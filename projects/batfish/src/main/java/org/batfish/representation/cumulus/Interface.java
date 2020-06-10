@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -13,7 +14,8 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 @ParametersAreNonnullByDefault
 public class Interface implements Serializable {
 
-  static final String NULL_INTERFACE_NAME = "null0";
+  static final Pattern NULL_INTERFACE_PATTERN =
+      Pattern.compile("Null0|blackhole|reject", Pattern.CASE_INSENSITIVE);
 
   private @Nullable String _alias;
   private @Nullable InterfaceBridgeSettings _bridge;

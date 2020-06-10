@@ -93,6 +93,11 @@ vni_number
 
 ;
 
+uint8
+:
+  UINT8
+;
+
 uint16
 :
   UINT8

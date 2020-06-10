@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.io.IOException;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.Response;
 import org.batfish.common.CoordConsts;
@@ -44,9 +45,9 @@ public final class AnalysisResourceTest extends WorkMgrServiceV2TestBase {
   public void testDeleteAnalysisMissingNetwork() {
     String network = "network1";
     String analysis = "analysis1";
-    Response response = getTarget(network, analysis).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, analysis).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -54,27 +55,27 @@ public final class AnalysisResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String analysis = "analysis1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, analysis).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, analysis).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testDeleteAnalysisSuccess() {
+  public void testDeleteAnalysisSuccess() throws IOException {
     String network = "network1";
     String analysis = "analysis1";
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr()
         .configureAnalysis(
             network, true, analysis, ImmutableMap.of("foo", "{}"), ImmutableList.of(), false);
-    Response response = getTarget(network, analysis).delete();
-
     // should succeed first time
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    response = getTarget(network, analysis).delete();
+    try (Response response = getTarget(network, analysis).delete()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
 
     // should fail second time
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, analysis).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 }

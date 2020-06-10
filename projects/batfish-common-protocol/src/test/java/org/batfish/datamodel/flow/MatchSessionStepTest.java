@@ -20,7 +20,7 @@ import org.junit.Test;
 public final class MatchSessionStepTest {
   @Test
   public void testConstructor() {
-    Set<String> incomingInterfaces = ImmutableSet.of("a");
+    SessionScope sessionScope = new IncomingSessionScope(ImmutableSet.of("a"));
     SessionMatchExpr matchCriteria =
         new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
     Set<FlowDiff> transformation =
@@ -28,13 +28,13 @@ public final class MatchSessionStepTest {
     MatchSessionStep step =
         new MatchSessionStep(
             MatchSessionStepDetail.builder()
-                .setIncomingInterfaces(incomingInterfaces)
+                .setSessionScope(sessionScope)
                 .setSessionAction(Accept.INSTANCE)
                 .setMatchCriteria(matchCriteria)
                 .setTransformation(transformation)
                 .build());
     assertEquals(step.getAction(), StepAction.MATCHED_SESSION);
-    assertEquals(step.getDetail().getIncomingInterfaces(), incomingInterfaces);
+    assertEquals(step.getDetail().getSessionScope(), sessionScope);
     assertEquals(step.getDetail().getSessionAction(), Accept.INSTANCE);
     assertEquals(step.getDetail().getMatchCriteria(), matchCriteria);
     assertEquals(step.getDetail().getTransformation(), transformation);
@@ -42,7 +42,7 @@ public final class MatchSessionStepTest {
 
   @Test
   public void testJsonSerialization() {
-    Set<String> incomingInterfaces = ImmutableSet.of("b");
+    SessionScope sessionScope = new IncomingSessionScope(ImmutableSet.of("b"));
     ForwardOutInterface forwardAction =
         new ForwardOutInterface("a", NodeInterfacePair.of("a", "b"));
     SessionMatchExpr matchCriteria =
@@ -52,16 +52,14 @@ public final class MatchSessionStepTest {
     MatchSessionStep step =
         new MatchSessionStep(
             MatchSessionStepDetail.builder()
-                .setIncomingInterfaces(incomingInterfaces)
+                .setSessionScope(sessionScope)
                 .setSessionAction(forwardAction)
                 .setMatchCriteria(matchCriteria)
                 .setTransformation(transformation)
                 .build());
     MatchSessionStep clone = BatfishObjectMapper.clone(step, MatchSessionStep.class);
     assertEquals(step.getAction(), clone.getAction());
-    assertThat(
-        clone.getDetail().getIncomingInterfaces(),
-        equalTo(step.getDetail().getIncomingInterfaces()));
+    assertThat(clone.getDetail().getSessionScope(), equalTo(step.getDetail().getSessionScope()));
     assertThat(clone.getDetail().getSessionAction(), equalTo(step.getDetail().getSessionAction()));
     assertThat(clone.getDetail().getMatchCriteria(), equalTo(step.getDetail().getMatchCriteria()));
     assertThat(

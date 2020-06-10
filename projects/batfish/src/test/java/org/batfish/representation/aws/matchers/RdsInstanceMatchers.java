@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.Multimap;
 import java.util.List;
 import javax.annotation.Nonnull;
-import org.batfish.representation.aws.RdsInstance.Status;
 import org.batfish.representation.aws.matchers.RdsInstanceMatchersImpl.HasAvailabilityZone;
 import org.batfish.representation.aws.matchers.RdsInstanceMatchersImpl.HasAzSubnetIds;
 import org.batfish.representation.aws.matchers.RdsInstanceMatchersImpl.HasDbInstanceStatus;
@@ -37,7 +36,7 @@ public final class RdsInstanceMatchers {
    * Provides a matcher that matches when {@code Db} is equal to the {@link
    * org.batfish.representation.aws.RdsInstance}'s DB Instance Status.
    */
-  public static HasDbInstanceStatus hasDbInstanceStatus(Status expectedDbInstanceStatus) {
+  public static HasDbInstanceStatus hasDbInstanceStatus(String expectedDbInstanceStatus) {
     return new HasDbInstanceStatus(equalTo(expectedDbInstanceStatus));
   }
 
@@ -46,7 +45,7 @@ public final class RdsInstanceMatchers {
    * org.batfish.representation.aws.RdsInstance}'s DB Instance Status.
    */
   public static HasDbInstanceStatus hasDbInstanceStatus(
-      @Nonnull Matcher<? super Status> subMatcher) {
+      @Nonnull Matcher<? super String> subMatcher) {
     return new HasDbInstanceStatus(subMatcher);
   }
 

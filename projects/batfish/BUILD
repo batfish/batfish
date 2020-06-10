@@ -1,8 +1,8 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
-
-load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_binary(
     name = "batfish_main",
@@ -26,11 +26,10 @@ java_library(
     ],
     runtime_deps = [
         "//projects/question",
+        "@maven//:io_jaegertracing_jaeger_thrift",
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_imish",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/iptables",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/mrv",
@@ -39,11 +38,13 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/nxos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/vyos",
+        "//projects/batfish/src/main/java/org/batfish/grammar/arista",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_xr",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_concatenated",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_nclu",
+        "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",
@@ -55,9 +56,11 @@ java_library(
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_auto_service_auto_service_annotations",
         "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_errorprone_error_prone_annotations",
         "@maven//:com_google_guava_guava",
-        "@maven//:com_uber_jaeger_jaeger_core",
+        "@maven//:com_ibm_icu_icu4j",
         "@maven//:commons_io_commons_io",
+        "@maven//:io_jaegertracing_jaeger_core",
         "@maven//:io_opentracing_contrib_opentracing_jaxrs2",
         "@maven//:io_opentracing_opentracing_api",
         "@maven//:io_opentracing_opentracing_util",
@@ -115,19 +118,17 @@ junit_tests(
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/identifiers",
         "//projects/bdd",
         "//projects/symbolic",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
+        "@maven//:commons_io_commons_io",
         "@maven//:junit_junit",
-        "@maven//:org_antlr_antlr4_runtime",
-        "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
-
-load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 pmd_test(
     name = "pmd",

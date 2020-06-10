@@ -100,12 +100,14 @@ l_null
       | AUTHORIZATION
       | AUTOHANGUP
       | AUTOSELECT
+      | BUFFER_LENGTH
       | DATABITS
       | ESCAPE_CHARACTER
       | EXEC
       | FLOWCONTROL
       | FLUSH_AT_ACTIVATION
       | HISTORY
+      | HOLD_CHARACTER
       | IPV6
       | LOCATION
       | LOGGING
@@ -120,6 +122,7 @@ l_null
       | SESSION_LIMIT
       | SESSION_TIMEOUT
       | SPEED
+      | STOP_CHARACTER
       | STOPBITS
       | TERMINAL_TYPE
       | TIMEOUT

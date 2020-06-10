@@ -1,6 +1,8 @@
 package org.batfish.storage;
 
-import static org.batfish.storage.FileBasedStorage.mkdirs;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
+import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -12,6 +14,7 @@ import static org.hamcrest.io.FileMatchers.anExistingDirectory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -23,9 +26,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +40,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.BfConsts;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
@@ -57,8 +59,10 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
+import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
+import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
@@ -116,23 +120,17 @@ public final class FileBasedStorageTest {
     NetworkId networkId = new NetworkId("network");
     SnapshotId snapshotId = new SnapshotId("snapshot");
 
-    Path batfishConfigDir =
-        _storage
-            .getDirectoryProvider()
-            .getSnapshotInputObjectsDir(networkId, snapshotId)
-            .resolve(BfConsts.RELPATH_BATFISH_CONFIGS_DIR);
-    final boolean mkdirs = batfishConfigDir.toFile().mkdirs();
-    assertThat(mkdirs, equalTo(true));
-
     IspConfiguration ispConfiguration =
         new IspConfiguration(
             ImmutableList.of(new BorderInterfaceInfo(NodeInterfacePair.of("node", "interface"))),
             new IspFilter(
                 ImmutableList.of(1L, 2L),
                 ImmutableList.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"))));
-    BatfishObjectMapper.mapper()
-        .writeValue(
-            batfishConfigDir.resolve(BfConsts.RELPATH_ISP_CONFIG_FILE).toFile(), ispConfiguration);
+    String ispConfigurationStr = BatfishObjectMapper.writeString(ispConfiguration);
+    try (InputStream is = new ByteArrayInputStream(ispConfigurationStr.getBytes(UTF_8))) {
+      _storage.storeSnapshotInputObject(
+          is, ISP_CONFIGURATION_KEY, new NetworkSnapshot(networkId, snapshotId));
+    }
 
     IspConfiguration readIspConfiguration = _storage.loadIspConfiguration(networkId, snapshotId);
     assertThat(ispConfiguration, equalTo(readIspConfiguration));
@@ -179,7 +177,7 @@ public final class FileBasedStorageTest {
   @Test
   public void testCheckNetworkExistsTrue() {
     NetworkId network = new NetworkId("network");
-    _storage.getDirectoryProvider().getNetworkDir(network).toFile().mkdirs();
+    _storage.getNetworkDir(network).toFile().mkdirs();
 
     assertThat(_storage.checkNetworkExists(network), equalTo(true));
   }
@@ -214,13 +212,14 @@ public final class FileBasedStorageTest {
     // setup: pretend a worker logger has written a file
     NetworkId network = new NetworkId("network");
     SnapshotId snapshot = new SnapshotId("snapshot");
-    Path dir = _storage.getDirectoryProvider().getSnapshotOutputDir(network, snapshot);
-    final boolean mkdirs = dir.toFile().mkdirs();
+    String workId = "workid";
+    Path logFile = getWorkLogPath(_containerDir.getParent(), network, snapshot, workId);
+    final boolean mkdirs = logFile.getParent().toFile().mkdirs();
     assertThat(mkdirs, equalTo(true));
-    CommonUtil.writeFile(dir.resolve("workid.log"), "testoutput");
+    CommonUtil.writeFile(logFile, "testoutput");
 
     // Test: read log using storage API
-    assertThat(_storage.loadWorkLog(network, snapshot, "workid"), equalTo("testoutput"));
+    assertThat(_storage.loadWorkLog(network, snapshot, workId), equalTo("testoutput"));
   }
 
   @Test
@@ -234,11 +233,23 @@ public final class FileBasedStorageTest {
   }
 
   @Test
+  public void testValidatePath() {
+    Path validPath = _containerDir.resolve("foo");
+
+    _storage.validatePath(_containerDir);
+    _storage.validatePath(validPath);
+
+    Path invalidPath = Paths.get("/dev/null");
+    _thrown.expect(IllegalArgumentException.class);
+    _storage.validatePath(invalidPath);
+  }
+
+  @Test
   public void testMkdirs() throws IOException {
-    Path dir = _folder.newFolder().toPath().resolve("parentDir").resolve("subDir");
+    Path dir = _containerDir.resolve("parentDir").resolve("subDir");
 
     // Confirm mkdirs creates the non-existent dir
-    mkdirs(dir);
+    _storage.mkdirs(dir);
     assertThat(dir.toFile(), anExistingDirectory());
   }
 
@@ -252,7 +263,7 @@ public final class FileBasedStorageTest {
     // Try many times, since false negatives are possible
     int numTries = 100;
 
-    final Path dir = _folder.newFolder().toPath().resolve("testDir");
+    final Path dir = _containerDir.resolve("testDir");
     final CyclicBarrier barrier = new CyclicBarrier(numThreads);
     final AtomicInteger exceptions = new AtomicInteger(0);
     List<Thread> threads = new ArrayList<>();
@@ -265,7 +276,7 @@ public final class FileBasedStorageTest {
                   try {
                     // Wait until all threads are at the barrier
                     barrier.await();
-                    mkdirs(dir);
+                    _storage.mkdirs(dir);
                   } catch (Exception e) {
                     // Track exceptions with int since they are not directly surfaced
                     exceptions.addAndGet(1);
@@ -287,22 +298,22 @@ public final class FileBasedStorageTest {
 
   @Test
   public void testMkdirsExists() throws IOException {
-    Path dir = _folder.newFolder().toPath();
+    Path dir = _containerDir;
 
     // Confirm mkdirs succeeds when the dir already exists
-    mkdirs(dir);
+    _storage.mkdirs(dir);
     assertThat(dir.toFile(), anExistingDirectory());
   }
 
   @Test
   public void testMkdirsFail() throws IOException {
-    File parentDir = _folder.newFolder();
+    File parentDir = _containerDir.toFile();
     parentDir.setReadOnly();
     Path dir = parentDir.toPath().resolve("testDir");
 
     // Confirm mkdirs throws when creating a dir within a read-only dir
     _thrown.expectMessage(containsString("Unable to create directory"));
-    mkdirs(dir);
+    _storage.mkdirs(dir);
   }
 
   @Test
@@ -320,7 +331,7 @@ public final class FileBasedStorageTest {
     assertThat("Should have been set", found, notNullValue());
     assertFalse("Should not have been found", found);
 
-    byte[] content = "here's some content".getBytes(StandardCharsets.UTF_8);
+    byte[] content = "here's some content".getBytes(UTF_8);
     _storage.storeNetworkBlob(new ByteArrayInputStream(content), network, id);
 
     byte[] loaded = ByteStreams.toByteArray(_storage.loadNetworkBlob(network, id));
@@ -338,7 +349,7 @@ public final class FileBasedStorageTest {
         _storage.getSnapshotInputObjectPath(network, snapshot, "test").toFile());
 
     try (InputStream inputStream = _storage.loadSnapshotInputObject(network, snapshot, "test")) {
-      assertThat(IOUtils.toString(inputStream, StandardCharsets.UTF_8.name()), equalTo(testSting));
+      assertThat(IOUtils.toString(inputStream, UTF_8.name()), equalTo(testSting));
     }
   }
 
@@ -358,6 +369,7 @@ public final class FileBasedStorageTest {
     }
 
     Path unzipDir = _folder.getRoot().toPath().resolve("tmp");
+    unzipDir.toFile().mkdirs();
     UnzipUtility.unzip(tmpzip, unzipDir);
 
     // the top level entry in the zip should be testkey
@@ -371,8 +383,7 @@ public final class FileBasedStorageTest {
     // the content of the testfile should match what we wrote
     assertThat(
         new String(
-            Files.readAllBytes(unzipDir.resolve(toplevel[0]).resolve(secondlevel[0])),
-            StandardCharsets.UTF_8),
+            Files.readAllBytes(unzipDir.resolve(toplevel[0]).resolve(secondlevel[0])), UTF_8),
         equalTo(testSting));
   }
 
@@ -518,5 +529,48 @@ public final class FileBasedStorageTest {
 
     assertEquals(
         _storage.loadSynthesizedLayer1Topology(networkSnapshot), Optional.of(Layer1Topology.EMPTY));
+  }
+
+  @Test
+  public void testReadId() throws IOException {
+    _storage.writeId(new NetworkId("network1_id"), "network1");
+    assertThat(_storage.readId(NetworkId.class, "network1"), equalTo(Optional.of("network1_id")));
+
+    assertThat(_storage.readId(NetworkId.class, "network2"), equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testHasId() throws IOException {
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1", new NetworkId("net1_id")));
+
+    _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1");
+
+    assertTrue(_storage.hasId(SnapshotId.class, "snapshot1"));
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1", new NetworkId("net1_id")));
+
+    _storage.deleteNameIdMapping(SnapshotId.class, "snapshot1");
+
+    assertFalse(_storage.hasId(SnapshotId.class, "snapshot1"));
+  }
+
+  @Test
+  public void testListResolvableNames() throws IOException {
+    _storage.writeId(new SnapshotId("snapshot1_id"), "snapshot1", new NetworkId("net1_id"));
+    _storage.writeId(new SnapshotId("snapshot2_id"), "snapshot2", new NetworkId("net1_id"));
+
+    // different ancestors
+    _storage.writeId(
+        new SnapshotId("snapshot1_id_other"),
+        "snapshot3",
+        new NetworkId("net1_id"),
+        new AnalysisId("analysis1_id")); //
+
+    // different ID type
+    _storage.writeId(new QuestionId("question1_id"), "snapshot4", new NetworkId("net1_id"));
+
+    assertThat(
+        _storage.listResolvableNames(SnapshotId.class, new NetworkId("net1_id")),
+        containsInAnyOrder("snapshot1", "snapshot2"));
   }
 }

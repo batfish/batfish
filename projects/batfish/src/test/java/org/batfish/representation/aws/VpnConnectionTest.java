@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
@@ -22,7 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -38,7 +39,7 @@ public class VpnConnectionTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/VpnConnectionTest.json");
+    String text = readResource("org/batfish/representation/aws/VpnConnectionTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");
@@ -111,8 +112,7 @@ public class VpnConnectionTest {
   @Test
   public void testDeserializationTransitGateway() throws IOException {
     String text =
-        CommonUtil.readResource(
-            "org/batfish/representation/aws/VpnConnectionTransitGatewayTest.json");
+        readResource("org/batfish/representation/aws/VpnConnectionTransitGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPN_CONNECTIONS);

@@ -10,6 +10,8 @@ public enum BgpTableFormat {
   EMPTY("empty"),
   EOS("eos"),
   EOS_DETAIL("eos_detail"),
+  /** For internal testing use only */
+  JSON("json"),
   UNKNOWN("unknown");
 
   private static final Map<String, BgpTableFormat> _map = buildMap();

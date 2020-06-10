@@ -30,6 +30,8 @@ ss_common
     | s_application_group
     | s_external_list
     | s_log_settings
+    | s_post_rulebase
+    | s_pre_rulebase
     | s_service
     | s_service_group
     | s_tag

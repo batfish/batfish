@@ -19,11 +19,6 @@ public class BDDUtils {
     return factory;
   }
 
-  /** @see BDD#isAssignment() */
-  public static boolean isAssignment(BDD orig) {
-    return orig.isAssignment();
-  }
-
   /**
    * Swap the constraints on multiple {@link BDDInteger BDDIntegers} in a {@link BDD}. Usage:
    * swap(bdd, a1, a2, b1, b2, ...). Swaps a1 and a2, b1 and b2, etc.

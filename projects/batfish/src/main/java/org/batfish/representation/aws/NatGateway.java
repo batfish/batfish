@@ -45,7 +45,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -198,8 +197,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
     // post transformation filter on the interface to the subnet
     IpAccessList postTransformationFilter =
-        computePostTransformationIllegalPacketFilter(
-            getPrivateIp(), ifaceToSubnet.getPrimaryNetwork());
+        computePostTransformationIllegalPacketFilter(getPrivateIp(), subnet.getCidrBlock());
     cfgNode.getIpAccessLists().put(postTransformationFilter.getName(), postTransformationFilter);
     ifaceToSubnet.setPostTransformationIncomingFilter(postTransformationFilter);
 
@@ -267,7 +265,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       return null;
     }
 
-    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
       warnings.redFlag(
           String.format(
@@ -279,8 +277,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     String vrfNameOnVpc = Vpc.vrfNameForLink(_natGatewayId);
 
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
-      vpc.initializeVrf(vrf);
+      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, _vpcId));
+      return null;
     }
 
     connect(awsConfiguration, natGwCfg, DEFAULT_VRF_NAME, vpcCfg, vrfNameOnVpc, "");

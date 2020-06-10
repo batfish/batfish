@@ -89,9 +89,9 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
   public void testDeleteQuestionAdHocMissingNetwork() {
     String network = "network1";
     String question = "question1";
-    Response response = getQuestionTargetAdHoc(network, question).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAdHoc(network, question).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -99,27 +99,27 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String question = "question1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getQuestionTargetAdHoc(network, question).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAdHoc(network, question).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testDeleteQuestionAdHocSuccess() throws JsonProcessingException {
+  public void testDeleteQuestionAdHocSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr()
         .uploadQuestion(network, question, BatfishObjectMapper.writeString(new TestQuestion()));
-    Response response = getQuestionTargetAdHoc(network, question).delete();
+    try (Response response = getQuestionTargetAdHoc(network, question).delete()) {
+      // should succed the first time
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
 
-    // should succed the first time
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    response = getQuestionTargetAdHoc(network, question).delete();
-
-    // should fail the second time
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAdHoc(network, question).delete()) {
+      // should fail the second time
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -128,9 +128,9 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String question = "question1";
     String analysis = "analysis1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getQuestionTargetAnalysis(network, question, analysis).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAnalysis(network, question, analysis).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -138,13 +138,13 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String question = "question1";
     String analysis = "analysis1";
-    Response response = getQuestionTargetAnalysis(network, question, analysis).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAnalysis(network, question, analysis).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testDeleteQuestionAnalysisMissingQuestion() throws JsonProcessingException {
+  public void testDeleteQuestionAnalysisMissingQuestion() throws IOException {
     String network = "network1";
     String question = "question1";
     String analysis = "analysis1";
@@ -158,13 +158,14 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableList.of(),
             false);
 
-    Response response = getQuestionTargetAnalysis(network, "someOtherQuestion", analysis).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response =
+        getQuestionTargetAnalysis(network, "someOtherQuestion", analysis).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testDeleteQuestionAnalysisSuccess() throws JsonProcessingException {
+  public void testDeleteQuestionAnalysisSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     String analysis = "analysis1";
@@ -177,24 +178,24 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableMap.of(question, BatfishObjectMapper.writeString(new TestQuestion())),
             ImmutableList.of(),
             false);
-    Response response = getQuestionTargetAnalysis(network, question, analysis).delete();
+    try (Response response = getQuestionTargetAnalysis(network, question, analysis).delete()) {
+      // should succed the first time
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
 
-    // should succed the first time
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    response = getQuestionTargetAnalysis(network, question, analysis).delete();
-
-    // should fail the second time
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAnalysis(network, question, analysis).delete()) {
+      // should fail the second time
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetQuestionAdHocMissingNetwork() {
     String network = "network1";
     String question = "question1";
-    Response response = getQuestionTargetAdHoc(network, question).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAdHoc(network, question).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -202,22 +203,22 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String question = "question1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getQuestionTargetAdHoc(network, question).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAdHoc(network, question).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testGetQuestionAdHocSuccess() throws JsonProcessingException {
+  public void testGetQuestionAdHocSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr().uploadQuestion(network, question, questionJson);
-    Response response = getQuestionTargetAdHoc(network, question).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo(questionJson));
+    try (Response response = getQuestionTargetAdHoc(network, question).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(String.class), equalTo(questionJson));
+    }
   }
 
   @Test
@@ -226,9 +227,9 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String question = "question1";
     String analysis = "analysis1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getQuestionTargetAnalysis(network, question, analysis).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAnalysis(network, question, analysis).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -236,13 +237,13 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String question = "question1";
     String analysis = "analysis1";
-    Response response = getQuestionTargetAnalysis(network, question, analysis).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionTargetAnalysis(network, question, analysis).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testGetQuestionAnalysisMissingQuestion() throws JsonProcessingException {
+  public void testGetQuestionAnalysisMissingQuestion() throws IOException {
     String network = "network1";
     String question = "question1";
     String analysis = "analysis1";
@@ -256,13 +257,14 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableMap.of(question, questionJson),
             ImmutableList.of(),
             false);
-    Response response = getQuestionTargetAnalysis(network, "someOtherQuestion", analysis).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response =
+        getQuestionTargetAnalysis(network, "someOtherQuestion", analysis).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testGetQuestionAnalysisSuccess() throws JsonProcessingException {
+  public void testGetQuestionAnalysisSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     String analysis = "analysis1";
@@ -276,18 +278,18 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableMap.of(question, questionJson),
             ImmutableList.of(),
             false);
-    Response response = getQuestionTargetAnalysis(network, question, analysis).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo(questionJson));
+    try (Response response = getQuestionTargetAnalysis(network, question, analysis).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(String.class), equalTo(questionJson));
+    }
   }
 
   @Test
   public void testListQuestionsAdHocMissingNetwork() {
     String network = "network1";
-    Response response = getTargetAdHoc(network).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTargetAdHoc(network).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -297,10 +299,10 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr()
         .uploadQuestion(network, question, BatfishObjectMapper.writeString(new TestQuestion()));
-    Response response = getTargetAdHoc(network).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(SortedSet.class), equalTo(ImmutableSortedSet.of(question)));
+    try (Response response = getTargetAdHoc(network).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(SortedSet.class), equalTo(ImmutableSortedSet.of(question)));
+    }
   }
 
   @Test
@@ -308,18 +310,18 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String analysis = "analysis1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTargetAnalysis(network, analysis).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTargetAnalysis(network, analysis).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testListQuestionsAnalysisMissingNetwork() {
     String network = "network1";
     String analysis = "analysis1";
-    Response response = getTargetAnalysis(network, analysis).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTargetAnalysis(network, analysis).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -336,10 +338,10 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
             ImmutableMap.of(question, BatfishObjectMapper.writeString(new TestQuestion())),
             ImmutableList.of(),
             false);
-    Response response = getTargetAnalysis(network, analysis).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(SortedSet.class), equalTo(ImmutableSortedSet.of(question)));
+    try (Response response = getTargetAnalysis(network, analysis).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(SortedSet.class), equalTo(ImmutableSortedSet.of(question)));
+    }
   }
 
   @Test
@@ -347,25 +349,25 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String question = "question1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());
-    Response response =
+    try (Response response =
         getQuestionTargetAdHoc(network, question)
-            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testPutQuestionAdHocSuccess() throws JsonProcessingException {
+  public void testPutQuestionAdHocSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr().uploadQuestion(network, question, questionJson);
-    Response response =
+    try (Response response =
         getQuestionTargetAdHoc(network, question)
-            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 
   @Test
@@ -374,11 +376,11 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String question = "question1";
     String analysis = "analysis1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());
-    Response response =
+    try (Response response =
         getQuestionTargetAnalysis(network, question, analysis)
-            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -386,15 +388,15 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String question = "question1";
     String questionJson = BatfishObjectMapper.writeString(new TestQuestion());
-    Response response =
+    try (Response response =
         getQuestionTargetAdHoc(network, question)
-            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testPutQuestionAnalysisSuccess() throws JsonProcessingException {
+  public void testPutQuestionAnalysisSuccess() throws IOException {
     String network = "network1";
     String question = "question1";
     String analysis = "analysis1";
@@ -409,10 +411,10 @@ public final class QuestionsResourceTest extends WorkMgrServiceV2TestBase {
                 "someOtherQuestion", BatfishObjectMapper.writeString(new TestQuestion())),
             ImmutableList.of(),
             false);
-    Response response =
+    try (Response response =
         getQuestionTargetAnalysis(network, question, analysis)
-            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+            .put(Entity.entity(questionJson, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 }

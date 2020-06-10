@@ -1,5 +1,7 @@
 package org.batfish.referencelibrary;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.referencelibrary.ReferenceLibrary.checkDuplicates;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -9,10 +11,8 @@ import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.SortedSet;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -45,7 +45,7 @@ public class ReferenceLibraryTest {
     ReferenceLibrary library =
         BatfishObjectMapper.mapper()
             .readValue(
-                CommonUtil.readResource("org/batfish/referencelibrary/libraryTwoBooks.json"),
+                readResource("org/batfish/referencelibrary/libraryTwoBooks.json", UTF_8),
                 ReferenceLibrary.class);
 
     assertThat(library.getReferenceBooks(), hasSize(2));
@@ -59,19 +59,17 @@ public class ReferenceLibraryTest {
 
     BatfishObjectMapper.mapper()
         .readValue(
-            CommonUtil.readResource("org/batfish/referencelibrary/libraryDuplicateBooks.json"),
+            readResource("org/batfish/referencelibrary/libraryDuplicateBooks.json", UTF_8),
             ReferenceLibrary.class);
   }
 
   /** check that merger of reference books is proper */
   @Test
   public void testMergeReferenceBooks() throws IOException {
-    Path tempPath = CommonUtil.createTempFile("referencelibrary", "tmp");
     ReferenceLibrary library =
         new ReferenceLibrary(
             ImmutableList.of(
                 ReferenceBook.builder("book1").build(), ReferenceBook.builder("book2").build()));
-    ReferenceLibrary.write(library, tempPath);
 
     SortedSet<ReferenceBook> newBooks =
         ImmutableSortedSet.of(
@@ -81,10 +79,10 @@ public class ReferenceLibraryTest {
                 .build(),
             ReferenceBook.builder("book3").build());
 
-    ReferenceLibrary.mergeReferenceBooks(tempPath, newBooks);
+    ReferenceLibrary merged = library.mergeReferenceBooks(newBooks);
 
     assertThat(
-        ReferenceLibrary.read(tempPath).getReferenceBooks(),
+        merged.getReferenceBooks(),
         equalTo(
             ImmutableSortedSet.of(
                 ReferenceBook.builder("book1")

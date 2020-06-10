@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
@@ -9,6 +10,7 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -141,10 +143,10 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ifaceAcceptBDDs,
+            toVrfAcceptBdds(ifaceAcceptBDDs),
             routableBDDs,
             ImmutableMap.of(),
-            ImmutableMap.of(),
-            PKT.getFactory()::orAll);
+            ImmutableMap.of());
     Edge expectedEdge =
         new Edge(
             new InterfaceAccept(NODE1, IFACE1), new VrfAccept(NODE1, VRF1), PKT.getFactory().one());
@@ -189,10 +191,10 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ifaceAcceptBDDs,
+            toVrfAcceptBdds(ifaceAcceptBDDs),
             routableBDDs,
             ImmutableMap.of(),
-            ImmutableMap.of(),
-            PKT.getFactory()::orAll);
+            ImmutableMap.of());
     Edge expectedEdge =
         new Edge(new TestPostInVrf(NODE1, VRF1), new InterfaceAccept(NODE1, IFACE1), DSTIP1);
 
@@ -235,10 +237,10 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ifaceAcceptBdds,
+            toVrfAcceptBdds(ifaceAcceptBdds),
             routableBDDs,
             ImmutableMap.of(),
-            ImmutableMap.of(),
-            PKT.getFactory()::orAll);
+            ImmutableMap.of());
     Edge expectedEdge =
         new Edge(new TestPostInVrf(NODE1, VRF1), new NodeDropNoRoute(NODE1), DSTIP1.nor(DSTIP2));
 
@@ -280,9 +282,9 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(),
-            nextVrfBDDs,
             ImmutableMap.of(),
-            PKT.getFactory()::orAll);
+            nextVrfBDDs,
+            ImmutableMap.of());
     Edge expectedEdge =
         new Edge(new TestPostInVrf(NODE1, VRF1), new TestPostInVrf(NODE1, VRF2), DSTIP1);
 
@@ -329,10 +331,10 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ifaceAcceptBdds,
+            toVrfAcceptBdds(ifaceAcceptBdds),
             routableBDDs,
             ImmutableMap.of(),
-            ImmutableMap.of(),
-            PKT.getFactory()::orAll);
+            ImmutableMap.of());
     Edge expectedEdge =
         new Edge(new TestPostInVrf(NODE1, VRF1), new TestPreOutVrf(NODE1, VRF1), DSTIP2);
 
@@ -372,8 +374,8 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(),
-            nullRoutedBDDs,
-            PKT.getFactory()::orAll);
+            ImmutableMap.of(),
+            nullRoutedBDDs);
     Edge expectedEdge =
         new Edge(new TestPreOutVrf(NODE1, VRF1), new NodeDropNullRoute(NODE1), DSTIP1);
 
@@ -423,7 +425,7 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(),
-            PKT.getFactory()::orAll);
+            ImmutableMap.of());
     Edge expectedEdge =
         new Edge(
             new TestPreOutVrf(NODE1, VRF1),
@@ -489,7 +491,7 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(),
-            PKT.getFactory()::orAll);
+            ImmutableMap.of());
     Edge expectedEdgeNeighborUnreachable =
         new Edge(
             new TestPreOutVrf(NODE1, VRF1),
@@ -567,5 +569,18 @@ public final class BDDFibGeneratorTest {
                 new TestPreOutVrf(NODE1, VRF1),
                 new TestPreOutInterfaceExitsNetwork(NODE1, IFACE1),
                 DSTIP1)));
+  }
+
+  private static Map<String, Map<String, BDD>> toVrfAcceptBdds(
+      Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBdds) {
+    return toImmutableMap(
+        ifaceAcceptBdds,
+        Entry::getKey, // node name
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, // vrf name
+                vrfEntry ->
+                    PKT.getFactory().orAll(vrfEntry.getValue().values()))); // vrf's accept BDD}
   }
 }

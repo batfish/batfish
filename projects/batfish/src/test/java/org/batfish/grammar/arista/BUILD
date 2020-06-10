@@ -1,9 +1,9 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
 package(
     default_testonly = True,
     default_visibility = ["//visibility:public"],
 )
-
-load("@batfish//skylark:junit.bzl", "junit_tests")
 
 junit_tests(
     name = "tests",
@@ -12,14 +12,16 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources/org/batfish/grammar/arista/testconfigs",
+        "//projects/batfish/src/test/resources/org/batfish/grammar/arista/testrigs",
     ],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/batfish/src/main/java/org/batfish/grammar/cisco",
-        "//projects/batfish/src/main/java/org/batfish/representation/cisco",
+        "//projects/batfish/src/main/java/org/batfish/grammar/arista",
+        "//projects/batfish/src/main/java/org/batfish/representation/arista",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",

@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -315,21 +314,23 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       List<Listener> listeners,
       Region region,
       Warnings warnings) {
-    List<LoadBalancerTransformation> listenerTransformations =
-        listeners.stream()
-            .map(
-                listener ->
-                    computeListenerTransformation(
-                        listener,
-                        lbAvailabilityZoneName,
-                        viIface.getConcreteAddress().getIp(),
-                        crossZoneLoadBalancing,
-                        region,
-                        warnings))
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList());
+    if (viIface.getConcreteAddress() != null) { // May be null if we couldn't find a usable address
+      List<LoadBalancerTransformation> listenerTransformations =
+          listeners.stream()
+              .map(
+                  listener ->
+                      computeListenerTransformation(
+                          listener,
+                          lbAvailabilityZoneName,
+                          viIface.getConcreteAddress().getIp(),
+                          crossZoneLoadBalancing,
+                          region,
+                          warnings))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
 
-    viIface.setIncomingTransformation(chainListenerTransformations(listenerTransformations));
+      viIface.setIncomingTransformation(chainListenerTransformations(listenerTransformations));
+    }
     viIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(viIface.getName()), null, null));
   }
@@ -354,32 +355,34 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
     try {
       HeaderSpace matchHeaderSpace = listener.getMatchingHeaderSpace();
 
-      Optional<TransformationStep> transformationStep =
+      Optional<DefaultAction> forwardingAction =
           listener.getDefaultActions().stream()
               .filter(defaultAction -> defaultAction.getType() == ActionType.FORWARD)
-              .sorted(Comparator.comparing(DefaultAction::getOrder))
-              .map(
-                  action ->
-                      computeTargetGroupTransformationStep(
-                          action.getTargetGroupArn(),
-                          lbAvailabilityZoneName,
-                          loadBalancerIp,
-                          crossZoneLoadBalancing,
-                          region,
-                          warnings))
-              .filter(Objects::nonNull)
               .findFirst();
-
-      if (!transformationStep.isPresent()) {
+      if (!forwardingAction.isPresent()) {
         warnings.redFlag(
             String.format(
-                "No valid transformation step could be built for listener %s of load balancer %s (%s)",
+                "No forwarding action found for listener %s of load balancer %s (%s)",
                 listener, _arn, _name));
         return null;
       }
 
+      TransformationStep transformationStep =
+          computeTargetGroupTransformationStep(
+              forwardingAction.get().getTargetGroupArn(),
+              lbAvailabilityZoneName,
+              loadBalancerIp,
+              crossZoneLoadBalancing,
+              region,
+              warnings);
+
+      if (transformationStep == null) {
+        // no need to warn here. computerTargetGroupTransformationStep does it
+        return null;
+      }
+
       return new LoadBalancerTransformation(
-          new MatchHeaderSpace(matchHeaderSpace), transformationStep.get());
+          new MatchHeaderSpace(matchHeaderSpace), transformationStep);
     } catch (Exception e) {
       warnings.redFlag(e.getMessage());
       return null;
@@ -416,19 +419,47 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       return null;
     }
 
-    Set<TransformationStep> transformationSteps =
+    Set<TargetHealthDescription> enabledAzTargets =
         targetHealths.getTargetHealthDescriptions().stream()
             .filter(
                 desc ->
-                    isValidTarget(
+                    isTargetInEnabledAvailabilityZone(
                         desc, targetGroup, lbAvailabilityZoneName, crossZoneLoadBalancing, region))
+            .collect(ImmutableSet.toImmutableSet());
+    if (enabledAzTargets.isEmpty()) {
+      warnings.redFlag(
+          String.format(
+              "No targets found in enabled availability zone(s) for target group ARN %s",
+              targetGroupArn));
+      return null;
+    }
+
+    Set<TargetHealthDescription> healthyTargets =
+        enabledAzTargets.stream()
+            .filter(desc -> desc.getTargetHealth().getState() == HealthState.HEALTHY)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
+    // If there are no enabled Availability Zones with a healthy target in each target group,
+    // requests are routed to targets in all enabled Availability Zones.
+    Set<TargetHealthDescription> activeTargets =
+        healthyTargets.isEmpty() ? enabledAzTargets : healthyTargets;
+
+    Set<TransformationStep> transformationSteps =
+        activeTargets.stream()
             .map(
                 desc ->
                     computeTargetTransformationStep(
-                        desc.getTarget(), targetGroup.getTargetType(), loadBalancerIp, region))
+                        desc.getTarget(),
+                        targetGroup.getTargetType(),
+                        loadBalancerIp,
+                        region,
+                        warnings))
             .filter(Objects::nonNull)
             .collect(ImmutableSet.toImmutableSet());
+
     if (transformationSteps.isEmpty()) {
+      // warning logged by computeTargetTransformationStep
       return null;
     }
 
@@ -447,13 +478,15 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
       LoadBalancerTarget target,
       TargetGroup.Type targetGroupType,
       Ip loadBalancerIp,
-      Region region) {
+      Region region,
+      Warnings warnings) {
     Ip targetIp =
         targetGroupType.equals(TargetGroup.Type.IP)
             ? Ip.parse(target.getId())
-            // instance must exist since this target is valid (see isValidTarget)
+            // instance must exist since this target is valid (see isTargetInValidAvailabilityZone)
             : region.getInstances().get(target.getId()).getPrimaryPrivateIpAddress();
     if (targetIp == null) {
+      warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
       return null;
     }
     return new ApplyAll(
@@ -464,20 +497,16 @@ final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /**
-   * A target is deemed valid for this load balancer if it is healthy and availability zone
-   * parameters match, that is, the load balancer does cross zone load balancing or the target is
-   * either in zone "all" or in the same zone as the load balancer.
+   * A target is in enabled zone for this load balancer if the load balancer does cross zone load
+   * balancing; or if the target is either in zone "all" or in the same zone as the load balancer.
    */
   @VisibleForTesting
-  static boolean isValidTarget(
+  static boolean isTargetInEnabledAvailabilityZone(
       TargetHealthDescription targetHealthDescription,
       TargetGroup targetGroup,
       String lbAvailabilityZoneName,
       boolean crossZoneLoadBalancing,
       Region region) {
-    if (targetHealthDescription.getTargetHealth().getState() != HealthState.HEALTHY) {
-      return false;
-    }
     switch (targetGroup.getTargetType()) {
       case IP:
         return crossZoneLoadBalancing

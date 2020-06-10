@@ -37,8 +37,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.config.Settings;
-import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
+import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -103,12 +103,8 @@ public class WorkMgrServiceTest {
         });
     Main.setLogger(logger);
     Main.initAuthorizer();
-    WorkMgr manager =
-        new WorkMgr(
-            settings,
-            logger,
-            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
+    FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
+    WorkMgr manager = new WorkMgr(settings, logger, new StorageBasedIdManager(fbs), fbs);
     Main.setWorkMgr(manager);
     manager.initNetwork(_networkName, null);
     manager.getIdManager().assignNetwork(_networkName, _networkId);
@@ -118,31 +114,34 @@ public class WorkMgrServiceTest {
   @Test
   public void getEmptyNetwork() {
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", _networkName);
-    String networkJson = response.getEntity().toString();
-    assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
+    try (Response response = _service.getNetwork("100", "0.0.0", _networkName)) {
+      String networkJson = response.getEntity().toString();
+      assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
+    }
   }
 
   @Test
   public void getNonExistNetwork() {
     String networkName = "non-existing-folder";
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", networkName);
-    String actualMessage = response.getEntity().toString();
-    String expected = "Network '" + networkName + "' not found";
-    assertThat(actualMessage, equalTo(expected));
+    try (Response response = _service.getNetwork("100", "0.0.0", networkName)) {
+      String actualMessage = response.getEntity().toString();
+      String expected = "Network '" + networkName + "' not found";
+      assertThat(actualMessage, equalTo(expected));
+    }
   }
 
   @Test
   public void getNonEmptyNetwork() throws Exception {
     initNetwork();
     initSnapshot();
-    Response response = _service.getNetwork("100", "0.0.0", _networkName);
-    Container network =
-        BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
-    Container expected =
-        Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
-    assertThat(network, equalTo(expected));
+    try (Response response = _service.getNetwork("100", "0.0.0", _networkName)) {
+      Container network =
+          BatfishObjectMapper.mapper().readValue(response.getEntity().toString(), Container.class);
+      Container expected =
+          Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
+      assertThat(network, equalTo(expected));
+    }
   }
 
   @Test
@@ -164,7 +163,7 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
     assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
     // test delete questions
     String questionsToDelete = String.format("[%s]", questionName);
@@ -214,8 +213,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -349,19 +348,21 @@ public class WorkMgrServiceTest {
   @Test
   public void getEmptyContainer() {
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", _networkName);
-    String networkJson = response.getEntity().toString();
-    assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
+    try (Response response = _service.getNetwork("100", "0.0.0", _networkName)) {
+      String networkJson = response.getEntity().toString();
+      assertThat(networkJson, equalTo("{\"name\":\"myNetwork\"}"));
+    }
   }
 
   @Test
   public void getNonExistContainer() {
     String networkName = "non-existing-folder";
     initNetwork();
-    Response response = _service.getNetwork("100", "0.0.0", networkName);
-    String actualMessage = response.getEntity().toString();
-    String expected = "Network '" + networkName + "' not found";
-    assertThat(actualMessage, equalTo(expected));
+    try (Response response = _service.getNetwork("100", "0.0.0", networkName)) {
+      String actualMessage = response.getEntity().toString();
+      String expected = "Network '" + networkName + "' not found";
+      assertThat(actualMessage, equalTo(expected));
+    }
   }
 
   private void initSnapshot() {
@@ -372,12 +373,13 @@ public class WorkMgrServiceTest {
   public void getNonEmptyContainer() throws Exception {
     initNetwork();
     initSnapshot();
-    Response response = _service.getNetwork("100", "0.0.0", _networkName);
-    String entityStr = response.getEntity().toString();
-    Container network = BatfishObjectMapper.mapper().readValue(entityStr, Container.class);
-    Container expected =
-        Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
-    assertThat(network, equalTo(expected));
+    try (Response response = _service.getNetwork("100", "0.0.0", _networkName)) {
+      String entityStr = response.getEntity().toString();
+      Container network = BatfishObjectMapper.mapper().readValue(entityStr, Container.class);
+      Container expected =
+          Container.of(_networkName, Sets.newTreeSet(Collections.singleton(_snapshotName)));
+      assertThat(network, equalTo(expected));
+    }
   }
 
   @Test
@@ -399,7 +401,7 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
     assertTrue(idm().hasQuestionId(questionName, _networkId, analysisId));
     // test delete questions
     String questionsToDelete = String.format("[%s]", questionName);
@@ -449,8 +451,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -530,8 +532,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -611,8 +613,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -687,8 +689,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId);
-    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysisName, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -738,7 +740,7 @@ public class WorkMgrServiceTest {
     String questionContent = BatfishObjectMapper.writeString(questionObj);
 
     Main.getWorkMgr().uploadQuestion(_networkName, question, questionContent);
-    QuestionId questionId = idm().getQuestionId(question, _networkId, null);
+    QuestionId questionId = idm().getQuestionId(question, _networkId, null).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -821,8 +823,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId);
-    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(
@@ -984,8 +986,8 @@ public class WorkMgrServiceTest {
         new FileInputStream(analysisFile),
         "",
         null);
-    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId);
-    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId);
+    AnalysisId analysisId = idm().getAnalysisId(analysis, _networkId).get();
+    QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
             .getBaseAnswerId(

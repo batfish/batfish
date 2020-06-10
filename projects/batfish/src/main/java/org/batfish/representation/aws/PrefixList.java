@@ -21,7 +21,7 @@ final class PrefixList implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<Prefix> _cidrs;
 
-  @Nullable private final String _prefixListId;
+  @Nonnull private final String _prefixListId;
 
   @Nonnull private final String _prefixListName;
 
@@ -53,7 +53,7 @@ final class PrefixList implements AwsVpcEntity, Serializable {
     return _prefixListId;
   }
 
-  @Nullable
+  @Nonnull
   public String getPrefixListName() {
     return _prefixListName;
   }

@@ -1,14 +1,15 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
-
-load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_binary(
     name = "client_main",
     main_class = "org.batfish.client.Main",
     runtime_deps = [
         ":client",
+        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )
@@ -29,9 +30,9 @@ java_library(
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
-        "@maven//:com_uber_jaeger_jaeger_core",
         "@maven//:commons_io_commons_io",
         "@maven//:io_github_java_diff_utils_java_diff_utils",
+        "@maven//:io_jaegertracing_jaeger_core",
         "@maven//:io_opentracing_opentracing_api",
         "@maven//:io_opentracing_opentracing_util",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
@@ -39,7 +40,6 @@ java_library(
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_glassfish_jersey_media_jersey_media_multipart",
         "@maven//:org_jline_jline",
-        "@maven//:org_skyscreamer_jsonassert",
     ],
 )
 
@@ -81,8 +81,6 @@ junit_tests(
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
-
-load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 pmd_test(
     name = "pmd",

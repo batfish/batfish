@@ -19,8 +19,8 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
-import org.batfish.coordinator.id.FileBasedIdManager;
 import org.batfish.coordinator.id.IdManager;
+import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -49,12 +49,8 @@ public final class WorkMgrTestUtils {
     Main.mainInit(new String[] {"-containerslocation", folder.getRoot().toString()});
     Main.setLogger(logger);
     Main.initAuthorizer();
-    WorkMgr workMgr =
-        new WorkMgr(
-            Main.getSettings(),
-            logger,
-            new FileBasedIdManager(Main.getSettings().getContainersLocation()),
-            new FileBasedStorage(Main.getSettings().getContainersLocation(), logger));
+    FileBasedStorage fbs = new FileBasedStorage(Main.getSettings().getContainersLocation(), logger);
+    WorkMgr workMgr = new WorkMgr(Main.getSettings(), logger, new StorageBasedIdManager(fbs), fbs);
     // Setup some test version data
     Main.setWorkMgr(workMgr);
   }
@@ -62,13 +58,14 @@ public final class WorkMgrTestUtils {
   public static void initSnapshotWithTopology(String network, String snapshot, Set<String> nodes)
       throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idManager.getNetworkId(network);
+    SnapshotMetadataMgr ssmManager = Main.getWorkMgr().getSnapshotMetadataManager();
+    NetworkId networkId = idManager.getNetworkId(network).get();
     SnapshotId snapshotId =
         idManager.hasSnapshotId(snapshot, networkId)
-            ? idManager.getSnapshotId(snapshot, networkId)
+            ? idManager.getSnapshotId(snapshot, networkId).get()
             : idManager.generateSnapshotId();
     idManager.assignSnapshot(snapshot, networkId, snapshotId);
-    SnapshotMetadataMgr.writeMetadata(
+    ssmManager.writeMetadata(
         new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
     Topology pojoTopology = new Topology(snapshot);
     pojoTopology.setNodes(nodes.stream().map(Node::new).collect(Collectors.toSet()));
@@ -81,8 +78,8 @@ public final class WorkMgrTestUtils {
   public static void setSnapshotNodeRoles(
       NodeRolesData nodeRolesData, String network, String snapshot) throws IOException {
     IdManager idManager = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idManager.getNetworkId(network);
-    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
+    NetworkId networkId = idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId).get();
     NodeRolesId snapshotNodeRolesId = idManager.getSnapshotNodeRolesId(networkId, snapshotId);
     Main.getWorkMgr().getStorage().storeNodeRoles(nodeRolesData, snapshotNodeRolesId);
   }
@@ -162,8 +159,8 @@ public final class WorkMgrTestUtils {
     IdManager idManager = manager.getIdManager();
     StorageProvider storage = manager.getStorage();
     Question question = new TestQuestion();
-    NetworkId networkId = idManager.getNetworkId(network);
-    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId);
+    NetworkId networkId = idManager.getNetworkId(network).get();
+    SnapshotId snapshotId = idManager.getSnapshotId(snapshot, networkId).get();
     AnalysisId analysisId = null;
 
     // Setup question
@@ -175,18 +172,20 @@ public final class WorkMgrTestUtils {
           ImmutableMap.of(questionName, BatfishObjectMapper.writeString(question)),
           Lists.newArrayList(),
           null);
-      analysisId = idManager.getAnalysisId(analysis, networkId);
+      analysisId = idManager.getAnalysisId(analysis, networkId).get();
     } else {
       idManager.assignQuestion(questionName, networkId, idManager.generateQuestionId(), null);
     }
-    QuestionId questionId = idManager.getQuestionId(questionName, networkId, analysisId);
+    QuestionId questionId = idManager.getQuestionId(questionName, networkId, analysisId).get();
     storage.storeQuestion(
         BatfishObjectMapper.writeString(question), networkId, questionId, analysisId);
 
     // Setup answer iff one was passed in
     if (answer != null) {
       SnapshotId referenceSnapshotId =
-          referenceSnapshot == null ? null : idManager.getSnapshotId(referenceSnapshot, networkId);
+          referenceSnapshot == null
+              ? null
+              : idManager.getSnapshotId(referenceSnapshot, networkId).get();
       AnswerId answerId =
           idManager.getBaseAnswerId(
               networkId,

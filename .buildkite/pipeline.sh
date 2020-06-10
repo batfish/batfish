@@ -4,7 +4,7 @@ set -euo pipefail
 
 BATFISH_ARTIFACTS_PLUGIN_VERSION="${BATFISH_ARTIFACTS_PLUGIN_VERSION:-v1.2.0}"
 BATFISH_DOCKER_PLUGIN_VERSION="${BATFISH_DOCKER_PLUGIN_VERSION:-v3.3.0}"
-BATFISH_DOCKER_CI_BASE_IMAGE="${BATFISH_DOCKER_CI_BASE_IMAGE:-batfish/ci-base:ee7a9f5}"
+BATFISH_DOCKER_CI_BASE_IMAGE="${BATFISH_DOCKER_CI_BASE_IMAGE:-batfish/ci-base:7b93a2097}"
 
 cat <<EOF
 steps:
@@ -84,20 +84,11 @@ cat <<EOF
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
           always-pull: true
-  - label: ":mvn: PMD"
-    depends_on:
-      - format
-      - template
-    command: "mvn -f projects/pom.xml verify -Dpmd.skip=false"
-    plugins:
-      - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
-          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
-          always-pull: true
 EOF
 
-###### Ensure the code still compiles with Bazel
+###### Ensure the code compiles with Bazel
 cat <<EOF
-  - label: ":bazel: Bazel"
+  - label: ":bazel: Build"
     depends_on:
       - format
       - template
@@ -105,6 +96,24 @@ cat <<EOF
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
       - "bazel build -- //..."
+    plugins:
+      - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
+          image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
+          always-pull: true
+          volumes:
+            - $HOME/.bazelrc:/home/batfish/.bazelrc
+EOF
+
+###### PMD
+cat <<EOF
+  - label: ":bazel: PMD"
+    depends_on:
+      - format
+      - template
+    command:
+      - "python3 -m virtualenv .venv"
+      - ". .venv/bin/activate"
+      - "bazel test --test_tag_filters=pmd_test -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}

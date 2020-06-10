@@ -101,9 +101,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
   public void testDeleteSnapshotMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getTarget(network, snapshot).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, snapshot).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -111,9 +111,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, snapshot).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, snapshot).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -122,24 +122,26 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     uploadTestSnapshot(network, snapshot, _folder);
-    Response response = getTarget(network, snapshot).delete();
+    try (Response response = getTarget(network, snapshot).delete()) {
 
-    // should succeed first time
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      // should succeed first time
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
 
-    response = getTarget(network, snapshot).delete();
+    try (Response response = getTarget(network, snapshot).delete()) {
 
-    // should fail second time
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+      // should fail second time
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testCompletedWorkMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getCompletedWorkTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getCompletedWorkTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -147,9 +149,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getCompletedWorkTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getCompletedWorkTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -159,18 +161,18 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
 
-    Response response = getCompletedWorkTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    try (Response response = getCompletedWorkTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetPojoTopologyMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getPojoTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getPojoTopologyTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -178,9 +180,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getPojoTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getPojoTopologyTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -189,19 +191,19 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
-    Response response = getPojoTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(org.batfish.datamodel.pojo.Topology.class), notNullValue());
+    try (Response response = getPojoTopologyTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(org.batfish.datamodel.pojo.Topology.class), notNullValue());
+    }
   }
 
   @Test
   public void testGetSnapshotMetadataMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -209,9 +211,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -220,19 +222,19 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
-    Response response = getTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(SnapshotMetadata.class), notNullValue());
+    try (Response response = getTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(SnapshotMetadata.class), notNullValue());
+    }
   }
 
   @Test
   public void testGetTopologyMissingNetwork() {
     String network = "network1";
     String snapshot = "snapshot1";
-    Response response = getTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTopologyTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -240,9 +242,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTopologyTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -251,10 +253,10 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.initSnapshotWithTopology(network, snapshot, ImmutableSet.of());
-    Response response = getTopologyTarget(network, snapshot).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(Topology.class), notNullValue());
+    try (Response response = getTopologyTarget(network, snapshot).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(Topology.class), notNullValue());
+    }
   }
 
   @Test
@@ -262,9 +264,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String network = "network1";
     String snapshot = "snapshot1";
 
-    Response response = getWorkLogTarget(network, snapshot, "workId").get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getWorkLogTarget(network, snapshot, "workId").get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -273,9 +275,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     String snapshot = "snapshot1";
     Main.getWorkMgr().initNetwork(network, null);
 
-    Response response = getWorkLogTarget(network, snapshot, "workid").get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getWorkLogTarget(network, snapshot, "workid").get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -285,9 +287,9 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
 
-    Response response = getWorkLogTarget(network, snapshot, "missingworkid").get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getWorkLogTarget(network, snapshot, "missingworkid").get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -297,15 +299,15 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
     Main.getWorkMgr().initNetwork(network, null);
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
     IdManager idm = Main.getWorkMgr().getIdManager();
-    NetworkId networkId = idm.getNetworkId(network);
-    SnapshotId snapshotId = idm.getSnapshotId(snapshot, networkId);
+    NetworkId networkId = idm.getNetworkId(network).get();
+    SnapshotId snapshotId = idm.getSnapshotId(snapshot, networkId).get();
     Main.getWorkMgr().getStorage().storeWorkLog("logoutput", networkId, snapshotId, "workid");
 
     Builder target = getWorkLogTarget(network, snapshot, "workid");
-    Response response = target.get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
-    assertThat(response.readEntity(String.class), equalTo("logoutput"));
+    try (Response response = target.get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.getMediaType(), equalTo(MediaType.TEXT_PLAIN_TYPE));
+      assertThat(response.readEntity(String.class), equalTo("logoutput"));
+    }
   }
 }

@@ -41,6 +41,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_DESCRIPTION = "Description";
   String JSON_KEY_DESTINATION_CIDR_BLOCK = "DestinationCidrBlock";
   String JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK = "DestinationIpv6CidrBlock";
+  String JSON_KEY_DESTINATION_PREFIX_LIST_ID = "DestinationPrefixListId";
   String JSON_KEY_DHCP_OPTIONS = "DhcpOptions";
   String JSON_KEY_DNS_NAME = "DNSName";
   String JSON_KEY_DOMAIN_NAME = "DomainName";
@@ -86,10 +87,12 @@ public interface AwsVpcEntity {
   String JSON_KEY_NETWORK_ACL_ID = "NetworkAclId";
   String JSON_KEY_NETWORK_ACLS = "NetworkAcls";
   String JSON_KEY_NETWORK_INTERFACE_ID = "NetworkInterfaceId";
+  String JSON_KEY_NETWORK_INTERFACE_IDS = "NetworkInterfaceIds";
   String JSON_KEY_NETWORK_INTERFACES = "NetworkInterfaces";
   String JSON_KEY_OPTIONS = "Options";
   String JSON_KEY_ORDER = "Order";
   String JSON_KEY_OUTSIDE_IP_ADDRESS = "OutsideIpAddress";
+  String JSON_KEY_OWNER_ID = "OwnerId";
   String JSON_KEY_PLACEMENT = "Placement";
   String JSON_KEY_PLACEMENT_GROUPS = "PlacementGroups";
   String JSON_KEY_PORT = "Port";
@@ -119,6 +122,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_SCHEME = "Scheme";
   String JSON_KEY_SECURITY_GROUPS = "SecurityGroups";
   String JSON_KEY_SECURITY_GROUP_IDS = "SecurityGroupIds";
+  String JSON_KEY_SERVICE_NAME = "ServiceName";
   String JSON_KEY_SERVICE_NAMES = "ServiceNames";
   String JSON_KEY_STATE = "State";
   String JSON_KEY_STATIC_ROUTES_ONLY = "StaticRoutesOnly";
@@ -158,6 +162,9 @@ public interface AwsVpcEntity {
   String JSON_KEY_VPC_ID = "VpcId";
   String JSON_KEY_ES_VPC_ID = "VPCId";
   String JSON_KEY_VPC_OPTIONS = "VPCOptions";
+  String JSON_KEY_VPC_ENDPOINT_ID = "VpcEndpointId";
+  String JSON_KEY_VPC_ENDPOINT_TYPE = "VpcEndpointType";
+  String JSON_KEY_VPC_ENDPOINTS = "VpcEndpoints";
   String JSON_KEY_VPC_PEERING_CONNECTION_ID = "VpcPeeringConnectionId";
   String JSON_KEY_VPC_PEERING_CONNECTIONS = "VpcPeeringConnections";
   String JSON_KEY_VPC_SECURITY_GROUPS = "VpcSecurityGroups";

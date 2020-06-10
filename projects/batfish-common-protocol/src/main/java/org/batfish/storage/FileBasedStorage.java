@@ -1,17 +1,21 @@
 package org.batfish.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Streams.stream;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,16 +25,21 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -56,16 +65,19 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -74,18 +86,24 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.Id;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
 public final class FileBasedStorage implements StorageProvider {
 
+  private static final String ID_EXTENSION = ".id";
+  private static final String SUFFIX_LOG_FILE = ".log";
+  private static final String SUFFIX_ANSWER_JSON_FILE = ".json";
   private static final String RELPATH_COMPLETION_METADATA_FILE = "completion_metadata.json";
   private static final String RELPATH_BGP_TOPOLOGY = "bgp_topology.json";
   private static final String RELPATH_EIGRP_TOPOLOGY = "eigrp_topology.json";
@@ -95,16 +113,37 @@ public final class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_LAYER3_TOPOLOGY = "layer3_topology.json";
   private static final String RELPATH_OSPF_TOPOLOGY = "ospf_topology.json";
   private static final String RELPATH_VXLAN_TOPOLOGY = "vxlan_topology.json";
+  private static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
+  private static final String RELPATH_QUESTIONS_DIR = "questions";
+  private static final String RELPATH_TESTRIG_POJO_TOPOLOGY_PATH = "testrig_pojo_topology";
+  private static final String RELPATH_ORIGINAL_DIR = "original";
+  private static final String RELPATH_METADATA_FILE = "metadata.json";
+  private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
+  private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
+  private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
+  private static final String RELPATH_CONTAINER_SETTINGS_ISSUES = "issues";
+  private static final String RELPATH_CONTAINER_SETTINGS = "settings";
+  private static final String RELPATH_ANSWERS_DIR = "answers";
+  private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
+  private static final String RELPATH_ANSWER_JSON = "answer.json";
+  private static final String RELPATH_ANALYSES_DIR = "analyses";
+  private static final String RELPATH_BATFISH_CONFIGS_DIR = "batfish";
+  private static final String RELPATH_ISP_CONFIG_FILE = "isp_config.json";
+  private static final String RELPATH_SNAPSHOT_ZIP_FILE = "snapshot.zip";
+  private static final String RELPATH_DATA_PLANE = "dp";
+  private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
+  private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
+  private static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS =
+      "external_bgp_announcements.json";
+  private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
+  private static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
+  private static final String RELPATH_AWS_ACCOUNTS_DIR = "accounts";
+  private static final String RELPATH_SNAPSHOTS_DIR = "snapshots";
+  private static final String RELPATH_OUTPUT = "output";
 
   private final BatfishLogger _logger;
   private final BiFunction<String, Integer, AtomicInteger> _newBatch;
-  private FileBasedStorageDirectoryProvider _d;
-
-  @VisibleForTesting
-  @Nonnull
-  FileBasedStorageDirectoryProvider getDirectoryProvider() {
-    return _d;
-  }
+  private final Path _baseDir;
 
   /**
    * Create a new {@link FileBasedStorage} instance that uses the given root path and job batch
@@ -114,7 +153,12 @@ public final class FileBasedStorage implements StorageProvider {
       Path baseDir, BatfishLogger logger, BiFunction<String, Integer, AtomicInteger> newBatch) {
     _logger = logger;
     _newBatch = newBatch;
-    _d = new FileBasedStorageDirectoryProvider(baseDir);
+    try {
+      _baseDir = baseDir.toFile().getCanonicalFile().toPath();
+    } catch (IOException e) {
+      throw new UncheckedIOException(
+          String.format("Could not get canonical path of %s", baseDir), e);
+    }
   }
 
   /**
@@ -133,15 +177,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Nullable
   public SortedMap<String, Configuration> loadConfigurations(
       NetworkId network, SnapshotId snapshot) {
-    Path testrigDir = _d.getSnapshotDir(network, snapshot);
-    Path indepDir =
-        testrigDir.resolve(
-            Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR));
-    return loadConfigurations(network, snapshot, indepDir);
-  }
-
-  private @Nullable SortedMap<String, Configuration> loadConfigurations(
-      NetworkId network, SnapshotId snapshot, Path indepDir) {
+    Path indepDir = getVendorIndependentConfigDir(network, snapshot);
     // If the directory that would contain these configs does not even exist, no cache exists.
     if (!Files.exists(indepDir)) {
       _logger.debugf("Unable to load configs for %s from disk: no cache directory", snapshot);
@@ -177,9 +213,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nullable ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(
       NetworkId network, SnapshotId snapshot) {
-    Path ccaePath =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
+    Path ccaePath = getConvertAnswerPath(network, snapshot);
     if (!Files.exists(ccaePath)) {
       return null;
     }
@@ -200,12 +234,12 @@ public final class FileBasedStorage implements StorageProvider {
     Path insideBatfish =
         Paths.get(
             BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            RELPATH_BATFISH_CONFIGS_DIR,
             BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE);
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel)
-            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .map(p -> getSnapshotDir(network, snapshot).resolve(p))
             .filter(Files::exists)
             .findFirst();
     if (!path.isPresent()) {
@@ -213,10 +247,9 @@ public final class FileBasedStorage implements StorageProvider {
       return null;
     }
 
-    String fileText = CommonUtil.readFile(path.get());
     try {
       return BatfishObjectMapper.mapper()
-          .readValue(fileText, new TypeReference<SortedSet<NodeInterfacePair>>() {});
+          .readValue(path.get().toFile(), new TypeReference<SortedSet<NodeInterfacePair>>() {});
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading interface blacklist for snapshot %s: %s",
@@ -225,22 +258,17 @@ public final class FileBasedStorage implements StorageProvider {
     }
   }
 
+  @VisibleForTesting
+  static final String ISP_CONFIGURATION_KEY =
+      String.format("%s/%s", RELPATH_BATFISH_CONFIGS_DIR, RELPATH_ISP_CONFIG_FILE);
+
   @Override
   public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
-    Path path =
-        _d.getSnapshotDir(network, snapshot)
-            .resolve(
-                Paths.get(
-                    BfConsts.RELPATH_INPUT,
-                    BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
-                    BfConsts.RELPATH_ISP_CONFIG_FILE));
-    if (!Files.exists(path)) {
+    try (InputStream inputStream =
+        loadSnapshotInputObject(network, snapshot, ISP_CONFIGURATION_KEY)) {
+      return BatfishObjectMapper.mapper().readValue(inputStream, IspConfiguration.class);
+    } catch (FileNotFoundException e) {
       return null;
-    }
-    String fileText = CommonUtil.readFile(path);
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(fileText, new TypeReference<IspConfiguration>() {});
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading ISP configuration for snapshot %s: %s",
@@ -255,12 +283,12 @@ public final class FileBasedStorage implements StorageProvider {
     Path insideBatfish =
         Paths.get(
             BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            RELPATH_BATFISH_CONFIGS_DIR,
             BfConsts.RELPATH_NODE_BLACKLIST_FILE);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_NODE_BLACKLIST_FILE);
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel)
-            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .map(p -> getSnapshotDir(network, snapshot).resolve(p))
             .filter(Files::exists)
             .findFirst();
     if (!path.isPresent()) {
@@ -268,10 +296,9 @@ public final class FileBasedStorage implements StorageProvider {
       return null;
     }
 
-    String fileText = CommonUtil.readFile(path.get());
     try {
       return BatfishObjectMapper.mapper()
-          .readValue(fileText, new TypeReference<SortedSet<String>>() {});
+          .readValue(path.get().toFile(), new TypeReference<SortedSet<String>>() {});
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading node blacklist for snapshot %s: %s",
@@ -285,14 +312,12 @@ public final class FileBasedStorage implements StorageProvider {
     // Prefer runtime data inside of batfish/ subfolder over top level
     Path insideBatfish =
         Paths.get(
-            BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
-            BfConsts.RELPATH_L1_TOPOLOGY_PATH);
+            BfConsts.RELPATH_INPUT, RELPATH_BATFISH_CONFIGS_DIR, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_L1_TOPOLOGY_PATH);
     Path deprecated = Paths.get(BfConsts.RELPATH_INPUT, "testrig_layer1_topology");
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel, deprecated)
-            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .map(p -> getSnapshotDir(network, snapshot).resolve(p))
             .filter(Files::exists)
             .findFirst();
     if (!path.isPresent()) {
@@ -301,9 +326,8 @@ public final class FileBasedStorage implements StorageProvider {
     }
 
     AtomicInteger counter = _newBatch.apply("Reading layer-1 topology", 1);
-    String topologyFileText = CommonUtil.readFile(path.get());
     try {
-      return BatfishObjectMapper.mapper().readValue(topologyFileText, Layer1Topology.class);
+      return BatfishObjectMapper.mapper().readValue(path.get().toFile(), Layer1Topology.class);
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading layer-1 topology for snapshot %s: %s",
@@ -318,30 +342,40 @@ public final class FileBasedStorage implements StorageProvider {
   @Nonnull
   public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
-    Path filePath = getWorkLoadPath(network, snapshot, workId);
+    Path filePath = getWorkLogPath(network, snapshot, workId);
     if (!Files.exists(filePath)) {
       throw new FileNotFoundException(
           String.format("Could not find log file for work ID: %s", workId));
     }
-    return FileUtils.readFileToString(filePath.toFile(), UTF_8);
+    return readFileToString(filePath, UTF_8);
+  }
+
+  @Override
+  @Nonnull
+  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException {
+    Path filePath = getWorkJsonPath(network, snapshot, workId);
+    if (!Files.exists(filePath)) {
+      throw new FileNotFoundException(
+          String.format("Could not find work json for work ID: %s", workId));
+    }
+    return readFileToString(filePath, UTF_8);
   }
 
   @Override
   public @Nullable MajorIssueConfig loadMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType) {
-    Path path = _d.getMajorIssueConfigDir(network, majorIssueType);
+    Path path = getMajorIssueConfigDir(network, majorIssueType);
 
     if (!Files.exists(path)) {
       return null;
     }
 
-    String majorIssueFileText = CommonUtil.readFile(path);
-
     try {
-      return BatfishObjectMapper.mapper().readValue(majorIssueFileText, MajorIssueConfig.class);
+      return BatfishObjectMapper.mapper().readValue(path.toFile(), MajorIssueConfig.class);
     } catch (IOException e) {
       _logger.errorf(
-          "ERROR: Could not cast file for major issue settings with ID %s in network %s to MajorIssueConfig: %s",
+          "ERROR: Could not cast read file for major issue settings with ID %s in network %s: %s",
           majorIssueType, network, Throwables.getStackTraceAsString(e));
       return null;
     }
@@ -351,19 +385,20 @@ public final class FileBasedStorage implements StorageProvider {
   public void storeMajorIssueConfig(
       NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig)
       throws IOException {
-    Path path = _d.getMajorIssueConfigDir(network, majorIssueType);
+    Path path = getMajorIssueConfigDir(network, majorIssueType);
 
     if (Files.notExists(path)) {
       Files.createDirectories(path.getParent());
     }
 
-    CommonUtil.writeFile(path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig));
+    writeStringToFile(
+        path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig), UTF_8);
   }
 
   private @Nonnull Path getQuestionSettingsPath(
       NetworkId network, QuestionSettingsId questionSettingsId) {
-    return _d.getNetworkSettingsDir(network)
-        .resolve(BfConsts.RELPATH_QUESTIONS_DIR)
+    return getNetworkSettingsDir(network)
+        .resolve(RELPATH_QUESTIONS_DIR)
         .resolve(String.format("%s.json", questionSettingsId.getId()));
   }
 
@@ -373,12 +408,12 @@ public final class FileBasedStorage implements StorageProvider {
     Path insideBatfish =
         Paths.get(
             BfConsts.RELPATH_INPUT,
-            BfConsts.RELPATH_BATFISH_CONFIGS_DIR,
+            RELPATH_BATFISH_CONFIGS_DIR,
             BfConsts.RELPATH_RUNTIME_DATA_FILE);
     Path topLevel = Paths.get(BfConsts.RELPATH_INPUT, BfConsts.RELPATH_RUNTIME_DATA_FILE);
     Optional<Path> path =
         Stream.of(insideBatfish, topLevel)
-            .map(p -> _d.getSnapshotDir(network, snapshot).resolve(p))
+            .map(p -> getSnapshotDir(network, snapshot).resolve(p))
             .filter(Files::exists)
             .findFirst();
     if (!path.isPresent()) {
@@ -387,9 +422,8 @@ public final class FileBasedStorage implements StorageProvider {
     }
 
     AtomicInteger counter = _newBatch.apply("Reading runtime data", 1);
-    String runtimeDataFileText = CommonUtil.readFile(path.get());
     try {
-      return BatfishObjectMapper.mapper().readValue(runtimeDataFileText, SnapshotRuntimeData.class);
+      return BatfishObjectMapper.mapper().readValue(path.get().toFile(), SnapshotRuntimeData.class);
     } catch (IOException e) {
       _logger.warnf(
           "Unexpected exception caught while loading runtime data for snapshot %s: %s",
@@ -413,12 +447,11 @@ public final class FileBasedStorage implements StorageProvider {
       SnapshotId snapshot)
       throws IOException {
 
-    mkdirs(_d.getSnapshotDir(network, snapshot));
+    mkdirs(getSnapshotDir(network, snapshot));
 
     // Save the convert configuration answer element.
     Path ccaePath = getConvertAnswerPath(network, snapshot);
-    mkdirs(ccaePath);
-    CommonUtil.deleteIfExists(ccaePath);
+    mkdirs(ccaePath.getParent());
     serializeObject(convertAnswerElement, ccaePath);
 
     // Save the synthesized layer1 topology
@@ -426,7 +459,7 @@ public final class FileBasedStorage implements StorageProvider {
       storeSynthesizedLayer1Topology(synthesizedLayer1Topology, network, snapshot);
     }
 
-    Path outputDir = _d.getVendorIndependentConfigDir(network, snapshot);
+    Path outputDir = getVendorIndependentConfigDir(network, snapshot);
 
     String batchName =
         String.format(
@@ -437,22 +470,21 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getConvertAnswerPath(NetworkId network, SnapshotId snapshot) {
-    return _d.getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_CONVERT_ANSWER_PATH));
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_CONVERT_ANSWER_PATH);
   }
 
   private @Nonnull Path getSynthesizedLayer1TopologyPath(NetworkId network, SnapshotId snapshot) {
-    return _d.getSnapshotDir(network, snapshot)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY));
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY);
   }
 
   private void storeConfigurations(
-      Path outputDir, String batchName, Map<String, Configuration> configurations) {
+      Path outputDir, String batchName, Map<String, Configuration> configurations)
+      throws IOException {
     _logger.infof("\n*** %s***\n", batchName.toUpperCase());
     AtomicInteger progressCount = _newBatch.apply(batchName, configurations.size());
 
     // Delete any existing output, then recreate.
-    CommonUtil.deleteDirectory(outputDir);
+    deleteDirectory(outputDir);
     mkdirs(outputDir);
 
     configurations
@@ -467,33 +499,30 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeAnswer(String answerStr, AnswerId answerId) {
+  public void storeAnswer(String answerStr, AnswerId answerId) throws IOException {
     Path answerPath = getAnswerPath(answerId);
     mkdirs(answerPath.getParent());
-    CommonUtil.writeFile(answerPath, answerStr);
+    writeStringToFile(answerPath, answerStr, UTF_8);
   }
 
   @Override
-  public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) {
-    String metricsStr;
-    try {
-      metricsStr = BatfishObjectMapper.writeString(answerMetadata);
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write answer metrics", e);
-    }
+  public void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId)
+      throws IOException {
     Path answerMetadataPath = getAnswerMetadataPath(answerId);
     mkdirs(answerMetadataPath.getParent());
-    CommonUtil.writeFile(answerMetadataPath, metricsStr);
+    writeJsonFile(answerMetadataPath, answerMetadata);
   }
 
   /**
    * Returns a single object of the given class deserialized from the given file. Uses the {@link
    * FileBasedStorage} default file encoding including serialization format and compression.
    */
-  private static <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
+  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
+  private <S extends Serializable> S deserializeObject(Path inputFile, Class<S> outputClass)
       throws BatfishException {
+    Path sanitizedInputFile = validatePath(inputFile);
     try (Closer closer = Closer.create()) {
-      FileInputStream fis = closer.register(new FileInputStream(inputFile.toFile()));
+      FileInputStream fis = closer.register(new FileInputStream(sanitizedInputFile.toFile()));
       PushbackInputStream pbstream = new PushbackInputStream(fis, DEFAULT_HEADER_LENGTH_BYTES);
       Format f = detectFormat(pbstream);
       ObjectInputStream ois;
@@ -508,7 +537,7 @@ public final class FileBasedStorage implements StorageProvider {
         ois = new ObjectInputStream(pbstream);
       } else {
         throw new BatfishException(
-            String.format("Could not detect format of the file %s", inputFile));
+            String.format("Could not detect format of the file %s", sanitizedInputFile));
       }
       closer.register(ois);
       return outputClass.cast(ois.readObject());
@@ -516,7 +545,7 @@ public final class FileBasedStorage implements StorageProvider {
       throw new BatfishException(
           String.format(
               "Failed to deserialize object of type %s from file %s",
-              outputClass.getCanonicalName(), inputFile),
+              outputClass.getCanonicalName(), sanitizedInputFile),
           e);
     }
   }
@@ -550,16 +579,47 @@ public final class FileBasedStorage implements StorageProvider {
    * Writes a single object of the given class to the given file. Uses the {@link FileBasedStorage}
    * default file encoding including serialization format and compression.
    */
-  private static void serializeObject(Serializable object, Path outputFile) {
+  private void serializeObject(Serializable object, Path outputFile) {
+    Path sanitizedOutputFile = validatePath(outputFile);
     try {
-      try (OutputStream out = Files.newOutputStream(outputFile);
-          LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
-          ObjectOutputStream oos = new ObjectOutputStream(gos)) {
-        oos.writeObject(object);
+      Path tmpFile = Files.createTempFile(null, null);
+      try {
+        try (OutputStream out = Files.newOutputStream(tmpFile);
+            LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
+            ObjectOutputStream oos = new ObjectOutputStream(gos)) {
+          oos.writeObject(object);
+        } catch (Throwable e) {
+          throw new BatfishException(
+              "Failed to serialize object to output file: " + sanitizedOutputFile, e);
+        }
+        mkdirs(sanitizedOutputFile.getParent());
+        Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
+      } finally {
+        Files.deleteIfExists(tmpFile);
       }
-    } catch (Throwable e) {
-      throw new BatfishException("Failed to serialize object to output file: " + outputFile, e);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
+  }
+
+  private <S extends Serializable> void serializeObjects(Map<Path, S> objectsByPath) {
+    if (objectsByPath.isEmpty()) {
+      return;
+    }
+    int size = objectsByPath.size();
+    String className = objectsByPath.values().iterator().next().getClass().getName();
+    AtomicInteger serializeCompleted =
+        _newBatch.apply(String.format("Serializing '%s' instances to disk", className), size);
+    objectsByPath
+        .entrySet()
+        .parallelStream()
+        .forEach(
+            entry -> {
+              Path outputPath = entry.getKey();
+              S object = entry.getValue();
+              serializeObject(object, outputPath);
+              serializeCompleted.incrementAndGet();
+            });
   }
 
   private boolean cachedConfigsAreCompatible(NetworkId network, SnapshotId snapshot) {
@@ -577,8 +637,8 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public @Nonnull String loadQuestion(
-      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
-    return CommonUtil.readFile(getQuestionPath(network, question, analysis));
+      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) throws IOException {
+    return readFileToString(getQuestionPath(network, question, analysis), UTF_8);
   }
 
   @Override
@@ -589,7 +649,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getQuestionPath(
       NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
-    return _d.getQuestionDir(network, question, analysis).resolve(BfConsts.RELPATH_QUESTION_FILE);
+    return getQuestionDir(network, question, analysis).resolve(BfConsts.RELPATH_QUESTION_FILE);
   }
 
   @Override
@@ -598,7 +658,7 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(answerPath)) {
       throw new FileNotFoundException(String.format("Could not find answer with ID: %s", answerId));
     }
-    return FileUtils.readFileToString(answerPath.toFile(), UTF_8);
+    return readFileToString(answerPath, UTF_8);
   }
 
   @Override
@@ -609,25 +669,25 @@ public final class FileBasedStorage implements StorageProvider {
       throw new FileNotFoundException(
           String.format("Could not find answer metadata for ID: %s", answerId));
     }
-    String answerMetadataStr = FileUtils.readFileToString(answerMetadataPath.toFile(), UTF_8);
     return BatfishObjectMapper.mapper()
-        .readValue(answerMetadataStr, new TypeReference<AnswerMetadata>() {});
+        .readValue(answerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
   }
 
   private @Nonnull Path getAnswerPath(AnswerId answerId) {
-    return _d.getAnswerDir(answerId).resolve(BfConsts.RELPATH_ANSWER_JSON);
+    return getAnswerDir(answerId).resolve(RELPATH_ANSWER_JSON);
   }
 
   private @Nonnull Path getAnswerMetadataPath(AnswerId answerId) {
-    return _d.getAnswerDir(answerId).resolve(BfConsts.RELPATH_ANSWER_METADATA);
+    return getAnswerDir(answerId).resolve(RELPATH_ANSWER_METADATA);
   }
 
   @Override
   public void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
+      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
+      throws IOException {
     Path questionPath = getQuestionPath(network, question, analysis);
     mkdirs(questionPath.getParent());
-    CommonUtil.writeFile(questionPath, questionStr);
+    writeStringToFile(questionPath, questionStr, UTF_8);
   }
 
   @Override
@@ -637,20 +697,19 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(questionSettingsPath)) {
       return null;
     }
-    return FileUtils.readFileToString(questionSettingsPath.toFile(), UTF_8);
+    return readFileToString(questionSettingsPath, UTF_8);
   }
 
   @Override
   public boolean checkNetworkExists(NetworkId network) {
-    return Files.exists(_d.getNetworkDir(network));
+    return Files.exists(getNetworkDir(network));
   }
 
   @Override
   public void storeQuestionSettings(
       String settings, NetworkId network, QuestionSettingsId questionSettingsId)
       throws IOException {
-    FileUtils.writeStringToFile(
-        getQuestionSettingsPath(network, questionSettingsId).toFile(), settings, UTF_8);
+    writeStringToFile(getQuestionSettingsPath(network, questionSettingsId), settings, UTF_8);
   }
 
   @Override
@@ -660,7 +719,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public String loadQuestionClassId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) {
+      NetworkId networkId, QuestionId questionId, AnalysisId analysisId) throws IOException {
     return Question.parseQuestion(loadQuestion(networkId, questionId, analysisId)).getName();
   }
 
@@ -670,64 +729,52 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   private @Nonnull Path getAnalysisMetadataPath(NetworkId networkId, AnalysisId analysisId) {
-    return _d.getNetworkAnalysisDir(networkId, analysisId).resolve(BfConsts.RELPATH_METADATA_FILE);
+    return getNetworkAnalysisDir(networkId, analysisId).resolve(RELPATH_METADATA_FILE);
   }
 
   private @Nonnull Path getSnapshotMetadataPath(NetworkId networkId, SnapshotId snapshotId) {
-    return _d.getSnapshotDir(networkId, snapshotId)
-        .resolve(Paths.get(BfConsts.RELPATH_OUTPUT, BfConsts.RELPATH_METADATA_FILE));
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_METADATA_FILE);
   }
 
   @Override
   public void storeAnalysisMetadata(
       AnalysisMetadata analysisMetadata, NetworkId networkId, AnalysisId analysisId)
       throws IOException {
-    FileUtils.writeStringToFile(
-        getAnalysisMetadataPath(networkId, analysisId).toFile(),
-        BatfishObjectMapper.writeString(analysisMetadata),
-        UTF_8);
+    writeJsonFile(getAnalysisMetadataPath(networkId, analysisId), analysisMetadata);
   }
 
   @Override
   public String loadAnalysisMetadata(NetworkId networkId, AnalysisId analysisId)
       throws FileNotFoundException, IOException {
-    return FileUtils.readFileToString(
-        getAnalysisMetadataPath(networkId, analysisId).toFile(), UTF_8);
+    return readFileToString(getAnalysisMetadataPath(networkId, analysisId), UTF_8);
   }
 
   @Override
   public void storeSnapshotMetadata(
       SnapshotMetadata snapshotMetadata, NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
-    FileUtils.writeStringToFile(
-        getSnapshotMetadataPath(networkId, snapshotId).toFile(),
-        BatfishObjectMapper.writeString(snapshotMetadata),
-        UTF_8);
+    writeJsonFile(getSnapshotMetadataPath(networkId, snapshotId), snapshotMetadata);
   }
 
   @Override
   public String loadSnapshotMetadata(NetworkId networkId, SnapshotId snapshotId)
       throws FileNotFoundException, IOException {
-    return FileUtils.readFileToString(
-        getSnapshotMetadataPath(networkId, snapshotId).toFile(), UTF_8);
+    return readFileToString(getSnapshotMetadataPath(networkId, snapshotId), UTF_8);
   }
 
   @Override
   public void storeNodeRoles(NodeRolesData nodeRolesData, NodeRolesId nodeRolesId)
       throws IOException {
-    FileUtils.write(
-        getNodeRolesPath(nodeRolesId).toFile(),
-        BatfishObjectMapper.writeString(nodeRolesData),
-        UTF_8);
+    writeJsonFile(getNodeRolesPath(nodeRolesId), nodeRolesData);
   }
 
   private @Nonnull Path getNodeRolesPath(NodeRolesId nodeRolesId) {
-    return _d.getNodeRolesDir().resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
+    return getNodeRolesDir().resolve(String.format("%s%s", nodeRolesId.getId(), ".json"));
   }
 
   @Override
   public String loadNodeRoles(NodeRolesId nodeRolesId) throws FileNotFoundException, IOException {
-    return FileUtils.readFileToString(getNodeRolesPath(nodeRolesId).toFile(), UTF_8);
+    return readFileToString(getNodeRolesPath(nodeRolesId), UTF_8);
   }
 
   @Override
@@ -737,7 +784,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   @Override
   public void initNetwork(NetworkId networkId) {
-    _d.getNetworkDir(networkId).toFile().mkdirs();
+    getNetworkDir(networkId).toFile().mkdirs();
   }
 
   @Override
@@ -764,7 +811,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getNetworkObjectPath(NetworkId networkId, String key) {
     String encodedKey = toBase64(key);
-    return _d.getNetworkObjectsDir(networkId).resolve(encodedKey);
+    return getNetworkObjectsDir(networkId).resolve(encodedKey);
   }
 
   @Override
@@ -791,7 +838,7 @@ public final class FileBasedStorage implements StorageProvider {
 
   private @Nonnull Path getNetworkBlobPath(NetworkId networkId, String key) {
     String encodedKey = toBase64(key);
-    return _d.getNetworkBlobsDir(networkId).resolve(encodedKey);
+    return getNetworkBlobsDir(networkId).resolve(encodedKey);
   }
 
   @Override
@@ -829,14 +876,14 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getSnapshotObjectPath(
       NetworkId networkId, SnapshotId snapshotId, String key) {
     String encodedKey = toBase64(key);
-    return _d.getSnapshotObjectsDir(networkId, snapshotId).resolve(encodedKey);
+    return getSnapshotObjectsDir(networkId, snapshotId).resolve(encodedKey);
   }
 
-  private static @Nonnull String toBase64(String key) {
+  public static @Nonnull String toBase64(String key) {
     return Base64.getUrlEncoder().encodeToString(key.getBytes(StandardCharsets.UTF_8));
   }
 
-  private static @Nonnull String fromBase64(String key) {
+  public static @Nonnull String fromBase64(String key) {
     return new String(Base64.getUrlDecoder().decode(key), StandardCharsets.UTF_8);
   }
 
@@ -889,9 +936,15 @@ public final class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  public boolean hasSnapshotInputObject(String key, NetworkSnapshot snapshot) throws IOException {
+    return Files.exists(
+        getSnapshotInputObjectPath(snapshot.getNetwork(), snapshot.getSnapshot(), key));
+  }
+
+  @Override
   public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
       NetworkId networkId, SnapshotId snapshotId) throws IOException {
-    Path objectPath = _d.getSnapshotInputObjectsDir(networkId, snapshotId);
+    Path objectPath = getSnapshotInputObjectsDir(networkId, snapshotId);
     if (!Files.exists(objectPath)) {
       throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
@@ -912,7 +965,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Override
   public @Nonnull List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
       NetworkId networkId, SnapshotId snapshotId) throws IOException {
-    Path objectPath = _d.getSnapshotObjectsDir(networkId, snapshotId);
+    Path objectPath = getSnapshotObjectsDir(networkId, snapshotId);
     if (!Files.exists(objectPath)) {
       throw new FileNotFoundException(String.format("Could not load: %s", objectPath));
     }
@@ -942,67 +995,78 @@ public final class FileBasedStorage implements StorageProvider {
   @VisibleForTesting
   Path getSnapshotInputObjectPath(NetworkId networkId, SnapshotId snapshotId, String key) {
     Path relativePath = objectKeyToRelativePath(key);
-    return _d.getSnapshotInputObjectsDir(networkId, snapshotId).resolve(relativePath);
+    return getSnapshotInputObjectsDir(networkId, snapshotId).resolve(relativePath);
   }
 
   @Override
   public @Nonnull String loadPojoTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
-    return FileUtils.readFileToString(getPojoTopologyPath(networkId, snapshotId).toFile(), UTF_8);
+    return readFileToString(getPojoTopologyPath(networkId, snapshotId), UTF_8);
   }
 
   private @Nonnull Path getBgpTopologyPath(NetworkSnapshot snapshot) {
-    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_BGP_TOPOLOGY);
   }
 
   private @Nonnull Path getEigrpTopologyPath(NetworkSnapshot snapshot) {
-    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_EIGRP_TOPOLOGY);
   }
 
   private @Nonnull Path getLayer2TopologyPath(NetworkSnapshot snapshot) {
-    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_LAYER2_TOPOLOGY);
   }
 
   private @Nonnull Path getLayer3TopologyPath(NetworkSnapshot snapshot) {
-    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_LAYER3_TOPOLOGY);
   }
 
   private @Nonnull Path getOspfTopologyPath(NetworkSnapshot snapshot) {
-    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_OSPF_TOPOLOGY);
   }
 
   private @Nonnull Path getVxlanTopologyPath(NetworkSnapshot snapshot) {
-    return _d.getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_VXLAN_TOPOLOGY);
   }
 
   private @Nonnull Path getPojoTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
-    return _d.getSnapshotDir(networkId, snapshotId)
-        .resolve(BfConsts.RELPATH_OUTPUT)
-        .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+  }
+
+  /**
+   * Returns path of work log for a given baseDir, network, snapshot, and workId. This function is a
+   * temporary helper until file-based logging in batfish worker is abstracted away.
+   */
+  public static @Nonnull Path getWorkLogPath(
+      Path baseDir, NetworkId network, SnapshotId snapshot, String workId) {
+    return new FileBasedStorage(baseDir, null).getWorkLogPath(network, snapshot, workId);
   }
 
   @Nonnull
-  private Path getWorkLoadPath(NetworkId network, SnapshotId snapshot, String workId) {
-    return _d.getSnapshotOutputDir(network, snapshot).resolve(workId + BfConsts.SUFFIX_LOG_FILE);
+  private Path getWorkLogPath(NetworkId network, SnapshotId snapshot, String workId) {
+    return getSnapshotOutputDir(network, snapshot).resolve(toBase64(workId + SUFFIX_LOG_FILE));
+  }
+
+  @Nonnull
+  private Path getWorkJsonPath(NetworkId network, SnapshotId snapshot, String workId) {
+    return getSnapshotOutputDir(network, snapshot)
+        .resolve(toBase64(workId + SUFFIX_ANSWER_JSON_FILE));
   }
 
   @Override
   public @Nonnull String loadInitialTopology(NetworkId networkId, SnapshotId snapshotId)
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
-    return FileUtils.readFileToString(path.toFile(), UTF_8);
+    return readFileToString(path, UTF_8);
   }
 
   private @Nonnull Path getEnvTopologyPath(NetworkId networkId, SnapshotId snapshotId) {
-    return _d.getSnapshotDir(networkId, snapshotId)
-        .resolve(BfConsts.RELPATH_OUTPUT)
-        .resolve(BfConsts.RELPATH_ENV_TOPOLOGY_FILE);
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_ENV_TOPOLOGY_FILE);
   }
 
   @Override
@@ -1010,7 +1074,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getEnvTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
-    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writeString(topology), UTF_8);
+    writeJsonFile(path, topology);
   }
 
   @Override
@@ -1019,14 +1083,19 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getPojoTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
-    FileUtils.writeStringToFile(path.toFile(), BatfishObjectMapper.writeString(topology), UTF_8);
+    writeStringToFile(path, BatfishObjectMapper.writeString(topology), UTF_8);
   }
 
   @Override
   public void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
-    FileUtils.writeStringToFile(
-        getWorkLoadPath(network, snapshot, workId).toFile(), logOutput, UTF_8);
+    writeStringToFile(getWorkLogPath(network, snapshot, workId), logOutput, UTF_8);
+  }
+
+  @Override
+  public void storeWorkJson(
+      String jsonOutput, NetworkId network, SnapshotId snapshot, String workId) throws IOException {
+    writeStringToFile(getWorkJsonPath(network, snapshot, workId), jsonOutput, UTF_8);
   }
 
   @Override
@@ -1036,10 +1105,8 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(completionMetadataPath)) {
       return CompletionMetadata.EMPTY;
     }
-    String completionMetadataStr =
-        FileUtils.readFileToString(completionMetadataPath.toFile(), UTF_8);
     return BatfishObjectMapper.mapper()
-        .readValue(completionMetadataStr, new TypeReference<CompletionMetadata>() {});
+        .readValue(completionMetadataPath.toFile(), CompletionMetadata.class);
   }
 
   @Override
@@ -1048,41 +1115,115 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path completionMetadataPath = getSnapshotCompletionMetadataPath(networkId, snapshotId);
     mkdirs(completionMetadataPath.getParent());
-    FileUtils.write(
-        completionMetadataPath.toFile(),
-        BatfishObjectMapper.writeString(completionMetadata),
-        UTF_8);
+    writeJsonFile(completionMetadataPath, completionMetadata);
   }
 
   private @Nonnull Path getSnapshotCompletionMetadataPath(
       NetworkId networkId, SnapshotId snapshotId) {
-    return _d.getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_COMPLETION_METADATA_FILE);
+    return getSnapshotOutputDir(networkId, snapshotId).resolve(RELPATH_COMPLETION_METADATA_FILE);
   }
 
   /**
    * Make specified directory along with any parent directories if they do not already exist.
    *
    * @param dir directory to create
-   * @throws BatfishException if there is an error creating the directories
+   * @throws IOException if there is an error creating the directories
    */
   @VisibleForTesting
-  static void mkdirs(Path dir) {
-    if (!dir.toFile().mkdirs() && !dir.toFile().exists()) {
-      throw new BatfishException(String.format("Unable to create directory '%s'", dir));
+  void mkdirs(Path dir) throws IOException {
+    Path sanitizedDir = validatePath(dir);
+    if (!sanitizedDir.toFile().mkdirs() && !sanitizedDir.toFile().exists()) {
+      throw new IOException(String.format("Unable to create directory '%s'", sanitizedDir));
+    }
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path validatePath(Path path) {
+    try {
+      Path sanitizedPath = path.toFile().getCanonicalFile().toPath();
+      checkArgument(
+          sanitizedPath.toString().startsWith(_baseDir.toString()),
+          "Path %s outside of base dir %s",
+          path,
+          _baseDir);
+      return sanitizedPath;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private void deleteDirectory(Path path) throws IOException {
+    Path sanitizedPath = validatePath(path);
+    FileUtils.deleteDirectory(sanitizedPath.toFile());
+  }
+
+  /**
+   * Read the contents of a file into a string, using the provided input charset.
+   *
+   * @throws FileNotFoundException if the file does not exist or is otherwise inaccessible
+   * @throws IOException if there is any other error
+   */
+  private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
+    Path sanitizedFile = validatePath(file);
+    try (InputStream in = new FileInputStream(sanitizedFile.toFile())) {
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      ByteStreams.copy(in, out);
+      return new String(out.toByteArray(), charset);
+    }
+  }
+
+  private void writeStringToFile(Path file, CharSequence data, Charset charset) throws IOException {
+    Path sanitizedFile = validatePath(file);
+    Path tmpFile = Files.createTempFile(null, null);
+    try {
+      FileUtils.write(tmpFile.toFile(), data, charset);
+      mkdirs(sanitizedFile.getParent());
+      Files.move(tmpFile, sanitizedFile, StandardCopyOption.REPLACE_EXISTING);
+    } finally {
+      Files.deleteIfExists(tmpFile);
+    }
+  }
+
+  private void writeJsonFile(Path file, @Nullable Object json) throws IOException {
+    Path sanitizedFile = validatePath(file);
+    Path tmpFile = Files.createTempFile(null, null);
+    try {
+      BatfishObjectMapper.writer().writeValue(tmpFile.toFile(), json);
+      mkdirs(sanitizedFile.getParent());
+      Files.move(tmpFile, sanitizedFile, StandardCopyOption.REPLACE_EXISTING);
+    } finally {
+      Files.deleteIfExists(tmpFile);
+    }
+  }
+
+  private void writeStreamToFile(InputStream inputStream, Path outputFile) throws IOException {
+    Path sanitizedOutputFile = validatePath(outputFile);
+    Path tmpFile = Files.createTempFile(null, null);
+    try (OutputStream fileOutputStream = Files.newOutputStream(tmpFile)) {
+      int read = 0;
+      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      while ((read = inputStream.read(bytes)) != -1) {
+        fileOutputStream.write(bytes, 0, read);
+      }
+      mkdirs(sanitizedOutputFile.getParent());
+      Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
+    } finally {
+      Files.deleteIfExists(tmpFile);
     }
   }
 
   @Override
   public @Nonnull BgpTopology loadBgpTopology(NetworkSnapshot networkSnapshot) throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(CommonUtil.readFile(getBgpTopologyPath(networkSnapshot)), BgpTopology.class);
+        .readValue(getBgpTopologyPath(networkSnapshot).toFile(), BgpTopology.class);
   }
 
   @Override
   public @Nonnull EigrpTopology loadEigrpTopology(NetworkSnapshot networkSnapshot)
       throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(CommonUtil.readFile(getEigrpTopologyPath(networkSnapshot)), EigrpTopology.class);
+        .readValue(getEigrpTopologyPath(networkSnapshot).toFile(), EigrpTopology.class);
   }
 
   @Nonnull
@@ -1095,8 +1236,7 @@ public final class FileBasedStorage implements StorageProvider {
       return Optional.empty();
     }
     return Optional.ofNullable(
-        BatfishObjectMapper.mapper()
-            .readValue(CommonUtil.readFile(sl1tPath), Layer1Topology.class));
+        BatfishObjectMapper.mapper().readValue(sl1tPath.toFile(), Layer1Topology.class));
   }
 
   @Override
@@ -1104,28 +1244,27 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     return Optional.ofNullable(
         BatfishObjectMapper.mapper()
-            .readValue(
-                CommonUtil.readFile(getLayer2TopologyPath(networkSnapshot)), Layer2Topology.class));
+            .readValue(getLayer2TopologyPath(networkSnapshot).toFile(), Layer2Topology.class));
   }
 
   @Override
   public @Nonnull Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(CommonUtil.readFile(getLayer3TopologyPath(networkSnapshot)), Topology.class);
+        .readValue(getLayer3TopologyPath(networkSnapshot).toFile(), Topology.class);
   }
 
   @Override
   public @Nonnull OspfTopology loadOspfTopology(NetworkSnapshot networkSnapshot)
       throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(CommonUtil.readFile(getOspfTopologyPath(networkSnapshot)), OspfTopology.class);
+        .readValue(getOspfTopologyPath(networkSnapshot).toFile(), OspfTopology.class);
   }
 
   @Override
   public @Nonnull VxlanTopology loadVxlanTopology(NetworkSnapshot networkSnapshot)
       throws IOException {
     return BatfishObjectMapper.mapper()
-        .readValue(CommonUtil.readFile(getVxlanTopologyPath(networkSnapshot)), VxlanTopology.class);
+        .readValue(getVxlanTopologyPath(networkSnapshot).toFile(), VxlanTopology.class);
   }
 
   @Override
@@ -1133,7 +1272,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getBgpTopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(bgpTopology), UTF_8);
+    writeJsonFile(path, bgpTopology);
   }
 
   @Override
@@ -1141,7 +1280,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getEigrpTopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(eigrpTopology), UTF_8);
+    writeJsonFile(path, eigrpTopology);
   }
 
   @Override
@@ -1149,8 +1288,7 @@ public final class FileBasedStorage implements StorageProvider {
       Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot) throws IOException {
     Path path = getLayer2TopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(
-        path.toFile(), BatfishObjectMapper.writeString(layer2Topology.orElse(null)), UTF_8);
+    writeJsonFile(path, layer2Topology.orElse(null));
   }
 
   @Override
@@ -1158,7 +1296,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getLayer3TopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(layer3Topology), UTF_8);
+    writeJsonFile(path, layer3Topology);
   }
 
   @Override
@@ -1166,7 +1304,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getOspfTopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(ospfTopology), UTF_8);
+    writeJsonFile(path, ospfTopology);
   }
 
   @Override
@@ -1174,7 +1312,7 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getVxlanTopologyPath(networkSnapshot);
     mkdirs(path.getParent());
-    FileUtils.write(path.toFile(), BatfishObjectMapper.writeString(vxlanTopology), UTF_8);
+    writeJsonFile(path, vxlanTopology);
   }
 
   @VisibleForTesting
@@ -1183,7 +1321,500 @@ public final class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path sl1tPath = getSynthesizedLayer1TopologyPath(network, snapshot);
     mkdirs(sl1tPath.getParent());
-    FileUtils.write(
-        sl1tPath.toFile(), BatfishObjectMapper.writeString(synthesizedLayer1Topology), UTF_8);
+    writeJsonFile(sl1tPath, synthesizedLayer1Topology);
+  }
+
+  @Override
+  public @Nonnull Optional<String> readId(Class<? extends Id> idType, String name, Id... ancestors)
+      throws IOException {
+    try {
+      return Optional.of(readFileToString(getIdFile(idType, name, ancestors), UTF_8));
+    } catch (FileNotFoundException e) {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public void writeId(Id id, String name, Id... ancestors) throws IOException {
+    Path file = getIdFile(id.getClass(), name, ancestors);
+    mkdirs(file.getParent());
+    writeStringToFile(file, id.getId(), UTF_8);
+  }
+
+  @Override
+  public boolean deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
+      throws IOException {
+    return Files.deleteIfExists(getIdFile(type, name, ancestors));
+  }
+
+  @Override
+  public boolean hasId(Class<? extends Id> type, String name, Id... ancestors) {
+    return Files.exists(getIdFile(type, name, ancestors));
+  }
+
+  @Override
+  public @Nonnull Set<String> listResolvableNames(Class<? extends Id> type, Id... ancestors)
+      throws IOException {
+    Path idsDir = getIdsDir(type, ancestors);
+    if (!Files.exists(idsDir)) {
+      return ImmutableSet.of();
+    }
+    try (Stream<Path> files = Files.list(idsDir)) {
+      return files
+          .filter(
+              path -> {
+                try {
+                  return fromBase64(path.getFileName().toString()).endsWith(ID_EXTENSION);
+                } catch (IllegalArgumentException e) {
+                  return false;
+                }
+              })
+          .map(Path::getFileName)
+          .map(Path::toString)
+          .map(FileBasedStorage::fromBase64)
+          .map(
+              nameWithExtension ->
+                  nameWithExtension.substring(
+                      0, nameWithExtension.length() - ID_EXTENSION.length()))
+          .collect(ImmutableSet.toImmutableSet());
+    } catch (IOException e) {
+      throw new IOException("Could not list files in '" + idsDir + "'", e);
+    }
+  }
+
+  @Nonnull
+  @Override
+  public Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException {
+    Path path = getReferenceLibraryPath(network);
+    if (!Files.exists(path)) {
+      return Optional.empty();
+    }
+    return Optional.of(
+        BatfishObjectMapper.mapper()
+            .readValue(getReferenceLibraryPath(network).toFile(), ReferenceLibrary.class));
+  }
+
+  @Override
+  public void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
+      throws IOException {
+    writeJsonFile(getReferenceLibraryPath(network), referenceLibrary);
+  }
+
+  @Override
+  public void storeUploadSnapshotZip(InputStream inputStream, String key, NetworkId network)
+      throws IOException {
+    writeStreamToFile(inputStream, getUploadSnapshotZipPath(key, network));
+  }
+
+  private @Nonnull Path getUploadSnapshotZipPath(String key, NetworkId network) {
+    return getOriginalDir(key, network).resolve(RELPATH_SNAPSHOT_ZIP_FILE);
+  }
+
+  @Override
+  public void storeForkSnapshotRequest(String forkSnapshotRequest, String key, NetworkId network)
+      throws IOException {
+    writeStringToFile(getForkSnapshotRequestPath(key, network), forkSnapshotRequest, UTF_8);
+  }
+
+  private @Nonnull Path getForkSnapshotRequestPath(String key, NetworkId network) {
+    return getOriginalDir(key, network).resolve(RELPATH_FORK_REQUEST_FILE);
+  }
+
+  private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
+    return Files.newInputStream(getUploadSnapshotZipPath(key, network));
+  }
+
+  @Override
+  public void storeSnapshotInputObject(
+      InputStream inputStream, String key, NetworkSnapshot snapshot) throws IOException {
+    writeStreamToFile(
+        inputStream,
+        getSnapshotInputObjectPath(snapshot.getNetwork(), snapshot.getSnapshot(), key));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
+    Path inputObjectsPath =
+        getSnapshotInputObjectsDir(snapshot.getNetwork(), snapshot.getSnapshot());
+    return Files.walk(inputObjectsPath)
+        .filter(Files::isRegularFile)
+        .map(inputObjectsPath::relativize)
+        // ignore hidden files and folders
+        .filter(
+            path -> stream(path).noneMatch(pathElement -> pathElement.toString().startsWith(".")))
+        .map(Object::toString);
+  }
+
+  @Nonnull
+  @Override
+  public DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
+    return deserializeObject(getDataPlanePath(snapshot), DataPlane.class);
+  }
+
+  @Override
+  public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
+    serializeObject(dataPlane, getDataPlanePath(snapshot));
+  }
+
+  @Override
+  public boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException {
+    return Files.exists(getDataPlanePath(snapshot));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
+  }
+
+  @Nonnull
+  @Override
+  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+      NetworkSnapshot snapshot) throws IOException {
+    return deserializeObject(
+        getParseEnvironmentBgpTablesAnswerElementPath(snapshot),
+        ParseEnvironmentBgpTablesAnswerElement.class);
+  }
+
+  @Override
+  public void storeParseEnvironmentBgpTablesAnswerElement(
+      ParseEnvironmentBgpTablesAnswerElement parseEnvironmentBgpTablesAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException {
+    serializeObject(
+        parseEnvironmentBgpTablesAnswerElement,
+        getParseEnvironmentBgpTablesAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public boolean hasParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    return Files.exists(getParseEnvironmentBgpTablesAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public void deleteParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    Files.deleteIfExists(getParseEnvironmentBgpTablesAnswerElementPath(snapshot));
+  }
+
+  private @Nonnull Path getParseEnvironmentBgpTablesAnswerElementPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
+      throws IOException {
+    _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
+    _logger.resetTimer();
+    Map<Path, String> namesByPath = new HashMap<>();
+    Path dir = getEnvironmentBgpTablesPath(snapshot);
+    if (!Files.exists(dir)) {
+      return ImmutableSortedMap.of();
+    }
+    try (DirectoryStream<Path> serializedBgpTables =
+        Files.newDirectoryStream(getEnvironmentBgpTablesPath(snapshot))) {
+      for (Path serializedBgpTable : serializedBgpTables) {
+        String name = serializedBgpTable.getFileName().toString();
+        namesByPath.put(serializedBgpTable, name);
+      }
+    } catch (IOException e) {
+      throw new UncheckedIOException("Error reading serialized BGP tables", e);
+    }
+    SortedMap<String, BgpAdvertisementsByVrf> bgpTables =
+        deserializeObjects(namesByPath, BgpAdvertisementsByVrf.class);
+    _logger.printElapsedTime();
+    return bgpTables;
+  }
+
+  @Override
+  public void storeEnvironmentBgpTables(
+      Map<String, BgpAdvertisementsByVrf> environmentBgpTables, NetworkSnapshot snapshot)
+      throws IOException {
+    _logger.info("\n*** SERIALIZING ENVIRONMENT BGP TABLES ***\n");
+    _logger.resetTimer();
+    SortedMap<Path, BgpAdvertisementsByVrf> output = new TreeMap<>();
+    Path outputPath = getEnvironmentBgpTablesPath(snapshot);
+    environmentBgpTables.forEach(
+        (name, rt) -> {
+          Path currentOutputPath = outputPath.resolve(name);
+          output.put(currentOutputPath, rt);
+        });
+    serializeObjects(output);
+    _logger.printElapsedTime();
+  }
+
+  @Override
+  public void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException {
+    deleteDirectory(getEnvironmentBgpTablesPath(snapshot));
+  }
+
+  @Nonnull
+  @Override
+  public Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
+      throws IOException {
+    Path path =
+        getSnapshotInputObjectPath(
+            snapshot.getNetwork(), snapshot.getSnapshot(), RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+    if (!Files.exists(path)) {
+      return Optional.empty();
+    }
+    return Optional.of(readFileToString(path, UTF_8));
+  }
+
+  private @Nonnull Path getEnvironmentBgpTablesPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES);
+  }
+
+  private @Nonnull Path getDataPlanePath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_DATA_PLANE);
+  }
+
+  private @Nonnull Path getReferenceLibraryPath(NetworkId network) {
+    return getNetworkDir(network).resolve(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH);
+  }
+
+  private static String toIdDirName(Class<? extends Id> type) {
+    return toBase64(type.getCanonicalName());
+  }
+
+  private @Nonnull Path getIdsDir(Class<? extends Id> type, Id... ancestors) {
+    Path file = getStorageBase().resolve("ids");
+    for (Id id : ancestors) {
+      file = file.resolve(toIdDirName(id.getClass())).resolve(id.getId());
+    }
+    return file.resolve(toIdDirName(type));
+  }
+
+  private @Nonnull Path getIdFile(Class<? extends Id> type, String name, Id... ancestors) {
+    return getIdsDir(type, ancestors).resolve(toBase64(name + ID_EXTENSION));
+  }
+
+  private static final String RELPATH_BLOBS = "blobs";
+  private static final String RELPATH_EXTENDED = "extended";
+  private static final String RELPATH_NODE_ROLES_DIR = "node_roles";
+
+  private @Nonnull Path getAdHocQuestionDir(NetworkId network, QuestionId question) {
+    return getAdHocQuestionsDir(network).resolve(question.getId());
+  }
+
+  private @Nonnull Path getAdHocQuestionsDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(RELPATH_QUESTIONS_DIR);
+  }
+
+  private @Nonnull Path getAnalysisQuestionDir(
+      NetworkId network, QuestionId question, AnalysisId analysis) {
+    return getAnalysisQuestionsDir(network, analysis).resolve(question.getId());
+  }
+
+  private @Nonnull Path getAnalysisQuestionsDir(NetworkId network, AnalysisId analysis) {
+    return getNetworkAnalysisDir(network, analysis).resolve(RELPATH_QUESTIONS_DIR);
+  }
+
+  private @Nonnull Path getAnswerDir(AnswerId answerId) {
+    return _baseDir.resolve(RELPATH_ANSWERS_DIR).resolve(answerId.getId());
+  }
+
+  private @Nonnull Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
+    return getNetworkSettingsDir(network)
+        .resolve(RELPATH_CONTAINER_SETTINGS_ISSUES)
+        .resolve(majorIssueType + ".json");
+  }
+
+  private @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
+    return getNetworkDir(network).resolve(RELPATH_ANALYSES_DIR).resolve(analysis.getId());
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path getNetworkDir(NetworkId network) {
+    return _baseDir.resolve(network.getId());
+  }
+
+  /** Directory where original initialization or fork requests are stored */
+  @Nonnull
+  Path getOriginalDir(String key, NetworkId network) {
+    return getNetworkDir(network).resolve(RELPATH_ORIGINAL_DIR).resolve(toBase64(key));
+  }
+
+  private @Nonnull Path getNetworkSettingsDir(NetworkId network) {
+    return getNetworkDir(network).resolve(RELPATH_CONTAINER_SETTINGS);
+  }
+
+  private Path getNodeRolesDir() {
+    return _baseDir.resolve(RELPATH_NODE_ROLES_DIR);
+  }
+
+  private @Nonnull Path getQuestionDir(
+      NetworkId network, QuestionId question, @Nullable AnalysisId analysis) {
+    return analysis != null
+        ? getAnalysisQuestionDir(network, question, analysis)
+        : getAdHocQuestionDir(network, question);
+  }
+
+  private @Nonnull Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
+    return getNetworkDir(network).resolve(RELPATH_SNAPSHOTS_DIR).resolve(snapshot.getId());
+  }
+
+  private @Nonnull Path getStorageBase() {
+    return _baseDir;
+  }
+
+  private @Nonnull Path getVendorIndependentConfigDir(NetworkId network, SnapshotId snapshot) {
+    return getSnapshotOutputDir(network, snapshot).resolve(RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR);
+  }
+
+  private Path getNetworkBlobsDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(RELPATH_BLOBS);
+  }
+
+  private Path getNetworkObjectsDir(NetworkId networkId) {
+    return getNetworkDir(networkId).resolve(RELPATH_EXTENDED);
+  }
+
+  private Path getSnapshotObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_EXTENDED);
+  }
+
+  private Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_INPUT);
+  }
+
+  private Path getSnapshotOutputDir(NetworkId networkId, SnapshotId snapshotId) {
+    return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_OUTPUT);
+  }
+
+  @Nonnull
+  @Override
+  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) throws IOException {
+    return deserializeObject(
+        getParseVendorConfigurationAnswerElementPath(snapshot),
+        ParseVendorConfigurationAnswerElement.class);
+  }
+
+  @Override
+  public void storeParseVendorConfigurationAnswerElement(
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException {
+    serializeObject(
+        parseVendorConfigurationAnswerElement,
+        getParseVendorConfigurationAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public boolean hasParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    return Files.exists(getParseVendorConfigurationAnswerElementPath(snapshot));
+  }
+
+  @Override
+  public void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    Files.deleteIfExists(getParseVendorConfigurationAnswerElementPath(snapshot));
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
+      throws IOException {
+    _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
+    _logger.resetTimer();
+    Map<Path, String> namesByPath = new TreeMap<>();
+    Path serializedVendorConfigPath = getVendorConfigurationsPath(snapshot);
+    if (!Files.exists(serializedVendorConfigPath)) {
+      return ImmutableSortedMap.of();
+    }
+    try (DirectoryStream<Path> serializedConfigs =
+        Files.newDirectoryStream(serializedVendorConfigPath)) {
+      for (Path serializedConfig : serializedConfigs) {
+        String name = serializedConfig.getFileName().toString();
+        namesByPath.put(serializedConfig, name);
+      }
+    } catch (IOException e) {
+      throw new BatfishException("Error reading vendor configs directory", e);
+    }
+    Map<String, VendorConfiguration> vendorConfigurations =
+        deserializeObjects(namesByPath, VendorConfiguration.class);
+    _logger.printElapsedTime();
+    return vendorConfigurations;
+  }
+
+  private @Nonnull Path getVendorConfigurationsPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_VENDOR_SPECIFIC_CONFIG_DIR);
+  }
+
+  @Override
+  public void storeVendorConfigurations(
+      Map<String, VendorConfiguration> vendorConfigurations, NetworkSnapshot snapshot)
+      throws IOException {
+    Map<Path, VendorConfiguration> output = new HashMap<>();
+    Path outputPath = getVendorConfigurationsPath(snapshot);
+    vendorConfigurations.forEach(
+        (name, vc) -> {
+          Path currentOutputPath = outputPath.resolve(name);
+          output.put(currentOutputPath, vc);
+        });
+    serializeObjects(output);
+  }
+
+  @Override
+  public void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException {
+    deleteDirectory(getVendorConfigurationsPath(snapshot));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_HOST_CONFIGS_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(RELPATH_AWS_ACCOUNTS_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_AWS_CONFIGS_DIR));
+  }
+
+  private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_PARSE_ANSWER_PATH);
   }
 }

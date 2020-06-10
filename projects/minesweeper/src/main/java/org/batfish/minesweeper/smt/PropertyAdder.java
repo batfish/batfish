@@ -110,6 +110,7 @@ class PropertyAdder {
    * is also reachable.
    */
   Map<String, BoolExpr> instrumentReachability(Set<GraphEdge> ges) {
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     EncoderSlice slice = _encoderSlice;
@@ -164,6 +165,7 @@ class PropertyAdder {
    * rather than a destination port.
    */
   Map<String, BoolExpr> instrumentReachability(String router) {
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     Map<String, BoolExpr> reachableVars = new HashMap<>();
@@ -314,6 +316,7 @@ class PropertyAdder {
    * with length n-1.
    */
   Map<String, ArithExpr> instrumentPathLength(Set<GraphEdge> ges) {
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
@@ -392,6 +395,7 @@ class PropertyAdder {
    * number of neighbors it actively uses to get to ge.
    */
   Map<String, ArithExpr> instrumentLoad(Set<GraphEdge> ges) {
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
@@ -463,6 +467,7 @@ class PropertyAdder {
    * of a routing loop.
    */
   BoolExpr instrumentLoop(String router) {
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = _encoderSlice.getCtx();
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();

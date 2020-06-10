@@ -1,6 +1,8 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -22,6 +24,7 @@ import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_
 import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
+import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -40,7 +43,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
@@ -52,7 +54,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.junit.Test;
@@ -62,8 +66,7 @@ public class InternetGatewayTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text =
-        CommonUtil.readResource("org/batfish/representation/aws/InternetGatewayTest.json");
+    String text = readResource("org/batfish/representation/aws/InternetGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode gatewaysArray = (ArrayNode) json.get(JSON_KEY_INTERNET_GATEWAYS);
@@ -112,6 +115,11 @@ public class InternetGatewayTest {
             .setNetworkInterfaces(ImmutableMap.of(ni.getId(), ni))
             .build();
 
+    String vrfNameOnVpc = vrfNameForLink(internetGateway.getId());
+    vpcConfig
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
+
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
@@ -152,8 +160,8 @@ public class InternetGatewayTest {
         igwConfig
             .getAllInterfaces()
             .get(Utils.interfaceNameToRemote(vpcConfig))
-            .getIncomingFilterName(),
-        equalTo(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
+            .getIncomingFilter(),
+        IpAccessListMatchers.hasName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
 
     assertThat(
         igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),

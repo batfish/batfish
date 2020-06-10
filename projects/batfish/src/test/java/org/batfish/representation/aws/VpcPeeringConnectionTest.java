@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
@@ -16,10 +18,8 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -32,7 +32,7 @@ public class VpcPeeringConnectionTest {
   @Test
   public void testDeserialization() throws IOException {
     String text =
-        CommonUtil.readResource("org/batfish/representation/aws/VpcPeeringConnectionsTest.json");
+        readResource("org/batfish/representation/aws/VpcPeeringConnectionsTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_VPC_PEERING_CONNECTIONS);
@@ -59,8 +59,8 @@ public class VpcPeeringConnectionTest {
   @Test
   public void testIgnoreNonActive() throws IOException {
     String text =
-        CommonUtil.readResource(
-            "org/batfish/representation/aws/VpcPeeringConnectionsTestIgnoreNonActive.json");
+        readResource(
+            "org/batfish/representation/aws/VpcPeeringConnectionsTestIgnoreNonActive.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");
@@ -99,14 +99,7 @@ public class VpcPeeringConnectionTest {
             ImmutableMap.of(
                 Vpc.nodeName(vpc1.getId()), vpc1Cfg, Vpc.nodeName(vpc2.getId()), vpc2Cfg));
 
-    Map<String, Region> regions =
-        ImmutableMap.of(
-            "r1",
-            Region.builder("r1")
-                .setVpcs(ImmutableMap.of(vpc1.getId(), vpc1, vpc2.getId(), vpc2))
-                .build());
-
-    connection.createConnection(regions, awsConfiguration, new Warnings());
+    connection.createConnection(awsConfiguration, new Warnings());
 
     String vrfName = Vpc.vrfNameForLink(connection.getId());
 
@@ -131,5 +124,49 @@ public class VpcPeeringConnectionTest {
                     Utils.interfaceNameToRemote(vpc1Cfg, connection.getId()),
                     Utils.getInterfaceLinkLocalIp(
                         vpc1Cfg, Utils.interfaceNameToRemote(vpc2Cfg, connection.getId()))))));
+  }
+
+  @Test
+  public void testCreateConnectionDifferentAccount() {
+    Vpc vpc1 = new Vpc("vpc1", ImmutableSet.of(), ImmutableMap.of());
+    Configuration vpc1Cfg = Utils.newAwsConfiguration(vpc1.getId(), "awstest");
+    Prefix vpc1Prefix = Prefix.parse("10.10.10.0/24");
+
+    // VPC2 is in a different account.
+    Prefix vpc2Prefix = Prefix.parse("10.10.20.0/24");
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(Vpc.nodeName(vpc1.getId()), vpc1Cfg));
+
+    // Requester in other account.
+    {
+      VpcPeeringConnection connection =
+          new VpcPeeringConnection(
+              "connection",
+              vpc1.getId(),
+              ImmutableList.of(vpc1Prefix),
+              "vpc2",
+              ImmutableList.of(vpc2Prefix));
+
+      connection.createConnection(awsConfiguration, new Warnings());
+
+      String vrfName = Vpc.vrfNameForLink(connection.getId());
+      assertThat(vpc1Cfg, not(hasVrf(vrfName, Matchers.any(Vrf.class))));
+    }
+    // Requester in this account.
+    {
+      VpcPeeringConnection connection =
+          new VpcPeeringConnection(
+              "connection",
+              "vpc2",
+              ImmutableList.of(vpc2Prefix),
+              vpc1.getId(),
+              ImmutableList.of(vpc1Prefix));
+
+      connection.createConnection(awsConfiguration, new Warnings());
+
+      String vrfName = Vpc.vrfNameForLink(connection.getId());
+      assertThat(vpc1Cfg, not(hasVrf(vrfName, Matchers.any(Vrf.class))));
+    }
   }
 }

@@ -74,14 +74,13 @@ public final class PoolMgrServiceTest extends JerseyTest {
     writeTemplateFile(publicQuestionName);
     writeTemplateFile(hiddenQuestionName);
 
-    Response response = getQuestionTemplatesResponse(true);
+    try (Response response = getQuestionTemplatesResponse(true)) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    Map<String, String> templates = getQuestionTemplates(response);
-
-    assertThat(
-        templates.keySet(), equalTo(ImmutableSet.of(publicQuestionName, hiddenQuestionName)));
+      Map<String, String> templates = getQuestionTemplates(response);
+      assertThat(
+          templates.keySet(), equalTo(ImmutableSet.of(publicQuestionName, hiddenQuestionName)));
+    }
   }
 
   @Test
@@ -92,13 +91,12 @@ public final class PoolMgrServiceTest extends JerseyTest {
     writeTemplateFile(publicQuestionName);
     writeTemplateFile(hiddenQuestionName);
 
-    Response response = getQuestionTemplatesResponse(false);
+    try (Response response = getQuestionTemplatesResponse(false)) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
 
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-
-    Map<String, String> templates = getQuestionTemplates(response);
-
-    assertThat(templates.keySet(), equalTo(ImmutableSet.of(publicQuestionName)));
+      Map<String, String> templates = getQuestionTemplates(response);
+      assertThat(templates.keySet(), equalTo(ImmutableSet.of(publicQuestionName)));
+    }
   }
 
   private Map<String, String> getQuestionTemplates(Response response) throws IOException {

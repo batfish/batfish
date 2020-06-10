@@ -4,7 +4,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
 import java.util.Map;
@@ -223,35 +224,37 @@ public final class TopologyProviderImpl implements TopologyProvider {
           .build(CacheLoader.from(this::computeVxlanTopology));
 
   private @Nonnull IpOwners computeIpOwners(NetworkSnapshot snapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeIpOwners").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeIpOwners").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return new IpOwners(_batfish.loadConfigurations(snapshot));
+    } finally {
+      span.finish();
     }
   }
 
   private @Nonnull Optional<Layer1Topology> computeLayer1LogicalTopology(
       NetworkSnapshot networkSnapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeLayer1LogicalTopology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer1LogicalTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return getLayer1PhysicalTopology(networkSnapshot)
           .map(
               layer1PhysicalTopology ->
                   TopologyUtil.computeLayer1LogicalTopology(
                       layer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
+    } finally {
+      span.finish();
     }
   }
 
   @Nonnull
   private Optional<Layer1Topology> computeLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeLayer1PhysicalTopology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer1PhysicalTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       Optional<Layer1Topology> rawTopology =
           getRawLayer1PhysicalTopology(networkSnapshot)
               .map(
@@ -260,25 +263,29 @@ public final class TopologyProviderImpl implements TopologyProvider {
                           rawLayer1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
       Optional<Layer1Topology> synthesizedTopology = getSynthesizedLayer1Topology(networkSnapshot);
       return TopologyUtil.unionLayer1PhysicalTopologies(rawTopology, synthesizedTopology);
+    } finally {
+      span.finish();
     }
   }
 
   /** Computes {@link IpsecTopology} with edges that have compatible IPsec settings */
   private IpsecTopology computeInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeInitialIpsecTopology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialIpsecTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return TopologyUtil.computeIpsecTopology(_batfish.loadConfigurations(networkSnapshot));
+    } finally {
+      span.finish();
     }
   }
 
   private @Nonnull Optional<Layer2Topology> computeInitialLayer2Topology(
       NetworkSnapshot networkSnapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeLayer2Topology").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialLayer2Topology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return getLayer1LogicalTopology(networkSnapshot)
           .map(
               layer1LogicalTopology ->
@@ -286,63 +293,71 @@ public final class TopologyProviderImpl implements TopologyProvider {
                       layer1LogicalTopology,
                       VxlanTopology.EMPTY,
                       _batfish.loadConfigurations(networkSnapshot)));
+    } finally {
+      span.finish();
     }
   }
 
   private Topology computeInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeInitialLayer3Topology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialLayer3Topology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return TopologyUtil.computeLayer3Topology(
           getRawLayer3Topology(networkSnapshot), ImmutableSet.of());
+    } finally {
+      span.finish();
     }
   }
 
   private @Nonnull Optional<Layer1Topology> computeRawLayer1PhysicalTopology(
       NetworkSnapshot networkSnapshot) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("TopologyProviderImpl::computeRawLayer1PhysicalTopology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return Optional.ofNullable(
           _storage.loadLayer1Topology(networkSnapshot.getNetwork(), networkSnapshot.getSnapshot()));
+    } finally {
+      span.finish();
     }
   }
 
   private @Nonnull Topology computeRawLayer3Topology(NetworkSnapshot networkSnapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeRawLayer3Topology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeRawLayer3Topology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
       return TopologyUtil.computeRawLayer3Topology(
           getRawLayer1PhysicalTopology(networkSnapshot),
           getLayer1LogicalTopology(networkSnapshot),
           getInitialLayer2Topology(networkSnapshot),
           configurations);
+    } finally {
+      span.finish();
     }
   }
 
   private @Nonnull OspfTopology computeInitialOspfTopology(NetworkSnapshot snapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeInitialOspfTopology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialOspfTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return OspfTopologyUtils.computeOspfTopology(
           NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
           getInitialLayer3Topology(snapshot));
+    } finally {
+      span.finish();
     }
   }
 
   private @Nonnull OspfTopology computeOspfTopology(NetworkSnapshot snapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeOspfTopology").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeOspfTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return OspfTopologyUtils.computeOspfTopology(
           NetworkConfigurations.of(_batfish.loadConfigurations(snapshot)),
           getLayer3Topology(snapshot));
@@ -350,20 +365,23 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   private @Nonnull TunnelTopology computeInitialTunnelTopology(NetworkSnapshot snapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("TopologyProviderImpl::computeInitialTunnelTopology")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialTunnelTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return TopologyUtil.computeInitialTunnelTopology(_batfish.loadConfigurations(snapshot));
+    } finally {
+      span.finish();
     }
   }
 
   private @Nonnull VxlanTopology computeVxlanTopology(NetworkSnapshot snapshot) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("TopologyProviderImpl::computeVxlanTopology").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return VxlanTopologyUtils.computeVxlanTopology(_batfish.loadConfigurations(snapshot));
+    } finally {
+      span.finish();
     }
   }
 }

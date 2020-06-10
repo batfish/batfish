@@ -27,8 +27,6 @@ interface Ethernet1
  ip address 1.1.1.1 255.255.255.255
  ip access-group AL_IF in
  ip access-group AL_IF out
- ip nat source dynamic access-list AL_IF overload
- ip nat destination static 1.2.3.4 access-list AL_IF_UNDEF 2.3.4.5
 !
 interface Ethernet2
  ip access-group AL_IF_UNDEF in

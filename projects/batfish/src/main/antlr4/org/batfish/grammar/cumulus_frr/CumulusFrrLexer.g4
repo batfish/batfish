@@ -65,6 +65,11 @@ ALERTS
    'alerts'
 ;
 
+ALL
+:
+  'all'
+;
+
 ALLOWAS_IN
 :
   'allowas-in'
@@ -117,14 +122,14 @@ BGP
   'bgp'
 ;
 
-BLACKHOLE
-:
-  'blackhole'
-;
-
 CALL
 :
   'call' -> pushMode(M_Word)
+;
+
+CLUSTER_ID
+:
+  'cluster-id'
 ;
 
 COLON
@@ -296,6 +301,11 @@ FILE
   'file' -> pushMode(M_Remark)
 ;
 
+FORCE
+:
+  'force'
+;
+
 FORWARDING
 :
   'forwarding'
@@ -416,7 +426,7 @@ LE
 
 LOCAL_AS
 :
-  [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
+  'local-as'
 ;
 
 LOCAL_PREFERENCE
@@ -509,6 +519,11 @@ NO_EXPORT
   'no-export'
 ;
 
+NO_PREPEND
+:
+  'no-prepend'
+;
+
 NOTIFICATIONS
 :
   'notifications'
@@ -584,6 +599,11 @@ REMOTE_AS
   'remote-as'
 ;
 
+REPLACE_AS
+:
+  'replace-as'
+;
+
 ROUTE_MAP
 :
   'route-map' -> pushMode(M_Word)
@@ -591,7 +611,7 @@ ROUTE_MAP
 
 ROUTE
 :
-  'route'
+  'route' -> pushMode(M_Static_Route_Next_Hop)
 ;
 
 ROUTER
@@ -1008,6 +1028,29 @@ M_Expanded4_REMARK_TEXT
   ~["\r\n] F_NonWhitespace* (F_Whitespace+ F_NonWhitespace+)* -> type(REMARK_TEXT), popMode
 ;
 
+
+mode M_Static_Route_Next_Hop;
+// Parsing for static routes in the format of 'ip route 1.1.1.1/32 (eth0|2.2.2.2)
+
+M_Static_Route_IP_Prefix
+:
+  F_IpPrefix -> type(IP_PREFIX)
+;
+
+M_Static_Route_IP_Address
+:
+  F_IpAddress -> type(IP_ADDRESS) , popMode
+;
+
+M_Static_Route_Word
+:
+  F_Word -> type(WORD) , popMode
+;
+
+M_Static_Route_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
 
 
 mode M_Neighbor;

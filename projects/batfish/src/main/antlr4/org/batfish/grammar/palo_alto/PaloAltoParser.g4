@@ -9,6 +9,7 @@ import
     PaloAlto_bgp,
     PaloAlto_common,
     PaloAlto_deviceconfig,
+    PaloAlto_device_group,
     PaloAlto_interface,
     PaloAlto_network,
     PaloAlto_ospf,
@@ -18,6 +19,8 @@ import
     PaloAlto_service_group,
     PaloAlto_shared,
     PaloAlto_tag,
+    PaloAlto_template,
+    PaloAlto_template_stack,
     PaloAlto_virtual_router,
     PaloAlto_vsys,
     PaloAlto_zone;
@@ -71,6 +74,7 @@ statement_config_devices
     s_address
     | s_address_group
     | s_application
+    | s_application_group
     | s_deviceconfig
     | s_network
     | s_null
@@ -91,6 +95,33 @@ statement_config_general
     | s_shared
 ;
 
+statement_template
+:
+    st_description
+    | statement_template_config
+;
+
+statement_template_config
+:
+    CONFIG (DEVICES name = variable)? statement_template_config_devices
+;
+
+// Templates support a small subset of device configuration (statement_config_devices)
+statement_template_config_devices
+:
+    s_deviceconfig
+    | s_network
+    | s_shared
+    | s_vsys
+;
+
+statement_template_stack
+:
+    sts_description
+    | sts_devices
+    | sts_templates
+;
+
 set_line
 :
     SET set_line_tail NEWLINE
@@ -98,15 +129,47 @@ set_line
 
 set_line_template
 :
-// TODO: do we need this if we have the applied template from other show commands?
-    TEMPLATE null_rest_of_line
+    TEMPLATE name = variable statement_template
+;
+
+set_line_template_stack
+:
+    TEMPLATE_STACK name = variable statement_template_stack
+;
+
+set_line_device_group
+:
+    DEVICE_GROUP name = variable statement_device_group
+;
+
+/*
+ * Device-group supports a subset of device configuration (statement_config_devices)
+ * plus a couple device-group / panorama specific items
+ */
+statement_device_group
+:
+    // Shared with statement_config_devices
+    s_address
+    | s_address_group
+    | s_application
+    | s_application_group
+    | s_service
+    | s_service_group
+    | s_tag
+    // Device-group / panorama specific
+    | s_post_rulebase
+    | s_pre_rulebase
+    | sdg_description
+    | sdg_devices
 ;
 
 set_line_tail
 :
     set_line_config_devices
     | set_line_config_general
+    | set_line_device_group
     | set_line_template
+    | set_line_template_stack
     | s_policy
 ;
 
@@ -124,22 +187,12 @@ s_policy_panorama
     PANORAMA
     (
         ss_common
-        | panorama_post_rulebase
-        | panorama_pre_rulebase
+        | s_post_rulebase
+        | s_pre_rulebase
     )
 ;
 
 s_policy_shared
 :
     SHARED /* TODO */
-;
-
-panorama_post_rulebase
-:
-    POST_RULEBASE rulebase_inner
-;
-
-panorama_pre_rulebase
-:
-    PRE_RULEBASE rulebase_inner
 ;

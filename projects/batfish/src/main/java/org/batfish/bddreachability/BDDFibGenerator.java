@@ -1,13 +1,8 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.common.util.CollectionUtil.toImmutableMap;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -72,38 +67,21 @@ public final class BDDFibGenerator {
       Map<String, Map<String, Map<String, BDD>>> exitsNetworkBDDs,
       Map<String, Map<String, Map<String, BDD>>> insufficientInfoBDDs,
       Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBDDs,
+      Map<String, Map<String, BDD>> vrfAcceptBDDs,
       Map<String, Map<String, BDD>> routableBDDs,
       Map<String, Map<String, Map<String, BDD>>> nextVrfBDDs,
-      Map<String, Map<String, BDD>> nullRoutedBDDs,
-      Function<Collection<BDD>, BDD> orAll) {
+      Map<String, Map<String, BDD>> nullRoutedBDDs) {
     _arpTrueEdgeBDDs = arpTrueEdgeBDDs;
     _neighborUnreachableBDDs = neighborUnreachableBDDs;
     _deliveredToSubnetBDDs = deliveredToSubnetBDDs;
     _exitsNetworkBDDs = exitsNetworkBDDs;
     _insufficientInfoBDDs = insufficientInfoBDDs;
     _ifaceAcceptBDDs = ifaceAcceptBDDs;
-    _vrfAcceptBDDs = computeVrfAcceptBDDs(_ifaceAcceptBDDs, orAll);
     _routableBDDs = routableBDDs;
     _nextVrfBDDs = nextVrfBDDs;
     _nullRoutedBDDs = nullRoutedBDDs;
-  }
-
-  /**
-   * Given a mapping of interface accept BDDs (node -&gt; vrf -&gt; interface -&gt; accept BDD),
-   * returns a mapping of node -&gt; vrf -&gt; accept BDD where each VRF's accept BDD is the union
-   * of its interfaces' accept BDDs.
-   */
-  private static Map<String, Map<String, BDD>> computeVrfAcceptBDDs(
-      Map<String, Map<String, Map<String, BDD>>> ifaceAcceptBdds,
-      Function<Collection<BDD>, BDD> orAll) {
-    return toImmutableMap(
-        ifaceAcceptBdds,
-        Entry::getKey, // node name
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey, // vrf name
-                vrfEntry -> orAll.apply(vrfEntry.getValue().values()))); // vrf's accept BDD
+    // fully determined by ifaceAcceptBdds, but already computed in BDDReachabilityAnalysisFactory
+    _vrfAcceptBDDs = vrfAcceptBDDs;
   }
 
   /**

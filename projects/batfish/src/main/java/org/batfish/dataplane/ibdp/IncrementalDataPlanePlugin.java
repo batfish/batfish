@@ -9,7 +9,6 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 
 /** A batfish plugin that registers the Incremental Batfish Data Plane (ibdp) Engine. */
@@ -25,7 +24,6 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   @Override
   public ComputeDataPlaneResult computeDataPlane(NetworkSnapshot snapshot) {
     Map<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
-    Topology topology = _batfish.getTopologyProvider().getInitialLayer3Topology(snapshot);
     Set<BgpAdvertisement> externalAdverts =
         _batfish.loadExternalBgpAnnouncements(snapshot, configurations);
     TopologyProvider topologyProvider = _batfish.getTopologyProvider();
@@ -34,7 +32,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
             .setIpsecTopology(topologyProvider.getInitialIpsecTopology(snapshot))
             .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(snapshot))
             .setLayer2Topology(topologyProvider.getInitialLayer2Topology(snapshot))
-            .setLayer3Topology(topology)
+            .setLayer3Topology(topologyProvider.getInitialLayer3Topology(snapshot))
             .setOspfTopology(topologyProvider.getInitialOspfTopology(snapshot))
             .setRawLayer1PhysicalTopology(topologyProvider.getRawLayer1PhysicalTopology(snapshot))
             .build();

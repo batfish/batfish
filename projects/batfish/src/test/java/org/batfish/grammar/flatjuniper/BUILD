@@ -1,11 +1,10 @@
 load("@rules_java//java:defs.bzl", "java_library")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 package(
     default_testonly = True,
     default_visibility = ["//visibility:public"],
 )
-
-load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_library(
     name = "testlib",

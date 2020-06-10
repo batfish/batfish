@@ -1,0 +1,33 @@
+local_as_test
+# This file describes the network interfaces
+
+iface lo inet loopback
+ address 1.1.1.0/32
+
+interface bond1
+ ip address 2.2.2.3/31
+
+interface bond2
+ ip address 4.4.4.3/24
+
+### end /etc/network/interfaces
+
+# ports.conf --
+### start of frr.conf
+frr version
+!
+router bgp 1
+ bgp router-id 1.1.1.0
+ network 1.1.1.0/32
+
+ neighbor pg peer-group
+ neighbor pg remote-as 2
+ neighbor pg local-as 10 no-prepend replace-as
+ neighbor 2.2.2.2 update-source 2.2.2.3
+ neighbor 2.2.2.2 peer-group pg
+ neighbor bond2 interface update-source 4.4.4.3
+ neighbor bond2 interface peer-group pg
+!
+line vty
+!
+!### end frr.conf

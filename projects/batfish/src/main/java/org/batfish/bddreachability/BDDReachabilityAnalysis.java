@@ -5,8 +5,10 @@ import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressLocatio
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -61,26 +63,32 @@ public class BDDReachabilityAnalysis {
       Set<StateExpr> ingressLocationStates,
       Stream<Edge> edges,
       BDD queryHeaderSpaceBdd) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("constructs BDDReachabilityAnalysis").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("constructs BDDReachabilityAnalysis").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       _bddPacket = packet;
       _forwardEdgeTable = computeForwardEdgeTable(edges);
       _ingressLocationStates = ImmutableSet.copyOf(ingressLocationStates);
       _queryHeaderSpaceBdd = queryHeaderSpaceBdd;
+    } finally {
+      span.finish();
     }
   }
 
   Map<StateExpr, BDD> computeReverseReachableStates() {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysis.computeReverseReachableStates")
-            .startActive()) {
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
       reverseReachableStates.put(Query.INSTANCE, _queryHeaderSpaceBdd);
       BDDReachabilityUtils.backwardFixpoint(_forwardEdgeTable, reverseReachableStates);
       return ImmutableMap.copyOf(reverseReachableStates);
+    } finally {
+      span.finish();
     }
   }
 
@@ -96,16 +104,20 @@ public class BDDReachabilityAnalysis {
   }
 
   Map<StateExpr, BDD> computeForwardReachableStates() {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
-            .startActive()) {
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>();
       BDD one = _bddPacket.getFactory().one();
       _ingressLocationStates.forEach(state -> forwardReachableStates.put(state, one));
       BDDReachabilityUtils.forwardFixpoint(_forwardEdgeTable, forwardReachableStates);
       return ImmutableMap.copyOf(forwardReachableStates);
+    } finally {
+      span.finish();
     }
   }
 
@@ -115,14 +127,18 @@ public class BDDReachabilityAnalysis {
    */
   public Map<StateExpr, BDD> computeForwardReachableStates(
       Map<StateExpr, BDD> initialReachableStates) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
-            .startActive()) {
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> forwardReachableStates = new LinkedHashMap<>(initialReachableStates);
       BDDReachabilityUtils.forwardFixpoint(_forwardEdgeTable, forwardReachableStates);
       return ImmutableMap.copyOf(forwardReachableStates);
+    } finally {
+      span.finish();
     }
   }
 
@@ -136,6 +152,15 @@ public class BDDReachabilityAnalysis {
 
   public Map<IngressLocation, BDD> getIngressLocationReachableBDDs() {
     Map<StateExpr, BDD> reverseReachableStates = computeReverseReachableStates();
+    return getIngressLocationBDDs(reverseReachableStates);
+  }
+
+  /**
+   * Like {@link #getIngressLocationReachableBDDs()}, but for only the specified states (with
+   * initial BDDs).
+   */
+  public Map<IngressLocation, BDD> getIngressLocationReachableBDDs(Map<StateExpr, BDD> roots) {
+    Map<StateExpr, BDD> reverseReachableStates = computeReverseReachableStates(roots);
     return getIngressLocationBDDs(reverseReachableStates);
   }
 
@@ -158,5 +183,9 @@ public class BDDReachabilityAnalysis {
 
   public Map<StateExpr, Map<StateExpr, Transition>> getForwardEdgeMap() {
     return _forwardEdgeTable.rowMap();
+  }
+
+  public Table<StateExpr, StateExpr, Transition> getForwardEdgeTable() {
+    return ImmutableTable.copyOf(_forwardEdgeTable);
   }
 }

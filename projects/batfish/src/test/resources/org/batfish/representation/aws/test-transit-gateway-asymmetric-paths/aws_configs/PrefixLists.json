@@ -1,0 +1,22 @@
+{
+ "PrefixLists": [
+  {
+   "Cidrs": [
+    "54.231.0.0/17",
+    "52.216.0.0/15",
+    "3.5.16.0/21",
+    "3.5.0.0/20"
+   ],
+   "PrefixListId": "pl-63a5400a",
+   "PrefixListName": "com.amazonaws.us-east-1.s3"
+  },
+  {
+   "Cidrs": [
+    "52.94.0.0/22",
+    "52.119.224.0/20"
+   ],
+   "PrefixListId": "pl-02cd2c6b",
+   "PrefixListName": "com.amazonaws.us-east-1.dynamodb"
+  }
+ ]
+}

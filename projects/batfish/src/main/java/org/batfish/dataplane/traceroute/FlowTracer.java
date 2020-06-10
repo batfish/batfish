@@ -8,6 +8,7 @@ import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDiff.returnFlowDiffs;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
+import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_ORIGINAL_FLOW_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.POST_TRANSFORMATION_INGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.PRE_TRANSFORMATION_EGRESS_FILTER;
@@ -38,7 +39,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -82,10 +82,12 @@ import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
+import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 import org.batfish.datamodel.flow.OriginateStep;
 import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
+import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
 import org.batfish.datamodel.flow.RoutingStep;
@@ -93,6 +95,7 @@ import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionMatchExpr;
+import org.batfish.datamodel.flow.SessionScope;
 import org.batfish.datamodel.flow.SetupSessionStep;
 import org.batfish.datamodel.flow.SetupSessionStep.SetupSessionStepDetail;
 import org.batfish.datamodel.flow.Step;
@@ -106,10 +109,8 @@ import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.FlowEvaluator.FlowResult;
-import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
-import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
-import org.batfish.datamodel.packet_policy.VrfExprVisitor;
+import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator;
@@ -203,10 +204,10 @@ class FlowTracer {
   private final @Nullable String _ingressInterface;
   private final Node _currentNode;
   private final Consumer<TraceAndReverseFlow> _flowTraces;
-  private final NodeInterfacePair _lastHopNodeAndOutgoingInterface;
+  private final @Nullable NodeInterfacePair _lastHopNodeAndOutgoingInterface;
   private final Set<FirewallSessionTraceInfo> _newSessions;
   private final Flow _originalFlow;
-  private final String _vrfName;
+  private final @Nonnull String _vrfName;
 
   // Mutable list of hops in the current trace
   private final List<Hop> _hops;
@@ -289,7 +290,7 @@ class FlowTracer {
     return vrfName;
   }
 
-  /** Construct a {@link FlowTracer} with expliclty-provided fields. */
+  /** Construct a {@link FlowTracer} with explicitly-provided fields. */
   @VisibleForTesting
   FlowTracer(
       TracerouteEngineImplContext tracerouteContext,
@@ -297,10 +298,10 @@ class FlowTracer {
       @Nullable String ingressInterface,
       Node currentNode,
       Consumer<TraceAndReverseFlow> flowTraces,
-      NodeInterfacePair lastHopNodeAndOutgoingInterface,
+      @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface,
       Set<FirewallSessionTraceInfo> newSessions,
       Flow originalFlow,
-      String vrfName,
+      @Nonnull String vrfName,
       List<Hop> hops,
       List<Step<?>> steps,
       Stack<Breadcrumb> breadcrumbs,
@@ -491,10 +492,8 @@ class FlowTracer {
     Ip dstIp = _currentFlow.getDstIp();
 
     // Accept if the flow is destined for this vrf on this host.
-    Optional<String> acceptingInterface =
-        _tracerouteContext.interfaceAcceptingIp(currentNodeName, _vrfName, dstIp);
-    if (acceptingInterface.isPresent()) {
-      buildAcceptTrace(acceptingInterface.get());
+    if (_tracerouteContext.vrfAcceptsIp(currentNodeName, _vrfName, dstIp)) {
+      buildAcceptTrace();
       return;
     }
 
@@ -502,6 +501,10 @@ class FlowTracer {
     fibLookup(dstIp, currentNodeName, fib);
   }
 
+  /**
+   * Applies PBR to the flow at the given {@code incomingInterface} if a packet policy is present.
+   * Returns true if PBR was applied.
+   */
   private boolean processPBR(Interface incomingInterface) {
 
     // apply routing/packet policy applied to the interface, if defined.
@@ -514,6 +517,7 @@ class FlowTracer {
       return false;
     }
 
+    // Policy is present. If this point is reached, processPBR will return true.
     Configuration owner = incomingInterface.getOwner();
     FlowResult result =
         FlowEvaluator.evaluate(
@@ -525,53 +529,44 @@ class FlowTracer {
             owner.getIpSpaces(),
             _tracerouteContext.getFibs(_currentNode.getName()));
     _currentFlow = result.getFinalFlow();
-    return new ActionVisitor<Boolean>() {
+
+    new ActionVisitor<Void>() {
 
       /** Helper visitor to figure out in which VRF we need to do the FIB lookup */
-      private VrfExprVisitor<String> _vrfExprVisitor =
-          new VrfExprVisitor<String>() {
-            @Override
-            public String visitLiteralVrfName(@Nonnull LiteralVrfName expr) {
-              return expr.getVrfName();
-            }
-
-            @Override
-            public String visitIngressInterfaceVrf(@Nonnull IngressInterfaceVrf expr) {
-              return incomingInterface.getVrfName();
-            }
-          };
+      private VrfExprNameExtractor _vrfExprVisitor = new VrfExprNameExtractor(incomingInterface);
 
       @Override
-      public Boolean visitDrop(@Nonnull Drop drop) {
+      public Void visitDrop(@Nonnull Drop drop) {
         _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), DENIED));
-        return true;
+        buildDeniedTrace(FlowDisposition.DENIED_IN);
+        return null;
       }
 
       @Override
-      public Boolean visitFibLookup(@Nonnull FibLookup fibLookup) {
+      public Void visitFibLookup(@Nonnull FibLookup fibLookup) {
         makePermittedStep();
         Ip dstIp = result.getFinalFlow().getDstIp();
 
         // Accept if the flow is destined for this vrf on this host.
         if (isAcceptedAtCurrentVrf()) {
-          return true;
+          return null;
         }
 
         String currentNodeName = _currentNode.getName();
         String lookupVrfName = fibLookup.getVrfExpr().accept(_vrfExprVisitor);
         Fib fib = _tracerouteContext.getFib(currentNodeName, lookupVrfName).get();
         fibLookup(dstIp, currentNodeName, fib);
-        return true;
+        return null;
       }
 
       @Override
-      public Boolean visitFibLookupOverrideLookupIp(
+      public Void visitFibLookupOverrideLookupIp(
           @Nonnull FibLookupOverrideLookupIp fibLookupAction) {
         makePermittedStep();
 
         // Accept if the flow is destined for this vrf on this host.
         if (isAcceptedAtCurrentVrf()) {
-          return true;
+          return null;
         }
 
         String currentNodeName = _currentNode.getName();
@@ -600,7 +595,8 @@ class FlowTracer {
 
         if (lookupIp == null) {
           // Nothing matched, execute default action
-          return visit(fibLookupAction.getDefaultAction());
+          visit(fibLookupAction.getDefaultAction());
+          return null;
         }
 
         // Just a sanity check, can't be Ip.AUTO
@@ -608,10 +604,10 @@ class FlowTracer {
 
         Fib fib = _tracerouteContext.getFib(currentNodeName, incomingInterface.getVrfName()).get();
         // Re-resolve and send out using FIB lookup part of the pipeline.
-        // Call the version of fibLookup that keeps track of overriden nextHopIp
+        // Call the version of fibLookup that keeps track of overridden nextHopIp
         Ip dstIp = result.getFinalFlow().getDstIp();
         fibLookup(dstIp, lookupIp, currentNodeName, fib);
-        return true;
+        return null;
       }
 
       /**
@@ -621,10 +617,8 @@ class FlowTracer {
       private boolean isAcceptedAtCurrentVrf() {
         String currentNodeName = _currentNode.getName();
         Ip dstIp = result.getFinalFlow().getDstIp();
-        Optional<String> acceptingInterface =
-            _tracerouteContext.interfaceAcceptingIp(currentNodeName, _vrfName, dstIp);
-        if (acceptingInterface.isPresent()) {
-          buildAcceptTrace(acceptingInterface.get());
+        if (_tracerouteContext.vrfAcceptsIp(currentNodeName, _vrfName, dstIp)) {
+          buildAcceptTrace();
           return true;
         }
         return false;
@@ -634,6 +628,8 @@ class FlowTracer {
         _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), PERMITTED));
       }
     }.visit(result.getAction());
+
+    return true;
   }
 
   /** Apply the input {@link Transformation} to the current flow in the current context. */
@@ -672,7 +668,7 @@ class FlowTracer {
   private void fibLookup(
       Ip dstIp, @Nullable Ip overrideNextHopIp, String currentNodeName, Fib fib) {
     fibLookup(
-        // Intentionally looking up the overriden NH
+        // Intentionally looking up the overridden NH
         firstNonNull(overrideNextHopIp, dstIp),
         currentNodeName,
         fib,
@@ -770,14 +766,13 @@ class FlowTracer {
    */
   private boolean processSessions() {
     String inputIfaceName = _ingressInterface;
-    if (inputIfaceName == null) {
-      // Sessions only exist when entering an interface.
-      return false;
-    }
-
     String currentNodeName = _currentNode.getName();
     Collection<FirewallSessionTraceInfo> sessions =
-        _tracerouteContext.getSessions(currentNodeName, inputIfaceName);
+        _ingressInterface != null
+            ? _tracerouteContext.getSessionsForIncomingInterface(currentNodeName, inputIfaceName)
+            // Flow originated here; check for sessions to match flows originating in current VRF
+            : _tracerouteContext.getSessionsForOriginatingVrf(currentNodeName, _vrfName);
+
     if (sessions.isEmpty()) {
       return false;
     }
@@ -796,17 +791,13 @@ class FlowTracer {
 
     MatchSessionStepDetail.Builder matchDetail =
         MatchSessionStepDetail.builder()
-            .setIncomingInterfaces(session.getIncomingInterfaces())
+            .setSessionScope(session.getSessionScope())
             .setSessionAction(session.getAction())
             .setMatchCriteria(session.getMatchCriteria());
 
     Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
     Map<String, IpSpace> ipSpaces = config.getIpSpaces();
-    Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
-    checkState(
-        incomingInterface.getFirewallSessionInterfaceInfo() != null,
-        "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
 
     // compute transformation. it will be applied after applying incoming ACL
     Transformation transformation = session.getTransformation();
@@ -820,12 +811,18 @@ class FlowTracer {
 
     _steps.add(new MatchSessionStep(matchDetail.build()));
 
-    // apply incoming ACL
-    String incomingAclName =
-        incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
-    if (incomingAclName != null
-        && applyFilter(ipAccessLists.get(incomingAclName), FilterType.INGRESS_FILTER) == DENIED) {
-      return true;
+    // apply incoming ACL if any
+    if (inputIfaceName != null) {
+      Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
+      checkState(
+          incomingInterface.getFirewallSessionInterfaceInfo() != null,
+          "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
+      String incomingAclName =
+          incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
+      if (incomingAclName != null
+          && applyFilter(ipAccessLists.get(incomingAclName), FilterType.INGRESS_FILTER) == DENIED) {
+        return true;
+      }
     }
 
     // apply transformation
@@ -841,7 +838,7 @@ class FlowTracer {
             new SessionActionVisitor<Void>() {
               @Override
               public Void visitAcceptVrf(Accept acceptVrf) {
-                buildAcceptTrace(inputIfaceName); // ingressInterface, guaranteed nonnull.
+                buildAcceptTrace();
                 return null;
               }
 
@@ -968,11 +965,12 @@ class FlowTracer {
    *
    * @param outgoingInterface the interface out of which the packet is being sent
    * @param nextHopIp the next hop IP (a.k.a ARP IP) <emph>as far as the FIB is concerned</emph>
-   * @param overridenNextHopIp not {@code null} if the next hop was overriden outside of the FIB
+   * @param overriddenNextHopIp not {@code null} if the next hop was overridden outside of the FIB
    *     (e.g., in PBR)
    */
-  private void forwardOutInterface(
-      Interface outgoingInterface, Ip nextHopIp, @Nullable Ip overridenNextHopIp) {
+  @VisibleForTesting
+  void forwardOutInterface(
+      Interface outgoingInterface, Ip nextHopIp, @Nullable Ip overriddenNextHopIp) {
     // Apply preSourceNatOutgoingFilter
     if (applyFilter(
             outgoingInterface.getPreTransformationOutgoingFilter(),
@@ -988,6 +986,13 @@ class FlowTracer {
       return;
     }
 
+    // apply outgoing filter matching original flow
+    if (applyFilterToOriginalFlow(
+            outgoingInterface.getOutgoingOriginalFlowFilter(), EGRESS_ORIGINAL_FLOW_FILTER)
+        == DENIED) {
+      return;
+    }
+
     // setup session if necessary
     FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
         outgoingInterface.getFirewallSessionInterfaceInfo();
@@ -1000,7 +1005,7 @@ class FlowTracer {
         _steps.add(
             new SetupSessionStep(
                 SetupSessionStepDetail.builder()
-                    .setIncomingInterfaces(session.getIncomingInterfaces())
+                    .setSessionScope(session.getSessionScope())
                     .setMatchCriteria(session.getMatchCriteria())
                     .setSessionAction(session.getAction())
                     .setTransformation(returnFlowDiffs(_originalFlow, _currentFlow))
@@ -1017,8 +1022,8 @@ class FlowTracer {
     SortedSet<NodeInterfacePair> neighborIfaces =
         _tracerouteContext.getInterfaceNeighbors(currentNodeName, outgoingIfaceName);
     /*
-    Special handling is necessary if ARP IP was overriden.
-    Consider the following: dst IP: 2.2.2.2, NH was overriden to 1.1.1.1 and matched a connected route 1.1.1.0/24, for "iface0"
+    Special handling is necessary if ARP IP was overridden.
+    Consider the following: dst IP: 2.2.2.2, NH was overridden to 1.1.1.1 and matched a connected route 1.1.1.0/24, for "iface0"
     Since the FIB entry has no ARP IP (because connected route) we'd normally compute disposition for the dest IP (2.2.2.2)
     However, nothing in forwarding analysis says 2.2.2.2 has a valid disposition for "iface0":
       - there is no route for 2.2.2.2 there,
@@ -1027,56 +1032,72 @@ class FlowTracer {
     To simplify our life, just compute disposition for 1.1.1.1, at least that's guaranteed to give us a disposition
     */
     if (neighborIfaces.isEmpty()) {
-      Ip arpIp = firstNonNull(overridenNextHopIp, _currentFlow.getDstIp());
+      Ip arpIp = firstNonNull(overriddenNextHopIp, _currentFlow.getDstIp());
       FlowDisposition disposition =
           _tracerouteContext.computeDisposition(currentNodeName, outgoingIfaceName, arpIp);
       buildArpFailureTrace(outgoingIfaceName, arpIp, disposition);
     } else {
       processOutgoingInterfaceEdges(
-          outgoingIfaceName, firstNonNull(overridenNextHopIp, nextHopIp), neighborIfaces);
+          outgoingIfaceName, firstNonNull(overriddenNextHopIp, nextHopIp), neighborIfaces);
     }
+  }
+
+  /**
+   * Creates {@link FirewallSessionTraceInfo} scoped to the {@link
+   * FirewallSessionInterfaceInfo#getSessionInterfaces() interfaces} defined in the given {@code
+   * firewallSessionInterfaceInfo}
+   */
+  @Nullable
+  private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+      @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    SessionAction action =
+        getSessionAction(
+            firewallSessionInterfaceInfo.getFibLookup(),
+            _ingressInterface,
+            _lastHopNodeAndOutgoingInterface);
+    return buildFirewallSessionTraceInfo(
+        action, new IncomingSessionScope(firewallSessionInterfaceInfo.getSessionInterfaces()));
   }
 
   @Nullable
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
-      @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+      @Nonnull SessionAction sessionAction, @Nonnull SessionScope sessionScope) {
     return buildFirewallSessionTraceInfo(
-        _ingressInterface,
-        _lastHopNodeAndOutgoingInterface,
-        _currentNode.getName(),
-        _currentFlow,
-        _originalFlow,
-        firewallSessionInterfaceInfo);
+        _currentNode.getName(), _currentFlow, _originalFlow, sessionAction, sessionScope);
   }
 
   @VisibleForTesting
   @Nullable
   static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
-      @Nullable String ingressInterface,
-      NodeInterfacePair lastHopNodeAndOutgoingInterface,
       String currentNode,
       Flow currentFlow,
       Flow originalFlow,
-      @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+      @Nonnull SessionAction sessionAction,
+      @Nonnull SessionScope sessionScope) {
     IpProtocol ipProtocol = currentFlow.getIpProtocol();
     if (!IpProtocol.IP_PROTOCOLS_WITH_SESSIONS.contains(ipProtocol)) {
       // TODO verify only protocols with ports can have sessions
       return null;
     }
-
-    SessionAction action =
-        firewallSessionInterfaceInfo.getFibLookup()
-            ? org.batfish.datamodel.flow.FibLookup.INSTANCE
-            : ingressInterface != null
-                ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
-                : Accept.INSTANCE;
-
     return new FirewallSessionTraceInfo(
         currentNode,
-        action,
-        firewallSessionInterfaceInfo.getSessionInterfaces(),
+        sessionAction,
+        sessionScope,
         matchSessionReturnFlow(currentFlow),
         sessionTransformation(originalFlow, currentFlow));
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  static SessionAction getSessionAction(
+      boolean fibLookup,
+      @Nullable String ingressInterface,
+      @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
+    return fibLookup
+        ? org.batfish.datamodel.flow.FibLookup.INSTANCE
+        : ingressInterface != null
+            ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
+            : Accept.INSTANCE;
   }
 
   @VisibleForTesting
@@ -1094,7 +1115,41 @@ class FlowTracer {
         forwardFlow.getSrcPort());
   }
 
-  private void buildAcceptTrace(@Nonnull String acceptingInterface) {
+  @VisibleForTesting
+  void buildAcceptTrace() {
+    // Choose accepting interface based on dst IP
+    String acceptingInterface =
+        _tracerouteContext
+            .interfaceAcceptingIp(_currentNode.getName(), _vrfName, _currentFlow.getDstIp())
+            .orElseGet(
+                // If no interface in VRF owns dst IP, choose arbitrary accepting interface.
+                // Currently we will only resort to this if a session is matched.
+                () -> _currentConfig.getActiveInterfaces(_vrfName).keySet().iterator().next());
+
+    if (_ingressInterface != null
+        && _currentConfig.getVrfs().get(_vrfName).hasOriginatingSessions()) {
+      // Set up a session that will match return traffic originating from this VRF.
+      // TODO Ensure this behavior is valid for all vendors.
+      //  - Is FibLookup the right action for all vendors?
+      //  - Do any vendors set up sessions for intranode traffic? AWS should not. If others do, then
+      //    for those cases we would need to set up a session even if ingressInterface is null.
+      SessionAction action = org.batfish.datamodel.flow.FibLookup.INSTANCE;
+      @Nullable
+      FirewallSessionTraceInfo session =
+          buildFirewallSessionTraceInfo(action, new OriginatingSessionScope(_vrfName));
+      if (session != null) {
+        _newSessions.add(session);
+        _steps.add(
+            new SetupSessionStep(
+                SetupSessionStepDetail.builder()
+                    .setSessionScope(session.getSessionScope())
+                    .setMatchCriteria(session.getMatchCriteria())
+                    .setSessionAction(session.getAction())
+                    .setTransformation(returnFlowDiffs(_originalFlow, _currentFlow))
+                    .build()));
+      }
+    }
+
     InboundStep inboundStep =
         InboundStep.builder().setDetail(new InboundStepDetail(acceptingInterface)).build();
     _steps.add(inboundStep);
@@ -1111,17 +1166,32 @@ class FlowTracer {
   }
 
   /**
-   * Apply a filter, and create the corresponding step. If the filter DENIED the flow, then create a
-   * trace ending in the denial. Return the action if the filter is non-null. If the filter is null,
-   * return null.
+   * Apply a filter to the current flow, and create the corresponding step. If the filter DENIED the
+   * flow, then create a trace ending in the denial. Return the action if the filter is non-null. If
+   * the filter is null, return null.
    */
   private @Nullable StepAction applyFilter(@Nullable IpAccessList filter, FilterType filterType) {
+    return applyFilter(filter, filterType, _currentFlow);
+  }
+
+  /**
+   * Apply a filter to the original flow, and create the corresponding step. If the filter DENIED
+   * the flow, then create a trace ending in the denial. Return the action if the filter is
+   * non-null. If the filter is null, return null.
+   */
+  private @Nullable StepAction applyFilterToOriginalFlow(
+      @Nullable IpAccessList filter, FilterType filterType) {
+    return applyFilter(filter, filterType, _originalFlow);
+  }
+
+  private @Nullable StepAction applyFilter(
+      @Nullable IpAccessList filter, FilterType filterType, @Nonnull Flow flow) {
     if (filter == null) {
       return null;
     }
     FilterStep filterStep =
         createFilterStep(
-            _currentFlow,
+            flow,
             _ingressInterface,
             filter,
             filterType,

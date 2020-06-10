@@ -378,7 +378,7 @@ public final class CumulusInterfacesConfigurationBuilder
     }
 
     StaticRoute sr =
-        new StaticRoute(Prefix.parse(ctx.IP_PREFIX().getText()), gatewayIp, nextHopInterface);
+        new StaticRoute(Prefix.parse(ctx.IP_PREFIX().getText()), gatewayIp, nextHopInterface, null);
     _currentIface.addPostUpIpRoute(sr);
   }
 

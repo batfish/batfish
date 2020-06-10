@@ -1,8 +1,14 @@
 package org.batfish.main;
 
+import static com.google.common.io.MoreFiles.createParentDirectories;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.CommonUtil.writeFile;
+import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.main.PreprocessJuniper.main;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
@@ -25,7 +31,7 @@ public final class PreprocessJuniperTest {
    * Equivalent to calling {@link PreprocessJuniperTest#assertValidPair(String,String,String)} with
    * {@code prefix} set to {@code JUNIPER_TESTCONFIGS_PREFIX}.
    */
-  private void assertValidPair(String before, String after) {
+  private void assertValidPair(String before, String after) throws IOException {
     assertValidPair(JUNIPER_TESTCONFIGS_PREFIX, before, after);
   }
 
@@ -33,39 +39,39 @@ public final class PreprocessJuniperTest {
    * Assert that the result of preprocessing the text of the resource {@code before} under {@code
    * prefix} is equal to the text of the resource {@code after} under {@code prefix}.
    */
-  private void assertValidPair(String prefix, String before, String after) {
+  private void assertValidPair(String prefix, String before, String after) throws IOException {
     Path root = _folder.getRoot().toPath();
     Path inputDir = root.resolve("input");
     Path outputDir = root.resolve("output");
     Path inputFile = inputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
     Path outputFile = outputDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR).resolve("conf");
-    inputFile.getParent().toFile().mkdirs();
-    CommonUtil.writeFile(inputFile, CommonUtil.readResource(String.format("%s%s", prefix, before)));
-    PreprocessJuniper.main(new String[] {inputDir.toString(), outputDir.toString()});
+    createParentDirectories(inputFile);
+    writeFile(inputFile, readResource(String.format("%s%s", prefix, before), UTF_8));
+    main(new String[] {inputDir.toString(), outputDir.toString()});
 
     assertThat(
         CommonUtil.readFile(outputFile).trim(),
-        equalTo(CommonUtil.readResource(String.format("%s%s", prefix, after)).trim()));
+        equalTo(readResource(String.format("%s%s", prefix, after), UTF_8).trim()));
   }
 
   @Test
-  public void testFlat() {
+  public void testFlat() throws IOException {
     assertValidPair("preprocess-flat-before", "preprocess-flat-after");
   }
 
   @Test
-  public void testHierarchical() {
+  public void testHierarchical() throws IOException {
     assertValidPair("preprocess-hierarchical-before", "preprocess-hierarchical-after");
   }
 
   @Test
-  public void testMainBadArgs() {
+  public void testMainBadArgs() throws IOException {
     _thrown.expect(IllegalArgumentException.class);
-    PreprocessJuniper.main(new String[] {});
+    main(new String[] {});
   }
 
   @Test
-  public void testNonJuniper() {
+  public void testNonJuniper() throws IOException {
     assertValidPair(JUNIPER_TESTCONFIGS_PREFIX, "non-juniper", "non-juniper");
   }
 }

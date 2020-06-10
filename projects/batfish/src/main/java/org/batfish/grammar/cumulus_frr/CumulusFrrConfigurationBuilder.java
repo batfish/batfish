@@ -3,7 +3,6 @@ package org.batfish.grammar.cumulus_frr;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
@@ -112,6 +111,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_ipv4_uni
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
@@ -122,6 +122,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declConte
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnobd_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_local_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContext;
@@ -191,6 +192,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private final CumulusFrrConfiguration _frr;
   private final CumulusFrrCombinedParser _parser;
   private final Warnings _w;
+  private final String _text;
 
   private @Nullable Vrf _currentVrf;
   private @Nullable RouteMapEntry _currentRouteMapEntry;
@@ -202,11 +204,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable FrrInterface _currentInterface;
 
   public CumulusFrrConfigurationBuilder(
-      CumulusConcatenatedConfiguration configuration, CumulusFrrCombinedParser parser, Warnings w) {
+      CumulusConcatenatedConfiguration configuration,
+      CumulusFrrCombinedParser parser,
+      Warnings w,
+      String fullText) {
     _c = configuration;
     _frr = configuration.getFrrConfiguration();
     _parser = parser;
     _w = w;
+    _text = fullText;
   }
 
   CumulusConcatenatedConfiguration getVendorConfiguration() {
@@ -268,12 +274,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
   }
 
+  /** Return the text of a given rule context */
+  @Nonnull
+  String getFullText(ParserRuleContext ctx) {
+    int start = ctx.getStart().getStartIndex();
+    int end = ctx.getStop().getStopIndex();
+    return _text.substring(start, end + 1);
+  }
+
   private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, ctx.getText(), _parser);
+    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, ctx.getText(), _parser, message);
+    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
@@ -427,6 +441,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (aggregateNetworks.put(prefix, agg) != null) {
       _w.addWarning(
           ctx, ctx.getText(), _parser, "Overwriting aggregate-address for " + prefix.toString());
+    }
+  }
+
+  @Override
+  public void exitSbnp_local_as(Sbnp_local_asContext ctx) {
+    long asn = Long.parseLong(ctx.autonomous_system().getText());
+    if (_currentBgpNeighbor == null) {
+      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp neighbor");
+      return;
+    }
+    _currentBgpNeighbor.setLocalAs(asn);
+    // TODO: Handle no-prepend and replace-as.
+    if (ctx.NO_PREPEND() != null || ctx.REPLACE_AS() != null) {
+      todo(ctx);
     }
   }
 
@@ -664,6 +692,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelf(true);
+    // "force" and "all" are aliases. See https://github.com/FRRouting/frr/pull/4200.
+    // The functionality is described at
+    // http://docs.frrouting.org/en/latest/bgp.html#clicmd-[no]neighborPEERnext-hop-self[all].
+    if (ctx.FORCE() != null || ctx.ALL() != null) {
+      _currentBgpNeighborIpv4UnicastAddressFamily.setNextHopSelfAll(true);
+    }
   }
 
   @Override
@@ -703,6 +737,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbb_router_id(Sbb_router_idContext ctx) {
     _currentBgpVrf.setRouterId(Ip.parse(ctx.IP_ADDRESS().getText()));
+  }
+
+  @Override
+  public void exitSbb_cluster_id(Sbb_cluster_idContext ctx) {
+    _currentBgpVrf.setClusterId(
+        Ip.parse(ctx.IP_ADDRESS() != null ? ctx.IP_ADDRESS().getText() : null));
   }
 
   @Override
@@ -848,15 +888,18 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSv_route(Sv_routeContext ctx) {
+    // If an interface name is parsed, use it.
+    final String next_hop_interface =
+        ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
+    // If user provides an IP next-hop instead of an interface, use that
+    final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
     Prefix network = Prefix.parse(ctx.prefix().getText());
-    Ip nextHopIp = null;
-    String nextHopInterface = null;
-    if (ctx.BLACKHOLE() != null) {
-      nextHopInterface = NULL_INTERFACE_NAME;
-    } else {
-      nextHopIp = toIp(ctx.ip_address());
-    }
-    _currentVrf.getStaticRoutes().add(new StaticRoute(network, nextHopIp, nextHopInterface));
+
+    final Integer distance = ctx.distance != null ? Integer.parseInt(ctx.distance.getText()) : null;
+
+    _currentVrf
+        .getStaticRoutes()
+        .add(new StaticRoute(network, next_hop_ip, next_hop_interface, distance));
   }
 
   @Override
@@ -1166,9 +1209,17 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitIp_route(Ip_routeContext ctx) {
+    // If an interface name is parsed, use it.
+    final String next_hop_interface =
+        ctx.next_hop_interface != null ? ctx.next_hop_interface.getText() : null;
+    // If user provides an IP next-hop instead of an interface, use that
+    final Ip next_hop_ip = ctx.next_hop_ip != null ? Ip.parse(ctx.next_hop_ip.getText()) : null;
+    // If admin distance is specified, set it
+    final Integer distance = ctx.distance != null ? Integer.parseInt(ctx.distance.getText()) : null;
+
     StaticRoute route =
         new StaticRoute(
-            Prefix.parse(ctx.network.getText()), Ip.parse(ctx.next_hop_ip.getText()), null);
+            Prefix.parse(ctx.network.getText()), next_hop_ip, next_hop_interface, distance);
     if (ctx.vrf == null) {
       _frr.getStaticRoutes().add(route);
     } else {

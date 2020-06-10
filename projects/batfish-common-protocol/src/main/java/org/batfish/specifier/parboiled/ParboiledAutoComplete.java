@@ -58,17 +58,18 @@ public final class ParboiledAutoComplete {
 
   static final char ILLEGAL_CHAR = (char) 0x26bd;
 
-  static final Function<ReferenceBook, Set<String>> addressGroupGetter =
-      book ->
-          book.getAddressGroups().stream()
-              .map(AddressGroup::getName)
-              .collect(ImmutableSet.toImmutableSet());
+  @VisibleForTesting
+  static Set<String> addressGroupGetter(ReferenceBook book) {
+    return book.getAddressGroups().stream()
+        .map(AddressGroup::getName)
+        .collect(ImmutableSet.toImmutableSet());
+  }
 
-  static final Function<ReferenceBook, Set<String>> interfaceGroupGetter =
-      book ->
-          book.getInterfaceGroups().stream()
-              .map(InterfaceGroup::getName)
-              .collect(ImmutableSet.toImmutableSet());
+  private static Set<String> interfaceGroupGetter(ReferenceBook book) {
+    return book.getInterfaceGroups().stream()
+        .map(InterfaceGroup::getName)
+        .collect(ImmutableSet.toImmutableSet());
+  }
 
   private final Grammar _grammar;
   private final Rule _inputRule;
@@ -190,6 +191,8 @@ public final class ParboiledAutoComplete {
     switch (pm.getAnchorType()) {
       case ADDRESS_GROUP_NAME:
         return autoCompleteReferenceBookEntity(pm);
+      case ONE_APP_ICMP:
+      case ONE_APP_ICMP_TYPE:
       case APP_ICMP_TYPE:
       case APP_ICMP_TYPE_CODE:
         // don't help with numbers
@@ -577,9 +580,9 @@ public final class ParboiledAutoComplete {
   private static Function<ReferenceBook, Set<String>> getEntityNameGetter(Anchor.Type anchorType) {
     switch (anchorType) {
       case ADDRESS_GROUP_NAME:
-        return addressGroupGetter;
+        return ParboiledAutoComplete::addressGroupGetter;
       case INTERFACE_GROUP_NAME:
-        return interfaceGroupGetter;
+        return ParboiledAutoComplete::interfaceGroupGetter;
       default:
         throw new IllegalArgumentException("Unexpected anchor type " + anchorType);
     }

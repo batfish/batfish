@@ -6,10 +6,10 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.uber.jaeger.Configuration;
-import com.uber.jaeger.Configuration.ReporterConfiguration;
-import com.uber.jaeger.Configuration.SamplerConfiguration;
-import com.uber.jaeger.samplers.ConstSampler;
+import io.jaegertracing.Configuration;
+import io.jaegertracing.Configuration.ReporterConfiguration;
+import io.jaegertracing.Configuration.SamplerConfiguration;
+import io.jaegertracing.Configuration.SenderConfiguration;
 import io.opentracing.contrib.jaxrs2.server.ServerTracingDynamicFeature;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
@@ -41,7 +41,7 @@ import org.batfish.coordinator.authorizer.FileAuthorizer;
 import org.batfish.coordinator.authorizer.NoneAuthorizer;
 import org.batfish.coordinator.config.ConfigurationLocator;
 import org.batfish.coordinator.config.Settings;
-import org.batfish.coordinator.id.FileBasedIdManager;
+import org.batfish.coordinator.id.StorageBasedIdManager;
 import org.batfish.datamodel.questions.InstanceData;
 import org.batfish.storage.FileBasedStorage;
 import org.codehaus.jettison.json.JSONException;
@@ -314,26 +314,22 @@ public class Main {
   }
 
   private static void initTracer() {
-    GlobalTracer.register(
-        new Configuration(
-                _settings.getServiceName(),
-                new SamplerConfiguration(ConstSampler.TYPE, 1),
-                new ReporterConfiguration(
-                    false,
-                    _settings.getTracingAgentHost(),
-                    _settings.getTracingAgentPort(),
-                    /* flush interval in ms */ 1000,
-                    /* max buffered Spans */ 10000))
-            .getTracer());
+    Configuration config =
+        new Configuration(_settings.getServiceName())
+            .withSampler(new SamplerConfiguration().withType("const").withParam(1))
+            .withReporter(
+                new ReporterConfiguration()
+                    .withSender(
+                        SenderConfiguration.fromEnv()
+                            .withAgentHost(_settings.getTracingAgentHost())
+                            .withAgentPort(_settings.getTracingAgentPort()))
+                    .withLogSpans(false));
+    GlobalTracer.registerIfAbsent(config.getTracer());
   }
 
   private static void initWorkManager(BindPortFutures bindPortFutures) {
-    _workManager =
-        new WorkMgr(
-            _settings,
-            _logger,
-            new FileBasedIdManager(_settings.getContainersLocation()),
-            new FileBasedStorage(_settings.getContainersLocation(), _logger));
+    FileBasedStorage fbs = new FileBasedStorage(_settings.getContainersLocation(), _logger);
+    _workManager = new WorkMgr(_settings, _logger, new StorageBasedIdManager(fbs), fbs);
     _workManager.startWorkManager();
     // Initialize and start the work manager service using the legacy API and Jettison.
     startWorkManagerService(

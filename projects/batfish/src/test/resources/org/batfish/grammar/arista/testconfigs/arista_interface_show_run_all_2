@@ -1,0 +1,563 @@
+!RANCID-CONTENT-TYPE: arista
+!
+! Command: show running-config all
+! device: arista_interface_show_run_all_2 (DCS-7260CX3-64, EOS-4.21.7M)
+!
+! boot system flash:/EOS-4.21.7M.swi
+!
+hostname arista_interface_show_run_all_2
+!
+interface Ethernet1/1
+   no shutdown
+   load-interval 30
+   mtu 9212
+   logging event link-status
+   no dcbx mode
+   no l2-protocol forwarding profile
+   no mac-address
+   no link-debounce
+   no flowcontrol send
+   no flowcontrol receive
+   no mac timestamp
+   speed forced 100gfull
+   no l2 mtu
+   default logging event congestion-drops
+   default unidirectional
+   no traffic-loopback
+   default error-correction encoding
+   no error-correction reed-solomon bypass
+   phy media 25gbase-cr negotiation standard consortium ieee
+   switchport dot1q ethertype 0x8100
+   no switchport
+   no encapsulation dot1q vlan
+   default switchport source-interface tx
+   no l2-protocol encapsulation dot1q vlan 0
+   no flow-spec ipv4 ipv6
+   snmp trap link-change
+   no ip proxy-arp
+   no ip local-proxy-arp
+   no arp gratuitous accept
+   ip address 192.0.2.7/24
+   no ip verify unicast
+   no ip directed-broadcast
+   ip attached-routes
+   default arp aging timeout 14400
+   default ipv6 nd cache expire 14400
+   no bfd echo
+   default ip dhcp relay all-subnets
+   ip helper-address 192.0.2.8
+   no ipv6 dhcp relay destination
+   no ipv6 dhcp relay add vendor-option ccap-core
+   no ipv6 dhcp relay install routes
+   ip dhcp relay information option circuit-id Ethernet1/1
+   no ip attached-host route export
+   no ipv6 attached-host route export
+   no ip igmp
+   ip igmp version 3
+   ip igmp last-member-query-count 2
+   ip igmp last-member-query-interval 10
+   igmp query-max-response-time 100
+   ip igmp query-interval 125
+   ip igmp startup-query-count 2
+   ip igmp startup-query-interval 310
+   ip igmp router-alert optional connected
+   no ip igmp host-proxy
+   no ipv6 enable
+   default ipv6 nd dad
+   ipv6 address 2001:db8::1/32
+   no ipv6 nd ra rx accept default-route
+   ipv6 attached-routes
+   no ipv6 verify unicast
+   no ipv6 nd ra disabled
+   ipv6 nd ra interval msec 200000
+   ipv6 nd ra lifetime 1800
+   no ipv6 nd ra mtu suppress
+   no ipv6 nd managed-config-flag
+   no ipv6 nd other-config-flag
+   ipv6 nd reachable-time 0
+   ipv6 nd router-preference medium
+   ipv6 nd ra dns-servers lifetime 300
+   ipv6 nd ra dns-suffixes lifetime 300
+   ipv6 nd ra hop-limit 64
+   no tcp mss ceiling
+   no channel-group
+   lacp timer normal
+   lacp port-priority 32768
+   default lacp rate-limit
+   lldp transmit
+   lldp receive
+   no lldp med network-policy
+   no multicast ipv4 source route export
+   no multicast ipv4 static
+   mfib ipv4 fastdrop
+   no mld
+   no mld static-group access-list
+   mld query-interval 125
+   mld query-response-interval 10
+   no mld startup-query-interval
+   mld startup-query-count 2
+   mld robustness 2
+   mld last-listener-query-interval 1
+   mld last-listener-query-count 2
+   mpls ip
+   no msrp
+   no mvrp
+   default ntp serve
+   no ip pim sparse-mode
+   no ip pim bidirectional
+   no ip pim border-router
+   ip pim query-interval 30
+   ip pim query-count 3.5
+   ip pim dr-priority 1
+   ip pim join-prune-interval 60
+   ip pim join-prune-count 3.5
+   no ip pim neighbor-filter
+   default ip pim bfd-instance
+   no  pim ipv4 join-prune transport sctp
+   no pim ipv6 sparse-mode
+   no pim ipv6 border-router
+   pim ipv6 hello interval 30
+   pim ipv6 hello count 3.5
+   pim ipv6 dr-priority 1
+   pim ipv6 join-prune interval 60
+   pim ipv6 join-prune count 3.5
+   no pim ipv6 neighbor-filter
+   default pim ipv6 bfd
+   no pim bsr ipv4 border
+   qos trust dscp
+   qos cos 0
+   qos dscp 0
+   no shape rate
+   no priority-flow-control
+   priority-flow-control pause watchdog
+   no priority-flow-control priority 0
+   no priority-flow-control priority 1
+   no priority-flow-control priority 2
+   no priority-flow-control priority 3
+   no priority-flow-control priority 4
+   no priority-flow-control priority 5
+   no priority-flow-control priority 6
+   no priority-flow-control priority 7
+   no priority-flow-control pause watchdog port action
+   no priority-flow-control pause watchdog port timer
+   !
+   tx-queue 0
+      no priority
+      bandwidth percent 69
+      no bandwidth guaranteed
+      no shape rate
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 1
+      no priority
+      bandwidth percent 1
+      no bandwidth guaranteed
+      no shape rate
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 2
+      no priority
+      bandwidth percent 20
+      no bandwidth guaranteed
+      no shape rate
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 3
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 4
+      no priority
+      bandwidth percent 10
+      no bandwidth guaranteed
+      no shape rate
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 5
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 6
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 7
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   no rip v2 multicast disable
+   default sflow enable
+   ! KEEP THIS LAST IN ETH1/1 - it is a sentinel to ensure we stay in the interface context forever.
+   description Made it to the end of Ethernet1/1
+!
+interface Ethernet1/3
+   no description
+   no shutdown
+   default load-interval
+   logging event link-status use-global
+   no dcbx mode
+   no l2-protocol forwarding profile
+   no mac-address
+   no link-debounce
+   no flowcontrol send
+   no flowcontrol receive
+   no mac timestamp
+   no speed
+   no l2 mtu
+   default logging event congestion-drops
+   default unidirectional
+   no traffic-loopback
+   default error-correction encoding
+   no error-correction reed-solomon bypass
+   phy media 25gbase-cr negotiation standard consortium ieee
+   switchport access vlan 1
+   switchport trunk native vlan 1
+   no switchport vlan translation in required
+   no switchport dot1q vlan tag
+   switchport trunk allowed vlan 1-4094
+   switchport mode access
+   switchport dot1q ethertype 0x8100
+   switchport mac address learning
+   no switchport vlan forwarding accept all
+   switchport
+   no encapsulation dot1q vlan
+   default switchport source-interface tx
+   no l2-protocol encapsulation dot1q vlan 0
+   !
+   evpn ethernet-segment
+      no identifier
+      no redundancy
+      no designated-forwarder election hold-time
+      no route-target import
+   no flow-spec ipv4 ipv6
+   snmp trap link-change
+   no ip proxy-arp
+   no ip local-proxy-arp
+   no arp gratuitous accept
+   no ip address
+   no ip verify unicast
+   no ip directed-broadcast
+   ip attached-routes
+   default arp aging timeout 14400
+   default ipv6 nd cache expire 14400
+   no bfd echo
+   default ip dhcp relay all-subnets
+   no ip helper-address
+   no ipv6 dhcp relay destination
+   no ipv6 dhcp relay add vendor-option ccap-core
+   no ipv6 dhcp relay install routes
+   ip dhcp relay information option circuit-id Ethernet1/3
+   no ip attached-host route export
+   no ipv6 attached-host route export
+   no ip igmp
+   ip igmp version 3
+   ip igmp last-member-query-count 2
+   ip igmp last-member-query-interval 10
+   igmp query-max-response-time 100
+   ip igmp query-interval 125
+   ip igmp startup-query-count 2
+   ip igmp startup-query-interval 310
+   ip igmp router-alert optional connected
+   no ip igmp host-proxy
+   no ipv6 enable
+   default ipv6 nd dad
+   no ipv6 address
+   no ipv6 nd ra rx accept default-route
+   ipv6 attached-routes
+   no ipv6 verify unicast
+   no ipv6 nd ra disabled
+   ipv6 nd ra interval msec 200000
+   ipv6 nd ra lifetime 1800
+   no ipv6 nd ra mtu suppress
+   no ipv6 nd managed-config-flag
+   no ipv6 nd other-config-flag
+   ipv6 nd reachable-time 0
+   ipv6 nd router-preference medium
+   ipv6 nd ra dns-servers lifetime 300
+   ipv6 nd ra dns-suffixes lifetime 300
+   ipv6 nd ra hop-limit 64
+   no tcp mss ceiling
+   no channel-group
+   lacp timer normal
+   lacp port-priority 32768
+   default lacp rate-limit
+   lldp transmit
+   lldp receive
+   no lldp med network-policy
+   no multicast ipv4 source route export
+   no multicast ipv4 static
+   mfib ipv4 fastdrop
+   no mld
+   no mld static-group access-list
+   mld query-interval 125
+   mld query-response-interval 10
+   no mld startup-query-interval
+   mld startup-query-count 2
+   mld robustness 2
+   mld last-listener-query-interval 1
+   mld last-listener-query-count 2
+   mpls ip
+   no msrp
+   no mvrp
+   default ntp serve
+   no ip pim sparse-mode
+   no ip pim bidirectional
+   no ip pim border-router
+   ip pim query-interval 30
+   ip pim query-count 3.5
+   ip pim dr-priority 1
+   ip pim join-prune-interval 60
+   ip pim join-prune-count 3.5
+   no ip pim neighbor-filter
+   default ip pim bfd-instance
+   no  pim ipv4 join-prune transport sctp
+   no pim ipv6 sparse-mode
+   no pim ipv6 border-router
+   pim ipv6 hello interval 30
+   pim ipv6 hello count 3.5
+   pim ipv6 dr-priority 1
+   pim ipv6 join-prune interval 60
+   pim ipv6 join-prune count 3.5
+   no pim ipv6 neighbor-filter
+   default pim ipv6 bfd
+   no pim bsr ipv4 border
+   switchport port-security mac-address maximum 1
+   no switchport port-security
+   default qos trust
+   qos cos 0
+   qos dscp 0
+   no shape rate
+   no priority-flow-control
+   priority-flow-control pause watchdog
+   no priority-flow-control priority 0
+   no priority-flow-control priority 1
+   no priority-flow-control priority 2
+   no priority-flow-control priority 3
+   no priority-flow-control priority 4
+   no priority-flow-control priority 5
+   no priority-flow-control priority 6
+   no priority-flow-control priority 7
+   no priority-flow-control pause watchdog port action
+   no priority-flow-control pause watchdog port timer
+   !
+   tx-queue 0
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 1
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 2
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 3
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 4
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 5
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 6
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   !
+   tx-queue 7
+      priority strict
+      no bandwidth percent
+      no shape rate
+      no bandwidth guaranteed
+      no random-detect ecn minimum-threshold
+      no random-detect drop
+      no random-detect ecn count
+   no rip v2 multicast disable
+   default sflow enable
+   no storm-control broadcast
+   no storm-control multicast
+   no storm-control unknown-unicast
+   no storm-control all
+   logging event storm-control discards use-global
+   no spanning-tree portfast
+   spanning-tree portfast auto
+   no spanning-tree link-type
+   no spanning-tree bpduguard
+   no spanning-tree bpdufilter
+   no spanning-tree cost
+   spanning-tree port-priority 128
+   no spanning-tree guard
+   no spanning-tree bpduguard rate-limit
+   logging event spanning-tree use-global
+   switchport tap native vlan 1
+   no switchport tap identity
+   no switchport tap encapsulation vxlan strip
+   no switchport tap mpls pop all
+   switchport tap allowed vlan 1-4094
+   switchport tool allowed vlan 1-4094
+   no switchport tool identity
+   no switchport tap truncation
+   no switchport tool truncation
+   no switchport tap default group
+   no switchport tap default interface
+   no switchport tool group
+   no switchport tool dot1q remove outer
+   ! KEEP THIS LAST IN ETH1/3 - it is a sentinel to ensure we stay in the interface context forever.
+   description Made it to the end of Ethernet1/3
+!
+interface Loopback0
+   no description
+   no shutdown
+   default load-interval
+   mtu 1500
+   logging event link-status use-global
+   snmp trap link-change
+   no ip proxy-arp
+   no ip local-proxy-arp
+   no arp gratuitous accept
+   ip address 192.0.2.9/32
+   no ip verify unicast
+   ip attached-routes
+   default arp aging timeout 14400
+   default ipv6 nd cache expire 14400
+   no bfd echo
+   no ipv6 enable
+   default ipv6 nd dad
+   ipv6 address 2001:db8::2/32
+   no ipv6 nd ra rx accept default-route
+   ipv6 attached-routes
+   no ipv6 verify unicast
+   no ipv6 nd ra disabled
+   ipv6 nd ra interval msec 200000
+   ipv6 nd ra lifetime 1800
+   no ipv6 nd ra mtu suppress
+   no ipv6 nd managed-config-flag
+   no ipv6 nd other-config-flag
+   ipv6 nd reachable-time 0
+   ipv6 nd router-preference medium
+   ipv6 nd ra dns-servers lifetime 300
+   ipv6 nd ra dns-suffixes lifetime 300
+   ipv6 nd ra hop-limit 64
+   default ntp serve
+   ! KEEP THIS LAST IN Lo0 - it is a sentinel to ensure we stay in the interface context forever.
+   description Made it to the end of Loopback0
+!
+interface Management1
+   no description
+   no shutdown
+   default load-interval
+   mtu 1500
+   logging event link-status use-global
+   no mac-address
+   no link-debounce
+   no flowcontrol send
+   no flowcontrol receive
+   no mac timestamp
+   no speed
+   no l2 mtu
+   default logging event congestion-drops
+   default unidirectional
+   no traffic-loopback
+   default error-correction encoding
+   no error-correction reed-solomon bypass
+   phy media 25gbase-cr negotiation standard consortium ieee
+   snmp trap link-change
+   no ip proxy-arp
+   no ip local-proxy-arp
+   no arp gratuitous accept
+   no ip address
+   no ip verify unicast
+   ip attached-routes
+   default arp aging timeout 300
+   default ipv6 nd cache expire 300
+   no bfd echo
+   no ipv6 enable
+   default ipv6 nd dad
+   no ipv6 address
+   no ipv6 nd ra rx accept default-route
+   ipv6 attached-routes
+   no ipv6 verify unicast
+   ipv6 nd ra disabled all
+   ipv6 nd ra interval msec 200000
+   ipv6 nd ra lifetime 1800
+   no ipv6 nd ra mtu suppress
+   no ipv6 nd managed-config-flag
+   no ipv6 nd other-config-flag
+   ipv6 nd reachable-time 0
+   ipv6 nd router-preference medium
+   ipv6 nd ra dns-servers lifetime 300
+   ipv6 nd ra dns-suffixes lifetime 300
+   ipv6 nd ra hop-limit 64
+   lldp transmit
+   lldp receive
+   no lldp med network-policy
+   default ntp serve
+   ! KEEP THIS LAST IN Management1 - it is a sentinel to ensure we stay in the interface context forever.
+   description Made it to the end of Management1
+!

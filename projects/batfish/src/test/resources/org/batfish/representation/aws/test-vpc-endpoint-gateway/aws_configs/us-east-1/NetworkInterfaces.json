@@ -1,0 +1,92 @@
+{
+ "NetworkInterfaces": [
+  {
+   "Association": {
+    "IpOwnerId": "amazon",
+    "PublicDnsName": "ec2-18-206-223-222.compute-1.amazonaws.com",
+    "PublicIp": "18.206.223.222"
+   },
+   "Attachment": {
+    "AttachTime": "2020-05-09 05:01:39+00:00",
+    "AttachmentId": "eni-attach-0960a7a0cc6b8eeda",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-0464d440ca0ee9e34",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0ba8692418a4ae00e",
+     "GroupName": "testing_sg"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:48:ff:1b:f1:55",
+   "NetworkInterfaceId": "eni-05a3a36428edb2766",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-1-169.ec2.internal",
+   "PrivateIpAddress": "10.1.1.169",
+   "PrivateIpAddresses": [
+    {
+     "Association": {
+      "IpOwnerId": "amazon",
+      "PublicDnsName": "ec2-18-206-223-222.compute-1.amazonaws.com",
+      "PublicIp": "18.206.223.222"
+     },
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-1-169.ec2.internal",
+     "PrivateIpAddress": "10.1.1.169"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-04391f04b912d0a73",
+   "TagSet": [],
+   "VpcId": "vpc-05d56c7295fca139b"
+  },
+  {
+   "Attachment": {
+    "AttachTime": "2020-05-09 05:22:19+00:00",
+    "AttachmentId": "eni-attach-01e436daf78672bc7",
+    "DeleteOnTermination": true,
+    "DeviceIndex": 0,
+    "InstanceId": "i-01c6c0647fdccc89e",
+    "InstanceOwnerId": "554773406868",
+    "Status": "attached"
+   },
+   "AvailabilityZone": "us-east-1a",
+   "Description": "",
+   "Groups": [
+    {
+     "GroupId": "sg-0ba8692418a4ae00e",
+     "GroupName": "testing_sg"
+    }
+   ],
+   "InterfaceType": "interface",
+   "Ipv6Addresses": [],
+   "MacAddress": "12:ca:4c:f7:ca:9f",
+   "NetworkInterfaceId": "eni-07c757c9635932972",
+   "OwnerId": "554773406868",
+   "PrivateDnsName": "ip-10-1-101-36.ec2.internal",
+   "PrivateIpAddress": "10.1.101.36",
+   "PrivateIpAddresses": [
+    {
+     "Primary": true,
+     "PrivateDnsName": "ip-10-1-101-36.ec2.internal",
+     "PrivateIpAddress": "10.1.101.36"
+    }
+   ],
+   "RequesterManaged": false,
+   "SourceDestCheck": true,
+   "Status": "in-use",
+   "SubnetId": "subnet-01e5f0945f6d6f47c",
+   "TagSet": [],
+   "VpcId": "vpc-05d56c7295fca139b"
+  }
+ ]
+}

@@ -1100,25 +1100,13 @@
       },
       {
         "File_Name" : "configs/cisco_interface",
-        "Struct_Type" : "interface",
-        "Ref_Name" : "Loopback1",
-        "Context" : "vxlan source-interface",
-        "Lines" : {
-          "filename" : "configs/cisco_interface",
-          "lines" : [
-            326
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "ipv4 acl",
         "Ref_Name" : "167",
         "Context" : "interface ip verify access-list",
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            132
+            129
           ]
         }
       },
@@ -1130,7 +1118,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            140
+            137
           ]
         }
       },
@@ -1160,30 +1148,6 @@
       },
       {
         "File_Name" : "configs/cisco_interface",
-        "Struct_Type" : "ipv4 acl",
-        "Ref_Name" : "def",
-        "Context" : "ip nat source dynamic access-list",
-        "Lines" : {
-          "filename" : "configs/cisco_interface",
-          "lines" : [
-            94
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_interface",
-        "Struct_Type" : "ipv4 acl",
-        "Ref_Name" : "mynatacl",
-        "Context" : "ip nat destination acl",
-        "Lines" : {
-          "filename" : "configs/cisco_interface",
-          "lines" : [
-            91
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "ipv4/6 acl",
         "Ref_Name" : "1",
         "Context" : "interface igmp access-group acl",
@@ -1208,25 +1172,13 @@
       },
       {
         "File_Name" : "configs/cisco_interface",
-        "Struct_Type" : "nat pool",
-        "Ref_Name" : "beeble",
-        "Context" : "ip nat source pool",
-        "Lines" : {
-          "filename" : "configs/cisco_interface",
-          "lines" : [
-            95
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "route-map",
         "Ref_Name" : "SITEMAP",
         "Context" : "interface ip vrf sitemap",
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            138
+            135
           ]
         }
       },
@@ -1238,7 +1190,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            128
+            125
           ]
         }
       },
@@ -1250,7 +1202,7 @@
         "Lines" : {
           "filename" : "configs/cisco_interface",
           "lines" : [
-            282
+            279
           ]
         }
       },
@@ -2023,7 +1975,7 @@
         "Lines" : {
           "filename" : "configs/cisco_snmp",
           "lines" : [
-            87
+            89
           ]
         }
       },
@@ -2035,7 +1987,7 @@
         "Lines" : {
           "filename" : "configs/cisco_snmp",
           "lines" : [
-            89
+            91
           ]
         }
       },
@@ -2047,7 +1999,7 @@
         "Lines" : {
           "filename" : "configs/cisco_snmp",
           "lines" : [
-            88
+            90
           ]
         }
       },
@@ -2073,6 +2025,18 @@
           "lines" : [
             8,
             10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv4 acl",
+        "Ref_Name" : "50",
+        "Context" : "snmp-server group v3 access",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            69
           ]
         }
       },
@@ -2157,7 +2121,7 @@
         "Lines" : {
           "filename" : "configs/cisco_snmp",
           "lines" : [
-            92
+            94
           ]
         }
       },
@@ -2170,6 +2134,18 @@
           "filename" : "configs/cisco_snmp",
           "lines" : [
             15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_snmp",
+        "Struct_Type" : "ipv6 acl",
+        "Ref_Name" : "snmp6",
+        "Context" : "snmp-server group v3 access ipv6",
+        "Lines" : {
+          "filename" : "configs/cisco_snmp",
+          "lines" : [
+            70
           ]
         }
       },
@@ -2543,6 +2519,42 @@
           "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_route_map",
           "lines" : [
             29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_sys_ha_group",
+        "Struct_Type" : "pool",
+        "Ref_Name" : "/Common/p1",
+        "Context" : "ha-group pool",
+        "Lines" : {
+          "filename" : "configs/f5_bigip/f5_bigip_structured_sys_ha_group",
+          "lines" : [
+            10
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_sys_ha_group",
+        "Struct_Type" : "pool",
+        "Ref_Name" : "/Common/p2",
+        "Context" : "ha-group pool",
+        "Lines" : {
+          "filename" : "configs/f5_bigip/f5_bigip_structured_sys_ha_group",
+          "lines" : [
+            13
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/f5_bigip/f5_bigip_structured_with_imish",
+        "Struct_Type" : "IMISH interface",
+        "Ref_Name" : "us1",
+        "Context" : "bgp neighbor update-source",
+        "Lines" : {
+          "filename" : "configs/f5_bigip/f5_bigip_structured_with_imish",
+          "lines" : [
+            56
           ]
         }
       },
@@ -4180,10 +4192,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 339 results",
+      "notes" : "Found 340 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 339
+      "numResults" : 340
     }
   }
 ]

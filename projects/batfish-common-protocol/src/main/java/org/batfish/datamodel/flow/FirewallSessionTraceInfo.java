@@ -1,5 +1,6 @@
 package org.batfish.datamodel.flow;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -12,20 +13,35 @@ import org.batfish.datamodel.transformation.Transformation;
 @ParametersAreNonnullByDefault
 public final class FirewallSessionTraceInfo {
   private final @Nonnull String _hostname;
-  private final @Nonnull Set<String> _incomingInterfaces;
   private final @Nonnull SessionAction _action;
   private final @Nonnull SessionMatchExpr _sessionFlows;
+  private final @Nonnull SessionScope _sessionScope;
   private final @Nullable Transformation _transformation;
 
+  @VisibleForTesting
   public FirewallSessionTraceInfo(
       String hostname,
       SessionAction action,
       Set<String> incomingInterfaces,
       SessionMatchExpr sessionFlows,
       @Nullable Transformation transformation) {
+    this(
+        hostname,
+        action,
+        new IncomingSessionScope(incomingInterfaces),
+        sessionFlows,
+        transformation);
+  }
+
+  public FirewallSessionTraceInfo(
+      String hostname,
+      SessionAction action,
+      SessionScope sessionScope,
+      SessionMatchExpr sessionFlows,
+      @Nullable Transformation transformation) {
     _hostname = hostname;
     _action = action;
-    _incomingInterfaces = incomingInterfaces;
+    _sessionScope = sessionScope;
     _sessionFlows = sessionFlows;
     _transformation = transformation;
   }
@@ -40,7 +56,7 @@ public final class FirewallSessionTraceInfo {
     }
     FirewallSessionTraceInfo that = (FirewallSessionTraceInfo) o;
     return _hostname.equals(that._hostname)
-        && _incomingInterfaces.equals(that._incomingInterfaces)
+        && _sessionScope.equals(that._sessionScope)
         && _action.equals(that._action)
         && _sessionFlows.equals(that._sessionFlows)
         && Objects.equals(_transformation, that._transformation);
@@ -48,7 +64,7 @@ public final class FirewallSessionTraceInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _incomingInterfaces, _action, _sessionFlows, _transformation);
+    return Objects.hash(_hostname, _sessionScope, _action, _sessionFlows, _transformation);
   }
 
   /** The action to take on return traffic. */
@@ -61,17 +77,17 @@ public final class FirewallSessionTraceInfo {
     return _hostname;
   }
 
-  /** The interfaces through which the flow is allowed to enter. */
-  public @Nonnull Set<String> getIncomingInterfaces() {
-    return _incomingInterfaces;
-  }
-
   /**
    * The allowed ingress flows for the session. Not allowed to contain {@link
    * org.batfish.datamodel.acl.PermittedByAcl} or {@link org.batfish.datamodel.IpSpaceReference}.
    */
   public @Nonnull AclLineMatchExpr getSessionFlows() {
     return _sessionFlows.toAclLineMatchExpr();
+  }
+
+  @Nonnull
+  public SessionScope getSessionScope() {
+    return _sessionScope;
   }
 
   /** The match criteria of the ingress flow for the session. */

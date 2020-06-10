@@ -1,8 +1,8 @@
 load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
-
-load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_binary(
     name = "allinone_main",
@@ -10,6 +10,7 @@ java_binary(
     runtime_deps = [
         ":allinone",
         "//projects/question",
+        "@maven//:io_jaegertracing_jaeger_thrift",
         "@maven//:org_slf4j_slf4j_jdk14",
     ],
 )
@@ -37,7 +38,7 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/coordinator",
         "@maven//:com_google_guava_guava",
-        "@maven//:com_uber_jaeger_jaeger_core",
+        "@maven//:io_jaegertracing_jaeger_core",
         "@maven//:io_opentracing_opentracing_util",
     ],
 )
@@ -241,8 +242,6 @@ junit_tests(
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
-
-load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 pmd_test(
     name = "pmd",

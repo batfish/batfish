@@ -3,11 +3,27 @@
 hostname arista_interface
 !
 interface Ethernet1
-  !! New syntax, EOS 4.23 and later
+  !! New vrf syntax, EOS 4.23 and later
   vrf VRF_1
+  encapsulation dot1q vlan 7
   ip address 1.1.1.1/31
+  ip ospf priority 150
+  no queue-monitor length
+  ptp enable
+  ptp sync interval 1
 !
 interface Ethernet2
-  !! Old syntax, before EOS 4.23
+  !! Old vrf syntax, before EOS 4.23
   vrf forwarding VRF_2
   ip address 1.1.1.2/31
+!
+interface Recirc-Channel1
+   description Arista Vxlan Encap Channel
+   no switchport
+   switchport recirculation features vxlan
+!
+interface UnconnectedEthernet5
+  description Arista Vxlan ReCirculation Channel
+  traffic-loopback source system device mac
+  channel-group recirculation 1
+!

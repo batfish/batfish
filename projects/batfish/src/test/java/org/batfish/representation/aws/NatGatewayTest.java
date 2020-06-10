@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
@@ -8,6 +10,7 @@ import static org.batfish.representation.aws.NatGateway.INCOMING_NAT_FILTER_NAME
 import static org.batfish.representation.aws.NatGateway.computePostTransformationIllegalPacketFilter;
 import static org.batfish.representation.aws.NatGateway.installIncomingFilter;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +26,6 @@ import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -49,7 +51,7 @@ public class NatGatewayTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/NatGatewayTest.json");
+    String text = readResource("org/batfish/representation/aws/NatGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");
@@ -119,7 +121,12 @@ public class NatGatewayTest {
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
     Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
-    awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
+    awsConfiguration.addNode(vpcCfg);
+
+    String vrfNameOnVpc = vrfNameForLink(ngw.getId());
+    vpcCfg
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcCfg).build());
 
     Configuration ngwConfig = ngw.toConfigurationNode(awsConfiguration, region, new Warnings());
 
@@ -192,10 +199,14 @@ public class NatGatewayTest {
     ngwConfig.getVrfs().put(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME));
 
     Vpc vpc = new Vpc(ngw.getVpcId(), ImmutableSet.of(), ImmutableMap.of());
-    Region region = Region.builder("r1").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
+    Region region =
+        Region.builder("r1")
+            .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
+            .setNatGateways(ImmutableMap.of(ngw.getId(), ngw))
+            .build();
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
     Configuration vpcCfg = vpc.toConfigurationNode(awsConfiguration, region, new Warnings());
-    awsConfiguration.getConfigurationNodes().put(vpcCfg.getHostname(), vpcCfg);
+    awsConfiguration.addNode(vpcCfg);
 
     ngw.connectToVpc(ngwConfig, awsConfiguration, region, new Warnings());
 

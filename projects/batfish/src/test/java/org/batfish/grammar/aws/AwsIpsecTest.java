@@ -78,8 +78,8 @@ public class AwsIpsecTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setAwsText(testrigResourcePrefix, awsFilenames)
-                .setConfigurationText(testrigResourcePrefix, configurationFilenames)
+                .setAwsFiles(testrigResourcePrefix, awsFilenames)
+                .setConfigurationFiles(testrigResourcePrefix, configurationFilenames)
                 .build(),
             _folder);
     return batfish.loadConfigurations(batfish.getSnapshot());

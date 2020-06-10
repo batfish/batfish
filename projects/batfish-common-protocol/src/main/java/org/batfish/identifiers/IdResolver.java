@@ -1,5 +1,6 @@
 package org.batfish.identifiers;
 
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,12 +11,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public interface IdResolver {
 
   /**
-   * Retrieve the {@link AnalysisId} assigned to {@code analysis} under {@code networkId}.
-   *
-   * @throws IllegalArgumentException if none assigned
+   * Retrieve the {@link AnalysisId} assigned to {@code analysis} under {@code networkId}. Returns
+   * {@link Optional#empty} if none assigned.
    */
   @Nonnull
-  AnalysisId getAnalysisId(String analysis, NetworkId networkId);
+  Optional<AnalysisId> getAnalysisId(String analysis, NetworkId networkId);
 
   /** Retrieve the {@link AnswerId} corresponding to the provided input IDs. */
   @Nonnull
@@ -34,50 +34,47 @@ public interface IdResolver {
 
   /**
    * Retrieve the {@link IssueSettingsId} assigned to {@code majorIssueType} under {@code
-   * networkId}.
-   *
-   * @throws IllegalArgumentException if none assigned
+   * networkId}. Returns {@link Optional#empty} if none assigned.
    */
   @Nonnull
-  IssueSettingsId getIssueSettingsId(String majorIssueType, NetworkId networkId);
+  Optional<IssueSettingsId> getIssueSettingsId(String majorIssueType, NetworkId networkId);
 
   /**
-   * Retrieve the {@link NetworkId} assigned to {@code network}.
-   *
-   * @throws IllegalArgumentException if none assigned
+   * Retrieve the {@link NetworkId} assigned to {@code network}. Returns {@link Optional#empty} if
+   * none assigned.
    */
   @Nonnull
-  NetworkId getNetworkId(String network);
+  Optional<NetworkId> getNetworkId(String network);
 
-  /** Retrieve the current {@link NodeRolesId} for {@code networkId}. */
+  /**
+   * Retrieve the current {@link NodeRolesId} for {@code networkId}. Returns {@link Optional#empty}
+   * if none assigned.
+   */
   @Nonnull
-  NodeRolesId getNetworkNodeRolesId(NetworkId networkId);
+  Optional<NodeRolesId> getNetworkNodeRolesId(NetworkId networkId);
 
   /**
    * Retrieve the {@link QuestionId} assigned to {@code question} under {@code networkId} and {@code
    * analysisId}. If {@code analysisId} is {@code null}, returns the mapping for an ad-hoc question.
-   *
-   * @throws IllegalArgumentException if none assigned
+   * Returns {@link Optional#empty} if none assigned.
    */
   @Nonnull
-  QuestionId getQuestionId(String question, NetworkId networkId, @Nullable AnalysisId analysisId);
+  Optional<QuestionId> getQuestionId(
+      String question, NetworkId networkId, @Nullable AnalysisId analysisId);
 
   /**
    * Retrieve the {@link QuestionSettingsId} assigned to {@code questionClassId} under {@code
-   * networkId}.
-   *
-   * @throws IllegalArgumentException if none assigned
+   * networkId}. Returns {@link Optional#empty} if none assigned.
    */
   @Nonnull
-  QuestionSettingsId getQuestionSettingsId(String questionClassId, NetworkId networkId);
+  Optional<QuestionSettingsId> getQuestionSettingsId(String questionClassId, NetworkId networkId);
 
   /**
-   * Retrieve the {@link SnapshotId} assigned to {@code snapshot} under {@code networkId}.
-   *
-   * @throws IllegalArgumentException if none assigned
+   * Retrieve the {@link SnapshotId} assigned to {@code snapshot} under {@code networkId}. Returns
+   * {@link Optional#empty} if none assigned.
    */
   @Nonnull
-  SnapshotId getSnapshotId(String snapshot, NetworkId networkId);
+  Optional<SnapshotId> getSnapshotId(String snapshot, NetworkId networkId);
 
   /** Retrieve the {@link NodeRolesId} corresponding to the provided input IDs. */
   @Nonnull

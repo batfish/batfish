@@ -46,9 +46,12 @@ public class ReferenceLibraryResource {
       if (library.getReferenceBook(referenceBookBean.name).isPresent()) {
         throw new BadRequestException("Duplicate bookname: " + referenceBookBean.name);
       }
-      ReferenceLibrary.mergeReferenceBooks(
-          Main.getWorkMgr().getReferenceLibraryPath(_network),
-          ImmutableSortedSet.of(referenceBookBean.toAddressBook()));
+      Main.getWorkMgr()
+          .putReferenceLibrary(
+              Main.getWorkMgr()
+                  .getReferenceLibrary(_network)
+                  .mergeReferenceBooks(ImmutableSortedSet.of(referenceBookBean.toAddressBook())),
+              _network);
       return Response.ok().build();
     } catch (IOException e) {
       throw new InternalServerErrorException("ReferenceLibrary resource is corrupted");

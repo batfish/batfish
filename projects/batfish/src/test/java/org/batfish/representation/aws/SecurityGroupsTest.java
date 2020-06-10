@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
@@ -31,7 +33,6 @@ import java.util.List;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
@@ -88,8 +89,7 @@ public class SecurityGroupsTest {
   public void setup() throws IOException {
     JsonNode json =
         BatfishObjectMapper.mapper()
-            .readTree(
-                CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTest.json"));
+            .readTree(readResource("org/batfish/representation/aws/SecurityGroupTest.json", UTF_8));
     _securityGroups =
         BatfishObjectMapper.mapper()
             .convertValue(
@@ -102,8 +102,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testDeser() throws IOException {
-    String text =
-        CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTestDeser.json");
+    String text = readResource("org/batfish/representation/aws/SecurityGroupTestDeser.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_SECURITY_GROUPS);

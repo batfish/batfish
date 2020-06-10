@@ -34,6 +34,8 @@
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service-annotations
                   </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.mockito:mockito-inline
+                  </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -65,6 +67,18 @@
           antlr4-maven-plugin only supports imports in one directory, we need to have one execution
           per grammar where we override the library (import) directory.
           -->
+          <execution>
+            <id>antlr4-arista</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/AristaLexer.g4,**/AristaParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/arista</libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-arista
+              </statusDirectory>
+            </configuration>
+          </execution>
           <execution>
             <id>antlr4-cisco</id>
             <goals>
@@ -252,7 +266,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/cisco/*.g4,**/cisco_nxos/*.g4,**/cisco_xr/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+                **/arista/*.g4,**/cisco/*.g4,**/cisco_nxos/*.g4,**/cisco_xr/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
               </excludes>
             </configuration>
           </execution>
@@ -303,18 +317,28 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>error_prone_annotations</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
 
     <dependency>
-      <groupId>com.uber.jaeger</groupId>
-      <artifactId>jaeger-core</artifactId>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>icu4j</artifactId>
     </dependency>
 
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.jaegertracing</groupId>
+      <artifactId>jaeger-core</artifactId>
     </dependency>
 
     <dependency>
@@ -441,6 +465,18 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -1,32 +1,76 @@
 package org.batfish.grammar.arista;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
+import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
+import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
+import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.cisco.eos.AristaBgpProcess.DEFAULT_VRF;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_EXTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_INTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
+import static org.batfish.representation.arista.AristaStructureType.VXLAN;
+import static org.batfish.representation.arista.OspfProcess.getReferenceOspfBandwidth;
+import static org.batfish.representation.arista.eos.AristaBgpProcess.DEFAULT_VRF;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_EXTERNAL;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_INTERNAL;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
+import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -35,23 +79,29 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -64,9 +114,12 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -78,65 +131,73 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.grammar.cisco.CiscoCombinedParser;
-import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.representation.cisco.CiscoConfiguration;
-import org.batfish.representation.cisco.VrrpInterface;
-import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
-import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
-import org.batfish.representation.cisco.eos.AristaBgpDefaultOriginate;
-import org.batfish.representation.cisco.eos.AristaBgpNeighbor.RemovePrivateAsMode;
-import org.batfish.representation.cisco.eos.AristaBgpNeighborAddressFamily;
-import org.batfish.representation.cisco.eos.AristaBgpNetworkConfiguration;
-import org.batfish.representation.cisco.eos.AristaBgpPeerGroupNeighbor;
-import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
-import org.batfish.representation.cisco.eos.AristaBgpV4DynamicNeighbor;
-import org.batfish.representation.cisco.eos.AristaBgpV4Neighbor;
-import org.batfish.representation.cisco.eos.AristaBgpVlan;
-import org.batfish.representation.cisco.eos.AristaBgpVlanAwareBundle;
-import org.batfish.representation.cisco.eos.AristaBgpVrf;
-import org.batfish.representation.cisco.eos.AristaBgpVrfEvpnAddressFamily;
-import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
-import org.batfish.representation.cisco.eos.AristaBgpVrfIpv6UnicastAddressFamily;
-import org.batfish.representation.cisco.eos.AristaRedistributeType;
+import org.batfish.main.TestrigText;
+import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.MlagConfiguration;
+import org.batfish.representation.arista.VrrpInterface;
+import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
+import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
+import org.batfish.representation.arista.eos.AristaBgpDefaultOriginate;
+import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
+import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
+import org.batfish.representation.arista.eos.AristaBgpPeerGroupNeighbor;
+import org.batfish.representation.arista.eos.AristaBgpRedistributionPolicy;
+import org.batfish.representation.arista.eos.AristaBgpV4DynamicNeighbor;
+import org.batfish.representation.arista.eos.AristaBgpV4Neighbor;
+import org.batfish.representation.arista.eos.AristaBgpVlan;
+import org.batfish.representation.arista.eos.AristaBgpVlanAwareBundle;
+import org.batfish.representation.arista.eos.AristaBgpVrf;
+import org.batfish.representation.arista.eos.AristaBgpVrfEvpnAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpVrfIpv4UnicastAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpVrfIpv6UnicastAddressFamily;
+import org.batfish.representation.arista.eos.AristaEosVxlan;
+import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
 public class AristaGrammarTest {
+  private static final String DEFAULT_VRF_NAME = "default";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/arista/testconfigs/";
+  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/arista/testrigs/";
+
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private static @Nonnull CiscoConfiguration parseVendorConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+  private static @Nonnull AristaConfiguration parseVendorConfig(String hostname) {
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    CiscoCombinedParser ciscoParser =
-        new CiscoCombinedParser(src, settings, ConfigurationFormat.ARISTA);
-    CiscoControlPlaneExtractor extractor =
-        new CiscoControlPlaneExtractor(
+    AristaCombinedParser ciscoParser = new AristaCombinedParser(src, settings);
+    AristaControlPlaneExtractor extractor =
+        new AristaControlPlaneExtractor(
             src, ciscoParser, ConfigurationFormat.ARISTA, new Warnings());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
-    CiscoConfiguration vendorConfiguration =
-        (CiscoConfiguration) extractor.getVendorConfiguration();
+    AristaConfiguration vendorConfiguration =
+        (AristaConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     return SerializationUtils.clone(vendorConfiguration);
@@ -170,7 +231,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testTopLevelBgpExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp");
+    AristaConfiguration config = parseVendorConfig("arista_bgp");
     // Basic VRF config
     {
       AristaBgpVrf defaultVrf = config.getAristaBgp().getDefaultVrf();
@@ -212,8 +273,364 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testAristaOspfReferenceBandwidth() throws IOException {
+    Configuration manual = parseConfig("aristaOspfCost");
+    assertThat(
+        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(3e6d));
+
+    Configuration defaults = parseConfig("aristaOspfCostDefaults");
+    assertThat(
+        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
+        equalTo(getReferenceOspfBandwidth()));
+  }
+
+  @Test
+  public void testAristaVsIosOspfRedistributeBgpSyntax() throws IOException {
+    // Both an Arista and an IOS config contain these "redistribute bgp" lines in their OSPF setups:
+    String l1 = "redistribute bgp";
+    String l2 = "redistribute bgp route-map MAP";
+    String l3 = "redistribute bgp 65100";
+    String l4 = "redistribute bgp 65100 route-map MAP";
+    String l5 = "redistribute bgp 65100 metric 10";
+    /*
+    Arista does not allow specification of an AS, while IOS requires it, and IOS allows setting
+    metric and a few other settings where Arista does not (both allow route-maps). So:
+    - First two lines should generate warnings on IOS but not Arista
+    - Remaining lines should generate warnings on Arista but not IOS
+    */
+    String testrigName = "arista-vs-ios-warnings";
+    String iosName = "ios-ospf-redistribute-bgp";
+    String aristaName = "arista-ospf-redistribute-bgp";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
+                .build(),
+            _folder);
+    batfish.getSettings().setDisableUnrecognized(false);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae.getWarnings().get("configs/" + iosName).getParseWarnings(),
+        contains(
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l1))),
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l2)))));
+    assertThat(
+        pvcae.getWarnings().get("configs/" + aristaName).getParseWarnings(),
+        contains(
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l3))),
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l4))),
+            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l5)))));
+  }
+
+  @Test
+  public void testAristaBgpDefaultOriginatePolicy() throws IOException {
+    /*
+     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
+     Because this is an Arista device, the route-map should be applied to the default route before
+     it is exported rather than used as a default route generation policy.
+    */
+    String testrigName = "arista-bgp-default-originate";
+    List<String> configurationNames = ImmutableList.of("arista-originator", "ios-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    Set<AbstractRoute> listenerRoutes =
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
+
+    // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
+            .setCommunities(
+                ImmutableSet.of(StandardCommunity.of(7274718L), StandardCommunity.of(21823932L)))
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("10.1.1.1"))
+            .setReceivedFromIp(Ip.parse("10.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
+            .setAdmin(20)
+            .setLocalPreference(100)
+            .build();
+    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+    // Ensure 10.10.10.0/24 doesn't get blocked
+    assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.parse("10.10.10.0/24"))));
+  }
+
+  @Test
+  public void testAristaBgpDefaultOriginateUndefinedRouteMap() throws IOException {
+    /*
+     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
+     However, ROUTE_MAP is undefined. Since this is Arista, default route should still be exported
+     (on IOS, where ROUTE_MAP is used as a generation policy rather than an export policy in this
+     context, the default route would not be exported).
+    */
+    String testrigName = "arista-bgp-default-originate";
+    List<String> configurationNames =
+        ImmutableList.of("arista-originator-undefined-rm", "ios-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    Set<AbstractRoute> listenerRoutes =
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
+
+    Bgpv4Route expectedDefaultRoute =
+        Bgpv4Route.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("10.1.1.1"))
+            .setReceivedFromIp(Ip.parse("10.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
+            .setCommunities(ImmutableSet.of())
+            .setAdmin(20)
+            .setLocalPreference(100)
+            .build();
+    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+  }
+
+  @Test
+  public void testAristaAdvertiseInactive() throws IOException {
+    Configuration config = parseConfig("arista-advertise-inactive");
+    assertTrue(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdvertiseInactive());
+  }
+
+  @Test
+  public void testAristaNoAdvertiseInactive() throws IOException {
+    Configuration config = parseConfig("arista-no-advertise-inactive");
+    assertFalse(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("1.1.1.1/32"))
+            .getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getAdvertiseInactive());
+  }
+
+  /**
+   * Ensure that Arista redistributes a static default route even though default-originate is not
+   * explicitly specified in the config
+   */
+  @Test
+  public void testAristaDefaultRouteRedistribution() throws IOException {
+    final String receiver = "ios_receiver";
+    final String advertiser = "arista_advertiser";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(
+                    TESTRIGS_PREFIX + "arista-redistribute-default-route",
+                    ImmutableList.of(advertiser, receiver))
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    Set<AbstractRoute> routes =
+        batfish.loadDataPlane(snapshot).getRibs().get(receiver).get(DEFAULT_VRF_NAME).getRoutes();
+
+    assertThat(
+        routes,
+        hasItem(
+            OspfExternalType2Route.builder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(Ip.parse("1.2.3.5"))
+                .setArea(1)
+                .setCostToAdvertiser(1)
+                .setAdvertiser(advertiser)
+                .setAdmin(110)
+                .setMetric(1)
+                .setLsaMetric(1)
+                .build()));
+  }
+
+  @Test
+  public void testAristaDefaultSwitchPort() throws IOException {
+    Configuration cUndeclared = parseConfig("eos_switchport_default_mode_undeclared");
+    Configuration cDefaultAccess = parseConfig("eos_switchport_default_mode_access");
+    Configuration cDefaultRouted = parseConfig("eos_switchport_default_mode_routed");
+
+    String l0Name = "Loopback0";
+    String e0Name = "Ethernet0/0";
+    String e1Name = "Ethernet0/1";
+    String e2Name = "Ethernet0/2";
+    String e3Name = "Ethernet0/3";
+    String e4Name = "Ethernet0/4";
+    String p0Name = "Port-Channel0";
+
+    Interface l0Undeclared = cUndeclared.getAllInterfaces().get(l0Name);
+    Interface e0Undeclared = cUndeclared.getAllInterfaces().get(e0Name);
+    Interface e1Undeclared = cUndeclared.getAllInterfaces().get(e1Name);
+    Interface e2Undeclared = cUndeclared.getAllInterfaces().get(e2Name);
+    Interface e3Undeclared = cUndeclared.getAllInterfaces().get(e3Name);
+    Interface e4Undeclared = cUndeclared.getAllInterfaces().get(e4Name);
+    Interface p0Undeclared = cUndeclared.getAllInterfaces().get(p0Name);
+
+    Interface l0DefaultAccess = cDefaultAccess.getAllInterfaces().get(l0Name);
+    Interface e0DefaultAccess = cDefaultAccess.getAllInterfaces().get(e0Name);
+    Interface e1DefaultAccess = cDefaultAccess.getAllInterfaces().get(e1Name);
+    Interface e2DefaultAccess = cDefaultAccess.getAllInterfaces().get(e2Name);
+    Interface e3DefaultAccess = cDefaultAccess.getAllInterfaces().get(e3Name);
+    Interface e4DefaultAccess = cDefaultAccess.getAllInterfaces().get(e4Name);
+    Interface p0DefaultAccess = cDefaultAccess.getAllInterfaces().get(p0Name);
+
+    Interface l0DefaultRouted = cDefaultRouted.getAllInterfaces().get(l0Name);
+    Interface e0DefaultRouted = cDefaultRouted.getAllInterfaces().get(e0Name);
+    Interface e1DefaultRouted = cDefaultRouted.getAllInterfaces().get(e1Name);
+    Interface e2DefaultRouted = cDefaultRouted.getAllInterfaces().get(e2Name);
+    Interface e3DefaultRouted = cDefaultRouted.getAllInterfaces().get(e3Name);
+    Interface e4DefaultRouted = cDefaultRouted.getAllInterfaces().get(e4Name);
+    Interface p0DefaultRouted = cDefaultRouted.getAllInterfaces().get(p0Name);
+
+    assertThat(l0Undeclared, isSwitchport(false));
+    assertThat(l0Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0Undeclared, isSwitchport(true));
+    assertThat(e0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e1Undeclared, isSwitchport(true));
+    assertThat(e1Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2Undeclared, isSwitchport(true));
+    assertThat(e2Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3Undeclared, isSwitchport(false));
+    assertThat(e3Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4Undeclared, isSwitchport(true));
+    assertThat(e4Undeclared, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0Undeclared, isSwitchport(true));
+    assertThat(p0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
+
+    assertThat(l0DefaultAccess, isSwitchport(false));
+    assertThat(l0DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0DefaultAccess, isSwitchport(true));
+    assertThat(e0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e1DefaultAccess, isSwitchport(true));
+    assertThat(e1DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2DefaultAccess, isSwitchport(true));
+    assertThat(e2DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3DefaultAccess, isSwitchport(false));
+    assertThat(e3DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4DefaultAccess, isSwitchport(true));
+    assertThat(e4DefaultAccess, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0DefaultAccess, isSwitchport(true));
+    assertThat(p0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
+
+    assertThat(l0DefaultRouted, isSwitchport(false));
+    assertThat(l0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e0DefaultRouted, isSwitchport(false));
+    assertThat(e0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e1DefaultRouted, isSwitchport(true));
+    assertThat(e1DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e2DefaultRouted, isSwitchport(true));
+    assertThat(e2DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
+    assertThat(e3DefaultRouted, isSwitchport(false));
+    assertThat(e3DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+    assertThat(e4DefaultRouted, isSwitchport(true));
+    assertThat(e4DefaultRouted, hasSwitchPortMode(SwitchportMode.TRUNK));
+    assertThat(p0DefaultRouted, isSwitchport(false));
+    assertThat(p0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
+  }
+
+  @Test
+  public void testAristaDynamicSourceNat() throws IOException {
+    Configuration c = parseConfig("arista-dynamic-source-nat");
+    Interface iface = c.getAllInterfaces().get("Ethernet1");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
+                .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet2");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
+                .setOrElse(
+                    when(permittedByAcl("acl2"))
+                        .apply(assignSourceIp(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")))
+                        .build())
+                .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet3");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                // due to the subnet mask, shift the pool IPs to avoid network/bcast IPs.
+                .apply(assignSourceIp(Ip.parse("2.0.0.1"), Ip.parse("2.0.0.6")))
+                .build()));
+
+    iface = c.getAllInterfaces().get("Ethernet4");
+    assertThat(iface.getIncomingTransformation(), nullValue());
+    assertThat(
+        iface.getOutgoingTransformation(),
+        equalTo(
+            when(permittedByAcl("acl1"))
+                // overload rule, so use the interface IP
+                .apply(assignSourceIp(Ip.parse("8.8.8.8"), Ip.parse("8.8.8.8")))
+                .build()));
+  }
+
+  @Test
+  public void testAristaBanner() throws IOException {
+    Configuration c = parseConfig("eos_banner");
+    assertThat(
+        c.getVendorFamily().getCisco().getBanners().get("login"),
+        equalTo("Some text\nEOF not alone\n"));
+  }
+
+  @Test
+  public void testArista100gfullInterface() throws IOException {
+    Configuration c = parseConfig("arista100gfull");
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/1",
+            hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.20.0.3/31")))));
+  }
+
+  @Test
+  public void testAristaSubinterfaceMtu() throws IOException {
+    Configuration c = parseConfig("aristaInterface");
+
+    assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
+  }
+
+  @Test
   public void testAggregateAddressExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_aggregate_address");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_aggregate_address");
     {
       AristaBgpAggregateNetwork agg =
           config.getAristaBgp().getDefaultVrf().getV4aggregates().get(Prefix.parse("1.2.33.0/24"));
@@ -283,8 +700,247 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testAllowedVlans() throws IOException {
+    Configuration c = parseConfig("eos-allowed-vlans");
+
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel1").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(1, 2))));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel2").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(2, 3))));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel3").getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel4").getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel5").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(1, 4094))));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel6").getAllowedVlans(),
+        equalTo(IntegerSpace.of(Range.closed(1, 4))));
+  }
+
+  @Test
+  public void testEosMlagExtraction() {
+    AristaConfiguration c = parseVendorConfig("eos-mlag");
+    MlagConfiguration mlag = c.getEosMlagConfiguration();
+    assertThat(mlag, notNullValue());
+    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
+    assertThat(mlag.getLocalInterface(), equalTo("Vlan4094"));
+    assertThat(mlag.getPeerAddress(), equalTo(Ip.parse("1.1.1.3")));
+    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
+    assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
+  }
+
+  @Test
+  public void testEosMlagConversion() throws IOException {
+    Configuration c = parseConfig("eos-mlag");
+
+    final String mlagName = "MLAG_DOMAIN_ID";
+    assertThat(c, hasMlagConfig(mlagName, hasId(mlagName)));
+    assertThat(c, hasMlagConfig(mlagName, hasPeerAddress(Ip.parse("1.1.1.3"))));
+    assertThat(c, hasMlagConfig(mlagName, hasPeerInterface("Port-Channel1")));
+    assertThat(c, hasMlagConfig(mlagName, MlagMatchers.hasLocalInterface("Vlan4094")));
+
+    // Test interface config
+    assertThat(c, hasInterface("Port-Channel1", hasMlagId(5)));
+  }
+
+  @Test
+  public void testEosBgpPeers() throws IOException {
+    String hostname = "eos-bgp-peers";
+    Prefix neighborWithRemoteAs = Prefix.parse("1.1.1.1/32");
+    Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    /*
+     * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
+     * should not appear, and there should be a warning about the missing remote-as.
+     */
+    assertThat(
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "No remote-as configured for BGP neighbor %s in vrf default",
+                    neighborWithoutRemoteAs.getStartIp()))));
+
+    /*
+     * Also ensure that default value of allowRemoteAsOut is true.
+     */
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(
+                    neighborWithRemoteAs,
+                    hasIpv4UnicastAddressFamily(
+                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true)))))));
+  }
+
+  @Test
+  public void testEosPortChannel() throws IOException {
+    String hostname = "eos-port-channel";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(c, hasInterface("Ethernet0", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet0", hasSpeed(40E9D)));
+    assertThat(c, hasInterface("Ethernet1", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet1", hasSpeed(40E9D)));
+    assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet2", hasSpeed(40E9D)));
+    assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
+    assertThat(c, hasInterface("Port-Channel1", hasSpeed(nullValue())));
+    assertThat(c, hasInterface("Port-Channel2", isActive(false)));
+    // 0 since no members
+    assertThat(c, hasInterface("Port-Channel2", hasBandwidth(0D)));
+    assertThat(c, hasInterface("Port-Channel2", hasSpeed(nullValue())));
+    assertThat(
+        c.getAllInterfaces().get("Port-Channel1").getDependencies(),
+        equalTo(
+            ImmutableSet.of(
+                new Dependency("Ethernet0", DependencyType.AGGREGATE),
+                new Dependency("Ethernet1", DependencyType.AGGREGATE))));
+  }
+
+  @Test
+  public void testEosVxlan() throws IOException {
+    String hostnameBase = "eos-vxlan";
+    String hostnameNoLoopbackAddr = "eos-vxlan-no-loopback-address";
+    String hostnameNoSourceIface = "eos-vxlan-no-source-interface";
+
+    Batfish batfish =
+        getBatfishForConfigurationNames(
+            hostnameBase, hostnameNoSourceIface, hostnameNoLoopbackAddr);
+    // Config with proper loopback iface, VLAN-specific unicast, explicit UDP port
+    Configuration configBase = batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameBase);
+    assertThat(configBase, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    Layer2Vni vnisBase = configBase.getDefaultVrf().getLayer2Vnis().get(10002);
+
+    // Config with no loopback address, using multicast, and default UDP port
+    Configuration configNoLoopbackAddr =
+        batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameNoLoopbackAddr);
+    assertThat(configNoLoopbackAddr, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    Layer2Vni vnisNoAddr = configNoLoopbackAddr.getDefaultVrf().getLayer2Vnis().get(10002);
+
+    // Config with no source interface and general VXLAN unicast address
+    Configuration configNoSourceIface =
+        batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameNoSourceIface);
+    assertThat(configNoSourceIface, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    Layer2Vni vnisNoIface = configNoSourceIface.getDefaultVrf().getLayer2Vnis().get(10002);
+
+    // Confirm VLAN-specific unicast address takes priority over the other addresses
+    assertThat(vnisBase, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
+    assertThat(vnisBase, hasBumTransportIps(contains(Ip.parse("1.1.1.10"))));
+    // Confirm source address is inherited from source interface
+    assertThat(vnisBase, hasSourceAddress(equalTo(Ip.parse("1.1.1.4"))));
+    // Confirm explicit UDP port is used
+    assertThat(vnisBase, hasUdpPort(equalTo(5555)));
+    // Confirm VLAN<->VNI mapping is applied
+    assertThat(vnisBase, hasVlan(equalTo(2)));
+
+    // Confirm multicast address is present
+    assertThat(vnisNoAddr, hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)));
+    assertThat(vnisNoAddr, hasBumTransportIps(contains(Ip.parse("227.10.1.1"))));
+    // Confirm no source address is present (no address specified for loopback interface)
+    assertThat(vnisNoAddr, hasSourceAddress(nullValue()));
+    // Confirm default UDP port is used even though none is supplied
+    assertThat(vnisNoAddr, hasUdpPort(equalTo(4789)));
+
+    // Confirm general VXLAN flood addresses are used
+    assertThat(vnisNoIface, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
+    assertThat(
+        vnisNoIface,
+        hasBumTransportIps(containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.6"))));
+    // Confirm no source address is present (no interface is linked to the VXLAN)
+    assertThat(vnisNoIface, hasSourceAddress(nullValue()));
+  }
+
+  @Test
+  public void testEosVxlanMisconfig() throws IOException {
+    String hostname = "eos-vxlan-misconfig";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration config = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Make sure that misconfigured VXLAN is still converted into VI model properly
+    assertThat(config, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
+    Layer2Vni vnisMisconfig = config.getDefaultVrf().getLayer2Vnis().get(10002);
+
+    // No BUM IPs specified
+    assertThat(vnisMisconfig, hasBumTransportIps(emptyIterable()));
+    // No source interface so no source address
+    assertThat(vnisMisconfig, hasSourceAddress(nullValue()));
+    // Confirm default UDP port is used
+    assertThat(vnisMisconfig, hasUdpPort(equalTo(4789)));
+    // Confirm VLAN<->VNI mapping is applied
+    assertThat(vnisMisconfig, hasVlan(equalTo(2)));
+  }
+
+  @Test
+  public void testEosTrunkGroup() throws IOException {
+    String hostname = "eos_trunk_group";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        c, hasInterface("Port-Channel1", hasAllowedVlans(IntegerSpace.of(Range.closed(1, 2)))));
+    assertThat(c, hasInterface("Port-Channel2", hasAllowedVlans(IntegerSpace.of(99))));
+  }
+
+  @Test
+  public void testEosVxlanCiscoConfig() {
+    String hostname = "eos-vxlan";
+
+    AristaConfiguration config = parseVendorConfig(hostname);
+
+    assertThat(config, notNullValue());
+    AristaEosVxlan eosVxlan = config.getEosVxlan();
+    assertThat(eosVxlan, notNullValue());
+
+    assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
+    // Confirm flood address set doesn't contain the removed address
+    assertThat(
+        eosVxlan.getFloodAddresses(), containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.7")));
+    assertThat(eosVxlan.getMulticastGroup(), equalTo(Ip.parse("227.10.1.1")));
+    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
+    assertThat(eosVxlan.getUdpPort(), equalTo(5555));
+
+    assertThat(eosVxlan.getVlanVnis(), hasEntry(equalTo(2), equalTo(10002)));
+
+    // Confirm flood address set was overwritten as expected
+    assertThat(
+        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(Ip.parse("1.1.1.10"))));
+  }
+
+  @Test
+  public void testEosVxlanReference() throws IOException {
+    String hostname = "eos-vxlan";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, VXLAN, "Vxlan1", 1));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback1", 2));
+  }
+
+  @Test
   public void testBgpVlansExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_vlans");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_vlans");
     {
       AristaBgpVlanAwareBundle bundle = config.getAristaBgp().getVlanAwareBundles().get("Tenant_A");
       assertThat(bundle, notNullValue());
@@ -305,13 +961,13 @@ public class AristaGrammarTest {
 
   @Test
   public void testCommunityListExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_community_list");
+    AristaConfiguration config = parseVendorConfig("arista_community_list");
     assertThat(config.getStandardCommunityLists(), hasKey("SOME_CL"));
   }
 
   @Test
   public void testNeighborExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbors");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_neighbors");
     {
       String peergName = "PEER_G";
       assertThat(config.getAristaBgp().getPeerGroups(), hasKey(peergName));
@@ -457,7 +1113,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testVrfExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_vrf");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_vrf");
     assertThat(config.getAristaBgp(), notNullValue());
     assertThat(
         config.getAristaBgp().getVrfs().keySet(), containsInAnyOrder(DEFAULT_VRF, "FOO", "BAR"));
@@ -518,7 +1174,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testAddressFamilyExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_af");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_af");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = vrf.getV4UnicastAf();
     AristaBgpVrfIpv6UnicastAddressFamily ipv6af = vrf.getV6UnicastAf();
@@ -566,7 +1222,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testNetworkExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_network");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_network");
     {
       Prefix prefix = Prefix.parse("1.1.1.0/24");
       AristaBgpNetworkConfiguration network =
@@ -596,7 +1252,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testVxlanExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_vxlan");
+    AristaConfiguration config = parseVendorConfig("arista_vxlan");
     assertThat(config.getEosVxlan().getArpReplyRelay(), equalTo(true));
     assertThat(config.getEosVxlan().getVrfToVni(), hasEntry("TENANT", 10000));
     assertThat(config.getEosVxlan().getVlanVnis(), hasEntry(1, 10001));
@@ -627,7 +1283,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testRedistributeExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_redistribute");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_redistribute");
     {
       Map<AristaRedistributeType, AristaBgpRedistributionPolicy> redistributionPolicies =
           config.getAristaBgp().getDefaultVrf().getRedistributionPolicies();
@@ -650,7 +1306,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testRedistributeOspfExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_redistribute_ospf");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_redistribute_ospf");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("vrf1");
       assertThat(
@@ -768,8 +1424,12 @@ public class AristaGrammarTest {
   @Test
   public void testInterfaceConversion() {
     Configuration c = parseConfig("arista_interface");
-    assertThat(c, hasInterface("Ethernet1", hasVrf(hasName(equalTo("VRF_1")))));
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1", allOf(hasVrf(hasName(equalTo("VRF_1"))), hasEncapsulationVlan(7))));
     assertThat(c, hasInterface("Ethernet2", hasVrf(hasName(equalTo("VRF_2")))));
+    assertThat(c, hasInterface("UnconnectedEthernet5"));
   }
 
   @Test
@@ -785,12 +1445,12 @@ public class AristaGrammarTest {
 
   @Test
   public void testVrrpExtraction() {
-    CiscoConfiguration c = parseVendorConfig("arista_vrrp");
+    AristaConfiguration c = parseVendorConfig("arista_vrrp");
     assertThat(c.getInterfaces(), hasKey("Vlan20"));
     assertThat(c.getVrrpGroups(), hasKey("Vlan20"));
     VrrpInterface vrrpI = c.getVrrpGroups().get("Vlan20");
     assertThat(vrrpI.getVrrpGroups(), hasKey(1));
-    org.batfish.representation.cisco.VrrpGroup g = vrrpI.getVrrpGroups().get(1);
+    org.batfish.representation.arista.VrrpGroup g = vrrpI.getVrrpGroups().get(1);
     assertThat(g.getVirtualAddress(), equalTo(Ip.parse("1.2.3.4")));
     assertThat(g.getPriority(), equalTo(200));
   }
@@ -861,7 +1521,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testBgpSendCommunityExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_send_community");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_send_community");
     AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
     {
       Ip ip = Ip.parse("1.1.1.1");
@@ -1041,7 +1701,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testAllowasInExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_allowas_in");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_allowas_in");
     assertThat(config.getAristaBgp().getDefaultVrf().getAllowAsIn(), equalTo(2));
   }
 
@@ -1071,8 +1731,256 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseCvx() {
+    parseVendorConfig("arista_cvx");
+    // don't crash.
+  }
+
+  @Test
+  public void testParseAclShowRunAll() {
+    Configuration c = parseConfig("arista_acl_show_run_all");
+    // Tests that the ACL parses.
+    assertThat(c, hasIpAccessList("SOME_ACL", hasLines(hasSize(1))));
+  }
+
+  @Test
+  public void testParseBgpShowRunAll() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all");
+    // Test relies on route-maps configured as the last line of specific address families.
+    assertThat(c.getAristaBgp().getPeerGroups().keySet(), containsInAnyOrder("SOME_GROUP"));
+    AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
+    Ip neighborIp = Ip.parse("192.0.2.7");
+    assertThat(defaultVrf.getV4neighbors().keySet(), contains(neighborIp));
+    {
+      AristaBgpNeighborAddressFamily evpn = defaultVrf.getEvpnAf().getNeighbor(neighborIp);
+      assertThat(evpn, notNullValue());
+      assertThat(evpn.getRouteMapIn(), equalTo("EVPN_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4u = defaultVrf.getV4UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6u = defaultVrf.getV6UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("IPV6_IN"));
+    }
+  }
+
+  @Test
+  public void testParseBgpShowRunAll2() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_2");
+    // Test relies on route-maps configured as the last line of specific address families.
+    assertThat(
+        c.getAristaBgp().getPeerGroups().keySet(), containsInAnyOrder("SOME_GROUP", "OTHER_GROUP"));
+    AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
+    Ip neighborIp = Ip.parse("192.0.2.7");
+    assertThat(defaultVrf.getV4neighbors().keySet(), contains(neighborIp));
+    {
+      AristaBgpNeighborAddressFamily evpn = defaultVrf.getEvpnAf().getNeighbor(neighborIp);
+      assertThat(evpn, notNullValue());
+      assertThat(evpn.getRouteMapIn(), equalTo("EVPN_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily fs4 = defaultVrf.getFlowSpecV4Af().getNeighbor(neighborIp);
+      assertThat(fs4, notNullValue());
+      assertThat(fs4.getActivate(), equalTo(Boolean.TRUE));
+    }
+    {
+      AristaBgpNeighborAddressFamily fs6 = defaultVrf.getFlowSpecV6Af().getNeighbor(neighborIp);
+      assertThat(fs6, notNullValue());
+      assertThat(fs6.getActivate(), equalTo(Boolean.TRUE));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4u = defaultVrf.getV4UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4m = defaultVrf.getV4MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv4m, notNullValue());
+      assertThat(ipv4m.getRouteMapIn(), equalTo("IPV4MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4lu =
+          defaultVrf.getV4LabeledUnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4lu, notNullValue());
+      assertThat(ipv4lu.getRouteMapIn(), equalTo("IPV4LU_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6lu =
+          defaultVrf.getV6LabeledUnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6lu, notNullValue());
+      assertThat(ipv6lu.getRouteMapIn(), equalTo("IPV6LU_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6u = defaultVrf.getV6UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("IPV6_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6m = defaultVrf.getV6MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv6m, notNullValue());
+      assertThat(ipv6m.getRouteMapIn(), equalTo("IPV6MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4sr = defaultVrf.getV4SrTeAf().getNeighbor(neighborIp);
+      assertThat(ipv4sr, notNullValue());
+      assertThat(ipv4sr.getRouteMapIn(), equalTo("IPV4SRTE_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6sr = defaultVrf.getV6SrTeAf().getNeighbor(neighborIp);
+      assertThat(ipv6sr, notNullValue());
+      assertThat(ipv6sr.getRouteMapIn(), equalTo("IPV6SRTE_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily vpn4 = defaultVrf.getVpnV4Af().getNeighbor(neighborIp);
+      assertThat(vpn4, notNullValue());
+      assertThat(vpn4.getRouteMapIn(), equalTo("VPN4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily vpn6 = defaultVrf.getVpnV6Af().getNeighbor(neighborIp);
+      assertThat(vpn6, notNullValue());
+      assertThat(vpn6.getRouteMapIn(), equalTo("VPN6_IN"));
+    }
+  }
+
+  @Test
+  public void testParseBgpShowRunAll3() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_3");
+    // Test relies on route-maps configured as the last line of specific address families.
+    assertThat(c.getAristaBgp().getVrfs().keySet(), containsInAnyOrder("default", "a"));
+    assertThat(c.getAristaBgp().getPeerGroups().keySet(), containsInAnyOrder("SOME_GROUP"));
+    Ip neighborIp = Ip.parse("192.0.2.7");
+    AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
+    assertThat(defaultVrf.getV4neighbors().keySet(), contains(neighborIp));
+    {
+      AristaBgpNeighborAddressFamily evpn = defaultVrf.getEvpnAf().getNeighbor(neighborIp);
+      assertThat(evpn, notNullValue());
+      assertThat(evpn.getRouteMapIn(), equalTo("EVPN_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily fs4 = defaultVrf.getFlowSpecV4Af().getNeighbor(neighborIp);
+      assertThat(fs4, notNullValue());
+      assertThat(fs4.getActivate(), equalTo(Boolean.TRUE));
+    }
+    {
+      AristaBgpNeighborAddressFamily fs6 = defaultVrf.getFlowSpecV6Af().getNeighbor(neighborIp);
+      assertThat(fs6, notNullValue());
+      assertThat(fs6.getActivate(), equalTo(Boolean.TRUE));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4u = defaultVrf.getV4UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRouteMapIn(), equalTo("IPV4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4m = defaultVrf.getV4MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv4m, notNullValue());
+      assertThat(ipv4m.getRouteMapIn(), equalTo("IPV4MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4lu =
+          defaultVrf.getV4LabeledUnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv4lu, notNullValue());
+      assertThat(ipv4lu.getRouteMapIn(), equalTo("IPV4LU_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6lu =
+          defaultVrf.getV6LabeledUnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6lu, notNullValue());
+      assertThat(ipv6lu.getRouteMapIn(), equalTo("IPV6LU_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6u = defaultVrf.getV6UnicastAf().getNeighbor(neighborIp);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("IPV6_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6m = defaultVrf.getV6MulticastAf().getNeighbor(neighborIp);
+      assertThat(ipv6m, notNullValue());
+      assertThat(ipv6m.getRouteMapIn(), equalTo("IPV6MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4sr = defaultVrf.getV4SrTeAf().getNeighbor(neighborIp);
+      assertThat(ipv4sr, notNullValue());
+      assertThat(ipv4sr.getRouteMapIn(), equalTo("IPV4SRTE_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6sr = defaultVrf.getV6SrTeAf().getNeighbor(neighborIp);
+      assertThat(ipv6sr, notNullValue());
+      assertThat(ipv6sr.getRouteMapIn(), equalTo("IPV6SRTE_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily vpn4 = defaultVrf.getVpnV4Af().getNeighbor(neighborIp);
+      assertThat(vpn4, notNullValue());
+      assertThat(vpn4.getRouteMapIn(), equalTo("VPN4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily vpn6 = defaultVrf.getVpnV6Af().getNeighbor(neighborIp);
+      assertThat(vpn6, notNullValue());
+      assertThat(vpn6.getRouteMapIn(), equalTo("VPN6_IN"));
+    }
+    /// vrf
+    AristaBgpVrf vrfA = c.getAristaBgp().getVrfs().get("a");
+    Ip neighborIpA = Ip.parse("192.0.2.8");
+    assertThat(vrfA.getV4neighbors().keySet(), contains(neighborIpA));
+    {
+      AristaBgpNeighborAddressFamily ipv4u = vrfA.getV4UnicastAf().getNeighbor(neighborIpA);
+      assertThat(ipv4u, notNullValue());
+      assertThat(ipv4u.getRouteMapIn(), equalTo("A-IPV4_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv4m = vrfA.getV4MulticastAf().getNeighbor(neighborIpA);
+      assertThat(ipv4m, notNullValue());
+      assertThat(ipv4m.getRouteMapIn(), equalTo("A-IPV4MC_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6u = vrfA.getV6UnicastAf().getNeighbor(neighborIpA);
+      assertThat(ipv6u, notNullValue());
+      assertThat(ipv6u.getRouteMapIn(), equalTo("A-IPV6_IN"));
+    }
+    {
+      AristaBgpNeighborAddressFamily ipv6m = vrfA.getV6MulticastAf().getNeighbor(neighborIpA);
+      assertThat(ipv6m, notNullValue());
+      assertThat(ipv6m.getRouteMapIn(), equalTo("A-IPV6MC_IN"));
+    }
+  }
+
+  @Test
+  public void testParseInterfaceShowRunAll() {
+    Configuration c = parseConfig("arista_interface_show_run_all");
+    // Test relies on the last line in each interface being this description.
+    assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
+    assertThat(c, hasInterface("Ethernet1/2", hasDescription("Made it to the end of Ethernet1/2")));
+    assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
+    assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
+  }
+
+  @Test
+  public void testParseInterfaceShowRunAll2() {
+    Configuration c = parseConfig("arista_interface_show_run_all_2");
+    // Test relies on the last line in each interface being this description.
+    assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
+    assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
+    assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
+    assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
+  }
+
+  @Test
+  public void testParseInterfaceShowRunAll3() {
+    Configuration c = parseConfig("arista_interface_show_run_all_3");
+    // Test relies on the last line in each interface being this description.
+    assertThat(c, hasInterface("Ethernet1/1", hasDescription("Made it to the end of Ethernet1/1")));
+    assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
+    assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
+    assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
+  }
+
+  @Test
   public void testEnforceFirstAsExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
     assertThat(config.getAristaBgp().getDefaultVrf().getEnforceFirstAs(), equalTo(Boolean.TRUE));
   }
 
@@ -1086,7 +1994,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testNeighborPrefixListExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_neighbor_prefix_list");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_neighbor_prefix_list");
     assertThat(
         config
             .getAristaBgp()
@@ -1182,7 +2090,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testNextHopUnchangedExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_nexthop_unchanged");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_nexthop_unchanged");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertTrue(vrf.getV4neighbors().get(Ip.parse("9.9.9.9")).getNextHopUnchanged());
@@ -1300,7 +2208,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testConfederationExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_confederations");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_confederations");
     {
       AristaBgpVrf vrf = config.getAristaBgp().getDefaultVrf();
       assertThat(vrf.getConfederationIdentifier(), equalTo(1111L));
@@ -1339,7 +2247,7 @@ public class AristaGrammarTest {
 
   @Test
   public void testEvpnImportPolicyExtraction() {
-    CiscoConfiguration config = parseVendorConfig("arista_bgp_evpn_import_policy");
+    AristaConfiguration config = parseVendorConfig("arista_bgp_evpn_import_policy");
     AristaBgpNeighborAddressFamily neighbor =
         config.getAristaBgp().getDefaultVrf().getEvpnAf().getNeighbor(Ip.parse("2.2.2.2"));
     assertThat(neighbor.getRouteMapIn(), equalTo("ALLOW_10"));

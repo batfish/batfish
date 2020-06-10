@@ -1,14 +1,14 @@
 package org.batfish.main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_FILE;
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
+import static org.batfish.common.util.Resources.readResourceBytes;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.main.Batfish.mergeInternetAndIspNodes;
 import static org.batfish.main.Batfish.postProcessInterfaceDependencies;
-import static org.batfish.main.Batfish.readAllFiles;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -26,25 +27,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import java.io.File;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.apache.commons.io.IOUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
@@ -52,8 +53,10 @@ import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -63,13 +66,15 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
-import org.batfish.datamodel.answers.ParseStatus;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
@@ -78,7 +83,6 @@ import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
 import org.batfish.job.ParseVendorConfigurationResult;
-import org.batfish.representation.host.HostConfiguration;
 import org.batfish.storage.TestStorageProvider;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
@@ -92,8 +96,6 @@ public class BatfishTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static final BatfishLogger LOGGER = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, false);
 
   private static final Question TEST_QUESTION =
       new TestQuestion() {
@@ -142,42 +144,42 @@ public class BatfishTest {
 
   @Test
   public void testOverlayIptables() throws IOException {
-    SortedMap<String, String> configurationsText = new TreeMap<>();
+    SortedMap<String, byte[]> configurationsBytes = new TreeMap<>();
     String[] configurationNames = new String[] {"host1.cfg"};
     String testConfigsPrefix = "org/batfish/grammar/host/testrigs/router-iptables/configs/";
 
-    SortedMap<String, String> hostsText = new TreeMap<>();
+    SortedMap<String, byte[]> hostsBytes = new TreeMap<>();
     String[] hostNames = new String[] {"host1.json"};
     String testHostsPrefix = "org/batfish/grammar/host/testrigs/router-iptables/hosts/";
 
-    SortedMap<String, String> iptablesFilesText = new TreeMap<>();
+    SortedMap<String, byte[]> iptablesFilesBytes = new TreeMap<>();
     String[] iptablesNames = new String[] {"host1.iptables"};
     String testIptablesPrefix = "org/batfish/grammar/host/testrigs/router-iptables/iptables/";
 
     for (String configurationName : configurationNames) {
-      String configurationText = CommonUtil.readResource(testConfigsPrefix + configurationName);
-      configurationsText.put(configurationName, configurationText);
+      byte[] configurationText = readResourceBytes(testConfigsPrefix + configurationName);
+      configurationsBytes.put(configurationName, configurationText);
     }
     for (String hostName : hostNames) {
-      String hostText = CommonUtil.readResource(testHostsPrefix + hostName);
-      hostsText.put(hostName, hostText);
+      byte[] hostText = readResourceBytes(testHostsPrefix + hostName);
+      hostsBytes.put(hostName, hostText);
     }
     for (String iptablesName : iptablesNames) {
-      String iptablesText = CommonUtil.readResource(testIptablesPrefix + iptablesName);
-      iptablesFilesText.put(iptablesName, iptablesText);
+      byte[] iptablesText = readResourceBytes(testIptablesPrefix + iptablesName);
+      iptablesFilesBytes.put(iptablesName, iptablesText);
     }
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(configurationsText)
-                .setHostsText(hostsText)
-                .setIptablesFilesText(iptablesFilesText)
+                .setConfigurationBytes(configurationsBytes)
+                .setHostsBytes(hostsBytes)
+                .setIptablesBytes(iptablesFilesBytes)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     assertThat(
-        configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilterName(),
-        is(notNullValue()));
+        configurations.get("host1").getAllInterfaces().get("Ethernet0").getIncomingFilter(),
+        notNullValue());
   }
 
   @Test
@@ -189,7 +191,7 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .setConfigurationFiles(testrigResourcePrefix, configurationNames)
                 .build(),
             _folder);
 
@@ -208,7 +210,7 @@ public class BatfishTest {
     Batfish batfish2 =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix2, configurationNames2)
+                .setConfigurationFiles(testrigResourcePrefix2, configurationNames2)
                 .build(),
             _folder);
 
@@ -223,8 +225,8 @@ public class BatfishTest {
     String testrigResourcePrefix = "org/batfish/common/topology/testrigs/layer1";
     TestrigText.Builder testrigTextBuilder =
         TestrigText.builder()
-            .setLayer1TopologyText(testrigResourcePrefix)
-            .setHostsText(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
+            .setLayer1TopologyPrefix(testrigResourcePrefix)
+            .setHostsFiles(testrigResourcePrefix, ImmutableSet.of("c1.json", "c2.json"));
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
 
@@ -243,8 +245,8 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(snapshotResourcePrefix, "rtr1")
-                .setRuntimeDataText(snapshotResourcePrefix)
+                .setConfigurationFiles(snapshotResourcePrefix, "rtr1")
+                .setRuntimeDataPrefix(snapshotResourcePrefix)
                 .build(),
             _folder);
     Map<String, Interface> interfaces =
@@ -264,9 +266,55 @@ public class BatfishTest {
   }
 
   @Test
+  public void testInitSnapshotWithEnvironmentBgpTables() throws IOException {
+    /* Setup: Config rtr1 has associated environment BGP tables. */
+    String snapshotResourcePrefix = "org/batfish/main/snapshots/env_bgp";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setBgpTablesFiles(snapshotResourcePrefix, "rtr1.bgp")
+                .setConfigurationFiles(snapshotResourcePrefix, "rtr1")
+                .build(),
+            _folder);
+    // don't crash
+    batfish.loadConfigurations(batfish.getSnapshot());
+    SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables =
+        batfish.loadEnvironmentBgpTables(batfish.getSnapshot());
+
+    assertThat(
+        environmentBgpTables,
+        equalTo(
+            ImmutableMap.of(
+                "rtr1",
+                ImmutableMap.of(
+                    "default",
+                    ImmutableSet.of(
+                        BgpAdvertisement.builder()
+                            .setType(BgpAdvertisementType.EBGP_SENT)
+                            .setNetwork(Prefix.strict("192.0.2.0/24"))
+                            .setNextHopIp(Ip.parse("10.0.0.1"))
+                            .setSrcNode("neighbor")
+                            .setSrcIp(Ip.parse("10.0.0.3"))
+                            .setDstNode("rtr1")
+                            .setDstIp(Ip.parse("10.0.0.4"))
+                            .setSrcProtocol(RoutingProtocol.AGGREGATE)
+                            .setOriginType(OriginType.INCOMPLETE)
+                            .setLocalPreference(100L)
+                            .setMed(0L)
+                            .setOriginatorIp(Ip.ZERO)
+                            .setAsPath(AsPath.empty())
+                            .setCommunities(ImmutableSortedSet.of())
+                            .setSrcVrf("default")
+                            .setDstVrf("default")
+                            .setClusterList(ImmutableSortedSet.of())
+                            .build())))));
+  }
+
+  @Test
   public void testLoadLayer1Topology() throws IOException {
     TestrigText.Builder testrigTextBuilder =
-        TestrigText.builder().setLayer1TopologyText("org/batfish/common/topology/testrigs/layer1");
+        TestrigText.builder()
+            .setLayer1TopologyPrefix("org/batfish/common/topology/testrigs/layer1");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(testrigTextBuilder.build(), _folder);
     Layer1Topology layer1Topology =
@@ -306,8 +354,8 @@ public class BatfishTest {
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setAwsText(snapshotPath, awsFiles)
-                .setConfigurationText(snapshotPath, routerFile)
+                .setAwsFiles(snapshotPath, awsFiles)
+                .setConfigurationFiles(snapshotPath, routerFile)
                 .build(),
             _folder);
 
@@ -328,19 +376,12 @@ public class BatfishTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(testrigResourcePrefix, configurationNames)
+                .setConfigurationFiles(testrigResourcePrefix, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Map<Ip, Set<String>> ipOwners = IpOwners.computeIpNodeOwners(configurations, true);
     assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r2")));
-  }
-
-  @Test
-  public void testNoFileUnderPath() throws IOException {
-    Path emptyFolder = _folder.newFolder("emptyFolder").toPath();
-    Map<Path, String> result = readAllFiles(emptyFolder, LOGGER);
-    assertThat(result, anEmptyMap());
   }
 
   @Test
@@ -389,102 +430,6 @@ public class BatfishTest {
   }
 
   @Test
-  public void testReadMissingIptableFile() throws IOException {
-    HostConfiguration host1 = new HostConfiguration();
-    String filename = Paths.get("iptables", "host1.iptables").toString();
-    host1.setHostname("host1");
-    host1.setIptablesFile(filename);
-    SortedMap<String, VendorConfiguration> hostConfigurations = new TreeMap<>();
-    hostConfigurations.put("host1", host1);
-    SortedMap<Path, String> iptablesData = new TreeMap<>();
-    Path testRigPath = _folder.newFolder("testrig").toPath();
-    ParseVendorConfigurationAnswerElement answerElement =
-        new ParseVendorConfigurationAnswerElement();
-    answerElement.getParseStatus().put("configs/host1.cfg", ParseStatus.PASSED);
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    String failureMessage =
-        "Iptables file iptables"
-            + File.separator
-            + "host1.iptables for host host1 is not contained within the testrig";
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    assertThat(
-        answerElement.getParseStatus().get(Paths.get("iptables", "host1.iptables").toString()),
-        equalTo(ParseStatus.FAILED));
-    assertThat(answerElement.getErrors().get("host1").toString(), containsString(failureMessage));
-    // When host file failed, verify that error message contains both failure messages
-    answerElement.getErrors().clear();
-    answerElement
-        .getErrors()
-        .put(
-            "host1",
-            new BatfishException("Failed to parse host file: host1").getBatfishStackTrace());
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    assertThat(answerElement.getErrors().get("host1").toString(), containsString(failureMessage));
-    assertThat(
-        answerElement.getErrors().get("host1").toString(),
-        containsString("Failed to parse host file: host1"));
-    // When the haltonparseerror flag is set to true
-    batfish.getSettings().setHaltOnParseError(true);
-    answerElement.getErrors().clear();
-    String parseErrorMessage =
-        "Fatal exception due to at least one Iptables file is not contained"
-            + " within the testrig";
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage(parseErrorMessage);
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-  }
-
-  @Test
-  public void testReadNestedPath() throws IOException {
-    Path nestedFolder = _folder.newFolder("nestedDirectory").toPath();
-    Set<Path> expected = new HashSet<>();
-    expected.add(nestedFolder.resolve("b-test.cfg"));
-    expected.add(nestedFolder.resolve("d-test.cfg"));
-    expected.add(nestedFolder.resolve("aDirectory").resolve("e-test.cfg"));
-    expected.add(nestedFolder.resolve("eDirectory").resolve("a-test.cfg"));
-    expected.add(nestedFolder.resolve("eDirectory").resolve("c-test.cfg"));
-    for (Path path : expected) {
-      path.getParent().toFile().mkdir();
-      assertThat(path.toFile().createNewFile(), is(true));
-    }
-    Set<Path> actual = readAllFiles(nestedFolder, LOGGER).keySet();
-    assertThat(expected, equalTo(actual));
-  }
-
-  @Test
-  public void testReadStartWithDotFile() throws IOException {
-    Path startWithDot = _folder.newFolder("startWithDot").toPath();
-    File file = startWithDot.resolve(".cfg").toFile();
-    file.getParentFile().mkdir();
-    assertThat(file.createNewFile(), is(true));
-    Map<Path, String> result = readAllFiles(startWithDot, LOGGER);
-    assertThat(result, anEmptyMap());
-  }
-
-  @Test
-  public void testReadUnNestedPath() throws IOException {
-    Path unNestedFolder = _folder.newFolder("unNestedDirectory").toPath();
-    Set<Path> expected = new HashSet<>();
-    expected.add(unNestedFolder.resolve("test1.cfg"));
-    expected.add(unNestedFolder.resolve("test2.cfg"));
-    expected.add(unNestedFolder.resolve("test3.cfg"));
-    for (Path path : expected) {
-      path.getParent().toFile().mkdir();
-      assertThat(path.toFile().createNewFile(), is(true));
-    }
-    Set<Path> actual = readAllFiles(unNestedFolder, LOGGER).keySet();
-    assertThat(expected, equalTo(actual));
-  }
-
-  @Test
-  public void testReadThrowsExceptionWithSpecificType() {
-    Path nonExistPath = _folder.getRoot().toPath().resolve("nonExistent");
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Failed to walk path: " + nonExistPath);
-    readAllFiles(nonExistPath, LOGGER);
-  }
-
-  @Test
   public void testUnusableVrrpHandledCorrectly() throws Exception {
     String configurationText =
         String.join(
@@ -509,28 +454,6 @@ public class BatfishTest {
   }
 
   @Test
-  public void testReadValidIptableFile() throws IOException {
-    HostConfiguration host1 = new HostConfiguration();
-    host1.setHostname("host1");
-    Path iptablePath = Paths.get("iptables").resolve("host1.iptables");
-    host1.setIptablesFile(iptablePath.toString());
-    SortedMap<String, VendorConfiguration> hostConfigurations = new TreeMap<>();
-    hostConfigurations.put("host1", host1);
-    SortedMap<Path, String> iptablesData = new TreeMap<>();
-    Path testRigPath = _folder.newFolder("testrig").toPath();
-    File iptableFile = Paths.get(testRigPath.toString(), iptablePath.toString()).toFile();
-    iptableFile.getParentFile().mkdir();
-    assertThat(iptableFile.createNewFile(), is(true));
-    ParseVendorConfigurationAnswerElement answerElement =
-        new ParseVendorConfigurationAnswerElement();
-    answerElement.getParseStatus().put("host1", ParseStatus.PASSED);
-    Batfish batfish = BatfishTestUtils.getBatfish(new TreeMap<>(), _folder);
-    batfish.readIptableFiles(testRigPath, hostConfigurations, iptablesData, answerElement);
-    assertThat(answerElement.getParseStatus().get("host1"), equalTo(ParseStatus.PASSED));
-    assertThat(answerElement.getErrors().size(), is(0));
-  }
-
-  @Test
   public void testLoadQuestionSettingsPresent() {
     String questionSettings = "{}";
 
@@ -550,9 +473,9 @@ public class BatfishTest {
               }
 
               @Override
-              public QuestionSettingsId getQuestionSettingsId(
+              public Optional<QuestionSettingsId> getQuestionSettingsId(
                   String questionClassId, NetworkId networkId) {
-                return new QuestionSettingsId("blah");
+                return Optional.of(new QuestionSettingsId("blah"));
               }
             });
 
@@ -572,8 +495,9 @@ public class BatfishTest {
             },
             new TestIdResolver() {
               @Override
-              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-                return false;
+              public Optional<QuestionSettingsId> getQuestionSettingsId(
+                  String questionClassId, NetworkId networkId) {
+                return Optional.empty();
               }
             });
 
@@ -593,9 +517,9 @@ public class BatfishTest {
             },
             new TestIdResolver() {
               @Override
-              public QuestionSettingsId getQuestionSettingsId(
+              public Optional<QuestionSettingsId> getQuestionSettingsId(
                   String questionClassId, NetworkId networkId) {
-                return new QuestionSettingsId("foo");
+                return Optional.of(new QuestionSettingsId("foo"));
               }
 
               @Override
@@ -833,9 +757,10 @@ public class BatfishTest {
             TestrigText.builder().setConfigurationText(configurations).build(), _folder);
 
     // returns the text of the config if it exists
-    assertThat(
-        batfish.getSnapshotInputObject(batfish.getSnapshot(), "configs/" + fileName),
-        equalTo(configText));
+    try (InputStream inputStream =
+        batfish.getSnapshotInputObject(batfish.getSnapshot(), "configs/" + fileName)) {
+      assertThat(new String(IOUtils.toByteArray(inputStream), UTF_8), equalTo(configText));
+    }
   }
 
   @Test
@@ -851,7 +776,11 @@ public class BatfishTest {
 
     // should throw FileNotFoundException if file not found
     _thrown.expect(FileNotFoundException.class);
-    batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file");
+    try (InputStream inputStream =
+        batfish.getSnapshotInputObject(batfish.getSnapshot(), "missing file")) {
+      // Should not reach here
+      assertNotNull(inputStream);
+    }
   }
 
   @Test

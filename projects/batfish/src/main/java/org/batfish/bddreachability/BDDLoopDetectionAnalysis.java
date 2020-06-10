@@ -6,7 +6,8 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,9 +58,9 @@ public class BDDLoopDetectionAnalysis {
    * Detect infinite routing loops in the network.
    */
   public Map<IngressLocation, BDD> detectLoops() {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.detectLoops").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.detectLoops").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       /*
        * Run enough rounds to exceed the max TTL (255). It takes at most 6 iterations to go between
        * hops:
@@ -91,13 +92,15 @@ public class BDDLoopDetectionAnalysis {
        */
       return getIngressLocationBdds(
           loopBDDs, _ingressLocationStates, _bddPacket.getFactory().zero());
+    } finally {
+      span.finish();
     }
   }
 
   private Map<StateExpr, BDD> propagate(Map<StateExpr, BDD> bdds) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.propagate").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.propagate").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       BDD zero = _bddPacket.getFactory().zero();
       Map<StateExpr, BDD> newReachableInNRounds = new HashMap<>();
       bdds.forEach(
@@ -113,6 +116,8 @@ public class BDDLoopDetectionAnalysis {
                         }
                       }));
       return newReachableInNRounds;
+    } finally {
+      span.finish();
     }
   }
 
@@ -121,9 +126,9 @@ public class BDDLoopDetectionAnalysis {
    * reached yet.
    */
   private boolean confirmLoop(StateExpr stateExpr, BDD bdd) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.confirmLoop").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.confirmLoop").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       Map<StateExpr, BDD> reachable = propagate(ImmutableMap.of(stateExpr, bdd));
       Set<StateExpr> dirty = new HashSet<>(reachable.keySet());
 
@@ -165,13 +170,15 @@ public class BDDLoopDetectionAnalysis {
         }
       }
       return false;
+    } finally {
+      span.finish();
     }
   }
 
   private Map<StateExpr, BDD> reachableInNRounds(int numRounds) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.reachableInNRounds").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("BDDLoopDetectionAnalysis.reachableInNRounds").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       BDD one = _bddPacket.getFactory().one();
 
       // All ingress locations are reachable in 0 rounds.
@@ -182,6 +189,8 @@ public class BDDLoopDetectionAnalysis {
         reachableInNRounds = propagate(reachableInNRounds);
       }
       return reachableInNRounds;
+    } finally {
+      span.finish();
     }
   }
 }

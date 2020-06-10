@@ -1,0 +1,31 @@
+load("@rules_java//java:defs.bzl", "java_library")
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "identifiers",
+    srcs = glob(
+        ["*.java"],
+        exclude = ["*Test.java"],
+    ),
+    deps = ["//projects/batfish-common-protocol:common"],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":identifiers",
+)
+
+junit_tests(
+    name = "tests",
+    srcs = glob(
+        ["*.java"],
+        exclude = ["Test*.java"],
+    ),
+    deps = ["@maven//:junit_junit"],
+)

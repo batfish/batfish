@@ -1,8 +1,8 @@
 package org.batfish.grammar.cisco;
 
-import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
-import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
@@ -29,16 +29,12 @@ import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
-import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
-import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
-import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -53,7 +49,6 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPeerConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPhase2Proposal;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -92,7 +87,6 @@ import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasSelfIden
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
@@ -100,7 +94,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpVersion;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMlagId;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
@@ -133,9 +126,6 @@ import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
-import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType7;
@@ -150,14 +140,8 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertise
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
-import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasSnmpServer;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -221,16 +205,12 @@ import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
-import static org.batfish.representation.cisco.CiscoStructureType.VXLAN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
-import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
-import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
@@ -242,7 +222,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -294,9 +273,9 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -338,7 +317,6 @@ import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -360,7 +338,7 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -379,7 +357,6 @@ import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPeerConfigMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
-import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
@@ -406,7 +383,6 @@ import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -416,14 +392,12 @@ import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
-import org.batfish.representation.cisco.MlagConfiguration;
 import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
-import org.batfish.representation.cisco.eos.AristaEosVxlan;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -474,7 +448,7 @@ public final class CiscoGrammarTest {
   }
 
   private CiscoConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings, format);
@@ -539,28 +513,6 @@ public final class CiscoGrammarTest {
 
     assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
     assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(not(hasMethod(LOCAL_CASE))));
-  }
-
-  @Test
-  public void testAllowedVlans() throws IOException {
-    Configuration c = parseConfig("eos-allowed-vlans");
-
-    assertThat(
-        c.getAllInterfaces().get("Port-Channel1").getAllowedVlans(),
-        equalTo(IntegerSpace.of(Range.closed(1, 2))));
-    assertThat(
-        c.getAllInterfaces().get("Port-Channel2").getAllowedVlans(),
-        equalTo(IntegerSpace.of(Range.closed(2, 3))));
-    assertThat(
-        c.getAllInterfaces().get("Port-Channel3").getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
-    assertThat(
-        c.getAllInterfaces().get("Port-Channel4").getAllowedVlans(), equalTo(IntegerSpace.EMPTY));
-    assertThat(
-        c.getAllInterfaces().get("Port-Channel5").getAllowedVlans(),
-        equalTo(IntegerSpace.of(Range.closed(1, 4094))));
-    assertThat(
-        c.getAllInterfaces().get("Port-Channel6").getAllowedVlans(),
-        equalTo(IntegerSpace.of(Range.closed(1, 4))));
   }
 
   @Test
@@ -698,7 +650,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -721,7 +673,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -742,150 +694,6 @@ public final class CiscoGrammarTest {
     assertThat(byType.keySet(), hasSize(2));
     assertThat(byType, hasKey("ip_acl_udef"));
     assertThat(byType, hasKey("mac_acl_udef"));
-  }
-
-  @Test
-  public void testAristaBanner() throws IOException {
-    Configuration c = parseConfig("eos_banner");
-    assertThat(
-        c.getVendorFamily().getCisco().getBanners().get("login"),
-        equalTo("Some text\nEOF not alone\n"));
-  }
-
-  @Test
-  public void testAristaOspfReferenceBandwidth() throws IOException {
-    Configuration manual = parseConfig("aristaOspfCost");
-    assertThat(
-        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(3e6d));
-
-    Configuration defaults = parseConfig("aristaOspfCostDefaults");
-    assertThat(
-        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
-        equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
-  }
-
-  @Test
-  public void testAristaVsIosOspfRedistributeBgpSyntax() throws IOException {
-    // Both an Arista and an IOS config contain these "redistribute bgp" lines in their OSPF setups:
-    String l1 = "redistribute bgp";
-    String l2 = "redistribute bgp route-map MAP";
-    String l3 = "redistribute bgp 65100";
-    String l4 = "redistribute bgp 65100 route-map MAP";
-    String l5 = "redistribute bgp 65100 metric 10";
-    /*
-    Arista does not allow specification of an AS, while IOS requires it, and IOS allows setting
-    metric and a few other settings where Arista does not (both allow route-maps). So:
-    - First two lines should generate warnings on IOS but not Arista
-    - Remaining lines should generate warnings on Arista but not IOS
-    */
-    String testrigName = "arista-vs-ios-warnings";
-    String iosName = "ios-ospf-redistribute-bgp";
-    String aristaName = "arista-ospf-redistribute-bgp";
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(
-                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(aristaName, iosName))
-                .build(),
-            _folder);
-    batfish.getSettings().setDisableUnrecognized(false);
-    ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
-    assertThat(
-        pvcae.getWarnings().get("configs/" + iosName).getParseWarnings(),
-        contains(
-            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l1))),
-            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l2)))));
-    assertThat(
-        pvcae.getWarnings().get("configs/" + aristaName).getParseWarnings(),
-        contains(
-            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l3))),
-            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l4))),
-            allOf(hasComment("This syntax is unrecognized"), hasText(containsString(l5)))));
-  }
-
-  @Test
-  public void testAristaBgpDefaultOriginatePolicy() throws IOException {
-    /*
-     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
-     Because this is an Arista device, the route-map should be applied to the default route before
-     it is exported rather than used as a default route generation policy.
-    */
-    String testrigName = "arista-bgp-default-originate";
-    List<String> configurationNames = ImmutableList.of("arista-originator", "ios-listener");
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-
-    NetworkSnapshot snapshot = batfish.getSnapshot();
-    batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
-
-    // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
-    Bgpv4Route expectedDefaultRoute =
-        Bgpv4Route.builder()
-            .setCommunities(
-                ImmutableSet.of(StandardCommunity.of(7274718L), StandardCommunity.of(21823932L)))
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setAsPath(AsPath.ofSingletonAsSets(1L))
-            .setAdmin(20)
-            .setLocalPreference(100)
-            .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
-    // Ensure 10.10.10.0/24 doesn't get blocked
-    assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.parse("10.10.10.0/24"))));
-  }
-
-  @Test
-  public void testAristaBgpDefaultOriginateUndefinedRouteMap() throws IOException {
-    /*
-     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
-     However, ROUTE_MAP is undefined. Since this is Arista, default route should still be exported
-     (on IOS, where ROUTE_MAP is used as a generation policy rather than an export policy in this
-     context, the default route would not be exported).
-    */
-    String testrigName = "arista-bgp-default-originate";
-    List<String> configurationNames =
-        ImmutableList.of("arista-originator-undefined-rm", "ios-listener");
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-
-    NetworkSnapshot snapshot = batfish.getSnapshot();
-    batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
-
-    Bgpv4Route expectedDefaultRoute =
-        Bgpv4Route.builder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setAsPath(AsPath.ofSingletonAsSets(1L))
-            .setCommunities(ImmutableSet.of())
-            .setAdmin(20)
-            .setLocalPreference(100)
-            .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
   }
 
   @Test
@@ -1463,6 +1271,37 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosUnicodeConversion() throws IOException {
+    Configuration c = parseConfig("ios-unicode");
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testIosUnicodeBomConversion() throws IOException {
+    Configuration c = parseConfig("ios-unicode-bom");
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasAddress("10.0.0.1/24")));
+  }
+
+  @Test
+  public void testIosLineParsing() {
+    assertNotNull(parseCiscoConfig("ios-line", null));
+  }
+
+  @Test
+  public void testIosEncapsulationVlanExtraction() {
+    CiscoConfiguration vc =
+        parseCiscoConfig("ios-encapsulation-vlan", ConfigurationFormat.CISCO_IOS);
+    assertThat(
+        vc.getInterfaces().get("GigabitEthernet0/1.203").getEncapsulationVlan(), equalTo(203));
+  }
+
+  @Test
+  public void testIosEncapsulationVlanConversion() throws IOException {
+    Configuration c = parseConfig("ios-encapsulation-vlan");
+    assertThat(c, hasInterface("GigabitEthernet0/1.203", hasEncapsulationVlan(203)));
+  }
+
+  @Test
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
@@ -1621,7 +1460,7 @@ public final class CiscoGrammarTest {
 
     // Confirm reference counts are correct for ACLs
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
-    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 3));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 2));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "10", 0));
     assertThat(ccae, hasNumReferrers(filename, IPV6_ACCESS_LIST_EXTENDED, "AL6", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV6_ACCESS_LIST_STANDARD, "AL6_UNUSED", 0));
@@ -1635,18 +1474,6 @@ public final class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, IPV6_ACCESS_LIST, "AL6_UNDEF", ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", IP_NAT_DESTINATION_ACCESS_LIST));
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", INTERFACE_INCOMING_FILTER));
-    assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, IPV4_ACCESS_LIST, "AL_IF_UNDEF", INTERFACE_OUTGOING_FILTER));
   }
 
   @Test
@@ -1663,6 +1490,37 @@ public final class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
+  }
+
+  @Test
+  public void testIosBgpConfedExtraction() {
+    CiscoConfiguration c = parseCiscoConfig("ios-bgp-confed", ConfigurationFormat.CISCO_IOS);
+    org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    assertThat(p, notNullValue());
+    assertThat(p.getConfederation(), equalTo(65100L));
+    assertThat(p.getConfederationMembers(), contains(65134L));
+  }
+
+  @Test
+  public void testIosBgpConfedConversion() throws IOException {
+    Configuration c = parseConfig("ios-bgp-confed");
+    BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    assertThat(p, notNullValue());
+    assertThat(p.getConfederation(), equalTo(new BgpConfederation(65100, ImmutableSet.of(65134L))));
+    {
+      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.2/32")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.2/32"));
+      assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
+      assertThat(neighbor.getLocalAs(), equalTo(65112L));
+      assertThat(neighbor.getRemoteAsns().enumerate(), contains(65112L));
+    }
+    {
+      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.3/32")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.3/32"));
+      assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
+      assertThat(neighbor.getLocalAs(), equalTo(65112L));
+      assertThat(neighbor.getRemoteAsns().enumerate(), contains(65134L));
+    }
   }
 
   @Test
@@ -1690,7 +1548,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -2144,6 +2002,13 @@ public final class CiscoGrammarTest {
                                 .build()))))));
   }
 
+  /** Tests that Cisco parser doesn't crash in conversion for incomplete ipsec profile. */
+  @Test
+  public void testIosIpsecGh5849() throws IOException {
+    // doesn't crash.
+    parseConfig("ios-ipsec-gh-5849");
+  }
+
   @Test
   public void testIosIsisConfigOnInterface() throws IOException {
     String hostname = "ios-isis";
@@ -2207,7 +2072,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + testrigName,
                     ImmutableList.of(originatorName, l1Name, l2Name, l3Name))
                 .build(),
@@ -2274,7 +2139,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + testrigName, ImmutableList.of(originatorName, l1Name, l2Name))
                 .build(),
             _folder);
@@ -2592,7 +2457,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2638,7 +2503,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2683,7 +2548,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -2727,7 +2592,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -3232,7 +3097,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -3649,7 +3514,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3685,7 +3550,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -3768,7 +3633,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -3814,7 +3679,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4242,223 +4107,6 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testEosBgpPeers() throws IOException {
-    String hostname = "eos-bgp-peers";
-    Prefix neighborWithRemoteAs = Prefix.parse("1.1.1.1/32");
-    Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-
-    /*
-     * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
-     * should not appear, and there should be a warning about the missing remote-as.
-     */
-    assertThat(
-        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
-    assertThat(
-        ccae,
-        hasRedFlagWarning(
-            hostname,
-            containsString(
-                String.format(
-                    "No remote-as configured for BGP neighbor %s in vrf default",
-                    neighborWithoutRemoteAs.getStartIp()))));
-
-    /*
-     * Also ensure that default value of allowRemoteAsOut is true.
-     */
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(
-                hasActiveNeighbor(
-                    neighborWithRemoteAs,
-                    hasIpv4UnicastAddressFamily(
-                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true)))))));
-  }
-
-  @Test
-  public void testEosPortChannel() throws IOException {
-    String hostname = "eos-port-channel";
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-
-    assertThat(c, hasInterface("Ethernet0", hasBandwidth(40E9D)));
-    assertThat(c, hasInterface("Ethernet0", hasSpeed(40E9D)));
-    assertThat(c, hasInterface("Ethernet1", hasBandwidth(40E9D)));
-    assertThat(c, hasInterface("Ethernet1", hasSpeed(40E9D)));
-    assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
-    assertThat(c, hasInterface("Ethernet2", hasSpeed(40E9D)));
-    assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
-    assertThat(c, hasInterface("Port-Channel1", hasSpeed(nullValue())));
-    assertThat(c, hasInterface("Port-Channel2", isActive(false)));
-    // 0 since no members
-    assertThat(c, hasInterface("Port-Channel2", hasBandwidth(0D)));
-    assertThat(c, hasInterface("Port-Channel2", hasSpeed(nullValue())));
-    assertThat(
-        c.getAllInterfaces().get("Port-Channel1").getDependencies(),
-        equalTo(
-            ImmutableSet.of(
-                new Dependency("Ethernet0", DependencyType.AGGREGATE),
-                new Dependency("Ethernet1", DependencyType.AGGREGATE))));
-  }
-
-  @Test
-  public void testEosMlagExtraction() {
-    CiscoConfiguration c = parseCiscoConfig("eos-mlag", ConfigurationFormat.ARISTA);
-    MlagConfiguration mlag = c.getEosMlagConfiguration();
-    assertThat(mlag, notNullValue());
-    assertThat(mlag.getDomainId(), equalTo("MLAG_DOMAIN_ID"));
-    assertThat(mlag.getLocalInterface(), equalTo("Vlan4094"));
-    assertThat(mlag.getPeerAddress(), equalTo(Ip.parse("1.1.1.3")));
-    assertThat(mlag.getPeerAddressHeartbeat(), equalTo(Ip.parse("1.1.1.4")));
-    assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
-  }
-
-  @Test
-  public void testEosMlagConversion() throws IOException {
-    Configuration c = parseConfig("eos-mlag");
-
-    final String mlagName = "MLAG_DOMAIN_ID";
-    assertThat(c, hasMlagConfig(mlagName, hasId(mlagName)));
-    assertThat(c, hasMlagConfig(mlagName, hasPeerAddress(Ip.parse("1.1.1.3"))));
-    assertThat(c, hasMlagConfig(mlagName, hasPeerInterface("Port-Channel1")));
-    assertThat(c, hasMlagConfig(mlagName, MlagMatchers.hasLocalInterface("Vlan4094")));
-
-    // Test interface config
-    assertThat(c, hasInterface("Port-Channel1", hasMlagId(5)));
-  }
-
-  @Test
-  public void testEosVxlan() throws IOException {
-    String hostnameBase = "eos-vxlan";
-    String hostnameNoLoopbackAddr = "eos-vxlan-no-loopback-address";
-    String hostnameNoSourceIface = "eos-vxlan-no-source-interface";
-
-    Batfish batfish =
-        getBatfishForConfigurationNames(
-            hostnameBase, hostnameNoSourceIface, hostnameNoLoopbackAddr);
-    // Config with proper loopback iface, VLAN-specific unicast, explicit UDP port
-    Configuration configBase = batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameBase);
-    assertThat(configBase, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
-    Layer2Vni vnisBase = configBase.getDefaultVrf().getLayer2Vnis().get(10002);
-
-    // Config with no loopback address, using multicast, and default UDP port
-    Configuration configNoLoopbackAddr =
-        batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameNoLoopbackAddr);
-    assertThat(configNoLoopbackAddr, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
-    Layer2Vni vnisNoAddr = configNoLoopbackAddr.getDefaultVrf().getLayer2Vnis().get(10002);
-
-    // Config with no source interface and general VXLAN unicast address
-    Configuration configNoSourceIface =
-        batfish.loadConfigurations(batfish.getSnapshot()).get(hostnameNoSourceIface);
-    assertThat(configNoSourceIface, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
-    Layer2Vni vnisNoIface = configNoSourceIface.getDefaultVrf().getLayer2Vnis().get(10002);
-
-    // Confirm VLAN-specific unicast address takes priority over the other addresses
-    assertThat(vnisBase, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
-    assertThat(vnisBase, hasBumTransportIps(contains(Ip.parse("1.1.1.10"))));
-    // Confirm source address is inherited from source interface
-    assertThat(vnisBase, hasSourceAddress(equalTo(Ip.parse("1.1.1.4"))));
-    // Confirm explicit UDP port is used
-    assertThat(vnisBase, hasUdpPort(equalTo(5555)));
-    // Confirm VLAN<->VNI mapping is applied
-    assertThat(vnisBase, hasVlan(equalTo(2)));
-
-    // Confirm multicast address is present
-    assertThat(vnisNoAddr, hasBumTransportMethod(equalTo(BumTransportMethod.MULTICAST_GROUP)));
-    assertThat(vnisNoAddr, hasBumTransportIps(contains(Ip.parse("227.10.1.1"))));
-    // Confirm no source address is present (no address specified for loopback interface)
-    assertThat(vnisNoAddr, hasSourceAddress(nullValue()));
-    // Confirm default UDP port is used even though none is supplied
-    assertThat(vnisNoAddr, hasUdpPort(equalTo(4789)));
-
-    // Confirm general VXLAN flood addresses are used
-    assertThat(vnisNoIface, hasBumTransportMethod(equalTo(BumTransportMethod.UNICAST_FLOOD_GROUP)));
-    assertThat(
-        vnisNoIface,
-        hasBumTransportIps(containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.6"))));
-    // Confirm no source address is present (no interface is linked to the VXLAN)
-    assertThat(vnisNoIface, hasSourceAddress(nullValue()));
-  }
-
-  @Test
-  public void testEosVxlanMisconfig() throws IOException {
-    String hostname = "eos-vxlan-misconfig";
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration config = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-
-    // Make sure that misconfigured VXLAN is still converted into VI model properly
-    assertThat(config, hasDefaultVrf(hasL2VniSettings(hasKey(10002))));
-    Layer2Vni vnisMisconfig = config.getDefaultVrf().getLayer2Vnis().get(10002);
-
-    // No BUM IPs specified
-    assertThat(vnisMisconfig, hasBumTransportIps(emptyIterable()));
-    // No source interface so no source address
-    assertThat(vnisMisconfig, hasSourceAddress(nullValue()));
-    // Confirm default UDP port is used
-    assertThat(vnisMisconfig, hasUdpPort(equalTo(4789)));
-    // Confirm VLAN<->VNI mapping is applied
-    assertThat(vnisMisconfig, hasVlan(equalTo(2)));
-  }
-
-  @Test
-  public void testEosTrunkGroup() throws IOException {
-    String hostname = "eos_trunk_group";
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-
-    assertThat(
-        c, hasInterface("Port-Channel1", hasAllowedVlans(IntegerSpace.of(Range.closed(1, 2)))));
-    assertThat(c, hasInterface("Port-Channel2", hasAllowedVlans(IntegerSpace.of(99))));
-  }
-
-  @Test
-  public void testEosVxlanCiscoConfig() {
-    String hostname = "eos-vxlan";
-
-    CiscoConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.ARISTA);
-
-    assertThat(config, notNullValue());
-    AristaEosVxlan eosVxlan = config.getEosVxlan();
-    assertThat(eosVxlan, notNullValue());
-
-    assertThat(eosVxlan.getDescription(), equalTo("vxlan vti"));
-    // Confirm flood address set doesn't contain the removed address
-    assertThat(
-        eosVxlan.getFloodAddresses(), containsInAnyOrder(Ip.parse("1.1.1.5"), Ip.parse("1.1.1.7")));
-    assertThat(eosVxlan.getMulticastGroup(), equalTo(Ip.parse("227.10.1.1")));
-    assertThat(eosVxlan.getSourceInterface(), equalTo("Loopback1"));
-    assertThat(eosVxlan.getUdpPort(), equalTo(5555));
-
-    assertThat(eosVxlan.getVlanVnis(), hasEntry(equalTo(2), equalTo(10002)));
-
-    // Confirm flood address set was overwritten as expected
-    assertThat(
-        eosVxlan.getVlanFloodAddresses(), hasEntry(equalTo(2), contains(Ip.parse("1.1.1.10"))));
-  }
-
-  @Test
-  public void testEosVxlanReference() throws IOException {
-    String hostname = "eos-vxlan";
-    String filename = "configs/" + hostname;
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-
-    assertThat(ccae, hasNumReferrers(filename, VXLAN, "Vxlan1", 1));
-    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "Loopback1", 2));
-  }
-
-  @Test
   public void testInterfaceNames() throws IOException {
     String testrigName = "interface-names";
     String iosHostname = "ios";
@@ -4469,7 +4117,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4490,7 +4138,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4610,7 +4258,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4648,7 +4296,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4706,7 +4354,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -4741,7 +4389,7 @@ public final class CiscoGrammarTest {
     batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     snapshot = batfish.getSnapshot();
@@ -4777,7 +4425,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
@@ -4868,7 +4516,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -4905,7 +4553,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -4940,7 +4588,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -4959,7 +4607,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
     batfish.getSettings().setDisableUnrecognized(false);
@@ -5016,143 +4664,6 @@ public final class CiscoGrammarTest {
         assertThat(vrf.getOspfProcesses().get("1").getRfc1583Compatible(), is(expectedResults[i]));
       }
     }
-  }
-
-  @Test
-  public void testAristaSubinterfaceMtu() throws IOException {
-    Configuration c = parseConfig("aristaInterface");
-
-    assertThat(c, hasInterface("Ethernet3/2/1.4", hasMtu(9000)));
-  }
-
-  @Test
-  public void testAristaDefaultSwitchPort() throws IOException {
-    Configuration cUndeclared = parseConfig("eos_switchport_default_mode_undeclared");
-    Configuration cDefaultAccess = parseConfig("eos_switchport_default_mode_access");
-    Configuration cDefaultRouted = parseConfig("eos_switchport_default_mode_routed");
-
-    String l0Name = "Loopback0";
-    String e0Name = "Ethernet0/0";
-    String e1Name = "Ethernet0/1";
-    String e2Name = "Ethernet0/2";
-    String e3Name = "Ethernet0/3";
-    String e4Name = "Ethernet0/4";
-    String p0Name = "Port-Channel0";
-
-    Interface l0Undeclared = cUndeclared.getAllInterfaces().get(l0Name);
-    Interface e0Undeclared = cUndeclared.getAllInterfaces().get(e0Name);
-    Interface e1Undeclared = cUndeclared.getAllInterfaces().get(e1Name);
-    Interface e2Undeclared = cUndeclared.getAllInterfaces().get(e2Name);
-    Interface e3Undeclared = cUndeclared.getAllInterfaces().get(e3Name);
-    Interface e4Undeclared = cUndeclared.getAllInterfaces().get(e4Name);
-    Interface p0Undeclared = cUndeclared.getAllInterfaces().get(p0Name);
-
-    Interface l0DefaultAccess = cDefaultAccess.getAllInterfaces().get(l0Name);
-    Interface e0DefaultAccess = cDefaultAccess.getAllInterfaces().get(e0Name);
-    Interface e1DefaultAccess = cDefaultAccess.getAllInterfaces().get(e1Name);
-    Interface e2DefaultAccess = cDefaultAccess.getAllInterfaces().get(e2Name);
-    Interface e3DefaultAccess = cDefaultAccess.getAllInterfaces().get(e3Name);
-    Interface e4DefaultAccess = cDefaultAccess.getAllInterfaces().get(e4Name);
-    Interface p0DefaultAccess = cDefaultAccess.getAllInterfaces().get(p0Name);
-
-    Interface l0DefaultRouted = cDefaultRouted.getAllInterfaces().get(l0Name);
-    Interface e0DefaultRouted = cDefaultRouted.getAllInterfaces().get(e0Name);
-    Interface e1DefaultRouted = cDefaultRouted.getAllInterfaces().get(e1Name);
-    Interface e2DefaultRouted = cDefaultRouted.getAllInterfaces().get(e2Name);
-    Interface e3DefaultRouted = cDefaultRouted.getAllInterfaces().get(e3Name);
-    Interface e4DefaultRouted = cDefaultRouted.getAllInterfaces().get(e4Name);
-    Interface p0DefaultRouted = cDefaultRouted.getAllInterfaces().get(p0Name);
-
-    assertThat(l0Undeclared, isSwitchport(false));
-    assertThat(l0Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e0Undeclared, isSwitchport(true));
-    assertThat(e0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e1Undeclared, isSwitchport(true));
-    assertThat(e1Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e2Undeclared, isSwitchport(true));
-    assertThat(e2Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e3Undeclared, isSwitchport(false));
-    assertThat(e3Undeclared, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e4Undeclared, isSwitchport(true));
-    assertThat(e4Undeclared, hasSwitchPortMode(SwitchportMode.TRUNK));
-    assertThat(p0Undeclared, isSwitchport(true));
-    assertThat(p0Undeclared, hasSwitchPortMode(SwitchportMode.ACCESS));
-
-    assertThat(l0DefaultAccess, isSwitchport(false));
-    assertThat(l0DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e0DefaultAccess, isSwitchport(true));
-    assertThat(e0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e1DefaultAccess, isSwitchport(true));
-    assertThat(e1DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e2DefaultAccess, isSwitchport(true));
-    assertThat(e2DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e3DefaultAccess, isSwitchport(false));
-    assertThat(e3DefaultAccess, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e4DefaultAccess, isSwitchport(true));
-    assertThat(e4DefaultAccess, hasSwitchPortMode(SwitchportMode.TRUNK));
-    assertThat(p0DefaultAccess, isSwitchport(true));
-    assertThat(p0DefaultAccess, hasSwitchPortMode(SwitchportMode.ACCESS));
-
-    assertThat(l0DefaultRouted, isSwitchport(false));
-    assertThat(l0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e0DefaultRouted, isSwitchport(false));
-    assertThat(e0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e1DefaultRouted, isSwitchport(true));
-    assertThat(e1DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e2DefaultRouted, isSwitchport(true));
-    assertThat(e2DefaultRouted, hasSwitchPortMode(SwitchportMode.ACCESS));
-    assertThat(e3DefaultRouted, isSwitchport(false));
-    assertThat(e3DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
-    assertThat(e4DefaultRouted, isSwitchport(true));
-    assertThat(e4DefaultRouted, hasSwitchPortMode(SwitchportMode.TRUNK));
-    assertThat(p0DefaultRouted, isSwitchport(false));
-    assertThat(p0DefaultRouted, hasSwitchPortMode(SwitchportMode.NONE));
-  }
-
-  @Test
-  public void testAristaDynamicSourceNat() throws IOException {
-    Configuration c = parseConfig("arista-dynamic-source-nat");
-    Interface iface = c.getAllInterfaces().get("Ethernet1");
-    assertThat(iface.getIncomingTransformation(), nullValue());
-    assertThat(
-        iface.getOutgoingTransformation(),
-        equalTo(
-            when(permittedByAcl("acl1"))
-                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
-                .build()));
-
-    iface = c.getAllInterfaces().get("Ethernet2");
-    assertThat(iface.getIncomingTransformation(), nullValue());
-    assertThat(
-        iface.getOutgoingTransformation(),
-        equalTo(
-            when(permittedByAcl("acl1"))
-                .apply(assignSourceIp(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2")))
-                .setOrElse(
-                    when(permittedByAcl("acl2"))
-                        .apply(assignSourceIp(Ip.parse("2.2.2.2"), Ip.parse("2.2.2.3")))
-                        .build())
-                .build()));
-
-    iface = c.getAllInterfaces().get("Ethernet3");
-    assertThat(iface.getIncomingTransformation(), nullValue());
-    assertThat(
-        iface.getOutgoingTransformation(),
-        equalTo(
-            when(permittedByAcl("acl1"))
-                // due to the subnet mask, shift the pool IPs to avoid network/bcast IPs.
-                .apply(assignSourceIp(Ip.parse("2.0.0.1"), Ip.parse("2.0.0.6")))
-                .build()));
-
-    iface = c.getAllInterfaces().get("Ethernet4");
-    assertThat(iface.getIncomingTransformation(), nullValue());
-    assertThat(
-        iface.getOutgoingTransformation(),
-        equalTo(
-            when(permittedByAcl("acl1"))
-                // overload rule, so use the interface IP
-                .apply(assignSourceIp(Ip.parse("8.8.8.8"), Ip.parse("8.8.8.8")))
-                .build()));
   }
 
   @Test
@@ -5337,16 +4848,6 @@ public final class CiscoGrammarTest {
     assertThat(e6, hasSwitchPortMode(SwitchportMode.TRUNK));
     assertThat(e6, hasSwitchPortEncapsulation(SwitchportEncapsulationType.NEGOTIATE));
     assertThat(e6.getAllowedVlans(), equalTo(IntegerSpace.of(Range.closed(5, 6))));
-  }
-
-  @Test
-  public void testArista100gfullInterface() throws IOException {
-    Configuration c = parseConfig("arista100gfull");
-    assertThat(
-        c,
-        hasInterface(
-            "Ethernet1/1",
-            hasAllAddresses(containsInAnyOrder(ConcreteInterfaceAddress.parse("10.20.0.3/31")))));
   }
 
   @Test
@@ -6378,43 +5879,6 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "undef-source-real"));
   }
 
-  /**
-   * Ensure that Arista redistributes a static default route even though default-originate is not
-   * explicitly specified in the config
-   */
-  @Test
-  public void testAristaDefaultRouteRedistribution() throws IOException {
-    final String receiver = "ios_receiver";
-    final String advertiser = "arista_advertiser";
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationText(
-                    TESTRIGS_PREFIX + "arista-redistribute-default-route",
-                    ImmutableList.of(advertiser, receiver))
-                .build(),
-            _folder);
-
-    NetworkSnapshot snapshot = batfish.getSnapshot();
-    batfish.computeDataPlane(snapshot);
-    Set<AbstractRoute> routes =
-        batfish.loadDataPlane(snapshot).getRibs().get(receiver).get(DEFAULT_VRF_NAME).getRoutes();
-
-    assertThat(
-        routes,
-        hasItem(
-            OspfExternalType2Route.builder()
-                .setNetwork(Prefix.ZERO)
-                .setNextHopIp(Ip.parse("1.2.3.5"))
-                .setArea(1)
-                .setCostToAdvertiser(1)
-                .setAdvertiser(advertiser)
-                .setAdmin(110)
-                .setMetric(1)
-                .setLsaMetric(1)
-                .build()));
-  }
-
   @Test
   public void testPortchannelSubinterfaceIsUp() throws IOException {
     Configuration config = parseConfig("ios-portchannel-subinterface");
@@ -6429,34 +5893,6 @@ public final class CiscoGrammarTest {
                 hasInterfaceType(InterfaceType.AGGREGATE_CHILD),
                 isActive(true),
                 hasBandwidth(eth1Bandwidth))));
-  }
-
-  @Test
-  public void testAristaAdvertiseInactive() throws IOException {
-    Configuration config = parseConfig("arista-advertise-inactive");
-    assertTrue(
-        config
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.1/32"))
-            .getIpv4UnicastAddressFamily()
-            .getAddressFamilyCapabilities()
-            .getAdvertiseInactive());
-  }
-
-  @Test
-  public void testAristaNoAdvertiseInactive() throws IOException {
-    Configuration config = parseConfig("arista-no-advertise-inactive");
-    assertFalse(
-        config
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.1/32"))
-            .getIpv4UnicastAddressFamily()
-            .getAddressFamilyCapabilities()
-            .getAdvertiseInactive());
   }
 
   @Test
@@ -6478,7 +5914,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + "ios-tunnels",
                     ImmutableList.of("n1-no-static-route", "n2-no-static-route"))
                 .build(),
@@ -6502,7 +5938,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + "ios-tunnels",
                     ImmutableList.of("n1-static-route", "n2-static-route"))
                 .build(),
@@ -6624,7 +6060,7 @@ public final class CiscoGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(
+                .setConfigurationFiles(
                     TESTRIGS_PREFIX + "ios-tunnels-eigrp",
                     ImmutableList.of("advertiser", "receiver"))
                 .build(),

@@ -26,7 +26,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -61,7 +62,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -84,7 +86,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -104,7 +107,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -212,7 +216,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -570,7 +575,8 @@
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE6_GEN:default:2607:f010:3f9:8000:0:0:0:0/52~"
               }
-            ]
+            ],
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -590,7 +596,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -733,7 +740,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -795,7 +803,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ROUTER_ID"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -869,7 +878,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -931,10 +941,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "mgmt" : {
-            "name" : "mgmt"
+            "name" : "mgmt",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -955,6 +967,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -994,12 +1007,13 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
       "arista_misc" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -1048,9 +1062,6 @@
           "cisco" : {
             "defaultSwitchportMode" : "NONE",
             "hostname" : "arista_misc",
-            "logging" : {
-              "on" : true
-            },
             "ntp" : {
               "servers" : {
                 "192.168.1.246" : {
@@ -1067,10 +1078,12 @@
         },
         "vrfs" : {
           "MGMT" : {
-            "name" : "MGMT"
+            "name" : "MGMT",
+            "hasOriginatingSessions" : false
           },
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1174,27 +1187,52 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
       "arista_ospf" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet1" : {
+            "name" : "Ethernet1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Ethernet1"
+            ],
+            "mtu" : 1500,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_ospf",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_ospf"
           }
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1214,7 +1252,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1239,14 +1278,15 @@
               },
               "noc" : {
                 "name" : "noc",
-                "password" : "bee05f48f9aed7d383bf9b82553b31b06fc417df4ac06a02120c51271d396453"
+                "password" : "57eaabe63a5726f36e16ec9ba5aba7bd944d511a2c2226c131fb3aade3671252"
               }
             }
           }
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1266,11 +1306,13 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "vrfName" : {
             "name" : "vrfName",
-            "description" : "descriptive sentence"
+            "description" : "descriptive sentence",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1294,7 +1336,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1314,7 +1357,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1334,7 +1378,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1364,7 +1409,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1389,7 +1435,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1444,7 +1491,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1472,7 +1520,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1492,7 +1541,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1509,7 +1559,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1533,6 +1584,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "snmpServer" : {
               "communities" : {
                 "abc" : {
@@ -1572,7 +1624,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1592,7 +1645,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1612,7 +1666,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1632,7 +1687,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1652,7 +1708,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -1695,7 +1752,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -2051,7 +2109,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         },
         "zones" : {
@@ -2866,7 +2925,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -2894,7 +2954,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -2952,7 +3013,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -2977,7 +3039,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -3119,7 +3182,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -3302,7 +3366,8 @@
                 "routerId" : "192.168.1.0",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         },
         "zones" : {
@@ -3338,7 +3403,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -3600,7 +3666,8 @@
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -3645,7 +3712,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -3906,7 +3974,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4191,7 +4260,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4240,7 +4310,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4361,7 +4432,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4417,7 +4489,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4581,7 +4654,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4877,7 +4951,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -4897,7 +4972,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5145,7 +5221,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5177,7 +5254,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5232,6 +5310,7 @@
             "declaredNames" : [
               "ethernet6/0.48"
             ],
+            "encapsulationVlan" : 48,
             "mtu" : 1500,
             "prefix" : "22.33.44.55/30",
             "proxyArp" : false,
@@ -5570,16 +5649,20 @@
         },
         "vrfs" : {
           "bleepvrf" : {
-            "name" : "bleepvrf"
+            "name" : "bleepvrf",
+            "hasOriginatingSessions" : false
           },
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "foovrf" : {
-            "name" : "foovrf"
+            "name" : "foovrf",
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5597,6 +5680,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -5638,6 +5722,7 @@
           },
           "foobar" : {
             "name" : "foobar",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -5661,6 +5746,7 @@
           },
           "management" : {
             "name" : "management",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -5689,6 +5775,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "isisProcess" : {
               "level1" : {
                 "wideMetricsOnly" : false
@@ -5712,7 +5799,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5742,7 +5830,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5781,10 +5870,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "vrf-foo1" : {
-            "name" : "vrf-foo1"
+            "name" : "vrf-foo1",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5845,7 +5936,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5862,7 +5954,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5885,6 +5978,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "ripProcess" : {
               "exportPolicy" : "~RIP_EXPORT_POLICY:default~"
             }
@@ -5924,7 +6018,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -5946,6 +6041,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "snmpServer" : {
               "communities" : {
                 "somepassword" : {
@@ -5981,7 +6077,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         },
         "zones" : {
@@ -6076,7 +6173,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -7031,7 +7129,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -7087,7 +7186,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -7107,7 +7207,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -7844,7 +7945,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "default" : {
             "name" : "default",
@@ -7856,7 +7958,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -7905,6 +8008,13 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "confederation" : {
+                "id" : 100,
+                "members" : [
+                  10,
+                  11
+                ]
+              },
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "0.0.0.0",
@@ -7912,7 +8022,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -7999,7 +8110,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8020,7 +8132,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8040,7 +8153,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8060,7 +8174,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8230,7 +8345,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8255,7 +8371,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8281,7 +8398,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8301,7 +8419,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8321,7 +8440,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8341,7 +8461,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8361,7 +8482,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8811,7 +8933,8 @@
         },
         "vrfs" : {
           "autonomous-system" : {
-            "name" : "autonomous-system"
+            "name" : "autonomous-system",
+            "hasOriginatingSessions" : false
           },
           "default" : {
             "name" : "default",
@@ -8822,7 +8945,8 @@
                 "exportPolicy" : "~EIGRP_EXPORT_POLICY:default:5~",
                 "routerId" : "100.1.1.1"
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8843,7 +8967,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8889,7 +9014,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8909,7 +9035,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -8955,7 +9082,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -9091,27 +9219,6 @@
               "helloMultiplier" : 0,
               "networkType" : "BROADCAST",
               "passive" : false
-            },
-            "outgoingTransformation" : {
-              "guard" : {
-                "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                "aclName" : "def"
-              },
-              "transformationSteps" : [
-                {
-                  "class" : "org.batfish.datamodel.transformation.AssignIpAddressFromPool",
-                  "ipField" : "SOURCE",
-                  "ipRanges" : [
-                    {
-                      "lowerEndpoint" : "1.2.3.4",
-                      "lowerBoundType" : "CLOSED",
-                      "upperEndpoint" : "1.2.3.4",
-                      "upperBoundType" : "CLOSED"
-                    }
-                  ],
-                  "transformationType" : "SOURCE_NAT"
-                }
-              ]
             },
             "prefix" : "1.2.3.4/30",
             "proxyArp" : false,
@@ -9716,10 +9823,12 @@
         },
         "vrfs" : {
           "U_VRF" : {
-            "name" : "U_VRF"
+            "name" : "U_VRF",
+            "hasOriginatingSessions" : false
           },
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         },
         "zones" : {
@@ -9837,7 +9946,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -9860,7 +9970,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -9880,7 +9991,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -9901,6 +10013,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -10005,6 +10118,7 @@
           },
           "myvrf" : {
             "name" : "myvrf",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -10035,7 +10149,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -10055,7 +10170,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -10311,7 +10427,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -10535,6 +10652,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "isisProcess" : {
               "level1" : {
                 "wideMetricsOnly" : false
@@ -10569,7 +10687,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11128,7 +11247,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11190,7 +11310,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11210,7 +11331,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11267,7 +11389,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11287,7 +11410,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11307,7 +11431,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11327,7 +11452,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11364,10 +11490,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "some-vrf" : {
-            "name" : "some-vrf"
+            "name" : "some-vrf",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11728,7 +11856,8 @@
                 "routerId" : "1.2.3.4",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -11786,7 +11915,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12064,7 +12194,8 @@
                 "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12122,7 +12253,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12142,7 +12274,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12162,7 +12295,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12182,7 +12316,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12277,7 +12412,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12297,7 +12433,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12317,7 +12454,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12343,6 +12481,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "ripProcess" : {
               "exportPolicy" : "~RIP_EXPORT_POLICY:default~"
             }
@@ -12365,7 +12504,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12613,7 +12753,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12633,7 +12774,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12658,6 +12800,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "snmpServer" : {
               "communities" : {
                 "dummy+dummy" : {
@@ -12793,7 +12936,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12816,7 +12960,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12836,7 +12981,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12891,7 +13037,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12946,7 +13093,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12967,7 +13115,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -12997,7 +13146,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13078,7 +13228,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13109,7 +13260,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13129,7 +13281,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13149,7 +13302,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13169,7 +13323,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13189,7 +13344,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13209,7 +13365,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13267,7 +13424,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13287,7 +13445,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13307,7 +13466,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -13437,7 +13597,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "default" : {
             "name" : "default",
@@ -13449,7 +13610,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -14917,7 +15079,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -14992,7 +15155,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -15067,7 +15231,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -15155,7 +15320,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -15501,7 +15667,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -16479,6 +16646,7 @@
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -16492,7 +16660,8 @@
             ]
           },
           "mgmt" : {
-            "name" : "mgmt"
+            "name" : "mgmt",
+            "hasOriginatingSessions" : false
           },
           "vrf1" : {
             "name" : "vrf1",
@@ -16505,6 +16674,7 @@
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -16717,7 +16887,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "vrf1" : {
             "name" : "vrf1",
@@ -16754,7 +16925,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -16834,7 +17006,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -16960,7 +17133,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "vrf1" : {
             "name" : "vrf1",
@@ -16972,7 +17146,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17056,7 +17231,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17136,7 +17312,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : true,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17464,7 +17641,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17546,7 +17724,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17607,10 +17786,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "vrf1" : {
-            "name" : "vrf1"
+            "name" : "vrf1",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17691,10 +17872,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "vrf1" : {
-            "name" : "vrf1"
+            "name" : "vrf1",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17780,7 +17963,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17885,10 +18069,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "vrf1" : {
-            "name" : "vrf1"
+            "name" : "vrf1",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -17930,7 +18116,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18016,7 +18203,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18096,7 +18284,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18139,7 +18328,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18259,7 +18449,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18280,7 +18471,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18320,6 +18512,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "kernelRoutes" : [
               {
                 "class" : "org.batfish.datamodel.KernelRoute",
@@ -18349,6 +18542,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -18519,6 +18713,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -18687,7 +18882,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18742,7 +18938,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18778,7 +18975,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18803,7 +19001,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -18824,7 +19023,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -19181,7 +19381,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -19331,7 +19532,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -19384,7 +19586,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ROUTER_ID"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -19427,7 +19630,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -19451,6 +19655,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -19478,7 +19683,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -19880,6 +20086,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -20129,7 +20336,8 @@
                 "routerId" : "2.130.0.1",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -20427,7 +20635,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -20630,7 +20839,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -20712,7 +20922,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -20821,7 +21032,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -20871,7 +21083,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21070,7 +21283,8 @@
                 "routerId" : "10.1.2.3",
                 "summaryAdminCost" : 10
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21094,7 +21308,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21118,7 +21333,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21138,7 +21354,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21194,7 +21411,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21240,7 +21458,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21286,7 +21505,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21332,7 +21552,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21378,7 +21599,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21442,7 +21664,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21462,7 +21685,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21518,7 +21742,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21531,7 +21756,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21755,7 +21981,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ROUTER_ID"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21962,7 +22189,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -21975,7 +22203,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22023,7 +22252,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22036,7 +22266,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22049,7 +22280,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22062,7 +22294,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22078,7 +22311,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22557,7 +22791,8 @@
                 "routerId" : "169.232.1.4",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22571,6 +22806,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -22675,7 +22911,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22688,7 +22925,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22701,7 +22939,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22733,7 +22972,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22753,7 +22993,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22773,7 +23014,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -22953,7 +23195,8 @@
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
-            ]
+            ],
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -23073,7 +23316,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -23118,7 +23362,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -23163,7 +23408,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -23208,7 +23454,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -23653,7 +23900,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -24061,7 +24309,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -24198,7 +24447,8 @@
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -24328,7 +24578,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -25483,7 +25734,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -25528,7 +25780,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -25582,8 +25835,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : true,
-            "switchportMode" : "ACCESS",
+            "switchport" : false,
+            "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATE_CHILD",
             "vrf" : "default"
@@ -25991,8 +26244,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : true,
-            "switchportMode" : "ACCESS",
+            "switchport" : false,
+            "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
             "vrf" : "default"
@@ -26037,8 +26290,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : true,
-            "switchportMode" : "ACCESS",
+            "switchport" : false,
+            "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "LOGICAL",
             "vrf" : "default"
@@ -26103,10 +26356,12 @@
         },
         "vrfs" : {
           "SOME_INSTANCE" : {
-            "name" : "SOME_INSTANCE"
+            "name" : "SOME_INSTANCE",
+            "hasOriginatingSessions" : false
           },
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26199,7 +26454,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26244,7 +26500,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26290,10 +26547,12 @@
         },
         "vrfs" : {
           "ROUTING_INSTANCE" : {
-            "name" : "ROUTING_INSTANCE"
+            "name" : "ROUTING_INSTANCE",
+            "hasOriginatingSessions" : false
           },
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26566,7 +26825,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         },
         "zones" : {
@@ -26623,7 +26883,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26757,7 +27018,8 @@
                 "routerId" : "1.1.1.1",
                 "summaryAdminCost" : 10
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26819,7 +27081,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26921,7 +27184,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -26966,7 +27230,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -27325,7 +27590,8 @@
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "default" : {
             "name" : "default",
@@ -27371,7 +27637,8 @@
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -27627,7 +27894,8 @@
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "default" : {
             "name" : "default",
@@ -27639,7 +27907,8 @@
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -27866,7 +28135,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -28328,7 +28598,8 @@
                 "tag" : -1
               }
             ],
-            "crossVrfImportPolicy" : "~INSTANCE_IMPORT_POLICY_default~"
+            "crossVrfImportPolicy" : "~INSTANCE_IMPORT_POLICY_default~",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -28495,7 +28766,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -28528,7 +28800,8 @@
             },
             "ikePhase1Proposals" : [
               "PROPOSAL"
-            ]
+            ],
+            "localInterface" : "unset_local_interface"
           }
         },
         "ikePhase1Proposals" : {
@@ -29621,7 +29894,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         },
         "zones" : {
@@ -29690,6 +29964,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "snmpServer" : {
               "communities" : {
                 "\"dummycommunity\"" : {
@@ -29757,7 +30032,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -29802,7 +30078,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -29863,7 +30140,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -29908,7 +30186,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30002,7 +30281,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30015,7 +30295,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30071,7 +30352,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30091,7 +30373,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30104,7 +30387,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30220,7 +30504,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30261,7 +30546,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30281,7 +30567,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30312,7 +30599,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30326,14 +30614,15 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs",
+            "region" : "us-west-2",
             "subnetId" : "subnet-a9660ce1",
             "vpcId" : "vpc-50fffd36"
           }
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30347,14 +30636,15 @@
         "domainName" : "aws",
         "vendorFamily" : {
           "aws" : {
-            "region" : "aws_configs",
+            "region" : "us-west-2",
             "subnetId" : "subnet-3e7e3458",
             "vpcId" : "vpc-50fffd36"
           }
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30630,7 +30920,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30698,7 +30989,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30718,7 +31010,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30738,7 +31031,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30758,7 +31052,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30808,7 +31103,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -30828,7 +31124,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -31001,7 +31298,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -31067,7 +31365,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -31390,10 +31689,12 @@
                 }
               },
               "tieBreaker" : "ROUTER_ID"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -31482,10 +31783,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -31503,10 +31806,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -31527,10 +31832,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -31638,7 +31945,8 @@
                 "routerId" : "5.6.7.8",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "default" : {
             "name" : "default",
@@ -31679,7 +31987,8 @@
                 "routerId" : "5.6.7.8",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "foo" : {
             "name" : "foo",
@@ -31699,10 +32008,12 @@
                 "routerId" : "0.0.0.0",
                 "summaryAdminCost" : 254
               }
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -33538,10 +33849,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -33559,10 +33872,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -33580,10 +33895,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -33601,10 +33918,12 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           },
           "management" : {
             "name" : "management",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -33627,6 +33946,7 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -33657,7 +33977,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -33754,7 +34075,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -33768,6 +34090,7 @@
         "vrfs" : {
           "vr1" : {
             "name" : "vr1",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -33782,7 +34105,8 @@
             ]
           },
           "vr2" : {
-            "name" : "vr2"
+            "name" : "vr2",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -34322,7 +34646,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "~NULL_VRF~" : {
-            "name" : "~NULL_VRF~"
+            "name" : "~NULL_VRF~",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -34581,7 +34906,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "~NULL_VRF~" : {
-            "name" : "~NULL_VRF~"
+            "name" : "~NULL_VRF~",
+            "hasOriginatingSessions" : false
           }
         },
         "zones" : {
@@ -34659,7 +34985,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -34679,7 +35006,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -34754,7 +35082,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -34824,7 +35153,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -35702,7 +36032,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -35775,7 +36106,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -35929,7 +36261,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -36148,7 +36481,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -36168,7 +36502,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -38378,7 +38713,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -38492,7 +38828,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -38512,7 +38849,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -38559,7 +38897,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -38579,7 +38918,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -38592,7 +38932,8 @@
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -39041,7 +39382,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -39061,7 +39403,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -39092,7 +39435,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -39138,7 +39482,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -39184,7 +39529,8 @@
         },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -39240,7 +39586,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           }
         }
       },
@@ -40884,13 +41231,16 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "hasOriginatingSessions" : false
           },
           "fabric" : {
-            "name" : "fabric"
+            "name" : "fabric",
+            "hasOriginatingSessions" : false
           },
           "vr" : {
-            "name" : "vr"
+            "name" : "vr",
+            "hasOriginatingSessions" : false
           }
         }
       }

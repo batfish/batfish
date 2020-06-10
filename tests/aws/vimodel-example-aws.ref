@@ -2,14 +2,1106 @@
   {
     "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelAnswerElement",
     "nodes" : {
-      "aws-backbone" : {
+      "es-domain" : {
+        "configurationFormat" : "AWS",
+        "name" : "es-domain",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_ELASTICSEARCH_DOMAIN",
+        "deviceType" : "HOST",
+        "domainName" : "aws",
+        "interfaces" : {
+          "es-domain-subnet-1641fa70" : {
+            "name" : "es-domain-subnet-1641fa70",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.168.1.2/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet subnet-1641fa70",
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : false,
+              "sessionInterfaces" : [
+                "es-domain-subnet-1641fa70"
+              ]
+            },
+            "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
+            "mtu" : 1500,
+            "outgoingFilter" : "~EGRESS_ACL~es-domain-subnet-1641fa70",
+            "prefix" : "192.168.1.2/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "es-domain-subnet-7044ff16" : {
+            "name" : "es-domain-subnet-7044ff16",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.168.2.2/28"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet subnet-7044ff16",
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : false,
+              "sessionInterfaces" : [
+                "es-domain-subnet-7044ff16"
+              ]
+            },
+            "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
+            "mtu" : 1500,
+            "outgoingFilter" : "~EGRESS_ACL~es-domain-subnet-7044ff16",
+            "prefix" : "192.168.2.2/28",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~EGRESS_ACL~es-domain-subnet-1641fa70" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.NotMatchExpr",
+                  "operand" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "headerSpace" : {
+                      "negate" : false,
+                      "srcIps" : {
+                        "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+                        "whitelist" : [
+                          "192.168.1.2"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Deny spoofed source IPs"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.AclAclLine",
+                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
+                "name" : "Security Group default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched security group default"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~EGRESS_ACL~es-domain-subnet-1641fa70"
+          },
+          "~EGRESS_ACL~es-domain-subnet-7044ff16" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.NotMatchExpr",
+                  "operand" : {
+                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                    "headerSpace" : {
+                      "negate" : false,
+                      "srcIps" : {
+                        "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+                        "whitelist" : [
+                          "192.168.2.2"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Deny spoofed source IPs"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.AclAclLine",
+                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
+                "name" : "Security Group default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched security group default"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~EGRESS_ACL~es-domain-subnet-7044ff16"
+          },
+          "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
+                    },
+                    "negate" : false
+                  },
+                  "traceElement" : {
+                    "fragments" : [
+                      {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched destination address CIDR IP 0.0.0.0/0"
+                      }
+                    ]
+                  }
+                },
+                "name" : "sg-3dfb3140 - default [egress] 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched rule with no description"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
+          },
+          "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "srcIps" : {
+                          "class" : "org.batfish.datamodel.IpIpSpace",
+                          "ip" : "192.168.1.3"
+                        }
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched instance test-rds"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "traceElement" : {
+                    "fragments" : [
+                      {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched source address Security Group default"
+                      }
+                    ]
+                  }
+                },
+                "name" : "sg-3dfb3140 - default [ingress] 0",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched rule with no description"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
+          },
+          "~SECURITY_GROUP_INGRESS_ACL~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.AclAclLine",
+                "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
+                "name" : "Security Group default",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched security group default"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~SECURITY_GROUP_INGRESS_ACL~"
+          }
+        },
+        "vendorFamily" : {
+          "aws" : {
+            "region" : "us-west-2",
+            "vpcId" : "vpc-b390fad5"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "hasOriginatingSessions" : true,
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "192.168.1.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "dynamic",
+                "nextHopIp" : "192.168.2.1",
+                "tag" : -1
+              }
+            ]
+          }
+        }
+      },
+      "igw-068fee63" : {
+        "configurationFormat" : "AWS",
+        "name" : "igw-068fee63",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_INTERNET_GATEWAY",
+        "deviceType" : "ROUTER",
+        "domainName" : "aws",
+        "interfaces" : {
+          "backbone" : {
+            "name" : "backbone",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To AWS backbone",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-f8fad69d" : {
+            "name" : "vpc-f8fad69d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-f8fad69d",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Allowed private instance IPs associated with a public IP"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
+          }
+        },
+        "routingPolicies" : {
+          "AwsInternetGatewayExportPolicy" : {
+            "name" : "AwsInternetGatewayExportPolicy",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocols" : [
+                        "static"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [ ]
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "incomplete"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "aws" : {
+            "region" : "us-west-2"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "169.254.0.1",
+              "interfaceNeighbors" : {
+                "backbone" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
+                    "exportPolicySources" : [
+                      "AwsInternetGatewayExportPolicy"
+                    ],
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 65534,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "backbone",
+                  "remoteAsns" : "16509"
+                }
+              },
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "hasOriginatingSessions" : false,
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.31.0.0/16",
+                "nextHopInterface" : "vpc-f8fad69d",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
+            ]
+          }
+        }
+      },
+      "igw-9b93ddfc" : {
+        "configurationFormat" : "AWS",
+        "name" : "igw-9b93ddfc",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_INTERNET_GATEWAY",
+        "deviceType" : "ROUTER",
+        "domainName" : "aws",
+        "humanName" : "Arista Demo",
+        "interfaces" : {
+          "backbone" : {
+            "name" : "backbone",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To AWS backbone",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-b390fad5" : {
+            "name" : "vpc-b390fad5",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-b390fad5",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Allowed private instance IPs associated with a public IP"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
+          }
+        },
+        "routingPolicies" : {
+          "AwsInternetGatewayExportPolicy" : {
+            "name" : "AwsInternetGatewayExportPolicy",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocols" : [
+                        "static"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [ ]
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "incomplete"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "aws" : {
+            "region" : "us-west-2"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "169.254.0.1",
+              "interfaceNeighbors" : {
+                "backbone" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
+                    "exportPolicySources" : [
+                      "AwsInternetGatewayExportPolicy"
+                    ],
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 65534,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "backbone",
+                  "remoteAsns" : "16509"
+                }
+              },
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "hasOriginatingSessions" : false,
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.0.0/16",
+                "nextHopInterface" : "vpc-b390fad5",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
+            ]
+          }
+        }
+      },
+      "igw-fac5839d" : {
+        "configurationFormat" : "AWS",
+        "name" : "igw-fac5839d",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "AWS_INTERNET_GATEWAY",
+        "deviceType" : "ROUTER",
+        "domainName" : "aws",
+        "interfaces" : {
+          "backbone" : {
+            "name" : "backbone",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To AWS backbone",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-925131f4" : {
+            "name" : "vpc-925131f4",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-925131f4",
+            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "ipAccessLists" : {
+          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+                    }
+                  }
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Allowed private instance IPs associated with a public IP"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Denied private instance IPs NOT associated with a public IP"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
+          }
+        },
+        "routingPolicies" : {
+          "AwsInternetGatewayExportPolicy" : {
+            "name" : "AwsInternetGatewayExportPolicy",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocols" : [
+                        "static"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [ ]
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "incomplete"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "aws" : {
+            "region" : "us-west-2"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "169.254.0.1",
+              "interfaceNeighbors" : {
+                "backbone" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
+                    "exportPolicySources" : [
+                      "AwsInternetGatewayExportPolicy"
+                    ],
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 65534,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "backbone",
+                  "remoteAsns" : "16509"
+                }
+              },
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "hasOriginatingSessions" : false,
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.0.0/16",
+                "nextHopInterface" : "vpc-925131f4",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              }
+            ]
+          }
+        }
+      },
+      "internet" : {
         "configurationFormat" : "CISCO_IOS",
-        "name" : "aws-backbone",
+        "name" : "internet",
+        "deviceModel" : "BATFISH_INTERNET",
+        "deviceType" : "INTERNET",
+        "interfaces" : {
+          "To-isp_16509" : {
+            "name" : "To-isp_16509",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
+          "out" : {
+            "name" : "out",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "240.254.254.1/30"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "prefix" : "240.254.254.1/30",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          }
+        },
+        "routingPolicies" : {
+          "exportPolicyOnInternet" : {
+            "name" : "exportPolicyOnInternet",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocols" : [
+                        "static"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "incomplete"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "240.254.254.1",
+              "interfaceNeighbors" : {
+                "To-isp_16509" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnInternet",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 65537,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "To-isp_16509",
+                  "remoteAsns" : "16509"
+                }
+              },
+              "multipathEbgp" : true,
+              "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
+            "hasOriginatingSessions" : false,
+            "staticRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "0.0.0.0/0",
+                "nextHopInterface" : "out",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.0.0/8",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "172.16.0.0/12",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "192.168.0.0/16",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              }
+            ]
+          }
+        }
+      },
+      "isp_16509" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "isp_16509",
         "deviceModel" : "BATFISH_ISP",
         "deviceType" : "ISP",
+        "humanName" : "aws-backbone",
         "interfaces" : {
-          "To Internet" : {
-            "name" : "To Internet",
+          "To-Internet" : {
+            "name" : "To-Internet",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -30,8 +1122,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "~Interface_0~" : {
-            "name" : "~Interface_0~",
+          "To-igw-068fee63" : {
+            "name" : "To-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -50,8 +1142,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "~Interface_1~" : {
-            "name" : "~Interface_1~",
+          "To-igw-9b93ddfc" : {
+            "name" : "To-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -70,8 +1162,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "~Interface_2~" : {
-            "name" : "~Interface_2~",
+          "To-igw-fac5839d" : {
+            "name" : "To-igw-fac5839d",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -1871,7 +2963,7 @@
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
               "interfaceNeighbors" : {
-                "To Internet" : {
+                "To-Internet" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1893,10 +2985,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To Internet",
+                  "peerInterface" : "To-Internet",
                   "remoteAsns" : "65537"
                 },
-                "~Interface_0~" : {
+                "To-igw-068fee63" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1918,10 +3010,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "~Interface_0~",
+                  "peerInterface" : "To-igw-068fee63",
                   "remoteAsns" : "65534"
                 },
-                "~Interface_1~" : {
+                "To-igw-9b93ddfc" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1943,10 +3035,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "~Interface_1~",
+                  "peerInterface" : "To-igw-9b93ddfc",
                   "remoteAsns" : "65534"
                 },
-                "~Interface_2~" : {
+                "To-igw-fac5839d" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -1968,7 +3060,7 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "~Interface_2~",
+                  "peerInterface" : "To-igw-fac5839d",
                   "remoteAsns" : "65534"
                 }
               },
@@ -1976,6 +3068,7 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -14050,1092 +15143,6 @@
           }
         }
       },
-      "es-domain" : {
-        "configurationFormat" : "AWS",
-        "name" : "es-domain",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_ELASTICSEARCH_DOMAIN",
-        "deviceType" : "HOST",
-        "domainName" : "aws",
-        "interfaces" : {
-          "es-domain-subnet-1641fa70" : {
-            "name" : "es-domain-subnet-1641fa70",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "192.168.1.2/24"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet subnet-1641fa70",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "es-domain-subnet-1641fa70"
-              ]
-            },
-            "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-            "mtu" : 1500,
-            "outgoingFilter" : "~EGRESS_ACL~es-domain-subnet-1641fa70",
-            "prefix" : "192.168.1.2/24",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "es-domain-subnet-7044ff16" : {
-            "name" : "es-domain-subnet-7044ff16",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "192.168.2.2/28"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet subnet-7044ff16",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "es-domain-subnet-7044ff16"
-              ]
-            },
-            "incomingFilter" : "~SECURITY_GROUP_INGRESS_ACL~",
-            "mtu" : 1500,
-            "outgoingFilter" : "~EGRESS_ACL~es-domain-subnet-7044ff16",
-            "prefix" : "192.168.2.2/28",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          }
-        },
-        "ipAccessLists" : {
-          "~EGRESS_ACL~es-domain-subnet-1641fa70" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.NotMatchExpr",
-                  "operand" : {
-                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                    "headerSpace" : {
-                      "negate" : false,
-                      "srcIps" : {
-                        "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
-                        "whitelist" : [
-                          "192.168.1.2"
-                        ]
-                      }
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Deny spoofed source IPs"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~EGRESS_ACL~es-domain-subnet-1641fa70"
-          },
-          "~EGRESS_ACL~es-domain-subnet-7044ff16" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.NotMatchExpr",
-                  "operand" : {
-                    "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                    "headerSpace" : {
-                      "negate" : false,
-                      "srcIps" : {
-                        "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
-                        "whitelist" : [
-                          "192.168.2.2"
-                        ]
-                      }
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Deny spoofed source IPs"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~EGRESS_ACL~es-domain-subnet-7044ff16"
-          },
-          "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false
-                  },
-                  "traceElement" : {
-                    "fragments" : [
-                      {
-                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Matched destination address CIDR IP 0.0.0.0/0"
-                      }
-                    ]
-                  }
-                },
-                "name" : "sg-3dfb3140 - default [egress] 0",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched rule with no description"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~EGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
-          },
-          "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                      "headerSpace" : {
-                        "negate" : false,
-                        "srcIps" : {
-                          "class" : "org.batfish.datamodel.IpIpSpace",
-                          "ip" : "192.168.1.3"
-                        }
-                      },
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched instance test-rds"
-                          }
-                        ]
-                      }
-                    }
-                  ],
-                  "traceElement" : {
-                    "fragments" : [
-                      {
-                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                        "text" : "Matched source address Security Group default"
-                      }
-                    ]
-                  }
-                },
-                "name" : "sg-3dfb3140 - default [ingress] 0",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched rule with no description"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
-          },
-          "~SECURITY_GROUP_INGRESS_ACL~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~",
-                "name" : "Security Group default",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched security group default"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~SECURITY_GROUP_INGRESS_ACL~"
-          }
-        },
-        "vendorFamily" : {
-          "aws" : {
-            "region" : "us-west-2",
-            "vpcId" : "vpc-b390fad5"
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "0.0.0.0/0",
-                "nextHopInterface" : "dynamic",
-                "nextHopIp" : "192.168.1.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "0.0.0.0/0",
-                "nextHopInterface" : "dynamic",
-                "nextHopIp" : "192.168.2.1",
-                "tag" : -1
-              }
-            ]
-          }
-        }
-      },
-      "igw-068fee63" : {
-        "configurationFormat" : "AWS",
-        "name" : "igw-068fee63",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_INTERNET_GATEWAY",
-        "deviceType" : "ROUTER",
-        "domainName" : "aws",
-        "interfaces" : {
-          "backbone" : {
-            "name" : "backbone",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To AWS backbone",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-f8fad69d" : {
-            "name" : "vpc-f8fad69d",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          }
-        },
-        "ipAccessLists" : {
-          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Allowed private instance IPs associated with a public IP"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Denied private instance IPs NOT associated with a public IP"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
-          }
-        },
-        "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "static"
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
-                      }
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "incomplete"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "vendorFamily" : {
-          "aws" : {
-            "region" : "us-west-2"
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "bgpProcess" : {
-              "ebgpAdminCost" : 20,
-              "ibgpAdminCost" : 200,
-              "routerId" : "169.254.0.1",
-              "interfaceNeighbors" : {
-                "backbone" : {
-                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 65534,
-                  "localIp" : "169.254.0.1",
-                  "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
-                }
-              },
-              "multipathEbgp" : false,
-              "multipathIbgp" : false,
-              "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "172.31.0.0/16",
-                "nextHopInterface" : "vpc-f8fad69d",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              }
-            ]
-          }
-        }
-      },
-      "igw-9b93ddfc" : {
-        "configurationFormat" : "AWS",
-        "name" : "igw-9b93ddfc",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_INTERNET_GATEWAY",
-        "deviceType" : "ROUTER",
-        "domainName" : "aws",
-        "humanName" : "Arista Demo",
-        "interfaces" : {
-          "backbone" : {
-            "name" : "backbone",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To AWS backbone",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-b390fad5" : {
-            "name" : "vpc-b390fad5",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          }
-        },
-        "ipAccessLists" : {
-          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Allowed private instance IPs associated with a public IP"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Denied private instance IPs NOT associated with a public IP"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
-          }
-        },
-        "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "static"
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
-                      }
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "incomplete"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "vendorFamily" : {
-          "aws" : {
-            "region" : "us-west-2"
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "bgpProcess" : {
-              "ebgpAdminCost" : 20,
-              "ibgpAdminCost" : 200,
-              "routerId" : "169.254.0.1",
-              "interfaceNeighbors" : {
-                "backbone" : {
-                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 65534,
-                  "localIp" : "169.254.0.1",
-                  "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
-                }
-              },
-              "multipathEbgp" : false,
-              "multipathIbgp" : false,
-              "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.0.0/16",
-                "nextHopInterface" : "vpc-b390fad5",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              }
-            ]
-          }
-        }
-      },
-      "igw-fac5839d" : {
-        "configurationFormat" : "AWS",
-        "name" : "igw-fac5839d",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "AWS_INTERNET_GATEWAY",
-        "deviceType" : "ROUTER",
-        "domainName" : "aws",
-        "interfaces" : {
-          "backbone" : {
-            "name" : "backbone",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To AWS backbone",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-925131f4" : {
-            "name" : "vpc-925131f4",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-925131f4",
-            "incomingFilter" : "~DENY~UNASSOCIATED~PRIVATE~IPs~",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          }
-        },
-        "ipAccessLists" : {
-          "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Allowed private instance IPs associated with a public IP"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.TrueExpr"
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Denied private instance IPs NOT associated with a public IP"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
-          }
-        },
-        "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "static"
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [ ]
-                      }
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "incomplete"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "vendorFamily" : {
-          "aws" : {
-            "region" : "us-west-2"
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "bgpProcess" : {
-              "ebgpAdminCost" : 20,
-              "ibgpAdminCost" : 200,
-              "routerId" : "169.254.0.1",
-              "interfaceNeighbors" : {
-                "backbone" : {
-                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 65534,
-                  "localIp" : "169.254.0.1",
-                  "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
-                }
-              },
-              "multipathEbgp" : false,
-              "multipathIbgp" : false,
-              "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "10.0.0.0/16",
-                "nextHopInterface" : "vpc-925131f4",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              }
-            ]
-          }
-        }
-      },
-      "internet" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "internet",
-        "deviceModel" : "BATFISH_INTERNET",
-        "deviceType" : "INTERNET",
-        "interfaces" : {
-          "out" : {
-            "name" : "out",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "240.254.254.1/30"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "mtu" : 1500,
-            "prefix" : "240.254.254.1/30",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
-            "vrf" : "default"
-          },
-          "~Interface_3~" : {
-            "name" : "~Interface_3~",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
-            "vrf" : "default"
-          }
-        },
-        "routingPolicies" : {
-          "exportPolicyOnInternet" : {
-            "name" : "exportPolicyOnInternet",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "static"
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [
-                          "0.0.0.0/0"
-                        ]
-                      }
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "incomplete"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "vendorFamily" : { },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "bgpProcess" : {
-              "ebgpAdminCost" : 20,
-              "ibgpAdminCost" : 200,
-              "routerId" : "240.254.254.1",
-              "interfaceNeighbors" : {
-                "~Interface_3~" : {
-                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
-                  "defaultMetric" : 0,
-                  "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
-                  "ipv4UnicastAddressFamily" : {
-                    "addressFamilyCapabilities" : {
-                      "additionalPathsReceive" : false,
-                      "additionalPathsSelectAll" : false,
-                      "additionalPathsSend" : false,
-                      "advertiseExternal" : false,
-                      "advertiseInactive" : false,
-                      "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
-                      "sendCommunity" : false,
-                      "sendExtendedCommunity" : false
-                    },
-                    "exportPolicy" : "exportPolicyOnInternet",
-                    "routeReflectorClient" : false
-                  },
-                  "localAs" : 65537,
-                  "localIp" : "169.254.0.1",
-                  "peerInterface" : "~Interface_3~",
-                  "remoteAsns" : "16509"
-                }
-              },
-              "multipathEbgp" : true,
-              "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
-              "multipathIbgp" : false,
-              "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "0.0.0.0/0",
-                "nextHopInterface" : "out",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "10.0.0.0/8",
-                "nextHopInterface" : "null_interface",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "172.16.0.0/12",
-                "nextHopInterface" : "null_interface",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.0.0/16",
-                "nextHopInterface" : "null_interface",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
-              }
-            ]
-          }
-        }
-      },
       "lhr-border-02" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "lhr-border-02",
@@ -16693,6 +16700,7 @@
               },
               "tieBreaker" : "ROUTER_ID"
             },
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -16784,8 +16792,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-b390fad5-igw-9b93ddfc" : {
-            "name" : "vpc-b390fad5-igw-9b93ddfc",
+          "vpc-b390fad5-vrf-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -16793,7 +16801,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-igw-9b93ddfc",
+            "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -16911,13 +16919,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -16993,8 +17002,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-b390fad5-igw-9b93ddfc" : {
-            "name" : "vpc-b390fad5-igw-9b93ddfc",
+          "vpc-b390fad5-vrf-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -17002,7 +17011,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-igw-9b93ddfc",
+            "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -17120,13 +17129,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17201,8 +17211,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-f8fad69d-igw-068fee63" : {
-            "name" : "vpc-f8fad69d-igw-068fee63",
+          "vpc-f8fad69d-vrf-igw-068fee63" : {
+            "name" : "vpc-f8fad69d-vrf-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -17210,7 +17220,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-igw-068fee63",
+            "description" : "To vpc-f8fad69d-vrf-igw-068fee63",
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
@@ -17340,13 +17350,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-f8fad69d-igw-068fee63",
+                "nextHopInterface" : "vpc-f8fad69d-vrf-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17422,8 +17433,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-b390fad5-igw-9b93ddfc" : {
-            "name" : "vpc-b390fad5-igw-9b93ddfc",
+          "vpc-b390fad5-vrf-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -17431,7 +17442,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-igw-9b93ddfc",
+            "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -17549,13 +17560,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17631,8 +17643,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-925131f4-igw-fac5839d" : {
-            "name" : "vpc-925131f4-igw-fac5839d",
+          "vpc-925131f4-vrf-igw-fac5839d" : {
+            "name" : "vpc-925131f4-vrf-igw-fac5839d",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -17640,7 +17652,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-925131f4-igw-fac5839d",
+            "description" : "To vpc-925131f4-vrf-igw-fac5839d",
             "incomingFilter" : "acl-3d4f745b_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-3d4f745b_egress",
@@ -17758,13 +17770,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-925131f4-igw-fac5839d",
+                "nextHopInterface" : "vpc-925131f4-vrf-igw-fac5839d",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -17840,8 +17853,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-b390fad5-igw-9b93ddfc" : {
-            "name" : "vpc-b390fad5-igw-9b93ddfc",
+          "vpc-b390fad5-vrf-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -17849,7 +17862,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-igw-9b93ddfc",
+            "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -17967,13 +17980,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -18035,6 +18049,30 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "description" : "To vpc-925131f4",
+            "incomingFilter" : "acl-3d4f745b_ingress",
+            "mtu" : 1500,
+            "outgoingFilter" : "acl-3d4f745b_egress",
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "vpc-925131f4-vrf-igw-fac5839d" : {
+            "name" : "vpc-925131f4-vrf-igw-fac5839d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To vpc-925131f4-vrf-igw-fac5839d",
             "incomingFilter" : "acl-3d4f745b_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-3d4f745b_egress",
@@ -18152,6 +18190,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -18233,8 +18272,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-f8fad69d-igw-068fee63" : {
-            "name" : "vpc-f8fad69d-igw-068fee63",
+          "vpc-f8fad69d-vrf-igw-068fee63" : {
+            "name" : "vpc-f8fad69d-vrf-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -18242,7 +18281,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-igw-068fee63",
+            "description" : "To vpc-f8fad69d-vrf-igw-068fee63",
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
@@ -18372,13 +18411,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-f8fad69d-igw-068fee63",
+                "nextHopInterface" : "vpc-f8fad69d-vrf-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -18453,8 +18493,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-f8fad69d-igw-068fee63" : {
-            "name" : "vpc-f8fad69d-igw-068fee63",
+          "vpc-f8fad69d-vrf-igw-068fee63" : {
+            "name" : "vpc-f8fad69d-vrf-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -18462,7 +18502,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-igw-068fee63",
+            "description" : "To vpc-f8fad69d-vrf-igw-068fee63",
             "incomingFilter" : "acl-4db39c28_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-4db39c28_egress",
@@ -18592,13 +18632,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-f8fad69d-igw-068fee63",
+                "nextHopInterface" : "vpc-f8fad69d-vrf-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -18674,8 +18715,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-b390fad5-igw-9b93ddfc" : {
-            "name" : "vpc-b390fad5-igw-9b93ddfc",
+          "vpc-b390fad5-vrf-igw-9b93ddfc" : {
+            "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -18683,7 +18724,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-igw-9b93ddfc",
+            "description" : "To vpc-b390fad5-vrf-igw-9b93ddfc",
             "incomingFilter" : "acl-7b78771d_ingress",
             "mtu" : 1500,
             "outgoingFilter" : "acl-7b78771d_egress",
@@ -18801,13 +18842,14 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "vpc-b390fad5-igw-9b93ddfc",
+                "nextHopInterface" : "vpc-b390fad5-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -19331,6 +19373,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : true,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -19773,6 +19816,7 @@
               },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -19829,6 +19873,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -19843,6 +19888,7 @@
           },
           "vrf-vgw-81fd279f" : {
             "name" : "vrf-vgw-81fd279f",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -19920,8 +19966,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-62f14104-igw-fac5839d" : {
-            "name" : "subnet-62f14104-igw-fac5839d",
+          "subnet-62f14104-vrf-igw-fac5839d" : {
+            "name" : "subnet-62f14104-vrf-igw-fac5839d",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -19929,7 +19975,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-62f14104-igw-fac5839d",
+            "description" : "To subnet-62f14104-vrf-igw-fac5839d",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -19963,6 +20009,28 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
+          },
+          "subnet-8d0cbdeb-vrf-igw-fac5839d" : {
+            "name" : "subnet-8d0cbdeb-vrf-igw-fac5839d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To subnet-8d0cbdeb-vrf-igw-fac5839d",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-igw-fac5839d"
           }
         },
         "vendorFamily" : {
@@ -19974,6 +20042,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -20006,6 +20075,7 @@
           },
           "vrf-igw-fac5839d" : {
             "name" : "vrf-igw-fac5839d",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -20030,7 +20100,16 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "10.0.0.0/24",
-                "nextHopInterface" : "subnet-62f14104-igw-fac5839d",
+                "nextHopInterface" : "subnet-62f14104-vrf-igw-fac5839d",
+                "nextHopIp" : "169.254.0.1",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "10.0.1.0/24",
+                "nextHopInterface" : "subnet-8d0cbdeb-vrf-igw-fac5839d",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }
@@ -20092,8 +20171,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-073b8061-igw-9b93ddfc" : {
-            "name" : "subnet-073b8061-igw-9b93ddfc",
+          "subnet-073b8061-vrf-igw-9b93ddfc" : {
+            "name" : "subnet-073b8061-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20101,7 +20180,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-073b8061-igw-9b93ddfc",
+            "description" : "To subnet-073b8061-vrf-igw-9b93ddfc",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20136,8 +20215,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-1641fa70-igw-9b93ddfc" : {
-            "name" : "subnet-1641fa70-igw-9b93ddfc",
+          "subnet-1641fa70-vrf-igw-9b93ddfc" : {
+            "name" : "subnet-1641fa70-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20145,7 +20224,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-1641fa70-igw-9b93ddfc",
+            "description" : "To subnet-1641fa70-vrf-igw-9b93ddfc",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20180,8 +20259,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-30398256-igw-9b93ddfc" : {
-            "name" : "subnet-30398256-igw-9b93ddfc",
+          "subnet-30398256-vrf-igw-9b93ddfc" : {
+            "name" : "subnet-30398256-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20189,7 +20268,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-30398256-igw-9b93ddfc",
+            "description" : "To subnet-30398256-vrf-igw-9b93ddfc",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20224,8 +20303,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-7044ff16-igw-9b93ddfc" : {
-            "name" : "subnet-7044ff16-igw-9b93ddfc",
+          "subnet-7044ff16-vrf-igw-9b93ddfc" : {
+            "name" : "subnet-7044ff16-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20233,7 +20312,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-7044ff16-igw-9b93ddfc",
+            "description" : "To subnet-7044ff16-vrf-igw-9b93ddfc",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20268,8 +20347,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-f73a8191-igw-9b93ddfc" : {
-            "name" : "subnet-f73a8191-igw-9b93ddfc",
+          "subnet-f73a8191-vrf-igw-9b93ddfc" : {
+            "name" : "subnet-f73a8191-vrf-igw-9b93ddfc",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20277,7 +20356,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-f73a8191-igw-9b93ddfc",
+            "description" : "To subnet-f73a8191-vrf-igw-9b93ddfc",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20300,6 +20379,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -20359,6 +20439,7 @@
           },
           "vrf-igw-9b93ddfc" : {
             "name" : "vrf-igw-9b93ddfc",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -20383,7 +20464,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "192.168.1.0/24",
-                "nextHopInterface" : "subnet-1641fa70-igw-9b93ddfc",
+                "nextHopInterface" : "subnet-1641fa70-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -20392,7 +20473,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "192.168.2.0/28",
-                "nextHopInterface" : "subnet-7044ff16-igw-9b93ddfc",
+                "nextHopInterface" : "subnet-7044ff16-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -20401,7 +20482,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "192.168.2.16/28",
-                "nextHopInterface" : "subnet-073b8061-igw-9b93ddfc",
+                "nextHopInterface" : "subnet-073b8061-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -20410,7 +20491,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "192.168.2.32/28",
-                "nextHopInterface" : "subnet-30398256-igw-9b93ddfc",
+                "nextHopInterface" : "subnet-30398256-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -20419,7 +20500,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "192.168.2.48/28",
-                "nextHopInterface" : "subnet-f73a8191-igw-9b93ddfc",
+                "nextHopInterface" : "subnet-f73a8191-vrf-igw-9b93ddfc",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }
@@ -20480,8 +20561,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-1f315846-igw-068fee63" : {
-            "name" : "subnet-1f315846-igw-068fee63",
+          "subnet-1f315846-vrf-igw-068fee63" : {
+            "name" : "subnet-1f315846-vrf-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20489,7 +20570,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-1f315846-igw-068fee63",
+            "description" : "To subnet-1f315846-vrf-igw-068fee63",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20524,8 +20605,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-9c8adceb-igw-068fee63" : {
-            "name" : "subnet-9c8adceb-igw-068fee63",
+          "subnet-9c8adceb-vrf-igw-068fee63" : {
+            "name" : "subnet-9c8adceb-vrf-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20533,7 +20614,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-9c8adceb-igw-068fee63",
+            "description" : "To subnet-9c8adceb-vrf-igw-068fee63",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20568,8 +20649,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-d9cafabc-igw-068fee63" : {
-            "name" : "subnet-d9cafabc-igw-068fee63",
+          "subnet-d9cafabc-vrf-igw-068fee63" : {
+            "name" : "subnet-d9cafabc-vrf-igw-068fee63",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -20577,7 +20658,7 @@
             "allowedVlans" : "",
             "autostate" : true,
             "bandwidth" : 1.0E12,
-            "description" : "To subnet-d9cafabc-igw-068fee63",
+            "description" : "To subnet-d9cafabc-vrf-igw-068fee63",
             "mtu" : 1500,
             "prefix" : "link-local:169.254.0.1",
             "proxyArp" : false,
@@ -20600,6 +20681,7 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -20641,6 +20723,7 @@
           },
           "vrf-igw-068fee63" : {
             "name" : "vrf-igw-068fee63",
+            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -20665,7 +20748,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "172.31.0.0/20",
-                "nextHopInterface" : "subnet-1f315846-igw-068fee63",
+                "nextHopInterface" : "subnet-1f315846-vrf-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -20674,7 +20757,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "172.31.16.0/20",
-                "nextHopInterface" : "subnet-d9cafabc-igw-068fee63",
+                "nextHopInterface" : "subnet-d9cafabc-vrf-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               },
@@ -20683,7 +20766,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "172.31.32.0/20",
-                "nextHopInterface" : "subnet-9c8adceb-igw-068fee63",
+                "nextHopInterface" : "subnet-9c8adceb-vrf-igw-068fee63",
                 "nextHopIp" : "169.254.0.1",
                 "tag" : -1
               }

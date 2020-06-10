@@ -133,7 +133,7 @@
           "configs/asa_ssh"
         ],
         "aws_configs" : [
-          "input/aws_configs/NatGateways.json"
+          "aws_configs/NatGateways.json"
         ],
         "bgp-allow" : [
           "configs/juniper_bgp_allow"
@@ -1546,7 +1546,7 @@
         },
         "configs/arista_bgp" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1601,8 +1601,9 @@
             "              NEWLINE:'\\n'",
             "              (eos_rbafipv4u_neighbor",
             "                NEIGHBOR:'neighbor'",
-            "                pg = (variable",
-            "                  VARIABLE:'UNDEFINED_PEER_GROUP'  <== mode:M_NEIGHBOR)",
+            "                nid = (eos_neighbor_id",
+            "                  pg = (variable",
+            "                    VARIABLE:'UNDEFINED_PEER_GROUP'  <== mode:M_NEIGHBOR))",
             "                (eos_rb_af_neighbor_common",
             "                  (eos_rbafnc_activate",
             "                    ACTIVATE:'activate'",
@@ -1875,7 +1876,7 @@
         },
         "configs/arista_misc" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1885,11 +1886,12 @@
             "    (s_cvx",
             "      CVX:'cvx'",
             "      NEWLINE:'\\n'",
-            "      (cvx_null",
+            "      (cvx_no",
             "        NO:'no'",
-            "        SHUTDOWN:'shutdown'",
-            "        (null_rest_of_line",
-            "          NEWLINE:'\\n'))))",
+            "        (cvx_no_null",
+            "          SHUTDOWN:'shutdown'",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_daemon",
             "      DAEMON:'daemon'",
@@ -2097,7 +2099,7 @@
         },
         "configs/arista_nat" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -2175,35 +2177,57 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_ip_address",
+            "        (if_ip",
             "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'1.1.1.1/32'",
-            "          NEWLINE:'\\n'))",
+            "          (ifip_address_eos",
+            "            ADDRESS:'address'",
+            "            (ifip_address_address_eos",
+            "              addr = (interface_address",
+            "                prefix = IP_PREFIX:'1.1.1.1/32')",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
-            "        (if_ip_nat_source",
+            "        (if_ip",
             "          IP:'ip'",
-            "          NAT:'nat'",
-            "          SOURCE:'source'",
-            "          DYNAMIC:'dynamic'",
-            "          ACCESS_LIST:'access-list'",
-            "          acl = (variable",
-            "            VARIABLE:'acl1')",
-            "          POOL:'pool'",
-            "          pool = (variable",
-            "            VARIABLE:'pool1')",
-            "          NEWLINE:'\\n'))))",
+            "          (if_ip_nat_source",
+            "            NAT:'nat'",
+            "            SOURCE:'source'",
+            "            DYNAMIC:'dynamic'",
+            "            ACCESS_LIST:'access-list'",
+            "            acl = (variable",
+            "              VARIABLE:'acl1')",
+            "            POOL:'pool'",
+            "            pool = (variable",
+            "              VARIABLE:'pool1')",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
         "configs/arista_ospf" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
             "      VARIABLE:'arista_ospf'",
             "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_ip",
+            "          IP:'ip'",
+            "          (ifip_ospf_eos",
+            "            OSPF:'ospf'",
+            "            (ifipo_priority_eos",
+            "              PRIORITY:'priority'",
+            "              pri = DEC:'150'",
+            "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (s_router_ospf",
             "      ROUTER:'router'",
@@ -2285,9 +2309,11 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_arista_md5",
+            "          (up_cisco",
             "            DEC:'5'",
-            "            pass = MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')))))",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_username",
@@ -2297,9 +2323,11 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_arista_sha512",
-            "            SHA512:'sha512'",
-            "            pass = SHA512_ARISTA:'$6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0')))",
+            "          (up_cisco",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                SHA512:'sha512'",
+            "                SHA512_ARISTA:'$6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0')))))",
             "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
@@ -9375,7 +9403,7 @@
             "  (stanza",
             "    (s_banner_cadant",
             "      BANNER:'banner'",
-            "      type = (eos_banner_type",
+            "      type = (cadant_banner_type",
             "        LOGIN:'login')",
             "      NEWLINE:'\\n'  <== mode:M_BannerCadant",
             "      body = BANNER_BODY:'Some text\\nSome more text\\n'  <== mode:M_BannerCadantText",
@@ -11429,11 +11457,13 @@
             "            low = DEC:'48'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_encapsulation",
             "          ENCAPSULATION:'encapsulation'",
-            "          DOT1Q:'dot1q'",
-            "          DEC:'48'",
-            "          NEWLINE:'\\n'))",
+            "          (if_encapsulation_dot1q",
+            "            DOT1Q:'dot1q'",
+            "            vlan = (vlan_id",
+            "              v = DEC:'48')",
+            "            NEWLINE:'\\n')))",
             "      (if_inner",
             "        (if_ip_address",
             "          IP:'ip'",
@@ -13012,161 +13042,176 @@
             "  (stanza",
             "    (s_snmp_server",
             "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
+            "      (ss_group",
             "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'foogroup'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v1'",
-            "          VARIABLE:'read'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'write'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          DOUBLE_QUOTE:'\"'",
+            "        name = (variable",
+            "          VARIABLE:'\"foogroup\"'  <== mode:M_Name)",
+            "        (ss_group_null",
+            "          V1:'v1'",
+            "          (null_rest_of_line",
+            "            READ:'read'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            VARIABLE:'hithere'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            WRITE:'write'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NOTIFY:'notify'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'",
+            "      (ss_group",
+            "        GROUP:'group'",
+            "        name = (variable",
+            "          VARIABLE:'\"foogroup\"'  <== mode:M_Name)",
+            "        (ss_group_null",
+            "          V1:'v1'",
+            "          (null_rest_of_line",
+            "            READ:'read'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            VARIABLE:'hithere'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            WRITE:'write'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            VARIABLE:'hithere'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NOTIFY:'notify'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'",
+            "      (ss_group",
+            "        GROUP:'group'",
+            "        name = (variable",
+            "          VARIABLE:'\"foogroup\"'  <== mode:M_Name)",
+            "        (ss_group_null",
+            "          V2C:'v2c'",
+            "          (null_rest_of_line",
+            "            READ:'read'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            VARIABLE:'hithere'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            WRITE:'write'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NOTIFY:'notify'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            VARIABLE:'hithere'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'",
+            "      (ss_group",
+            "        GROUP:'group'",
+            "        name = (variable",
+            "          VARIABLE:'\"foogroup\"'  <== mode:M_Name)",
+            "        (ss_group_null",
+            "          V2C:'v2c'",
+            "          (null_rest_of_line",
+            "            READ:'read'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            VARIABLE:'hithere'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            WRITE:'write'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            VARIABLE:'hithere'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NOTIFY:'notify'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            DOUBLE_QUOTE:'\"'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'",
+            "      (ss_group",
+            "        GROUP:'group'",
+            "        name = (variable",
+            "          VARIABLE:'\"blorp\"'  <== mode:M_Name)",
+            "        (ss_group_v3",
+            "          V3:'v3'",
+            "          level = AUTH:'auth'",
+            "          READ:'read'",
+            "          rview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'byethere'",
+            "              DOUBLE_QUOTE:'\"'))",
+            "          WRITE:'write'",
+            "          wview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'byethere'",
+            "              DOUBLE_QUOTE:'\"'))",
             "          NOTIFY:'notify'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          DOUBLE_QUOTE:'\"'",
+            "          nview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'byethere'",
+            "              DOUBLE_QUOTE:'\"'))",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_snmp_server",
             "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
+            "      (ss_group",
             "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'foogroup'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v1'",
-            "          VARIABLE:'read'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'write'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
+            "        name = (variable",
+            "          VARIABLE:'\"foogroup\"'  <== mode:M_Name)",
+            "        (ss_group_v3",
+            "          V3:'v3'",
+            "          level = NOAUTH:'noauth'",
+            "          READ:'read'",
+            "          rview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'hithere'",
+            "              DOUBLE_QUOTE:'\"'))",
+            "          WRITE:'write'",
+            "          wview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'hithere'",
+            "              DOUBLE_QUOTE:'\"'))",
             "          NOTIFY:'notify'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          DOUBLE_QUOTE:'\"'",
+            "          nview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'hithere'",
+            "              DOUBLE_QUOTE:'\"'))",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_snmp_server",
             "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
+            "      (ss_group",
             "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'foogroup'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v2c'",
-            "          VARIABLE:'read'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'write'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          DOUBLE_QUOTE:'\"'",
+            "        name = (variable",
+            "          VARIABLE:'\"blarp\"'  <== mode:M_Name)",
+            "        (ss_group_v3",
+            "          V3:'v3'",
+            "          level = PRIV:'priv'",
+            "          READ:'read'",
+            "          rview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'byethere'",
+            "              DOUBLE_QUOTE:'\"'))",
+            "          WRITE:'write'",
+            "          wview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'byethere'",
+            "              DOUBLE_QUOTE:'\"'))",
             "          NOTIFY:'notify'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_snmp_server",
-            "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
-            "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'foogroup'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v2c'",
-            "          VARIABLE:'read'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'write'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NOTIFY:'notify'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_snmp_server",
-            "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
-            "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'blorp'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v3'",
-            "          AUTH:'auth'",
-            "          VARIABLE:'read'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'byethere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'write'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'byethere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NOTIFY:'notify'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'byethere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_snmp_server",
-            "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
-            "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'foogroup'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v3'",
-            "          NOAUTH:'noauth'",
-            "          VARIABLE:'read'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'write'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NOTIFY:'notify'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'hithere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_snmp_server",
-            "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
-            "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'blarp'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v3'",
-            "          PRIV:'priv'",
-            "          VARIABLE:'read'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'byethere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'write'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'byethere'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          NOTIFY:'notify'",
-            "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'byethere'",
-            "          DOUBLE_QUOTE:'\"'",
+            "          nview = (ss_view_name",
+            "            quoted_name = (double_quoted_string",
+            "              DOUBLE_QUOTE:'\"'",
+            "              VARIABLE:'byethere'",
+            "              DOUBLE_QUOTE:'\"'))",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -13183,7 +13228,7 @@
             "        (ss_host_version",
             "          VERSION:'version'",
             "          version = (variable_snmp_host",
-            "            VARIABLE:'v2c'))",
+            "            V2C:'v2c'))",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_snmp_server",
@@ -13225,7 +13270,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'bar'",
             "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v1'",
+            "          V1:'v1'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -13239,7 +13284,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'baz'",
             "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v2c'",
+            "          V2C:'v2c'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -13253,7 +13298,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'foogroup'",
             "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'v3'",
+            "          V3:'v3'",
             "          AUTH:'auth'",
             "          MD5:'md5'",
             "          DOUBLE_QUOTE:'\"'",
@@ -15685,17 +15730,22 @@
             "        (bgp_confederation_rb_stanza",
             "          BGP:'bgp'",
             "          CONFEDERATION:'confederation'",
-            "          IDENTIFIER:'identifier'",
-            "          DEC:'100'",
-            "          NEWLINE:'\\n'))",
+            "          (bgp_conf_identifier_rb_stanza",
+            "            IDENTIFIER:'identifier'",
+            "            id = (bgp_asn",
+            "              asn = DEC:'100')",
+            "            NEWLINE:'\\n')))",
             "      (router_bgp_stanza_tail",
             "        (bgp_confederation_rb_stanza",
             "          BGP:'bgp'",
             "          CONFEDERATION:'confederation'",
-            "          PEERS:'peers'",
-            "          DEC:'10'",
-            "          DEC:'11'",
-            "          NEWLINE:'\\n'))))",
+            "          (bgp_conf_peers_rb_stanza",
+            "            PEERS:'peers'",
+            "            (bgp_asn",
+            "              asn = DEC:'10')",
+            "            (bgp_asn",
+            "              asn = DEC:'11')",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -23441,18 +23491,6 @@
             "          DEC:'1'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_ip_nat_destination",
-            "          IP:'ip'",
-            "          NAT:'nat'",
-            "          DESTINATION:'destination'",
-            "          STATIC:'static'",
-            "          IP_ADDRESS:'1.2.3.4'",
-            "          ACCESS_LIST:'access-list'",
-            "          acl = (variable",
-            "            VARIABLE:'mynatacl')",
-            "          IP_ADDRESS:'2.3.4.5'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
             "        (if_ip_nat_inside",
             "          IP:'ip'",
             "          NAT:'nat'",
@@ -23463,30 +23501,6 @@
             "          IP:'ip'",
             "          NAT:'nat'",
             "          OUTSIDE:'outside'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_ip_nat_source",
-            "          IP:'ip'",
-            "          NAT:'nat'",
-            "          SOURCE:'source'",
-            "          DYNAMIC:'dynamic'",
-            "          ACCESS_LIST:'access-list'",
-            "          acl = (variable",
-            "            VARIABLE:'def')",
-            "          OVERLOAD:'overload'",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_ip_nat_source",
-            "          IP:'ip'",
-            "          NAT:'nat'",
-            "          SOURCE:'source'",
-            "          DYNAMIC:'dynamic'",
-            "          ACCESS_LIST:'access-list'",
-            "          acl = (variable",
-            "            VARIABLE:'abc')",
-            "          POOL:'pool'",
-            "          pool = (variable",
-            "            VARIABLE:'beeble')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
             "        (if_ip_nbar",
@@ -24144,26 +24158,30 @@
             "            DEC:'1001'",
             "            NEWLINE:'\\n')))",
             "      (if_inner",
-            "        (if_null_block",
+            "        (if_pvc",
             "          PVC:'pvc'",
-            "          DEC:'8'",
-            "          FORWARD_SLASH:'/'",
-            "          DEC:'35'",
-            "          NEWLINE:'\\n'",
-            "          (if_null_inner",
-            "            DIALER:'dialer'",
-            "            VARIABLE:'pool-member'",
-            "            DEC:'1'",
+            "          (null_rest_of_line",
+            "            DEC:'8'",
+            "            FORWARD_SLASH:'/'",
+            "            DEC:'35'",
             "            NEWLINE:'\\n')",
-            "          (if_null_inner",
+            "          (pvc_null",
+            "            DIALER:'dialer'",
+            "            (null_rest_of_line",
+            "              VARIABLE:'pool-member'",
+            "              DEC:'1'",
+            "              NEWLINE:'\\n'))",
+            "          (pvc_null",
             "            ENCAPSULATION:'encapsulation'",
-            "            VARIABLE:'aal5snap'",
-            "            NEWLINE:'\\n')",
-            "          (if_null_inner",
+            "            (null_rest_of_line",
+            "              AAL5SNAP:'aal5snap'",
+            "              NEWLINE:'\\n'))",
+            "          (pvc_null",
             "            PROTOCOL:'protocol'",
-            "            PPP:'ppp'",
-            "            DIALER:'dialer'",
-            "            NEWLINE:'\\n')))",
+            "            (null_rest_of_line",
+            "              PPP:'ppp'",
+            "              DIALER:'dialer'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_null_block",
             "          QUEUE_MONITOR:'queue-monitor'",
@@ -24980,54 +24998,6 @@
             "          (subrange",
             "            low = DEC:'111'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface))",
-            "  (stanza",
-            "    (s_eos_vxlan_interface",
-            "      INTERFACE:'interface'",
-            "      iname = (eos_vxlan_interface_name",
-            "        VXLAN:'Vxlan'  <== mode:M_Interface",
-            "        DEC:'1'  <== mode:M_Interface)",
-            "      NEWLINE:'\\n'  <== mode:M_Interface",
-            "      (eos_vxlan_if_inner",
-            "        (eos_vxif_vxlan",
-            "          VXLAN:'vxlan'",
-            "          (eos_vxif_vxlan_source_interface",
-            "            SOURCE_INTERFACE:'source-interface'",
-            "            iface = (interface_name",
-            "              name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
-            "              (range",
-            "                (subrange",
-            "                  low = DEC:'1'  <== mode:M_Interface)))",
-            "            NEWLINE:'\\n'  <== mode:M_Interface)))",
-            "      (eos_vxlan_if_inner",
-            "        (eos_vxif_vxlan",
-            "          VXLAN:'vxlan'",
-            "          (eos_vxif_vxlan_udp_port",
-            "            UDP_PORT:'udp-port'",
-            "            num = DEC:'1234'",
-            "            NEWLINE:'\\n')))",
-            "      (eos_vxlan_if_inner",
-            "        (eos_vxif_vxlan",
-            "          VXLAN:'vxlan'",
-            "          (eos_vxif_vxlan_vlan",
-            "            VLAN:'vlan'",
-            "            num = DEC:'123'",
-            "            (eos_vxif_vxlan_vlan_vni",
-            "              VNI:'vni'",
-            "              num = DEC:'456'",
-            "              NEWLINE:'\\n'))))",
-            "      (eos_vxlan_if_inner",
-            "        (eos_vxif_vxlan",
-            "          VXLAN:'vxlan'",
-            "          (eos_vxif_vxlan_vlan",
-            "            VLAN:'vlan'",
-            "            num = DEC:'123'",
-            "            (eos_vxif_vxlan_flood",
-            "              FLOOD:'flood'",
-            "              VTEP:'vtep'",
-            "              IP_ADDRESS:'1.0.0.1'",
-            "              IP_ADDRESS:'2.0.0.1'",
-            "              IP_ADDRESS:'3.0.0.1'",
-            "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
@@ -32910,7 +32880,7 @@
             "      (null_rest_of_line",
             "        LEVEL:'level'",
             "        DEC:'15'",
-            "        VARIABLE:'write'",
+            "        WRITE:'write'",
             "        MEMORY:'memory'",
             "        NEWLINE:'\\n')))",
             "  (stanza",
@@ -32920,7 +32890,7 @@
             "      (null_rest_of_line",
             "        LEVEL:'level'",
             "        DEC:'15'",
-            "        VARIABLE:'write'",
+            "        WRITE:'write'",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_privilege",
@@ -34257,7 +34227,7 @@
             "        (null_rest_of_line",
             "          DEC:'1'",
             "          PERMIT:'permit'",
-            "          VARIABLE:'read'",
+            "          READ:'read'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_role",
@@ -34280,7 +34250,7 @@
             "        (null_rest_of_line",
             "          DEC:'1'",
             "          PERMIT:'permit'",
-            "          VARIABLE:'read'",
+            "          READ:'read'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_null",
@@ -35459,13 +35429,52 @@
             "  (stanza",
             "    (s_snmp_server",
             "      SNMP_SERVER:'snmp-server'",
-            "      (ss_null",
+            "      (ss_group",
             "        GROUP:'group'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'cenic-nms'",
-            "          VARIABLE:'v2c'",
-            "          IPV4:'IPv4'",
-            "          AUTH:'auth'",
+            "        name = (variable",
+            "          VARIABLE:'cenic-nms'  <== mode:M_Name)",
+            "        (ss_group_null",
+            "          V2C:'v2c'",
+            "          (null_rest_of_line",
+            "            IPV4:'IPv4'",
+            "            AUTH:'auth'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'",
+            "      (ss_group",
+            "        GROUP:'group'",
+            "        name = (variable",
+            "          VARIABLE:'V3GROUP'  <== mode:M_Name)",
+            "        (ss_group_v3",
+            "          V3:'v3'",
+            "          level = PRIV:'priv'",
+            "          READ:'read'",
+            "          rview = (ss_view_name",
+            "            name = (variable",
+            "              VARIABLE:'V3READ'))",
+            "          ACCESS:'access'",
+            "          v4acl = (variable",
+            "            DEC:'50')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_snmp_server",
+            "      SNMP_SERVER:'snmp-server'",
+            "      (ss_group",
+            "        GROUP:'group'",
+            "        name = (variable",
+            "          VARIABLE:'V3GROUP'  <== mode:M_Name)",
+            "        (ss_group_v3",
+            "          V3:'v3'",
+            "          level = PRIV:'priv'",
+            "          READ:'read'",
+            "          rview = (ss_view_name",
+            "            name = (variable",
+            "              VARIABLE:'V3READ'))",
+            "          ACCESS:'access'",
+            "          IPV6:'ipv6'",
+            "          v6acl = (variable",
+            "            VARIABLE:'snmp6')",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_snmp_server",
@@ -37019,9 +37028,11 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_arista_md5",
+            "          (up_cisco",
             "            DEC:'5'",
-            "            pass = MD5_ARISTA:'$1$pdQG$60trnJU5CpHjXSffvKXzd.')))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                MD5_ARISTA:'$1$pdQG$60trnJU5CpHjXSffvKXzd.')))))",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_username",
@@ -37148,9 +37159,11 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_arista_md5",
+            "          (up_cisco",
             "            DEC:'5'",
-            "            pass = MD5_ARISTA:'$1$aaaa$bbbbbbbbbbbbbbbbbbbbbb')))",
+            "            (up_cisco_tail",
+            "              pass = (variable_secret",
+            "                MD5_ARISTA:'$1$aaaa$bbbbbbbbbbbbbbbbbbbbbb')))))",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_username_attributes",
@@ -42828,7 +42841,7 @@
         },
         "configs/eos_mlag" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -42868,11 +42881,12 @@
             "            text = RAW_TEXT:' to MLAG PEER'  <== mode:M_Description",
             "            NEWLINE:'\\n'  <== mode:M_Description)))",
             "      (if_inner",
-            "        (if_switchport_mode",
+            "        (if_switchport",
             "          SWITCHPORT:'switchport'",
-            "          MODE:'mode'",
-            "          TRUNK:'trunk'",
-            "          NEWLINE:'\\n'))))",
+            "          (if_switchport_mode",
+            "            MODE:'mode'",
+            "            TRUNK:'trunk'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
@@ -42888,11 +42902,14 @@
             "          id = DEC:'2'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_ip_address",
+            "        (if_ip",
             "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'2.2.2.2/32'",
-            "          NEWLINE:'\\n'))))",
+            "          (ifip_address_eos",
+            "            ADDRESS:'address'",
+            "            (ifip_address_address_eos",
+            "              addr = (interface_address",
+            "                prefix = IP_PREFIX:'2.2.2.2/32')",
+            "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (s_eos_mlag",
             "      MLAG:'mlag'",
@@ -42957,7 +42974,7 @@
         },
         "configs/eos_trunk_group" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -43153,27 +43170,30 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_switchport_mode",
+            "        (if_switchport",
             "          SWITCHPORT:'switchport'",
-            "          MODE:'mode'",
-            "          TRUNK:'trunk'",
-            "          NEWLINE:'\\n'))",
+            "          (if_switchport_mode",
+            "            MODE:'mode'",
+            "            TRUNK:'trunk'",
+            "            NEWLINE:'\\n')))",
             "      (if_inner",
-            "        (if_switchport_trunk_group_eos",
+            "        (if_switchport",
             "          SWITCHPORT:'switchport'",
-            "          TRUNK:'trunk'",
-            "          GROUP:'group'",
-            "          name = (variable",
-            "            VARIABLE:'GROUP1')",
-            "          NEWLINE:'\\n'))",
+            "          (if_switchport_trunk_group_eos",
+            "            TRUNK:'trunk'",
+            "            GROUP:'group'",
+            "            name = (variable",
+            "              VARIABLE:'GROUP1')",
+            "            NEWLINE:'\\n')))",
             "      (if_inner",
-            "        (if_switchport_trunk_group_eos",
+            "        (if_switchport",
             "          SWITCHPORT:'switchport'",
-            "          TRUNK:'trunk'",
-            "          GROUP:'group'",
-            "          name = (variable",
-            "            VARIABLE:'GROUP2')",
-            "          NEWLINE:'\\n\\n'))))",
+            "          (if_switchport_trunk_group_eos",
+            "            TRUNK:'trunk'",
+            "            GROUP:'group'",
+            "            name = (variable",
+            "              VARIABLE:'GROUP2')",
+            "            NEWLINE:'\\n\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -43199,59 +43219,62 @@
             "  EOF:<EOF>)",
             "(f5_bigip_imish_configuration",
             "  (statement",
-            "    (s_ip_prefix_list",
+            "    (s_ip",
             "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (word",
-            "        WORD:'pl1')",
-            "      SEQ:'seq'",
-            "      num = (uint32",
-            "        d = DEC:'10')",
-            "      action = (line_action",
-            "        PERMIT:'permit')",
-            "      prefix = (ip_prefix",
-            "        IP_PREFIX:'10.0.0.0/24')",
-            "      GE:'ge'",
-            "      ge = (ip_prefix_length",
-            "        d = DEC:'16')",
-            "      NEWLINE:'\\n'))",
+            "      (s_ip_prefix_list",
+            "        PREFIX_LIST:'prefix-list'",
+            "        name = (word",
+            "          WORD:'pl1')",
+            "        SEQ:'seq'",
+            "        num = (uint32",
+            "          d = DEC:'10')",
+            "        action = (line_action",
+            "          PERMIT:'permit')",
+            "        prefix = (ip_prefix",
+            "          IP_PREFIX:'10.0.0.0/24')",
+            "        GE:'ge'",
+            "        ge = (ip_prefix_length",
+            "          d = DEC:'16')",
+            "        NEWLINE:'\\n')))",
             "  (statement",
-            "    (s_ip_prefix_list",
+            "    (s_ip",
             "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (word",
-            "        WORD:'pl1')",
-            "      SEQ:'seq'",
-            "      num = (uint32",
-            "        d = DEC:'20')",
-            "      action = (line_action",
-            "        PERMIT:'permit')",
-            "      prefix = (ip_prefix",
-            "        IP_PREFIX:'10.0.0.0/24')",
-            "      LE:'le'",
-            "      le = (ip_prefix_length",
-            "        d = DEC:'16')",
-            "      NEWLINE:'\\n'))",
+            "      (s_ip_prefix_list",
+            "        PREFIX_LIST:'prefix-list'",
+            "        name = (word",
+            "          WORD:'pl1')",
+            "        SEQ:'seq'",
+            "        num = (uint32",
+            "          d = DEC:'20')",
+            "        action = (line_action",
+            "          PERMIT:'permit')",
+            "        prefix = (ip_prefix",
+            "          IP_PREFIX:'10.0.0.0/24')",
+            "        LE:'le'",
+            "        le = (ip_prefix_length",
+            "          d = DEC:'16')",
+            "        NEWLINE:'\\n')))",
             "  (statement",
-            "    (s_ip_prefix_list",
+            "    (s_ip",
             "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (word",
-            "        WORD:'pl1')",
-            "      SEQ:'seq'",
-            "      num = (uint32",
-            "        d = DEC:'30')",
-            "      action = (line_action",
-            "        PERMIT:'permit')",
-            "      prefix = (ip_prefix",
-            "        IP_PREFIX:'10.0.0.0/24')",
-            "      GE:'ge'",
-            "      ge = (ip_prefix_length",
-            "        d = DEC:'28')",
-            "      LE:'le'",
-            "      le = (ip_prefix_length",
-            "        d = DEC:'26')",
-            "      NEWLINE:'\\n\\n'))",
+            "      (s_ip_prefix_list",
+            "        PREFIX_LIST:'prefix-list'",
+            "        name = (word",
+            "          WORD:'pl1')",
+            "        SEQ:'seq'",
+            "        num = (uint32",
+            "          d = DEC:'30')",
+            "        action = (line_action",
+            "          PERMIT:'permit')",
+            "        prefix = (ip_prefix",
+            "          IP_PREFIX:'10.0.0.0/24')",
+            "        GE:'ge'",
+            "        ge = (ip_prefix_length",
+            "          d = DEC:'28')",
+            "        LE:'le'",
+            "        le = (ip_prefix_length",
+            "          d = DEC:'26')",
+            "        NEWLINE:'\\n\\n')))",
             "  (statement",
             "    (s_router",
             "      ROUTER:'router'",
@@ -43309,7 +43332,7 @@
             "          NEIGHBOR:'neighbor'",
             "          ip6 = IPV6_ADDRESS:'2::2'",
             "          (rbn_common",
-            "            (rbn_route_map_out",
+            "            (rbn_route_map",
             "              ROUTE_MAP:'route-map'",
             "              name = (word",
             "                WORD:'rm1')",
@@ -43320,7 +43343,7 @@
             "          name = (peer_group_name",
             "            WORD:'undeclared-peer-group')",
             "          (rbn_common",
-            "            (rbn_route_map_out",
+            "            (rbn_route_map",
             "              ROUTE_MAP:'route-map'",
             "              name = (word",
             "                WORD:'rm1')",
@@ -48941,56 +48964,59 @@
             "        WORD:'vlan_passive')",
             "      NEWLINE:'\\n'))",
             "  (statement",
-            "    (s_ip_prefix_list",
+            "    (s_ip",
             "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (word",
-            "        WORD:'pl1')",
-            "      SEQ:'seq'",
-            "      num = (uint32",
-            "        d = DEC:'10')",
-            "      action = (line_action",
-            "        PERMIT:'permit')",
-            "      prefix = (ip_prefix",
-            "        IP_PREFIX:'192.0.2.0/24')",
-            "      NEWLINE:'\\n'))",
+            "      (s_ip_prefix_list",
+            "        PREFIX_LIST:'prefix-list'",
+            "        name = (word",
+            "          WORD:'pl1')",
+            "        SEQ:'seq'",
+            "        num = (uint32",
+            "          d = DEC:'10')",
+            "        action = (line_action",
+            "          PERMIT:'permit')",
+            "        prefix = (ip_prefix",
+            "          IP_PREFIX:'192.0.2.0/24')",
+            "        NEWLINE:'\\n')))",
             "  (statement",
-            "    (s_ip_prefix_list",
+            "    (s_ip",
             "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (word",
-            "        WORD:'pl1')",
-            "      SEQ:'seq'",
-            "      num = (uint32",
-            "        d = DEC:'20')",
-            "      action = (line_action",
-            "        PERMIT:'permit')",
-            "      prefix = (ip_prefix",
-            "        IP_PREFIX:'172.16.0.0/24')",
-            "      LE:'le'",
-            "      le = (ip_prefix_length",
-            "        d = DEC:'26')",
-            "      NEWLINE:'\\n'))",
+            "      (s_ip_prefix_list",
+            "        PREFIX_LIST:'prefix-list'",
+            "        name = (word",
+            "          WORD:'pl1')",
+            "        SEQ:'seq'",
+            "        num = (uint32",
+            "          d = DEC:'20')",
+            "        action = (line_action",
+            "          PERMIT:'permit')",
+            "        prefix = (ip_prefix",
+            "          IP_PREFIX:'172.16.0.0/24')",
+            "        LE:'le'",
+            "        le = (ip_prefix_length",
+            "          d = DEC:'26')",
+            "        NEWLINE:'\\n')))",
             "  (statement",
-            "    (s_ip_prefix_list",
+            "    (s_ip",
             "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (word",
-            "        WORD:'pl1')",
-            "      SEQ:'seq'",
-            "      num = (uint32",
-            "        d = DEC:'30')",
-            "      action = (line_action",
-            "        PERMIT:'permit')",
-            "      prefix = (ip_prefix",
-            "        IP_PREFIX:'10.0.0.0/24')",
-            "      GE:'ge'",
-            "      ge = (ip_prefix_length",
-            "        d = DEC:'26')",
-            "      LE:'le'",
-            "      le = (ip_prefix_length",
-            "        d = DEC:'28')",
-            "      NEWLINE:'\\n'))",
+            "      (s_ip_prefix_list",
+            "        PREFIX_LIST:'prefix-list'",
+            "        name = (word",
+            "          WORD:'pl1')",
+            "        SEQ:'seq'",
+            "        num = (uint32",
+            "          d = DEC:'30')",
+            "        action = (line_action",
+            "          PERMIT:'permit')",
+            "        prefix = (ip_prefix",
+            "          IP_PREFIX:'10.0.0.0/24')",
+            "        GE:'ge'",
+            "        ge = (ip_prefix_length",
+            "          d = DEC:'26')",
+            "        LE:'le'",
+            "        le = (ip_prefix_length",
+            "          d = DEC:'28')",
+            "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_router",
             "      ROUTER:'router'",
@@ -73318,49 +73344,23 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_1')",
-            "                    (srn_destination_translation",
-            "                      DESTINATION_TRANSLATION:'destination-translation'",
-            "                      (srndt_translated_address",
-            "                        TRANSLATED_ADDRESS:'translated-address'",
-            "                        (translated_address_list_item",
-            "                          prefix = IP_PREFIX:'1.1.1.0/24')))))))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (s_policy",
-            "        POLICY:'policy'",
-            "        (s_policy_panorama",
-            "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_1')",
-            "                    (srn_source_translation",
-            "                      SOURCE_TRANSLATION:'source-translation'",
-            "                      (srnst_dynamic_ip_and_port",
-            "                        DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
-            "                        (srnst_translated_address",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_1')",
+            "                      (srn_destination_translation",
+            "                        DESTINATION_TRANSLATION:'destination-translation'",
+            "                        (srndt_translated_address",
             "                          TRANSLATED_ADDRESS:'translated-address'",
-            "                          (translated_address_list",
-            "                            (translated_address_list_item",
-            "                              prefix = IP_PREFIX:'2.2.2.0/24')))))))))))))",
+            "                          (translated_address_list_item",
+            "                            prefix = IP_PREFIX:'1.1.1.0/24'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73369,20 +73369,26 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_1')",
-            "                    (srn_to",
-            "                      TO:'to'",
-            "                      zone = (variable",
-            "                        VARIABLE:'TO_ZONE'))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_1')",
+            "                      (srn_source_translation",
+            "                        SOURCE_TRANSLATION:'source-translation'",
+            "                        (srnst_dynamic_ip_and_port",
+            "                          DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
+            "                          (srnst_translated_address",
+            "                            TRANSLATED_ADDRESS:'translated-address'",
+            "                            (translated_address_list",
+            "                              (translated_address_list_item",
+            "                                prefix = IP_PREFIX:'2.2.2.0/24'))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73391,21 +73397,21 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_1')",
-            "                    (srn_from",
-            "                      FROM:'from'",
-            "                      (variable_list",
-            "                        (variable_list_item",
-            "                          ANY:'any')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_1')",
+            "                      (srn_to",
+            "                        TO:'to'",
+            "                        zone = (variable",
+            "                          VARIABLE:'TO_ZONE')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73414,21 +73420,22 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_1')",
-            "                    (srn_source",
-            "                      SOURCE:'source'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          any = ANY:'any')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_1')",
+            "                      (srn_from",
+            "                        FROM:'from'",
+            "                        (variable_list",
+            "                          (variable_list_item",
+            "                            ANY:'any'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73437,21 +73444,22 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_1')",
-            "                    (srn_destination",
-            "                      DESTINATION:'destination'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          any = ANY:'any')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_1')",
+            "                      (srn_source",
+            "                        SOURCE:'source'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            any = ANY:'any'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73460,20 +73468,22 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_2')",
-            "                    (srn_to",
-            "                      TO:'to'",
-            "                      zone = (variable",
-            "                        VARIABLE:'TO_ZONE'))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_1')",
+            "                      (srn_destination",
+            "                        DESTINATION:'destination'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            any = ANY:'any'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73482,21 +73492,21 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_2')",
-            "                    (srn_from",
-            "                      FROM:'from'",
-            "                      (variable_list",
-            "                        (variable_list_item",
-            "                          VARIABLE:'FROM_ZONE')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_2')",
+            "                      (srn_to",
+            "                        TO:'to'",
+            "                        zone = (variable",
+            "                          VARIABLE:'TO_ZONE')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73505,22 +73515,22 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_2')",
-            "                    (srn_source",
-            "                      SOURCE:'source'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'SRC_NAME'))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_2')",
+            "                      (srn_from",
+            "                        FROM:'from'",
+            "                        (variable_list",
+            "                          (variable_list_item",
+            "                            VARIABLE:'FROM_ZONE'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73529,22 +73539,23 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_2')",
-            "                    (srn_destination",
-            "                      DESTINATION:'destination'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'DST_NAME'))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_2')",
+            "                      (srn_source",
+            "                        SOURCE:'source'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            name = (variable",
+            "                              VARIABLE:'SRC_NAME')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73553,20 +73564,23 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_to",
-            "                      TO:'to'",
-            "                      zone = (variable",
-            "                        VARIABLE:'TO_ZONE'))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_2')",
+            "                      (srn_destination",
+            "                        DESTINATION:'destination'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            name = (variable",
+            "                              VARIABLE:'DST_NAME')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73575,26 +73589,21 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_source_translation",
-            "                      SOURCE_TRANSLATION:'source-translation'",
-            "                      (srnst_dynamic_ip_and_port",
-            "                        DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
-            "                        (srnst_translated_address",
-            "                          TRANSLATED_ADDRESS:'translated-address'",
-            "                          (translated_address_list",
-            "                            (translated_address_list_item",
-            "                              name = (variable",
-            "                                VARIABLE:'ADDR1'))))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_to",
+            "                        TO:'to'",
+            "                        zone = (variable",
+            "                          VARIABLE:'TO_ZONE')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73603,26 +73612,27 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_source_translation",
-            "                      SOURCE_TRANSLATION:'source-translation'",
-            "                      (srnst_dynamic_ip_and_port",
-            "                        DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
-            "                        (srnst_translated_address",
-            "                          TRANSLATED_ADDRESS:'translated-address'",
-            "                          (translated_address_list",
-            "                            (translated_address_list_item",
-            "                              address = (ip_address",
-            "                                IP_ADDRESS:'1.1.1.1'))))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_source_translation",
+            "                        SOURCE_TRANSLATION:'source-translation'",
+            "                        (srnst_dynamic_ip_and_port",
+            "                          DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
+            "                          (srnst_translated_address",
+            "                            TRANSLATED_ADDRESS:'translated-address'",
+            "                            (translated_address_list",
+            "                              (translated_address_list_item",
+            "                                name = (variable",
+            "                                  VARIABLE:'ADDR1')))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73631,25 +73641,27 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_source_translation",
-            "                      SOURCE_TRANSLATION:'source-translation'",
-            "                      (srnst_dynamic_ip_and_port",
-            "                        DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
-            "                        (srnst_translated_address",
-            "                          TRANSLATED_ADDRESS:'translated-address'",
-            "                          (translated_address_list",
-            "                            (translated_address_list_item",
-            "                              prefix = IP_PREFIX:'2.2.2.0/24')))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_source_translation",
+            "                        SOURCE_TRANSLATION:'source-translation'",
+            "                        (srnst_dynamic_ip_and_port",
+            "                          DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
+            "                          (srnst_translated_address",
+            "                            TRANSLATED_ADDRESS:'translated-address'",
+            "                            (translated_address_list",
+            "                              (translated_address_list_item",
+            "                                address = (ip_address",
+            "                                  IP_ADDRESS:'1.1.1.1')))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73658,25 +73670,26 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_source_translation",
-            "                      SOURCE_TRANSLATION:'source-translation'",
-            "                      (srnst_dynamic_ip_and_port",
-            "                        DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
-            "                        (srnst_translated_address",
-            "                          TRANSLATED_ADDRESS:'translated-address'",
-            "                          (translated_address_list",
-            "                            (translated_address_list_item",
-            "                              range = IP_RANGE:'3.3.3.3-4.4.4.4')))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_source_translation",
+            "                        SOURCE_TRANSLATION:'source-translation'",
+            "                        (srnst_dynamic_ip_and_port",
+            "                          DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
+            "                          (srnst_translated_address",
+            "                            TRANSLATED_ADDRESS:'translated-address'",
+            "                            (translated_address_list",
+            "                              (translated_address_list_item",
+            "                                prefix = IP_PREFIX:'2.2.2.0/24'))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73685,21 +73698,26 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_from",
-            "                      FROM:'from'",
-            "                      (variable_list",
-            "                        (variable_list_item",
-            "                          VARIABLE:'FROM_1')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_source_translation",
+            "                        SOURCE_TRANSLATION:'source-translation'",
+            "                        (srnst_dynamic_ip_and_port",
+            "                          DYNAMIC_IP_AND_PORT:'dynamic-ip-and-port'",
+            "                          (srnst_translated_address",
+            "                            TRANSLATED_ADDRESS:'translated-address'",
+            "                            (translated_address_list",
+            "                              (translated_address_list_item",
+            "                                range = IP_RANGE:'3.3.3.3-4.4.4.4'))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73708,21 +73726,22 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_from",
-            "                      FROM:'from'",
-            "                      (variable_list",
-            "                        (variable_list_item",
-            "                          VARIABLE:'FROM_2')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_from",
+            "                        FROM:'from'",
+            "                        (variable_list",
+            "                          (variable_list_item",
+            "                            VARIABLE:'FROM_1'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73731,22 +73750,22 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_source",
-            "                      SOURCE:'source'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'SRC_1'))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_from",
+            "                        FROM:'from'",
+            "                        (variable_list",
+            "                          (variable_list_item",
+            "                            VARIABLE:'FROM_2'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73755,22 +73774,23 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_source",
-            "                      SOURCE:'source'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'SRC_2'))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_source",
+            "                        SOURCE:'source'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            name = (variable",
+            "                              VARIABLE:'SRC_1')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73779,22 +73799,23 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_destination",
-            "                      DESTINATION:'destination'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'DST_1'))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_source",
+            "                        SOURCE:'source'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            name = (variable",
+            "                              VARIABLE:'SRC_2')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73803,22 +73824,23 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'RULE_3')",
-            "                    (srn_destination",
-            "                      DESTINATION:'destination'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'DST_2'))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_destination",
+            "                        DESTINATION:'destination'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            name = (variable",
+            "                              VARIABLE:'DST_1')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73827,16 +73849,23 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'MISSING_TO')))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'RULE_3')",
+            "                      (srn_destination",
+            "                        DESTINATION:'destination'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            name = (variable",
+            "                              VARIABLE:'DST_2')))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73845,20 +73874,17 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'MISSING_FROM')",
-            "                    (srn_to",
-            "                      TO:'to'",
-            "                      zone = (variable",
-            "                        VARIABLE:'TO_ZONE'))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'MISSING_TO'))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73867,20 +73893,21 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'MISSING_SOURCE')",
-            "                    (srn_to",
-            "                      TO:'to'",
-            "                      zone = (variable",
-            "                        VARIABLE:'TO_ZONE'))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'MISSING_FROM')",
+            "                      (srn_to",
+            "                        TO:'to'",
+            "                        zone = (variable",
+            "                          VARIABLE:'TO_ZONE')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73889,21 +73916,21 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'MISSING_SOURCE')",
-            "                    (srn_from",
-            "                      FROM:'from'",
-            "                      (variable_list",
-            "                        (variable_list_item",
-            "                          VARIABLE:'FROM_ZONE')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'MISSING_SOURCE')",
+            "                      (srn_to",
+            "                        TO:'to'",
+            "                        zone = (variable",
+            "                          VARIABLE:'TO_ZONE')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73912,20 +73939,22 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'MISSING_DESTINATION')",
-            "                    (srn_to",
-            "                      TO:'to'",
-            "                      zone = (variable",
-            "                        VARIABLE:'TO_ZONE'))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'MISSING_SOURCE')",
+            "                      (srn_from",
+            "                        FROM:'from'",
+            "                        (variable_list",
+            "                          (variable_list_item",
+            "                            VARIABLE:'FROM_ZONE'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73934,21 +73963,21 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'MISSING_DESTINATION')",
-            "                    (srn_from",
-            "                      FROM:'from'",
-            "                      (variable_list",
-            "                        (variable_list_item",
-            "                          VARIABLE:'FROM_ZONE')))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'MISSING_DESTINATION')",
+            "                      (srn_to",
+            "                        TO:'to'",
+            "                        zone = (variable",
+            "                          VARIABLE:'TO_ZONE')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -73957,22 +73986,47 @@
             "        POLICY:'policy'",
             "        (s_policy_panorama",
             "          PANORAMA:'panorama'",
-            "          (panorama_post_rulebase",
-            "            POST_RULEBASE:'post-rulebase'",
-            "            (rulebase_inner",
-            "              (sr_nat",
-            "                NAT:'nat'",
-            "                (sr_nat_rules",
-            "                  RULES:'rules'",
-            "                  (srn_definition",
-            "                    name = (variable",
-            "                      VARIABLE:'MISSING_DESTINATION')",
-            "                    (srn_source",
-            "                      SOURCE:'source'",
-            "                      (src_or_dst_list",
-            "                        (src_or_dst_list_item",
-            "                          name = (variable",
-            "                            VARIABLE:'SRC_NAME'))))))))))))",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'MISSING_DESTINATION')",
+            "                      (srn_from",
+            "                        FROM:'from'",
+            "                        (variable_list",
+            "                          (variable_list_item",
+            "                            VARIABLE:'FROM_ZONE'))))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (s_policy",
+            "        POLICY:'policy'",
+            "        (s_policy_panorama",
+            "          PANORAMA:'panorama'",
+            "          (ss_common",
+            "            (s_post_rulebase",
+            "              POST_RULEBASE:'post-rulebase'",
+            "              (rulebase_inner",
+            "                (sr_nat",
+            "                  NAT:'nat'",
+            "                  (sr_nat_rules",
+            "                    RULES:'rules'",
+            "                    (srn_definition",
+            "                      name = (variable",
+            "                        VARIABLE:'MISSING_DESTINATION')",
+            "                      (srn_source",
+            "                        SOURCE:'source'",
+            "                        (src_or_dst_list",
+            "                          (src_or_dst_list_item",
+            "                            name = (variable",
+            "                              VARIABLE:'SRC_NAME')))))))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -76283,7 +76337,7 @@
             "              DROP:'DROP')))))",
             "    NEWLINE:'\\n')",
             "  COMMIT:'COMMIT'",
-            "  NEWLINE:'\\n')"
+            "  NEWLINE:'\\n\\n')"
           ]
         }
       },
@@ -76294,13 +76348,13 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 12,
-              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match internal route-map ROUTE_MAP"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 13,
-              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match external route-map UNDEFINED_MAP"
             }
           ]
@@ -76320,13 +76374,13 @@
             {
               "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP",
               "Line" : 9,
-              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255"
             },
             {
               "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP",
               "Line" : 10,
-              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza cisco_configuration]",
+              "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32"
             }
           ]
@@ -76621,22 +76675,6 @@
             }
           ]
         },
-        "configs/cisco_bgp_confederation" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 7,
-              "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "bgp confederation identifier 100"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 8,
-              "Parser_Context" : "[bgp_confederation_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "bgp confederation peers 10 11"
-            }
-          ]
-        },
         "configs/cisco_eigrp" : {
           "Parse warnings" : [
             {
@@ -76699,25 +76737,25 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 128,
+              "Line" : 125,
               "Parser_Context" : "[if_ip_summary_address if_inner s_interface stanza cisco_configuration]",
               "Text" : "ip summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 281,
+              "Line" : 278,
               "Parser_Context" : "[if_zone_member if_inner s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 316,
+              "Line" : 313,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre ipv4"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 317,
+              "Line" : 314,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -77922,18 +77960,6 @@
         "configs/juniper_interfaces" : {
           "Parse warnings" : [
             {
-              "Comment" : "Unexpected vlan members range on non-trunk interface",
-              "Line" : 5,
-              "Parser_Context" : "[ife_vlan if_ethernet_switching i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "vlan members 1-1000"
-            },
-            {
-              "Comment" : "Unexpected vlan members range on non-trunk interface",
-              "Line" : 15,
-              "Parser_Context" : "[ife_vlan if_ethernet_switching i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "vlan members all"
-            },
-            {
               "Comment" : "This feature is not currently supported",
               "Line" : 19,
               "Parser_Context" : "[ifi_tcp_mss if_inet i_family i_common i_unit int_named s_interfaces s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -78331,7 +78357,7 @@
         "juniper_extended_community" : "PASSED",
         "juniper_firewall" : "WARNINGS",
         "juniper_forwarding_options" : "PASSED",
-        "juniper_interfaces" : "PASSED",
+        "juniper_interfaces" : "WARNINGS",
         "juniper_isis" : "PASSED",
         "juniper_l2_learning" : "PASSED",
         "juniper_misc" : "PASSED",
@@ -78543,7 +78569,17 @@
             }
           }
         },
-        "configs/arista_ospf" : { },
+        "configs/arista_ospf" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                5,
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/arista_queue_monitor" : { },
         "configs/arista_username" : { },
         "configs/arista_vrf" : { },
@@ -79768,31 +79804,31 @@
                 4,
                 5
               ],
-              "numReferrers" : 1
+              "numReferrers" : 0
             }
           },
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                284
+                281
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                286
+                283
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                288
+                285
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                290
+                287
               ],
               "numReferrers" : 1
             },
@@ -80070,59 +80106,59 @@
                 276,
                 277,
                 278,
-                279,
-                280,
-                281,
-                282
+                279
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                292
+                289
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                352,
-                353
+                342,
+                343
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
+                291,
+                292,
+                293,
                 294,
-                295,
-                296,
-                297,
-                298
+                295
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                300,
-                301,
-                302,
-                303
+                297,
+                298,
+                299,
+                300
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                305
+                302
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                307
+                304
               ],
               "numReferrers" : 1
             },
             "Tunnel0" : {
               "definitionLines" : [
+                308,
+                309,
+                310,
                 311,
                 312,
                 313,
@@ -80131,100 +80167,85 @@
                 316,
                 317,
                 318,
-                319,
-                320,
-                321,
-                322
+                319
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                332
+                322
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                338
+                328
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                340
+                330
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                323
+                320
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                342
+                332
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                334
+                324
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                336
+                326
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                344
+                334
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                346
+                336
               ],
               "numReferrers" : 1
             },
             "Wlan-GigabitEthernet0" : {
               "definitionLines" : [
-                350
+                340
               ],
               "numReferrers" : 1
             },
             "Wlan-ap0" : {
               "definitionLines" : [
-                348
+                338
               ],
               "numReferrers" : 1
             },
             "inside" : {
               "definitionLines" : [
-                295
+                292
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                309
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "vxlan" : {
-            "Vxlan1" : {
-              "definitionLines" : [
-                325,
-                326,
-                327,
-                328,
-                329
+                306
               ],
               "numReferrers" : 1
             }
@@ -87526,6 +87547,15 @@
             }
           }
         },
+        "configs/arista_ospf" : {
+          "interface" : {
+            "Ethernet1" : {
+              "interface" : [
+                5
+              ]
+            }
+          }
+        },
         "configs/aruba_crypto" : {
           "crypto ipsec transform-set" : {
             "\"" : {
@@ -88496,27 +88526,27 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                284
+                281
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                286
+                283
               ]
             },
             "Cellular0" : {
               "tunnel source" : [
-                320
+                317
               ]
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                288
+                285
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                290
+                287
               ]
             },
             "Ethernet0" : {
@@ -88524,129 +88554,119 @@
                 7
               ],
               "tunnel source" : [
-                321
+                318
               ]
             },
             "Ethernet1/11" : {
               "interface" : [
-                292
+                289
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                352
+                342
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                294
+                291
               ]
             },
             "Loopback0" : {
               "interface" : [
-                300
-              ]
-            },
-            "Loopback1" : {
-              "vxlan source-interface" : [
-                326
+                297
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                305
+                302
               ]
             },
             "Null0" : {
               "interface" : [
-                307
+                304
               ]
             },
             "Tunnel0" : {
               "interface" : [
-                311
+                308
               ]
             },
             "Vlan1" : {
               "interface" : [
-                332
+                322
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                338
+                328
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                340
+                330
               ]
             },
             "Vlan111" : {
               "interface" : [
-                323
+                320
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                342
+                332
               ]
             },
             "Vlan2" : {
               "interface" : [
-                334
+                324
               ]
             },
             "Vlan3" : {
               "interface" : [
-                336
+                326
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                344
+                334
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                346
+                336
               ]
             },
             "Wlan-GigabitEthernet0" : {
               "interface" : [
-                350
+                340
               ]
             },
             "Wlan-ap0" : {
               "interface" : [
-                348
+                338
               ]
             },
             "inside" : {
               "interface" : [
-                295
+                292
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                309
+                306
               ]
             }
           },
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                132
+                129
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                140
-              ]
-            },
-            "abc" : {
-              "ip nat source dynamic access-list" : [
-                95
+                137
               ]
             },
             "ag1" : {
@@ -88657,16 +88677,6 @@
             "ag2" : {
               "interface outgoing ip access-list" : [
                 57
-              ]
-            },
-            "def" : {
-              "ip nat source dynamic access-list" : [
-                94
-              ]
-            },
-            "mynatacl" : {
-              "ip nat destination acl" : [
-                91
               ]
             }
           },
@@ -88682,43 +88692,29 @@
               ]
             }
           },
-          "nat pool" : {
-            "beeble" : {
-              "ip nat source pool" : [
-                95
-              ]
-            }
-          },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                138
+                135
               ]
             },
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
-                128
-              ]
-            }
-          },
-          "vxlan" : {
-            "Vxlan1" : {
-              "vxlan" : [
-                325
+                125
               ]
             }
           },
           "zone" : {
             "t1" : {
               "interface zone-member" : [
-                281
+                278
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                282
+                279
               ]
             }
           }
@@ -89262,17 +89258,17 @@
           "interface" : {
             "Loopback0" : {
               "snmp-server source-interface" : [
-                87
+                89
               ]
             },
             "Vlan1" : {
               "snmp-server source-interface" : [
-                89
+                91
               ]
             },
             "mgmt0" : {
               "snmp-server source-interface" : [
-                88
+                90
               ]
             }
           },
@@ -89286,6 +89282,11 @@
               "snmp server community ipv4 acl" : [
                 8,
                 10
+              ]
+            },
+            "50" : {
+              "snmp-server group v3 access" : [
+                69
               ]
             },
             "customer-snmp" : {
@@ -89321,13 +89322,13 @@
                 67
               ],
               "snmp server tftp-server list" : [
-                92
+                94
               ]
             },
             "Loopback0" : {
               "snmp-server trap-source" : [
-                94,
-                95
+                96,
+                97
               ]
             }
           },
@@ -89335,6 +89336,11 @@
             "dummyacl" : {
               "snmp server community ipv6 acl" : [
                 15
+              ]
+            },
+            "snmp6" : {
+              "snmp-server group v3 access ipv6" : [
+                70
               ]
             },
             "to-VTY" : {
@@ -93734,22 +93740,15 @@
           }
         },
         "configs/cisco_interface" : {
-          "interface" : {
-            "Loopback1" : {
-              "vxlan source-interface" : [
-                326
-              ]
-            }
-          },
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                132
+                129
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                140
+                137
               ]
             },
             "ag1" : {
@@ -93760,16 +93759,6 @@
             "ag2" : {
               "interface outgoing ip access-list" : [
                 57
-              ]
-            },
-            "def" : {
-              "ip nat source dynamic access-list" : [
-                94
-              ]
-            },
-            "mynatacl" : {
-              "ip nat destination acl" : [
-                91
               ]
             }
           },
@@ -93785,29 +93774,22 @@
               ]
             }
           },
-          "nat pool" : {
-            "beeble" : {
-              "ip nat source pool" : [
-                95
-              ]
-            }
-          },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
-                138
+                135
               ]
             },
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
-                128
+                125
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                282
+                279
               ]
             }
           }
@@ -94206,17 +94188,17 @@
           "interface" : {
             "Loopback0" : {
               "snmp-server source-interface" : [
-                87
+                89
               ]
             },
             "Vlan1" : {
               "snmp-server source-interface" : [
-                89
+                91
               ]
             },
             "mgmt0" : {
               "snmp-server source-interface" : [
-                88
+                90
               ]
             }
           },
@@ -94230,6 +94212,11 @@
               "snmp server community ipv4 acl" : [
                 8,
                 10
+              ]
+            },
+            "50" : {
+              "snmp-server group v3 access" : [
+                69
               ]
             },
             "customer-snmp" : {
@@ -94265,7 +94252,7 @@
                 67
               ],
               "snmp server tftp-server list" : [
-                92
+                94
               ]
             }
           },
@@ -94273,6 +94260,11 @@
             "dummyacl" : {
               "snmp server community ipv6 acl" : [
                 15
+              ]
+            },
+            "snmp6" : {
+              "snmp-server group v3 access ipv6" : [
+                70
               ]
             },
             "to-VTY" : {
@@ -94481,6 +94473,29 @@
             "/Common/MY_PREFIX_LIST2" : {
               "route-map match ipv4 address prefix-list" : [
                 29
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : {
+          "pool" : {
+            "/Common/p1" : {
+              "ha-group pool" : [
+                10
+              ]
+            },
+            "/Common/p2" : {
+              "ha-group pool" : [
+                13
+              ]
+            }
+          }
+        },
+        "configs/f5_bigip/f5_bigip_structured_with_imish" : {
+          "IMISH interface" : {
+            "us1" : {
+              "bgp neighbor update-source" : [
+                56
               ]
             }
           }
@@ -95725,6 +95740,22 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "missing action in firewall filter: 'ip_options', term: 't1'"
+            }
+          ]
+        },
+        "juniper_interfaces" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign more than one access vlan: [1-1000] to interface 'ae0.0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign more than one access vlan: [all] to interface 'xe-0/0/0:0.0'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign more than one access vlan: [bippetyboppety] to interface 'xe-0/0/5:0.0'"
             }
           ]
         },

@@ -17,8 +17,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.SwitchportEncapsulationType;
-import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 
 public class Interface implements Serializable {
@@ -43,6 +41,16 @@ public class Interface implements Serializable {
     return _ospfNeighbors;
   }
 
+  public @Nullable EthernetSwitching getEthernetSwitching() {
+    return _ethernetSwitching;
+  }
+
+  public void initEthernetSwitching() {
+    if (_ethernetSwitching == null) {
+      _ethernetSwitching = new EthernetSwitching();
+    }
+  }
+
   /** Represents the type of interface for OSPF */
   public enum OspfInterfaceType {
     /** This is not an explicit type -- assumed by default */
@@ -57,7 +65,6 @@ public class Interface implements Serializable {
     P2P
   }
 
-  private String _accessVlan;
   private boolean _active;
   private Set<Ip> _additionalArpIps;
   private final Set<ConcreteInterfaceAddress> _allAddresses;
@@ -69,6 +76,7 @@ public class Interface implements Serializable {
   private double _bandwidth;
   private String _description;
   private boolean _defined;
+  private @Nullable EthernetSwitching _ethernetSwitching;
   private @Nullable String _incomingFilter;
   private @Nullable List<String> _incomingFilterList;
   private transient boolean _inherited;
@@ -93,8 +101,6 @@ public class Interface implements Serializable {
   private ConcreteInterfaceAddress _primaryAddress;
   @Nullable private String _redundantParentInterface;
   private String _routingInstance;
-  private SwitchportMode _switchportMode;
-  private SwitchportEncapsulationType _switchportTrunkEncapsulation;
   private final SortedMap<String, Interface> _units;
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
   private Integer _tcpMss;
@@ -109,8 +115,6 @@ public class Interface implements Serializable {
     _name = name;
     _ospfInterfaceType = OspfInterfaceType.BROADCAST;
     _ospfNeighbors = new HashSet<>();
-    _switchportMode = SwitchportMode.NONE;
-    _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _allowedVlans = new LinkedList<>();
     _allowedVlanNames = new LinkedList<>();
     _ospfCost = null;
@@ -120,10 +124,6 @@ public class Interface implements Serializable {
 
   public String get8023adInterface() {
     return _agg8023adInterface;
-  }
-
-  public String getAccessVlan() {
-    return _accessVlan;
   }
 
   public boolean getActive() {
@@ -192,6 +192,10 @@ public class Interface implements Serializable {
     return _name;
   }
 
+  /**
+   * The vlan assigned to untagged packets. These packets are sent to the logical L3 subinterface
+   * with the same vlan-id. This is distinct from the concept of trunk native-vlan.
+   */
   @Nullable
   public Integer getNativeVlan() {
     return _nativeVlan;
@@ -263,14 +267,6 @@ public class Interface implements Serializable {
     return _routingInstance;
   }
 
-  public SwitchportMode getSwitchportMode() {
-    return _switchportMode;
-  }
-
-  public SwitchportEncapsulationType getSwitchportTrunkEncapsulation() {
-    return _switchportTrunkEncapsulation;
-  }
-
   public Map<String, Interface> getUnits() {
     return _units;
   }
@@ -336,10 +332,6 @@ public class Interface implements Serializable {
 
   public void set8023adInterface(String interfaceName) {
     _agg8023adInterface = interfaceName;
-  }
-
-  public void setAccessVlan(String vlan) {
-    _accessVlan = vlan;
   }
 
   public void setActive(boolean active) {
@@ -450,14 +442,6 @@ public class Interface implements Serializable {
 
   public void setRoutingInstance(String routingInstance) {
     _routingInstance = routingInstance;
-  }
-
-  public void setSwitchportMode(SwitchportMode switchportMode) {
-    _switchportMode = switchportMode;
-  }
-
-  public void setSwitchportTrunkEncapsulation(SwitchportEncapsulationType encapsulation) {
-    _switchportTrunkEncapsulation = encapsulation;
   }
 
   public void setTcpMss(@Nullable Integer tcpMss) {

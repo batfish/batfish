@@ -1,8 +1,8 @@
 load("@rules_java//java:defs.bzl", "java_library")
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
-
-load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_library(
     name = "minesweeper",
@@ -66,8 +66,6 @@ junit_tests(
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
-
-load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 pmd_test(
     name = "pmd",

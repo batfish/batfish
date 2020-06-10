@@ -14,6 +14,7 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PbrFibLookup;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInInterfacePostNat;
 import org.batfish.symbolic.state.PostInVrf;
@@ -21,7 +22,6 @@ import org.batfish.symbolic.state.PostInVrfSession;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdge;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
-import org.batfish.symbolic.state.PreOutEdgeSession;
 import org.batfish.symbolic.state.PreOutInterfaceDeliveredToSubnet;
 import org.batfish.symbolic.state.PreOutInterfaceExitsNetwork;
 import org.batfish.symbolic.state.PreOutInterfaceInsufficientInfo;
@@ -157,6 +157,11 @@ public class PreOutgoingTransformationNodeVisitor implements StateExprVisitor<No
   }
 
   @Override
+  public NodeInterfacePair visitPbrFibLookup(PbrFibLookup pbrFibLookup) {
+    return null;
+  }
+
+  @Override
   public NodeInterfacePair visitPostInInterface(PostInInterface postInInterface) {
     return null;
   }
@@ -222,11 +227,6 @@ public class PreOutgoingTransformationNodeVisitor implements StateExprVisitor<No
 
   @Override
   public NodeInterfacePair visitPostInVrfSession(PostInVrfSession postInVrfSession) {
-    return null;
-  }
-
-  @Override
-  public NodeInterfacePair visitPreOutEdgeSession(PreOutEdgeSession preOutEdgeSession) {
     return null;
   }
 

@@ -1,0 +1,23 @@
+{
+  "default": [
+    {
+      "type" : "ebgp_sent",
+      "network" : "192.0.2.0/24",
+      "nextHopIp" : "10.0.0.1",
+      "srcNode" : "neighbor",
+      "srcIp" : "10.0.0.3",
+      "dstNode" : "rtr1",
+      "dstIp" : "10.0.0.4",
+      "srcProtocol" : "AGGREGATE",
+      "originType" : "incomplete",
+      "localPreference" : 100,
+      "med" : 0,
+      "originatorIp" : "0.0.0.0",
+      "asPath" : [],
+      "communities" : [],
+      "srcVrf":"default",
+      "dstVrf":"default",
+      "clusterList":[]
+    }
+  ]
+}

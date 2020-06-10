@@ -1,0 +1,28 @@
+{
+ "Vpcs": [
+  {
+   "CidrBlock": "10.2.0.0/16",
+   "CidrBlockAssociationSet": [
+    {
+     "AssociationId": "vpc-cidr-assoc-061dc252477fb1d6a",
+     "CidrBlock": "10.2.0.0/16",
+     "CidrBlockState": {
+      "State": "associated"
+     }
+    }
+   ],
+   "DhcpOptionsId": "dopt-aa2d83d0",
+   "InstanceTenancy": "default",
+   "IsDefault": false,
+   "OwnerId": "951601349076",
+   "State": "available",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "fish"
+    }
+   ],
+   "VpcId": "vpc-05951c91977125d2e"
+  }
+ ]
+}

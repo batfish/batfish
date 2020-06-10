@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
@@ -98,7 +99,7 @@ public final class IspModelingUtils {
   public static final String INTERNET_OUT_INTERFACE = "out";
   static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
   static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(LINK_LOCAL_IP);
-  static final String ISP_TO_INTERNET_INTERFACE_NAME = "To Internet";
+  static final String ISP_TO_INTERNET_INTERFACE_NAME = "To-Internet";
 
   // null routing private address space at the internet prevents "INSUFFICIENT_INFO" for networks
   // that use this space internally
@@ -111,8 +112,17 @@ public final class IspModelingUtils {
   /** Use this cost to install static routes on ISP nodes for prefixes originated to the Internet */
   static final int HIGH_ADMINISTRATIVE_COST = 32767; // maximum possible
 
-  public static String getDefaultIspNodeName(Long asn) {
-    return String.format("%s_%s", "isp", asn);
+  /** Returns the hostname that will be used for the ISP model with the given ASN. */
+  public static String getDefaultIspNodeName(long asn) {
+    return String.format("isp_%s", asn);
+  }
+
+  public static String internetToIspInterfaceName(String ispHostname) {
+    return "To-" + ispHostname;
+  }
+
+  public static String ispToRemoteInterfaceName(String remoteHostname) {
+    return "To-" + remoteHostname;
   }
 
   public static class ModeledNodes {
@@ -194,21 +204,13 @@ public final class IspModelingUtils {
 
     asnToIspInfo.forEach(
         (asn, ispInfo) -> {
-          String ispName = ispInfo.getName();
-          if (configurations.containsKey(ispName)) {
+          String hostname = ispInfo.getHostname();
+          if (configurations.containsKey(hostname)) {
             conflicts.add(
                 String.format(
-                    "ISP name %s for ASN %d conflicts with a node name in the snapshot",
-                    ispName, asn));
+                    "ISP hostname %s for ASN %d conflicts with a node name in the snapshot",
+                    hostname, asn));
           }
-          asnToIspInfo.values().stream()
-              .filter(info -> info.getAsn() > asn && info.getName().equals(ispName))
-              .forEach(
-                  info ->
-                      conflicts.add(
-                          String.format(
-                              "ISP name %s for ASN %d conflicts with that for ASN %d",
-                              ispName, asn, info.getAsn())));
         });
     return conflicts.build();
   }
@@ -355,6 +357,7 @@ public final class IspModelingUtils {
       Interface internetIface =
           nf.interfaceBuilder()
               .setOwner(internet)
+              .setName(internetToIspInterfaceName(ispConfiguration.getHostname()))
               .setVrf(internet.getDefaultVrf())
               .setAddress(LINK_LOCAL_ADDRESS)
               .build();
@@ -471,11 +474,8 @@ public final class IspModelingUtils {
             ispNodeInfos.stream().filter(i -> i.getAsn() == asn).collect(Collectors.toList());
 
         // For properties that can't be merged, pick the first one.
-        String ispName =
-            matchingInfos.stream()
-                .map(IspNodeInfo::getName)
-                .findFirst()
-                .orElse(getDefaultIspNodeName(asn));
+        @Nullable
+        String ispName = matchingInfos.stream().map(IspNodeInfo::getName).findFirst().orElse(null);
         IspTrafficFiltering filtering =
             matchingInfos.stream()
                 .map(IspNodeInfo::getIspTrafficFiltering)
@@ -527,7 +527,8 @@ public final class IspModelingUtils {
 
     Configuration ispConfiguration =
         Configuration.builder()
-            .setHostname(ispInfo.getName())
+            .setHostname(ispInfo.getHostname())
+            .setHumanName(ispInfo.getName())
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setDeviceModel(DeviceModel.BATFISH_ISP)
             .build();
@@ -609,6 +610,7 @@ public final class IspModelingUtils {
               Interface ispInterface =
                   nf.interfaceBuilder()
                       .setOwner(ispConfiguration)
+                      .setName(ispToRemoteInterfaceName(remote.getRemoteHostname()))
                       .setVrf(defaultVrf)
                       .setAddress(remote.getIspIfaceAddress())
                       .setIncomingFilter(fromNetwork)

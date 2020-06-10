@@ -28,9 +28,6 @@
  */
 package net.sf.javabdd;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -126,6 +123,7 @@ public final class JFactory extends BDDFactory {
       return _index == BDDONE;
     }
 
+    @Override
     public boolean isAssignment() {
       return bdd_isAssignment(_index);
     }
@@ -196,6 +194,13 @@ public final class JFactory extends BDDFactory {
       int x = _index;
       int y = ((BDDImpl) var)._index;
       return makeBDD(bdd_exist(x, y));
+    }
+
+    @Override
+    public BDD project(BDD var) {
+      int x = _index;
+      int y = ((BDDImpl) var)._index;
+      return makeBDD(bdd_project(x, y));
     }
 
     @Override
@@ -322,6 +327,12 @@ public final class JFactory extends BDDFactory {
     public BDD fullSatOne() {
       int x = _index;
       return makeBDD(bdd_fullsatone(x));
+    }
+
+    @Override
+    public BDD randomFullSatOne(int seed) {
+      int x = _index;
+      return makeBDD(bdd_randomfullsatone(x, seed));
     }
 
     @Override
@@ -688,7 +699,7 @@ public final class JFactory extends BDDFactory {
   private static final int BDD_ERRNUM = 24;
 
   /* Strings for all error mesages */
-  private static String[] errorstrings = {
+  private static final String[] errorstrings = {
     "",
     "Out of memory",
     "Unknown variable",
@@ -2319,6 +2330,53 @@ public final class JFactory extends BDDFactory {
     return res;
   }
 
+  private int project_rec(int r) {
+    BddCacheDataI entry;
+    int res;
+
+    if (r < 2) {
+      return r;
+    }
+
+    int level = LEVEL(r);
+    if (level > quantlast) {
+      // existentially quantify all remaining variables
+      return BDDONE;
+    }
+
+    entry = BddCache_lookupI(quantcache, QUANTHASH(r));
+    if (entry.a == r && entry.c == quantid) {
+      if (CACHESTATS) {
+        cachestats.opHit++;
+      }
+      return entry.res;
+    }
+    if (CACHESTATS) {
+      cachestats.opMiss++;
+    }
+
+    int low = PUSHREF(project_rec(LOW(r)));
+    int high = PUSHREF(project_rec(HIGH(r)));
+
+    if (INVARSET(level)) {
+      res = bdd_makenode(level, low, high);
+    } else {
+      // existentially quantify
+      res = or_rec(low, high);
+    }
+
+    POPREF(2);
+
+    if (CACHESTATS && entry.a != -1) {
+      cachestats.opOverwrite++;
+    }
+    entry.a = r;
+    entry.c = quantid;
+    entry.res = res;
+
+    return res;
+  }
+
   private int bdd_constrain(int f, int c) {
     CHECK(f);
     CHECK(c);
@@ -2551,6 +2609,34 @@ public final class JFactory extends BDDFactory {
 
     INITREF();
     int res = quant_rec(r);
+    checkresize();
+
+    return res;
+  }
+
+  private int bdd_project(int r, int var) {
+    CHECK(r);
+    CHECK(var);
+
+    if (var < 2) /* Empty set */ {
+      // projecting onto an empty set of variables means existentially
+      // quantifying all variables.
+      return r == BDDZERO ? BDDZERO : BDDONE;
+    }
+    if (varset2vartable(var) < 0) {
+      return BDDZERO;
+    }
+
+    if (applycache == null) {
+      applycache = BddCacheI_init(cachesize);
+    }
+    if (quantcache == null) {
+      quantcache = BddCacheI_init(cachesize);
+    }
+    quantid = (var << 3) | CACHEID_PROJECT;
+
+    INITREF();
+    int res = project_rec(r);
     checkresize();
 
     return res;
@@ -2908,17 +2994,10 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    if (ISZERO(LOW(r))) {
-      int res = satone_rec(HIGH(r));
-      int m = bdd_makenode(LEVEL(r), BDDZERO, res);
-      PUSHREF(m);
-      return m;
-    } else {
-      int res = satone_rec(LOW(r));
-      int m = bdd_makenode(LEVEL(r), res, BDDZERO);
-      PUSHREF(m);
-      return m;
-    }
+    int lo = LOW(r);
+    int hi = HIGH(r);
+    boolean useHi = ISZERO(lo);
+    return bdd_makesatnode(LEVEL(r), satone_rec(useHi ? hi : lo), !useHi);
   }
 
   private int bdd_satoneset(int r, int var, int pol) {
@@ -2947,40 +3026,17 @@ public final class JFactory extends BDDFactory {
     }
 
     if (LEVEL(r) < LEVEL(var)) {
-      if (ISZERO(LOW(r))) {
-        int res = satoneset_rec(HIGH(r), var);
-        int m = bdd_makenode(LEVEL(r), BDDZERO, res);
-        PUSHREF(m);
-        return m;
-      } else {
-        int res = satoneset_rec(LOW(r), var);
-        int m = bdd_makenode(LEVEL(r), res, BDDZERO);
-        PUSHREF(m);
-        return m;
-      }
+      int lo = LOW(r);
+      int hi = HIGH(r);
+      boolean useHi = ISZERO(lo);
+      return bdd_makesatnode(LEVEL(r), satoneset_rec(useHi ? hi : lo, var), !useHi);
     } else if (LEVEL(var) < LEVEL(r)) {
-      int res = satoneset_rec(r, HIGH(var));
-      if (satPolarity == BDDONE) {
-        int m = bdd_makenode(LEVEL(var), BDDZERO, res);
-        PUSHREF(m);
-        return m;
-      } else {
-        int m = bdd_makenode(LEVEL(var), res, BDDZERO);
-        PUSHREF(m);
-        return m;
-      }
+      return bdd_makesatnode(LEVEL(var), satoneset_rec(r, HIGH(var)), satPolarity != BDDONE);
     } else /* LEVEL(r) == LEVEL(var) */ {
-      if (ISZERO(LOW(r))) {
-        int res = satoneset_rec(HIGH(r), HIGH(var));
-        int m = bdd_makenode(LEVEL(r), BDDZERO, res);
-        PUSHREF(m);
-        return m;
-      } else {
-        int res = satoneset_rec(LOW(r), HIGH(var));
-        int m = bdd_makenode(LEVEL(r), res, BDDZERO);
-        PUSHREF(m);
-        return m;
-      }
+      int lo = LOW(r);
+      int hi = HIGH(r);
+      boolean useHi = ISZERO(lo);
+      return bdd_makesatnode(LEVEL(r), satoneset_rec(useHi ? hi : lo, HIGH(var)), !useHi);
     }
   }
 
@@ -2996,7 +3052,7 @@ public final class JFactory extends BDDFactory {
     res = fullsatone_rec(r);
 
     for (int v = LEVEL(r) - 1; v >= 0; v--) {
-      res = PUSHREF(bdd_makenode(v, res, BDDZERO));
+      res = bdd_makesatnode(v, res, true);
     }
 
     checkresize();
@@ -3008,23 +3064,89 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    if (LOW(r) != BDDZERO) {
-      int res = fullsatone_rec(LOW(r));
-
-      for (int v = LEVEL(LOW(r)) - 1; v > LEVEL(r); v--) {
-        res = PUSHREF(bdd_makenode(v, res, BDDZERO));
-      }
-
-      return PUSHREF(bdd_makenode(LEVEL(r), res, BDDZERO));
-    } else {
-      int res = fullsatone_rec(HIGH(r));
-
-      for (int v = LEVEL(HIGH(r)) - 1; v > LEVEL(r); v--) {
-        res = PUSHREF(bdd_makenode(v, res, BDDZERO));
-      }
-
-      return PUSHREF(bdd_makenode(LEVEL(r), BDDZERO, res));
+    int lo = LOW(r);
+    int hi = HIGH(r);
+    boolean useLo = lo != BDDZERO;
+    int child = fullsatone_rec(useLo ? lo : hi);
+    for (int v = LEVEL(child) - 1; v > LEVEL(r); v--) {
+      child = bdd_makesatnode(v, child, true);
     }
+    return bdd_makesatnode(LEVEL(r), child, useLo);
+  }
+
+  private int bdd_randomfullsatone(int r, int seed) {
+    int res;
+
+    CHECK(r);
+    if (r == BDDZERO) {
+      return BDDZERO;
+    }
+
+    INITREF();
+    res = randomfullsatone_rec(r, 0, seed);
+
+    checkresize();
+    return res;
+  }
+
+  // Makes a node for the purposes of a satisfying assignment. The resulting node tests the given
+  // variable, has the given child at the branch indicated by {@code useLow}, and has the other
+  // branch false.
+  private int bdd_makesatnode(int variable, int child, boolean useLow) {
+    assert LEVEL(child) > variable; // or the BDD is out of order.
+
+    PUSHREF(child);
+    int ret = bdd_makenode(variable, useLow ? child : BDDZERO, useLow ? BDDZERO : child);
+    POPREF(1);
+    return ret;
+  }
+
+  // Recursively builds a full satisfying assignment for the BDD corresponding to r, using all
+  // variables from level..bddvarnum.
+  //
+  // Invariants:
+  // * r can be anything, including BDDZERO or BDDONE.
+  // * level <= LEVEL(r)
+  // * seed is a deterministic function of the branches taken in the eventual parent BDD
+  //   (levels 0..level-1) and the original seed.
+  //
+  // The returned BDD tests all variables from level..bddvarnum.
+  private int randomfullsatone_rec(int r, int level, int seed) {
+    if (level == bddvarnum) {
+      // Reached past the last variable aka, r is zero or one.
+      assert r == BDDZERO || r == BDDONE; // sanity check.
+      return r;
+    }
+
+    // To be deterministic, we cannot use the BDD ID (r). Indeed, the only thing we can really use
+    // is LEVEL(r) [aka, which variable is tested in this node] as well as the path we take through
+    // the BDD. This is a lot like netconan, but no need for cryptographic security.
+    int newSeed = seed * 31 + level;
+    boolean preferLo = (newSeed & 1) == 0;
+    if (level < LEVEL(r)) {
+      // The BDD r is the same no matter which branch at the current level is taken. Pick one
+      // randomly.
+      if (preferLo) {
+        // Change newSeed for recursive cases based on path.
+        newSeed = newSeed * 23;
+      }
+      int next = randomfullsatone_rec(r, level + 1, newSeed);
+      return bdd_makesatnode(level, next, preferLo);
+    }
+
+    assert level == LEVEL(r); // sanity check
+
+    int lo = LOW(r);
+    int hi = HIGH(r);
+    // Even though we prefer low branch randomly, we can't use it if the low branch is BDDZERO.
+    // Similarly, even if we prefer the high branch we must take low branch if hi is BDDZERO.
+    boolean useLo = (lo != BDDZERO && preferLo || hi == BDDZERO);
+    if (useLo) {
+      // Change newSeed for recursive cases based on path.
+      newSeed *= 23;
+    }
+    int next = randomfullsatone_rec(useLo ? lo : hi, level + 1, newSeed);
+    return bdd_makesatnode(level, next, useLo);
   }
 
   private void bdd_gbc_rehash() {
@@ -3581,19 +3703,20 @@ public final class JFactory extends BDDFactory {
   private static final int CACHEID_VECCOMPOSE = 0x2;
   private static final int CACHEID_CORRECTIFY = 0x3;
 
-  /* Hash value modifiers for quantification */
+  /* Hash value modifiers for quantification. Max 8 values */
   private static final int CACHEID_EXIST = 0x0;
   private static final int CACHEID_FORALL = 0x1;
   private static final int CACHEID_UNIQUE = 0x2;
   private static final int CACHEID_APPEX = 0x3;
   private static final int CACHEID_APPAL = 0x4;
   private static final int CACHEID_APPUN = 0x5;
+  private static final int CACHEID_PROJECT = 0x6;
 
   /* Number of boolean operators */
   static final int OPERATOR_NUM = 11;
 
   /* Operator results - entry = left<<1 | right  (left,right in {0,1}) */
-  private static int[][] oprres = {
+  private static final int[][] oprres = {
     {0, 0, 0, 1}, /* and                       ( & )         */
     {0, 1, 1, 0}, /* xor                       ( ^ )         */
     {0, 1, 1, 1}, /* or                        ( | )         */
@@ -4350,6 +4473,9 @@ public final class JFactory extends BDDFactory {
     bdd_pairs_resize(oldbddvarnum, bddvarnum);
     bdd_operator_varresize();
 
+    assert bddvarnum == LEVEL(BDDZERO);
+    assert bddvarnum == LEVEL(BDDONE);
+
     return 0;
   }
 
@@ -4372,18 +4498,6 @@ public final class JFactory extends BDDFactory {
   public void printTable(BDD b) {
     int x = ((BDDImpl) b)._index;
     bdd_fprinttable(System.out, x);
-  }
-
-  @Override
-  public BDD load(BufferedReader in, int[] translate) throws IOException {
-    int result = bdd_load(in, translate);
-    return makeBDD(result);
-  }
-
-  @Override
-  public void save(BufferedWriter out, BDD b) throws IOException {
-    int x = ((BDDImpl) b)._index;
-    bdd_save(out, x);
   }
 
   @Override
@@ -4578,10 +4692,6 @@ public final class JFactory extends BDDFactory {
       while (r != 0) {
         int next = NEXT(r);
 
-        /**
-         * * if (LOW(r) == -1) { System.out.println(r+": LOW="+LOW(r)); } if (HIGH(r) == -1) {
-         * System.out.println(r+": HIGH="+HIGH(r)); } *
-         */
         if (VARr(LOW(r)) != var1 && VARr(HIGH(r)) != var1) {
           /* Node does not depend on next var, let it stay in the chain */
           SETNEXT(r, HASH(n + vl0));
@@ -5232,163 +5342,6 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private int lh_nodenum;
-  private int lh_freepos;
-  private int[] loadvar2level;
-  private LoadHash[] lh_table;
-
-  private int bdd_load(BufferedReader ifile, int[] translate) throws IOException {
-    int vnum, tmproot;
-    int root;
-
-    lh_nodenum = Integer.parseInt(readNext(ifile));
-    vnum = Integer.parseInt(readNext(ifile));
-
-    // Check for constant true / false
-    if (lh_nodenum == 0 && vnum == 0) {
-      root = Integer.parseInt(readNext(ifile));
-      return root;
-    }
-
-    // Not actually used.
-    loadvar2level = new int[vnum];
-    for (int n = 0; n < vnum; n++) {
-      loadvar2level[n] = Integer.parseInt(readNext(ifile));
-    }
-
-    if (vnum > bddvarnum) {
-      bdd_setvarnum(vnum);
-    }
-
-    lh_table = new LoadHash[lh_nodenum];
-
-    for (int n = 0; n < lh_nodenum; n++) {
-      lh_table[n] = new LoadHash();
-      lh_table[n].first = -1;
-      lh_table[n].next = n + 1;
-    }
-    lh_table[lh_nodenum - 1].next = -1;
-    lh_freepos = 0;
-
-    tmproot = bdd_loaddata(ifile, translate);
-
-    for (int n = 0; n < lh_nodenum; n++) {
-      bdd_delref(lh_table[n].data);
-    }
-
-    lh_table = null;
-    loadvar2level = null;
-
-    root = tmproot;
-    return root;
-  }
-
-  static class LoadHash {
-    int key;
-    int data;
-    int first;
-    int next;
-  }
-
-  private int bdd_loaddata(BufferedReader ifile, int[] translate) throws IOException {
-    int key, var, low, high, root = 0;
-
-    for (int n = 0; n < lh_nodenum; n++) {
-      key = Integer.parseInt(readNext(ifile));
-      var = Integer.parseInt(readNext(ifile));
-      if (translate != null) {
-        var = translate[var];
-      }
-      low = Integer.parseInt(readNext(ifile));
-      high = Integer.parseInt(readNext(ifile));
-
-      if (low >= 2) {
-        low = loadhash_get(low);
-      }
-      if (high >= 2) {
-        high = loadhash_get(high);
-      }
-
-      if (low < 0 || high < 0 || var < 0) {
-        return bdd_error(BDD_FORMAT);
-      }
-
-      root = bdd_addref(bdd_ite(bdd_ithvar(var), high, low));
-
-      loadhash_add(key, root);
-    }
-
-    return root;
-  }
-
-  private void loadhash_add(int key, int data) {
-    int hash = key % lh_nodenum;
-    int pos = lh_freepos;
-
-    lh_freepos = lh_table[pos].next;
-    lh_table[pos].next = lh_table[hash].first;
-    lh_table[hash].first = pos;
-
-    lh_table[pos].key = key;
-    lh_table[pos].data = data;
-  }
-
-  private int loadhash_get(int key) {
-    int hash = lh_table[key % lh_nodenum].first;
-
-    while (hash != -1 && lh_table[hash].key != key) {
-      hash = lh_table[hash].next;
-    }
-
-    if (hash == -1) {
-      return -1;
-    }
-    return lh_table[hash].data;
-  }
-
-  private void bdd_save(BufferedWriter out, int r) throws IOException {
-    int[] n = new int[1];
-
-    if (r < 2) {
-      out.write("0 0 " + r + "\n");
-      return;
-    }
-
-    bdd_markcount(r, n);
-    bdd_unmark(r);
-    out.write(n[0] + " " + bddvarnum + "\n");
-
-    for (int x = 0; x < bddvarnum; x++) {
-      out.write(bddvar2level[x] + " ");
-    }
-    out.write("\n");
-
-    bdd_save_rec(out, r);
-    bdd_unmark(r);
-
-    out.flush();
-  }
-
-  private void bdd_save_rec(BufferedWriter out, int root) throws IOException {
-
-    if (root < 2) {
-      return;
-    }
-
-    if (MARKED(root)) {
-      return;
-    }
-    SETMARK(root);
-
-    bdd_save_rec(out, LOW(root));
-    bdd_save_rec(out, HIGH(root));
-
-    out.write(root + " ");
-    out.write(bddlevel2var[LEVEL(root)] + " ");
-    out.write(LOW(root) + " ");
-    out.write(HIGH(root) + "\n");
-  }
-
   private static String right(int x, int w) {
     return right(Integer.toString(x), w);
   }
@@ -5433,7 +5386,6 @@ public final class JFactory extends BDDFactory {
 
   private class bvec extends BDDBitVector {
 
-    /** @param bitnum */
     bvec(int bitnum) {
       super(bitnum);
     }
@@ -5446,7 +5398,7 @@ public final class JFactory extends BDDFactory {
 
   //// Prime stuff below.
 
-  private Random rng = new Random();
+  private final Random rng = new Random();
 
   private int Random(int i) {
     return rng.nextInt(i) + 1;

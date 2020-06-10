@@ -28,6 +28,7 @@ sb_bgp
     | sbb_confederation
     | sbb_log_neighbor_changes
     | sbb_router_id
+    | sbb_cluster_id
   )
 ;
 
@@ -83,6 +84,11 @@ sbbb_aspath_multipath_relax
 sbb_router_id
 :
   ROUTER_ID IP_ADDRESS NEWLINE
+;
+
+sbb_cluster_id
+:
+  CLUSTER_ID IP_ADDRESS NEWLINE
 ;
 
 sb_neighbor
@@ -222,6 +228,7 @@ sbn_property
 | sbnp_password
 | sbnp_remote_as
 | sbnp_update_source
+| sbnp_local_as
 ;
 
 sbnp_bfd
@@ -257,6 +264,11 @@ sbnp_remote_as
 sbnp_update_source
 :
   UPDATE_SOURCE (ip = IP_ADDRESS | name = word)
+;
+
+sbnp_local_as
+:
+  LOCAL_AS asn = autonomous_system (NO_PREPEND REPLACE_AS?)?
 ;
 
 sb_network
@@ -297,7 +309,7 @@ sbafin_default_originate
 
 sbafin_next_hop_self
 :
-  NEXT_HOP_SELF
+  NEXT_HOP_SELF (FORCE | ALL)?
 ;
 
 sbafin_route_reflector_client

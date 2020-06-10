@@ -1,5 +1,7 @@
 package org.batfish.grammar.cumulus_concatenated;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -32,7 +34,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -113,7 +114,7 @@ public class CumulusConcatenatedGrammarTest {
 
   private static CumulusConcatenatedConfiguration parseVendorConfig(
       String filename, GrammarSettings settings) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
+    String src = readResource(TESTCONFIGS_PREFIX + filename, UTF_8);
     CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
@@ -272,7 +273,27 @@ public class CumulusConcatenatedGrammarTest {
                 StaticRoute.builder()
                     .setNetwork(Prefix.parse("1.1.1.1/24"))
                     .setNextHopIp(Ip.parse("10.0.0.1"))
+                    .setAdministrativeCost(100)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("3.3.3.3/24"))
+                    .setNextHopInterface("null_interface")
                     .setAdministrativeCost(1)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("4.4.4.4/24"))
+                    .setNextHopInterface("Eth0")
+                    .setAdministrativeCost(1)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("6.6.6.6/24"))
+                    .setNextHopInterface("null_interface")
+                    .setAdministrativeCost(1)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("7.7.7.7/24"))
+                    .setNextHopInterface("null_interface")
+                    .setAdministrativeCost(250)
                     .build())));
     assertThat(
         viConfig.getVrfs().get("VRF").getStaticRoutes(),
@@ -281,6 +302,11 @@ public class CumulusConcatenatedGrammarTest {
                 StaticRoute.builder()
                     .setNetwork(Prefix.parse("2.2.2.2/24"))
                     .setNextHopIp(Ip.parse("10.0.0.2"))
+                    .setAdministrativeCost(1)
+                    .build(),
+                StaticRoute.builder()
+                    .setNetwork(Prefix.parse("5.5.5.5/24"))
+                    .setNextHopInterface("eth0-1")
                     .setAdministrativeCost(1)
                     .build())));
   }
@@ -293,7 +319,7 @@ public class CumulusConcatenatedGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
 
@@ -701,5 +727,21 @@ public class CumulusConcatenatedGrammarTest {
             .getIpv4UnicastAddressFamily()
             .getExportPolicySources(),
         hasSize(1));
+  }
+
+  @Test
+  public void testLocalAs() throws IOException {
+    Configuration c = parseConfig("local_as_test");
+    org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
+    Long neighbor_ip_local_as =
+        defaultVrf
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("2.2.2.2/32"))
+            .getLocalAs();
+    assertThat(neighbor_ip_local_as, equalTo(10L));
+    Long neighbor_iface_local_as =
+        defaultVrf.getBgpProcess().getInterfaceNeighbors().get("bond2").getLocalAs();
+    assertThat(neighbor_iface_local_as, equalTo(10L));
   }
 }

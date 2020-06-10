@@ -13,6 +13,16 @@ s_rulebase
     RULEBASE rulebase_inner
 ;
 
+s_post_rulebase
+:
+    POST_RULEBASE rulebase_inner
+;
+
+s_pre_rulebase
+:
+    PRE_RULEBASE rulebase_inner
+;
+
 rulebase_inner
 :
     sr_nat

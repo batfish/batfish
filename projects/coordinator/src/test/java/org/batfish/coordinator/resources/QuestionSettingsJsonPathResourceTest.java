@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.util.Optional;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
@@ -103,10 +104,10 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     _idManager =
         new LocalIdManager() {
           @Override
-          public QuestionSettingsId getQuestionSettingsId(
+          public Optional<QuestionSettingsId> getQuestionSettingsId(
               String questionClassId, NetworkId networkId) {
             if (questionClassId.equals(BAD_QUESTION)) {
-              return BAD_QUESTION_SETTINGS_ID;
+              return Optional.of(BAD_QUESTION_SETTINGS_ID);
             }
             return super.getQuestionSettingsId(questionClassId, networkId);
           }
@@ -126,25 +127,25 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
 
   @Test
   public void testGetQuestionSettingsError() {
-    Response response = getQuestionSettingsJsonPathTarget(BAD_QUESTION, "foo").get();
-
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    try (Response response = getQuestionSettingsJsonPathTarget(BAD_QUESTION, "foo").get()) {
+      assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetQuestionSettingsJsonPathQuestionAbsent() {
-    Response response = getQuestionSettingsJsonPathTarget(QUESTION, "foo").get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionSettingsJsonPathTarget(QUESTION, "foo").get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetQuestionSettingsJsonPathQuestionPresentDepth1Absent() {
     String settings = "{}";
     _storage._questionSettings = settings;
-    Response response = getQuestionSettingsJsonPathTarget(QUESTION, PROP1).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getQuestionSettingsJsonPathTarget(QUESTION, PROP1).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -153,21 +154,21 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
         BatfishObjectMapper.mapper()
             .readTree(String.format("{\"%s\":{\"%s\":%d}}", PROP1, PROP2, VAL));
     Main.getWorkMgr().writeQuestionSettings(NETWORK, QUESTION, ImmutableList.of(), settings);
-    Response response = getQuestionSettingsJsonPathTarget(QUESTION, PROP1).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(String.class), equalTo(String.format("{\"%s\":%d}", PROP2, VAL)));
+    try (Response response = getQuestionSettingsJsonPathTarget(QUESTION, PROP1).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(String.class), equalTo(String.format("{\"%s\":%d}", PROP2, VAL)));
+    }
   }
 
   @Test
   public void testGetQuestionSettingsJsonPathQuestionPresentDepth2Absent() {
     String settings = String.format("{\"%s\":{\"%s\":%d}}", PROP1, PROP2, VAL);
     _storage._questionSettings = settings;
-    Response response =
-        getQuestionSettingsJsonPathTarget(QUESTION, String.format("%s/%s", PROP1, "foo")).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response =
+        getQuestionSettingsJsonPathTarget(QUESTION, String.format("%s/%s", PROP1, "foo")).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
@@ -176,11 +177,11 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
         BatfishObjectMapper.mapper()
             .readTree(String.format("{\"%s\":{\"%s\":%d}}", PROP1, PROP2, VAL));
     Main.getWorkMgr().writeQuestionSettings(NETWORK, QUESTION, ImmutableList.of(), settings);
-    Response response =
-        getQuestionSettingsJsonPathTarget(QUESTION, String.format("%s/%s", PROP1, PROP2)).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(String.class), equalTo("5"));
+    try (Response response =
+        getQuestionSettingsJsonPathTarget(QUESTION, String.format("%s/%s", PROP1, PROP2)).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(String.class), equalTo("5"));
+    }
   }
 
   @Test
@@ -190,11 +191,11 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     ObjectNode rootSettingsNode = new ObjectNode(factory);
     rootSettingsNode.set(PROP1, settingsNode);
-    Response response =
+    try (Response response =
         getQuestionSettingsJsonPathTarget(QUESTION, PROP1)
-            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    }
     assertThat(
         BatfishObjectMapper.mapper().readTree(_storage._questionSettings),
         equalTo(rootSettingsNode));
@@ -209,11 +210,12 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     ObjectNode leafNode = new ObjectNode(factory);
     leafNode.set(PROP2, settingsNode);
     rootSettingsNode.set(PROP1, leafNode);
-    Response response =
+    try (Response response =
         getQuestionSettingsJsonPathTarget(QUESTION, String.format("%s/%s", PROP1, PROP2))
-            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON));
+            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON))) {
 
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+      assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    }
     assertThat(
         BatfishObjectMapper.mapper().readTree(_storage._questionSettings),
         equalTo(rootSettingsNode));
@@ -226,11 +228,11 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
     ObjectNode rootSettingsNode = new ObjectNode(factory);
     rootSettingsNode.set(PROP1, settingsNode);
-    Response response =
+    try (Response response =
         getQuestionSettingsJsonPathTarget(BAD_QUESTION, PROP1)
-            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
+    }
   }
 
   @Test
@@ -253,11 +255,11 @@ public final class QuestionSettingsJsonPathResourceTest extends WorkMgrServiceV2
     leafNode.set(PROP2, settingsNode);
     rootSettingsNode.set(PROP1, leafNode);
     rootSettingsNode.set(oldKey, new IntNode(oldVal));
-    Response response =
+    try (Response response =
         getQuestionSettingsJsonPathTarget(QUESTION, String.format("%s/%s", PROP1, PROP2))
-            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON));
-
-    assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+            .put(Entity.entity(settingsNode, MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(Status.OK.getStatusCode()));
+    }
     assertThat(
         BatfishObjectMapper.mapper().readTree(_storage._questionSettings),
         equalTo(rootSettingsNode));

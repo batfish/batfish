@@ -26,6 +26,8 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
+                  <ignoredUnusedDeclaredDependency>io.jaegertracing:jaeger-thrift
+                  </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
@@ -131,7 +133,7 @@
     </dependency>
 
     <dependency>
-      <groupId>com.uber.jaeger</groupId>
+      <groupId>io.jaegertracing</groupId>
       <artifactId>jaeger-core</artifactId>
     </dependency>
 
@@ -186,6 +188,13 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <!-- Runtime dependency for Jaeger -->
+    <dependency>
+      <groupId>io.jaegertracing</groupId>
+      <artifactId>jaeger-thrift</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <!-- Runtime dependencies to add logging. -->

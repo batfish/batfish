@@ -72,23 +72,31 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
             null,
             null);
 
-    Response response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
-    // Confirm missing network causes not found
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response =
+        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean))) {
+      // Confirm missing network causes not found
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
 
     Main.getWorkMgr().initNetwork(networkName, null);
-    response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
-    // Confirm missing snapshot causes not found
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response =
+        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean))) {
+      // Confirm missing snapshot causes not found
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
 
     uploadTestSnapshot(networkName, baseSnapshotName, _folder);
-    response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
-    // Confirm forking existing snapshot is successful
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    try (Response response =
+        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean))) {
+      // Confirm forking existing snapshot is successful
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
 
-    response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean));
-    // Confirm duplicate snapshot name fails with bad request
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    try (Response response =
+        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBean))) {
+      // Confirm duplicate snapshot name fails with bad request
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
   }
 
   @Test
@@ -103,40 +111,44 @@ public final class NetworkResourceTest extends WorkMgrServiceV2TestBase {
     ForkSnapshotBean forkSnapshotBeanNoBaseName =
         new ForkSnapshotBean("", snapshotName, null, null, null, null, null, null, null);
 
-    Response response =
-        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoName));
-    // Confirm no snapshot name fails with bad request
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    try (Response response =
+        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoName))) {
+      // Confirm no snapshot name fails with bad request
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
 
-    response = getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoBaseName));
-    // Confirm no base snapshot name fails with bad request
-    assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    try (Response response =
+        getForkSnapshotTarget(networkName).post(Entity.json(forkSnapshotBeanNoBaseName))) {
+      // Confirm no base snapshot name fails with bad request
+      assertThat(response.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
+    }
   }
 
   @Test
   public void testGetContainer() {
     String containerName = "someContainer";
     Main.getWorkMgr().initNetwork(containerName, null);
-    Response response = getNetworkTarget(containerName).get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(new GenericType<Container>() {}).getName(), equalTo(containerName));
+    try (Response response = getNetworkTarget(containerName).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(new GenericType<Container>() {}).getName(), equalTo(containerName));
+    }
   }
 
   @Test
   public void testDeleteNetwork() {
     String network = "network1";
     Main.getWorkMgr().initNetwork(network, null);
-    Response response = getNetworkTarget(network).delete();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    try (Response response = getNetworkTarget(network).delete()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 
   @Test
   public void testDeleteNetworkMissingNetwork() {
     String network = "network1";
-    Response response = getNetworkTarget(network).delete();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getNetworkTarget(network).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 }

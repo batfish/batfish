@@ -1,5 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
@@ -66,10 +68,12 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLATE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
@@ -116,14 +120,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -150,6 +156,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
@@ -189,6 +196,7 @@ import org.batfish.representation.palo_alto.BgpVr;
 import org.batfish.representation.palo_alto.BgpVrRoutingOptions.AsFormat;
 import org.batfish.representation.palo_alto.CryptoProfile;
 import org.batfish.representation.palo_alto.CryptoProfile.Type;
+import org.batfish.representation.palo_alto.DeviceGroup;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
@@ -216,9 +224,12 @@ import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
 import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
+import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
+import org.batfish.representation.palo_alto.Template;
+import org.batfish.representation.palo_alto.TemplateStack;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
@@ -230,6 +241,8 @@ import org.junit.rules.TemporaryFolder;
 
 public final class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
+  private static final BDDPacket PKT = new BDDPacket();
+  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -252,7 +265,7 @@ public final class PaloAltoGrammarTest {
   }
 
   private PaloAltoConfiguration parsePaloAltoConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
@@ -272,7 +285,7 @@ public final class PaloAltoGrammarTest {
   }
 
   private @Nonnull PaloAltoConfiguration parseNestedConfig(String hostname) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname);
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     Warnings w = new Warnings();
@@ -328,6 +341,10 @@ public final class PaloAltoGrammarTest {
     fb.setDstPort(destinationPort);
     fb.setSrcPort(sourcePort);
     return fb.build();
+  }
+
+  private static void assertIpSpacesEqual(IpSpace left, IpSpace right) {
+    assertThat(DST.visit(left), equalTo(DST.visit(right)));
   }
 
   @Test
@@ -1479,7 +1496,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "multiline-token";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -1526,7 +1543,7 @@ public final class PaloAltoGrammarTest {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
-            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             new Settings(),
             new Warnings(),
@@ -2084,6 +2101,32 @@ public final class PaloAltoGrammarTest {
         equalTo(new RuleEndpoint(REFERENCE, "DST_2")));
 
     // TODO: Test semantics after conversion
+  }
+
+  @Test
+  public void testSharedRulebase() {
+    String hostname = "shared-rulebase";
+    PaloAltoConfiguration vendorConfig = parsePaloAltoConfig(hostname);
+
+    Map<String, NatRule> natPreRules = vendorConfig.getShared().getPreRulebase().getNatRules();
+    Map<String, SecurityRule> securityPreRules =
+        vendorConfig.getShared().getPreRulebase().getSecurityRules();
+    Map<String, NatRule> natPostRules = vendorConfig.getShared().getPostRulebase().getNatRules();
+    Map<String, SecurityRule> securityPostRules =
+        vendorConfig.getShared().getPostRulebase().getSecurityRules();
+
+    // Make sure shared pre- and post- rules are associated with the shared vsys
+    assertThat(natPreRules.keySet(), contains("PRE_NAT"));
+    assertThat(natPreRules.get("PRE_NAT").getTo(), equalTo("Z1"));
+
+    assertThat(natPostRules.keySet(), contains("POST_NAT"));
+    assertThat(natPostRules.get("POST_NAT").getTo(), equalTo("Z2"));
+
+    assertThat(securityPreRules.keySet(), contains("PRE_SECURITY"));
+    assertThat(securityPreRules.get("PRE_SECURITY").getTo(), contains("Z1"));
+
+    assertThat(securityPostRules.keySet(), contains("POST_SECURITY"));
+    assertThat(securityPostRules.get("POST_SECURITY").getTo(), contains("Z2"));
   }
 
   @Test
@@ -2714,5 +2757,206 @@ public final class PaloAltoGrammarTest {
     // Missing value and empty quotes should be interpreted as empty string
     assertThat(descr6, equalTo(""));
     assertThat(descr7, equalTo(""));
+  }
+
+  @Test
+  public void testApplicationGroup() {
+    String hostname = "application-group";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertThat(
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplicationGroups().get("foo").getMembers(),
+        containsInAnyOrder("dns", "app1"));
+  }
+
+  @Test
+  public void testApplicationGroupReference() throws IOException {
+    String hostname = "application-group";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm reference count is correct for applications
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            PaloAltoStructureType.APPLICATION,
+            computeObjectName(DEFAULT_VSYS_NAME, "app1"),
+            1));
+  }
+
+  @Test
+  public void testDeviceGroup() {
+    String hostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
+    DeviceGroup deviceGroup2 = c.getOrCreateDeviceGroup("DG2");
+    Vsys panoramaDg1 = deviceGroup1.getPanorama();
+    Vsys panoramaDg2 = deviceGroup2.getPanorama();
+
+    // Check first device-group
+    assertThat(deviceGroup1.getDevices(), containsInAnyOrder(firewallId1, firewallId2));
+    assertThat(deviceGroup1.getDescription(), equalTo("long description"));
+    assertThat(panoramaDg1, notNullValue());
+    assertThat(panoramaDg1.getPostRulebase().getSecurityRules().keySet(), contains("RULE1"));
+    assertThat(panoramaDg1.getAddressObjects().keySet(), contains("ADDR1"));
+
+    // Check second device-group
+    assertThat(deviceGroup2.getDevices(), contains(firewallId3));
+    assertThat(panoramaDg2, notNullValue());
+    assertThat(panoramaDg2.getAddressObjects().keySet(), contains("ADDR2"));
+
+    // Make sure post-device-group config is attached to the main config as expected
+    assertThat(c.getHostname(), equalTo("device-group"));
+  }
+
+  @Test
+  public void testDeviceGroupConversion() {
+    String panoramaHostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    String addressObject1Name = "ADDR1";
+    String addressObject2Name = "ADDR2";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+    Configuration firewall3 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
+
+    // First two firewalls should inherit definitions from first Panorama device-group
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(addressObject1Name), Ip.parse("1.2.3.4").toIpSpace());
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(addressObject1Name), Ip.parse("1.2.3.4").toIpSpace());
+    // Third firewall should inherit definitions from second Panorama device-group
+    assertIpSpacesEqual(
+        firewall3.getIpSpaces().get(addressObject2Name), Ip.parse("2.3.4.5").toIpSpace());
+  }
+
+  @Test
+  public void testTemplate() {
+    String hostname = "template";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    Template t1 = c.getOrCreateTemplate("T1");
+    Template t2 = c.getOrCreateTemplate("T2");
+    assertThat(t1.getDescription(), equalTo("template description"));
+    assertThat(t2.getDescription(), equalTo("template 2 description"));
+    assertThat(t1.getHostname(), equalTo("pan-template"));
+
+    // Check network configuration is applied to the template as expected
+    assertThat(t1.getInterfaces().keySet(), containsInAnyOrder("ethernet1/1", "ethernet1/2"));
+    assertThat(t1.getVirtualRouters().keySet(), contains("default"));
+    assertThat(
+        t1.getVirtualRouters().get("default").getInterfaceNames(),
+        containsInAnyOrder("ethernet1/1", "ethernet1/2"));
+
+    // Check vsys configuration is applied to the template as expected
+    assertThat(t1.getVirtualSystems().keySet(), contains("vsys1"));
+    Vsys vsys1 = t1.getVirtualSystems().get("vsys1");
+    assertThat(vsys1.getImportedInterfaces(), containsInAnyOrder("ethernet1/1", "ethernet1/2"));
+    SortedMap<String, Zone> zones = vsys1.getZones();
+    assertThat(zones.keySet(), containsInAnyOrder("ZONE1", "ZONE2"));
+    assertThat(zones.get("ZONE1").getInterfaceNames(), contains("ethernet1/1"));
+    assertThat(zones.get("ZONE2").getInterfaceNames(), contains("ethernet1/2"));
+  }
+
+  @Test
+  public void testTemplateStack() {
+    String hostname = "template-stack";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    TemplateStack ts1 = c.getOrCreateTemplateStack("TS1");
+    TemplateStack ts2 = c.getOrCreateTemplateStack("TS2");
+    TemplateStack ts3 = c.getOrCreateTemplateStack("TS3");
+
+    assertThat(ts1.getDescription(), equalTo("ts 1 description"));
+    assertThat(ts2.getDescription(), equalTo("ts 2 description"));
+    assertThat(ts3.getDescription(), equalTo("ts 3 description"));
+
+    // Check devices associated w/ each stack
+    assertThat(ts1.getDevices(), containsInAnyOrder("00000001", "00000002"));
+    assertThat(ts2.getDevices(), emptyIterable());
+    assertThat(ts3.getDevices(), contains("00000003"));
+
+    // Finally, check templates associated w/ each stack; order is important
+    assertThat(ts1.getTemplates(), contains("T1", "T2", "T_UNDEF"));
+    assertThat(ts2.getTemplates(), contains("T3"));
+    assertThat(ts3.getTemplates(), emptyIterable());
+  }
+
+  /**
+   * Test that inheriting from multiple templates merges and overwrites configuration as expected.
+   */
+  @Test
+  public void testTemplateStackOverwriteConversion() {
+    String panoramaHostname = "template-stack-overwrite";
+    String firewallHostname = "hostname_one";
+    String zone1Name = computeObjectName("vsys1", "Z1");
+    String zone2Name = computeObjectName("vsys1", "Z2");
+    String zone3Name = computeObjectName("vsys1", "Z3");
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallHostname));
+    Configuration firewall1 =
+        viConfigs.stream()
+            .filter(vi -> vi.getHostname().equals(firewallHostname))
+            .findFirst()
+            .get();
+
+    // Only SG1 servers and shared servers from template 1 should make it into VI model
+    assertThat(
+        firewall1.getLoggingServers(),
+        contains("10.1.21.1", "10.1.23.1", "10.1.31.1", "10.1.33.1"));
+    // Primary dns / ntp servers should be overwritten by T1, but secondary should come from T2
+    assertThat(firewall1.getDnsServers(), contains("10.1.51.1", "10.2.52.1"));
+    assertThat(firewall1.getNtpServers(), contains("10.1.61.1", "10.2.62.1"));
+    // eth1/2 address should be from template 2, others should be from template 1
+    assertThat(firewall1, hasInterface("ethernet1/1", hasAddress("10.1.41.1/30")));
+    assertThat(firewall1, hasInterface("ethernet1/2", hasAddress("10.2.42.1/30")));
+    assertThat(firewall1, hasInterface("ethernet1/3", hasAddress("10.1.43.1/30")));
+    // Both virtual-routers should make it into VI model
+    assertThat(firewall1.getVrfs().keySet(), containsInAnyOrder("default", "default2"));
+    // All zones should make it into VI model
+    assertThat(firewall1, hasZone(zone1Name, hasMemberInterfaces(contains("ethernet1/1"))));
+    assertThat(firewall1, hasZone(zone2Name, hasMemberInterfaces(contains("ethernet1/2"))));
+    assertThat(firewall1, hasZone(zone3Name, hasMemberInterfaces(contains("ethernet1/3"))));
+  }
+
+  @Test
+  public void testTemplateReferences() throws IOException {
+    String hostname = "template-stack";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructureWithDefinitionLines(filename, TEMPLATE, "T1", contains(1)));
+    assertThat(ccae, hasDefinedStructureWithDefinitionLines(filename, TEMPLATE, "T2", contains(2)));
+    assertThat(ccae, hasDefinedStructureWithDefinitionLines(filename, TEMPLATE, "T3", contains(3)));
+
+    assertThat(
+        ccae, hasUndefinedReference(filename, TEMPLATE, "T_UNDEF", TEMPLATE_STACK_TEMPLATES));
+    assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T1", 1));
+    assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T2", 1));
+    assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T3", 1));
   }
 }

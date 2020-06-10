@@ -2,25 +2,15 @@ package org.batfish.client;
 
 import static org.batfish.client.Command.ADD_BATFISH_OPTION;
 import static org.batfish.client.Command.ANSWER;
-import static org.batfish.client.Command.CHECK_API_KEY;
 import static org.batfish.client.Command.DEL_BATFISH_OPTION;
 import static org.batfish.client.Command.DEL_NETWORK;
-import static org.batfish.client.Command.DEL_QUESTION;
-import static org.batfish.client.Command.DEL_SNAPSHOT;
 import static org.batfish.client.Command.EXIT;
 import static org.batfish.client.Command.GEN_DP;
 import static org.batfish.client.Command.GET;
-import static org.batfish.client.Command.GET_ANSWER;
-import static org.batfish.client.Command.GET_ANSWER_DIFFERENTIAL;
-import static org.batfish.client.Command.GET_ANSWER_REFERENCE;
-import static org.batfish.client.Command.GET_CONFIGURATION;
 import static org.batfish.client.Command.HELP;
 import static org.batfish.client.Command.INIT_NETWORK;
 import static org.batfish.client.Command.INIT_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.INIT_SNAPSHOT;
-import static org.batfish.client.Command.LIST_NETWORKS;
-import static org.batfish.client.Command.LIST_QUESTIONS;
-import static org.batfish.client.Command.LIST_SNAPSHOTS;
 import static org.batfish.client.Command.LOAD_QUESTIONS;
 import static org.batfish.client.Command.SET_BATFISH_LOGLEVEL;
 import static org.batfish.client.Command.SET_LOGLEVEL;
@@ -36,7 +26,6 @@ import static org.batfish.client.Command.SHOW_NETWORK;
 import static org.batfish.client.Command.SHOW_REFERENCE_SNAPSHOT;
 import static org.batfish.client.Command.SHOW_SNAPSHOT;
 import static org.batfish.client.Command.TEST;
-import static org.batfish.client.Command.UPLOAD_CUSTOM_OBJECT;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.APPLICATION_SPEC;
@@ -136,12 +125,12 @@ public final class ClientTest {
       Command command, String[] parameters, String expected) throws Exception {
     Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
-    FileWriter writer = new FileWriter(tempFile);
-    client._logger = new BatfishLogger("output", false);
-    String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
-    assertFalse(client.processCommand(args, writer));
-    assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
-    writer.close();
+    try (FileWriter writer = new FileWriter(tempFile)) {
+      client._logger = new BatfishLogger("output", false);
+      String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
+      assertFalse(client.processCommand(args, writer));
+      assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    }
   }
 
   @Test
@@ -173,21 +162,16 @@ public final class ClientTest {
   }
 
   @Test
-  public void testCheckApiKeyInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(CHECK_API_KEY, new String[] {}, parameters);
-  }
-
-  @Test
   public void testDefaultCase() throws Exception {
     Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
-    FileWriter writer = new FileWriter(tempFile);
-    client._logger = new BatfishLogger("output", false);
-    String[] args = new String[] {"non-exist command"};
-    String expected = "Command failed: Not a valid command: \"non-exist command\"\n";
-    assertFalse(client.processCommand(args, writer));
-    assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    try (FileWriter writer = new FileWriter(tempFile)) {
+      client._logger = new BatfishLogger("output", false);
+      String[] args = new String[] {"non-exist command"};
+      String expected = "Command failed: Not a valid command: \"non-exist command\"\n";
+      assertFalse(client.processCommand(args, writer));
+      assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    }
   }
 
   @Test
@@ -205,28 +189,6 @@ public final class ClientTest {
   @Test
   public void testDelNetworkInvalidParas() throws Exception {
     testInvalidInput(DEL_NETWORK, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testDelQuestionInvalidParas() throws Exception {
-    testInvalidInput(DEL_QUESTION, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testDelQuestionValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_QUESTION, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testDelSnapshotInvalidParas() throws Exception {
-    testInvalidInput(DEL_SNAPSHOT, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testDelSnapshotValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(DEL_SNAPSHOT, parameters, NETWORK_NOT_SET);
   }
 
   @Test
@@ -267,29 +229,6 @@ public final class ClientTest {
   @Test
   public void testGenerateDataplaneValidParas() throws Exception {
     checkProcessCommandErrorMessage(GEN_DP, new String[] {}, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testGetAnswersReferenceValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANSWER_REFERENCE, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testGetAnswersDifferentialValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANSWER_DIFFERENTIAL, parameters, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testGetAnswersInvalidParas() throws Exception {
-    testInvalidInput(GET_ANSWER, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testGetAnswersValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    checkProcessCommandErrorMessage(GET_ANSWER, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test
@@ -802,29 +741,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testListNetworksInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_NETWORKS, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testListQuestionsInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_QUESTIONS, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testListQuestionsValidParas() throws Exception {
-    checkProcessCommandErrorMessage(LIST_QUESTIONS, new String[] {}, SNAPSHOT_NOT_SET);
-  }
-
-  @Test
-  public void testListSnapshotsInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(LIST_SNAPSHOTS, new String[] {}, parameters);
-  }
-
-  @Test
   public void testLoadQuestionFromFile() throws Exception {
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
@@ -942,23 +858,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testLoadQuestionsFromServer() throws Exception {
-    JSONObject testQuestion = new JSONObject();
-    testQuestion.put(
-        "instance",
-        new JSONObject()
-            .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
-    JSONObject testJson = new JSONObject().put("testQuestion", testQuestion.toString());
-    Multimap<String, String> loadedQuestions = Client.loadQuestionsFromServer(testJson);
-    Multimap<String, String> expectedMap = HashMultimap.create();
-    expectedMap.put("testQuestionName", testQuestion.toString());
-
-    // checking if questions are loaded from json correctly
-    assertEquals(expectedMap, loadedQuestions);
-  }
-
-  @Test
   public void testLoadQuestionsInvalidParas1() throws Exception {
     testInvalidInput(LOAD_QUESTIONS, new String[] {}, new String[] {"path1", "path2"});
   }
@@ -980,19 +879,6 @@ public final class ClientTest {
 
   @Test
   public void testLoadQuestionsValidParas2() throws Exception {
-    Path tempFilePath = _folder.newFolder("temp").toPath();
-    String[] parameters = new String[] {"-loadremote", tempFilePath.toString()};
-    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
-  }
-
-  @Test
-  public void testLoadQuestionsValidParas3() throws Exception {
-    String[] parameters = new String[] {"-loadremote"};
-    testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
-  }
-
-  @Test
-  public void testLoadQuestionsValidParas4() throws Exception {
     String[] parameters = new String[] {};
     testProcessCommandWithValidInput(LOAD_QUESTIONS, parameters, "");
   }
@@ -1153,12 +1039,12 @@ public final class ClientTest {
       Command command, String[] parameters, String expected) throws Exception {
     Client client = new Client(new String[] {"-runmode", "interactive"});
     File tempFile = _folder.newFile("writer");
-    FileWriter writer = new FileWriter(tempFile);
-    String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
-    client._logger = new BatfishLogger("output", false);
-    assertTrue(client.processCommand(args, writer));
-    assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
-    writer.close();
+    try (FileWriter writer = new FileWriter(tempFile)) {
+      String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
+      client._logger = new BatfishLogger("output", false);
+      assertTrue(client.processCommand(args, writer));
+      assertThat(client.getLogger().getHistory().toString(500), equalTo(expected));
+    }
   }
 
   @Test
@@ -1366,12 +1252,6 @@ public final class ClientTest {
   }
 
   @Test
-  public void testGetConfigurationInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(GET_CONFIGURATION, new String[] {}, parameters);
-  }
-
-  @Test
   public void testUnsatisfiedMinElementInput() throws IOException {
     Map<String, JsonNode> parameters = new HashMap<>();
     Map<String, Variable> variables = new HashMap<>();
@@ -1406,17 +1286,6 @@ public final class ClientTest {
     String input = "10";
     String expectedMessage = String.format("A Batfish %s must be a JSON string", STRING.getName());
     validateTypeWithInvalidInput(input, expectedMessage, STRING);
-  }
-
-  @Test
-  public void testUploadCustomObjectInvalidParas() throws Exception {
-    testInvalidInput(UPLOAD_CUSTOM_OBJECT, new String[] {}, new String[] {});
-  }
-
-  @Test
-  public void testUploadCustomObjectValidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1", "parameter2"};
-    checkProcessCommandErrorMessage(UPLOAD_CUSTOM_OBJECT, parameters, SNAPSHOT_NOT_SET);
   }
 
   @Test

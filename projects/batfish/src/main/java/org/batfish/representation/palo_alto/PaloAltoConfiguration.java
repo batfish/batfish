@@ -134,11 +134,12 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
+import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
-public final class PaloAltoConfiguration extends VendorConfiguration {
+public class PaloAltoConfiguration extends VendorConfiguration {
 
   /** This is the name of an application that matches all traffic */
   public static final String CATCHALL_APPLICATION_NAME = "any";
@@ -160,6 +161,9 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private Configuration _c;
 
   private List<CryptoProfile> _cryptoProfiles;
+
+  /** Device groups owned by this configuration. */
+  private final Map<String, DeviceGroup> _deviceGroups;
 
   private String _dnsServerPrimary;
 
@@ -185,6 +189,12 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Vsys> _sharedGateways;
 
+  /** Templates owned by this configuration */
+  private final Map<String, Template> _templates;
+
+  /** Template Stacks owned by this configuration */
+  private final Map<String, TemplateStack> _templateStacks;
+
   private ConfigurationFormat _vendor;
 
   private final SortedMap<String, VirtualRouter> _virtualRouters;
@@ -196,8 +206,11 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
+    _deviceGroups = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _sharedGateways = new TreeMap<>();
+    _templates = new TreeMap<>();
+    _templateStacks = new HashMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
     _zoneOutgoingTransformations = new TreeMap<>();
@@ -212,6 +225,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       servers.add(_dnsServerSecondary);
     }
     return servers;
+  }
+
+  @Nullable
+  String getDnsServerPrimary() {
+    return _dnsServerPrimary;
+  }
+
+  @Nullable
+  String getDnsServerSecondary() {
+    return _dnsServerSecondary;
   }
 
   public List<CryptoProfile> getCryptoProfiles() {
@@ -237,6 +260,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   @Override
   public String getHostname() {
     return _hostname;
+  }
+
+  public DeviceGroup getOrCreateDeviceGroup(String name) {
+    return _deviceGroups.computeIfAbsent(name, DeviceGroup::new);
+  }
+
+  public Template getOrCreateTemplate(String name) {
+    return _templates.computeIfAbsent(name, Template::new);
+  }
+
+  public TemplateStack getOrCreateTemplateStack(String name) {
+    return _templateStacks.computeIfAbsent(name, TemplateStack::new);
   }
 
   public SortedMap<String, Interface> getInterfaces() {
@@ -266,8 +301,22 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
+  @Nullable
+  String getNtpServerPrimary() {
+    return _ntpServerPrimary;
+  }
+
+  @Nullable
+  String getNtpServerSecondary() {
+    return _ntpServerSecondary;
+  }
+
   public @Nonnull SortedMap<String, Vsys> getSharedGateways() {
     return _sharedGateways;
+  }
+
+  public @Nullable Template getTemplate(String name) {
+    return _templates.get(name);
   }
 
   public SortedMap<String, VirtualRouter> getVirtualRouters() {
@@ -648,6 +697,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
    * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
    * Panorama.
    */
+  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
@@ -669,6 +719,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
    */
+  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private Stream<NatRule> getAllNatRules(Vsys vsys) {
     Stream<NatRule> pre =
         _panorama == null
@@ -1810,8 +1861,164 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
             });
   }
 
+  /**
+   * Apply the specified device-group "pseudo-config" to this PaloAltoConfiguration. Any previously
+   * made changes will be overwritten in this process.
+   */
+  private void applyDeviceGroup(PaloAltoConfiguration template) {
+    // Currently, we only support device-group attributes, which are associated w/ the Panorama vsys
+    // So just copy the Panorama vsys for now
+    Vsys panorama = template.getPanorama();
+    if (panorama != null) {
+      _virtualSystems.put(PANORAMA_VSYS_NAME, panorama);
+    }
+  }
+
+  /**
+   * Merge specified template "vsys" configuration into specified target. Only merges configuration
+   * supported by templates (i.e. does not merge device-group vsys configuration).
+   */
+  private void applyTemplateVsys(Vsys template, Vsys target) {
+    // Merge template objects and imports
+    for (Entry<String, Zone> entry : template.getZones().entrySet()) {
+      entry.getValue().setVsys(target);
+      target.getZones().put(entry.getKey(), entry.getValue());
+    }
+    target.getSyslogServerGroups().putAll(template.getSyslogServerGroups());
+    target.getImportedInterfaces().addAll(template.getImportedInterfaces());
+
+    // Overwrite settings
+    if (template.getDisplayName() != null) {
+      target.setDisplayName(template.getDisplayName());
+    }
+  }
+
+  /**
+   * Apply the specified template-stack "pseudo-config" to this PaloAltoConfiguration. Any
+   * previously made changes will be overwritten in this process.
+   */
+  private void applyTemplateStack(TemplateStack stack, PaloAltoConfiguration mainConfig) {
+    /* Iterate over templates in reverse order, since first template should overwrite other template configuration */
+    for (String templateName : ImmutableList.copyOf(stack.getTemplates()).reverse()) {
+      Template template = mainConfig.getTemplate(templateName);
+      if (template == null) {
+        // Warning will be surfaced through undefined references
+        continue;
+      }
+      // Deviceconfig entities
+      if (template.getHostname() != null) {
+        setHostname(template.getHostname());
+      }
+      if (template.getMgmtIfaceGateway() != null) {
+        setMgmtIfaceGateway(template.getMgmtIfaceGateway());
+      }
+      if (template.getMgmtIfaceAddress() != null) {
+        setMgmtIfaceAddress(template.getMgmtIfaceAddress());
+      }
+      if (template.getMgmtIfaceNetmask() != null) {
+        setMgmtIfaceNetmask(template.getMgmtIfaceNetmask());
+      }
+      if (template.getDnsServerPrimary() != null) {
+        setDnsServerPrimary(template.getDnsServerPrimary());
+      }
+      if (template.getDnsServerSecondary() != null) {
+        setDnsServerSecondary(template.getDnsServerSecondary());
+      }
+      if (template.getNtpServerPrimary() != null) {
+        setNtpServerPrimary(template.getNtpServerPrimary());
+      }
+      if (template.getNtpServerSecondary() != null) {
+        setNtpServerSecondary(template.getNtpServerSecondary());
+      }
+
+      // Network entities
+      _interfaces.putAll(template.getInterfaces());
+      _sharedGateways.putAll(template.getSharedGateways());
+      _virtualRouters.putAll(template.getVirtualRouters());
+      _cryptoProfiles.addAll(template.getCryptoProfiles());
+
+      // Vsys entities
+      for (Entry<String, Vsys> entry : template.getVirtualSystems().entrySet()) {
+        Vsys target = _virtualSystems.computeIfAbsent(entry.getKey(), Vsys::new);
+        applyTemplateVsys(entry.getValue(), target);
+      }
+      // Shared vsys
+      if (template.getShared() != null) {
+        if (_shared == null) {
+          _shared = new Vsys(SHARED_VSYS_NAME, NamespaceType.SHARED);
+        }
+        applyTemplateVsys(template.getShared(), _shared);
+      }
+    }
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+    ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
+    // Build primary config
+    outputConfigurations.add(this.toVendorIndependentConfiguration());
+
+    // Build configs for each managed device, if applicable
+    // Map of managed device ID to managed device config
+    Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
+    // Apply device-groups
+    _deviceGroups
+        .entrySet()
+        .forEach(
+            deviceGroupEntry ->
+                deviceGroupEntry
+                    .getValue()
+                    .getDevices()
+                    .forEach(
+                        name -> {
+                          // Create new managed config if one doesn't already exist for this device
+                          if (managedConfigurations.containsKey(name)) {
+                            // If the device already has a config associated with it, it must
+                            // already be associated with another device-group (should not happen)
+                            _w.redFlag(
+                                String.format(
+                                    "Managed device '%s' cannot be associated with more than one device-group. Ignoring association with device-group '%s'.",
+                                    name, deviceGroupEntry.getKey()));
+                          } else {
+                            PaloAltoConfiguration c = new PaloAltoConfiguration();
+                            // This may not actually be the device's hostname
+                            // but this is all we know at this point
+                            c.setHostname(name);
+                            c.applyDeviceGroup(deviceGroupEntry.getValue());
+                            managedConfigurations.put(name, c);
+                          }
+                        }));
+    // Apply template-stacks
+    _templateStacks
+        .entrySet()
+        .forEach(
+            stackEntry ->
+                stackEntry
+                    .getValue()
+                    .getDevices()
+                    .forEach(
+                        name -> {
+                          PaloAltoConfiguration c = managedConfigurations.get(name);
+                          // Create new managed config if one doesn't already exist for this device
+                          if (c == null) {
+                            c = new PaloAltoConfiguration();
+                            // This may not actually be the device's hostname
+                            // but this is all we know at this point
+                            c.setHostname(name);
+                            managedConfigurations.put(name, c);
+                          }
+                          c.applyTemplateStack(stackEntry.getValue(), this);
+                        }));
+    // Once managed devices are built, convert them too
+    outputConfigurations.addAll(
+        managedConfigurations.values().stream()
+            .map(PaloAltoConfiguration::toVendorIndependentConfiguration)
+            .collect(ImmutableList.toImmutableList()));
+
+    return outputConfigurations.build();
+  }
+
+  private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
@@ -1928,6 +2135,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(PaloAltoStructureType.INTERFACE);
     markConcreteStructure(PaloAltoStructureType.REDIST_PROFILE);
     markConcreteStructure(PaloAltoStructureType.SECURITY_RULE);
+    markConcreteStructure(PaloAltoStructureType.TEMPLATE);
     markConcreteStructure(PaloAltoStructureType.ZONE);
     markConcreteStructure(PaloAltoStructureType.VIRTUAL_ROUTER);
 
@@ -1985,7 +2193,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS,
         PaloAltoStructureUsage.SECURITY_RULE_APPLICATION);
 
-    return ImmutableList.of(_c);
+    return _c;
   }
 
   /**

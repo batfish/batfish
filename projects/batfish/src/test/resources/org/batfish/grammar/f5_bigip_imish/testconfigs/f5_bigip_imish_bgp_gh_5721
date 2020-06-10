@@ -1,0 +1,89 @@
+#TMSH-VERSION: 13.1.1
+
+sys global-settings {
+    hostname f5_bigip_imish_bgp_gh_5721
+}
+
+!!! imish configuration starts here
+!
+router bgp 11111
+ bgp log-neighbor-changes
+ bgp graceful-restart restart-time 120
+ aggregate-address 10.10.23.0/25 summary-only
+ aggregate-address 99.99.99.0/25 summary-only
+ aggregate-address 99.99.99.128/25 summary-only
+ aggregate-address 99.99.70.32/27 summary-only
+ redistribute kernel
+ redistribute connected
+ redistribute static route-map service1-gack
+ neighbor spines peer-group
+ neighbor spines remote-as 22222
+ neighbor spines default-originate route-map bgp-activef5-check
+ neighbor spines soft-reconfiguration inbound
+ neighbor spines route-map V4-SPINE-TO-EBIGIP in
+ neighbor spines route-map V4-EBIGIP-TO-SPINE out
+ neighbor 10.10.13.16 remote-as 33333
+ neighbor 10.10.13.16 description agg1-dc1
+ neighbor 10.10.13.16 soft-reconfiguration inbound
+ neighbor 10.10.13.16 route-map ebigip-to-agg out
+ neighbor 10.10.106.36 peer-group spines
+ neighbor 10.10.106.36 description spine5-dc1
+ neighbor 10.10.106.100 peer-group spines
+ neighbor 10.10.106.100 description spine6-dc1
+ neighbor 10.10.106.164 peer-group spines
+ neighbor 10.10.106.164 description spine7-dc1
+ neighbor 10.10.106.228 peer-group spines
+ neighbor 10.10.106.228 description spine8-dc1
+!
+ip route 100.100.100.43/32 10.10.13.16
+ip route 100.100.100.44/32 10.10.13.16
+!
+ip as-path access-list mylocalASN permit ^$
+!
+ip prefix-list PL_V4-DC2-ROUTES seq 10 permit 10.10.0.0/21 le 32
+ip prefix-list PL_V4-DC2-ROUTES seq 20 permit 10.10.8.0/22 le 32
+ip prefix-list PL_V4-DC2-ROUTES seq 50 permit 10.10.48.0/22 le 32
+ip prefix-list PL_V4-DC2-ROUTES seq 60 permit 10.10.64.0/19 le 32
+ip prefix-list PL_V4-DC1-ROUTES seq 10 permit 10.10.12.0/21 le 32
+ip prefix-list PL_V4-DC1-ROUTES seq 20 permit 10.10.20.0/22 le 32
+ip prefix-list PL_V4-DC1-ROUTES seq 50 permit 10.10.60.0/22 le 32
+ip prefix-list PL_V4-DC1-ROUTES seq 60 permit 10.10.96.0/19 le 32
+ip prefix-list active-check seq 10 permit 10.10.23.0/25
+ip prefix-list external-vips seq 10 permit 99.99.99.0/25
+ip prefix-list external-vips seq 15 permit 99.99.99.128/25
+ip prefix-list external-vips seq 20 permit 99.99.70.32/27
+ip prefix-list internal-vips seq 10 permit 10.10.23.0/25
+ip prefix-list service1 seq 10 permit 100.100.100.43/32
+ip prefix-list service1 seq 15 permit 100.100.100.44/32
+ip prefix-list permit-default seq 5 permit 0.0.0.0/0
+!
+route-map ebigip-to-agg permit 10
+ match ip address prefix-list external-vips
+!
+route-map service1-gack permit 10
+ match ip address prefix-list service1
+!
+route-map service1-gack deny 20
+!
+route-map bgp-activef5-check permit 10
+ match ip address prefix-list active-check
+!
+route-map V4-EBIGIP-TO-SPINE permit 10
+ match ip address prefix-list internal-vips
+!
+route-map V4-EBIGIP-TO-SPINE permit 20
+ match as-path mylocalASN
+ match ip address prefix-list permit-default
+!
+route-map V4-EBIGIP-TO-SPINE permit 30
+ match ip address prefix-list service1
+!
+route-map V4-EBIGIP-TO-SPINE deny 40
+!
+route-map V4-SPINE-TO-EBIGIP permit 10
+ match ip address prefix-list PL_V4-DC2-ROUTES
+!
+route-map V4-SPINE-TO-EBIGIP permit 20
+ match ip address prefix-list PL_V4-DC1-ROUTES
+!
+route-map V4-SPINE-TO-EBIGIP deny 30

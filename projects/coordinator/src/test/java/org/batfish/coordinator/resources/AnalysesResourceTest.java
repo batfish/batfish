@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.io.IOException;
 import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.ws.rs.client.Invocation.Builder;
@@ -45,22 +46,22 @@ public final class AnalysesResourceTest extends WorkMgrServiceV2TestBase {
   @Test
   public void testListAnalysesMissingNetwork() {
     String network = "network1";
-    Response response = getTarget(network).get();
-
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
   }
 
   @Test
-  public void testListAnalysesSuccess() {
+  public void testListAnalysesSuccess() throws IOException {
     String network = "network1";
     String analysis = "analysis1";
     Main.getWorkMgr().initNetwork(network, null);
     Main.getWorkMgr()
         .configureAnalysis(
             network, true, analysis, ImmutableMap.of("foo", "{}"), ImmutableList.of(), false);
-    Response response = getTarget(network).get();
-
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(response.readEntity(List.class), equalTo(ImmutableList.of(analysis)));
+    try (Response response = getTarget(network).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(response.readEntity(List.class), equalTo(ImmutableList.of(analysis)));
+    }
   }
 }

@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,12 +21,16 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -32,13 +38,16 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.Id;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.VendorConfiguration;
 
 /** Storage backend for loading and storing persistent data used by Batfish */
 @ParametersAreNonnullByDefault
@@ -124,6 +133,15 @@ public interface StorageProvider {
   String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
 
   /**
+   * Load the answer JSON file for a given work item ID.
+   *
+   * @throws FileNotFoundException if the log file is not found.
+   * @throws IOException if there is an error reading the log file.
+   */
+  @Nonnull
+  String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
+
+  /**
    * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored
    * {@link MajorIssueConfig}s
    *
@@ -153,16 +171,18 @@ public interface StorageProvider {
    *
    * @param answerStr The text of the answer
    * @param answerId The ID of the answer
+   * @throws IOException if there is an error
    */
-  void storeAnswer(String answerStr, AnswerId answerId);
+  void storeAnswer(String answerStr, AnswerId answerId) throws IOException;
 
   /**
    * Store the metadata for the answer to an ad-hoc or analysis question.
    *
    * @param answerMetadata The metadata to store
    * @param answerId The ID of the answer
+   * @throws IOException if there is an error
    */
-  void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId);
+  void storeAnswerMetadata(AnswerMetadata answerMetadata, AnswerId answerId) throws IOException;
 
   /**
    * Load the text of a JSON-serialized ad-hoc or analysis question
@@ -171,9 +191,11 @@ public interface StorageProvider {
    * @param question The name of the question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
+   * @throws IOException if there is some other error
    */
   @Nonnull
-  String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
+  String loadQuestion(NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
+      throws IOException;
 
   /**
    * Returns {@code true} iff the specified question exists.
@@ -222,9 +244,11 @@ public interface StorageProvider {
    * @param question The name of the question
    * @param analysis (optional) The name of the analysis for an analysis question, or {@code null}
    *     for an ad-hoc question
+   * @throws IOException if there is an error
    */
   void storeQuestion(
-      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis);
+      String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
+      throws IOException;
 
   /**
    * Return the JSON-serialized settings for the {@code questionClassId} under the specified {@code
@@ -430,6 +454,8 @@ public interface StorageProvider {
   InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 
+  boolean hasSnapshotInputObject(String key, NetworkSnapshot snapshot) throws IOException;
+
   /**
    * Fetch the list of keys in the given snapshot's input directory
    *
@@ -483,6 +509,10 @@ public interface StorageProvider {
 
   /** Store a given string as a log file for a given work item ID. */
   void storeWorkLog(String logOutput, NetworkId network, SnapshotId snapshot, String workId)
+      throws IOException;
+
+  /** Store a given string as an answer JSON file for a given work item ID. */
+  void storeWorkJson(String jsonOutput, NetworkId network, SnapshotId snapshot, String workId)
       throws IOException;
 
   /**
@@ -625,4 +655,308 @@ public interface StorageProvider {
    */
   void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot)
       throws IOException;
+
+  /**
+   * Read the value of an ID corresponding to given ancestor IDs, ID type, and user-provided name.
+   * Returns {@link Optional#empty} if there is no such ID.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Optional<String> readId(Class<? extends Id> idType, String name, Id... ancestors)
+      throws IOException;
+
+  /**
+   * Write an name-ID mapping corresponding to given ancestor IDs and user-provided name.
+   *
+   * @throws IOException if there is an error
+   */
+  void writeId(Id id, String name, Id... ancestors) throws IOException;
+
+  /**
+   * Delete the name-ID mapping corresponding to the given ancestor IDs, ID type, and user-provided
+   * name. Returns {@code true} iff a mapping for the provided name was successfully deleted.
+   *
+   * @throws IOException if there is an error
+   */
+  boolean deleteNameIdMapping(Class<? extends Id> idType, String name, Id... ancestors)
+      throws IOException;
+
+  /**
+   * Returns true iff there is a name-ID mapping corresponding to given ancestor IDs and
+   * user-provided name.
+   */
+  boolean hasId(Class<? extends Id> idType, String name, Id... ancestors);
+
+  /**
+   * Lists the resolvable names corresponding to the given ancestor IDs and ID type.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Set<String> listResolvableNames(Class<? extends Id> idType, Id... ancestors) throws IOException;
+
+  /**
+   * Loads the network-wide reference library for the given network if it exists, or else returns
+   * {@link Optional#empty}.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException;
+
+  /**
+   * Stores the network-wide reference library for the given network
+   *
+   * @throws IOException if there is an error
+   */
+  void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
+      throws IOException;
+
+  /**
+   * Stores the original zip for a snapshot upload request for the given network, associating it
+   * with the given key.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeUploadSnapshotZip(InputStream inputStream, String key, NetworkId network)
+      throws IOException;
+
+  /**
+   * Stores the a fork-snapshot request for the given network, associating it with the given key.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeForkSnapshotRequest(String forkSnapshotRequest, String key, NetworkId network)
+      throws IOException;
+
+  /**
+   * Loads the original zip for a snapshot upload request associated with the given key.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException;
+
+  /**
+   * Stores an input object with the given key whose contents are accessible via the given
+   * inputStream for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeSnapshotInputObject(InputStream inputStream, String key, NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Returns a stream of the keys of all input objects for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the stored data plane for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the data plane for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns {@code true} iff a data plane has been stored for the given snapshot
+   *
+   * @throws IOException if there is an error
+   */
+  boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to environment BGP tables.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the answer element that is the result of parsing environment BGP tables for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+      NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the answer element that is the result of parsing environment BGP tables for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeParseEnvironmentBgpTablesAnswerElement(
+      ParseEnvironmentBgpTablesAnswerElement parseEnvironmentBgpTablesAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Returns true iff environment BGP tables have been parsed for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  boolean hasParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Deletes the answer element that is the result of parsing environment BGP tables for the given
+   * snapshot if it exists.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the compiled environment BGP tables for the given snapshot if they exist. Returns an
+   * empty map if none were compiled.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Stores the compiled environment BGP tables for the given snapshot if they exist.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeEnvironmentBgpTables(
+      Map<String, BgpAdvertisementsByVrf> environmentBgpTables, NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Deletes the compiled environment BGP tables for the given snapshot if they exist.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the content of the external BGP announcements input file for the given snapshot, or
+   * returns {@link Optional#empty} if the snapshot does not contain one.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the answer element that is the result of parsing vendor configurations for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Stores the answer element that is the result of parsing vendor configurations for the given
+   * snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeParseVendorConfigurationAnswerElement(
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Returns true iff vendor configurations have been parsed for the given snapshot.
+   *
+   * @throws IOException if there is an error
+   */
+  boolean hasParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Deletes the answer element that is the result of parsing vendor configurations for the given
+   * snapshot if it exists.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Loads the compiled vendor configurations for the given snapshot if they exist. Returns an empty
+   * map if none were compiled.
+   *
+   * @throws IOException if there is an error
+   */
+  @Nonnull
+  Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Stores the compiled vendor configurations for the given snapshot if they exist. Merges with any
+   * existing stored vendor configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  void storeVendorConfigurations(
+      Map<String, VendorConfiguration> vendorConfigurations, NetworkSnapshot snapshot)
+      throws IOException;
+
+  /**
+   * Deletes the compiled vendor configurations for the given snapshot if they exist.
+   *
+   * @throws IOException if there is an error
+   */
+  void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to host configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to network configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to AWS multi-account configuration
+   * data.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Returns a list of snapshot input object keys corresponding to AWS single-account configuration
+   * data.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 }

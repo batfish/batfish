@@ -70,6 +70,14 @@ public final class IpAccessListMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the Ip Access List's value of {@code name} matches specified
+   * {@code subMatcher}
+   */
+  public static @Nonnull HasName hasName(Matcher<? super String> subMatcher) {
+    return new HasName(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the IpAccessList rejects a flow at the provided source
    * interface given the provided acl definitions.
    */

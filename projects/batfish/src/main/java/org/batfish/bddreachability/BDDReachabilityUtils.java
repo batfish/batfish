@@ -9,7 +9,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashSet;
 import java.util.Map;
@@ -50,9 +51,9 @@ public final class BDDReachabilityUtils {
       Map<StateExpr, BDD> reachableSets,
       Table<StateExpr, StateExpr, Transition> edges,
       BiFunction<Transition, BDD, BDD> traverse) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.fixpoint").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("BDDReachabilityAnalysis.fixpoint").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       Set<StateExpr> dirtyStates = ImmutableSet.copyOf(reachableSets.keySet());
 
       while (!dirtyStates.isEmpty()) {
@@ -86,11 +87,13 @@ public final class BDDReachabilityUtils {
 
         dirtyStates = newDirtyStates;
       }
+    } finally {
+      span.finish();
     }
   }
 
   @VisibleForTesting
-  static IngressLocation toIngressLocation(StateExpr stateExpr) {
+  public static IngressLocation toIngressLocation(StateExpr stateExpr) {
     checkArgument(stateExpr instanceof OriginateVrf || stateExpr instanceof OriginateInterfaceLink);
 
     if (stateExpr instanceof OriginateVrf) {

@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 
 public class MockForwardingAnalysis implements ForwardingAnalysis {
@@ -11,9 +10,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
     private Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
     private Map<String, Map<String, IpSpace>> _arpReplies;
-    private Map<
-            String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
-        _arpRequests;
     private Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
     private Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
     private Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
@@ -23,7 +19,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     private Builder() {
       _acceptedIps = ImmutableMap.of();
       _arpReplies = ImmutableMap.of();
-      _arpRequests = ImmutableMap.of();
       _arpTrueEdge = ImmutableMap.of();
       _deliveredToSubnet = ImmutableMap.of();
       _nextVrfIps = ImmutableMap.of();
@@ -42,13 +37,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
     public Builder setArpReplies(Map<String, Map<String, IpSpace>> arpReplies) {
       _arpReplies = arpReplies;
-      return this;
-    }
-
-    public Builder setArpRequests(
-        Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
-            arpRequests) {
-      _arpRequests = arpRequests;
       return this;
     }
 
@@ -85,9 +73,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
 
   private final Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
   private final Map<String, Map<String, IpSpace>> _arpReplies;
-  private final Map<
-          String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
-      _arpRequests;
   private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
   private final Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
   private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
@@ -97,7 +82,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   public MockForwardingAnalysis(Builder builder) {
     _acceptedIps = ImmutableMap.copyOf(builder._acceptedIps);
     _arpReplies = ImmutableMap.copyOf(builder._arpReplies);
-    _arpRequests = ImmutableMap.copyOf(builder._arpRequests);
     _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);
     _deliveredToSubnet = ImmutableMap.copyOf(builder._deliveredToSubnet);
     _nextVrfIps = ImmutableMap.copyOf(builder._nextVrfIps);
@@ -114,11 +98,6 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
   @Override
   public Map<String, Map<String, IpSpace>> getArpReplies() {
     return _arpReplies;
-  }
-
-  public Map<String, Map<String, Map<AbstractRoute, Map<String, Map<ArpIpChoice, Set<IpSpace>>>>>>
-      getArpRequests() {
-    return _arpRequests;
   }
 
   @Override

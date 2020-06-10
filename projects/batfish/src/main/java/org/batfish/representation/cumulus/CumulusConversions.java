@@ -455,17 +455,27 @@ public final class CumulusConversions {
       BgpNeighbor neighbor,
       Warnings w) {
 
-    Long localAs = bgpVrf.getAutonomousSystem();
     org.batfish.datamodel.BgpProcess viBgpProcess =
         c.getVrfs().get(bgpVrf.getVrfName()).getBgpProcess();
+    neighbor.inheritFrom(bgpVrf.getNeighbors());
+    Long localAs = null;
+    if (neighbor.getLocalAs() != null) {
+      localAs = neighbor.getLocalAs();
+    } else if (bgpVrf.getAutonomousSystem() != null) {
+      localAs = bgpVrf.getAutonomousSystem();
+    }
 
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-      interfaceNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      if (interfaceNeighbor.getLocalAs() != null) {
+        localAs = interfaceNeighbor.getLocalAs();
+      }
       addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-      ipNeighbor.inheritFrom(bgpVrf.getNeighbors());
+      if (ipNeighbor.getLocalAs() != null) {
+        localAs = ipNeighbor.getLocalAs();
+      }
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
       throw new IllegalArgumentException(
@@ -524,6 +534,7 @@ public final class CumulusConversions {
 
     peerConfigBuilder
         .setBgpProcess(newProc)
+        .setClusterId(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor))
         .setConfederation(bgpVrf.getConfederationId())
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
@@ -761,16 +772,28 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    if (neighbor.getRemoteAs() == null
-        || bgpVrf.getAutonomousSystem() == null
-        || !neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem())) {
+    if (neighbor.getRemoteAs() == null || bgpVrf.getAutonomousSystem() == null) {
       return null;
     }
 
+    boolean isIBgp = neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem());
+    // TODO: Need to handle dynamic neighbors.
     boolean nextHopSelf =
         Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
             .map(BgpNeighborIpv4UnicastAddressFamily::getNextHopSelf)
             .orElse(false);
+
+    if (isIBgp) {
+      // Check for "force".
+      // TODO: Handle v6 AFI.
+      BgpNeighborIpv4UnicastAddressFamily ipv4af = neighbor.getIpv4UnicastAddressFamily();
+      if (ipv4af != null) {
+        Boolean nextHopSelfAll = ipv4af.getNextHopSelfAll();
+        if (nextHopSelfAll == null || !nextHopSelfAll) {
+          nextHopSelf = false;
+        }
+      }
+    }
 
     return nextHopSelf ? new SetNextHop(SelfNextHop.getInstance()) : null;
   }
@@ -1225,6 +1248,25 @@ public final class CumulusConversions {
     return biggestInterfaceIp
         .map(ConcreteInterfaceAddress::getIp)
         .orElseGet(() -> Ip.parse("0.0.0.0"));
+  }
+
+  /**
+   * REF:
+   * https://github.com/FRRouting/frr/blob/b4b1d1ebdbee99664c0607cf4abac977dfc896b6/bgpd/bgp_attr.c#L3851
+   * If FRR has a cluster-id set it will use that, otherwise it will use router-id.
+   *
+   * @param bgpVrf BGP vrf for which to infer cluster ID
+   * @param routerId router ID of the {@code bgpVrf} (already inferred if needed)
+   */
+  @VisibleForTesting
+  @Nullable
+  static Long inferClusterId(final BgpVrf bgpVrf, final Ip routerId, final BgpNeighbor neighbor) {
+    // Do not set cluster Id if peer is eBGP
+    if (!Objects.equals(neighbor.getRemoteAs(), bgpVrf.getAutonomousSystem())) {
+      return null;
+    }
+    // Return clusterId if set in the config, otherwise return routerId as default.
+    return bgpVrf.getClusterId() != null ? bgpVrf.getClusterId().asLong() : routerId.asLong();
   }
 
   @VisibleForTesting

@@ -1,0 +1,12 @@
+set template T1 description "template description"
+set template T1 config devices localhost.localdomain deviceconfig system hostname pan-template
+set template T1 config devices localhost.localdomain vsys vsys1 zone ZONE1 network layer3 ethernet1/1
+set template T1 config devices localhost.localdomain vsys vsys1 zone ZONE2 network layer3 ethernet1/2
+set template T1 config devices localhost.localdomain vsys vsys1 import network interface [ ethernet1/1 ethernet1/2 ]
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+# Intentional use of short-hand syntax, accepted by cli
+set template T1 config network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set template T1 config devices localhost.localdomain network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+set template T2 description "template 2 description"
+# Regular, non-template config - intentionally after device-group config to confirm we pop out as expected
+set deviceconfig system hostname template

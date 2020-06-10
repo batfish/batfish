@@ -237,6 +237,7 @@ public class PropertyChecker {
 
   private void addEnvironmentConstraints(Encoder enc, EnvironmentType t) {
     LogicalGraph lg = enc.getMainSlice().getLogicalGraph();
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = enc.getCtx();
     switch (t) {
       case ANY:
@@ -742,6 +743,7 @@ public class PropertyChecker {
     Graph graph = new Graph(_batfish, snapshot);
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = enc.getCtx();
     EncoderSlice slice = enc.getMainSlice();
 
@@ -875,6 +877,7 @@ public class PropertyChecker {
     }
     Encoder enc = new Encoder(graph, q);
     enc.computeEncoding();
+    @SuppressWarnings("PMD.CloseResource")
     Context ctx = enc.getCtx();
     EncoderSlice slice = enc.getMainSlice();
     PropertyAdder pa = new PropertyAdder(slice);
@@ -931,6 +934,7 @@ public class PropertyChecker {
       Encoder e1 = new Encoder(g1, q);
       e1.computeEncoding();
 
+      @SuppressWarnings("PMD.CloseResource")
       Context ctx = e1.getCtx();
 
       // Create transfer function for router 2

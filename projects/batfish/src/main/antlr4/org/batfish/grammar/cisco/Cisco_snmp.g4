@@ -25,6 +25,7 @@ s_snmp_server
       | ss_enable_trap
       | ss_enable_traps
       | ss_file_transfer
+      | ss_group
       | ss_host
       | ss_mib
       | ss_null
@@ -79,6 +80,39 @@ ss_file_transfer
    (
       PROTOCOL snmp_file_transfer_protocol
    )? NEWLINE
+;
+
+ss_group
+:
+  GROUP name = variable
+  (
+    ss_group_null
+    | ss_group_v3
+  )
+;
+
+ss_group_null
+:
+  (V1 | V2C) null_rest_of_line
+;
+
+ss_view_name
+:
+   name = variable
+   | quoted_name = double_quoted_string
+;
+
+ss_group_v3
+:
+  V3
+  level = (AUTH | NOAUTH | PRIV)
+  (CONTEXT cname = variable)?
+  (MATCH mtype = (EXACT | PREFIX))?
+  (READ rview = ss_view_name)?
+  (WRITE wview = ss_view_name)?
+  (NOTIFY nview = ss_view_name)?
+  (ACCESS (v4acl = variable | IPV6 v6acl = variable))?
+  NEWLINE
 ;
 
 ss_host
@@ -163,7 +197,6 @@ ss_null
       | CONTEXT
       | ENGINEID
       | GLOBALENFORCEPRIV
-      | GROUP
       | IFINDEX
       | IFMIB
       | LOCATION

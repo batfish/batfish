@@ -3,6 +3,8 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.immutableEntry;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLinkLocationInfo;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLocationInfo;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
@@ -10,6 +12,7 @@ import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 
@@ -19,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -36,13 +40,10 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.StaticRoute.Builder;
-import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
@@ -200,18 +201,34 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Utils.newInterface(
         instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
-    // connect to the VPC
-    Configuration vpcConfigNode =
-        awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(_vpcId));
-    connect(awsConfiguration, cfgNode, vpcConfigNode);
+    // connect to the VPC on each of its VRFs. add static routes on the VPC to this subnet.
+    Configuration vpcConfigNode = awsConfiguration.getNode(Vpc.nodeName(_vpcId));
+    vpcConfigNode
+        .getVrfs()
+        .values()
+        .forEach(
+            vrf -> {
+              String interfaceSuffix = vrf.getName().equals(DEFAULT_VRF_NAME) ? "" : vrf.getName();
+              connect(
+                  awsConfiguration,
+                  cfgNode,
+                  DEFAULT_VRF_NAME,
+                  vpcConfigNode,
+                  vrf.getName(),
+                  interfaceSuffix);
 
-    // add a static route on the vpc router for this subnet;
-    addStaticRoute(
-        vpcConfigNode,
-        toStaticRoute(
-            _cidrBlock, interfaceNameToRemote(cfgNode), getInterfaceLinkLocalIp(cfgNode, _vpcId)));
+              // add a static route on the vpc router for this subnet;
+              addStaticRoute(
+                  vrf,
+                  toStaticRoute(
+                      _cidrBlock,
+                      interfaceNameToRemote(cfgNode, interfaceSuffix),
+                      getInterfaceLinkLocalIp(
+                          cfgNode, interfaceNameToRemote(vpcConfigNode, interfaceSuffix))));
+            });
 
-    Optional<VpnGateway> optVpnGateway = region.findVpnGateway(_vpcId);
+    @Nullable
+    String vpnGatewayId = region.findVpnGateway(_vpcId).map(VpnGateway::getId).orElse(null);
     Optional<RouteTable> routeTable = region.findRouteTable(_vpcId, _subnetId);
     Optional<InternetGateway> optInternetGateway = region.findInternetGateway(_vpcId);
 
@@ -220,6 +237,19 @@ public class Subnet implements AwsVpcEntity, Serializable {
         && isPublicSubnet(optInternetGateway.get(), routeTable.get())) {
       cfgNode.setDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC);
     }
+
+    // collect all VPC-level gateways: IGW, VGW, VPC Endpoint Gateway
+    List<String> vpcGatewayIds =
+        Streams.concat(
+                Stream.of(optInternetGateway.map(InternetGateway::getId).orElse(null)),
+                Stream.of(vpnGatewayId),
+                region.getVpcEndpoints().values().stream()
+                    .filter(
+                        vpce ->
+                            vpce instanceof VpcEndpointGateway && vpce.getVpcId().equals(_vpcId))
+                    .map(VpcEndpoint::getId))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
 
     // process route tables to get outbound traffic going
     if (!routeTable.isPresent()) {
@@ -230,19 +260,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
           .get()
           .getRoutes()
           .forEach(
-              route -> {
-                if (route instanceof RouteV4) {
+              route ->
                   processRoute(
                       cfgNode,
                       region,
-                      (RouteV4) route,
+                      route,
                       vpcConfigNode,
-                      optInternetGateway.orElse(null),
-                      optVpnGateway.orElse(null),
+                      vpcGatewayIds,
                       awsConfiguration,
-                      warnings);
-                }
-              });
+                      warnings));
     }
 
     installNetworkAcls(cfgNode, region, warnings);
@@ -316,172 +342,142 @@ public class Subnet implements AwsVpcEntity, Serializable {
   void processRoute(
       Configuration cfgNode,
       Region region,
-      RouteV4 route,
+      Route route,
       Configuration vpcNode,
-      @Nullable InternetGateway igw,
-      @Nullable VpnGateway vgw,
+      List<String> vpcGatewayIds, // IGW, VGW, VPC Endpoint Gateway
       ConvertedConfiguration awsConfiguration,
       Warnings warnings) {
-
-    StaticRoute.Builder sr =
-        StaticRoute.builder()
-            .setNetwork(route.getDestinationCidrBlock())
-            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
-
-    if (route.getState() == State.BLACKHOLE) {
-      addStaticRoute(cfgNode, sr.setNextHopInterface(Interface.NULL_INTERFACE_NAME).build());
+    List<Prefix> networks;
+    if (route instanceof RouteV4) {
+      networks = ImmutableList.of(((RouteV4) route).getDestinationCidrBlock());
+    } else if (route instanceof RoutePrefixListId) {
+      PrefixList prefixList =
+          region.getPrefixLists().get(((RoutePrefixListId) route).getPrefixListId());
+      if (prefixList == null) {
+        warnings.redFlag(
+            String.format(
+                "Prefix list %s mentioned in route %s not found in region %s",
+                ((RoutePrefixListId) route).getPrefixListId(), route, region.getName()));
+        return;
+      }
+      networks = ImmutableList.copyOf(prefixList.getCidrs());
+    } else {
+      // we don't do V6
       return;
     }
 
-    switch (route.getTargetType()) {
-      case Gateway:
-        if (route.getTarget() == null) {
-          warnings.redFlag("Route target is null for target type Gateway");
-          return;
-        }
-        if (route.getTarget().equals("local")) {
-          // To VPC
-          addStaticRoute(
-              cfgNode,
-              sr.setNextHopIp(getInterfaceLinkLocalIp(vpcNode, _subnetId))
-                  .setNextHopInterface(interfaceNameToRemote(vpcNode))
-                  .build());
-          return;
-        }
-        if (igw != null && route.getTarget().equals(igw.getId())) {
-          // To IGW
-          initializeVpcLink(
-              cfgNode, vpcNode, region.getVpcs().get(_vpcId), igw.getId(), sr, awsConfiguration);
-          return;
-        }
-        if (vgw != null && route.getTarget().equals(vgw.getId())) {
-          // To VGW
-          initializeVpcLink(
-              cfgNode, vpcNode, region.getVpcs().get(_vpcId), vgw.getId(), sr, awsConfiguration);
-          return;
-        }
-        warnings.redFlag(
-            String.format(
-                "Unknown target %s specified in this route not accessible from this subnet",
-                route.getTarget()));
-        return;
-      case VpcPeeringConnection:
-        String connectionId = route.getTarget();
-        if (connectionId == null) {
-          warnings.redFlag(
-              String.format("Route target is null for a VPC peering connection type: %s", route));
-          return;
-        }
-        initializeVpcLink(
-            cfgNode, vpcNode, region.getVpcs().get(_vpcId), connectionId, sr, awsConfiguration);
-        return;
-      case TransitGateway:
-        assert route.getTarget() != null; // suppress warning
-        TransitGatewayVpcAttachment attachment =
-            region.findTransitGatewayVpcAttachment(_vpcId, route.getTarget()).orElse(null);
-        if (attachment == null) {
-          warnings.redFlag(
-              String.format(
-                  "Transit gateway VPC attachment between %s and %s not found. Needed for route: %s",
-                  _vpcId, route.getTarget(), route));
-          return;
-        }
-        // this attachment is not reachable if it is not present in our availability zone
-        if (!attachment.getAvailabilityZones(region).contains(_availabilityZone)) {
-          addStaticRoute(cfgNode, sr.setNextHopInterface(Interface.NULL_INTERFACE_NAME).build());
-          return;
-        }
-        initializeVpcLink(
-            cfgNode,
-            vpcNode,
-            region.getVpcs().get(_vpcId),
-            attachment.getId(),
-            sr,
-            awsConfiguration);
-        return;
-      case NatGateway:
-        NatGateway natGateway = region.getNatGateways().get(route.getTarget());
-        if (natGateway == null) {
-          warnings.redFlag(
-              String.format(
-                  "Nat gateway %s not found. Needed for route: %s", route.getTarget(), route));
-          return;
-        }
-        // If the NAT is in our subnet, send it directly. Otherwise, send it via the VPC
-        if (natGateway.getSubnetId().equals(_subnetId)) {
-          // This configuration won't actually work (which manual testing confirms). The packet will
-          // go the NAT, which will NAT the *source ip* and send it back to the subnet router, which
-          // will then send it to NAT, and so on. Nevertheless, we add this route instead of
-          // ignoring it because it is the correct model and users expect routes in AWS and Batfish
-          // to line up.
-          addStaticRoute(
-              cfgNode,
-              sr.setNextHopIp(natGateway.getPrivateIp())
-                  .setNextHopInterface(
-                      interfaceNameToRemote(
-                          awsConfiguration.getConfigurationNodes().get(natGateway.getId())))
-                  .build());
-        } else {
-          initializeVpcLink(
-              cfgNode,
-              vpcNode,
-              region.getVpcs().get(_vpcId),
-              natGateway.getId(),
-              sr,
-              awsConfiguration);
-        }
-        return;
-      default:
-        warnings.redFlag("Unsupported target type: " + route.getTargetType());
-    }
-  }
+    final String nexthopInterfaceName;
+    final Ip nextHopIp;
 
-  /**
-   * Initializes what is needed on the VPC to allow a subnet to use its link to a remote entities
-   * (e.g., a VPC peering connection or a transit gateway attachment)
-   */
-  @VisibleForTesting
-  void initializeVpcLink(
-      Configuration cfgNode,
-      Configuration vpcNode,
-      Vpc vpc,
-      String linkId,
-      Builder sr,
-      ConvertedConfiguration awsConfiguration) {
-    // if we are not connected to the VPC for this link, do that first
-    if (!cfgNode.getAllInterfaces().containsKey(Utils.interfaceNameToRemote(vpcNode, linkId))) {
-      // the interface on the VPC node is in the link-specific VRF
-      String vrfNameOnVpc = Vpc.vrfNameForLink(linkId);
+    if (route.getState() == State.BLACKHOLE) {
+      nexthopInterfaceName = NULL_INTERFACE_NAME;
+      nextHopIp = null;
+    } else {
 
-      // have we created a VRF for this link on the VPC node before?
-      if (!vpcNode.getVrfs().containsKey(vrfNameOnVpc)) {
-        Vrf vrf = Vrf.builder().setOwner(vpcNode).setName(vrfNameOnVpc).build();
-        vpc.initializeVrf(vrf);
+      switch (route.getTargetType()) {
+        case Gateway:
+          if (route.getTarget() == null) {
+            warnings.redFlag("Route target is null for target type Gateway");
+            return;
+          }
+          if (route.getTarget().equals("local")) {
+            // To VPC
+            nextHopIp = getInterfaceLinkLocalIp(vpcNode, _subnetId);
+            nexthopInterfaceName = interfaceNameToRemote(vpcNode);
+          } else if (vpcGatewayIds.contains(route.getTarget())) {
+            nexthopInterfaceName =
+                Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(route.getTarget()));
+            nextHopIp =
+                getInterfaceLinkLocalIp(
+                    vpcNode,
+                    Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(route.getTarget())));
+          } else {
+            warnings.redFlag(
+                String.format(
+                    "Unknown target %s specified in this route not accessible from this subnet",
+                    route.getTarget()));
+            return;
+          }
+          break;
+        case VpcPeeringConnection:
+          String connectionId = route.getTarget();
+          if (connectionId == null) {
+            warnings.redFlag(
+                String.format("Route target is null for a VPC peering connection type: %s", route));
+            return;
+          }
+          nexthopInterfaceName = Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(connectionId));
+          nextHopIp =
+              getInterfaceLinkLocalIp(
+                  vpcNode, Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(connectionId)));
+          break;
+        case TransitGateway:
+          assert route.getTarget() != null; // suppress warning
+          TransitGatewayVpcAttachment attachment =
+              region.findTransitGatewayVpcAttachment(_vpcId, route.getTarget()).orElse(null);
+          if (attachment == null) {
+            warnings.redFlag(
+                String.format(
+                    "Transit gateway VPC attachment between %s and %s not found. Needed for route: %s",
+                    _vpcId, route.getTarget(), route));
+            return;
+          }
+          // this attachment is not reachable if it is not present in our availability zone
+          if (!attachment.getAvailabilityZones(region).contains(_availabilityZone)) {
+            nexthopInterfaceName = NULL_INTERFACE_NAME;
+            nextHopIp = null;
+          } else {
+            nexthopInterfaceName =
+                Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(attachment.getId()));
+            nextHopIp =
+                getInterfaceLinkLocalIp(
+                    vpcNode,
+                    Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(attachment.getId())));
+          }
+          break;
+        case NatGateway:
+          NatGateway natGateway = region.getNatGateways().get(route.getTarget());
+          if (natGateway == null) {
+            warnings.redFlag(
+                String.format(
+                    "Nat gateway %s not found. Needed for route: %s", route.getTarget(), route));
+            return;
+          }
+          // If the NAT is in our subnet, send it directly. Otherwise, send it via the VPC
+          if (natGateway.getSubnetId().equals(_subnetId)) {
+            // This configuration won't actually work (which manual testing confirms). The packet
+            // will go the NAT, which will NAT the *source ip* and send it back to the subnet
+            // router,  which will then send it to NAT, and so on. Nevertheless, we add this route
+            // instead of ignoring it because it is the correct model and users expect routes in AWS
+            // and Batfish to line up.
+            nexthopInterfaceName =
+                interfaceNameToRemote(awsConfiguration.getNode(natGateway.getId()));
+            nextHopIp = natGateway.getPrivateIp();
+          } else {
+            nexthopInterfaceName =
+                Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(natGateway.getId()));
+            nextHopIp =
+                getInterfaceLinkLocalIp(
+                    vpcNode,
+                    Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(natGateway.getId())));
+          }
+          break;
+        default:
+          warnings.redFlag("Unsupported target type: " + route.getTargetType());
+          return;
       }
-
-      connect(
-          awsConfiguration,
-          cfgNode,
-          cfgNode.getDefaultVrf().getName(),
-          vpcNode,
-          vrfNameOnVpc,
-          linkId);
-
-      addStaticRoute(
-          vpcNode.getVrfs().get(vrfNameOnVpc),
-          toStaticRoute(
-              _cidrBlock,
-              Utils.interfaceNameToRemote(cfgNode, linkId),
-              getInterfaceLinkLocalIp(cfgNode, Utils.interfaceNameToRemote(vpcNode, linkId))));
     }
-
-    addStaticRoute(
-        cfgNode,
-        sr.setNextHopInterface(Utils.interfaceNameToRemote(vpcNode, linkId))
-            .setNextHopIp(
-                getInterfaceLinkLocalIp(vpcNode, Utils.interfaceNameToRemote(cfgNode, linkId)))
-            .build());
+    networks.forEach(
+        network ->
+            addStaticRoute(
+                cfgNode,
+                StaticRoute.builder()
+                    .setNetwork(network)
+                    .setNextHopInterface(nexthopInterfaceName)
+                    .setNextHopIp(nextHopIp)
+                    .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                    .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                    .build()));
   }
 
   @Override

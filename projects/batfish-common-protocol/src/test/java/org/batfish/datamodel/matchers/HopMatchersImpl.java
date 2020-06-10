@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -12,6 +12,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.Step;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -27,6 +28,24 @@ final class HopMatchersImpl {
     @Override
     protected String featureValueOf(Hop hop) {
       return hop.getNode().getName();
+    }
+  }
+
+  static class HasAcceptingInterface extends FeatureMatcher<Hop, NodeInterfacePair> {
+    HasAcceptingInterface(Matcher<? super NodeInterfacePair> subMatcher) {
+      super(subMatcher, "a Hop with accepting interface:", "accepting interface");
+    }
+
+    @Override
+    protected NodeInterfacePair featureValueOf(Hop hop) {
+      List<Step<?>> steps =
+          hop.getSteps().stream()
+              .filter(step -> step instanceof InboundStep)
+              .collect(ImmutableList.toImmutableList());
+      assertThat(steps, hasSize(1));
+
+      InboundStep lastStep = (InboundStep) steps.get(0);
+      return NodeInterfacePair.of(hop.getNode().getName(), lastStep.getDetail().getInterface());
     }
   }
 
@@ -57,7 +76,7 @@ final class HopMatchersImpl {
               .filter(step -> step instanceof ExitOutputIfaceStep)
               .collect(ImmutableList.toImmutableList());
 
-      assertThat(steps.size(), equalTo(1));
+      assertThat(steps, hasSize(1));
 
       ExitOutputIfaceStep lastStep = (ExitOutputIfaceStep) steps.get(0);
 

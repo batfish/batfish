@@ -18,7 +18,6 @@ tokens {
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
    BANNER_DELIMITER_CADANT,
-   BANNER_DELIMITER_EOS,
    BANNER_DELIMITER_IOS,
    BANNER_BODY,
    COMMUNITY_LIST_NUM_EXPANDED,
@@ -68,6 +67,11 @@ AAA_SERVER
 AAA_USER
 :
    'aaa-user'
+;
+
+AAL5SNAP
+:
+  'aal5snap'
 ;
 
 ABSOLUTE_TIMEOUT
@@ -1789,6 +1793,11 @@ BUCKETS
    'buckets'
 ;
 
+BUFFER_LENGTH
+:
+  'buffer-length'
+;
+
 BUFFER_LIMIT
 :
    'buffer-limit'
@@ -2743,21 +2752,6 @@ CUSTOM
 CUSTOMER_ID
 :
    'customer-id'
-;
-
-CVX
-:
-   'cvx'
-;
-
-CVX_CLUSTER
-:
-   'cvx-cluster'
-;
-
-CVX_LICENSE
-:
-   'cvx-license'
 ;
 
 CWR
@@ -5181,6 +5175,11 @@ GREEN
 GROUP
 :
    'group'
+   {
+     if (lastTokenType() == SNMP_SERVER) {
+       pushMode(M_Name);
+     }
+   }
 ;
 
 GROUP_ALIAS
@@ -5486,6 +5485,11 @@ HIGH_RESOLUTION
 HISTORY
 :
    'history'
+;
+
+HOLD_CHARACTER
+:
+  'hold-character'
 ;
 
 HOLD_TIME
@@ -7166,8 +7170,6 @@ LOGIN
   {
     if (isCadant()) {
       pushMode(M_BannerCadant);
-    } else if (isEos()) {
-      pushMode(M_BannerEos);
     }
   }
 ;
@@ -10450,6 +10452,11 @@ REACTION
    'reaction'
 ;
 
+READ
+:
+   'read'
+;
+
 READ_ONLY_PASSWORD
 :
    'read-only-password'
@@ -12417,6 +12424,11 @@ STOP
    'stop'
 ;
 
+STOP_CHARACTER
+:
+  'stop-character'
+;
+
 STOP_ONLY
 :
    'stop-only'
@@ -14257,6 +14269,11 @@ UUCP_PATH
    'uucp-path'
 ;
 
+V1
+:
+   'v1'
+;
+
 V1_RP_REACHABILITY
 :
    'v1-rp-reachability'
@@ -14265,6 +14282,16 @@ V1_RP_REACHABILITY
 V2
 :
    'v2'
+;
+
+V2C
+:
+   'v2c'
+;
+
+V3
+:
+   'v3'
 ;
 
 V4
@@ -14919,6 +14946,11 @@ WRED_PROFILE
    'wred-profile'
 ;
 
+WRITE
+:
+   'write'
+;
+
 WRITE_MEMORY
 :
    'write-memory'
@@ -15267,7 +15299,6 @@ COMMENT_LINE
       switch(lastTokenType()) {
         case -1:
         case BANNER_DELIMITER_CADANT:
-        case BANNER_DELIMITER_EOS:
         case NEWLINE:
           return true;
         default:
@@ -16200,38 +16231,6 @@ M_BannerCadant_BODY
   F_NonNewline* F_Newline+
   {
     if (bannerCadantDelimiterFollows()) {
-      setType(BANNER_BODY);
-    } else {
-      more();
-    }
-  }
-;
-
-mode M_BannerEos;
-
-M_BannerEos_NEWLINE
-:
-  // Consume single newline. Subsequent newlines are part of banner.
-  F_Newline -> type(NEWLINE), mode(M_BannerEosText)
-;
-
-M_BannerEos_WS
-:
-  F_Whitespace+ -> channel(HIDDEN)
-;
-
-mode M_BannerEosText;
-
-M_BannerEos_BANNER_DELIMITER_EOS
-:
-  'EOF' F_Newline+ -> type(BANNER_DELIMITER_EOS), popMode
-;
-
-M_BannerEos_BODY
-:
-  F_NonNewline* F_Newline+
-  {
-    if (bannerEosDelimiterFollows()) {
       setType(BANNER_BODY);
     } else {
       more();

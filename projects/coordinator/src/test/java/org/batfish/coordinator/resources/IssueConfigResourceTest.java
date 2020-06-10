@@ -36,13 +36,14 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   private void addIssue(String network, String major, String minor, int severity, String url) {
-    Response response =
+    try (Response response =
         getIssueSettingsTarget(network)
             .post(
                 Entity.entity(
                     new IssueConfigBean(major, new MinorIssueConfig(minor, severity, url)),
-                    MediaType.APPLICATION_JSON));
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+                    MediaType.APPLICATION_JSON))) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 
   private Builder getIssueConfigTarget(String network, String major, String minor) {
@@ -76,13 +77,15 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
     String minor = "minor";
     Main.getWorkMgr().initNetwork(network, null);
 
-    Response response = getIssueConfigTarget(network, major, minor).delete();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getIssueConfigTarget(network, major, minor).delete()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
 
     addIssue(network, major, minor, 100, "www.cnn");
 
-    response = getIssueConfigTarget(network, major, minor).delete();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    try (Response response = getIssueConfigTarget(network, major, minor).delete()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    }
   }
 
   @Test
@@ -92,15 +95,17 @@ public class IssueConfigResourceTest extends WorkMgrServiceV2TestBase {
     String minor = "minor";
     Main.getWorkMgr().initNetwork(network, null);
 
-    Response response = getIssueConfigTarget(network, major, minor).get();
-    assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    try (Response response = getIssueConfigTarget(network, major, minor).get()) {
+      assertThat(response.getStatus(), equalTo(NOT_FOUND.getStatusCode()));
+    }
 
     addIssue(network, major, minor, 100, "www.cnn");
 
-    response = getIssueConfigTarget(network, major, minor).get();
-    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(IssueConfigBean.class),
-        equalTo(new IssueConfigBean(major, new MinorIssueConfig(minor, 100, "www.cnn"))));
+    try (Response response = getIssueConfigTarget(network, major, minor).get()) {
+      assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+      assertThat(
+          response.readEntity(IssueConfigBean.class),
+          equalTo(new IssueConfigBean(major, new MinorIssueConfig(minor, 100, "www.cnn"))));
+    }
   }
 }

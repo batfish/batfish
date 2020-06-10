@@ -13,7 +13,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco.AristaConversions.getVrfForVlan;
 import static org.batfish.representation.cisco.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
@@ -39,14 +38,6 @@ import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterv
 import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfNetworkType;
 import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.CONNECTED;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_EXTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_INTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
-import static org.batfish.representation.cisco.eos.AristaRedistributeType.STATIC;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Functions;
@@ -55,7 +46,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
@@ -92,7 +82,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
-import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -120,7 +109,6 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
@@ -200,18 +188,8 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
-import org.batfish.datamodel.vxlan.Layer2Vni;
-import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
-import org.batfish.representation.cisco.eos.AristaBgpAggregateNetwork;
-import org.batfish.representation.cisco.eos.AristaBgpBestpathTieBreaker;
-import org.batfish.representation.cisco.eos.AristaBgpProcess;
-import org.batfish.representation.cisco.eos.AristaBgpRedistributionPolicy;
-import org.batfish.representation.cisco.eos.AristaBgpVrf;
-import org.batfish.representation.cisco.eos.AristaBgpVrfIpv4UnicastAddressFamily;
-import org.batfish.representation.cisco.eos.AristaEosVxlan;
-import org.batfish.representation.cisco.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
@@ -447,8 +425,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return output;
   }
 
-  @Nullable private AristaBgpProcess _aristaBgp;
-
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
   private final Map<String, AsPathSet> _asPathSets;
@@ -466,12 +442,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private String _dnsSourceInterface;
 
   private String _domainName;
-
-  private Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
-
-  private AristaEosVxlan _eosVxlan;
-
-  @Nullable private MlagConfiguration _eosMlagConfiguration;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -604,7 +574,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _cryptoMapSets = new HashMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
-    _eosVlanTrunkGroups = new HashMap<>();
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
@@ -725,15 +694,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
   }
 
-  @Nullable
-  public AristaBgpProcess getAristaBgp() {
-    return _aristaBgp;
-  }
-
-  public void setAristaBgp(@Nullable AristaBgpProcess aristaBgp) {
-    _aristaBgp = aristaBgp;
-  }
-
   public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
   }
@@ -805,20 +765,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public String getDnsSourceInterface() {
     return _dnsSourceInterface;
-  }
-
-  @Nonnull
-  public Map<String, VlanTrunkGroup> getEosVlanTrunkGroups() {
-    return _eosVlanTrunkGroups;
-  }
-
-  public AristaEosVxlan getEosVxlan() {
-    return _eosVxlan;
-  }
-
-  @Nullable
-  public MlagConfiguration getEosMlagConfiguration() {
-    return _eosMlagConfiguration;
   }
 
   public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
@@ -1168,14 +1114,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _domainName = domainName;
   }
 
-  public void setEosMlagConfiguration(@Nullable MlagConfiguration eosMlagConfiguration) {
-    _eosMlagConfiguration = eosMlagConfiguration;
-  }
-
-  public void setEosVxlan(AristaEosVxlan eosVxlan) {
-    _eosVxlan = eosVxlan;
-  }
-
   public void setFailover(boolean failover) {
     _failover = failover;
   }
@@ -1269,6 +1207,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
+
+    // Global confederation config
+    Long confederation = proc.getConfederation();
+    if (confederation != null && !proc.getConfederationMembers().isEmpty()) {
+      newBgpProcess.setConfederation(
+          new BgpConfederation(confederation, proc.getConfederationMembers()));
+    }
 
     /*
      * Create common bgp export policy. This policy encompasses network
@@ -1551,20 +1496,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       boolean ipv4 = lpg.getNeighborPrefix() != null;
       Ip updateSource = getUpdateSource(c, vrfName, lpg, updateSourceInterface, ipv4);
 
-      // Get default-originate generation policy (if Cisco) or export policy (if Arista)
-      String defaultOriginateExportMap = null;
+      // Get default-originate generation policy
       String defaultOriginateGenerationMap = null;
       if (lpg.getDefaultOriginate()) {
-        if (c.getConfigurationFormat() == ConfigurationFormat.ARISTA) {
-          defaultOriginateExportMap = lpg.getDefaultOriginateMap();
-        } else {
-          defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
-        }
+        defaultOriginateGenerationMap = lpg.getDefaultOriginateMap();
       }
 
       // Generate import and export policies
       String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, ipv4, defaultOriginateExportMap, c, _w);
+      generateBgpExportPolicy(lpg, vrfName, ipv4, c, _w);
 
       // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
@@ -1615,6 +1555,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         throw new VendorConversionException("Invalid BGP leaf neighbor type");
       }
       newNeighborBuilder.setBgpProcess(newBgpProcess);
+      newNeighborBuilder.setConfederation(proc.getConfederation());
 
       AddressFamilyCapabilities ipv4AfSettings =
           AddressFamilyCapabilities.builder()
@@ -1624,8 +1565,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAllowLocalAsIn(lpg.getAllowAsIn())
               .setAllowRemoteAsOut(firstNonNull(lpg.getDisablePeerAsCheck(), Boolean.TRUE))
               /*
-               * On Arista EOS, advertise-inactive is a command that we parse and extract;
-               *
                * On Cisco IOS, advertise-inactive is true by default. This can be modified by
                * "bgp suppress-inactive" command,
                * which we currently do not parse/extract. So we choose the default value here.
@@ -1633,8 +1572,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                * For other Cisco OS variations (e.g., IOS-XR) we did not find a similar command and for now,
                * we assume behavior to be identical to IOS family.
                */
-              .setAdvertiseInactive(
-                  _vendor.equals(ConfigurationFormat.ARISTA) ? lpg.getAdvertiseInactive() : true)
+              .setAdvertiseInactive(true)
               .setSendCommunity(lpg.getSendCommunity())
               .setSendExtendedCommunity(lpg.getSendExtendedCommunity())
               .build();
@@ -1660,300 +1598,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newBgpProcess;
   }
 
-  private org.batfish.datamodel.BgpProcess toEosBgpProcess(
-      Configuration c, AristaBgpProcess bgpGlobal, AristaBgpVrf bgpVrf) {
-    String vrfName = bgpVrf.getName();
-    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
-    int ebgpAdmin =
-        firstNonNull(
-            bgpVrf.getEbgpAdminDistance(),
-            RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat()));
-    int ibgpAdmin =
-        firstNonNull(
-            bgpVrf.getIbgpAdminDistance(),
-            RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat()));
-    org.batfish.datamodel.BgpProcess newBgpProcess =
-        new org.batfish.datamodel.BgpProcess(
-            AristaConversions.getBgpRouterId(
-                bgpVrf, v.getName(), c.getAllInterfaces(v.getName()), _w),
-            ebgpAdmin,
-            ibgpAdmin);
-
-    boolean multipath = firstNonNull(bgpVrf.getMaxPaths(), 1) > 1;
-    newBgpProcess.setMultipathEbgp(multipath);
-    newBgpProcess.setMultipathIbgp(multipath); // TODO is this correct? Seems like it.
-
-    // Arista `bestpath as-path multipath-relax` is enabled by default.
-    // https://www.arista.com/en/um-eos/eos-section-33-1-bgp-conceptual-overview#ww1296175 step 8
-    newBgpProcess.setMultipathEquivalentAsPathMatchMode(
-        firstNonNull(bgpVrf.getBestpathAsPathMultipathRelax(), Boolean.TRUE)
-            ? PATH_LENGTH
-            : EXACT_PATH);
-    BgpTieBreaker tieBreaker = BgpTieBreaker.ROUTER_ID; // default if not specified
-    if (bgpVrf.getBestpathTieBreaker() == AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH) {
-      tieBreaker = BgpTieBreaker.CLUSTER_LIST_LENGTH;
-    }
-    newBgpProcess.setTieBreaker(tieBreaker);
-
-    // If confederations are present, convert
-    if (bgpVrf.getConfederationIdentifier() != null) {
-      LongSpace peers =
-          firstNonNull(
-              bgpVrf.getConfederationPeers(),
-              LongSpace.of(firstNonNull(bgpVrf.getLocalAs(), bgpGlobal.getAsn())));
-      newBgpProcess.setConfederation(
-          // Assuming peers is a small space/set in most configs, so safe to enumerate
-          new BgpConfederation(bgpVrf.getConfederationIdentifier(), peers.enumerate()));
-    }
-
-    // Process vrf-level address family configuration, such as export policy.
-    if (bgpVrf.getDefaultIpv4Unicast()) {
-      // Handle default activation for v4 unicast.
-      bgpVrf.getOrCreateV4UnicastAf();
-    }
-    AristaBgpVrfIpv4UnicastAddressFamily ipv4af = bgpVrf.getV4UnicastAf();
-
-    // Next we build up the BGP common export policy.
-    RoutingPolicy bgpCommonExportPolicy =
-        new RoutingPolicy(Names.generatedBgpCommonExportPolicyName(vrfName), c);
-    c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
-
-    // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
-    if (ipv4af != null) {
-      Stream<Prefix> summaryOnlyNetworks =
-          bgpVrf.getV4aggregates().entrySet().stream()
-              .filter(e -> firstNonNull(e.getValue().getSummaryOnly(), Boolean.FALSE))
-              .map(Entry::getKey);
-      If suppressLonger = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
-      if (suppressLonger != null) {
-        bgpCommonExportPolicy.getStatements().add(suppressLonger);
-      }
-    }
-
-    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
-    Disjunction routesShouldBeExported = new Disjunction();
-    bgpCommonExportPolicy
-        .getStatements()
-        .add(
-            new If(
-                routesShouldBeExported,
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of()));
-    // This list of reasons to export a route will be built up over the remainder of this function.
-    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
-
-    // Generate and distribute aggregate routes.
-    if (ipv4af != null) {
-      for (Entry<Prefix, AristaBgpAggregateNetwork> e : bgpVrf.getV4aggregates().entrySet()) {
-        Prefix prefix = e.getKey();
-        AristaBgpAggregateNetwork agg = e.getValue();
-
-        // TODO: add agg here for, e.g., match-map
-        RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
-
-        GeneratedRoute.Builder gr =
-            GeneratedRoute.builder()
-                .setNetwork(prefix)
-                .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
-                .setGenerationPolicy(genPolicy.getName())
-                .setDiscard(true);
-
-        // Conditions to generate this route
-        List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
-        exportAggregateConditions.add(
-            new MatchPrefixSet(
-                DestinationNetwork.instance(),
-                new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-        exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-        // If defined, set attribute map for aggregate network
-        BooleanExpr weInterior = BooleanExprs.TRUE;
-        String attributeMapName = agg.getAttributeMap();
-        if (attributeMapName != null) {
-          RouteMap attributeMap = _routeMaps.get(attributeMapName);
-          if (attributeMap != null) {
-            // need to apply attribute changes if this specific route is matched
-            weInterior = new CallExpr(attributeMapName);
-            gr.setAttributePolicy(attributeMapName);
-          }
-        }
-        exportAggregateConditions.add(
-            bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
-
-        v.getGeneratedRoutes().add(gr.build());
-        // Do export a generated aggregate.
-        exportConditions.add(new Conjunction(exportAggregateConditions));
-      }
-    }
-
-    // Only redistribute default route if `default-information originate` is set.
-    //    BooleanExpr redistributeDefaultRoute =
-    //        ipv4af == null || !ipv4af.get() ? NOT_DEFAULT_ROUTE : BooleanExprs.TRUE;
-
-    // TODO: Export RIP routes that should be redistributed.
-
-    // Export static routes that should be redistributed.
-    AristaBgpRedistributionPolicy staticPolicy =
-        ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(STATIC);
-    if (staticPolicy != null) {
-      BooleanExpr filterByRouteMap =
-          Optional.ofNullable(staticPolicy.getRouteMap())
-              .filter(_routeMaps::containsKey)
-              .<BooleanExpr>map(CallExpr::new)
-              .orElse(BooleanExprs.TRUE);
-      List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.STATIC),
-              // TODO redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
-      Conjunction staticRedist = new Conjunction(conditions);
-      staticRedist.setComment("Redistribute static routes into BGP");
-      exportConditions.add(staticRedist);
-    }
-    // Export connected routes that should be redistributed.
-    AristaBgpRedistributionPolicy connectedPolicy =
-        ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(CONNECTED);
-    if (connectedPolicy != null) {
-      BooleanExpr filterByRouteMap =
-          Optional.ofNullable(connectedPolicy.getRouteMap())
-              .filter(_routeMaps::containsKey)
-              .<BooleanExpr>map(CallExpr::new)
-              .orElse(BooleanExprs.TRUE);
-      List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.CONNECTED),
-              // TODO redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
-      Conjunction connected = new Conjunction(conditions);
-      connected.setComment("Redistribute connected routes into BGP");
-      exportConditions.add(connected);
-    }
-
-    // Export OSPF routes that should be redistributed, to the best of our abilities in VI.
-    // Warn and skip if our VI model doesn't allow a particular type of redistribution
-    Map<AristaRedistributeType, MatchProtocol> protocolConversions =
-        ImmutableMap.of(
-            OSPF,
-                new MatchProtocol(
-                    RoutingProtocol.OSPF,
-                    RoutingProtocol.OSPF_IA,
-                    RoutingProtocol.OSPF_E1,
-                    RoutingProtocol.OSPF_E2),
-            OSPF_INTERNAL, new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA),
-            OSPF_EXTERNAL, new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2));
-
-    for (AristaRedistributeType type :
-        new AristaRedistributeType[] {
-          OSPF,
-          OSPF_INTERNAL,
-          OSPF_EXTERNAL,
-          OSPF_NSSA_EXTERNAL,
-          OSPF_NSSA_EXTERNAL_TYPE_1,
-          OSPF_NSSA_EXTERNAL_TYPE_2
-        }) {
-      AristaBgpRedistributionPolicy ospfPolicy =
-          ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(type);
-      if (ospfPolicy == null) {
-        continue;
-      }
-      if (protocolConversions.get(type) == null) {
-        _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
-        continue;
-      }
-      BooleanExpr filterByRouteMap =
-          Optional.ofNullable(ospfPolicy.getRouteMap())
-              .filter(_routeMaps::containsKey)
-              .<BooleanExpr>map(CallExpr::new)
-              .orElse(BooleanExprs.TRUE);
-      List<BooleanExpr> conditions =
-          ImmutableList.of(
-              protocolConversions.get(type),
-              // TODO redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
-      Conjunction ospf = new Conjunction(conditions);
-      ospf.setComment(String.format("Redistribute %s routes into BGP", type));
-      exportConditions.add(ospf);
-    }
-
-    // Now we add all the per-network export policies.
-    if (ipv4af != null) {
-      ipv4af
-          .getNetworks()
-          .forEach(
-              (prefix, networkConf) -> {
-                PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(prefix));
-                List<BooleanExpr> exportNetworkConditions =
-                    ImmutableList.of(
-                        new MatchPrefixSet(
-                            DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
-                        new Not(
-                            new MatchProtocol(
-                                RoutingProtocol.BGP,
-                                RoutingProtocol.IBGP,
-                                RoutingProtocol.AGGREGATE)),
-                        bgpRedistributeWithEnvironmentExpr(
-                            networkConf.getRouteMap() != null
-                                    && _routeMaps.containsKey(networkConf.getRouteMap())
-                                ? new CallExpr(networkConf.getRouteMap())
-                                : BooleanExprs.TRUE,
-                            OriginType.IGP));
-                newBgpProcess.addToOriginationSpace(exportSpace);
-                exportConditions.add(new Conjunction(exportNetworkConditions));
-              });
-    }
-
-    // Always export BGP or IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
-
-    // Finally, the export policy ends with returning false: do not export unmatched routes.
-    bgpCommonExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
-    //
-    //    // Generate BGP_NETWORK6_NETWORKS filter.
-    //    if (ipv6af != null) {
-    //      List<Route6FilterLine> lines =
-    //          ipv6af.getIpv6Networks().keySet().stream()
-    //              .map(p6 -> new Route6FilterLine(LineAction.PERMIT,
-    // Prefix6Range.fromPrefix6(p6)))
-    //              .collect(ImmutableList.toImmutableList());
-    //      Route6FilterList localFilter6 =
-    //          new Route6FilterList("~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~", lines);
-    //      c.getRoute6FilterLists().put(localFilter6.getName(), localFilter6);
-    //    }
-
-    // Process active neighbors first.
-    Map<Prefix, BgpActivePeerConfig> activeNeighbors =
-        AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
-    newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
-
-    // Process passive neighbors next
-    Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
-        AristaConversions.getPassiveNeighbors(
-            c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
-    newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
-
-    return newBgpProcess;
-  }
-
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
-
-  /**
-   * Returns the MTU that should be assigned to the given interface, taking into account
-   * vendor-specific conventions such as Arista subinterfaces.
-   */
-  private int getInterfaceMtu(Interface iface) {
-    if (_vendor == ConfigurationFormat.ARISTA) {
-      Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
-      if (m.matches()) {
-        String parentInterfaceName = m.group(1);
-        Interface parentInterface = _interfaces.get(parentInterfaceName);
-        if (parentInterface != null) {
-          return parentInterface.getMtu();
-        }
-      }
-    }
-
-    return iface.getMtu();
-  }
 
   /**
    * Get the {@link OspfNetwork} in the specified {@link OspfProcess} containing the specified
@@ -2046,7 +1691,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setDhcpRelayAddresses(ImmutableList.copyOf(iface.getDhcpRelayAddresses()));
     }
     newIface.setMlagId(iface.getMlagId());
-    newIface.setMtu(getInterfaceMtu(iface));
+    newIface.setMtu(iface.getMtu());
     newIface.setProxyArp(iface.getProxyArp());
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
@@ -2170,19 +1815,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       /*
        * Compute allowed VLANs:
        * - If allowed VLANs are set, honor them;
-       * - Otherwise prune allowed VLANs based on configured trunk groups (if any).
-       *
-       * https://www.arista.com/en/um-eos/eos-section-19-3-vlan-configuration-procedures#ww1152330
        */
       if (iface.getAllowedVlans() != null) {
         newIface.setAllowedVlans(iface.getAllowedVlans());
-      } else if (!iface.getVlanTrunkGroups().isEmpty()) {
-        newIface.setAllowedVlans(
-            iface.getVlanTrunkGroups().stream()
-                .map(_eosVlanTrunkGroups::get)
-                .map(VlanTrunkGroup::getVlans)
-                .reduce(IntegerSpace::union)
-                .get());
       } else {
         newIface.setAllowedVlans(Interface.ALL_VLANS);
       }
@@ -2209,16 +1844,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
     List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
-    List<AristaDynamicSourceNat> aristaDynamicSourceNats =
-        firstNonNull(iface.getAristaNats(), ImmutableList.of());
-    int natTypes =
-        (aristaDynamicSourceNats.isEmpty() ? 0 : 1)
-            + (ciscoAsaNats.isEmpty() ? 0 : 1)
-            + (ciscoIosNats.isEmpty() ? 0 : 1);
+    int natTypes = (ciscoAsaNats.isEmpty() ? 0 : 1) + (ciscoIosNats.isEmpty() ? 0 : 1);
     if (natTypes > 1) {
       _w.redFlag("Multiple NAT types should not be present in same configuration.");
-    } else if (!aristaDynamicSourceNats.isEmpty()) {
-      generateAristaDynamicSourceNats(newIface, aristaDynamicSourceNats);
     } else if (!ciscoAsaNats.isEmpty()) {
       generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
     } else if (!ciscoIosNats.isEmpty()) {
@@ -2271,17 +1899,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else {
       throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
     }
-  }
-
-  private void generateAristaDynamicSourceNats(
-      org.batfish.datamodel.Interface newIface,
-      List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
-    Ip interfaceIp = newIface.getConcreteAddress().getIp();
-    Transformation next = null;
-    for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
-      next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
-    }
-    newIface.setOutgoingTransformation(next);
   }
 
   private void generateCiscoAsaNatTransformations(
@@ -2383,8 +2000,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (zoneOutgoingAcl == null) {
       return;
     }
-    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
-    if (oldOutgoingFilterName == null) {
+    IpAccessList oldOutgoingFilter = newIface.getOutgoingFilter();
+    if (oldOutgoingFilter == null) {
       // No interface outbound filter
       newIface.setOutgoingFilter(zoneOutgoingAcl);
       return;
@@ -2393,7 +2010,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Construct a new ACL that combines filters, i.e. 1 AND 2
     // 1) the interface outbound filter, if it exists
     // 2) the zone filter
-
+    String oldOutgoingFilterName = oldOutgoingFilter.getName();
     IpAccessList combinedOutgoingAcl =
         IpAccessList.builder()
             .setOwner(c)
@@ -2427,7 +2044,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (interSecurityLevelAcl == null) {
       return;
     }
-    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
+    IpAccessList oldOutgoingFilter = newIface.getOutgoingFilter();
+    String oldOutgoingFilterName = oldOutgoingFilter == null ? null : oldOutgoingFilter.getName();
 
     // Construct a new ACL that:
     // 1) rejects if the (inter- or intra-) security-level policy rejects
@@ -2612,10 +2230,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
     }
 
-    // Do not redistribute the default route on Cisco. For Arista, no such restriction exists
-    if (_vendor != ConfigurationFormat.ARISTA) {
-      ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
-    }
+    // Do not redistribute the default route.
+    ospfExportConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
 
     ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();
 
@@ -2623,17 +2239,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ospfExportStatements.add(new SetOspfMetricType(policy.getMetricType()));
     long metric =
         policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(_vendor, protocol);
-    // On Arista, the default route gets a special metric of 1.
-    // https://www.arista.com/en/um-eos/eos-section-30-5-ospfv2-commands#ww1153059
-    if (_vendor == ConfigurationFormat.ARISTA) {
-      ospfExportStatements.add(
-          new If(
-              Common.matchDefaultRoute(),
-              ImmutableList.of(new SetMetric(new LiteralLong(1L))),
-              ImmutableList.of(new SetMetric(new LiteralLong(metric)))));
-    } else {
-      ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
-    }
+    ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
 
     // If only classful routes should be redistributed, filter to classful routes.
     if (policy.getOnlyClassfulRoutes()) {
@@ -2901,19 +2507,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface, networkType));
 
     iface.setOspfSettings(ospfSettings.build());
-  }
-
-  @Nullable
-  private Mlag toMlag(@Nullable MlagConfiguration mlag) {
-    if (mlag == null || mlag.getDomainId() == null) {
-      return null;
-    }
-    return Mlag.builder()
-        .setId(mlag.getDomainId())
-        .setPeerAddress(mlag.getPeerAddress())
-        .setPeerInterface(mlag.getPeerLink())
-        .setLocalInterface(mlag.getLocalInterface())
-        .build();
   }
 
   private org.batfish.datamodel.ospf.StubSettings toStubSettings(StubSettings stubSettings) {
@@ -3631,14 +3224,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // apply vrrp settings to interfaces
     applyVrrp(c);
 
-    // convert MLAG configs
-    if (_vendor.equals(ConfigurationFormat.ARISTA)) {
-      Mlag viMlag = toMlag(_eosMlagConfiguration);
-      if (viMlag != null) {
-        c.setMlags(ImmutableMap.of(viMlag.getId(), viMlag));
-      }
-    }
-
     // ISAKMP policies to IKE Phase 1 proposals
     for (Entry<Integer, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
       IkePhase1Proposal ikePhase1Proposal = toIkePhase1Proposal(e.getValue());
@@ -3775,24 +3360,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setIsisProcess(newIsisProcess);
           }
 
-          ///////////////////////////////////////////////
-          // BEGIN Convert BGP process for various vendors
-          // Hybrid
+          // convert bgp process
           BgpProcess bgpProcess = vrf.getBgpProcess();
           if (bgpProcess != null) {
             org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
             newVrf.setBgpProcess(newBgpProcess);
           }
-
-          // Arista
-          AristaBgpVrf aristaBgp = _aristaBgp == null ? null : _aristaBgp.getVrfs().get(vrfName);
-          if (aristaBgp != null) {
-            org.batfish.datamodel.BgpProcess newBgpProcess =
-                toEosBgpProcess(c, getAristaBgp(), aristaBgp);
-            newVrf.setBgpProcess(newBgpProcess);
-          }
-          // END Convert BGP process for various vendors
-          ///////////////////////////////////////////////
         });
 
     /*
@@ -3826,65 +3399,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             }
           }
         });
-
-    // convert Arista EOS VXLAN
-    if (_eosVxlan != null) {
-      String sourceIfaceName = _eosVxlan.getSourceInterface();
-      Interface sourceIface = sourceIfaceName == null ? null : _interfaces.get(sourceIfaceName);
-
-      _eosVxlan
-          .getVlanVnis()
-          .forEach(
-              (vlan, vni) -> {
-                org.batfish.datamodel.Vrf vrf = getVrfForVlan(c, vlan).orElse(c.getDefaultVrf());
-                vrf.addLayer2Vni(toL2Vni(_eosVxlan, vni, vlan, sourceIface));
-              });
-      _eosVxlan
-          .getVrfToVni()
-          .forEach(
-              (vrfName, vni) ->
-                  Optional.ofNullable(c.getVrfs().get(vrfName))
-                      .ifPresent(vrf -> vrf.addLayer3Vni(toL3Vni(_eosVxlan, vni, sourceIface))));
-    }
-
-    // For EOS, if a VRF has VNIs but no BGP process, create a dummy BGP processes in VI.
-    if (_eosVxlan != null) {
-      // handle L3 VNIs
-      _eosVxlan
-          .getVrfToVni()
-          .forEach(
-              (vrfName, vni) -> {
-                org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(vrfName);
-                if (viVrf != null && viVrf.getBgpProcess() == null) {
-                  viVrf.setBgpProcess(
-                      org.batfish.datamodel.BgpProcess.builder()
-                          .setRouterId(Ip.ZERO)
-                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
-                          .build());
-                }
-              });
-      // handle L2 VNIs
-      org.batfish.datamodel.BgpProcess defaultVrfBgpProc = c.getDefaultVrf().getBgpProcess();
-      c.getVrfs()
-          .values()
-          .forEach(
-              vrf -> {
-                if (!vrf.getLayer2Vnis().isEmpty() // have L2 vnis in this VRF
-                    && vrf.getBgpProcess() == null // no bgp process in this VRF
-                    && defaultVrfBgpProc != null // Default VRF has a BGP process
-                    && defaultVrfBgpProc
-                        .allPeerConfigsStream()
-                        .map(BgpPeerConfig::getEvpnAddressFamily)
-                        // Default VRF has peers with EVPN enabled (so not just static vxlan)
-                        .anyMatch(Objects::nonNull)) {
-                  vrf.setBgpProcess(
-                      org.batfish.datamodel.BgpProcess.builder()
-                          .setRouterId(Ip.ZERO)
-                          .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
-                          .build());
-                }
-              });
-    }
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
@@ -3966,6 +3480,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
+        CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS,
         CiscoStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
         CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
@@ -3974,6 +3489,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.NTP_ACCESS_GROUP,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
+        CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS_IPV6,
         CiscoStructureUsage.SSH_IPV6_ACL,
         CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
         CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
@@ -4230,67 +3746,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     return ImmutableList.of(c);
-  }
-
-  private static Layer2Vni toL2Vni(
-      @Nonnull AristaEosVxlan vxlan, int vni, int vlan, @Nullable Interface sourceInterface) {
-    Ip sourceAddress =
-        sourceInterface == null
-            ? null
-            : sourceInterface.getAddress() == null ? null : sourceInterface.getAddress().getIp();
-
-    // Prefer VLAN-specific or general flood address (in that order) over multicast address
-    SortedSet<Ip> bumTransportIps =
-        firstNonNull(vxlan.getVlanFloodAddresses().get(vlan), vxlan.getFloodAddresses());
-
-    // default to unicast flooding unless specified otherwise
-    BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
-
-    // Check if multicast is enabled
-    Ip multicastAddress = vxlan.getMulticastGroup();
-    if (bumTransportIps.isEmpty() && multicastAddress != null) {
-      bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
-      bumTransportIps = ImmutableSortedSet.of(multicastAddress);
-    }
-
-    return Layer2Vni.builder()
-        .setBumTransportIps(bumTransportIps)
-        .setBumTransportMethod(bumTransportMethod)
-        .setSourceAddress(sourceAddress)
-        .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
-        .setVlan(vlan)
-        .setVni(vni)
-        .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
-        .build();
-  }
-
-  private static Layer3Vni toL3Vni(
-      @Nonnull AristaEosVxlan vxlan, @Nonnull Integer vni, @Nullable Interface sourceInterface) {
-    Ip sourceAddress =
-        sourceInterface == null
-            ? null
-            : sourceInterface.getAddress() == null ? null : sourceInterface.getAddress().getIp();
-
-    SortedSet<Ip> bumTransportIps = vxlan.getFloodAddresses();
-
-    // default to unicast flooding unless specified otherwise
-    BumTransportMethod bumTransportMethod = BumTransportMethod.UNICAST_FLOOD_GROUP;
-
-    // Check if multicast is enabled
-    Ip multicastAddress = vxlan.getMulticastGroup();
-    if (bumTransportIps.isEmpty() && multicastAddress != null) {
-      bumTransportMethod = BumTransportMethod.MULTICAST_GROUP;
-      bumTransportIps = ImmutableSortedSet.of(multicastAddress);
-    }
-
-    return Layer3Vni.builder()
-        .setBumTransportIps(bumTransportIps)
-        .setBumTransportMethod(bumTransportMethod)
-        .setSourceAddress(sourceAddress)
-        .setUdpPort(firstNonNull(vxlan.getUdpPort(), AristaEosVxlan.DEFAULT_UDP_PORT))
-        .setVni(vni)
-        .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
-        .build();
   }
 
   private void createInspectClassMapAcls(Configuration c) {

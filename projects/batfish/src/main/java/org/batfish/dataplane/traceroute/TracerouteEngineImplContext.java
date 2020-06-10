@@ -2,9 +2,11 @@ package org.batfish.dataplane.traceroute;
 
 import static org.batfish.dataplane.traceroute.FlowTracer.initialFlowTracer;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIngressInterface;
+import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByOriginatingVrf;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +47,7 @@ public class TracerouteEngineImplContext {
   private final Map<String, Configuration> _configurations;
   private final DataPlane _dataPlane;
   private final Multimap<NodeInterfacePair, FirewallSessionTraceInfo> _sessionsByIngressInterface;
+  private final Map<String, Multimap<String, FirewallSessionTraceInfo>> _sessionsByOriginatingVrf;
   private final Map<String, Map<String, Fib>> _fibs;
   private final Set<Flow> _flows;
   private final ForwardingAnalysis _forwardingAnalysis;
@@ -65,6 +68,7 @@ public class TracerouteEngineImplContext {
     _ignoreFilters = ignoreFilters;
     _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
+    _sessionsByOriginatingVrf = buildSessionsByOriginatingVrf(sessions);
     _topology = topology;
   }
 
@@ -162,8 +166,13 @@ public class TracerouteEngineImplContext {
     return _ignoreFilters;
   }
 
-  Collection<FirewallSessionTraceInfo> getSessions(String node, String inputIface) {
+  Collection<FirewallSessionTraceInfo> getSessionsForIncomingInterface(
+      String node, String inputIface) {
     return _sessionsByIngressInterface.get(NodeInterfacePair.of(node, inputIface));
+  }
+
+  Collection<FirewallSessionTraceInfo> getSessionsForOriginatingVrf(String node, String vrf) {
+    return _sessionsByOriginatingVrf.getOrDefault(node, ImmutableMultimap.of()).get(vrf);
   }
 
   /**
@@ -179,6 +188,12 @@ public class TracerouteEngineImplContext {
         .filter(e -> e.getValue().containsIp(ip, ImmutableMap.of()))
         .map(Entry::getKey)
         .findAny(); // Should be zero or one.
+  }
+
+  /** Returns true if the given VRF will accept traffic to the given IP. */
+  @Nonnull
+  boolean vrfAcceptsIp(String node, String vrf, Ip ip) {
+    return interfaceAcceptingIp(node, vrf, ip).isPresent();
   }
 
   /**

@@ -4,7 +4,8 @@ import static org.batfish.datamodel.PacketHeaderConstraintsUtil.DEFAULT_PACKET_L
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import net.sf.javabdd.BDD;
@@ -27,7 +28,9 @@ public final class BDDFlowConstraintGenerator {
      * Prefers TCP over UDP over ICMP. Not currently different from {@link #APPLICATION}, but may
      * change.
      */
-    TESTFILTER
+    TESTFILTER,
+    /** Prefers UDP traceroute. */
+    TRACEROUTE
   }
 
   @VisibleForTesting static final Prefix PRIVATE_SUBNET_10 = Prefix.parse("10.0.0.0/8");
@@ -42,6 +45,9 @@ public final class BDDFlowConstraintGenerator {
   @VisibleForTesting
   static final Prefix RESERVED_DOCUMENTATION_203 = Prefix.parse("203.0.113.0/24");
 
+  static final int UDP_TRACEROUTE_FIRST_PORT = 33434;
+  static final int UDP_TRACEROUTE_LAST_PORT = 33534;
+
   private final BDDPacket _bddPacket;
   private final BDDOps _bddOps;
   private final List<BDD> _icmpConstraints;
@@ -49,14 +55,16 @@ public final class BDDFlowConstraintGenerator {
   private final List<BDD> _tcpConstraints;
   private final BDD _defaultPacketLength;
   private final List<BDD> _ipConstraints;
+  private final BDD _udpTraceroute;
 
   BDDFlowConstraintGenerator(BDDPacket pkt) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       _bddPacket = pkt;
       _bddOps = new BDDOps(pkt.getFactory());
       _defaultPacketLength = _bddPacket.getPacketLength().value(DEFAULT_PACKET_LENGTH);
+      _udpTraceroute = computeUdpTraceroute();
       _icmpConstraints = computeICMPConstraint();
       _udpConstraints = computeUDPConstraints();
       _tcpConstraints = computeTCPConstraints();
@@ -88,6 +96,23 @@ public final class BDDFlowConstraintGenerator {
         _bddOps.and(tcp, tcpPort.value(0).not()));
   }
 
+  private List<BDD> tcpFlagPreferences(BDD tcp) {
+    return ImmutableList.of(
+        // Force all the rarely used flags off
+        _bddOps.and(tcp, _bddPacket.getTcpCwr().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpEce().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpPsh().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpUrg().not()),
+        // Less rarely used flags
+        _bddOps.and(tcp, _bddPacket.getTcpFin().not()),
+        // Sometimes used flags
+        _bddOps.and(tcp, _bddPacket.getTcpRst().not()),
+        // Prefer SYN, SYN_ACK, ACK
+        _bddOps.and(tcp, _bddPacket.getTcpSyn(), _bddPacket.getTcpAck().not()),
+        _bddOps.and(tcp, _bddPacket.getTcpAck(), _bddPacket.getTcpSyn()),
+        _bddOps.and(tcp, _bddPacket.getTcpAck()));
+  }
+
   // Get TCP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
   private List<BDD> computeTCPConstraints() {
@@ -102,9 +127,11 @@ public final class BDDFlowConstraintGenerator {
         // First, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
         .add(_bddOps.and(tcp, srcPortEphemeral, dstPortEphemeral.not()))
         .add(_bddOps.and(tcp, srcPortEphemeral.not(), dstPortEphemeral))
-        // Next, execute port preferences
+        // Next, execute port preferences.
         .addAll(tcpPortPreferences(tcp, srcPort))
         .addAll(tcpPortPreferences(tcp, dstPort))
+        // Next execute flag preferences.
+        .addAll(tcpFlagPreferences(tcp))
         // Anything TCP.
         .add(tcp)
         .build();
@@ -119,6 +146,16 @@ public final class BDDFlowConstraintGenerator {
         _bddOps.and(udp, tcpPort.value(0).not()));
   }
 
+  private BDD computeUdpTraceroute() {
+    BDDInteger dstPort = _bddPacket.getDstPort();
+    BDDInteger srcPort = _bddPacket.getSrcPort();
+    BDD udp = _bddPacket.getIpProtocol().value(IpProtocol.UDP);
+    return _bddOps.and(
+        udp,
+        dstPort.range(UDP_TRACEROUTE_FIRST_PORT, UDP_TRACEROUTE_LAST_PORT),
+        srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()));
+  }
+
   // Get UDP packets with special named ports, trying to find cases where only one side is
   // ephemeral.
   private List<BDD> computeUDPConstraints() {
@@ -131,10 +168,7 @@ public final class BDDFlowConstraintGenerator {
 
     return ImmutableList.<BDD>builder()
         // Try for UDP traceroute.
-        .add(
-            _bddOps.and(
-                udp,
-                dstPort.range(33434, 33534).and(srcPort.geq(NamedPort.EPHEMERAL_LOWEST.number()))))
+        .add(_udpTraceroute)
         // Next, try to nudge src and dst port apart. E.g., if one is ephemeral the other is not.
         .add(_bddOps.and(udp, srcPortEphemeral, dstPortEphemeral.not()))
         .add(_bddOps.and(udp, srcPortEphemeral.not(), dstPortEphemeral))
@@ -204,6 +238,14 @@ public final class BDDFlowConstraintGenerator {
         return ImmutableList.<BDD>builder()
             .addAll(_tcpConstraints)
             .addAll(_udpConstraints)
+            .addAll(_icmpConstraints)
+            .add(_defaultPacketLength)
+            .addAll(_ipConstraints)
+            .build();
+      case TRACEROUTE:
+        return ImmutableList.<BDD>builder()
+            .addAll(_udpConstraints)
+            .addAll(_tcpConstraints)
             .addAll(_icmpConstraints)
             .add(_defaultPacketLength)
             .addAll(_ipConstraints)

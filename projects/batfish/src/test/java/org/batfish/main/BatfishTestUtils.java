@@ -1,10 +1,18 @@
 package org.batfish.main;
 
+import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_CONFIGURATIONS_DIR;
+import static org.batfish.common.BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES;
+import static org.batfish.common.BfConsts.RELPATH_HOST_CONFIGS_DIR;
+import static org.batfish.common.util.Resources.readResourceBytes;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
@@ -17,7 +25,6 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -25,11 +32,11 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
-import org.batfish.identifiers.FileBasedIdResolver;
 import org.batfish.identifiers.IdResolver;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.batfish.main.Batfish.TestrigSettings;
+import org.batfish.identifiers.StorageBasedIdResolver;
+import org.batfish.storage.FileBasedStorage;
 import org.batfish.storage.StorageProvider;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.rules.TemporaryFolder;
@@ -42,10 +49,10 @@ public class BatfishTestUtils {
   public static final NetworkSnapshot TEST_REFERENCE_SNAPSHOT =
       new NetworkSnapshot(new NetworkId("testnet"), new SnapshotId("testrefss"));
 
-  private static class TestFileBasedIdResolver extends FileBasedIdResolver {
+  private static class TestStorageBasedIdResolver extends StorageBasedIdResolver {
 
-    public TestFileBasedIdResolver(Path storageBase) {
-      super(storageBase);
+    public TestStorageBasedIdResolver(Path storageBase) {
+      super(new FileBasedStorage(storageBase, null));
     }
   }
 
@@ -88,7 +95,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeVendorConfigurationCache(),
             null,
-            new TestFileBasedIdResolver(settings.getStorageBase()));
+            new TestStorageBasedIdResolver(settings.getStorageBase()));
     if (!configurations.isEmpty()) {
       batfish.initializeTopology(batfish.getSnapshot());
     }
@@ -122,7 +129,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeVendorConfigurationCache(),
             null,
-            new TestFileBasedIdResolver(settings.getStorageBase()));
+            new TestStorageBasedIdResolver(settings.getStorageBase()));
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
       batfish.initializeTopology(TEST_SNAPSHOT);
@@ -160,13 +167,13 @@ public class BatfishTestUtils {
    */
   public static Batfish getBatfishFromTestrigText(
       TestrigText testrigText, TemporaryFolder tempFolder) throws IOException {
-    Map<String, String> awsText = testrigText.getAwsText();
-    Map<String, String> bgpTablesText = testrigText.getBgpTablesText();
-    Map<String, String> configurationText = testrigText.getConfigurationText();
-    Map<String, String> hostsText = testrigText.getHostsText();
-    Map<String, String> iptablesFilesText = testrigText.getIptablesFilesText();
-    String layer1TopologyText = testrigText.getLayer1TopologyText();
-    String runtimeDataText = testrigText.getRuntimeDataText();
+    Map<String, byte[]> awsBytes = testrigText.getAwsBytes();
+    Map<String, byte[]> bgpTablesBytes = testrigText.getBgpTablesBytes();
+    Map<String, byte[]> configurationBytes = testrigText.getConfigurationBytes();
+    Map<String, byte[]> hostsBytes = testrigText.getHostsBytes();
+    Map<String, byte[]> iptablesFilesBytes = testrigText.getIptablesFilesBytes();
+    byte[] layer1TopologyBytes = testrigText.getLayer1TopologyBytes();
+    byte[] runtimeDataBytes = testrigText.getRuntimeDataBytes();
 
     Settings settings = new Settings(new String[] {});
     configureBatfishTestSettings(settings);
@@ -182,23 +189,28 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeVendorConfigurationCache(),
             null,
-            new TestFileBasedIdResolver(settings.getStorageBase()));
-    TestrigSettings snapshotTr = batfish.getSnapshotTestrigSettings();
-    Path testrigPath = snapshotTr.getInputPath();
-    snapshotTr.getOutputPath().toFile().mkdirs();
-    writeTemporaryTestrigFiles(
-        configurationText, testrigPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR));
-    writeTemporaryTestrigFiles(awsText, testrigPath.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(bgpTablesText, snapshotTr.getEnvironmentBgpTablesPath());
-    writeTemporaryTestrigFiles(hostsText, testrigPath.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR));
-    writeTemporaryTestrigFiles(iptablesFilesText, testrigPath.resolve("iptables"));
-    if (layer1TopologyText != null) {
-      writeTemporaryTestrigFiles(
-          ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyText), testrigPath);
+            new TestStorageBasedIdResolver(settings.getStorageBase()));
+    StorageProvider storage = new FileBasedStorage(settings.getStorageBase(), batfish.getLogger());
+    writeTemporarySnapshotInputFiles(
+        configurationBytes, RELPATH_CONFIGURATIONS_DIR, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(awsBytes, RELPATH_AWS_CONFIGS_DIR, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(
+        bgpTablesBytes, RELPATH_ENVIRONMENT_BGP_TABLES, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(hostsBytes, RELPATH_HOST_CONFIGS_DIR, storage, TEST_SNAPSHOT);
+    writeTemporarySnapshotInputFiles(iptablesFilesBytes, "iptables", storage, TEST_SNAPSHOT);
+    if (layer1TopologyBytes != null) {
+      writeTemporarySnapshotInputFiles(
+          ImmutableMap.of(BfConsts.RELPATH_L1_TOPOLOGY_PATH, layer1TopologyBytes),
+          "",
+          storage,
+          TEST_SNAPSHOT);
     }
-    if (runtimeDataText != null) {
-      writeTemporaryTestrigFiles(
-          ImmutableMap.of(BfConsts.RELPATH_RUNTIME_DATA_FILE, runtimeDataText), testrigPath);
+    if (runtimeDataBytes != null) {
+      writeTemporarySnapshotInputFiles(
+          ImmutableMap.of(BfConsts.RELPATH_RUNTIME_DATA_FILE, runtimeDataBytes),
+          "",
+          storage,
+          TEST_SNAPSHOT);
     }
     registerDataPlanePlugins(batfish);
     return batfish;
@@ -275,13 +287,13 @@ public class BatfishTestUtils {
 
   public static Batfish getBatfishForTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
-    SortedMap<String, String> configurationTextMap = new TreeMap<>();
+    SortedMap<String, byte[]> configurationBytesMap = new TreeMap<>();
     for (String configName : configurationNames) {
-      String configurationText = CommonUtil.readResource(configName);
-      configurationTextMap.put(new File(configName).getName(), configurationText);
+      byte[] configurationBytes = readResourceBytes(configName);
+      configurationBytesMap.put(new File(configName).getName(), configurationBytes);
     }
     return BatfishTestUtils.getBatfishFromTestrigText(
-        TestrigText.builder().setConfigurationText(configurationTextMap).build(), folder);
+        TestrigText.builder().setConfigurationBytes(configurationBytesMap).build(), folder);
   }
 
   public static SortedMap<String, Configuration> parseTextConfigs(
@@ -290,13 +302,21 @@ public class BatfishTestUtils {
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
-  private static void writeTemporaryTestrigFiles(
-      @Nullable Map<String, String> filesText, Path outputDirectory) {
-    if (filesText != null) {
-      filesText.forEach(
-          (filename, text) -> {
-            outputDirectory.toFile().mkdirs();
-            CommonUtil.writeFile(outputDirectory.resolve(filename), text);
+  private static void writeTemporarySnapshotInputFiles(
+      @Nullable Map<String, byte[]> filesBytes,
+      String keyPrefix,
+      StorageProvider storage,
+      NetworkSnapshot snapshot) {
+    if (filesBytes != null) {
+      filesBytes.forEach(
+          (filename, bytes) -> {
+            String key =
+                keyPrefix.isEmpty() ? filename : String.format("%s/%s", keyPrefix, filename);
+            try {
+              storage.storeSnapshotInputObject(new ByteArrayInputStream(bytes), key, snapshot);
+            } catch (IOException e) {
+              throw new UncheckedIOException(e);
+            }
           });
     }
   }

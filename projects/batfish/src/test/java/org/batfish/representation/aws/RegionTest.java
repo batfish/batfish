@@ -23,10 +23,10 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -154,9 +154,10 @@ public class RegionTest {
             .setOwner(c)
             .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
             .build();
-    Map<String, Configuration> configurationMap = ImmutableMap.of(c.getHostname(), c);
+    ConvertedConfiguration cfg = new ConvertedConfiguration();
+    cfg.addNode(c);
     Region region = createTestRegion();
-    region.applyInstanceInterfaceAcls(configurationMap, new Warnings());
+    region.applyInstanceInterfaceAcls(cfg, new Warnings());
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-1~sg-001~"));
@@ -196,9 +197,10 @@ public class RegionTest {
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
         .build();
-    Map<String, Configuration> configurationMap = ImmutableMap.of(c.getHostname(), c);
     Region region = createTestRegion();
-    region.applyInstanceInterfaceAcls(configurationMap, new Warnings());
+    ConvertedConfiguration cfg = new ConvertedConfiguration();
+    cfg.addNode(c);
+    region.applyInstanceInterfaceAcls(cfg, new Warnings());
     IpAccessList ingressAcl = c.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~");
 
     Flow permittedFlow =
@@ -290,5 +292,16 @@ public class RegionTest {
                 ImmutableMap.of())
             .visit(antiSpoofingLine),
         equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testGetAddresses() {
+    Address addr1 = new Address(Ip.parse("1.2.3.4"), "i-1234", Ip.parse("4.3.2.1"));
+    Address addr2 = new Address(Ip.parse("11.22.33.44"), null, null);
+    Region region =
+        Region.builder("r1")
+            .setAddresses(ImmutableMap.of("1.2.3.4", addr1, "11.22.33.44", addr2))
+            .build();
+    assertThat(region.getAddresses(), equalTo(ImmutableSet.of(addr1, addr2)));
   }
 }

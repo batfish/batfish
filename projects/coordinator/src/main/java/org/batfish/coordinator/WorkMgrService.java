@@ -11,7 +11,6 @@ import io.opentracing.util.GlobalTracer;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +44,6 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
-import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -259,7 +257,7 @@ public class WorkMgrService {
 
       return successResponse(new JSONObject().put("result", "successfully configured analysis"));
 
-    } catch (IllegalArgumentException | AccessControlException e) {
+    } catch (IllegalArgumentException | AccessControlException | IOException e) {
       _logger.errorf("WMS:configureAnalysis exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
@@ -1268,100 +1266,6 @@ public class WorkMgrService {
     }
   }
 
-  /**
-   * Fetches the specified object from the specified network, snapshot
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The network in which the object resides
-   * @param snapshotName The snapshot in which the object resides
-   * @param objectName The name of the object
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_GET_OBJECT)
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  @Deprecated
-  public Response getObject(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName) {
-    try {
-      _logger.infof("WMS:getObject %s --> %s\n", snapshotName, objectName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-      checkStringParam(objectName, "Object name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      java.nio.file.Path file =
-          Main.getWorkMgr().getTestrigObject(networkName, snapshotName, objectName);
-
-      if (file == null || !Files.exists(file)) {
-        return Response.status(Response.Status.NOT_FOUND)
-            .entity("File not found")
-            .type(MediaType.TEXT_PLAIN)
-            .build();
-      }
-
-      String filename = file.getFileName().toString();
-      return Response.ok(file.toFile(), MediaType.APPLICATION_OCTET_STREAM)
-          .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
-          .header(CoordConsts.SVC_FILENAME_HDR, filename)
-          .build();
-    } catch (IllegalArgumentException | AccessControlException e) {
-      return Response.status(Response.Status.BAD_REQUEST)
-          .entity(e.getMessage())
-          .type(MediaType.TEXT_PLAIN)
-          .build();
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:getObject exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-          .entity(e.getCause())
-          .type(MediaType.TEXT_PLAIN)
-          .build();
-    }
-  }
-
-  @POST
-  @Path(CoordConsts.SVC_RSC_GET_PARSING_RESULTS)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getParsingResults(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName) {
-    try {
-      _logger.infof("WMS:getParsingResults %s %s %s\n", apiKey, networkName, snapshotName);
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      return successResponse(Main.getWorkMgr().getParsingResults(networkName, snapshotName));
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:getParsingResults exception for apikey:%s in network:%s, snapshot:%s; exception:%s",
-          apiKey, networkName, snapshotName, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
   @POST
   @Path(CoordConsts.SVC_RSC_GET_QUESTION_TEMPLATES)
   @Produces(MediaType.APPLICATION_JSON)
@@ -1441,7 +1345,12 @@ public class WorkMgrService {
       NetworkId networkId = work.getDetails().getNetworkId();
       Optional<String> networkOpt =
           Main.getWorkMgr().getNetworkNames().stream()
-              .filter(n -> Main.getWorkMgr().getIdManager().getNetworkId(n).equals(networkId))
+              .filter(
+                  n ->
+                      Main.getWorkMgr()
+                          .getIdManager()
+                          .getNetworkId(n)
+                          .equals(Optional.of(networkId)))
               .findFirst();
       checkArgument(networkOpt.isPresent(), "Invalid network ID: %s", networkId);
 
@@ -1515,7 +1424,7 @@ public class WorkMgrService {
   }
 
   /**
-   * Kill the specified work
+   * Here for backwards compatibility. Throws exception because it never worked correctly.
    *
    * @param apiKey The API key of the client
    * @param clientVersion The version of the client
@@ -1529,34 +1438,8 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_WORKID) String workId) {
-    try {
-      _logger.infof("WMS:killWork %s\n", workId);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(workId, "work id");
-
-      checkApiKeyValidity(apiKey);
-
-      QueuedWork work = Main.getWorkMgr().getWork(UUID.fromString(workId));
-
-      if (work == null) {
-        return failureResponse("work with the specified id does not exist or is not inaccessible");
-      }
-
-      checkNetworkAccessibility(apiKey, work.getWorkItem().getNetwork());
-
-      boolean killed = Main.getWorkMgr().killWork(work);
-
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_RESULT, killed));
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:killWork exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:killWork exception: %s", stackTrace);
-      return failureResponse(e.getMessage());
-    }
+    // TODO: remove this api call
+    throw new UnsupportedOperationException();
   }
 
   /**
@@ -1767,116 +1650,6 @@ public class WorkMgrService {
       _logger.errorf(
           "WMS:listQuestions exception for apikey:%s in network:%s; exception:%s",
           apiKey, networkName, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * List the snapshots under the specified network
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The name of the network whose snapshots are to be listed
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_LIST_SNAPSHOTS)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Deprecated
-  public JSONArray listSnapshots(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName) {
-    try {
-      _logger.infof("WMS:listSnapshots %s %s\n", apiKey, networkName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      JSONArray retArray = new JSONArray();
-
-      List<String> snapshotList = Main.getWorkMgr().listSnapshots(networkName);
-      checkArgument(snapshotList != null, String.format("Network '%s' not found", networkName));
-      for (String snapshot : snapshotList) {
-        try {
-          String snapshotInfo = Main.getWorkMgr().getTestrigInfo(networkName, snapshot);
-          SnapshotMetadata ssMetadata =
-              Main.getWorkMgr().getSnapshotMetadata(networkName, snapshot);
-
-          String metadataStr = BatfishObjectMapper.writeString(ssMetadata);
-          JSONObject jObject =
-              new JSONObject()
-                  .put(CoordConsts.SVC_KEY_SNAPSHOT_NAME, snapshot)
-                  .put(CoordConsts.SVC_KEY_SNAPSHOT_INFO, snapshotInfo)
-                  .put(CoordConsts.SVC_KEY_SNAPSHOT_METADATA, metadataStr);
-
-          retArray.put(jObject);
-        } catch (Exception e) {
-          _logger.warnf(
-              "Error listing snapshot %s in network %s: %s",
-              networkName, snapshot, Throwables.getStackTraceAsString(e));
-        }
-      }
-      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SNAPSHOT_LIST, retArray));
-    } catch (Exception e) {
-      _logger.errorf(
-          "WMS:listSnapshots exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, Throwables.getStackTraceAsString(e));
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * Upload a custom object under the specified network, snapshot.
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The name of the network in which the snapshot resides
-   * @param snapshotName The name of the snapshot under which to upload the object
-   * @param objectName The name of the object to upload
-   * @param fileStream The stream from which the object is read
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_PUT_OBJECT)
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @Produces(MediaType.APPLICATION_JSON)
-  @Deprecated
-  public JSONArray putObject(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_SNAPSHOT_NAME) String snapshotName,
-      @FormDataParam(CoordConsts.SVC_KEY_OBJECT_NAME) String objectName,
-      @FormDataParam(CoordConsts.SVC_KEY_FILE) InputStream fileStream) {
-    try {
-      _logger.infof("WMS:putObject %s %s %s / %s\n", apiKey, networkName, snapshotName, objectName);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(snapshotName, "Snapshot name");
-      checkStringParam(objectName, "Object name");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      Main.getWorkMgr().putObject(networkName, snapshotName, objectName, fileStream);
-
-      return successResponse(new JSONObject().put("result", "successfully uploaded custom object"));
-
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:putObject exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf("WMS:putObject exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
   }

@@ -1,5 +1,7 @@
 package org.batfish.grammar.f5_bigip_structured;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
 import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
@@ -183,7 +185,6 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Bgpv4Route;
@@ -337,7 +338,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   private @Nonnull F5BigipConfiguration parseVendorConfig(String filename) {
-    String src = CommonUtil.readResource(TESTCONFIGS_PREFIX + filename);
+    String src = readResource(TESTCONFIGS_PREFIX + filename, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     settings.setDisableUnrecognized(_disableUnrecognized);
@@ -406,7 +407,7 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + "bgp_e2e", "r1", "r2")
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -1066,8 +1067,8 @@ public final class F5BigipStructuredGrammarTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationText(SNAPSHOTS_PREFIX + snapshotName, natHostname)
-                .setHostsText(SNAPSHOTS_PREFIX + snapshotName, hostFilename)
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, natHostname)
+                .setHostsFiles(SNAPSHOTS_PREFIX + snapshotName, hostFilename)
                 .build(),
             _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();

@@ -7,6 +7,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasAddressFamilyCapabilities;
 import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasExportPolicy;
+import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasImportPolicy;
 import org.batfish.datamodel.matchers.AddressFamilyMatchersImpl.HasRouteReflectorClient;
 import org.hamcrest.Matcher;
 
@@ -27,6 +28,14 @@ public final class AddressFamilyMatchers {
    */
   public static @Nonnull Matcher<AddressFamily> hasExportPolicy(String expectedExportPolicy) {
     return new HasExportPolicy(equalTo(expectedExportPolicy));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link AddressFamily} has the specified {@code
+   * expectedImportPolicy}.
+   */
+  public static @Nonnull Matcher<AddressFamily> hasImportPolicy(String expectedImportPolicy) {
+    return new HasImportPolicy(equalTo(expectedImportPolicy));
   }
 
   /**

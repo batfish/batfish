@@ -27,7 +27,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -64,13 +65,12 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
-import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
-import org.batfish.datamodel.packet_policy.LiteralVrfName;
-import org.batfish.datamodel.packet_policy.VrfExprVisitor;
+import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
 import org.batfish.datamodel.transformation.ApplyAll;
 import org.batfish.datamodel.transformation.ApplyAny;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -91,6 +91,7 @@ import org.batfish.symbolic.state.DropNoRoute;
 import org.batfish.symbolic.state.DropNullRoute;
 import org.batfish.symbolic.state.ExitsNetwork;
 import org.batfish.symbolic.state.InsufficientInfo;
+import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NeighborUnreachable;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
@@ -104,6 +105,7 @@ import org.batfish.symbolic.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.OriginateInterface;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
 import org.batfish.symbolic.state.OriginateVrf;
+import org.batfish.symbolic.state.PbrFibLookup;
 import org.batfish.symbolic.state.PostInInterface;
 import org.batfish.symbolic.state.PostInVrf;
 import org.batfish.symbolic.state.PreInInterface;
@@ -223,6 +225,9 @@ public final class BDDReachabilityAnalysisFactory {
   /** node --&gt; vrf --&gt; interface --&gt; set of packets accepted by the interface */
   private final Map<String, Map<String, Map<String, BDD>>> _ifaceAcceptBDDs;
 
+  /** node --&gt; vrf --&gt; set of packets accepted by the vrf */
+  private final Map<String, Map<String, BDD>> _vrfAcceptBDDs;
+
   // node --> vrf --> nextVrf --> set of packets vrf delegates to nextVrf
   private final Map<String, Map<String, Map<String, BDD>>> _nextVrfBDDs;
 
@@ -238,9 +243,9 @@ public final class BDDReachabilityAnalysisFactory {
       IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory,
       boolean ignoreFilters,
       boolean initializeSessions) {
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("Construct BDDReachabilityAnalysisFactory").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("Construct BDDReachabilityAnalysisFactory").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       _bddPacket = packet;
       _one = packet.getFactory().one();
       _zero = packet.getFactory().zero();
@@ -279,6 +284,7 @@ public final class BDDReachabilityAnalysisFactory {
       _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
       _ifaceAcceptBDDs =
           computeIfaceAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
+      _vrfAcceptBDDs = computeVrfAcceptBDDs(); // must do this after populating _ifaceAcceptBDDs
       _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
       _interfacesToVrfsMap = computeInterfacesToVrfsMap(configs);
 
@@ -301,11 +307,31 @@ public final class BDDReachabilityAnalysisFactory {
               _exitsNetworkBDDs,
               _insufficientInfoBDDs,
               _ifaceAcceptBDDs,
+              _vrfAcceptBDDs,
               _routableBDDs,
               _nextVrfBDDs,
-              _nullRoutedBDDs,
-              _bddPacket.getFactory()::orAll);
+              _nullRoutedBDDs);
+    } finally {
+      span.finish();
     }
+  }
+
+  /**
+   * Computes VRF accept BDDs based on interface accept BDDs. Each VRF's accept BDD is the union of
+   * its interfaces' accept BDDs.
+   */
+  private Map<String, Map<String, BDD>> computeVrfAcceptBDDs() {
+    return toImmutableMap(
+        _ifaceAcceptBDDs,
+        Entry::getKey, // node name
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, // vrf name
+                vrfEntry ->
+                    _bddPacket
+                        .getFactory()
+                        .orAll(vrfEntry.getValue().values()))); // vrf's accept BDD
   }
 
   /**
@@ -317,11 +343,10 @@ public final class BDDReachabilityAnalysisFactory {
       BDDPacket bddPacket,
       Map<String, BDDSourceManager> bddSourceManagers,
       Map<String, Configuration> configs) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeAclBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.computeAclBDDs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           configs,
           Entry::getKey,
@@ -334,6 +359,8 @@ public final class BDDReachabilityAnalysisFactory {
                 Entry::getKey,
                 aclEntry -> Suppliers.memoize(() -> aclToBdd.toBdd(aclEntry.getValue())));
           });
+    } finally {
+      span.finish();
     }
   }
 
@@ -353,11 +380,10 @@ public final class BDDReachabilityAnalysisFactory {
 
   private static Map<String, Map<String, Supplier<BDD>>> computeAclDenyBDDs(
       Map<String, Map<String, Supplier<BDD>>> aclBDDs) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeAclDenyBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.computeAclDenyBDDs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           aclBDDs,
           Entry::getKey,
@@ -366,6 +392,8 @@ public final class BDDReachabilityAnalysisFactory {
                   nodeEntry.getValue(),
                   Entry::getKey,
                   aclEntry -> Suppliers.memoize(() -> aclEntry.getValue().get().not())));
+    } finally {
+      span.finish();
     }
   }
 
@@ -380,11 +408,12 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Map<String, Map<String, Transition>> computeBDDIncomingTransformations() {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeBDDIncomingTransformations")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           _configs,
           Entry::getKey, /* node */
@@ -397,15 +426,18 @@ public final class BDDReachabilityAnalysisFactory {
                 ifaceEntry ->
                     toTransition.toTransition(ifaceEntry.getValue().getIncomingTransformation()));
           });
+    } finally {
+      span.finish();
     }
   }
 
   private Map<String, Map<String, Transition>> computeBDDOutgoingTransformations() {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeBDDOutgoingTransformations")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           _configs,
           Entry::getKey, /* node */
@@ -418,16 +450,19 @@ public final class BDDReachabilityAnalysisFactory {
                 ifaceEntry ->
                     toTransition.toTransition(ifaceEntry.getValue().getOutgoingTransformation()));
           });
+    } finally {
+      span.finish();
     }
   }
 
   private static @Nonnull Map<String, Map<String, BDD>> computeNullRoutedBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeNullRoutedBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           forwardingAnalysis.getNullRoutedIps(),
           Entry::getKey /* hostname */,
@@ -437,16 +472,17 @@ public final class BDDReachabilityAnalysisFactory {
                   Entry::getKey /* vrf */,
                   nullRoutedIpsByVrfEntry ->
                       nullRoutedIpsByVrfEntry.getValue().accept(ipSpaceToBDD)));
+    } finally {
+      span.finish();
     }
   }
 
   private static Map<String, Map<String, BDD>> computeRoutableBDDs(
       ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeRoutableBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.computeRoutableBDDs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           forwardingAnalysis.getRoutableIps(),
           Entry::getKey,
@@ -455,6 +491,8 @@ public final class BDDReachabilityAnalysisFactory {
                   nodeEntry.getValue(),
                   Entry::getKey,
                   vrfEntry -> vrfEntry.getValue().accept(ipSpaceToBDD)));
+    } finally {
+      span.finish();
     }
   }
 
@@ -462,12 +500,12 @@ public final class BDDReachabilityAnalysisFactory {
   private Map<String, Map<String, PacketPolicyToBdd>> convertPacketPolicies(
       Map<String, Configuration> configs,
       IpsRoutedOutInterfacesFactory ipsRoutedOutInterfacesFactory) {
-
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.convertPacketPolicies")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           configs,
           Entry::getKey,
@@ -494,6 +532,8 @@ public final class BDDReachabilityAnalysisFactory {
                                             ipsRoutedOutInterfaces)));
                       })
                   .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
+    } finally {
+      span.finish();
     }
   }
 
@@ -511,11 +551,12 @@ public final class BDDReachabilityAnalysisFactory {
 
   private static Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>>
       computeArpTrueEdgeBDDs(ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeArpTrueEdgeBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           forwardingAnalysis.getArpTrueEdge(),
           Entry::getKey, // node
@@ -528,16 +569,19 @@ public final class BDDReachabilityAnalysisFactory {
                           vrfEntry.getValue(),
                           Entry::getKey,
                           edgeEntry -> edgeEntry.getValue().accept(ipSpaceToBDD))));
+    } finally {
+      span.finish();
     }
   }
 
   private static Map<String, Map<String, Map<String, BDD>>> computeDispositionBDDs(
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaceMap, IpSpaceToBDD ipSpaceToBDD) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeDispositionBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           ipSpaceMap,
           Entry::getKey,
@@ -550,6 +594,8 @@ public final class BDDReachabilityAnalysisFactory {
                           vrfEntry.getValue(),
                           Entry::getKey,
                           ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -625,6 +671,8 @@ public final class BDDReachabilityAnalysisFactory {
               String vrf = originateVrf.getVrf();
               PostInVrf postInVrf = new PostInVrf(hostname, vrf);
               BDD rootBdd = entry.getValue();
+              // Keep this edge's transition in sync with transition of session-matching edge,
+              // defined in SessionScopeFibLookupSessionEdges#visitOriginatingSessionScope.
               return new Edge(
                   originateVrf,
                   postInVrf,
@@ -676,9 +724,11 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PreInInterface_NodeDropAclIn(),
         generateRules_PreInInterface_NodeDropAclIn_PBR(),
         generateRules_PreInInterface_PostInInterface(),
-        generateRules_PreInInterface_PostInVrf_PBR(),
+        generateRules_PreInInterface_PbrFibLookup(),
         generateRules_PostInInterface_NodeDropAclIn(),
         generateRules_PostInInterface_PostInVrf(),
+        generateRules_PbrFibLookup_InterfaceAccept(),
+        generateRules_PbrFibLookup_PreOutVrf(),
         generateRules_PreOutEdge_NodeDropAclOut(),
         generateRules_PreOutEdge_PreOutEdgePostNat(),
         generateRules_PreOutEdgePostNat_NodeDropAclOut(),
@@ -785,7 +835,7 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(iface -> iface.getPostTransformationIncomingFilter() != null)
         .map(
             i -> {
-              String acl = i.getPostTransformationIncomingFilterName();
+              IpAccessList acl = i.getPostTransformationIncomingFilter();
               String node = i.getOwner().getHostname();
               String iface = i.getName();
 
@@ -804,7 +854,7 @@ public final class BDDReachabilityAnalysisFactory {
     return getInterfaces()
         .map(
             iface -> {
-              String aclName = iface.getPostTransformationIncomingFilterName();
+              IpAccessList acl = iface.getPostTransformationIncomingFilter();
               String nodeName = iface.getOwner().getHostname();
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
@@ -812,7 +862,7 @@ public final class BDDReachabilityAnalysisFactory {
               PostInInterface preState = new PostInInterface(nodeName, ifaceName);
               PostInVrf postState = new PostInVrf(nodeName, vrfName);
 
-              BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
+              BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
               return new Edge(preState, postState, constraint(inAclBDD));
             });
   }
@@ -823,7 +873,7 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(iface -> iface.getRoutingPolicyName() == null && iface.getIncomingFilter() != null)
         .map(
             i -> {
-              String acl = i.getIncomingFilterName();
+              IpAccessList acl = i.getIncomingFilter();
               String node = i.getOwner().getHostname();
               String iface = i.getName();
 
@@ -857,57 +907,110 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreInInterface_PostInVrf_PBR() {
+  private Stream<Edge> generateRules_PreInInterface_PbrFibLookup() {
     return getInterfaces()
         .filter(iface -> iface.getRoutingPolicyName() != null)
         .flatMap(
             iface -> {
               String nodeName = iface.getOwner().getHostname();
+              String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
               Map<FibLookup, Transition> transitionByFibLookup =
                   _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
+              VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
 
-              PreInInterface preState = new PreInInterface(nodeName, ifaceName);
+              PreInInterface preInInterface = new PreInInterface(nodeName, ifaceName);
               return transitionByFibLookup.entrySet().stream()
                   .map(
-                      transitionByFibLookupEntry ->
-                          new Edge(
-                              preState,
-                              new PostInVrf(
-                                  nodeName,
-                                  transitionByFibLookupEntry
-                                      .getKey()
-                                      .getVrfExpr()
-                                      .accept(
-                                          new VrfExprVisitor<String>() {
-                                            @Override
-                                            public String visitLiteralVrfName(LiteralVrfName expr) {
-                                              return expr.getVrfName();
-                                            }
-
-                                            @Override
-                                            public String visitIngressInterfaceVrf(
-                                                IngressInterfaceVrf expr) {
-                                              return iface.getVrfName();
-                                            }
-                                          })),
-                              transitionByFibLookupEntry.getValue()));
+                      transitionByFibLookupEntry -> {
+                        FibLookup fibLookup = transitionByFibLookupEntry.getKey();
+                        String lookupVrf = fibLookup.getVrfExpr().accept(lookupVrfExtractor);
+                        return new Edge(
+                            preInInterface,
+                            new PbrFibLookup(nodeName, vrfName, lookupVrf),
+                            transitionByFibLookupEntry.getValue());
+                      });
             });
   }
 
-  private BDD aclDenyBDD(String node, @Nullable String acl) {
-    return acl == null ? _zero : _aclDenyBDDs.get(node).get(acl).get();
+  /**
+   * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
+   * From there they can either get accepted into the ingress VRF or forwarded based on the PBR FIB
+   * lookup. These edges represent the former.
+   */
+  private Stream<Edge> generateRules_PbrFibLookup_InterfaceAccept() {
+    return getInterfaces()
+        .flatMap(this::interfaceToPbrFibLookups)
+        .distinct()
+        .flatMap(
+            pbrFibLookup -> {
+              // Create edge from PbrFibLookup to InterfaceAccept for each interface in ingress VRF
+              String hostname = pbrFibLookup.getHostname();
+              String ingressVrf = pbrFibLookup.getIngressVrf();
+              return _ifaceAcceptBDDs.get(hostname).get(ingressVrf).entrySet().stream()
+                  .map(
+                      ifaceAcceptBddEntry ->
+                          new Edge(
+                              pbrFibLookup,
+                              new InterfaceAccept(hostname, ifaceAcceptBddEntry.getKey()),
+                              ifaceAcceptBddEntry.getValue()));
+            });
   }
 
-  private BDD aclPermitBDD(String node, @Nullable String acl) {
-    return acl == null ? _one : _aclPermitBDDs.get(node).get(acl).get();
+  /**
+   * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
+   * From there they can either get accepted into the ingress VRF or forwarded based on the PBR FIB
+   * lookup. These edges represent the latter.
+   */
+  private Stream<Edge> generateRules_PbrFibLookup_PreOutVrf() {
+    return getInterfaces()
+        .flatMap(this::interfaceToPbrFibLookups)
+        .distinct()
+        .map(
+            pbrFibLookup -> {
+              // Generate PbrFibLookup -> PreOutVrf edge for each PbrFibLookup
+              String hostname = pbrFibLookup.getHostname();
+              String ingressVrf = pbrFibLookup.getIngressVrf();
+              BDD notAcceptedBdd = _vrfAcceptBDDs.get(hostname).get(ingressVrf).not();
+              return new Edge(
+                  pbrFibLookup,
+                  new PreOutVrf(hostname, pbrFibLookup.getLookupVrf()),
+                  notAcceptedBdd);
+            });
   }
 
-  private BDD ignorableAclDenyBDD(String node, @Nullable String acl) {
+  /** Returns {@link PbrFibLookup} states reachable by entering the given interface */
+  @Nonnull
+  private Stream<PbrFibLookup> interfaceToPbrFibLookups(Interface iface) {
+    if (iface.getRoutingPolicyName() == null) {
+      // Interface does not have PBR
+      return Stream.of();
+    }
+    String nodeName = iface.getOwner().getHostname();
+    String vrfName = iface.getVrfName();
+    String ifaceName = iface.getName();
+    VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
+
+    Map<FibLookup, Transition> transitionByFibLookup =
+        _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
+    return transitionByFibLookup.keySet().stream()
+        .map(fibLookup -> fibLookup.getVrfExpr().accept(lookupVrfExtractor))
+        .map(lookupVrf -> new PbrFibLookup(nodeName, vrfName, lookupVrf));
+  }
+
+  private BDD aclDenyBDD(String node, @Nullable IpAccessList acl) {
+    return acl == null ? _zero : _aclDenyBDDs.get(node).get(acl.getName()).get();
+  }
+
+  private BDD aclPermitBDD(String node, @Nullable IpAccessList acl) {
+    return acl == null ? _one : _aclPermitBDDs.get(node).get(acl.getName()).get();
+  }
+
+  private BDD ignorableAclDenyBDD(String node, @Nullable IpAccessList acl) {
     return _ignoreFilters ? _zero : aclDenyBDD(node, acl);
   }
 
-  private BDD ignorableAclPermitBDD(String node, @Nullable String acl) {
+  private BDD ignorableAclPermitBDD(String node, @Nullable IpAccessList acl) {
     return _ignoreFilters ? _one : aclPermitBDD(node, acl);
   }
 
@@ -917,14 +1020,14 @@ public final class BDDReachabilityAnalysisFactory {
         .filter(iface -> iface.getRoutingPolicyName() == null)
         .map(
             iface -> {
-              String aclName = iface.getIncomingFilterName();
+              IpAccessList acl = iface.getIncomingFilter();
               String nodeName = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
 
               PreInInterface preState = new PreInInterface(nodeName, ifaceName);
               PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
-              BDD inAclBDD = ignorableAclPermitBDD(nodeName, aclName);
+              BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
 
               Transition transition =
                   compose(
@@ -948,7 +1051,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              String preNatAcl = i1.getPreTransformationOutgoingFilterName();
+              IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
 
               BDD denyPreNat = ignorableAclDenyBDD(node1, preNatAcl);
               if (denyPreNat.equals(_zero)) {
@@ -976,7 +1079,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              String preNatAcl = i1.getPreTransformationOutgoingFilterName();
+              IpAccessList preNatAcl = i1.getPreTransformationOutgoingFilter();
 
               BDD aclPermit = ignorableAclPermitBDD(node1, preNatAcl);
               if (aclPermit.equals(_zero)) {
@@ -1008,13 +1111,13 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              String aclName = i1.getOutgoingFilterName();
+              IpAccessList acl = i1.getOutgoingFilter();
 
-              if (aclName == null) {
+              if (acl == null) {
                 return Stream.of();
               }
 
-              BDD aclDenyBDD = ignorableAclDenyBDD(node1, aclName);
+              BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
               return Stream.of(
                   new Edge(
                       new PreOutEdgePostNat(node1, iface1, node2, iface2),
@@ -1037,7 +1140,7 @@ public final class BDDReachabilityAnalysisFactory {
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
-              BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilterName());
+              BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilter());
               assert aclPermitBDD != null;
 
               return new Edge(
@@ -1070,16 +1173,16 @@ public final class BDDReachabilityAnalysisFactory {
                             .stream()
                             .filter(
                                 iface ->
-                                    iface.getPreTransformationOutgoingFilterName() != null
-                                        || iface.getOutgoingFilterName() != null)
+                                    iface.getPreTransformationOutgoingFilter() != null
+                                        || iface.getOutgoingFilter() != null)
                             .flatMap(
                                 iface -> {
                                   String ifaceName = iface.getName();
                                   BDD denyPreAclBDD =
                                       ignorableAclDenyBDD(
-                                          node, iface.getPreTransformationOutgoingFilterName());
+                                          node, iface.getPreTransformationOutgoingFilter());
                                   BDD denyPostAclBDD =
-                                      ignorableAclDenyBDD(node, iface.getOutgoingFilterName());
+                                      ignorableAclDenyBDD(node, iface.getOutgoingFilter());
                                   Transition transformation =
                                       _bddOutgoingTransformations.get(node).get(ifaceName);
 
@@ -1133,32 +1236,6 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  @Nonnull
-  private static Stream<Edge> getPreOutVrfToDispositionStateEdges(
-      Map<String, Map<String, Map<String, BDD>>> dispositionBddMap,
-      BiFunction<String, String, StateExpr> stateConstructor) {
-    return dispositionBddMap.entrySet().stream()
-        .flatMap(
-            nodeEntry -> {
-              String hostname = nodeEntry.getKey();
-              return nodeEntry.getValue().entrySet().stream()
-                  .flatMap(
-                      vrfEntry -> {
-                        String vrfName = vrfEntry.getKey();
-                        StateExpr preState = new PreOutVrf(hostname, vrfName);
-                        return vrfEntry.getValue().entrySet().stream()
-                            .filter(e -> !e.getValue().isZero())
-                            .map(
-                                ifaceEntry -> {
-                                  String ifaceName = ifaceEntry.getKey();
-                                  BDD bdd = ifaceEntry.getValue();
-                                  return new Edge(
-                                      preState, stateConstructor.apply(hostname, ifaceName), bdd);
-                                });
-                      });
-            });
-  }
-
   private Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition() {
     return getInterfaces()
         .flatMap(
@@ -1166,8 +1243,8 @@ public final class BDDReachabilityAnalysisFactory {
               String node = iface.getOwner().getHostname();
               String ifaceName = iface.getName();
               BDD permitBeforeNatBDD =
-                  ignorableAclPermitBDD(node, iface.getPreTransformationOutgoingFilterName());
-              BDD permitAfterNatBDD = ignorableAclPermitBDD(node, iface.getOutgoingFilterName());
+                  ignorableAclPermitBDD(node, iface.getPreTransformationOutgoingFilter());
+              BDD permitAfterNatBDD = ignorableAclPermitBDD(node, iface.getOutgoingFilter());
               Transition outgoingTransformation =
                   _bddOutgoingTransformations.get(node).get(ifaceName);
 
@@ -1251,10 +1328,9 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     checkArgument(!actions.isEmpty(), "No actions");
-
-    try (ActiveSpan span =
-        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.getAllBDDs").startActive()) {
-      assert span != null; // avoid unused warning
+    Span span = GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.getAllBDDs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       Set<FlowDisposition> nonLoopActions = new HashSet<>(actions);
       boolean loopIncluded = nonLoopActions.remove(LOOP);
@@ -1283,6 +1359,8 @@ public final class BDDReachabilityAnalysisFactory {
                 nonLoopActions)
             .getIngressLocationBdds();
       }
+    } finally {
+      span.finish();
     }
   }
 
@@ -1369,11 +1447,12 @@ public final class BDDReachabilityAnalysisFactory {
       Set<FlowDisposition> actions,
       boolean useInterfaceRoots) {
     checkArgument(!finalNodes.isEmpty(), "final nodes cannot be empty");
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       BDD initialHeaderSpaceBdd = computeInitialHeaderSpaceBdd(initialHeaderSpace);
       BDD finalHeaderSpaceBdd = computeFinalHeaderSpaceBdd(initialHeaderSpaceBdd);
 
@@ -1391,6 +1470,8 @@ public final class BDDReachabilityAnalysisFactory {
 
       return new BDDReachabilityAnalysis(
           _bddPacket, roots.keySet(), edgeStream, finalHeaderSpaceBdd);
+    } finally {
+      span.finish();
     }
   }
 
@@ -1407,11 +1488,12 @@ public final class BDDReachabilityAnalysisFactory {
    */
   @VisibleForTesting
   BDD computeFinalHeaderSpaceBdd(BDD initialHeaderSpaceBdd) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeFinalHeaderSpaceBdd")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       BDD finalHeaderSpace = initialHeaderSpaceBdd;
 
       BDD noDstIp = finalHeaderSpace.exist(_dstIpVars);
@@ -1455,6 +1537,8 @@ public final class BDDReachabilityAnalysisFactory {
       }
 
       return finalHeaderSpace;
+    } finally {
+      span.finish();
     }
   }
 
@@ -1475,11 +1559,12 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> forbiddenTransitNodes,
       Set<String> requiredTransitNodes,
       Set<FlowDisposition> dispositions) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.bddReachabilityAnalysis")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
 
       /* We will use the return pass reachability graph a bit differently than usual: to find flows
        * that successfully return to the origination point of the forward flow, we'll look at states
@@ -1513,6 +1598,8 @@ public final class BDDReachabilityAnalysisFactory {
 
       return new BDDReachabilityAnalysis(
           _bddPacket, returnPassOrigBdds.keySet(), returnPassEdges, _one);
+    } finally {
+      span.finish();
     }
   }
 
@@ -1605,11 +1692,12 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private RangeComputer computeTransformationRanges() {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeTransformationRanges")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       RangeComputer rangeComputer = new RangeComputer();
       _configs
           .values()
@@ -1625,6 +1713,8 @@ public final class BDDReachabilityAnalysisFactory {
                                 iface.getOutgoingTransformation(), rangeComputer);
                           }));
       return rangeComputer;
+    } finally {
+      span.finish();
     }
   }
 
@@ -1632,11 +1722,10 @@ public final class BDDReachabilityAnalysisFactory {
       IpSpaceAssignment srcIpSpaceAssignment,
       BDD initialHeaderSpaceBdd,
       boolean useInterfaceRoots) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.rootConstraints")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.rootConstraints").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       LocationVisitor<Optional<StateExpr>> locationToStateExpr =
           new LocationToOriginationStateExpr(_configs, useInterfaceRoots);
       IpSpaceToBDD srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
@@ -1668,6 +1757,8 @@ public final class BDDReachabilityAnalysisFactory {
           "No sources are compatible with the headerspace constraint");
 
       return finalRootConstraints;
+    } finally {
+      span.finish();
     }
   }
 
@@ -1688,11 +1779,12 @@ public final class BDDReachabilityAnalysisFactory {
       Map<String, Configuration> configs,
       Map<String, Map<String, Map<String, IpSpace>>> acceptIps, // hostname -> vrf -> iface -> ips
       IpSpaceToBDD ipSpaceToBDD) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeIfaceAcceptBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       // Iterate over configs because we want all node/vrf/iface keys to be present in the map
       return toImmutableMap(
           configs,
@@ -1721,17 +1813,18 @@ public final class BDDReachabilityAnalysisFactory {
                                       .accept(ipSpaceToBDD)));
                 });
           });
+    } finally {
+      span.finish();
     }
   }
 
   private Map<String, Map<String, Map<String, BDD>>> computeNextVrfBDDs(
       Map<String, Map<String, Map<String, IpSpace>>> nextVrfIpsByNodeVrf,
       IpSpaceToBDD ipSpaceToBDD) {
-    try (ActiveSpan span =
-        GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeNextVrfBDDs")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+    Span span =
+        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.computeNextVrfBDDs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       return toImmutableMap(
           nextVrfIpsByNodeVrf,
           Entry::getKey /* node */,
@@ -1745,6 +1838,8 @@ public final class BDDReachabilityAnalysisFactory {
                           Entry::getKey,
                           nextVrfIpsByNextVrfEntry ->
                               nextVrfIpsByNextVrfEntry.getValue().accept(ipSpaceToBDD))));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1781,11 +1876,12 @@ public final class BDDReachabilityAnalysisFactory {
    */
   private Stream<Edge> instrumentForbiddenTransitNodes(
       Set<String> forbiddenTransitNodes, Stream<Edge> edgeStream) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.instrumentForbiddenTransitNodes")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       if (forbiddenTransitNodes.isEmpty()) {
         return edgeStream;
       }
@@ -1797,6 +1893,8 @@ public final class BDDReachabilityAnalysisFactory {
                   && edge.getPostState() instanceof PreInInterface
                   && forbiddenTransitNodes.contains(
                       ((PreOutEdgePostNat) edge.getPreState()).getSrcNode())));
+    } finally {
+      span.finish();
     }
   }
 
@@ -1809,11 +1907,12 @@ public final class BDDReachabilityAnalysisFactory {
    */
   private Stream<Edge> instrumentRequiredTransitNodes(
       Set<String> requiredTransitNodes, Stream<Edge> edgeStream) {
-    try (ActiveSpan span =
+    Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.instrumentRequiredTransitNodes")
-            .startActive()) {
-      assert span != null; // avoid unused warning
+            .start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
       if (requiredTransitNodes.isEmpty()) {
         return edgeStream;
       }
@@ -1839,6 +1938,8 @@ public final class BDDReachabilityAnalysisFactory {
               return edge;
             }
           });
+    } finally {
+      span.finish();
     }
   }
 

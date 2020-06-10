@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
@@ -18,7 +20,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -33,7 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -52,7 +55,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.aws.IpPermissions.AddressType;
-import org.batfish.representation.aws.RdsInstance.Status;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,7 +87,7 @@ public class RdsInstanceTest {
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setAwsText("org/batfish/representation/aws/test", awsFilenames)
+                .setAwsFiles("org/batfish/representation/aws/test", awsFilenames)
                 .build(),
             _folder);
     return batfish.loadConfigurations(batfish.getSnapshot());
@@ -224,7 +226,7 @@ public class RdsInstanceTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/RdsInstanceTest.json");
+    String text = readResource("org/batfish/representation/aws/RdsInstanceTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     ArrayNode array = (ArrayNode) json.get(JSON_KEY_DB_INSTANCES);
@@ -244,8 +246,37 @@ public class RdsInstanceTest {
                     "us-west-2b",
                     "vpc-1",
                     false,
-                    Status.AVAILABLE,
+                    "available",
                     ImmutableListMultimap.of("us-west-2b", "subnet-1"),
                     ImmutableList.of("sg-12345")))));
+  }
+
+  @Test
+  public void testIsUp() {
+    // Instance should be considered up unless status is unavailable
+    assertTrue(
+        new RdsInstance(
+                "id",
+                "az",
+                "vpc",
+                false,
+                "available",
+                ImmutableListMultimap.of(),
+                ImmutableList.of())
+            .isUp());
+    assertTrue(
+        new RdsInstance(
+                "id",
+                "az",
+                "vpc",
+                false,
+                "backing-up",
+                ImmutableListMultimap.of(),
+                ImmutableList.of())
+            .isUp());
+    assertFalse(
+        new RdsInstance(
+                "id", "az", "vpc", false, "stopped", ImmutableListMultimap.of(), ImmutableList.of())
+            .isUp());
   }
 }

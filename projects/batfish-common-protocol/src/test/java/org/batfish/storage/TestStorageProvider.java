@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.CompletionMetadata;
@@ -16,12 +18,16 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
+import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
@@ -29,13 +35,16 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
+import org.batfish.identifiers.Id;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
 import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
+import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
+import org.batfish.vendor.VendorConfiguration;
 
 public class TestStorageProvider implements StorageProvider {
 
@@ -89,6 +98,12 @@ public class TestStorageProvider implements StorageProvider {
   @Nonnull
   @Override
   public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId) {
+    throw new UnsupportedOperationException("no implementation for generated method");
+  }
+
+  @Nonnull
+  @Override
+  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -271,6 +286,11 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
+  public boolean hasSnapshotInputObject(String key, NetworkSnapshot snapshot) throws IOException {
+    return false;
+  }
+
+  @Override
   public @Nonnull List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
       NetworkId networkId, SnapshotId snapshotId) {
     throw new UnsupportedOperationException();
@@ -306,6 +326,12 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void storeWorkLog(
       String logOutput, NetworkId network, SnapshotId snapshot, String workId) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeWorkJson(
+      String jsonOutput, NetworkId network, SnapshotId snapshot, String workId) {
     throw new UnsupportedOperationException();
   }
 
@@ -383,6 +409,224 @@ public class TestStorageProvider implements StorageProvider {
 
   @Override
   public void storeVxlanTopology(VxlanTopology vxlanTopology, NetworkSnapshot networkSnapshot) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Optional<String> readId(Class<? extends Id> type, String name, Id... ancestors)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void writeId(Id id, String name, Id... ancestors) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean deleteNameIdMapping(Class<? extends Id> type, String name, Id... ancestors)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasId(Class<? extends Id> type, String name, Id... ancestors) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Set<String> listResolvableNames(Class<? extends Id> type, Id... ancestors)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeReferenceLibrary(ReferenceLibrary referenceLibrary, NetworkId network)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeUploadSnapshotZip(InputStream inputStream, String key, NetworkId network)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeForkSnapshotRequest(String forkSnapshotRequest, String key, NetworkId network)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeSnapshotInputObject(
+      InputStream inputStream, String key, NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeDataPlane(DataPlane dataPlane, NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasDataPlane(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+      NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeParseEnvironmentBgpTablesAnswerElement(
+      ParseEnvironmentBgpTablesAnswerElement parseEnvironmentBgpTablesAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteParseEnvironmentBgpTablesAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeEnvironmentBgpTables(
+      Map<String, BgpAdvertisementsByVrf> environmentBgpTables, NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteEnvironmentBgpTables(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+      NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeParseVendorConfigurationAnswerElement(
+      ParseVendorConfigurationAnswerElement parseVendorConfigurationAnswerElement,
+      NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean hasParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteParseVendorConfigurationAnswerElement(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void storeVendorConfigurations(
+      Map<String, VendorConfiguration> vendorConfigurations, NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException {}
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nonnull
+  @Override
+  public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 }

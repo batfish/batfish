@@ -348,6 +348,11 @@ DEVICES
     'devices'
 ;
 
+DEVICE_GROUP
+:
+    'device-group'
+;
+
 DEVICECONFIG
 :
     'deviceconfig'
@@ -1371,6 +1376,16 @@ TECHNOLOGY
 TEMPLATE
 :
     'template'
+;
+
+TEMPLATES
+:
+    'templates'
+;
+
+TEMPLATE_STACK
+:
+    'template-stack'
 ;
 
 THREE_DES

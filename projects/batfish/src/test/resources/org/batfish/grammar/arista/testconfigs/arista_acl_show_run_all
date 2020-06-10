@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_acl_show_run_all
+!
+ip access-list standard SOME_ACL
+   no statistics per-entry
+   fragment-rules
+   10 permit 192.0.2.0/24

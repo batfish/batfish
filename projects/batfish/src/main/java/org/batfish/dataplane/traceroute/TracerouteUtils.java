@@ -14,10 +14,13 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -45,7 +48,10 @@ import org.batfish.datamodel.flow.FilterStep.FilterStepDetail;
 import org.batfish.datamodel.flow.FilterStep.FilterType;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.IncomingSessionScope;
+import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.RouteInfo;
+import org.batfish.datamodel.flow.SessionScopeVisitor;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.TransformationStep;
@@ -240,12 +246,63 @@ public final class TracerouteUtils {
     sessions.forEach(
         session ->
             session
-                .getIncomingInterfaces()
-                .forEach(
-                    incomingIface ->
-                        builder.put(
-                            NodeInterfacePair.of(session.getHostname(), incomingIface), session)));
+                .getSessionScope()
+                .accept(
+                    new SessionScopeVisitor<Void>() {
+                      @Override
+                      public Void visitIncomingSessionScope(
+                          IncomingSessionScope incomingSessionScope) {
+                        incomingSessionScope
+                            .getIncomingInterfaces()
+                            .forEach(
+                                incomingIface ->
+                                    builder.put(
+                                        NodeInterfacePair.of(session.getHostname(), incomingIface),
+                                        session));
+                        return null;
+                      }
+
+                      @Override
+                      public Void visitOriginatingSessionScope(
+                          OriginatingSessionScope originatingSessionScope) {
+                        return null;
+                      }
+                    }));
     return builder.build();
+  }
+
+  static Map<String, Multimap<String, FirewallSessionTraceInfo>> buildSessionsByOriginatingVrf(
+      @Nullable Set<FirewallSessionTraceInfo> sessions) {
+    if (sessions == null) {
+      return ImmutableMap.of();
+    }
+
+    Map<String, ImmutableMultimap.Builder<String, FirewallSessionTraceInfo>> builder =
+        new HashMap<>();
+    sessions.forEach(
+        session ->
+            session
+                .getSessionScope()
+                .accept(
+                    new SessionScopeVisitor<Void>() {
+                      @Override
+                      public Void visitIncomingSessionScope(
+                          IncomingSessionScope incomingSessionScope) {
+                        return null;
+                      }
+
+                      @Override
+                      public Void visitOriginatingSessionScope(
+                          OriginatingSessionScope originatingSessionScope) {
+                        builder
+                            .computeIfAbsent(
+                                session.getHostname(), k -> ImmutableMultimap.builder())
+                            .put(originatingSessionScope.getOriginatingVrf(), session);
+                        return null;
+                      }
+                    }));
+    return builder.entrySet().stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().build()));
   }
 
   @Nullable

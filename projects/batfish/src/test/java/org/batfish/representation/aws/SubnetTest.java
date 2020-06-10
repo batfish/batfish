@@ -1,8 +1,10 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
@@ -10,6 +12,8 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
+import static org.batfish.representation.aws.Utils.connect;
+import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.nodeName;
@@ -25,13 +29,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
@@ -39,6 +44,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
@@ -55,7 +61,7 @@ public class SubnetTest {
   public void setup() throws IOException {
     JsonNode json =
         BatfishObjectMapper.mapper()
-            .readTree(CommonUtil.readResource("org/batfish/representation/aws/SubnetTest.json"));
+            .readTree(readResource("org/batfish/representation/aws/SubnetTest.json", UTF_8));
     _subnetList =
         BatfishObjectMapper.mapper()
             .convertValue(json.get(JSON_KEY_SUBNETS), new TypeReference<List<Subnet>>() {});
@@ -184,7 +190,6 @@ public class SubnetTest {
   @Test
   public void testToConfigurationNodePublic() {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
     Subnet subnet =
         new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
     InternetGateway igw =
@@ -207,6 +212,8 @@ public class SubnetTest {
                                 Prefix.ZERO, State.ACTIVE, igw.getId(), TargetType.Gateway)))))
             .build();
 
+    Configuration vpcConfig =
+        vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
@@ -214,47 +221,87 @@ public class SubnetTest {
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC));
   }
 
+  /**
+   * Test that the subnet connects to all the VRFs on the VPC, and the VPC has a static route to the
+   * subnet prefix inside all VRFs
+   */
+  @Test
+  public void testToConfigurationNodeConnectAllVpcVrfs() {
+    Configuration vpcCfg = Utils.newAwsConfiguration("vpc", "domain");
+
+    // add a connection-based VRF (in addition to the default VRF)
+    String connectionVrf = "vrf-connection";
+    vpcCfg
+        .getVrfs()
+        .put(connectionVrf, Vrf.builder().setName(connectionVrf).setOwner(vpcCfg).build());
+
+    Prefix subnetPrefix = Prefix.parse("1.1.1.1/32");
+    Subnet subnet =
+        new Subnet(subnetPrefix, "subnet", vpcCfg.getHostname(), "az", ImmutableMap.of());
+
+    ConvertedConfiguration awsConfiguration =
+        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+
+    Configuration subnetCfg =
+        subnet.toConfigurationNode(awsConfiguration, new Region("r1"), new Warnings());
+
+    assertThat(
+        subnetCfg.getAllInterfaces().keySet(),
+        equalTo(
+            ImmutableSet.of(
+                instancesInterfaceName(subnet.getId()), // to instances
+                interfaceNameToRemote(vpcCfg), // default VRF
+                interfaceNameToRemote(vpcCfg, connectionVrf)))); // connection-based VRF
+
+    assertThat(
+        vpcCfg.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.of(
+                toStaticRoute(
+                    subnetPrefix,
+                    interfaceNameToRemote(subnetCfg),
+                    getInterfaceLinkLocalIp(subnetCfg, vpcCfg.getHostname())))));
+
+    assertThat(
+        vpcCfg.getVrfs().get(connectionVrf).getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.of(
+                toStaticRoute(
+                    subnetPrefix,
+                    interfaceNameToRemote(subnetCfg, connectionVrf),
+                    getInterfaceLinkLocalIp(
+                        subnetCfg, interfaceNameToRemote(vpcCfg, connectionVrf))))));
+  }
+
   private static void testProcessRouteHelper(
-      RouteV4 route,
-      String linkId,
-      Configuration vpcCfg,
-      Configuration subnetCfg,
-      Prefix subnetPrefix) {
+      RouteV4 route, String linkId, Configuration vpcCfg, Configuration subnetCfg) {
     // there should be a VRF on the VPC node
     String vrfName = vrfNameForLink(linkId);
     assertThat(vpcCfg, hasVrf(vrfName, any(Vrf.class)));
 
     // there should be an interface on the Subnet pointed to the VPC node
     Interface subnetIface = Iterables.getOnlyElement(subnetCfg.getAllInterfaces().values());
-    assertThat(subnetIface, hasName(Utils.interfaceNameToRemote(vpcCfg, linkId)));
+    assertThat(subnetIface, hasName(Utils.interfaceNameToRemote(vpcCfg, vrfNameForLink(linkId))));
 
     // there should be an interface on the VPC node
     Interface vpcIface = Iterables.getOnlyElement(vpcCfg.getAllInterfaces().values());
-    assertThat(vpcIface, hasName(Utils.interfaceNameToRemote(subnetCfg, linkId)));
+    assertThat(vpcIface, hasName(Utils.interfaceNameToRemote(subnetCfg, vrfNameForLink(linkId))));
     assertThat(vpcIface, hasVrfName(vrfNameForLink(linkId)));
 
-    // right static routes on both sides
+    // right static routes on the subnet
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
                 toStaticRoute(
                     route.getDestinationCidrBlock(),
-                    Utils.interfaceNameToRemote(vpcCfg, linkId),
+                    Utils.interfaceNameToRemote(vpcCfg, vrfNameForLink(linkId)),
                     vpcIface.getLinkLocalAddress().getIp()))));
-    assertThat(
-        vpcCfg.getVrfs().get(vrfName).getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnetPrefix,
-                    Utils.interfaceNameToRemote(subnetCfg, linkId),
-                    subnetIface.getLinkLocalAddress().getIp()))));
   }
 
-  /** Tests that we do the right thing when processing a route for an Internet gateway. */
+  /** Tests that we do the right thing when processing a route for a VPC-level gateway. */
   @Test
-  public void testProcessRouteInternetGateway() {
+  public void testProcessRouteVpcGateway() {
     Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
@@ -272,35 +319,28 @@ public class SubnetTest {
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
 
+    vpcCfg
+        .getVrfs()
+        .put(
+            vrfNameForLink(igw.getId()),
+            Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(igw.getId())).build());
+    connect(
+        awsConfiguration,
+        subnetCfg,
+        DEFAULT_VRF_NAME,
+        vpcCfg,
+        vrfNameForLink(igw.getId()),
+        vrfNameForLink(igw.getId()));
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, igw, null, awsConfiguration, new Warnings());
+        subnetCfg,
+        region,
+        route,
+        vpcCfg,
+        ImmutableList.of(igw.getId()),
+        awsConfiguration,
+        new Warnings());
 
-    testProcessRouteHelper(route, igw.getId(), vpcCfg, subnetCfg, subnet.getCidrBlock());
-  }
-
-  /** Tests that we do the right thing when processing a route for an Internet gateway. */
-  @Test
-  public void testProcessRouteVpnGateway() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
-
-    Subnet subnet =
-        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
-    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
-
-    VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
-
-    Region region = Region.builder("region").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
-
-    RouteV4 route =
-        new RouteV4(Prefix.parse("192.168.0.0/16"), State.ACTIVE, vgw.getId(), TargetType.Gateway);
-
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
-
-    subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, vgw, awsConfiguration, new Warnings());
-
-    testProcessRouteHelper(route, vgw.getId(), vpcCfg, subnetCfg, subnet.getCidrBlock());
+    testProcessRouteHelper(route, igw.getId(), vpcCfg, subnetCfg);
   }
 
   /** Tests that we do the right thing when processing a route for VPC peering connection. */
@@ -323,10 +363,23 @@ public class SubnetTest {
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
 
-    subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
+    vpcCfg
+        .getVrfs()
+        .put(
+            vrfNameForLink(connectionId),
+            Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(connectionId)).build());
+    connect(
+        awsConfiguration,
+        subnetCfg,
+        DEFAULT_VRF_NAME,
+        vpcCfg,
+        vrfNameForLink(connectionId),
+        vrfNameForLink(connectionId));
 
-    testProcessRouteHelper(route, connectionId, vpcCfg, subnetCfg, subnetPrefix);
+    subnet.processRoute(
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
+
+    testProcessRouteHelper(route, connectionId, vpcCfg, subnetCfg);
   }
 
   /** Tests that we do the right thing when processing a route for transit gateway. */
@@ -360,10 +413,22 @@ public class SubnetTest {
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
 
+    vpcCfg
+        .getVrfs()
+        .put(
+            vrfNameForLink(linkId),
+            Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(linkId)).build());
+    connect(
+        awsConfiguration,
+        subnetCfg,
+        DEFAULT_VRF_NAME,
+        vpcCfg,
+        vrfNameForLink(linkId),
+        vrfNameForLink(linkId));
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
 
-    testProcessRouteHelper(route, linkId, vpcCfg, subnetCfg, subnetPrefix);
+    testProcessRouteHelper(route, linkId, vpcCfg, subnetCfg);
   }
 
   /**
@@ -404,7 +469,7 @@ public class SubnetTest {
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
 
     subnet.processRoute(
-        subnetCfg, region, route, vpcCfg, null, null, awsConfiguration, new Warnings());
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
 
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),
@@ -412,202 +477,49 @@ public class SubnetTest {
             ImmutableSet.of(toStaticRoute(route.getDestinationCidrBlock(), NULL_INTERFACE_NAME))));
   }
 
-  /** Two subnets using the same VPC link */
+  /** Test that all prefixes of the prefix list are inserted as destinations */
   @Test
-  public void testInitializeVpcLinkTwoSubnets() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+  public void testProcessRoutePrefixList() {
+    Configuration vpcCfg = Utils.newAwsConfiguration("vpc", "awstest");
 
-    Prefix subnet1Prefix = Prefix.parse("10.10.10.0/24");
-    Prefix subnet2Prefix = Prefix.parse("10.10.20.0/24");
-    Prefix remotePrefix = Prefix.parse("192.168.0.0/16");
-    String linkId = "link";
-
-    Subnet subnet1 = new Subnet(subnet1Prefix, "subnet1", vpc.getId(), "zone", ImmutableMap.of());
-    Configuration subnet1Cfg = Utils.newAwsConfiguration(subnet1.getId(), "awstest");
-
-    Subnet subnet2 = new Subnet(subnet2Prefix, "subnet2", vpc.getId(), "zone", ImmutableMap.of());
-    Configuration subnet2Cfg = Utils.newAwsConfiguration(subnet1.getId(), "awstest");
-
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
-
-    StaticRoute.Builder sr =
-        StaticRoute.builder()
-            .setNetwork(remotePrefix)
-            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
-
-    subnet1.initializeVpcLink(subnet1Cfg, vpcCfg, vpc, linkId, sr, awsConfiguration);
-    subnet2.initializeVpcLink(subnet2Cfg, vpcCfg, vpc, linkId, sr, awsConfiguration);
-
-    // the VPC should have static routes to both subnets in the VRF
-    assertThat(
-        vpcCfg.getVrfs().get(vrfNameForLink(linkId)).getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnet1.getCidrBlock(),
-                    Utils.interfaceNameToRemote(subnet1Cfg, linkId),
-                    Utils.getInterfaceLinkLocalIp(
-                        subnet1Cfg, Utils.interfaceNameToRemote(vpcCfg, linkId))),
-                toStaticRoute(
-                    subnet2.getCidrBlock(),
-                    Utils.interfaceNameToRemote(subnet2Cfg, linkId),
-                    Utils.getInterfaceLinkLocalIp(
-                        subnet2Cfg, Utils.interfaceNameToRemote(vpcCfg, linkId))))));
-  }
-
-  /** The subnet has two links */
-  @Test
-  public void testInitializeVpcLinkTwoLinks() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
-
-    Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
-    Prefix remotePrefix1 = Prefix.parse("192.168.0.0/16");
-    Prefix remotePrefix2 = Prefix.parse("192.169.0.0/16");
-    String linkId1 = "peering1";
-    String linkId2 = "peering2";
-
-    Subnet subnet = new Subnet(subnetPrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet =
+        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", "vpc", "zone", ImmutableMap.of());
     Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    List<Prefix> prefixes =
+        ImmutableList.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"));
+    PrefixList prefixList = new PrefixList("plist", prefixes, "name");
 
-    StaticRoute.Builder sr1 =
-        StaticRoute.builder()
-            .setNetwork(remotePrefix1)
-            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
-    StaticRoute.Builder sr2 =
-        StaticRoute.builder()
-            .setNetwork(remotePrefix2)
-            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
+    Region region =
+        Region.builder("region")
+            .setPrefixLists(ImmutableMap.of(prefixList.getId(), prefixList))
+            .build();
 
-    subnet.initializeVpcLink(subnetCfg, vpcCfg, vpc, linkId1, sr1, awsConfiguration);
-    subnet.initializeVpcLink(subnetCfg, vpcCfg, vpc, linkId2, sr2, awsConfiguration);
+    RoutePrefixListId route =
+        new RoutePrefixListId(prefixList.getId(), State.BLACKHOLE, null, TargetType.Gateway);
 
-    // there should be two VRFs on the VPC node
-    assertThat(vpcCfg, hasVrf(vrfNameForLink(linkId1), any(Vrf.class)));
-    assertThat(vpcCfg, hasVrf(vrfNameForLink(linkId2), any(Vrf.class)));
-
-    // there should two interface on the Subnet pointed to the VPC node
-    assertThat(
+    subnet.processRoute(
         subnetCfg,
-        hasInterface(Utils.interfaceNameToRemote(vpcCfg, linkId1), any(Interface.class)));
-    assertThat(
-        subnetCfg,
-        hasInterface(Utils.interfaceNameToRemote(vpcCfg, linkId2), any(Interface.class)));
-
-    // there should be two interfaces on the VPC node
-    assertThat(
+        region,
+        route,
         vpcCfg,
-        hasInterface(Utils.interfaceNameToRemote(subnetCfg, linkId1), any(Interface.class)));
-    assertThat(
-        vpcCfg,
-        hasInterface(Utils.interfaceNameToRemote(subnetCfg, linkId2), any(Interface.class)));
+        ImmutableList.of(),
+        new ConvertedConfiguration(),
+        new Warnings());
 
-    // static routes
     assertThat(
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    remotePrefix1,
-                    Utils.interfaceNameToRemote(vpcCfg, linkId1),
-                    Utils.getInterfaceLinkLocalIp(
-                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId1))),
-                toStaticRoute(
-                    remotePrefix2,
-                    Utils.interfaceNameToRemote(vpcCfg, linkId2),
-                    Utils.getInterfaceLinkLocalIp(
-                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId2))))));
-    assertThat(
-        vpcCfg.getVrfs().get(vrfNameForLink(linkId1)).getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnet.getCidrBlock(),
-                    Utils.interfaceNameToRemote(subnetCfg, linkId1),
-                    Utils.getInterfaceLinkLocalIp(
-                        subnetCfg, Utils.interfaceNameToRemote(vpcCfg, linkId1))))));
-    assertThat(
-        vpcCfg.getVrfs().get(vrfNameForLink(linkId2)).getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnet.getCidrBlock(),
-                    Utils.interfaceNameToRemote(subnetCfg, linkId2),
-                    Utils.getInterfaceLinkLocalIp(
-                        subnetCfg, Utils.interfaceNameToRemote(vpcCfg, linkId2))))));
-  }
-
-  /** The subnet has two routes going over the same connection */
-  @Test
-  public void testInitializeVpcLinkTwoRoutes() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
-    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
-
-    Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
-    Prefix remotePrefix1 = Prefix.parse("192.168.0.0/16");
-    Prefix remotePrefix2 = Prefix.parse("192.169.0.0/16");
-    String linkId = "link";
-
-    Subnet subnet = new Subnet(subnetPrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
-    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
-
-    StaticRoute.Builder sr1 =
-        StaticRoute.builder()
-            .setNetwork(remotePrefix1)
-            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
-    StaticRoute.Builder sr2 =
-        StaticRoute.builder()
-            .setNetwork(remotePrefix2)
-            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
-            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST);
-
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
-
-    subnet.initializeVpcLink(subnetCfg, vpcCfg, vpc, linkId, sr1, awsConfiguration);
-    subnet.initializeVpcLink(subnetCfg, vpcCfg, vpc, linkId, sr2, awsConfiguration);
-
-    // there should be two VRFs on the VPC node
-    assertThat(vpcCfg, hasVrf(vrfNameForLink(linkId), any(Vrf.class)));
-
-    // there should two interface on the Subnet pointed to the VPC node
-    assertThat(
-        subnetCfg, hasInterface(Utils.interfaceNameToRemote(vpcCfg, linkId), any(Interface.class)));
-
-    // there should be two interfaces on the VPC node
-    assertThat(
-        vpcCfg, hasInterface(Utils.interfaceNameToRemote(subnetCfg, linkId), any(Interface.class)));
-
-    // static routes
-    assertThat(
-        subnetCfg.getDefaultVrf().getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    remotePrefix1,
-                    Utils.interfaceNameToRemote(vpcCfg, linkId),
-                    Utils.getInterfaceLinkLocalIp(
-                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId))),
-                toStaticRoute(
-                    remotePrefix2,
-                    Utils.interfaceNameToRemote(vpcCfg, linkId),
-                    Utils.getInterfaceLinkLocalIp(
-                        vpcCfg, Utils.interfaceNameToRemote(subnetCfg, linkId))))));
-    assertThat(
-        vpcCfg.getVrfs().get(vrfNameForLink(linkId)).getStaticRoutes(),
-        equalTo(
-            ImmutableSet.of(
-                toStaticRoute(
-                    subnet.getCidrBlock(),
-                    Utils.interfaceNameToRemote(subnetCfg, linkId),
-                    Utils.getInterfaceLinkLocalIp(
-                        subnetCfg, Utils.interfaceNameToRemote(vpcCfg, linkId))))));
+            prefixes.stream()
+                .map(
+                    prefix ->
+                        StaticRoute.builder()
+                            .setNetwork(prefix)
+                            .setNextHopInterface(NULL_INTERFACE_NAME)
+                            .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                            .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                            .build())
+                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))));
   }
 
   /** Test that network ACls are properly attached */
@@ -649,13 +561,17 @@ public class SubnetTest {
     // NACLs are not installed on the instances-facing interface
     Interface instancesInterface =
         subnetCfg.getAllInterfaces().get(instancesInterfaceName(subnet.getId()));
-    assertThat(instancesInterface.getIncomingFilterName(), nullValue());
-    assertThat(instancesInterface.getOutgoingFilterName(), nullValue());
+    assertThat(instancesInterface.getIncomingFilter(), nullValue());
+    assertThat(instancesInterface.getOutgoingFilter(), nullValue());
 
     // NACLs are installed on the vpc-facing interface
     Interface ifaceToVpc = subnetCfg.getAllInterfaces().get(interfaceNameToRemote(vpcCfg));
-    assertThat(ifaceToVpc.getIncomingFilterName(), equalTo(getAclName(acl.getId(), false)));
-    assertThat(ifaceToVpc.getOutgoingFilterName(), equalTo(getAclName(acl.getId(), true)));
+    assertThat(
+        ifaceToVpc.getIncomingFilter(),
+        IpAccessListMatchers.hasName(getAclName(acl.getId(), false)));
+    assertThat(
+        ifaceToVpc.getOutgoingFilter(),
+        IpAccessListMatchers.hasName(getAclName(acl.getId(), true)));
   }
 
   @Test

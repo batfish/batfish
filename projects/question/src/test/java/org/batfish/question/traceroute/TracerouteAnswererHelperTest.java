@@ -2,6 +2,7 @@ package org.batfish.question.traceroute;
 
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressNode;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasIpProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -17,8 +18,11 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Vrf;
@@ -28,6 +32,8 @@ import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
+import org.batfish.specifier.MockSpecifierContext;
+import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.SpecifierFactories;
 import org.junit.Test;
@@ -87,5 +93,30 @@ public class TracerouteAnswererHelperTest {
         contains(
             allOf(
                 hasIngressNode(config.getHostname()), hasIngressInterface(activeIface.getName()))));
+  }
+
+  @Test
+  public void testGetFlows_ICMP() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration config =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("node")
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(config).build();
+    Interface iface =
+        nf.interfaceBuilder().setVrf(vrf).setOwner(config).setActive(true).setName("iface").build();
+    SpecifierContext ctxt =
+        MockSpecifierContext.builder()
+            .setConfigs(ImmutableMap.of(config.getHostname(), config))
+            .setLocationInfo(
+                ImmutableMap.of(
+                    Location.interfaceLocation(iface),
+                    new LocationInfo(true, Ip.parse("1.1.1.1").toIpSpace(), EmptyIpSpace.INSTANCE)))
+            .build();
+    PacketHeaderConstraints phc =
+        PacketHeaderConstraints.builder().setDstIp("8.8.8.8").setApplications("icmp/3/15").build();
+    Set<Flow> flows = new TracerouteAnswererHelper(phc, ".*", ctxt).getFlows();
+    assertThat(flows, contains(allOf(hasIpProtocol(IpProtocol.ICMP))));
   }
 }

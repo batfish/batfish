@@ -138,7 +138,7 @@ final class Utils {
 
   /** Creates a new interface on {@code c} with the provided name, address, and description. */
   static Interface newInterface(
-      String name, Configuration c, InterfaceAddress primaryAddress, String description) {
+      String name, Configuration c, @Nullable InterfaceAddress primaryAddress, String description) {
     return newInterface(name, c, c.getDefaultVrf().getName(), primaryAddress, description);
   }
 
@@ -150,7 +150,7 @@ final class Utils {
       String name,
       Configuration c,
       String vrfName,
-      InterfaceAddress primaryAddress,
+      @Nullable InterfaceAddress primaryAddress,
       String description) {
     checkArgument(
         c.getVrfs().containsKey(vrfName), "VRF %s does not exist on %s", vrfName, c.getHostname());
@@ -311,7 +311,11 @@ final class Utils {
   }
 
   /**
-   * Connects Internet or Vpn gateway to its VPC and adds static routes on both nodes.
+   * Connects VPC-level gateways such as Internet gateway, VPN gateway, VPC endpoint gateway to its
+   * VPC and adds static routes on both nodes.
+   *
+   * <p>The VPC for such gateways must be in the same region and account, so the search for
+   * connecting VPC is performed within that scope.
    *
    * @retruns The Interface on the gateway for the new link or null if the VPC is not found.
    */
@@ -331,7 +335,7 @@ final class Utils {
       return null;
     }
 
-    Configuration vpcCfg = awsConfiguration.getConfigurationNodes().get(Vpc.nodeName(vpc.getId()));
+    Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
       warnings.redFlag(String.format("Configuration for VPC with id %s not found", vpcId));
       return null;
@@ -339,8 +343,8 @@ final class Utils {
 
     String vrfNameOnVpc = Vpc.vrfNameForLink(gatewayId);
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      Vrf vrf = Vrf.builder().setOwner(vpcCfg).setName(vrfNameOnVpc).build();
-      vpc.initializeVrf(vrf);
+      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpcId));
+      return null;
     }
 
     connect(awsConfiguration, gatewayCfg, DEFAULT_VRF_NAME, vpcCfg, vrfNameOnVpc, "");
@@ -458,6 +462,11 @@ final class Utils {
       ifaceAddressesBuilder.add(address);
     }
     Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
+    if (ifaceAddresses.isEmpty()) {
+      warnings.redFlag(
+          String.format("No valid address found for interface '%s'", netInterface.getId()));
+    }
+    @Nullable
     ConcreteInterfaceAddress primaryAddress =
         ifaceAddresses.stream()
             .filter(addr -> addr.getIp().equals(netInterface.getPrimaryPrivateIp().getPrivateIp()))
@@ -468,8 +477,7 @@ final class Utils {
                       String.format(
                           "Primary address not found for interface '%s'. Using lowest address as primary",
                           netInterface.getId()));
-                  // get() is safe here: ifaceAddresses cannot be empty
-                  return ifaceAddresses.stream().min(naturalOrder()).get();
+                  return ifaceAddresses.stream().min(naturalOrder()).orElse(null);
                 });
 
     Interface iface =

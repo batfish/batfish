@@ -1,10 +1,13 @@
 package org.batfish.representation.aws;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,12 +24,12 @@ import java.io.IOException;
 import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
@@ -36,7 +39,7 @@ public class VpnGatewayTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String text = CommonUtil.readResource("org/batfish/representation/aws/VpnGatewayTest.json");
+    String text = readResource("org/batfish/representation/aws/VpnGatewayTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");
@@ -86,6 +89,11 @@ public class VpnGatewayTest {
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
+    String vrfNameOnVpc = vrfNameForLink(vgw.getId());
+    vpcConfig
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
+
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
     assertThat(vgwConfig.getHumanName(), equalTo("vgw-name"));
@@ -123,6 +131,11 @@ public class VpnGatewayTest {
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))
             .setVpnConnections(ImmutableMap.of(vpnConnection.getId(), vpnConnection))
             .build();
+
+    String vrfNameOnVpc = vrfNameForLink(vgw.getId());
+    vpcConfig
+        .getVrfs()
+        .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
 
     ConvertedConfiguration awsConfiguration =
         new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));

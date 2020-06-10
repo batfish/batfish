@@ -1,0 +1,17 @@
+! Command: show running-config
+! device: localhost (vEOS, EOS-4.18.10M)
+!
+! boot system flash:/vEOS-lab.swi
+!
+hostname arista_advertiser
+!
+interface Ethernet1
+   no switchport
+   ip address 1.2.3.5/24
+   ip ospf area 1
+!
+ip route 0.0.0.0/0 Null0
+!
+router ospf 1
+   redistribute static
+!

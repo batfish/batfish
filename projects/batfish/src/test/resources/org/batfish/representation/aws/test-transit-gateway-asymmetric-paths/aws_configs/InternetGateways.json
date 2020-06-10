@@ -1,0 +1,36 @@
+{
+ "InternetGateways": [
+  {
+   "Attachments": [
+    {
+     "State": "available",
+     "VpcId": "vpc-0c7ecdaddf451b56d"
+    }
+   ],
+   "InternetGatewayId": "igw-063b0d31ebd4e4c5e",
+   "OwnerId": "554773406868",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "bat"
+    }
+   ]
+  },
+  {
+   "Attachments": [
+    {
+     "State": "available",
+     "VpcId": "vpc-0de868624d5f787db"
+    }
+   ],
+   "InternetGatewayId": "igw-0f2c5f8ac8f5d475c",
+   "OwnerId": "554773406868",
+   "Tags": [
+    {
+     "Key": "Name",
+     "Value": "fish"
+    }
+   ]
+  }
+ ]
+}

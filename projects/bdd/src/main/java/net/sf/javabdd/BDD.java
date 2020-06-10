@@ -502,6 +502,18 @@ public abstract class BDD {
   public abstract BDD exist(BDD var);
 
   /**
+   * Project this BDD onto the variables in the set. i.e. existentially quantify all other
+   * variables.
+   *
+   * <p>Compare to bdd_project.
+   *
+   * @param var BDD containing the variables to be projected onto
+   * @return the result of the projection
+   * @see net.sf.javabdd.BDDDomain#set()
+   */
+  public abstract BDD project(BDD var);
+
+  /**
    * Universal quantification of variables. Removes all occurrences of this BDD in variables in the
    * set var by universal quantification.
    *
@@ -661,6 +673,15 @@ public abstract class BDD {
    * @return one satisfying variable assignment
    */
   public abstract BDD fullSatOne();
+
+  /**
+   * Finds one satisfying variable assignment, deterministically produced as a function of the seed.
+   * Finds a BDD with exactly one variable at all levels. The new BDD implies this BDD and is not
+   * false unless this BDD is false.
+   *
+   * @return one satisfying variable assignment
+   */
+  public abstract BDD randomFullSatOne(int seed);
 
   /**
    * Finds one satisfying variable assignment. Finds a minterm in this BDD. The <tt>var</tt>
