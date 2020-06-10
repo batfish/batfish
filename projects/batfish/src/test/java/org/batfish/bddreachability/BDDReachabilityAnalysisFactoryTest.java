@@ -1505,9 +1505,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
   /**
    * Constructs a network with configs c1 and (if {@code withNeighbor}) c2.
    *
-   * <p>c1 has VRFs vrf1 and vrf2, and interfaces INGRESS_IFACE and i1. INGRESS_IFACE has a packet
-   * policy that does a FIB lookup in vrf2 for flows with dst IPs in 8.8.8.0/24 and otherwise drops.
-   * vrf2 has a static route for 8.8.8.0/24 that sends traffic out i1.
+   * <p>c1 has VRFs vrf1 and vrf2, and interfaces INGRESS_IFACE and i1 in vrf1. INGRESS_IFACE has a
+   * packet policy that does a FIB lookup in vrf2 for flows with dst IPs in 8.8.8.0/24 and otherwise
+   * drops. vrf2 has a static route for 8.8.8.0/24 that sends traffic out i1.
    *
    * <p>If included, c2 has interface i1 on the same subnet as c1[i1].
    */
