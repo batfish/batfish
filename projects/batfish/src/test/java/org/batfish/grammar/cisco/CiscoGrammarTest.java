@@ -1043,11 +1043,20 @@ public final class CiscoGrammarTest {
   @Test
   public void testAsaGh5875() throws IOException {
     Configuration c = parseConfig("asa-gh-5875");
-    String aclName = computeServiceObjectGroupAclName("SOME_GROUP");
-    assertThat(c, hasIpAccessList(aclName));
-    IpAccessList acl = c.getIpAccessLists().get(aclName);
     BDDPacket p = new BDDPacket();
-    assertThat(IpAccessListToBdd.toBDD(p, acl), BDDMatchers.isOne());
+
+    {
+      String aclName = computeServiceObjectGroupAclName("IP_GROUP");
+      assertThat(c, hasIpAccessList(aclName));
+      IpAccessList acl = c.getIpAccessLists().get(aclName);
+      assertThat(IpAccessListToBdd.toBDD(p, acl), BDDMatchers.isOne());
+    }
+    {
+      String aclName = computeServiceObjectGroupAclName("TCP_GROUP");
+      assertThat(c, hasIpAccessList(aclName));
+      IpAccessList acl = c.getIpAccessLists().get(aclName);
+      assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.TCP)));
+    }
   }
 
   @Test
