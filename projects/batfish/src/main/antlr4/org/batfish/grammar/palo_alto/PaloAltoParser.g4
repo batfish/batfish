@@ -142,6 +142,11 @@ set_line_device_group
     DEVICE_GROUP name = variable statement_device_group
 ;
 
+set_line_readonly
+:
+    READONLY null_rest_of_line
+;
+
 /*
  * Device-group supports a subset of device configuration (statement_config_devices)
  * plus a couple device-group / panorama specific items
@@ -168,6 +173,7 @@ set_line_tail
     set_line_config_devices
     | set_line_config_general
     | set_line_device_group
+    | set_line_readonly
     | set_line_template
     | set_line_template_stack
     | s_policy

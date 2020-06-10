@@ -1083,6 +1083,11 @@ QOS
     'qos'
 ;
 
+READONLY
+:
+    'readonly'
+;
+
 RECURRING
 :
     'recurring'

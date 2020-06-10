@@ -86,3 +86,7 @@ set vsys vsys1 log-settings syslog NAME server NAME transport UDP
 set vsys vsys1 log-settings profiles NAME match-list ML_NAME log-type foo
 set vsys vsys1 profiles dos-protection
 set vsys vsys1 profile-group NAME
+# Readonly lines are related to firewalls managed by a panorama node
+set readonly devices localhost.localdomain device-group DG1 id 16
+set readonly devices localhost.localdomain template T1 id 12
+set readonly devices localhost.localdomain template T1 config devices localhost.localdomain vsys vsys1 zone Z1 id 14
