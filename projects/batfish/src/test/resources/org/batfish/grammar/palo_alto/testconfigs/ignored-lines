@@ -68,6 +68,9 @@ set shared botnet configuration unknown-applications unknown-tcp destinations-pe
 set shared botnet report topn 100
 set shared botnet report scheduled yes
 #
+set shared admin-role A1 role panorama cli superuser
+set shared admin-role A1 role panorama contextswitch monitor pdf-reports manage-pdf-summary enable
+#
 set tag PublicNW
 #
 set mgt-config users admin phash $1$vqgaovyp$BA8m4uld.cxY2T/n9ihK2.
