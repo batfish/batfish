@@ -3561,7 +3561,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitService_specifier_protocol(Service_specifier_protocolContext ctx) {
-    _currentServiceObject.addProtocol(toIpProtocol(ctx.protocol()));
+    @Nullable IpProtocol protocol = toIpProtocol(ctx.protocol());
+    if (protocol != null) {
+      _currentServiceObject.addProtocol(protocol);
+    }
+    // Else protocol is ip or ipv4, so anything is valid.
   }
 
   @Override
