@@ -14,10 +14,7 @@ options {
 
 s_shared
 :
-    SHARED
-    (
-        ss_common
-    )
+    SHARED ss_common?
 ;
 
 // Common syntax between vsys, panorama, and other shared contexts
