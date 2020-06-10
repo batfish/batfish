@@ -949,8 +949,8 @@ public final class BDDReachabilityAnalysisFactory {
                             preInInterface,
                             new PbrFibLookup(nodeName, vrfName, lookupVrf),
                             compose(
-                                transitionByFibLookupEntry.getValue(),
-                                constraint(outgoingOriginalFlowFiltersConstraint)));
+                                constraint(outgoingOriginalFlowFiltersConstraint),
+                                transitionByFibLookupEntry.getValue()));
                       });
             });
   }
@@ -1308,9 +1308,9 @@ public final class BDDReachabilityAnalysisFactory {
               BDD permitOriginalFlowBdd =
                   originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(ifaceName);
 
-              /* 1. constrain to outgoing interface (applies outgoingOriginalFlowFilter)
-               * 2. erase outgoing interface vars
-               * 3. pre-transformation filter
+              /* 1. pre-transformation filter
+               * 2. constrain to outgoing interface (applies outgoingOriginalFlowFilter)
+               * 3. erase outgoing interface vars
                * 4. outgoing transformation
                * 5. post-transformation filter
                */
