@@ -1,0 +1,8 @@
+!
+hostname asa-gh-5875
+! test for https://github.com/batfish/batfish/issues/5875
+!
+object-group service SOME_GROUP
+ ! This should mean any ip packet, and not crash.
+ service-object ip
+!
