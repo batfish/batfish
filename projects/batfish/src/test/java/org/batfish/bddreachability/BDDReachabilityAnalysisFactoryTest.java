@@ -32,10 +32,8 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
@@ -2013,7 +2011,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     IpAccessList outgoingFilter =
         ab.setLines(acceptSrc1, acceptSrc3, acceptSrc4, REJECT_ALL).build();
 
-    // Create i1 on c2 with the appropriate filters
+    // Create i1 on c1 with the appropriate filters
     Vrf vrf = nf.vrfBuilder().setOwner(c1).build();
     nf.interfaceBuilder()
         .setName("i1")
@@ -2106,48 +2104,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testOutgoingFilters_ignoreFiltersOn() throws IOException {
-    /* Test that all flows are permitted when ignoreFilters is on. */
-    String c1 = "c1";
-    String i1 = "i1";
-    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(false);
-    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, true);
-
-    StateExpr deliveredToSubnet = new PreOutInterfaceDeliveredToSubnet(c1, i1);
-    StateExpr exitsNetwork = new PreOutInterfaceExitsNetwork(c1, i1);
-    StateExpr neighborUnreachable = new PreOutInterfaceNeighborUnreachable(c1, i1);
-    StateExpr insufficientInfo = new PreOutInterfaceInsufficientInfo(c1, i1);
-
-    // BddOutgoingOriginalFlowFilterManager should be trivial when ignoreFilters is on
-    assertTrue(factory.getBddOutgoingOriginalFlowFilterManagers().get(c1).isTrivial());
-
-    // Test permit edges for ignoreFilters
-    StateExpr nodeDeliveredToSubnet = new NodeInterfaceDeliveredToSubnet(c1, i1);
-    StateExpr nodeExitsNetwork = new NodeInterfaceExitsNetwork(c1, i1);
-    StateExpr nodeNeighborUnreachable = new NodeInterfaceNeighborUnreachable(c1, i1);
-    StateExpr nodeInsufficientInfo = new NodeInterfaceInsufficientInfo(c1, i1);
-    List<Edge> permitEdges =
-        factory
-            .generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition()
-            .collect(ImmutableList.toImmutableList());
-    Matcher<Transition> expectedTransition = mapsForward(ONE, ONE);
-    assertThat(
-        permitEdges,
-        containsInAnyOrder(
-            edge(deliveredToSubnet, nodeDeliveredToSubnet, expectedTransition),
-            edge(exitsNetwork, nodeExitsNetwork, expectedTransition),
-            edge(neighborUnreachable, nodeNeighborUnreachable, expectedTransition),
-            edge(insufficientInfo, nodeInsufficientInfo, expectedTransition)));
-
-    // Test there are no deny edges for ignoreFilters (all transitions are zero)
-    List<Edge> denyEdges =
-        factory
-            .generateRules_PreOutInterfaceDisposition_NodeDropAclOut()
-            .collect(ImmutableList.toImmutableList());
-    assertThat(denyEdges, empty());
-  }
-
-  @Test
   public void testOutgoingFilters_PreOutEdgePostNat() throws IOException {
     /*
     Test that NAT flow is denied unless it matches original flow filter and outgoing filter (the
@@ -2212,34 +2168,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   @Test
-  public void testOutgoingFilters_PreOutEdgePostNat_ignoreFiltersOn() throws IOException {
-    /* Test that all flows are permitted when ignoreFilters is on. */
-    String c1 = "c1";
-    String c2 = "c2";
-    String i1 = "i1";
-    String i2 = "i2";
-    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(true);
+  public void testOutgoingOriginalFlowFilterManagersTrivialIfIgnoreFiltersOn() throws IOException {
+    /* When ignoreFilters is on, we artificially make all original flow filter managers trivial. */
+    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(false);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, true);
-
-    StateExpr preOutEdgePostNat = new PreOutEdgePostNat(c1, i1, c2, i2);
-
-    // BddOutgoingOriginalFlowFilterManager should be trivial when ignoreFilters is on
-    assertTrue(factory.getBddOutgoingOriginalFlowFilterManagers().get(c1).isTrivial());
-
-    // Test permit edge to PreInInterface states allows all flows
-    StateExpr preInInterface = new PreInInterface(c2, i2);
-    List<Edge> permitEdges =
-        factory
-            .generateRules_PreOutEdgePostNat_PreInInterface()
-            .collect(ImmutableList.toImmutableList());
-    assertThat(
-        permitEdges, hasItem(edge(preOutEdgePostNat, preInInterface, mapsForward(ONE, ONE))));
-
-    // No edge should exist to NodeDropAclOut state for ignoreFilters (transition should be zero)
-    List<Edge> denyEdges =
-        factory
-            .generateRules_PreOutEdgePostNat_NodeDropAclOut()
-            .collect(ImmutableList.toImmutableList());
-    assertThat(denyEdges, empty());
+    assertTrue(factory.getBddOutgoingOriginalFlowFilterManagers().get("c1").isTrivial());
   }
 }
