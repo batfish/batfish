@@ -88,6 +88,8 @@ s_network
         | sn_qos
         | sn_shared_gateway
         | sn_virtual_router
+        | sn_virtual_wire
+        | sn_vlan
     )
 ;
 
