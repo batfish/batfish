@@ -94,8 +94,8 @@ translated_address_list_item
 :
     (
         address = ip_address
-        | prefix = IP_PREFIX
-        | range = IP_RANGE
+        | prefix = ip_prefix
+        | range = ip_range
         | name = variable
     )
 ;

@@ -39,13 +39,13 @@ sa_ip_netmask
     IP_NETMASK
     (
         ip_address
-        | IP_PREFIX
+        | ip_prefix
     )
 ;
 
 sa_ip_range
 :
-    IP_RANGE_LITERAL IP_RANGE
+    IP_RANGE_LITERAL ip_range
 ;
 
 sa_tag

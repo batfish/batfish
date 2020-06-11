@@ -18,7 +18,7 @@ null_rest_of_line
 interface_address
 :
     addr = ip_address
-    | addr_with_mask = IP_PREFIX
+    | addr_with_mask = ip_prefix
 ;
 
 ip_address
@@ -34,6 +34,11 @@ ip_address_or_slash32
 ip_prefix
 :
     IP_PREFIX
+;
+
+ip_range
+:
+    IP_RANGE
 ;
 
 ip_prefix_list
@@ -71,8 +76,8 @@ src_or_dst_list_item
     (
         any = ANY
         | address = ip_address
-        | prefix = IP_PREFIX
-        | range = IP_RANGE
+        | prefix = ip_prefix
+        | range = ip_range
         | name = variable
     )
 ;
