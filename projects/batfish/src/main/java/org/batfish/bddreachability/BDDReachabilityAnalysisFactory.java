@@ -14,8 +14,7 @@ import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
-import static org.batfish.bddreachability.transition.Transitions.removeLastHopConstraint;
-import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.removeNodeSpecificConstraints;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -165,6 +164,8 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting final @Nonnull BDDFibGenerator _bddFibGenerator;
 
   private final Map<String, BDDSourceManager> _bddSourceManagers;
+  private final Map<String, BDDOutgoingOriginalFlowFilterManager>
+      _bddOutgoingOriginalFlowFilterManagers;
 
   // Needed when initializing sessions.
   private final @Nullable LastHopOutgoingInterfaceManager _lastHopMgr;
@@ -261,6 +262,18 @@ public final class BDDReachabilityAnalysisFactory {
               : null;
       _requiredTransitNodeBDD = _bddPacket.allocateBDDBit("requiredTransitNodes");
       _bddSourceManagers = BDDSourceManager.forNetwork(_bddPacket, configs, initializeSessions);
+      if (_ignoreFilters) {
+        // If ignoring filters, make all BDDOutgoingOriginalFlowFilterManagers trivial; they should
+        // never enforce any constraints.
+        BDDOutgoingOriginalFlowFilterManager empty =
+            BDDOutgoingOriginalFlowFilterManager.empty(_bddPacket);
+        _bddOutgoingOriginalFlowFilterManagers =
+            toImmutableMap(configs.keySet(), Function.identity(), k -> empty);
+      } else {
+        _bddOutgoingOriginalFlowFilterManagers =
+            BDDOutgoingOriginalFlowFilterManager.forNetwork(
+                _bddPacket, configs, _bddSourceManagers);
+      }
       _configs = configs;
       _dstIpSpaceToBDD = _bddPacket.getDstIpSpaceToBDD();
       _srcIpSpaceToBDD = _bddPacket.getSrcIpSpaceToBDD();
@@ -774,9 +787,11 @@ public final class BDDReachabilityAnalysisFactory {
                 new Edge(
                     new NodeDropNoRoute(node),
                     DropNoRoute.INSTANCE,
-                    compose(
-                        removeSourceConstraint(_bddSourceManagers.get(node)),
-                        removeLastHopConstraint(_lastHopMgr, node))));
+                    removeNodeSpecificConstraints(
+                        node,
+                        _lastHopMgr,
+                        _bddOutgoingOriginalFlowFilterManagers.get(node),
+                        _bddSourceManagers.get(node))));
   }
 
   private static Stream<Edge> generateRules_NodeDropNullRoute_DropNullRoute(
@@ -800,9 +815,11 @@ public final class BDDReachabilityAnalysisFactory {
               return new Edge(
                   nodeInterfaceDispositionConstructor.apply(node, ifaceName),
                   dispositionNode,
-                  compose(
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                  removeNodeSpecificConstraints(
+                      node,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(node),
+                      _bddSourceManagers.get(node)));
             });
   }
 
@@ -845,8 +862,11 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       constraint(aclDenyBDD),
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                      removeNodeSpecificConstraints(
+                          node,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node),
+                          _bddSourceManagers.get(node))));
             });
   }
 
@@ -883,8 +903,11 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       constraint(aclDenyBDD),
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                      removeNodeSpecificConstraints(
+                          node,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node),
+                          _bddSourceManagers.get(node))));
             });
   }
 
@@ -902,12 +925,16 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       denyTransition,
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                      removeNodeSpecificConstraints(
+                          node,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node),
+                          _bddSourceManagers.get(node))));
             });
   }
 
-  private Stream<Edge> generateRules_PreInInterface_PbrFibLookup() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreInInterface_PbrFibLookup() {
     return getInterfaces()
         .filter(iface -> iface.getRoutingPolicyName() != null)
         .flatMap(
@@ -915,6 +942,10 @@ public final class BDDReachabilityAnalysisFactory {
               String nodeName = iface.getOwner().getHostname();
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
+              BDD outgoingOriginalFlowFiltersConstraint =
+                  _bddOutgoingOriginalFlowFilterManagers
+                      .get(nodeName)
+                      .outgoingOriginalFlowFiltersConstraint();
               Map<FibLookup, Transition> transitionByFibLookup =
                   _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
               VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
@@ -928,7 +959,9 @@ public final class BDDReachabilityAnalysisFactory {
                         return new Edge(
                             preInInterface,
                             new PbrFibLookup(nodeName, vrfName, lookupVrf),
-                            transitionByFibLookupEntry.getValue());
+                            compose(
+                                constraint(outgoingOriginalFlowFiltersConstraint),
+                                transitionByFibLookupEntry.getValue()));
                       });
             });
   }
@@ -1014,7 +1047,8 @@ public final class BDDReachabilityAnalysisFactory {
     return _ignoreFilters ? _one : aclPermitBDD(node, acl);
   }
 
-  private Stream<Edge> generateRules_PreInInterface_PostInInterface() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreInInterface_PostInInterface() {
     return getInterfaces()
         // Policy-based routing edges handled elsewhere
         .filter(iface -> iface.getRoutingPolicyName() == null)
@@ -1028,10 +1062,15 @@ public final class BDDReachabilityAnalysisFactory {
               PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
               BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
+              BDD outgoingOriginalFlowFiltersConstraint =
+                  _bddOutgoingOriginalFlowFilterManagers
+                      .get(nodeName)
+                      .outgoingOriginalFlowFiltersConstraint();
 
               Transition transition =
                   compose(
                       constraint(inAclBDD),
+                      constraint(outgoingOriginalFlowFiltersConstraint),
                       _bddIncomingTransformations.get(nodeName).get(ifaceName));
               return new Edge(preState, postState, transition);
             });
@@ -1063,8 +1102,11 @@ public final class BDDReachabilityAnalysisFactory {
                       new NodeDropAclOut(node1),
                       compose(
                           constraint(denyPreNat),
-                          removeSourceConstraint(_bddSourceManagers.get(node1)),
-                          removeLastHopConstraint(_lastHopMgr, node1))));
+                          removeNodeSpecificConstraints(
+                              node1,
+                              _lastHopMgr,
+                              _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                              _bddSourceManagers.get(node1)))));
             });
   }
 
@@ -1097,7 +1139,8 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreOutEdgePostNat_NodeDropAclOut() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreOutEdgePostNat_NodeDropAclOut() {
     if (_ignoreFilters) {
       return Stream.of();
     }
@@ -1117,19 +1160,27 @@ public final class BDDReachabilityAnalysisFactory {
                 return Stream.of();
               }
 
+              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+                  _bddOutgoingOriginalFlowFilterManagers.get(node1);
+              BDD originalFlowAclDenyBdd =
+                  originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(iface1);
               BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
               return Stream.of(
                   new Edge(
                       new PreOutEdgePostNat(node1, iface1, node2, iface2),
                       new NodeDropAclOut(node1),
                       compose(
-                          constraint(aclDenyBDD),
-                          removeSourceConstraint(_bddSourceManagers.get(node1)),
-                          removeLastHopConstraint(_lastHopMgr, node1))));
+                          constraint(aclDenyBDD.or(originalFlowAclDenyBdd)),
+                          removeNodeSpecificConstraints(
+                              node1,
+                              _lastHopMgr,
+                              _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                              _bddSourceManagers.get(node1)))));
             });
   }
 
-  private Stream<Edge> generateRules_PreOutEdgePostNat_PreInInterface() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreOutEdgePostNat_PreInInterface() {
     return _topologyEdges.stream()
         .map(
             edge -> {
@@ -1143,13 +1194,21 @@ public final class BDDReachabilityAnalysisFactory {
               BDD aclPermitBDD = ignorableAclPermitBDD(node1, i1.getOutgoingFilter());
               assert aclPermitBDD != null;
 
+              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+                  _bddOutgoingOriginalFlowFilterManagers.get(node1);
+              BDD originalFlowAclPermitBdd =
+                  originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(iface1);
+
               return new Edge(
                   new PreOutEdgePostNat(node1, iface1, node2, iface2),
                   new PreInInterface(node2, iface2),
                   compose(
-                      constraint(aclPermitBDD),
-                      removeLastHopConstraint(_lastHopMgr, node1),
-                      removeSourceConstraint(_bddSourceManagers.get(node1)),
+                      constraint(aclPermitBDD.and(originalFlowAclPermitBdd)),
+                      removeNodeSpecificConstraints(
+                          node1,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                          _bddSourceManagers.get(node1)),
                       addSourceInterfaceConstraint(_bddSourceManagers.get(node2), iface2),
                       addLastHopConstraint(_lastHopMgr, node1, iface1, node2, iface2)));
             });
@@ -1165,6 +1224,8 @@ public final class BDDReachabilityAnalysisFactory {
         .flatMap(
             nodeEntry -> {
               String node = nodeEntry.getKey();
+              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+                  _bddOutgoingOriginalFlowFilterManagers.get(node);
               return nodeEntry.getValue().getVrfs().entrySet().stream()
                   .flatMap(
                       vrfEntry -> {
@@ -1173,11 +1234,15 @@ public final class BDDReachabilityAnalysisFactory {
                             .stream()
                             .filter(
                                 iface ->
-                                    iface.getPreTransformationOutgoingFilter() != null
+                                    iface.getOutgoingOriginalFlowFilter() != null
+                                        || iface.getPreTransformationOutgoingFilter() != null
                                         || iface.getOutgoingFilter() != null)
                             .flatMap(
                                 iface -> {
                                   String ifaceName = iface.getName();
+                                  BDD denyOriginalFlowBdd =
+                                      originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(
+                                          ifaceName);
                                   BDD denyPreAclBDD =
                                       ignorableAclDenyBDD(
                                           node, iface.getPreTransformationOutgoingFilter());
@@ -1186,26 +1251,30 @@ public final class BDDReachabilityAnalysisFactory {
                                   Transition transformation =
                                       _bddOutgoingTransformations.get(node).get(ifaceName);
 
-                                  // DENIED_OUT: either denied by the pre-Transformation ACL or
-                                  // transformed and denied by the post-Transformation ACL.
+                                  // DENIED_OUT can be due to any of:
+                                  // - denied by the outgoingOriginalFlowFilter
+                                  // - denied by the pre-Transformation ACL
+                                  // - transformed and denied by the post-Transformation ACL
                                   Transition deniedFlows =
                                       branch(
-                                          // branch on whether denied by pre-trans ACL
-                                          denyPreAclBDD,
-                                          // deny all flows denied by pre-trans ACL
+                                          // branch on whether denied before transformation
+                                          denyOriginalFlowBdd.or(denyPreAclBDD),
+                                          // deny all flows denied by pre-trans ACLs
                                           IDENTITY,
-                                          // for flows permitted by pre-trans ACL, transform and
+                                          // for flows permitted by first two ACLs, transform and
                                           // then apply the post-trans ACL. deny any that are denied
                                           // by the post-trans ACL.
                                           compose(transformation, constraint(denyPostAclBDD)));
 
-                                  // We must clear any node-specific constraints before exiting the
-                                  // node.
+                                  // Clear any node-specific constraints before exiting the node.
                                   Transition transition =
                                       compose(
                                           deniedFlows,
-                                          removeSourceConstraint(_bddSourceManagers.get(node)),
-                                          removeLastHopConstraint(_lastHopMgr, node));
+                                          removeNodeSpecificConstraints(
+                                              node,
+                                              _lastHopMgr,
+                                              _bddOutgoingOriginalFlowFilterManagers.get(node),
+                                              _bddSourceManagers.get(node)));
 
                                   return Stream.of(
                                           new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
@@ -1224,19 +1293,25 @@ public final class BDDReachabilityAnalysisFactory {
         .flatMap(
             nodeEntry -> {
               String hostname = nodeEntry.getKey();
+              Transition removeNodeSpecificConstraints =
+                  removeNodeSpecificConstraints(
+                      hostname,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(hostname),
+                      _bddSourceManagers.get(hostname));
+              StateExpr nodeAccept = new NodeAccept(hostname);
               return nodeEntry.getValue().keySet().stream() // vrf names
                   .map(
                       vrf ->
                           new Edge(
                               new VrfAccept(hostname, vrf),
-                              new NodeAccept(hostname),
-                              compose(
-                                  removeSourceConstraint(_bddSourceManagers.get(hostname)),
-                                  removeLastHopConstraint(_lastHopMgr, hostname))));
+                              nodeAccept,
+                              removeNodeSpecificConstraints));
             });
   }
 
-  private Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition() {
     return getInterfaces()
         .flatMap(
             iface -> {
@@ -1252,13 +1327,19 @@ public final class BDDReachabilityAnalysisFactory {
                 return Stream.of();
               }
 
+              BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+                  _bddOutgoingOriginalFlowFilterManagers.get(node);
+              BDD permitOriginalFlowBdd =
+                  originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(ifaceName);
+
               /* 1. pre-transformation filter
-               * 2. outgoing transformation
-               * 3. post-transformation filter
+               * 2. constrain to outgoing interface (applies outgoingOriginalFlowFilter)
+               * 3. outgoing transformation
+               * 4. post-transformation filter
                */
               Transition transition =
                   compose(
-                      constraint(permitBeforeNatBDD),
+                      constraint(permitBeforeNatBDD.and(permitOriginalFlowBdd)),
                       outgoingTransformation,
                       constraint(permitAfterNatBDD));
               if (transition == ZERO) {
@@ -1587,6 +1668,7 @@ public final class BDDReachabilityAnalysisFactory {
                       _configs,
                       _bddSourceManagers,
                       _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers,
                       _aclPermitBDDs,
                       Stream.concat(generateEdges(), generateDispositionEdges(_configs.keySet())),
                       initializedSessions,
@@ -1941,6 +2023,11 @@ public final class BDDReachabilityAnalysisFactory {
     } finally {
       span.finish();
     }
+  }
+
+  public Map<String, BDDOutgoingOriginalFlowFilterManager>
+      getBddOutgoingOriginalFlowFilterManagers() {
+    return _bddOutgoingOriginalFlowFilterManagers;
   }
 
   public Map<String, BDDSourceManager> getBDDSourceManagers() {

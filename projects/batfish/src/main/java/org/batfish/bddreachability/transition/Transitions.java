@@ -370,18 +370,31 @@ public final class Transitions {
     return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr, iface);
   }
 
-  public static Transition removeLastHopConstraint(
+  public static Transition removeNodeSpecificConstraints(
+      String node,
+      @Nullable LastHopOutgoingInterfaceManager lastHopMgr,
+      BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr,
+      BDDSourceManager sourceMgr) {
+    return compose(
+        removeSourceConstraint(sourceMgr),
+        removeLastHopConstraint(lastHopMgr, node),
+        removeOutgoingInterfaceConstraints(originalFlowFilterMgr));
+  }
+
+  private static Transition removeLastHopConstraint(
       @Nullable LastHopOutgoingInterfaceManager mgr, String node) {
     return mgr == null || !mgr.isTrackedReceivingNode(node)
         ? IDENTITY
         : new RemoveLastHopConstraint(mgr, node);
   }
 
+  @VisibleForTesting
   public static Transition removeOutgoingInterfaceConstraints(
       BDDOutgoingOriginalFlowFilterManager mgr) {
     return mgr.isTrivial() ? IDENTITY : new RemoveOutgoingInterfaceConstraints(mgr);
   }
 
+  @VisibleForTesting
   public static Transition removeSourceConstraint(BDDSourceManager mgr) {
     return mgr.isTrivial() ? IDENTITY : new RemoveSourceConstraint(mgr);
   }
