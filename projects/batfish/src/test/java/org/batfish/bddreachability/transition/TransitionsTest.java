@@ -303,10 +303,11 @@ public class TransitionsTest {
   }
 
   @Test
-  public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint() {
+  public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_merge() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
-            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
+            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b", "c"));
+    checkState(mgr.isValidValue().isOne(), "manager needs to have isValidValue = 1");
     RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
     AddSourceConstraint add = new AddSourceConstraint(mgr, "a");
 
@@ -314,6 +315,18 @@ public class TransitionsTest {
     Transition expected =
         eraseAndSet(mgr.getFiniteDomain().getVar(), mgr.getSourceInterfaceBDD("a"));
     assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_no_merge() {
+    BDDSourceManager mgr =
+        BDDSourceManager.forSources(
+            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
+    checkState(
+        !mgr.isValidValue().isOne(), "manager needs to have nontrivial isValidValue constraint");
+    RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
+    AddSourceConstraint add = new AddSourceConstraint(mgr, "a");
+    assertNull(mergeComposed(remove, add));
   }
 
   private static List<Transition> mergeCompositeTransitions(Transition... transitions) {
