@@ -1,0 +1,5 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_snmp
+!
+snmp-server host 10.1.2.3 vrf default traps version 2c FOO udp-port 162
