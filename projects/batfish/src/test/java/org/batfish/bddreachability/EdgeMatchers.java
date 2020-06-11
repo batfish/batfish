@@ -12,26 +12,14 @@ import org.hamcrest.Matcher;
 
 /** {@link Matcher Matchers} for {@link Edge Edges}. */
 public final class EdgeMatchers {
-  /** Matches {@link Edge#getPostState}. */
-  public static Matcher<Edge> hasPostState(StateExpr expr) {
-    return new HasPostState(equalTo(expr));
-  }
-
-  /** Matches {@link Edge#getPreState}. */
-  public static Matcher<Edge> hasPreState(StateExpr expr) {
-    return new HasPreState(equalTo(expr));
-  }
-
-  /** Matches {@link Edge#getTransition()}. */
-  public static Matcher<Edge> hasTransition(Matcher<Transition> matcher) {
-    return new HasTransition(matcher);
-  }
-
   /**
-   * Matches {@link Edge#getPostState}, {@link Edge#getPreState}, and {@link Edge#getTransition}.
+   * Matches {@link Edge#getPreState}, {@link Edge#getPostState}, and {@link Edge#getTransition}.
    */
   public static Matcher<Edge> edge(
       StateExpr preState, StateExpr postState, Matcher<Transition> transitionMatcher) {
-    return allOf(hasPreState(preState), hasPostState(postState), hasTransition(transitionMatcher));
+    return allOf(
+        new HasPreState(equalTo(preState)),
+        new HasPostState(equalTo(postState)),
+        new HasTransition(transitionMatcher));
   }
 }

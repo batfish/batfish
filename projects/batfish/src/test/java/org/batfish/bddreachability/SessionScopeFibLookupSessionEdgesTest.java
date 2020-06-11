@@ -1,8 +1,6 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.bddreachability.EdgeMatchers.hasPostState;
-import static org.batfish.bddreachability.EdgeMatchers.hasPreState;
-import static org.batfish.bddreachability.EdgeMatchers.hasTransition;
+import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,13 +63,11 @@ public class SessionScopeFibLookupSessionEdgesTest {
     assertThat(
         actualEdges,
         contains(
-            allOf(
-                hasPreState(new PreInInterface(HOSTNAME, IFACE_NAME)),
-                hasPostState(new PostInVrfSession(HOSTNAME, VRF_NAME)),
-                hasTransition(
-                    allOf(
-                        mapsForward(ONE, expectedForwardFlows),
-                        mapsBackward(ONE, SESSION_HEADERS))))));
+            edge(
+                new PreInInterface(HOSTNAME, IFACE_NAME),
+                new PostInVrfSession(HOSTNAME, VRF_NAME),
+                allOf(
+                    mapsForward(ONE, expectedForwardFlows), mapsBackward(ONE, SESSION_HEADERS)))));
   }
 
   @Test
@@ -89,13 +85,13 @@ public class SessionScopeFibLookupSessionEdgesTest {
     assertThat(
         edges,
         containsInAnyOrder(
-            allOf(
-                hasPreState(new OriginateInterface(HOSTNAME, IFACE_NAME)),
-                hasPostState(new PostInVrfSession(HOSTNAME, VRF_NAME)),
-                hasTransition(expectedTransition)),
-            allOf(
-                hasPreState(new OriginateVrf(HOSTNAME, VRF_NAME)),
-                hasPostState(new PostInVrfSession(HOSTNAME, VRF_NAME)),
-                hasTransition(expectedTransition))));
+            edge(
+                new OriginateInterface(HOSTNAME, IFACE_NAME),
+                new PostInVrfSession(HOSTNAME, VRF_NAME),
+                expectedTransition),
+            edge(
+                new OriginateVrf(HOSTNAME, VRF_NAME),
+                new PostInVrfSession(HOSTNAME, VRF_NAME),
+                expectedTransition)));
   }
 }
