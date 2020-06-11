@@ -102,7 +102,8 @@ seltip_url
 ss_null
 :
     (
-        AUTHENTICATION_PROFILE
+        ADMIN_ROLE
+        | AUTHENTICATION_PROFILE
         | BOTNET
         | CERTIFICATE
         | CERTIFICATE_PROFILE
