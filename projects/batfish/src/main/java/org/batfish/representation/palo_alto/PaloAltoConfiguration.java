@@ -1890,19 +1890,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getPreRulebase().getSecurityRules().putAll(source.getPreRulebase().getSecurityRules());
 
     // NAT post
-    List<NatRule> postRulebaseNat = new ArrayList<>();
+    Map<String, NatRule> postRulebaseNat = new TreeMap<>(source.getPostRulebase().getNatRules());
     Map<String, NatRule> targetPostNat = target.getPostRulebase().getNatRules();
-    postRulebaseNat.addAll(source.getPostRulebase().getNatRules().values());
-    postRulebaseNat.addAll(targetPostNat.values());
+    postRulebaseNat.putAll(targetPostNat);
     targetPostNat.clear();
-    postRulebaseNat.forEach(r -> targetPostNat.put(r.getName(), r));
+    targetPostNat.putAll(postRulebaseNat);
     // Security post
-    List<SecurityRule> postRulebaseSecurity = new ArrayList<>();
+    Map<String, SecurityRule> postRulebaseSecurity =
+        new TreeMap<>(source.getPostRulebase().getSecurityRules());
     Map<String, SecurityRule> targetPostSecurity = target.getPostRulebase().getSecurityRules();
-    postRulebaseSecurity.addAll(source.getPostRulebase().getSecurityRules().values());
-    postRulebaseSecurity.addAll(targetPostSecurity.values());
+    postRulebaseSecurity.putAll(targetPostSecurity);
     targetPostSecurity.clear();
-    postRulebaseSecurity.forEach(r -> targetPostSecurity.put(r.getName(), r));
+    targetPostSecurity.putAll(postRulebaseSecurity);
   }
 
   /**
