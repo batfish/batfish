@@ -2099,7 +2099,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
         factory
             .generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition()
             .collect(ImmutableList.toImmutableList());
-    Matcher<Transition> expectedTransition = mapsForward(originalFlowFiltersConstraint, src1Bdd);
+
+    // Node-specific constraints cleared later in generateRules_NodeInterfaceDisposition_Disposition
+    Matcher<Transition> expectedTransition =
+        mapsForward(originalFlowFiltersConstraint, originalFlowFiltersConstraint.and(src1Bdd));
     assertThat(
         permitEdges,
         containsInAnyOrder(

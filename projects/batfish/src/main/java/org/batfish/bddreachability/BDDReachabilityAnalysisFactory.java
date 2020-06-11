@@ -14,9 +14,7 @@ import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.eraseAndSet;
-import static org.batfish.bddreachability.transition.Transitions.removeLastHopConstraint;
-import static org.batfish.bddreachability.transition.Transitions.removeOutgoingInterfaceConstraints;
-import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.removeNodeSpecificConstraints;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -789,9 +787,11 @@ public final class BDDReachabilityAnalysisFactory {
                 new Edge(
                     new NodeDropNoRoute(node),
                     DropNoRoute.INSTANCE,
-                    compose(
-                        removeSourceConstraint(_bddSourceManagers.get(node)),
-                        removeLastHopConstraint(_lastHopMgr, node))));
+                    removeNodeSpecificConstraints(
+                        node,
+                        _lastHopMgr,
+                        _bddOutgoingOriginalFlowFilterManagers.get(node),
+                        _bddSourceManagers.get(node))));
   }
 
   private static Stream<Edge> generateRules_NodeDropNullRoute_DropNullRoute(
@@ -815,9 +815,11 @@ public final class BDDReachabilityAnalysisFactory {
               return new Edge(
                   nodeInterfaceDispositionConstructor.apply(node, ifaceName),
                   dispositionNode,
-                  compose(
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                  removeNodeSpecificConstraints(
+                      node,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(node),
+                      _bddSourceManagers.get(node)));
             });
   }
 
@@ -860,8 +862,11 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       constraint(aclDenyBDD),
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                      removeNodeSpecificConstraints(
+                          node,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node),
+                          _bddSourceManagers.get(node))));
             });
   }
 
@@ -898,8 +903,11 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       constraint(aclDenyBDD),
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                      removeNodeSpecificConstraints(
+                          node,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node),
+                          _bddSourceManagers.get(node))));
             });
   }
 
@@ -917,8 +925,11 @@ public final class BDDReachabilityAnalysisFactory {
                   new NodeDropAclIn(node),
                   compose(
                       denyTransition,
-                      removeSourceConstraint(_bddSourceManagers.get(node)),
-                      removeLastHopConstraint(_lastHopMgr, node)));
+                      removeNodeSpecificConstraints(
+                          node,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node),
+                          _bddSourceManagers.get(node))));
             });
   }
 
@@ -1091,8 +1102,11 @@ public final class BDDReachabilityAnalysisFactory {
                       new NodeDropAclOut(node1),
                       compose(
                           constraint(denyPreNat),
-                          removeSourceConstraint(_bddSourceManagers.get(node1)),
-                          removeLastHopConstraint(_lastHopMgr, node1))));
+                          removeNodeSpecificConstraints(
+                              node1,
+                              _lastHopMgr,
+                              _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                              _bddSourceManagers.get(node1)))));
             });
   }
 
@@ -1157,9 +1171,11 @@ public final class BDDReachabilityAnalysisFactory {
                       new NodeDropAclOut(node1),
                       compose(
                           constraint(aclDenyBDD.or(originalFlowAclDenyBdd)),
-                          removeOutgoingInterfaceConstraints(originalFlowFilterMgr),
-                          removeSourceConstraint(_bddSourceManagers.get(node1)),
-                          removeLastHopConstraint(_lastHopMgr, node1))));
+                          removeNodeSpecificConstraints(
+                              node1,
+                              _lastHopMgr,
+                              _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                              _bddSourceManagers.get(node1)))));
             });
   }
 
@@ -1188,9 +1204,11 @@ public final class BDDReachabilityAnalysisFactory {
                   new PreInInterface(node2, iface2),
                   compose(
                       constraint(aclPermitBDD.and(originalFlowAclPermitBdd)),
-                      removeOutgoingInterfaceConstraints(originalFlowFilterMgr),
-                      removeLastHopConstraint(_lastHopMgr, node1),
-                      removeSourceConstraint(_bddSourceManagers.get(node1)),
+                      removeNodeSpecificConstraints(
+                          node1,
+                          _lastHopMgr,
+                          _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                          _bddSourceManagers.get(node1)),
                       addSourceInterfaceConstraint(_bddSourceManagers.get(node2), iface2),
                       addLastHopConstraint(_lastHopMgr, node1, iface1, node2, iface2)));
             });
@@ -1248,14 +1266,15 @@ public final class BDDReachabilityAnalysisFactory {
                                           // by the post-trans ACL.
                                           compose(transformation, constraint(denyPostAclBDD)));
 
-                                  // We must clear any node-specific constraints before exiting the
-                                  // node.
+                                  // Clear any node-specific constraints before exiting the node.
                                   Transition transition =
                                       compose(
                                           deniedFlows,
-                                          removeOutgoingInterfaceConstraints(originalFlowFilterMgr),
-                                          removeSourceConstraint(_bddSourceManagers.get(node)),
-                                          removeLastHopConstraint(_lastHopMgr, node));
+                                          removeNodeSpecificConstraints(
+                                              node,
+                                              _lastHopMgr,
+                                              _bddOutgoingOriginalFlowFilterManagers.get(node),
+                                              _bddSourceManagers.get(node)));
 
                                   return Stream.of(
                                           new PreOutInterfaceDeliveredToSubnet(node, ifaceName),
@@ -1274,15 +1293,20 @@ public final class BDDReachabilityAnalysisFactory {
         .flatMap(
             nodeEntry -> {
               String hostname = nodeEntry.getKey();
+              Transition removeNodeSpecificConstraints =
+                  removeNodeSpecificConstraints(
+                      hostname,
+                      _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers.get(hostname),
+                      _bddSourceManagers.get(hostname));
+              StateExpr nodeAccept = new NodeAccept(hostname);
               return nodeEntry.getValue().keySet().stream() // vrf names
                   .map(
                       vrf ->
                           new Edge(
                               new VrfAccept(hostname, vrf),
-                              new NodeAccept(hostname),
-                              compose(
-                                  removeSourceConstraint(_bddSourceManagers.get(hostname)),
-                                  removeLastHopConstraint(_lastHopMgr, hostname))));
+                              nodeAccept,
+                              removeNodeSpecificConstraints));
             });
   }
 
@@ -1310,14 +1334,12 @@ public final class BDDReachabilityAnalysisFactory {
 
               /* 1. pre-transformation filter
                * 2. constrain to outgoing interface (applies outgoingOriginalFlowFilter)
-               * 3. erase outgoing interface vars
-               * 4. outgoing transformation
-               * 5. post-transformation filter
+               * 3. outgoing transformation
+               * 4. post-transformation filter
                */
               Transition transition =
                   compose(
                       constraint(permitBeforeNatBDD.and(permitOriginalFlowBdd)),
-                      removeOutgoingInterfaceConstraints(originalFlowFilterMgr),
                       outgoingTransformation,
                       constraint(permitAfterNatBDD));
               if (transition == ZERO) {
@@ -1646,6 +1668,7 @@ public final class BDDReachabilityAnalysisFactory {
                       _configs,
                       _bddSourceManagers,
                       _lastHopMgr,
+                      _bddOutgoingOriginalFlowFilterManagers,
                       _aclPermitBDDs,
                       Stream.concat(generateEdges(), generateDispositionEdges(_configs.keySet())),
                       initializedSessions,

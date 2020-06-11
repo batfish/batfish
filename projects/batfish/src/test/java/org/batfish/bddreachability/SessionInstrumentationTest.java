@@ -1,5 +1,6 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager.forNetwork;
 import static org.batfish.bddreachability.EdgeMatchers.hasPostState;
 import static org.batfish.bddreachability.EdgeMatchers.hasPreState;
 import static org.batfish.bddreachability.EdgeMatchers.hasTransition;
@@ -87,6 +88,7 @@ public final class SessionInstrumentationTest {
   private BDDSourceManager _fwSrcMgr;
   private BDDSourceManager _source1SrcMgr;
   private Map<String, BDDSourceManager> _srcMgrs;
+  private Map<String, BDDOutgoingOriginalFlowFilterManager> _outgoingOriginalFlowFilterMgrs;
 
   private LastHopOutgoingInterfaceManager _lastHopMgr;
   private Map<String, Map<String, Supplier<BDD>>> _filterBdds;
@@ -157,6 +159,8 @@ public final class SessionInstrumentationTest {
           BDDSourceManager.forInterfaces(srcVar, ImmutableSet.of(SOURCE1_IFACE, FAKE_IFACE));
 
       _srcMgrs = ImmutableMap.of(FW, _fwSrcMgr, SOURCE1, _source1SrcMgr);
+      _outgoingOriginalFlowFilterMgrs =
+          forNetwork(PKT, ImmutableMap.of(FW, _fw, SOURCE1, _source1), _srcMgrs);
     }
 
     // Setup filter BDDs
@@ -171,37 +175,43 @@ public final class SessionInstrumentationTest {
   }
 
   private List<Edge> deliveredToSubnetEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeInterfaceDeliveredToSubnetEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeAcceptEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeAcceptEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeDropAclInEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeDropAclInEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeDropAclOutEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeDropAclOutEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> fibLookupSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .fibLookupSessionEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> preInInterfaceEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .preInInterfaceEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
