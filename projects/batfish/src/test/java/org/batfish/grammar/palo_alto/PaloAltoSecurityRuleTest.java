@@ -1,5 +1,9 @@
 package org.batfish.grammar.palo_alto;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
+import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertFalse;
@@ -14,16 +18,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,10 +64,79 @@ public class PaloAltoSecurityRuleTest {
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
   }
 
+  private PaloAltoConfiguration parsePaloAltoConfig(String hostname) {
+    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
+    Settings settings = new Settings();
+    configureBatfishTestSettings(settings);
+    PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
+    ParserRuleContext tree =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    PaloAltoControlPlaneExtractor extractor =
+        new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
+    extractor.processParseTree(TEST_SNAPSHOT, tree);
+    PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
+    pac.setVendor(ConfigurationFormat.PALO_ALTO);
+    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    pac.setFilename(TESTCONFIGS_PREFIX + hostname);
+    // crash if not serializable
+    pac = SerializationUtils.clone(pac);
+    pac.setAnswerElement(answerElement);
+    return pac;
+  }
+
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
+  }
+
+  @Test
+  public void testDeviceGroupSharedInheritance() throws IOException {
+    String panoramaHostname = "device-group-shared-inheritance";
+    String firewallId = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+    Configuration firewallConfig =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId)).findFirst().get();
+
+    Batfish batfish =
+        getBatfish(ImmutableSortedMap.of(firewallConfig.getHostname(), firewallConfig), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    String if1name = "ethernet1/1"; // 192.168.0.1/16
+    String if2name = "ethernet1/2"; // 10.0.0.1/16
+    Builder baseFlow =
+        Flow.builder()
+            .setIngressNode(firewallConfig.getHostname())
+            // Arbitrary ports and protocol
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP);
+    // This flow matches overridden ADDR2 source address
+    Flow flowReject =
+        baseFlow
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("192.168.1.2"))
+            .setDstIp(Ip.parse("10.0.0.2"))
+            .build();
+    // This flow matches shared ADDR3 source address
+    Flow flowPermit =
+        baseFlow
+            .setIngressInterface(if2name)
+            .setSrcIp(Ip.parse("192.168.2.3"))
+            .setDstIp(Ip.parse("10.0.0.2"))
+            .build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowPermit, flowReject), false);
+
+    // Rejected due to hitting shared pre-rulebase rule (deny) before device-group rule (allow)
+    assertFalse(traces.get(flowReject).get(0).getDisposition().isSuccessful());
+    // Permitted due to hitting device-group post-rulebase rule (allow) before any deny rule
+    assertTrue(traces.get(flowPermit).get(0).getDisposition().isSuccessful());
   }
 
   @Test
