@@ -2134,7 +2134,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitVrrt_destination(Vrrt_destinationContext ctx) {
-    _currentStaticRoute.setDestination(toPrefix(ctx.destination)));
+    _currentStaticRoute.setDestination(toPrefix(ctx.destination));
   }
 
   @Override
