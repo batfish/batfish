@@ -2962,4 +2962,33 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T2", 1));
     assertThat(ccae, hasNumReferrers(filename, TEMPLATE, "T3", 1));
   }
+
+  @Test
+  public void testDeviceGroupSharedInerhitance() {
+    String panoramaHostname = "device-group-shared-inheritance";
+    String firewallId1 = "00000001";
+    String addressObject1Name = "ADDR1";
+    String addressObject2Name = "ADDR2-override";
+    String addressObject3Name = "ADDR3-shared";
+
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get two nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    // Address only defined in device-group or shared namespace should directly end up in VI config
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(addressObject1Name), Ip.parse("192.168.1.1").toIpSpace());
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(addressObject3Name), Ip.parse("192.168.2.3").toIpSpace());
+    // Address defined in both device-group and shared namespace should have definition from
+    // device-group overwrite shared object definition
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(addressObject2Name), Ip.parse("192.168.1.2").toIpSpace());
+  }
 }

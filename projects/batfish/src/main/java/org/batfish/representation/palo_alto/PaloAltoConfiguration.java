@@ -1862,16 +1862,62 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Apply the specified device-group "pseudo-config" to this PaloAltoConfiguration. Any previously
-   * made changes will be overwritten in this process.
+   * Copy configuration from specified source vsys to specified target vsys. Any previously made
+   * changes will be overwritten in this process. Note: this only supports copying device-group vsys
+   * configuration (objects and rules) and rules are merged by appending pre-rulebase and prepending
+   * post-rulebase.
    */
-  private void applyDeviceGroup(PaloAltoConfiguration template) {
-    // Currently, we only support device-group attributes, which are associated w/ the Panorama vsys
-    // So just copy the Panorama vsys for now
-    Vsys panorama = template.getPanorama();
-    if (panorama != null) {
-      _virtualSystems.put(PANORAMA_VSYS_NAME, panorama);
+  private void applyVsys(@Nullable Vsys source, Vsys target) {
+    if (source == null) {
+      return;
     }
+    // Merge (and replace) objects
+    target.getApplications().putAll(source.getApplications());
+    target.getApplicationGroups().putAll(source.getApplicationGroups());
+    target.getAddressObjects().putAll(source.getAddressObjects());
+    target.getAddressGroups().putAll(source.getAddressGroups());
+    target.getServices().putAll(source.getServices());
+    target.getServiceGroups().putAll(source.getServiceGroups());
+    target.getTags().putAll(source.getTags());
+
+    /*
+     * Merge rules. Pre-rulebase rules should be appended, post-rulebase rules should be prepended.
+     * Note: "regular" rulebase does not apply to panorama
+     */
+    // NAT pre
+    target.getPreRulebase().getNatRules().putAll(source.getPreRulebase().getNatRules());
+    // Security pre
+    target.getPreRulebase().getSecurityRules().putAll(source.getPreRulebase().getSecurityRules());
+
+    // NAT post
+    Map<String, NatRule> postRulebaseNat = new TreeMap<>(source.getPostRulebase().getNatRules());
+    Map<String, NatRule> targetPostNat = target.getPostRulebase().getNatRules();
+    postRulebaseNat.putAll(targetPostNat);
+    targetPostNat.clear();
+    targetPostNat.putAll(postRulebaseNat);
+    // Security post
+    Map<String, SecurityRule> postRulebaseSecurity =
+        new TreeMap<>(source.getPostRulebase().getSecurityRules());
+    Map<String, SecurityRule> targetPostSecurity = target.getPostRulebase().getSecurityRules();
+    postRulebaseSecurity.putAll(targetPostSecurity);
+    targetPostSecurity.clear();
+    targetPostSecurity.putAll(postRulebaseSecurity);
+  }
+
+  /**
+   * Apply the specified device-group "pseudo-config" and shared config to this
+   * PaloAltoConfiguration. Any previously made changes will be overwritten in this process.
+   */
+  private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
+    // Create the target vsys (it shouldn't already exist)
+    Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+    _virtualSystems.put(PANORAMA_VSYS_NAME, target);
+
+    // Apply shared config first
+    applyVsys(shared, target);
+
+    // Apply the actual device-group after shared, to overwrite conflicting shared config
+    applyVsys(template.getPanorama(), target);
   }
 
   /**
@@ -1984,7 +2030,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
-                            c.applyDeviceGroup(deviceGroupEntry.getValue());
+                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
                             managedConfigurations.put(name, c);
                           }
                         }));
