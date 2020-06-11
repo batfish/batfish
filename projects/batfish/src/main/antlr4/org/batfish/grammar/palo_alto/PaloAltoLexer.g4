@@ -1503,6 +1503,11 @@ USED_BY_MALWARE
     'used-by-malware'
 ;
 
+USERID
+:
+    'userid'
+;
+
 USERNAME
 :
     'username'
