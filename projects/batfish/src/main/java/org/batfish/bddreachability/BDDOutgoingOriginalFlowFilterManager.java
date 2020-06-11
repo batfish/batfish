@@ -89,6 +89,21 @@ public final class BDDOutgoingOriginalFlowFilterManager {
                 .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
+  private static BDD allocatePermitVar(BDDPacket pkt) {
+    // Allocate permit var
+    checkState(BDDPacket.FIRST_PACKET_VAR > 0, "Can't allocate permit BDD variable");
+    return pkt.getFactory().ithVar(0);
+  }
+
+  /** Returns an empty {@link BDDOutgoingOriginalFlowFilterManager}. */
+  public static BDDOutgoingOriginalFlowFilterManager empty(BDDPacket pkt) {
+    return new BDDOutgoingOriginalFlowFilterManager(
+        new BDDFiniteDomain<>(pkt, VAR_NAME, ImmutableSet.of()),
+        null,
+        ImmutableMap.of(),
+        allocatePermitVar(pkt));
+  }
+
   /**
    * Initialize a {@link BDDOutgoingOriginalFlowFilterManager} for each {@link Configuration} in a
    * network. A single variable is shared by all of them.
@@ -141,8 +156,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
         BDDFiniteDomain.domainsWithSharedVariable(pkt, VAR_NAME, finiteDomainValues.build());
 
     // Allocate permit var
-    checkState(BDDPacket.FIRST_PACKET_VAR > 0, "Can't allocate permit BDD variable");
-    BDD permitVar = pkt.getFactory().ithVar(0);
+    BDD permitVar = allocatePermitVar(pkt);
 
     return toImmutableMap(
         configs.keySet(),

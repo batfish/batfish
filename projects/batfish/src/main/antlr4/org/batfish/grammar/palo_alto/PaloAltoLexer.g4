@@ -63,6 +63,11 @@ ADMIN_DISTS
     'admin-dists'
 ;
 
+ADMIN_ROLE
+:
+    'admin-role'
+;
+
 ADVERTISE
 :
     'advertise'
@@ -1501,6 +1506,11 @@ USED_BY
 USED_BY_MALWARE
 :
     'used-by-malware'
+;
+
+USERID
+:
+    'userid'
 ;
 
 USERNAME

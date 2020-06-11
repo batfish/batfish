@@ -110,6 +110,12 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   }
 
   @Test
+  public void testEmpty() {
+    BDDOutgoingOriginalFlowFilterManager empty = BDDOutgoingOriginalFlowFilterManager.empty(PKT);
+    assertTrue(empty.isTrivial());
+  }
+
+  @Test
   public void testFiniteDomainValues_managerTrivial() {
     // If no active interfaces are present, finite domain should be empty.
     {

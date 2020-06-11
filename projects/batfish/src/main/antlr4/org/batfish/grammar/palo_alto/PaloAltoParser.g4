@@ -22,6 +22,8 @@ import
     PaloAlto_template,
     PaloAlto_template_stack,
     PaloAlto_virtual_router,
+    PaloAlto_virtual_wire,
+    PaloAlto_vlan,
     PaloAlto_vsys,
     PaloAlto_zone;
 
@@ -113,6 +115,8 @@ statement_template_config_devices
     | s_network
     | s_shared
     | s_vsys
+    // Ignore irrelevant syntax
+    | s_null
 ;
 
 statement_template_stack
@@ -149,7 +153,7 @@ set_line_readonly
 
 /*
  * Device-group supports a subset of device configuration (statement_config_devices)
- * plus a couple device-group / panorama specific items
+ * plus some device-group / panorama specific items
  */
 statement_device_group
 :
@@ -162,6 +166,7 @@ statement_device_group
     | s_service_group
     | s_tag
     // Device-group / panorama specific
+    | s_log_settings
     | s_post_rulebase
     | s_pre_rulebase
     | sdg_description
