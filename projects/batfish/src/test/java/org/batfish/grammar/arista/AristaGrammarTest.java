@@ -2279,4 +2279,10 @@ public class AristaGrammarTest {
     assertTrue(policy.processBgpRoute(acceptRoute, Bgpv4Route.builder(), null, Direction.IN));
     assertFalse(policy.processBgpRoute(denyRoute, Bgpv4Route.builder(), null, Direction.IN));
   }
+
+  @Test
+  public void testSnmpExtraction() {
+    Configuration config = parseConfig("arista_snmp");
+    assertThat(config.getSnmpTrapServers(), containsInAnyOrder("10.1.2.3"));
+  }
 }
