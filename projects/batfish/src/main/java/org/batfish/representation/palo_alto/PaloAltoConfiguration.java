@@ -1864,7 +1864,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Copy configuration from specified source vsys to specified target vsys. Any previously made
    * changes will be overwritten in this process. Note: this only supports copying device-group vsys
-   * configuration (objects and rules) and rules are merged by prepending pre-rulebase and appending
+   * configuration (objects and rules) and rules are merged by appending pre-rulebase and prepending
    * post-rulebase.
    */
   private void applyVsys(@Nullable Vsys source, Vsys target) {
@@ -1881,23 +1881,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getTags().putAll(source.getTags());
 
     /*
-     * Merge rules. Pre-rulebase rules should be prepended, post-rulebase rules should be appended.
+     * Merge rules. Pre-rulebase rules should be appended, post-rulebase rules should be prepended.
      * Note: "regular" rulebase does not apply to panorama
      */
     // NAT pre
-    List<NatRule> preRulebaseNat = new ArrayList<>();
-    Map<String, NatRule> targetPreNat = target.getPreRulebase().getNatRules();
-    preRulebaseNat.addAll(targetPreNat.values());
-    preRulebaseNat.addAll(source.getPreRulebase().getNatRules().values());
-    targetPreNat.clear();
-    preRulebaseNat.forEach(r -> targetPreNat.put(r.getName(), r));
+    target.getPreRulebase().getNatRules().putAll(source.getPreRulebase().getNatRules());
     // Security pre
-    List<SecurityRule> preRulebaseSecurity = new ArrayList<>();
-    Map<String, SecurityRule> targetPreSecurity = target.getPreRulebase().getSecurityRules();
-    preRulebaseSecurity.addAll(targetPreSecurity.values());
-    preRulebaseSecurity.addAll(source.getPreRulebase().getSecurityRules().values());
-    targetPreSecurity.clear();
-    preRulebaseSecurity.forEach(r -> targetPreSecurity.put(r.getName(), r));
+    target.getPreRulebase().getSecurityRules().putAll(source.getPreRulebase().getSecurityRules());
 
     // NAT post
     List<NatRule> postRulebaseNat = new ArrayList<>();
