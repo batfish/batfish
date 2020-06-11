@@ -39,7 +39,7 @@ sa_ip_netmask
     IP_NETMASK
     (
         ip_address
-        | IP_PREFIX
+        | ip_prefix
     )
 ;
 
