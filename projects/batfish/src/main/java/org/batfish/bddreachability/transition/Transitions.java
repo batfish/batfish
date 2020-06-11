@@ -207,7 +207,7 @@ public final class Transitions {
       AddSourceConstraint add = (AddSourceConstraint) t2;
       BDDSourceManager mgr = remove.getSourceManager();
 
-      if(!mgr.isValidValue().isOne()) {
+      if (!mgr.isValidValue().isOne()) {
         // cannot merge, because we'd lose the isValidConstraint RemoveSourceConstraint imposes in
         // the backward direction.
         return null;
