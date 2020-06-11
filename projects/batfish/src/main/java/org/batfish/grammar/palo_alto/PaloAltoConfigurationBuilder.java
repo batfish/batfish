@@ -1472,7 +1472,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (ctx.ip_address() != null) {
       _currentAddressObject.setIp(toIp(ctx.ip_address()));
     } else if (ctx.ip_prefix() != null) {
-      _currentAddressObject.setPrefix(Prefix.parse(getText(ctx.ip_prefix())));
+      _currentAddressObject.setPrefix(toPrefix(ctx.ip_prefix()));
     } else {
       warn(ctx, "Cannot understand what follows 'ip-netmask'");
     }
@@ -1480,7 +1480,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    String[] ips = getText(ctx.IP_RANGE()).split("-");
+    String[] ips = getText(ctx.ip_range()).split("-");
     _currentAddressObject.setIpRange(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
   }
 
