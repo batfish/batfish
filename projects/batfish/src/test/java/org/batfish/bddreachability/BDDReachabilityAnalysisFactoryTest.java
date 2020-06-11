@@ -6,6 +6,8 @@ import static org.batfish.bddreachability.transition.Transitions.addOriginatingF
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
+import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
@@ -61,16 +63,17 @@ import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.NetworkFactory;
@@ -138,6 +141,7 @@ import org.batfish.symbolic.state.PreOutInterfaceNeighborUnreachable;
 import org.batfish.symbolic.state.PreOutVrf;
 import org.batfish.symbolic.state.Query;
 import org.batfish.symbolic.state.StateExpr;
+import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -172,6 +176,20 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SpecifierContext ctxt = batfish.specifierContext(batfish.getSnapshot());
     Set<Location> locations = LocationSpecifier.ALL_LOCATIONS.resolve(ctxt);
     return CONSTANT_UNIVERSE_IPSPACE_SPECIFIER.resolve(locations, ctxt);
+  }
+
+  private BDDReachabilityAnalysisFactory makeBddReachabilityAnalysisFactory(
+      SortedMap<String, Configuration> configs, boolean ignoreFilters) throws IOException {
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
+    return new BDDReachabilityAnalysisFactory(
+        PKT,
+        configs,
+        dataPlane.getForwardingAnalysis(),
+        new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
+        ignoreFilters,
+        false);
   }
 
   @Test
@@ -1445,9 +1463,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     .setOwner(config)
                     .setLines(
                         ImmutableList.of(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchSrc(srcNatPoolIp))
-                                .build()))
+                            accepting().setMatchCondition(matchSrc(srcNatPoolIp)).build()))
                     .build())
             .build();
 
@@ -1486,6 +1502,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
             IngressLocation.vrf(hostname, vrf.getName()), PKT.getDstIp().value(dstIp.asLong())));
   }
 
+  /**
+   * Constructs a network with configs c1 and (if {@code withNeighbor}) c2.
+   *
+   * <p>c1 has VRFs vrf1 and vrf2, and interfaces INGRESS_IFACE and i1 in vrf1. INGRESS_IFACE has a
+   * packet policy that does a FIB lookup in vrf2 for flows with dst IPs in 8.8.8.0/24 and otherwise
+   * drops. vrf2 has a static route for 8.8.8.0/24 that sends traffic out i1.
+   *
+   * <p>If included, c2 has interface i1 on the same subnet as c1[i1].
+   */
   private ImmutableSortedMap<String, Configuration> makePBRNetwork(boolean withNeighbor) {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
@@ -1960,51 +1985,299 @@ public final class BDDReachabilityAnalysisFactoryTest {
                     constraint(rootBdd)))));
   }
 
-  @Test
-  public void testDroppedByPreTransformationOutgoingFilter() throws IOException {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
-    Interface iface1 =
-        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
-            .setPreTransformationOutgoingFilter(
-                nf.aclBuilder().setOwner(c).setLines(ExprAclLine.REJECT_ALL).build())
-            .setOutgoingFilter(null)
-            .build();
+  /**
+   * Constructs a network with configs c1 and (optionally) c2. c1 has an interface i1 with every
+   * type of outgoing filter:
+   *
+   * <ul>
+   *   <li>{@link Interface#getOutgoingOriginalFlowFilter() outgoingOriginalFlowFilter} permits IPs
+   *       1.0.0.0, 2.0.0.0, and 3.0.0.0
+   *   <li>{@link Interface#getPreTransformationOutgoingFilter() preTransformationOutgoingFilter}
+   *       permits IPs 1.0.0.0, 2.0.0.0, and 4.0.0.0
+   *   <li>{@link Interface#getOutgoingFilter() outgoingFilter} permits IPs 1.0.0.0, 3.0.0.0, and
+   *       4.0.0.0
+   * </ul>
+   *
+   * <p>c1 can optionally have another interface i2 with no filters.
+   *
+   * <p>c2 (if included) has an interface i1 with no filters, connected to c1[i1]. This is necessary
+   * if you want a topology edge.
+   */
+  private static SortedMap<String, Configuration> makeOutgoingFiltersNetwork(
+      boolean includeC1I2, boolean includeC2) {
+    AclLine acceptSrc1 = accepting(matchSrc(Ip.parse("1.0.0.0")));
+    AclLine acceptSrc2 = accepting(matchSrc(Ip.parse("2.0.0.0")));
+    AclLine acceptSrc3 = accepting(matchSrc(Ip.parse("3.0.0.0")));
+    AclLine acceptSrc4 = accepting(matchSrc(Ip.parse("4.0.0.0")));
 
-    String hostname = c.getHostname();
-    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, c);
-    Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
-    batfish.computeDataPlane(batfish.getSnapshot());
-    DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
-    BDDReachabilityAnalysisFactory factory =
-        new BDDReachabilityAnalysisFactory(
-            PKT,
-            configs,
-            dataPlane.getForwardingAnalysis(),
-            new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
-            false,
-            false);
-    List<Edge> edges =
+    // Create c1 and its filters
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.setHostname("c1").build();
+    IpAccessList.Builder ab = nf.aclBuilder().setOwner(c1);
+    IpAccessList originalFlowFilter =
+        ab.setLines(acceptSrc1, acceptSrc2, acceptSrc3, REJECT_ALL).build();
+    IpAccessList preTransformFilter =
+        ab.setLines(acceptSrc1, acceptSrc2, acceptSrc4, REJECT_ALL).build();
+    IpAccessList outgoingFilter =
+        ab.setLines(acceptSrc1, acceptSrc3, acceptSrc4, REJECT_ALL).build();
+
+    // Create i1 on c1 with the appropriate filters
+    Vrf vrf = nf.vrfBuilder().setOwner(c1).build();
+    nf.interfaceBuilder()
+        .setName("i1")
+        .setOwner(c1)
+        .setVrf(vrf)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+        .setOutgoingOriginalFlowFilter(originalFlowFilter)
+        .setPreTransformationOutgoingFilter(preTransformFilter)
+        .setOutgoingFilter(outgoingFilter)
+        .build();
+
+    if (includeC1I2) {
+      // Create i2 on c1 with no filters
+      nf.interfaceBuilder()
+          .setName("i2")
+          .setOwner(c1)
+          .setVrf(vrf)
+          .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24"))
+          .build();
+    }
+
+    if (!includeC2) {
+      return ImmutableSortedMap.of(c1.getHostname(), c1);
+    }
+
+    // Create c2 and i2
+    Configuration c2 = cb.setHostname("c2").build();
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
+    nf.interfaceBuilder()
+        .setName("i1")
+        .setOwner(c2)
+        .setVrf(vrf2)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
+        .build();
+
+    return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+  }
+
+  @Test
+  public void testOutgoingFilters() throws IOException {
+    /*
+    Test that flow is denied unless it matches all outgoing filters.
+    - Src IP 1.0.0.0 permitted by all filters (original flow, pre-transformation, and outgoing)
+    - Src IP 2.0.0.0 permitted by original flow and pre-transformation filters
+    - Src IP 3.0.0.0 permitted by original flow and outgoing filters
+    - Src IP 4.0.0.0 permitted by pre-transformation and outgoing filters
+     */
+    Ip srcIp1 = Ip.parse("1.0.0.0");
+    String c1 = "c1";
+    String i1 = "i1";
+    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(false, false);
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, false);
+
+    StateExpr deliveredToSubnet = new PreOutInterfaceDeliveredToSubnet(c1, i1);
+    StateExpr exitsNetwork = new PreOutInterfaceExitsNetwork(c1, i1);
+    StateExpr neighborUnreachable = new PreOutInterfaceNeighborUnreachable(c1, i1);
+    StateExpr insufficientInfo = new PreOutInterfaceInsufficientInfo(c1, i1);
+
+    // Flow needs to start with the expected constraint for outgoing original flow filters
+    BDD originalFlowFiltersConstraint =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1)
+            .outgoingOriginalFlowFiltersConstraint();
+    BDD src1Bdd = PKT.getSrcIp().value(srcIp1.asLong());
+
+    // Test permit edges, to NodeInterface[Disposition] states
+    StateExpr nodeDeliveredToSubnet = new NodeInterfaceDeliveredToSubnet(c1, i1);
+    StateExpr nodeExitsNetwork = new NodeInterfaceExitsNetwork(c1, i1);
+    StateExpr nodeNeighborUnreachable = new NodeInterfaceNeighborUnreachable(c1, i1);
+    StateExpr nodeInsufficientInfo = new NodeInterfaceInsufficientInfo(c1, i1);
+    List<Edge> permitEdges =
+        factory
+            .generateRules_PreOutInterfaceDisposition_NodeInterfaceDisposition()
+            .collect(ImmutableList.toImmutableList());
+
+    // Node-specific constraints cleared later in generateRules_NodeInterfaceDisposition_Disposition
+    Matcher<Transition> expectedTransition =
+        mapsForward(originalFlowFiltersConstraint, originalFlowFiltersConstraint.and(src1Bdd));
+    assertThat(
+        permitEdges,
+        containsInAnyOrder(
+            edge(deliveredToSubnet, nodeDeliveredToSubnet, expectedTransition),
+            edge(exitsNetwork, nodeExitsNetwork, expectedTransition),
+            edge(neighborUnreachable, nodeNeighborUnreachable, expectedTransition),
+            edge(insufficientInfo, nodeInsufficientInfo, expectedTransition)));
+
+    // Test deny edges, to NodeDropAclOut state
+    StateExpr nodeDropAclOut = new NodeDropAclOut(c1);
+    List<Edge> denyEdges =
         factory
             .generateRules_PreOutInterfaceDisposition_NodeDropAclOut()
             .collect(ImmutableList.toImmutableList());
+    Matcher<Transition> expectedDenyTransition =
+        mapsForward(originalFlowFiltersConstraint, src1Bdd.not());
+    assertThat(
+        denyEdges,
+        containsInAnyOrder(
+            edge(deliveredToSubnet, nodeDropAclOut, expectedDenyTransition),
+            edge(exitsNetwork, nodeDropAclOut, expectedDenyTransition),
+            edge(neighborUnreachable, nodeDropAclOut, expectedDenyTransition),
+            edge(insufficientInfo, nodeDropAclOut, expectedDenyTransition)));
+  }
 
-    String ifaceName = iface1.getName();
-    StateExpr deliveredToSubnet = new PreOutInterfaceDeliveredToSubnet(hostname, ifaceName);
-    StateExpr exitsNetwork = new PreOutInterfaceExitsNetwork(hostname, ifaceName);
-    StateExpr neighborUnreachable = new PreOutInterfaceNeighborUnreachable(hostname, ifaceName);
-    StateExpr insufficientInfo = new PreOutInterfaceInsufficientInfo(hostname, ifaceName);
-    StateExpr nodeDropAclOut = new NodeDropAclOut(hostname);
+  @Test
+  public void testOutgoingFilters_PreOutEdgePostNat() throws IOException {
+    /*
+    Test that NAT flow is denied unless it matches original flow filter and outgoing filter (the
+    pre-transformation filter should not touch NAT flows). 1.0.0.0 and 3.0.0.0 should be allowed.
+    - Src IP 1.0.0.0 permitted by original flow, pre-transformation, and outgoing filters
+    - Src IP 2.0.0.0 permitted by original flow and pre-transformation filters
+    - Src IP 3.0.0.0 permitted by original flow and outgoing filters
+    - Src IP 4.0.0.0 permitted by pre-transformation and outgoing filters
+     */
+    Ip srcIp1 = Ip.parse("1.0.0.0");
+    Ip srcIp3 = Ip.parse("3.0.0.0");
+    String c1 = "c1";
+    String c2 = "c2";
+    String i1 = "i1";
+    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(false, true);
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, false);
 
+    StateExpr preOutEdgePostNat = new PreOutEdgePostNat(c1, i1, c2, i1);
+
+    // Flow needs to start with the expected constraint for outgoing original flow filters
+    BDD originalFlowFiltersConstraint =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1)
+            .outgoingOriginalFlowFiltersConstraint();
+    BDD src1And3Bdd =
+        PKT.getSrcIp().value(srcIp1.asLong()).or(PKT.getSrcIp().value(srcIp3.asLong()));
+
+    // Test permit edge to PreInInterface states
+    StateExpr preInInterface = new PreInInterface(c2, i1);
+    List<Edge> permitEdges =
+        factory
+            .generateRules_PreOutEdgePostNat_PreInInterface()
+            .collect(ImmutableList.toImmutableList());
+    assertThat(
+        permitEdges,
+        containsInAnyOrder(
+            edge(
+                preOutEdgePostNat,
+                preInInterface,
+                mapsForward(originalFlowFiltersConstraint, src1And3Bdd)),
+            // should be a second edge: PreOutEdgePostNat -> PreInInterface in opposite direction
+            edge(
+                new PreOutEdgePostNat(c2, i1, c1, i1),
+                new PreInInterface(c1, i1),
+                mapsForward(ONE, ONE))));
+
+    // Test deny edge to NodeDropAclOut state
+    StateExpr nodeDropAclOut = new NodeDropAclOut(c1);
+    List<Edge> denyEdges =
+        factory
+            .generateRules_PreOutEdgePostNat_NodeDropAclOut()
+            .collect(ImmutableList.toImmutableList());
+    assertThat(
+        denyEdges,
+        contains(
+            edge(
+                preOutEdgePostNat,
+                nodeDropAclOut,
+                mapsForward(originalFlowFiltersConstraint, src1And3Bdd.not()))));
+  }
+
+  @Test
+  public void testOutgoingOriginalFlowFilterManagersTrivialIfIgnoreFiltersOn() throws IOException {
+    /* When ignoreFilters is on, we artificially make all original flow filter managers trivial. */
+    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(false, false);
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, true);
+    assertTrue(factory.getBddOutgoingOriginalFlowFilterManagers().get("c1").isTrivial());
+  }
+
+  @Test
+  public void testAddOutgoingOriginalFlowFiltersConstraint_PostInInterface() throws IOException {
+    /*
+    Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows entering a node
+    with an interface with an outgoingOriginalFlowFilter. In this case, c1 has interfaces i1 and i2,
+    and i1 has an outgoingOriginalFlowFilter.
+     */
+    String c1 = "c1";
+    String i1 = "i1";
+    String i2 = "i2";
+    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(true, false);
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, false);
+    BDD originalFlowFiltersConstraint =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1)
+            .outgoingOriginalFlowFiltersConstraint();
+    // Sanity check: make sure there really is a constraint due to an outgoingOriginalFlowFilter
+    assertFalse(originalFlowFiltersConstraint.isOne());
+
+    List<Edge> edges =
+        factory
+            .generateRules_PreInInterface_PostInInterface()
+            .collect(ImmutableList.toImmutableList());
+
+    // Whichever interface the flow enters, the constraint for going out i1 should be added
+    StateExpr preInInterface1 = new PreInInterface(c1, i1);
+    StateExpr preInInterface2 = new PreInInterface(c1, i2);
+    StateExpr postInInterface1 = new PostInInterface(c1, i1);
+    StateExpr postInInterface2 = new PostInInterface(c1, i2);
+    Matcher<Transition> addsOriginalFlowFiltersConstraint =
+        mapsForward(ONE, originalFlowFiltersConstraint);
     assertThat(
         edges,
         containsInAnyOrder(
-            edge(deliveredToSubnet, nodeDropAclOut, mapsForward(ONE, ONE)),
-            edge(exitsNetwork, nodeDropAclOut, mapsForward(ONE, ONE)),
-            edge(neighborUnreachable, nodeDropAclOut, mapsForward(ONE, ONE)),
-            edge(insufficientInfo, nodeDropAclOut, mapsForward(ONE, ONE))));
+            edge(preInInterface1, postInInterface1, addsOriginalFlowFiltersConstraint),
+            edge(preInInterface2, postInInterface2, addsOriginalFlowFiltersConstraint)));
+  }
+
+  @Test
+  public void testAddOutgoingOriginalFlowFiltersConstraint_PbrFibLookup() throws IOException {
+    /*
+    Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows that match a
+    packet policy. In this case, the config has INGRESS_IFACE with a packet policy and interface i1
+    with an outgoingOriginalFlowFilter.
+     */
+    String c1 = "c1";
+    String i1 = "i1";
+    Ip srcIp1 = Ip.parse("1.0.0.0");
+    SortedMap<String, Configuration> configs = makePBRNetwork(false);
+    // Add an outgoingOriginalFlowFilter on the one of the interfaces on the node with PBR
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c = configs.get(c1);
+    IpAccessList filter =
+        nf.aclBuilder().setOwner(c).setLines(accepting(matchSrc(srcIp1)), REJECT_ALL).build();
+    c.getAllInterfaces().get(i1).setOutgoingOriginalFlowFilter(filter);
+
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs, false);
+    BDD originalFlowFiltersConstraint =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1)
+            .outgoingOriginalFlowFiltersConstraint();
+    // Sanity check: make sure there really is a constraint due to an outgoingOriginalFlowFilter
+    assertFalse(originalFlowFiltersConstraint.isOne());
+
+    // Flows will also be constrained to those not dropped by the packet policy
+    Prefix pbrPrefix = Prefix.parse("8.8.8.0/24");
+    BDD notDroppedByPbr = new IpSpaceToBDD(PKT.getDstIp()).toBDD(pbrPrefix);
+
+    List<Edge> edges =
+        factory
+            .generateRules_PreInInterface_PbrFibLookup()
+            .collect(ImmutableList.toImmutableList());
+
+    StateExpr preInInterface = new PreInInterface(c1, INGRESS_IFACE);
+    StateExpr pbrFibLookup = new PbrFibLookup(c1, "vrf1", "vrf2"); // (see makePBRNetwork for names)
+    BDD expectedFlows = originalFlowFiltersConstraint.and(notDroppedByPbr);
+    assertThat(
+        edges, contains(edge(preInInterface, pbrFibLookup, mapsForward(ONE, expectedFlows))));
   }
 }
