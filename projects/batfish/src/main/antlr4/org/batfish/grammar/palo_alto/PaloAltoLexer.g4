@@ -63,6 +63,11 @@ ADMIN_DISTS
     'admin-dists'
 ;
 
+ADMIN_ROLE
+:
+    'admin-role'
+;
+
 ADVERTISE
 :
     'advertise'
