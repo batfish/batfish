@@ -95,32 +95,14 @@ config {
             }
             security {
               rules {
-                PERMIT_TRANSLATED_SRC {
-                  to any;
-                  from any;
-                  source NEW_SRC_ADDR;
-                  destination any;
-                  application any;
-                  service any;
-                  action allow;
-                }
-                PERMIT_TRANSLATED_DST {
-                  to any;
-                  from any;
-                  source any;
-                  destination NEW_DST_ADDR;
-                  application any;
-                  service any;
-                  action allow;
-                }
-                DENY_ALL {
+                PERMIT_ALL {
                   to any;
                   from any;
                   source any;
                   destination any;
                   application any;
                   service any;
-                  action deny;
+                  action allow;
                 }
               }
             }
