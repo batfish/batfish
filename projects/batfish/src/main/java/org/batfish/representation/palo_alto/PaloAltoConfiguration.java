@@ -1915,6 +1915,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
     // Create the target vsys (it shouldn't already exist)
     Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+    assert _panorama == null;
     _panorama = target;
 
     // Apply shared config first
