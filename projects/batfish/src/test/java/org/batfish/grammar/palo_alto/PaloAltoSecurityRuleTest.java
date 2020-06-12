@@ -105,7 +105,6 @@ public class PaloAltoSecurityRuleTest {
     batfish.computeDataPlane(snapshot);
 
     String if1name = "ethernet1/1"; // 192.168.0.1/16
-    String if2name = "ethernet1/2"; // 10.0.0.1/16
     Builder baseFlow =
         Flow.builder()
             .setIngressNode(firewallConfig.getHostname())
