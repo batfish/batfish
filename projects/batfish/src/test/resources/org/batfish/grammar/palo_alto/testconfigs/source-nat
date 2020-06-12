@@ -39,7 +39,7 @@ config {
         }
         virtual-router {
           vr1 {
-            interface [ ethernet1/1.1 ethernet1/1.2 ethernet1/2.1];
+            interface [ ethernet1/1.1 ethernet1/2.1 ethernet1/2.2];
           }
         }
       }
