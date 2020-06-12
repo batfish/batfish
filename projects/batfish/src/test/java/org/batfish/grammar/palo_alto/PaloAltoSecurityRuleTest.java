@@ -105,7 +105,6 @@ public class PaloAltoSecurityRuleTest {
     batfish.computeDataPlane(snapshot);
 
     String if1name = "ethernet1/1"; // 192.168.0.1/16
-    String if2name = "ethernet1/2"; // 10.0.0.1/16
     Builder baseFlow =
         Flow.builder()
             .setIngressNode(firewallConfig.getHostname())
@@ -123,7 +122,7 @@ public class PaloAltoSecurityRuleTest {
     // This flow matches shared ADDR3 source address
     Flow flowPermit =
         baseFlow
-            .setIngressInterface(if2name)
+            .setIngressInterface(if1name)
             .setSrcIp(Ip.parse("192.168.2.3"))
             .setDstIp(Ip.parse("10.0.0.2"))
             .build();
