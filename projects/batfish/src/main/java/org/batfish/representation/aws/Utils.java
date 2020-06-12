@@ -163,36 +163,6 @@ final class Utils {
         .build();
   }
 
-  /**
-   * Updates {@link Region}'s mapping between {@link Configuration} names and {@link SecurityGroup}
-   * for a given configuration. Also updates {@link org.batfish.datamodel.Ip} of instances in {@link
-   * SecurityGroup}
-   *
-   * @param region {@link Region} in which the configuration is in
-   * @param configuration {@link Configuration} for which security groups are to be processed
-   * @param securityGroupsIds {@link List} of security group IDs
-   * @param warnings {@link Warnings} for the configuration
-   */
-  static void processSecurityGroups(
-      Region region,
-      Configuration configuration,
-      List<String> securityGroupsIds,
-      Warnings warnings) {
-    for (String sGroupId : securityGroupsIds) {
-      SecurityGroup securityGroup = region.getSecurityGroups().get(sGroupId);
-      if (securityGroup == null) {
-        warnings.pedantic(
-            String.format(
-                "Security group \"%s\" for \"%s\" not found",
-                sGroupId, configuration.getHostname()));
-        continue;
-      }
-      region.updateConfigurationSecurityGroups(configuration.getHostname(), securityGroup);
-
-      securityGroup.updateConfigIps(configuration);
-    }
-  }
-
   @Nullable
   static IpProtocol toIpProtocol(String ipProtocolAsString) {
     switch (ipProtocolAsString) {

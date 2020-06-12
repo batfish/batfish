@@ -4,8 +4,8 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlo
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
-import static org.batfish.representation.aws.Region.SG_INGRESS_ACL_NAME;
 import static org.batfish.representation.aws.Region.instanceEgressAclName;
+import static org.batfish.representation.aws.SecurityGroup.SG_INGRESS_ACL_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

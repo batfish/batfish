@@ -135,7 +135,7 @@ public class IpPermissionsTest {
     Region region = new Region("test");
     SecurityGroup sg1 =
         new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of(), "vpc");
-    sg1.updateConfigIps(cg);
+    region.addNetworkInterfaceIpsToSecurityGroups(new Warnings());
     region.getSecurityGroups().put(sg1.getId(), sg1);
     return region;
   }
