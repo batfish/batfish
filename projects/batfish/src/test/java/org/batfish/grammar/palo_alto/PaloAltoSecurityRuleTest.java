@@ -123,7 +123,7 @@ public class PaloAltoSecurityRuleTest {
     // This flow matches shared ADDR3 source address
     Flow flowPermit =
         baseFlow
-            .setIngressInterface(if2name)
+            .setIngressInterface(if1name)
             .setSrcIp(Ip.parse("192.168.2.3"))
             .setDstIp(Ip.parse("10.0.0.2"))
             .build();

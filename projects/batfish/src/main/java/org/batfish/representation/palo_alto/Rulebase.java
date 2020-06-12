@@ -17,11 +17,13 @@ public class Rulebase implements Serializable {
     _securityRules = new LinkedHashMap<>();
   }
 
+  /** Get map of {@code NatRule} name to {@code NatRule}; preserves insertion order. */
   @Nonnull
   public Map<String, NatRule> getNatRules() {
     return _natRules;
   }
 
+  /** Get map of {@code SecurityRule} name to {@code SecurityRule}; preserves insertion order. */
   @Nonnull
   public Map<String, SecurityRule> getSecurityRules() {
     return _securityRules;
