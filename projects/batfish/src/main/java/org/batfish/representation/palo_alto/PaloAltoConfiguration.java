@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -1837,14 +1838,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     target.getPreRulebase().getSecurityRules().putAll(source.getPreRulebase().getSecurityRules());
 
     // NAT post
-    Map<String, NatRule> postRulebaseNat = new TreeMap<>(source.getPostRulebase().getNatRules());
+    // Note: using LinkedHashMaps to preserve insertion order
+    Map<String, NatRule> postRulebaseNat =
+        new LinkedHashMap<>(source.getPostRulebase().getNatRules());
     Map<String, NatRule> targetPostNat = target.getPostRulebase().getNatRules();
     postRulebaseNat.putAll(targetPostNat);
     targetPostNat.clear();
     targetPostNat.putAll(postRulebaseNat);
     // Security post
+    // Note: using LinkedHashMaps to preserve insertion order
     Map<String, SecurityRule> postRulebaseSecurity =
-        new TreeMap<>(source.getPostRulebase().getSecurityRules());
+        new LinkedHashMap<>(source.getPostRulebase().getSecurityRules());
     Map<String, SecurityRule> targetPostSecurity = target.getPostRulebase().getSecurityRules();
     postRulebaseSecurity.putAll(targetPostSecurity);
     targetPostSecurity.clear();
@@ -1858,7 +1862,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
     // Create the target vsys (it shouldn't already exist)
     Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
-    _virtualSystems.put(PANORAMA_VSYS_NAME, target);
+    assert _panorama == null;
+    _panorama = target;
 
     // Apply shared config first
     applyVsys(shared, target);
