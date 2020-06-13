@@ -25,7 +25,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructu
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingOriginalFlowFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
@@ -505,15 +505,21 @@ public final class PaloAltoGrammarTest {
     Flow rule1Permitted = createFlow("10.10.10.10", "33.33.33.33");
     Flow rule1Denied = createFlow("11.11.11.11", "33.33.33.33");
 
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule1Permitted, if2name, c))));
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule1Denied, if2name, c))));
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(rule1Permitted, if2name, c))));
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(rule1Denied, if2name, c))));
 
     // rule2: literal 22.22.22.22 should not be allowed but 10.10.10.10 should be
     Flow rule2Permitted = createFlow("44.44.44.44", "10.10.10.10");
     Flow rule2Denied = createFlow("44.44.44.44", "22.22.22.22");
 
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule2Permitted, if2name, c))));
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule2Denied, if2name, c))));
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(rule2Permitted, if2name, c))));
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(rule2Denied, if2name, c))));
   }
 
   @Test
@@ -1615,7 +1621,7 @@ public final class PaloAltoGrammarTest {
         c,
         hasInterface(
             if1name,
-            hasOutgoingFilter(
+            hasOutgoingOriginalFlowFilter(
                 allOf(
                     accepts(service1, if2name, c),
                     rejects(service2, if2name, c),
@@ -1627,7 +1633,7 @@ public final class PaloAltoGrammarTest {
         c,
         hasInterface(
             if1name,
-            hasOutgoingFilter(
+            hasOutgoingOriginalFlowFilter(
                 allOf(
                     accepts(service1, if1name, c),
                     rejects(service2, if1name, c),
@@ -1673,7 +1679,7 @@ public final class PaloAltoGrammarTest {
         c,
         hasInterface(
             if1name,
-            hasOutgoingFilter(
+            hasOutgoingOriginalFlowFilter(
                 allOf(
                     rejects(webapplication, if2name, c),
                     accepts(sslapplication, if2name, c),
@@ -1700,27 +1706,42 @@ public final class PaloAltoGrammarTest {
 
     // Confirm flow matching deny rule is rejected
     assertThat(
-        c, hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedService, if2name, c))));
+        c,
+        hasInterface(
+            if1name, hasOutgoingOriginalFlowFilter(rejects(z1ToZ1rejectedService, if2name, c))));
 
     // Confirm intrazone flow matching allow rule is accepted
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ1permitted, if2name, c))));
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ1permitted, if2name, c))));
     // Confirm intrazone flow not matching allow rule (bad destination address) is rejected
     assertThat(
         c,
-        hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedDestination, if2name, c))));
+        hasInterface(
+            if1name,
+            hasOutgoingOriginalFlowFilter(rejects(z1ToZ1rejectedDestination, if2name, c))));
     // Confirm intrazone flow not matching allow rule (source address negated) is rejected
     assertThat(
-        c, hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ1rejectedSource, if2name, c))));
+        c,
+        hasInterface(
+            if1name, hasOutgoingOriginalFlowFilter(rejects(z1ToZ1rejectedSource, if2name, c))));
 
     // Confirm interzone flow matching allow rule is accepted
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(z2ToZ1permitted, if4name, c))));
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(z2ToZ1permitted, if4name, c))));
 
     // Confirm flow from an unzoned interface is rejected
     assertThat(
-        c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1rejected, if3name, c))));
+        c,
+        hasInterface(
+            if1name, hasOutgoingOriginalFlowFilter(rejects(noZoneToZ1rejected, if3name, c))));
 
     // Confirm flow from the device itself is permitted
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(fromDevicePermitted, null, c))));
+    assertThat(
+        c,
+        hasInterface(
+            if1name, hasOutgoingOriginalFlowFilter(accepts(fromDevicePermitted, null, c))));
   }
 
   @Test
@@ -1946,13 +1967,19 @@ public final class PaloAltoGrammarTest {
 
     // Confirm flow matching overridden service is permitted
     assertThat(
-        c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ2OverridePermitted, if4name, c))));
+        c,
+        hasInterface(
+            if1name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ2OverridePermitted, if4name, c))));
     // Confirm flow matching built-in service that was overridden is rejected
     assertThat(
-        c, hasInterface(if1name, hasOutgoingFilter(rejects(z1ToZ2HttpRejected, if4name, c))));
+        c,
+        hasInterface(
+            if1name, hasOutgoingOriginalFlowFilter(rejects(z1ToZ2HttpRejected, if4name, c))));
     // Confirm flow matching built-in service, indirectly referenced is permitted
     assertThat(
-        c, hasInterface(if1name, hasOutgoingFilter(accepts(z1ToZ2HttpsPermitted, if4name, c))));
+        c,
+        hasInterface(
+            if1name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ2HttpsPermitted, if4name, c))));
   }
 
   @Test
@@ -1971,15 +1998,20 @@ public final class PaloAltoGrammarTest {
     Flow z1ToNoZone = createFlow("1.1.1.2", "1.1.3.2");
 
     // Confirm intrazone flow is accepted by default
-    assertThat(c, hasInterface(if2name, hasOutgoingFilter(accepts(z1ToZ1, if1name, c))));
+    assertThat(
+        c, hasInterface(if2name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ1, if1name, c))));
 
     // Confirm interzone flows are rejected by default
-    assertThat(c, hasInterface(if4name, hasOutgoingFilter(rejects(z1ToZ2, if1name, c))));
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(z2ToZ1, if4name, c))));
+    assertThat(
+        c, hasInterface(if4name, hasOutgoingOriginalFlowFilter(rejects(z1ToZ2, if1name, c))));
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(z2ToZ1, if4name, c))));
 
     // Confirm unzoned flows are rejected by default
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(noZoneToZ1, if3name, c))));
-    assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(z1ToNoZone, if1name, c))));
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(noZoneToZ1, if3name, c))));
+    assertThat(
+        c, hasInterface(if3name, hasOutgoingOriginalFlowFilter(rejects(z1ToNoZone, if1name, c))));
   }
 
   @Test
@@ -1994,8 +2026,11 @@ public final class PaloAltoGrammarTest {
     Flow rule1Permitted = createFlow("11.11.11.11", "33.33.33.33");
     Flow rule1Denied = createFlow("11.11.11.13", "33.33.33.33");
 
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(accepts(rule1Permitted, if2name, c))));
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(rule1Denied, if2name, c))));
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(rule1Permitted, if2name, c))));
+    assertThat(
+        c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(rule1Denied, if2name, c))));
   }
 
   @Test
@@ -2141,12 +2176,12 @@ public final class PaloAltoGrammarTest {
     Flow flow = createFlow("1.1.1.1", "2.2.2.2");
 
     // Confirm flow is rejected in vsys1
-    assertThat(c, hasInterface(if1name, hasOutgoingFilter(rejects(flow, if2name, c))));
+    assertThat(c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(flow, if2name, c))));
 
     // Confirm intravsys flow is accepted in vsys2
-    assertThat(c, hasInterface(if3name, hasOutgoingFilter(accepts(flow, if4name, c))));
+    assertThat(c, hasInterface(if3name, hasOutgoingOriginalFlowFilter(accepts(flow, if4name, c))));
     // Confirm intervsys flow (even from same zone name) is rejected in vsys2
-    assertThat(c, hasInterface(if3name, hasOutgoingFilter(rejects(flow, if2name, c))));
+    assertThat(c, hasInterface(if3name, hasOutgoingOriginalFlowFilter(rejects(flow, if2name, c))));
   }
 
   @Test
