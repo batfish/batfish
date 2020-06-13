@@ -1384,55 +1384,70 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * applies the transformation.
    */
   private Optional<Transformation> convertRuleToTransformation(NatRule rule, Vsys vsys) {
+    List<TransformationStep> transformationSteps =
+        ImmutableList.<TransformationStep>builder()
+            .addAll(getSourceTransformationSteps(rule, vsys))
+            .addAll(getDestinationTransformationSteps(rule, vsys))
+            .build();
+
+    return transformationSteps.isEmpty()
+        ? Optional.empty()
+        : Optional.of(Transformation.always().apply(transformationSteps).build());
+  }
+
+  private List<TransformationStep> getSourceTransformationSteps(NatRule rule, Vsys vsys) {
     List<RuleEndpoint> translatedSrcAddrs =
         Optional.ofNullable(rule.getSourceTranslation())
             .map(SourceTranslation::getDynamicIpAndPort)
             .map(DynamicIpAndPort::getTranslatedAddresses)
             .orElse(null);
+    if (translatedSrcAddrs == null) {
+      // No source translation
+      return ImmutableList.of();
+    }
+
+    RangeSet<Ip> pool = ipRangeSetFromRuleEndpoints(translatedSrcAddrs, vsys, _w);
+    if (pool.isEmpty()) {
+      // Can't apply a source IP translation with empty IP pool
+      // TODO: Check real behavior in this scenario
+      _w.redFlag(
+          String.format(
+              "NAT rule %s of VSYS %s will not apply source translation because its source translation pool is empty",
+              rule.getName(), vsys.getName()));
+      return ImmutableList.of();
+    }
+
+    // Create steps to transform src IP and port
+    return ImmutableList.of(
+        new AssignIpAddressFromPool(TransformationType.SOURCE_NAT, IpField.SOURCE, pool),
+        TransformationStep.assignSourcePort(
+            NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number()));
+  }
+
+  private List<TransformationStep> getDestinationTransformationSteps(NatRule rule, Vsys vsys) {
     RuleEndpoint translatedDstAddr =
         Optional.ofNullable(rule.getDestinationTranslation())
             .map(DestinationTranslation::getTranslatedAddress)
             .orElse(null);
-
-    List<TransformationStep> transformSteps = new ArrayList<>();
-    if (translatedSrcAddrs != null) {
-      // Rule applies a source translation. Add src IP and port transformation steps.
-      RangeSet<Ip> pool = ipRangeSetFromRuleEndpoints(translatedSrcAddrs, vsys, _w);
-      if (pool.isEmpty()) {
-        // Can't apply a source IP translation with empty IP pool
-        // TODO: Check real behavior in this scenario
-        _w.redFlag(
-            String.format(
-                "NAT rule %s of VSYS %s will not apply source translation because its source translation pool is empty",
-                rule.getName(), vsys.getName()));
-      } else {
-        // Transform src IP and port
-        transformSteps.add(
-            new AssignIpAddressFromPool(TransformationType.SOURCE_NAT, IpField.SOURCE, pool));
-        transformSteps.add(
-            TransformationStep.assignSourcePort(
-                NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number()));
-      }
-    }
-    if (translatedDstAddr != null) {
-      // Rule applies a destination translation. Add dest IP transformation step.
-      RangeSet<Ip> pool = ruleEndpointToIpRangeSet(translatedDstAddr, vsys, _w);
-      if (pool.isEmpty()) {
-        // Can't apply a dest IP translation with empty IP pool
-        // TODO: Check real behavior in this scenario
-        _w.redFlag(
-            String.format(
-                "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
-                rule.getName(), vsys.getName()));
-      } else {
-        transformSteps.add(
-            new AssignIpAddressFromPool(TransformationType.DEST_NAT, IpField.DESTINATION, pool));
-      }
+    if (translatedDstAddr == null) {
+      // No destination translation
+      return ImmutableList.of();
     }
 
-    return transformSteps.isEmpty()
-        ? Optional.empty()
-        : Optional.of(Transformation.always().apply(transformSteps).build());
+    RangeSet<Ip> pool = ruleEndpointToIpRangeSet(translatedDstAddr, vsys, _w);
+    if (pool.isEmpty()) {
+      // Can't apply a dest IP translation with empty IP pool
+      // TODO: Check real behavior in this scenario
+      _w.redFlag(
+          String.format(
+              "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
+              rule.getName(), vsys.getName()));
+      return ImmutableList.of();
+    }
+
+    // Create step to transform dst IP
+    return ImmutableList.of(
+        new AssignIpAddressFromPool(TransformationType.DEST_NAT, IpField.DESTINATION, pool));
   }
 
   /** Return a list of all valid NAT rules to apply to packets entering the specified zone. */
