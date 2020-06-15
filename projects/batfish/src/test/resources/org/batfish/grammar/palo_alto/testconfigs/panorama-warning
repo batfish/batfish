@@ -1,0 +1,23 @@
+set deviceconfig system hostname panorama-warning
+
+# Setup objects in device-group
+set device-group DG1 post-rulebase security rules RULE1 to any
+set device-group DG1 post-rulebase security rules RULE1 from any
+set device-group DG1 post-rulebase security rules RULE1 source any
+set device-group DG1 post-rulebase security rules RULE1 destination any
+# Undefined app should generate a warning
+set device-group DG1 post-rulebase security rules RULE1 application undefined_app
+set device-group DG1 post-rulebase security rules RULE1 service application-default
+set device-group DG1 post-rulebase security rules RULE1 action allow
+set device-group DG1 devices 00000001
+
+# Setup networking in template
+set template T1 config deviceconfig system ip-address 10.1.10.1
+set template T1 config vsys vsys1 zone Z1 network layer3 ethernet1/1
+set template T1 config vsys vsys1 zone Z3 network layer3 ethernet1/3
+set template T1 config vsys vsys1 import network interface [ ethernet1/1 ethernet1/3 ]
+set template T1 config network interface ethernet ethernet1/1 layer3 ip 10.1.41.1/30
+set template T1 config network interface ethernet ethernet1/3 layer3 ip 10.1.43.1/30
+set template T1 config network virtual-router default interface [ ethernet1/1 ethernet1/3 ]
+set template-stack TS1 templates [ T1 ]
+set template-stack TS1 devices 00000001
