@@ -225,7 +225,7 @@
                         "fragments" : [
                           {
                             "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "Matched instance test-rds"
+                            "text" : "Matched private IP of RDS database test-rds"
                           }
                         ]
                       }

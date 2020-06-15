@@ -12,9 +12,9 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
 import static org.batfish.representation.aws.Region.instanceEgressAclName;
+import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
-import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -232,8 +232,8 @@ public class ElasticsearchDomainTest {
                                     HeaderSpace.builder()
                                         .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
                                         .build(),
-                                    traceElementForInstance(
-                                        "Test host (i-066b1b9957b9200e7)")))))))));
+                                    traceElementEniPrivateIp(
+                                        "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))))))));
     assertThat(
         esDomain.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
         equalTo(

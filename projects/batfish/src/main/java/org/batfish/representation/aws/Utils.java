@@ -515,8 +515,8 @@ final class Utils {
     return TraceElement.of(String.format("Matched destination ports [%s-%s]", low, high));
   }
 
-  static TraceElement traceElementForInstance(String instanceName) {
-    return TraceElement.of(String.format("Matched instance %s", instanceName));
+  static TraceElement traceElementEniPrivateIp(String eniDescription) {
+    return TraceElement.of(String.format("Matched private IP of %s", eniDescription));
   }
 
   static TraceElement traceElementForIcmpType(int type) {
