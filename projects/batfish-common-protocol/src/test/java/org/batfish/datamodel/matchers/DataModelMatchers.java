@@ -97,7 +97,16 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
-   * Interface}'s {@code outgoingFilterName}.
+   * Interface}'s {@link Interface#getOutgoingOriginalFlowFilter()} outgoingOriginalFlowFilter}.
+   */
+  public static @Nonnull Matcher<Interface> hasOutgoingOriginalFlowFilter(
+      @Nonnull Matcher<? super IpAccessList> subMatcher) {
+    return new InterfaceMatchersImpl.HasOutgoingOriginalFlowFilter(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s {@code outgoingFilter}.
    */
   public static @Nonnull Matcher<Interface> hasOutgoingFilter(
       @Nonnull Matcher<? super IpAccessList> subMatcher) {

@@ -24,7 +24,12 @@ config {
                 units {
                   ethernet1/2.1 {
                     ip {
-                      1.2.1.3/24;
+                      2.2.2.4/24;
+                    }
+                  }
+                  ethernet1/2.2 {
+                    ip {
+                      3.3.3.4/24;
                     }
                   }
                 }
@@ -34,75 +39,67 @@ config {
         }
         virtual-router {
           vr1 {
-            interface [ ethernet1/1.1 ethernet1/2.1];
+            interface [ ethernet1/1.1 ethernet1/2.1 ethernet1/2.2];
           }
         }
       }
       deviceconfig {
         system {
-          hostname nat-rules-empty-pool;
+          hostname security-rules-original-flow;
         }
       }
       vsys {
         vsys1 {
           address {
-            SOURCE_ADDR {
-              ip-netmask 1.1.1.2/32;
+            DST_ADDR_1 {
+              ip-netmask 2.2.2.2/32;
             }
-            SOURCE_ADDR_30 {
-              ip-netmask 1.1.1.2/30;
+            DST_ADDR_2 {
+              ip-netmask 3.3.3.3/32;
             }
-            NEW_SRC_ADDR {
-              ip-netmask 1.1.1.99/32;
-            }
-            NEW_DST_ADDR {
-              ip-netmask 1.2.1.99/32;
-            }
-            EMPTY_ADDR;
           }
           rulebase {
             nat {
               rules {
-                EMPTY_NAT_POOLS {
-                  source-translation {
-                    dynamic-ip-and-port {
-                      translated-address EMPTY_ADDR;
-                    }
-                  }
+                TRANSLATE_1_TO_2 {
                   destination-translation {
-                    translated-address EMPTY_ADDR;
+                    translated-address DST_ADDR_2;
                   }
                   to OUTSIDE;
                   from INSIDE;
-                  source SOURCE_ADDR;
-                  destination any;
+                  source any;
+                  destination DST_ADDR_1;
                 }
-                TRANSLATE_SRC_AND_DST {
-                  source-translation {
-                    dynamic-ip-and-port {
-                      translated-address NEW_SRC_ADDR;
-                    }
-                  }
+                TRANSLATE_2_TO_1 {
                   destination-translation {
-                    translated-address NEW_DST_ADDR;
+                    translated-address DST_ADDR_1;
                   }
                   to OUTSIDE;
                   from INSIDE;
-                  source SOURCE_ADDR_30;
-                  destination any;
+                  source any;
+                  destination DST_ADDR_2;
                 }
               }
             }
             security {
               rules {
-                PERMIT_ALL {
+                PERMIT_DST_1 {
+                  to any;
+                  from any;
+                  source any;
+                  destination DST_ADDR_1;
+                  application any;
+                  service any;
+                  action allow;
+                }
+                DENY_ALL {
                   to any;
                   from any;
                   source any;
                   destination any;
                   application any;
                   service any;
-                  action allow;
+                  action deny;
                 }
               }
             }
@@ -115,7 +112,7 @@ config {
             }
             OUTSIDE {
               network {
-                layer3 [ ethernet1/2.1];
+                layer3 [ ethernet1/2.1 ethernet1/2.2];
               }
             }
           }

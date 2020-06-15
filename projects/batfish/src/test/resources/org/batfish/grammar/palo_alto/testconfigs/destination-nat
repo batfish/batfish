@@ -57,9 +57,6 @@ config {
             SERVER_NEW_ADDR {
               ip-netmask 1.1.1.99/32;
             }
-            SERVER_OLD_ADDR {
-              ip-netmask 1.1.1.2/32;
-            }
             BOGUS_ADDR {
               ip-netmask 11.11.11.11/32;
             }
@@ -67,16 +64,6 @@ config {
           rulebase {
             nat {
               rules {
-                # Should never apply this NAT since it matches a bogus source address
-                DEST_NAT_NEVER_MATCHED {
-                  destination-translation {
-                    translated-address BOGUS_ADDR;
-                  }
-                  to INSIDE;
-                  from OUTSIDE;
-                  source BOGUS_ADDR;
-                  destination any;
-                }
                 DEST_NAT_NAME {
                   destination-translation {
                     translated-address SERVER_NEW_ADDR;
@@ -100,24 +87,14 @@ config {
             }
             security {
               rules {
-                PERMIT_TO_SERVER {
-                  to INSIDE;
-                  from OUTSIDE;
-                  source any;
-                  # destination 1.1.1.0/24;
-                  destination [ SERVER_NEW_ADDR];
-                  application any;
-                  service any;
-                  action allow;
-                }
-                DENY_ALL {
+                PERMIT_ALL {
                   to any;
                   from any;
                   source any;
                   destination any;
                   application any;
                   service any;
-                  action deny;
+                  action allow;
                 }
               }
             }
