@@ -126,6 +126,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -3025,5 +3026,22 @@ public final class PaloAltoGrammarTest {
     // device-group overwrite shared object definition
     assertIpSpacesEqual(
         firewall1.getIpSpaces().get(addressObject2Name), Ip.parse("192.168.1.2").toIpSpace());
+  }
+
+  @Test
+  public void testPanoramaWarning() throws IOException {
+    String panoramaHostname = "panorama-warning";
+    String firewallId = "00000001";
+
+    Batfish batfish = getBatfishForConfigurationNames(panoramaHostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should have a warning about an unknown application associated with the firewall
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(firewallId)));
+    Warnings warn = ccae.getWarnings().get(firewallId);
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        contains("Unable to identify application undefined_app in vsys RULE1 rule panorama"));
   }
 }
