@@ -22,12 +22,16 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.RouteInfo;
+import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
@@ -453,5 +457,64 @@ public class PaloAltoNatTest {
             .setSrcPort(newSrcPort)
             .setDstIp(newDstIp)
             .build());
+  }
+
+  @Test
+  public void testSecurityRulesMatchOnOriginalFlow() throws IOException {
+    /*
+    Setup: 2 NAT rules
+     - Transform dst 2.2.2.2 -> 3.3.3.3
+     - Transform dst 3.3.3.3 -> 2.2.2.2
+    Security rules only permit flows to dst 2.2.2.2. Should match on the original pre-NAT flow.
+     */
+    Configuration c = parseConfig("security-rules-original-flow");
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    String ingressIfaceName = "ethernet1/1.1"; // 1.1.1.3/24
+
+    // Create flows to match each rule
+    Ip dstIp1 = Ip.parse("2.2.2.2");
+    Ip dstIp2 = Ip.parse("3.3.3.3");
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(ingressIfaceName)
+            .setSrcIp(Ip.parse("1.1.1.1")) // src should make no difference
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP);
+    Flow toDst1 = flowBuilder.setDstIp(dstIp1).build();
+    Flow toDst2 = flowBuilder.setDstIp(dstIp2).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(toDst1, toDst2), false);
+    Trace toDst1Trace = Iterables.getOnlyElement(traces.get(toDst1));
+    Trace toDst2Trace = Iterables.getOnlyElement(traces.get(toDst2));
+
+    // Only the trace originally to dst 1 should have been allowed out
+    assertEquals(toDst1Trace.getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+    assertEquals(toDst2Trace.getDisposition(), FlowDisposition.DENIED_OUT);
+
+    // Make sure both flows were transformed as expected, based on their selected routes.
+    // TODO This could be less roundabout once PolicyStepDetail is fleshed out.
+    RoutingStep originallyToDst1RoutingStep =
+        Iterables.getOnlyElement(
+            Iterables.getOnlyElement(toDst1Trace.getHops()).getSteps().stream()
+                .filter(step -> step instanceof RoutingStep)
+                .map(RoutingStep.class::cast)
+                .collect(ImmutableList.toImmutableList()));
+    RoutingStep originallyToDst2RoutingStep =
+        Iterables.getOnlyElement(
+            Iterables.getOnlyElement(toDst2Trace.getHops()).getSteps().stream()
+                .filter(step -> step instanceof RoutingStep)
+                .map(RoutingStep.class::cast)
+                .collect(ImmutableList.toImmutableList()));
+    RouteInfo routeUsedForFlowOriginallyToDst1 =
+        Iterables.getOnlyElement(originallyToDst1RoutingStep.getDetail().getRoutes());
+    RouteInfo routeUsedForFlowOriginallyToDst2 =
+        Iterables.getOnlyElement(originallyToDst2RoutingStep.getDetail().getRoutes());
+    assertEquals(routeUsedForFlowOriginallyToDst1.getNetwork(), Prefix.create(dstIp2, 24));
+    assertEquals(routeUsedForFlowOriginallyToDst2.getNetwork(), Prefix.create(dstIp1, 24));
   }
 }

@@ -1,0 +1,123 @@
+policy {
+  panorama {
+  }
+}
+config {
+  devices {
+    localhost.localdomain {
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                units {
+                  ethernet1/1.1 {
+                    ip {
+                      1.1.1.3/24;
+                    }
+                  }
+                }
+              }
+            }
+            ethernet1/2 {
+              layer3 {
+                units {
+                  ethernet1/2.1 {
+                    ip {
+                      2.2.2.4/24;
+                    }
+                  }
+                  ethernet1/2.2 {
+                    ip {
+                      3.3.3.4/24;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          vr1 {
+            interface [ ethernet1/1.1 ethernet1/2.1 ethernet1/2.2];
+          }
+        }
+      }
+      deviceconfig {
+        system {
+          hostname security-rules-original-flow;
+        }
+      }
+      vsys {
+        vsys1 {
+          address {
+            DST_ADDR_1 {
+              ip-netmask 2.2.2.2/32;
+            }
+            DST_ADDR_2 {
+              ip-netmask 3.3.3.3/32;
+            }
+          }
+          rulebase {
+            nat {
+              rules {
+                TRANSLATE_1_TO_2 {
+                  destination-translation {
+                    translated-address DST_ADDR_2;
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source any;
+                  destination DST_ADDR_1;
+                }
+                TRANSLATE_2_TO_1 {
+                  destination-translation {
+                    translated-address DST_ADDR_1;
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source any;
+                  destination DST_ADDR_2;
+                }
+              }
+            }
+            security {
+              rules {
+                PERMIT_DST_1 {
+                  to any;
+                  from any;
+                  source any;
+                  destination DST_ADDR_1;
+                  application any;
+                  service any;
+                  action allow;
+                }
+                DENY_ALL {
+                  to any;
+                  from any;
+                  source any;
+                  destination any;
+                  application any;
+                  service any;
+                  action deny;
+                }
+              }
+            }
+          }
+          zone {
+            INSIDE {
+              network {
+                layer3 [ ethernet1/1.1];
+              }
+            }
+            OUTSIDE {
+              network {
+                layer3 [ ethernet1/2.1 ethernet1/2.2];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
