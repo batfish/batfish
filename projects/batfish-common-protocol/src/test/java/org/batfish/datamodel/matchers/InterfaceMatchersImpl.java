@@ -331,6 +331,20 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOutgoingOriginalFlowFilter extends FeatureMatcher<Interface, IpAccessList> {
+    HasOutgoingOriginalFlowFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(
+          subMatcher,
+          "an Interface with outgoingOriginalFlowFilter:",
+          "outgoingOriginalFlowFilter");
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Interface actual) {
+      return actual.getOutgoingOriginalFlowFilter();
+    }
+  }
+
   static final class HasOutgoingFilter extends FeatureMatcher<Interface, IpAccessList> {
     HasOutgoingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
       super(subMatcher, "an Interface with outgoingFilter:", "outgoingFilter");

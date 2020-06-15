@@ -19,12 +19,6 @@ policy {
       SERVER_NEW_ADDR3 {
         ip-netmask 1.1.1.101/32;
       }
-      SERVER_NEW_ADDRS {
-        ip-netmask 1.1.1.64/26;
-      }
-      SERVER_OLD_ADDR {
-        ip-netmask 1.1.1.2/32;
-      }
     }
     pre-rulebase {
       nat {
@@ -143,24 +137,14 @@ config {
             }
             security {
               rules {
-                PERMIT_TO_SERVER {
-                  to INSIDE;
-                  from OUTSIDE;
-                  source any;
-                  # destination 1.1.1.0/24;
-                  destination [ SERVER_NEW_ADDRS];
-                  application any;
-                  service any;
-                  action allow;
-                }
-                DENY_ALL {
+                PERMIT_ALL {
                   to any;
                   from any;
                   source any;
                   destination any;
                   application any;
                   service any;
-                  action deny;
+                  action allow;
                 }
               }
             }
