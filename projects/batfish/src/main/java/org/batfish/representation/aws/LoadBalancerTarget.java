@@ -14,7 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class LoadBalancerTarget implements AwsVpcEntity, Serializable {
+public final class LoadBalancerTarget implements AwsVpcEntity, Serializable {
 
   @Nullable private final String _availabilityZone;
 
