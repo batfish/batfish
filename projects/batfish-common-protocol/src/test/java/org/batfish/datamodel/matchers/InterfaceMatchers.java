@@ -210,7 +210,15 @@ public final class InterfaceMatchers {
    * expectedDescription}.
    */
   public static Matcher<Interface> hasDescription(String expectedDescription) {
-    return new HasDescription(equalTo(expectedDescription));
+    return hasDescription(equalTo(expectedDescription));
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Interface}'s description matches the given
+   * subMatcher.
+   */
+  public static Matcher<Interface> hasDescription(Matcher<? super String> subMatcher) {
+    return new HasDescription(subMatcher);
   }
 
   /**
