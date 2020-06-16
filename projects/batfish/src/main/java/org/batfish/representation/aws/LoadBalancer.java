@@ -61,7 +61,7 @@ import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescr
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class LoadBalancer implements AwsVpcEntity, Serializable {
+public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   enum Scheme {
     INTERNAL,
