@@ -35,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
@@ -122,8 +123,7 @@ public class LoadBalancerTest {
     assertThat(
         region.getLoadBalancers(),
         equalTo(
-            ImmutableMap.of(
-                "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
+            ImmutableSet.of(
                 new LoadBalancer(
                     "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
                     ImmutableList.of(
@@ -134,7 +134,6 @@ public class LoadBalancerTest {
                     Scheme.INTERNET_FACING,
                     Type.NETWORK,
                     "vpc-08afc01f5013ddc43"),
-                "arn-application",
                 new LoadBalancer(
                     "arn-application",
                     ImmutableList.of(),

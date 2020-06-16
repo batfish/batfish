@@ -24,7 +24,7 @@ import org.batfish.representation.aws.LoadBalancer.Protocol;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class LoadBalancerListener implements AwsVpcEntity, Serializable {
+public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
   enum ActionType {
     FORWARD,
@@ -36,7 +36,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static class DefaultAction implements Serializable {
+  public static class DefaultAction implements Serializable {
 
     @Nullable private final Integer _order;
 
@@ -99,7 +99,7 @@ final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static class Listener implements AwsVpcEntity, Serializable {
+  public static class Listener implements AwsVpcEntity, Serializable {
 
     @Nonnull private String _listenerArn;
 
