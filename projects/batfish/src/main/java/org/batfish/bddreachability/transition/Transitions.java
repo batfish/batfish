@@ -207,6 +207,12 @@ public final class Transitions {
       AddSourceConstraint add = (AddSourceConstraint) t2;
       BDDSourceManager mgr = remove.getSourceManager();
 
+      if (!mgr.isValidValue().isOne()) {
+        // cannot merge, because we'd lose the isValidConstraint RemoveSourceConstraint imposes in
+        // the backward direction.
+        return null;
+      }
+
       // each node has its own source mgr, but all mgrs are backed by a single BDDInteger
       checkState(
           mgr.getFiniteDomain().getVar() == add.getSourceManager().getFiniteDomain().getVar(),
@@ -370,18 +376,31 @@ public final class Transitions {
     return mgr.isTrivial() ? IDENTITY : new AddSourceConstraint(mgr, iface);
   }
 
-  public static Transition removeLastHopConstraint(
+  public static Transition removeNodeSpecificConstraints(
+      String node,
+      @Nullable LastHopOutgoingInterfaceManager lastHopMgr,
+      BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr,
+      BDDSourceManager sourceMgr) {
+    return compose(
+        removeLastHopConstraint(lastHopMgr, node),
+        removeSourceConstraint(sourceMgr),
+        removeOutgoingInterfaceConstraints(originalFlowFilterMgr));
+  }
+
+  private static Transition removeLastHopConstraint(
       @Nullable LastHopOutgoingInterfaceManager mgr, String node) {
     return mgr == null || !mgr.isTrackedReceivingNode(node)
         ? IDENTITY
         : new RemoveLastHopConstraint(mgr, node);
   }
 
+  @VisibleForTesting
   public static Transition removeOutgoingInterfaceConstraints(
       BDDOutgoingOriginalFlowFilterManager mgr) {
     return mgr.isTrivial() ? IDENTITY : new RemoveOutgoingInterfaceConstraints(mgr);
   }
 
+  @VisibleForTesting
   public static Transition removeSourceConstraint(BDDSourceManager mgr) {
     return mgr.isTrivial() ? IDENTITY : new RemoveSourceConstraint(mgr);
   }

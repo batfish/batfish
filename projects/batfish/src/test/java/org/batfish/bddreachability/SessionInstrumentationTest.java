@@ -1,8 +1,7 @@
 package org.batfish.bddreachability;
 
-import static org.batfish.bddreachability.EdgeMatchers.hasPostState;
-import static org.batfish.bddreachability.EdgeMatchers.hasPreState;
-import static org.batfish.bddreachability.EdgeMatchers.hasTransition;
+import static org.batfish.bddreachability.BDDOutgoingOriginalFlowFilterManager.forNetwork;
+import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.LastHopOutgoingInterfaceManager.NO_LAST_HOP;
 import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
@@ -87,6 +86,7 @@ public final class SessionInstrumentationTest {
   private BDDSourceManager _fwSrcMgr;
   private BDDSourceManager _source1SrcMgr;
   private Map<String, BDDSourceManager> _srcMgrs;
+  private Map<String, BDDOutgoingOriginalFlowFilterManager> _outgoingOriginalFlowFilterMgrs;
 
   private LastHopOutgoingInterfaceManager _lastHopMgr;
   private Map<String, Map<String, Supplier<BDD>>> _filterBdds;
@@ -157,6 +157,8 @@ public final class SessionInstrumentationTest {
           BDDSourceManager.forInterfaces(srcVar, ImmutableSet.of(SOURCE1_IFACE, FAKE_IFACE));
 
       _srcMgrs = ImmutableMap.of(FW, _fwSrcMgr, SOURCE1, _source1SrcMgr);
+      _outgoingOriginalFlowFilterMgrs =
+          forNetwork(PKT, ImmutableMap.of(FW, _fw, SOURCE1, _source1), _srcMgrs);
     }
 
     // Setup filter BDDs
@@ -171,37 +173,43 @@ public final class SessionInstrumentationTest {
   }
 
   private List<Edge> deliveredToSubnetEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeInterfaceDeliveredToSubnetEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeAcceptEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeAcceptEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeDropAclInEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeDropAclInEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeDropAclOutEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeDropAclOutEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> fibLookupSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .fibLookupSessionEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> preInInterfaceEdges(BDDFirewallSessionTraceInfo sessionInfo) {
-    return new SessionInstrumentation(PKT, configs(), _srcMgrs, _lastHopMgr, _filterBdds)
+    return new SessionInstrumentation(
+            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .preInInterfaceEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
@@ -222,15 +230,14 @@ public final class SessionInstrumentationTest {
     assertThat(
         nodeAcceptEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeAccept(FW)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders),
-                        mapsForward(srcFwI1.and(noLastHop), sessionHeaders),
-                        mapsForward(srcFwI1.and(lastHop1), sessionHeaders),
-                        mapsBackward(ONE, validSrc.and(sessionHeaders)))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new NodeAccept(FW),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders),
+                    mapsForward(srcFwI1.and(noLastHop), sessionHeaders),
+                    mapsForward(srcFwI1.and(lastHop1), sessionHeaders),
+                    mapsBackward(ONE, validSrc.and(sessionHeaders))))));
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
@@ -238,15 +245,14 @@ public final class SessionInstrumentationTest {
     assertThat(
         nodeAcceptEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeAccept(FW)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd)),
-                        mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(_permitTcpBdd)),
-                        mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(_permitTcpBdd)),
-                        mapsBackward(ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd)))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new NodeAccept(FW),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd)),
+                    mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(_permitTcpBdd)),
+                    mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(_permitTcpBdd)),
+                    mapsBackward(ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // Session has a transformation
@@ -259,16 +265,15 @@ public final class SessionInstrumentationTest {
       assertThat(
           nodeAcceptEdges(natSessionInfo),
           contains(
-              allOf(
-                  hasPreState(new PreInInterface(FW, FW_I1)),
-                  hasPostState(new NodeAccept(FW)),
-                  hasTransition(
-                      allOf(
-                          mapsForward(srcFwI1, sessionHeaders.and(poolBdd)),
-                          mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(poolBdd)),
-                          mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(poolBdd)),
-                          mapsBackward(ONE, validSrc.and(sessionHeaders)),
-                          mapsBackward(poolBdd.not(), ZERO))))));
+              edge(
+                  new PreInInterface(FW, FW_I1),
+                  new NodeAccept(FW),
+                  allOf(
+                      mapsForward(srcFwI1, sessionHeaders.and(poolBdd)),
+                      mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(poolBdd)),
+                      mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(poolBdd)),
+                      mapsBackward(ONE, validSrc.and(sessionHeaders)),
+                      mapsBackward(poolBdd.not(), ZERO)))));
     }
   }
 
@@ -282,14 +287,12 @@ public final class SessionInstrumentationTest {
     assertThat(
         fibLookupSessionEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(
-                    allOf(
-                        mapsForward(
-                            ONE, sessionHeaders.and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
-                        mapsBackward(ONE, sessionHeaders))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new PostInVrfSession(FW, FW_VRF),
+                allOf(
+                    mapsForward(ONE, sessionHeaders.and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
+                    mapsBackward(ONE, sessionHeaders)))));
   }
 
   @Test
@@ -304,17 +307,14 @@ public final class SessionInstrumentationTest {
     assertThat(
         fibLookupSessionEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(
-                    allOf(
-                        mapsForward(
-                            ONE,
-                            sessionHeaders
-                                .and(poolBdd)
-                                .and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
-                        mapsBackward(ONE, sessionHeaders))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new PostInVrfSession(FW, FW_VRF),
+                allOf(
+                    mapsForward(
+                        ONE,
+                        sessionHeaders.and(poolBdd).and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
+                    mapsBackward(ONE, sessionHeaders)))));
   }
 
   @Test
@@ -330,14 +330,14 @@ public final class SessionInstrumentationTest {
     assertThat(
         fibLookupSessionEdges(sessionInfo),
         containsInAnyOrder(
-            allOf(
-                hasPreState(new OriginateInterface(FW, FW_I1)),
-                hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(expectedTransition)),
-            allOf(
-                hasPreState(new OriginateVrf(FW, FW_VRF)),
-                hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(expectedTransition))));
+            edge(
+                new OriginateInterface(FW, FW_I1),
+                new PostInVrfSession(FW, FW_VRF),
+                expectedTransition),
+            edge(
+                new OriginateVrf(FW, FW_VRF),
+                new PostInVrfSession(FW, FW_VRF),
+                expectedTransition)));
   }
 
   @Test
@@ -357,14 +357,14 @@ public final class SessionInstrumentationTest {
     assertThat(
         fibLookupSessionEdges(natSessionInfo),
         containsInAnyOrder(
-            allOf(
-                hasPreState(new OriginateInterface(FW, FW_I1)),
-                hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(expectedTransition)),
-            allOf(
-                hasPreState(new OriginateVrf(FW, FW_VRF)),
-                hasPostState(new PostInVrfSession(FW, FW_VRF)),
-                hasTransition(expectedTransition))));
+            edge(
+                new OriginateInterface(FW, FW_I1),
+                new PostInVrfSession(FW, FW_VRF),
+                expectedTransition),
+            edge(
+                new OriginateVrf(FW, FW_VRF),
+                new PostInVrfSession(FW, FW_VRF),
+                expectedTransition)));
   }
 
   @Test
@@ -390,16 +390,15 @@ public final class SessionInstrumentationTest {
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new PreInInterface(SOURCE1, SOURCE1_IFACE)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders.and(source1Iface)),
-                        mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(source1Iface)),
-                        mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(source1Iface)),
-                        mapsBackward(source1Iface, validSrc.and(sessionHeaders)),
-                        mapsBackward(fakeIface, ZERO))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new PreInInterface(SOURCE1, SOURCE1_IFACE),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders.and(source1Iface)),
+                    mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(source1Iface)),
+                    mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(source1Iface)),
+                    mapsBackward(source1Iface, validSrc.and(sessionHeaders)),
+                    mapsBackward(fakeIface, ZERO)))));
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
@@ -407,20 +406,18 @@ public final class SessionInstrumentationTest {
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new PreInInterface(SOURCE1, SOURCE1_IFACE)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
-                        mapsForward(
-                            srcFwI1.and(noLastHop),
-                            sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
-                        mapsForward(
-                            srcFwI1.and(lastHop1),
-                            sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
-                        mapsBackward(source1Iface, validSrc.and(sessionHeaders).and(_permitTcpBdd)),
-                        mapsBackward(fakeIface, ZERO))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new PreInInterface(SOURCE1, SOURCE1_IFACE),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
+                    mapsForward(
+                        srcFwI1.and(noLastHop),
+                        sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
+                    mapsForward(
+                        srcFwI1.and(lastHop1), sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
+                    mapsBackward(source1Iface, validSrc.and(sessionHeaders).and(_permitTcpBdd)),
+                    mapsBackward(fakeIface, ZERO)))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // FW_I1 has an outgoing session ACL
@@ -429,20 +426,18 @@ public final class SessionInstrumentationTest {
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new PreInInterface(SOURCE1, SOURCE1_IFACE)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
-                        mapsForward(
-                            srcFwI1.and(noLastHop),
-                            sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
-                        mapsForward(
-                            srcFwI1.and(lastHop1),
-                            sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
-                        mapsBackward(source1Iface, validSrc.and(sessionHeaders).and(_permitTcpBdd)),
-                        mapsBackward(fakeIface, ZERO))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new PreInInterface(SOURCE1, SOURCE1_IFACE),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
+                    mapsForward(
+                        srcFwI1.and(noLastHop),
+                        sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
+                    mapsForward(
+                        srcFwI1.and(lastHop1), sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
+                    mapsBackward(source1Iface, validSrc.and(sessionHeaders).and(_permitTcpBdd)),
+                    mapsBackward(fakeIface, ZERO)))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // Session has a transformation
@@ -459,20 +454,18 @@ public final class SessionInstrumentationTest {
       assertThat(
           preInInterfaceEdges(natSessionInfo),
           contains(
-              allOf(
-                  hasPreState(new PreInInterface(FW, FW_I1)),
-                  hasPostState(new PreInInterface(SOURCE1, SOURCE1_IFACE)),
-                  hasTransition(
-                      allOf(
-                          mapsForward(srcFwI1, sessionHeaders.and(poolBdd).and(source1Iface)),
-                          mapsForward(
-                              srcFwI1.and(noLastHop),
-                              sessionHeaders.and(poolBdd).and(source1Iface)),
-                          mapsForward(
-                              srcFwI1.and(lastHop1), sessionHeaders.and(poolBdd).and(source1Iface)),
-                          mapsBackward(source1Iface, validSrc.and(sessionHeaders)),
-                          mapsBackward(source1Iface.and(poolBdd.not()), ZERO),
-                          mapsBackward(fakeIface, ZERO))))));
+              edge(
+                  new PreInInterface(FW, FW_I1),
+                  new PreInInterface(SOURCE1, SOURCE1_IFACE),
+                  allOf(
+                      mapsForward(srcFwI1, sessionHeaders.and(poolBdd).and(source1Iface)),
+                      mapsForward(
+                          srcFwI1.and(noLastHop), sessionHeaders.and(poolBdd).and(source1Iface)),
+                      mapsForward(
+                          srcFwI1.and(lastHop1), sessionHeaders.and(poolBdd).and(source1Iface)),
+                      mapsBackward(source1Iface, validSrc.and(sessionHeaders)),
+                      mapsBackward(source1Iface.and(poolBdd.not()), ZERO),
+                      mapsBackward(fakeIface, ZERO)))));
     }
   }
 
@@ -496,17 +489,14 @@ public final class SessionInstrumentationTest {
     assertThat(
         actual,
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeInterfaceDeliveredToSubnet(FW, FW_I1)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders.and(srcFwI1)),
-                        mapsForward(
-                            srcFwI1.and(noLastHop), sessionHeaders.and(srcFwI1).and(noLastHop)),
-                        mapsForward(
-                            srcFwI1.and(lastHop1), sessionHeaders.and(srcFwI1).and(lastHop1)),
-                        mapsBackward(ONE, sessionHeaders))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new NodeInterfaceDeliveredToSubnet(FW, FW_I1),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders.and(srcFwI1)),
+                    mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(srcFwI1).and(noLastHop)),
+                    mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(srcFwI1).and(lastHop1)),
+                    mapsBackward(ONE, sessionHeaders)))));
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
@@ -514,13 +504,12 @@ public final class SessionInstrumentationTest {
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeInterfaceDeliveredToSubnet(FW, FW_I1)),
-                hasTransition(
-                    allOf(
-                        mapsForward(ONE, sessionHeaders.and(_permitTcpBdd)),
-                        mapsBackward(ONE, sessionHeaders.and(_permitTcpBdd)))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new NodeInterfaceDeliveredToSubnet(FW, FW_I1),
+                allOf(
+                    mapsForward(ONE, sessionHeaders.and(_permitTcpBdd)),
+                    mapsBackward(ONE, sessionHeaders.and(_permitTcpBdd))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // FW_I1 has an outgoing session ACL
@@ -529,13 +518,12 @@ public final class SessionInstrumentationTest {
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeInterfaceDeliveredToSubnet(FW, FW_I1)),
-                hasTransition(
-                    allOf(
-                        mapsForward(ONE, sessionHeaders.and(_permitTcpBdd)),
-                        mapsBackward(ONE, sessionHeaders.and(_permitTcpBdd)))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new NodeInterfaceDeliveredToSubnet(FW, FW_I1),
+                allOf(
+                    mapsForward(ONE, sessionHeaders.and(_permitTcpBdd)),
+                    mapsBackward(ONE, sessionHeaders.and(_permitTcpBdd))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // Session has a transformation
@@ -552,15 +540,14 @@ public final class SessionInstrumentationTest {
       assertThat(
           deliveredToSubnetEdges(natSessionInfo),
           contains(
-              allOf(
-                  hasPreState(new PreInInterface(FW, FW_I1)),
-                  hasPostState(new NodeInterfaceDeliveredToSubnet(FW, FW_I1)),
-                  hasTransition(
-                      allOf(
-                          mapsForward(ONE, sessionHeaders.and(poolBdd)),
-                          mapsForward(poolBdd.not(), sessionHeaders.and(poolBdd)),
-                          mapsBackward(ONE, sessionHeaders),
-                          mapsBackward(poolBdd.not(), ZERO))))));
+              edge(
+                  new PreInInterface(FW, FW_I1),
+                  new NodeInterfaceDeliveredToSubnet(FW, FW_I1),
+                  allOf(
+                      mapsForward(ONE, sessionHeaders.and(poolBdd)),
+                      mapsForward(poolBdd.not(), sessionHeaders.and(poolBdd)),
+                      mapsBackward(ONE, sessionHeaders),
+                      mapsBackward(poolBdd.not(), ZERO)))));
     }
   }
 
@@ -583,14 +570,12 @@ public final class SessionInstrumentationTest {
     assertThat(
         nodeDropAclInEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeDropAclIn(FW)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd.not())),
-                        mapsBackward(
-                            ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd.not())))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new NodeDropAclIn(FW),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd.not())),
+                    mapsBackward(ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd.not()))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
   }
 
@@ -617,14 +602,12 @@ public final class SessionInstrumentationTest {
     assertThat(
         nodeDropAclOutEdges(sessionInfo),
         contains(
-            allOf(
-                hasPreState(new PreInInterface(FW, FW_I1)),
-                hasPostState(new NodeDropAclOut(FW)),
-                hasTransition(
-                    allOf(
-                        mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd.not())),
-                        mapsBackward(
-                            ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd.not())))))));
+            edge(
+                new PreInInterface(FW, FW_I1),
+                new NodeDropAclOut(FW),
+                allOf(
+                    mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd.not())),
+                    mapsBackward(ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd.not()))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
   }
 }

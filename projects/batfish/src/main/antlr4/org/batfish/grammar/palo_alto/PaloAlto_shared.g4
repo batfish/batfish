@@ -14,10 +14,7 @@ options {
 
 s_shared
 :
-    SHARED
-    (
-        ss_common
-    )
+    SHARED ss_common?
 ;
 
 // Common syntax between vsys, panorama, and other shared contexts
@@ -105,7 +102,8 @@ seltip_url
 ss_null
 :
     (
-        AUTHENTICATION_PROFILE
+        ADMIN_ROLE
+        | AUTHENTICATION_PROFILE
         | BOTNET
         | CERTIFICATE
         | CERTIFICATE_PROFILE

@@ -68,6 +68,9 @@ set shared botnet configuration unknown-applications unknown-tcp destinations-pe
 set shared botnet report topn 100
 set shared botnet report scheduled yes
 #
+set shared admin-role A1 role panorama cli superuser
+set shared admin-role A1 role panorama contextswitch monitor pdf-reports manage-pdf-summary enable
+#
 set tag PublicNW
 #
 set mgt-config users admin phash $1$vqgaovyp$BA8m4uld.cxY2T/n9ihK2.
@@ -84,5 +87,17 @@ set vsys vsys1 log-settings syslog NAME server NAME format IETF
 set vsys vsys1 log-settings syslog NAME server NAME port 65535
 set vsys vsys1 log-settings syslog NAME server NAME transport UDP
 set vsys vsys1 log-settings profiles NAME match-list ML_NAME log-type foo
+set template T1 config shared log-settings config match-list ML_NAME send-to-panorama yes
+set template T1 config shared log-settings userid match-list ML_NAME send-to-panorama yes
+set device-group DG1 log-settings profiles P1 description "long description"
 set vsys vsys1 profiles dos-protection
 set vsys vsys1 profile-group NAME
+# Readonly lines are related to firewalls managed by a panorama node
+set readonly devices localhost.localdomain device-group DG1 id 16
+set readonly devices localhost.localdomain template T1 id 12
+set readonly devices localhost.localdomain template T1 config devices localhost.localdomain vsys vsys1 zone Z1 id 14
+# Misc "empty" definitions
+set template T1 config mgt-config users
+set template T1 config shared
+set template T1 config devices localhost.localdomain network vlan
+set template T1 config devices localhost.localdomain network virtual-wire

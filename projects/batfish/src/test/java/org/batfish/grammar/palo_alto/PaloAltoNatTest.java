@@ -2,15 +2,16 @@ package org.batfish.grammar.palo_alto;
 
 import static org.batfish.main.BatfishTestUtils.getBatfish;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -21,11 +22,16 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
-import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.RouteInfo;
+import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.main.Batfish;
@@ -64,9 +70,28 @@ public class PaloAltoNatTest {
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
+  /**
+   * Extracts transformed flow from a trace that is expected to contain one hop with one {@link
+   * ExitOutputIfaceStep}. The transformed flow is taken from that step.
+   */
+  private static Flow getTransformedFlow(Trace trace) {
+    List<Hop> hops = trace.getHops();
+    assert hops.size() == 1;
+    List<Step<?>> steps = hops.get(0).getSteps();
+    List<ExitOutputIfaceStep> exitIfaceSteps =
+        steps.stream()
+            .filter(s -> s instanceof ExitOutputIfaceStep)
+            .map(ExitOutputIfaceStep.class::cast)
+            .collect(ImmutableList.toImmutableList());
+    assert exitIfaceSteps.size() == 1;
+    return exitIfaceSteps.get(0).getDetail().getTransformedFlow();
+  }
+
   @Test
   public void testSourceNat() throws IOException {
-    // Test source NAT for traffic from inside zone to outside zone
+    /* Test source NAT for traffic from inside zone to outside zone. There is one NAT rule that
+      matches flows from inside to outside with src 1.1.1.2, and translates src to 1.1.1.99.
+    */
     Configuration c = parseConfig("source-nat");
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/24
     String outside2Name = "ethernet1/2.2"; // 1.2.2.3/24
@@ -74,8 +99,8 @@ public class PaloAltoNatTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
 
-    // This flow is NAT'd and should pass through the firewall
-    Flow insideToOutside =
+    // This flow is NAT'd
+    Flow insideToOutsideMatch =
         Flow.builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(inside1Name)
@@ -85,34 +110,36 @@ public class PaloAltoNatTest {
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
-    // This flow is NOT NAT'd (does not match source address constraint)
-    Flow insideToOutsideBadSrcIp =
-        insideToOutside.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
-    // This flow is NOT NAT'd (does not match from interface constraint)
-    Flow outsideToOutsideBadIngressIface =
-        insideToOutside.toBuilder().setIngressInterface(outside2Name).build();
+    // This flow is not NAT'd (does not match source address constraint)
+    Flow insideToOutsideNoMatch =
+        insideToOutsideMatch.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
+    // This flow is not NAT'd (does not match from interface constraint)
+    Flow outsideToOutside =
+        insideToOutsideMatch.toBuilder().setIngressInterface(outside2Name).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine(snapshot)
             .computeTraces(
-                ImmutableSet.of(
-                    insideToOutside, insideToOutsideBadSrcIp, outsideToOutsideBadIngressIface),
+                ImmutableSet.of(insideToOutsideMatch, insideToOutsideNoMatch, outsideToOutside),
                 false);
 
-    // Flow should be NAT'd and be successful
-    assertTrue(traces.get(insideToOutside).get(0).getDisposition().isSuccessful());
+    Ip newSrcIp = Ip.parse("1.1.1.99");
+    int newSrcPort = NamedPort.EPHEMERAL_LOWEST.number();
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(insideToOutsideMatch))),
+        insideToOutsideMatch.toBuilder().setSrcIp(newSrcIp).setSrcPort(newSrcPort).build());
 
-    // Flow not matching NAT source address restriction should not be NAT'd
-    // And therefore should not be successful
-    assertFalse(traces.get(insideToOutsideBadSrcIp).get(0).getDisposition().isSuccessful());
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(insideToOutsideNoMatch))),
+        insideToOutsideNoMatch);
 
-    // Flow not matching from zone, should not be NAT'd and should be unsuccessful
-    assertFalse(traces.get(outsideToOutsideBadIngressIface).get(0).getDisposition().isSuccessful());
+    // No ruleset applied to intrazone flows, so exit interface step has no transformed flow
+    assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(outsideToOutside))));
   }
 
   @Test
-  public void testPanoramaSourceNat() throws IOException {
+  public void testPanoramaSourceNatOrder() throws IOException {
     /*
     Setup: Three NAT rules
     - Panorama pre-rulebase has a rule to translate source 1.1.1.2 to 1.1.1.99
@@ -120,7 +147,6 @@ public class PaloAltoNatTest {
     - Panorama post-rulebase has a rule to translate sources in 1.1.1.2/28 to 1.1.1.101
     Should match at most one rule.
      */
-    // Test panorama destination NAT for traffic from outside zone to inside zone
     Configuration c = parseConfig("source-nat-panorama");
 
     String inside1Name = "ethernet1/1.1"; // 1.1.1.3/24
@@ -159,40 +185,37 @@ public class PaloAltoNatTest {
                     doesNotHitNatRule),
                 false);
 
-    // All natted flows should make it out, unnatted flow should not
-    Trace hitPreRulebaseRule = traces.get(hitsPreRulebaseNatRule).get(0);
-    Trace hitVsysRule = traces.get(hitsVsysNatRule).get(0);
-    Trace hitPostRulebaseRule = traces.get(hitsPostRulebaseNatRule).get(0);
-    assertTrue(hitPreRulebaseRule.getDisposition().isSuccessful());
-    assertTrue(hitVsysRule.getDisposition().isSuccessful());
-    assertTrue(hitPostRulebaseRule.getDisposition().isSuccessful());
-    assertFalse(traces.get(doesNotHitNatRule).get(0).getDisposition().isSuccessful());
+    Trace hitPreRulebaseRule = Iterables.getOnlyElement(traces.get(hitsPreRulebaseNatRule));
+    Trace hitVsysRule = Iterables.getOnlyElement(traces.get(hitsVsysNatRule));
+    Trace hitPostRulebaseRule = Iterables.getOnlyElement(traces.get(hitsPostRulebaseNatRule));
+    Trace didNotHitNatRule = Iterables.getOnlyElement(traces.get(doesNotHitNatRule));
 
     // Expected translated addresses
     Ip panPreNewAddr = Ip.parse("1.1.1.99");
     Ip vsysNatNewAddr = Ip.parse("1.1.1.100");
     Ip panPostNewAddr = Ip.parse("1.1.1.101");
+    int newSrcPort = NamedPort.EPHEMERAL_LOWEST.number();
 
-    List<Step<?>> steps = hitPreRulebaseRule.getHops().get(0).getSteps();
-    ExitOutputIfaceStep hitPreRuleLastStep = (ExitOutputIfaceStep) steps.get(steps.size() - 2);
-
-    steps = hitVsysRule.getHops().get(0).getSteps();
-    ExitOutputIfaceStep hitVsysRuleLastStep = (ExitOutputIfaceStep) steps.get(steps.size() - 2);
-
-    steps = hitPostRulebaseRule.getHops().get(0).getSteps();
-    ExitOutputIfaceStep hitPostRuleLastStep = (ExitOutputIfaceStep) steps.get(steps.size() - 2);
-
-    assertThat(
-        hitPreRuleLastStep.getDetail().getTransformedFlow().getSrcIp(), equalTo(panPreNewAddr));
-    assertThat(
-        hitVsysRuleLastStep.getDetail().getTransformedFlow().getSrcIp(), equalTo(vsysNatNewAddr));
-    assertThat(
-        hitPostRuleLastStep.getDetail().getTransformedFlow().getSrcIp(), equalTo(panPostNewAddr));
+    assertEquals(
+        getTransformedFlow(hitPreRulebaseRule),
+        hitsPreRulebaseNatRule.toBuilder().setSrcIp(panPreNewAddr).setSrcPort(newSrcPort).build());
+    assertEquals(
+        getTransformedFlow(hitVsysRule),
+        hitsVsysNatRule.toBuilder().setSrcIp(vsysNatNewAddr).setSrcPort(newSrcPort).build());
+    assertEquals(
+        getTransformedFlow(hitPostRulebaseRule),
+        hitsPostRulebaseNatRule
+            .toBuilder()
+            .setSrcIp(panPostNewAddr)
+            .setSrcPort(newSrcPort)
+            .build());
+    assertEquals(getTransformedFlow(didNotHitNatRule), doesNotHitNatRule);
   }
 
   @Test
   public void testDestNat() throws IOException {
-    // Test destination NAT is applied correctly
+    // Test destination NAT is applied correctly. There is one NAT rule that matches flows from
+    // outside to inside with src 1.1.1.2, and translates dst to 1.1.1.99.
     Configuration c = parseConfig("destination-nat");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -209,8 +232,8 @@ public class PaloAltoNatTest {
     // Interface in OUTSIDE zone has packet policy
     assertThat(outside1Policy, notNullValue());
 
-    // This flow is NAT'd and should pass through the firewall
-    Flow outsideToInsideNat =
+    // This flow is NAT'd
+    Flow outsideToInsideMatch =
         Flow.builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(outside1Name)
@@ -220,35 +243,48 @@ public class PaloAltoNatTest {
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
-    // This flow is NOT NAT'd (does not match source address constraint)
-    Flow outsideToInsideBadSrcIp =
-        outsideToInsideNat.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
-    // This flow is NOT NAT'd (does not match from-interface constraint)
-    Flow insideToInsideBadIngressIface =
-        outsideToInsideNat.toBuilder().setIngressInterface(inside2Name).build();
+    // This flow is not NAT'd (does not match source address constraint)
+    Flow outsideToInsideNoMatch =
+        outsideToInsideMatch.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
+    // This flow is not NAT'd (does not match from-interface constraint)
+    Flow insideToInside = outsideToInsideMatch.toBuilder().setIngressInterface(inside2Name).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine(snapshot)
             .computeTraces(
-                ImmutableSet.of(
-                    outsideToInsideNat, outsideToInsideBadSrcIp, insideToInsideBadIngressIface),
+                ImmutableSet.of(outsideToInsideMatch, outsideToInsideNoMatch, insideToInside),
                 false);
 
-    // Flow should be NAT'd and be successful
-    assertTrue(traces.get(outsideToInsideNat).get(0).getDisposition().isSuccessful());
+    Ip newDstIp = Ip.parse("1.1.1.99");
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(outsideToInsideMatch))),
+        outsideToInsideMatch.toBuilder().setDstIp(newDstIp).build());
 
-    // Flow not matching NAT dest address constraint should not be NAT'd and therefore should not be
-    // successful
-    assertFalse(traces.get(outsideToInsideBadSrcIp).get(0).getDisposition().isSuccessful());
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(outsideToInsideNoMatch))),
+        outsideToInsideNoMatch);
 
-    // Flow not matching from-zone, should not be NAT'd and should be unsuccessful
-    assertFalse(traces.get(insideToInsideBadIngressIface).get(0).getDisposition().isSuccessful());
+    // No ruleset applied to intrazone flows, so exit interface step has no transformed flow
+    assertNull(getTransformedFlow(Iterables.getOnlyElement(traces.get(insideToInside))));
   }
 
   @Test
   public void testPanoramaDestNatOrder() throws IOException {
-    // Test panorama destination NATs are applied in the right order
+    /* Test panorama dst NATs are applied in the right order. Each rulebase has rules:
+      pre-rulebase:
+        - match src 1.2.1.2 -> translate dst to 1.1.1.99
+      vsys1 rulebase:
+        - match src 1.2.1.2 -> translate dst to 11.11.11.11 (unreachable due to pre-rulebase rule)
+        - match src 1.2.1.4 -> translate dst to 1.1.1.100
+      post-rulebase:
+        - match src 1.2.1.4 -> translate dst to 11.11.11.11 (unreachable for vsys1 flows)
+        - match src 1.2.1.5 -> translate dst to 1.1.1.101
+    */
+    Ip preRulebaseTranslatedDst = Ip.parse(("1.1.1.99"));
+    Ip vsys1RulebaseTranslatedDst = Ip.parse(("1.1.1.100"));
+    Ip postRulebaseTranslatedDst = Ip.parse(("1.1.1.101"));
+
     Configuration c = parseConfig("destination-nat-panorama");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -272,56 +308,27 @@ public class PaloAltoNatTest {
             .setSrcPort(111)
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP);
-    // This flow is NAT'd by the pre-rulebase rule and should pass through the firewall
-    Flow outsideToInsideNatPreRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.2")).build();
-    // This flow is NAT'd by the rulebase rule and should pass through the firewall
-    Flow outsideToInsideNatRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.4")).build();
-    // This flow is NAT'd by the post-rulebase and should pass through the firewall
-    Flow outsideToInsideNatPostRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.5")).build();
+    Flow matchPreRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.2")).build();
+    Flow matchVsys1Rulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.4")).build();
+    Flow matchPostRulebase = flowBuilder.setSrcIp(Ip.parse("1.2.1.5")).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine(snapshot)
             .computeTraces(
-                ImmutableSet.of(
-                    outsideToInsideNatPreRulebase,
-                    outsideToInsideNatRulebase,
-                    outsideToInsideNatPostRulebase),
-                false);
+                ImmutableSet.of(matchPreRulebase, matchVsys1Rulebase, matchPostRulebase), false);
 
-    // First flow should be NAT'd by pre-rulebase (not rulebase) rule and be successful
-    Trace preRulebase = traces.get(outsideToInsideNatPreRulebase).get(0);
-    assertTrue(preRulebase.getDisposition().isSuccessful());
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchPreRulebase))),
+        matchPreRulebase.toBuilder().setDstIp(preRulebaseTranslatedDst).build());
 
-    List<Step<?>> steps = preRulebase.getHops().get(0).getSteps();
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchVsys1Rulebase))),
+        matchVsys1Rulebase.toBuilder().setDstIp(vsys1RulebaseTranslatedDst).build());
 
-    ExitOutputIfaceStepDetail preRulebaseDetail =
-        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
-
-    // Confirm the dst IP was rewritten by the pre-rulebase rule
-    assertThat(preRulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.99")));
-
-    // Second flow should be NAT'd by rulebase (not post-rulebase) rule and be successful
-    Trace rulebase = traces.get(outsideToInsideNatRulebase).get(0);
-    assertTrue(rulebase.getDisposition().isSuccessful());
-
-    steps = rulebase.getHops().get(0).getSteps();
-    ExitOutputIfaceStepDetail rulebaseDetail =
-        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
-
-    // Confirm the dst IP was rewritten by the rulebase rule
-    assertThat(rulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.100")));
-
-    // Third flow should be NAT'd by rulebase (not post-rulebase) rule and be successful
-    Trace postRulebase = traces.get(outsideToInsideNatPostRulebase).get(0);
-    assertTrue(postRulebase.getDisposition().isSuccessful());
-
-    steps = postRulebase.getHops().get(0).getSteps();
-    ExitOutputIfaceStepDetail postRulebaseDetail =
-        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
-
-    // Confirm the dst IP was rewritten by the post-rulebase rule
-    assertThat(postRulebaseDetail.getTransformedFlow().getDstIp(), equalTo(Ip.parse("1.1.1.101")));
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchPostRulebase))),
+        matchPostRulebase.toBuilder().setDstIp(postRulebaseTranslatedDst).build());
   }
 
   @Test
@@ -331,6 +338,7 @@ public class PaloAltoNatTest {
     - First rule matches src 1.1.1.2, does nothing
     - Second rule matches src 1.1.1.2/30, translates source only
     - Third rule matches src 1.1.1.2/28, translates dest only
+    - Fourth rule matches src 1.1.1.2/24, translates both source and dest
     Only one NAT rule should be applied to each flow.
      */
     Configuration c = parseConfig("nat-match-noop-rules");
@@ -372,42 +380,27 @@ public class PaloAltoNatTest {
     // All translated IPs will match these translated addresses
     Ip newSrcIp = Ip.parse("1.1.1.99");
     Ip newDstIp = Ip.parse("1.2.1.99");
+    int newSrcPort = NamedPort.EPHEMERAL_LOWEST.number();
 
-    // First flow should not be NAT'd, should not get past security rules
-    assertFalse(traces.get(matchesNoopRule).get(0).getDisposition().isSuccessful());
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesNoopRule))), matchesNoopRule);
 
-    // Second flow should have only its source IP translated
-    Trace matchSrcTranslation = traces.get(matchesSrcTranslationRule).get(0);
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesSrcTranslationRule))),
+        matchesSrcTranslationRule.toBuilder().setSrcIp(newSrcIp).setSrcPort(newSrcPort).build());
 
-    List<Step<?>> steps = matchSrcTranslation.getHops().get(0).getSteps();
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesDstTranslationRule))),
+        matchesDstTranslationRule.toBuilder().setDstIp(newDstIp).build());
 
-    ExitOutputIfaceStepDetail matchSrcTranslationDetail =
-        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
-
-    assertThat(matchSrcTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(newSrcIp));
-    assertThat(matchSrcTranslationDetail.getTransformedFlow().getDstIp(), equalTo(dstIp));
-
-    // Third flow should have only its dest IP translated
-    Trace matchDstTranslation = traces.get(matchesDstTranslationRule).get(0);
-
-    steps = matchDstTranslation.getHops().get(0).getSteps();
-
-    ExitOutputIfaceStepDetail matchDstTranslationDetail =
-        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
-
-    assertThat(
-        matchDstTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(matchDstTransRuleIp));
-    assertThat(matchDstTranslationDetail.getTransformedFlow().getDstIp(), equalTo(newDstIp));
-
-    // Fourth flow should have both IPs translated
-    Trace matchSrcAndDstTranslation = traces.get(matchesSrcAndDstTranslationRule).get(0);
-    steps = matchSrcAndDstTranslation.getHops().get(0).getSteps();
-
-    ExitOutputIfaceStepDetail matchSrcAndDstTranslationDetail =
-        (ExitOutputIfaceStepDetail) (steps.get(steps.size() - 2).getDetail());
-
-    assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getSrcIp(), equalTo(newSrcIp));
-    assertThat(matchSrcAndDstTranslationDetail.getTransformedFlow().getDstIp(), equalTo(newDstIp));
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesSrcAndDstTranslationRule))),
+        matchesSrcAndDstTranslationRule
+            .toBuilder()
+            .setSrcIp(newSrcIp)
+            .setSrcPort(newSrcPort)
+            .setDstIp(newDstIp)
+            .build());
   }
 
   @Test
@@ -416,7 +409,8 @@ public class PaloAltoNatTest {
     Setup: 2 NAT rules
     - First rule matches src 1.1.1.2, has source and dest nat but both pools are empty
     - Second rule matches src 1.1.1.2/30, translates both source and dest
-    Security rules only permit flows with either translated source or translated dest.
+    Flows matching first rule should be left untransformed (should not fall through to second rule).
+    TODO This behavior is only a guess.
      */
     Configuration c = parseConfig("nat-rules-empty-pool");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
@@ -445,10 +439,82 @@ public class PaloAltoNatTest {
             .computeTraces(
                 ImmutableSet.of(matchesEmptyPoolsRule, matchesSrcAndDstTranslationRule), false);
 
-    // Flow that matches rule with empty pools should not undergo any transformation, so should fail
-    assertFalse(traces.get(matchesEmptyPoolsRule).get(0).getDisposition().isSuccessful());
+    Ip newSrcIp = Ip.parse("1.1.1.99");
+    Ip newDstIp = Ip.parse("1.2.1.99");
+    int newSrcPort = NamedPort.EPHEMERAL_LOWEST.number();
 
-    // Flow that matches src and dst translation rule (with non-empty pools) should pass security
-    assertTrue(traces.get(matchesSrcAndDstTranslationRule).get(0).getDisposition().isSuccessful());
+    // Flow that matches rule with empty pools should not undergo any transformation
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesEmptyPoolsRule))),
+        matchesEmptyPoolsRule);
+
+    // Flow that matches src and dst translation rule (with non-empty pools) should be transformed
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesSrcAndDstTranslationRule))),
+        matchesSrcAndDstTranslationRule
+            .toBuilder()
+            .setSrcIp(newSrcIp)
+            .setSrcPort(newSrcPort)
+            .setDstIp(newDstIp)
+            .build());
+  }
+
+  @Test
+  public void testSecurityRulesMatchOnOriginalFlow() throws IOException {
+    /*
+    Setup: 2 NAT rules
+     - Transform dst 2.2.2.2 -> 3.3.3.3
+     - Transform dst 3.3.3.3 -> 2.2.2.2
+    Security rules only permit flows to dst 2.2.2.2. Should match on the original pre-NAT flow.
+     */
+    Configuration c = parseConfig("security-rules-original-flow");
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    String ingressIfaceName = "ethernet1/1.1"; // 1.1.1.3/24
+
+    // Create flows to match each rule
+    Ip dstIp1 = Ip.parse("2.2.2.2");
+    Ip dstIp2 = Ip.parse("3.3.3.3");
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(ingressIfaceName)
+            .setSrcIp(Ip.parse("1.1.1.1")) // src should make no difference
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP);
+    Flow toDst1 = flowBuilder.setDstIp(dstIp1).build();
+    Flow toDst2 = flowBuilder.setDstIp(dstIp2).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(toDst1, toDst2), false);
+    Trace toDst1Trace = Iterables.getOnlyElement(traces.get(toDst1));
+    Trace toDst2Trace = Iterables.getOnlyElement(traces.get(toDst2));
+
+    // Only the trace originally to dst 1 should have been allowed out
+    assertEquals(toDst1Trace.getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+    assertEquals(toDst2Trace.getDisposition(), FlowDisposition.DENIED_OUT);
+
+    // Make sure both flows were transformed as expected, based on their selected routes.
+    // TODO This could be less roundabout once PolicyStepDetail is fleshed out.
+    RoutingStep originallyToDst1RoutingStep =
+        Iterables.getOnlyElement(
+            Iterables.getOnlyElement(toDst1Trace.getHops()).getSteps().stream()
+                .filter(step -> step instanceof RoutingStep)
+                .map(RoutingStep.class::cast)
+                .collect(ImmutableList.toImmutableList()));
+    RoutingStep originallyToDst2RoutingStep =
+        Iterables.getOnlyElement(
+            Iterables.getOnlyElement(toDst2Trace.getHops()).getSteps().stream()
+                .filter(step -> step instanceof RoutingStep)
+                .map(RoutingStep.class::cast)
+                .collect(ImmutableList.toImmutableList()));
+    RouteInfo routeUsedForFlowOriginallyToDst1 =
+        Iterables.getOnlyElement(originallyToDst1RoutingStep.getDetail().getRoutes());
+    RouteInfo routeUsedForFlowOriginallyToDst2 =
+        Iterables.getOnlyElement(originallyToDst2RoutingStep.getDetail().getRoutes());
+    assertEquals(routeUsedForFlowOriginallyToDst1.getNetwork(), Prefix.create(dstIp2, 24));
+    assertEquals(routeUsedForFlowOriginallyToDst2.getNetwork(), Prefix.create(dstIp1, 24));
   }
 }

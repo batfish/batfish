@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +103,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -201,9 +201,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private final SortedMap<String, Vsys> _virtualSystems;
 
-  // vsys name -> zone name -> outgoing transformation
-  private final Map<String, Map<String, Transformation>> _zoneOutgoingTransformations;
-
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _deviceGroups = new TreeMap<>();
@@ -213,7 +210,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _templateStacks = new HashMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
-    _zoneOutgoingTransformations = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -445,8 +441,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     for (Vsys vsys : _virtualSystems.values()) {
-
-      populateZoneOutgoingTransformations(vsys);
+      // Generate warnings for invalid NAT rules in this vsys
+      getAllNatRules(vsys).forEach(r -> checkNatRuleValid(r, true));
 
       // Create zone-specific outgoing ACLs.
       for (Zone toZone : vsys.getZones().values()) {
@@ -480,83 +476,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         }
       }
     }
-  }
-
-  @Nonnull
-  private void populateZoneOutgoingTransformations(Vsys vsys) {
-    Map<String, List<Transformation.Builder>> toZoneTransformations = new HashMap<>();
-
-    TransformationStep transformPort =
-        TransformationStep.assignSourcePort(
-            NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number());
-
-    getAllNatRules(vsys)
-        // This method is run once and goes through all NAT rules. File invalid rule warnings here.
-        .filter(r -> checkNatRuleValid(r, true))
-        .forEach(
-            r -> {
-              Transformation.Builder t = Transformation.when(getSourceNatRuleMatchExpr(r, vsys));
-              List<RuleEndpoint> translatedAddrs =
-                  Optional.ofNullable(r.getSourceTranslation())
-                      .map(SourceTranslation::getDynamicIpAndPort)
-                      .map(DynamicIpAndPort::getTranslatedAddresses)
-                      .orElse(null);
-              if (translatedAddrs != null) {
-                // This rule applies a source transformation. Collect the translated IP pool.
-                RangeSet<Ip> pool = ipRangeSetFromRuleEndpoints(translatedAddrs, vsys, _w);
-                if (pool.isEmpty()) {
-                  // Can't apply a source IP translation with empty IP pool
-                  // TODO: Check real behavior in this scenario
-                  _w.redFlag(
-                      String.format(
-                          "NAT rule %s of VSYS %s will not apply source translation because its source translation pool is empty",
-                          r.getName(), vsys.getName()));
-                } else {
-                  t.apply(
-                      new AssignIpAddressFromPool(
-                          TransformationType.SOURCE_NAT, IpField.SOURCE, pool),
-                      transformPort);
-                }
-              }
-              // Note that "to any" is not permitted
-              toZoneTransformations.computeIfAbsent(r.getTo(), x -> new ArrayList<>()).add(t);
-            });
-
-    Map<String, Transformation> finalZoneTransformations =
-        _zoneOutgoingTransformations.computeIfAbsent(vsys.getName(), v -> new TreeMap<>());
-    toZoneTransformations.forEach(
-        (zoneName, builders) -> {
-          Transformation t = null;
-          for (int i = builders.size() - 1; i >= 0; i--) {
-            Transformation.Builder prevT = builders.get(i);
-            prevT.setOrElse(t);
-            t = prevT.build();
-          }
-          finalZoneTransformations.put(zoneName, t);
-        });
-  }
-
-  private AclLineMatchExpr getSourceNatRuleMatchExpr(NatRule rule, Vsys vsys) {
-    // Match source and destination
-    MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
-
-    if (rule.getFrom().contains(CATCHALL_ZONE_NAME)) {
-      // Rule says "from any" -- no need to match on packet source interface
-      return matchHeaderSpace;
-    }
-
-    // Match from
-    Set<String> fromIfaces =
-        rule.getFrom().stream()
-            .flatMap(
-                fromZone -> {
-                  Zone zone = vsys.getZones().get(fromZone);
-                  return zone == null ? Stream.of() : zone.getInterfaceNames().stream();
-                })
-            .collect(ImmutableSet.toImmutableSet());
-    MatchSrcInterface matchSrcInterface = new MatchSrcInterface(fromIfaces);
-
-    return new AndMatchExpr(ImmutableList.of(matchHeaderSpace, matchSrcInterface));
   }
 
   /** Convert unique aspects of shared-gateways. */
@@ -734,9 +653,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Generate {@link IpAccessList} to be used as outgoing filter by interfaces in layer-3 zone
-   * {@code toZone}, given supplied definitions for all {@code sharedGateways} and {@code
-   * virtualSystems}.
+   * Generate {@link IpAccessList} to be used as {@link
+   * org.batfish.datamodel.Interface#getOutgoingOriginalFlowFilter() outgoingOriginalFlowFilter} by
+   * interfaces in layer-3 zone {@code toZone}, given supplied definitions for all {@code
+   * sharedGateways} and {@code virtualSystems}.
    */
   @VisibleForTesting
   static @Nonnull IpAccessList generateOutgoingFilter(
@@ -1326,15 +1246,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setAccessVlan(iface.getTag());
     }
 
-    Zone zone = iface.getZone();
-    // add outgoing transformation
-    if (zone != null) {
-      String vsysName = zone.getVsys().getName();
-      newIface.setOutgoingTransformation(
-          _zoneOutgoingTransformations
-              .getOrDefault(vsysName, ImmutableMap.of())
-              .get(zone.getName()));
-    }
     // add outgoing filter
     IpAccessList.Builder aclBuilder =
         IpAccessList.builder().setOwner(_c).setName(computeOutgoingFilterName(iface.getName()));
@@ -1343,6 +1254,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         _sharedGateways.values().stream()
             .filter(sg -> sg.getImportedInterfaces().contains(name))
             .findFirst();
+    Zone zone = iface.getZone();
     if (sharedGatewayOptional.isPresent()) {
       Vsys sharedGateway = sharedGatewayOptional.get();
       String sgName = sharedGateway.getName();
@@ -1383,8 +1295,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     if (!aclLines.isEmpty()) {
       // For interfaces with security rules, assume traffic originating from the device is allowed
-      // out
-      // the interface
+      // out the interface
       // TODO this isn't tested and may not line up with actual device behavior, but is in place to
       // allow things like BGP sessions to come up
       aclLines.add(
@@ -1392,11 +1303,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
               .setMatchCondition(ORIGINATING_FROM_DEVICE)
               .setTraceElement(originatedFromDeviceTraceElement())
               .build());
-      newIface.setOutgoingFilter(aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
+      newIface.setOutgoingOriginalFlowFilter(
+          aclBuilder.setLines(ImmutableList.copyOf(aclLines)).build());
     }
 
     // If there are NAT rules for packets entering this interface's zone, apply them
-    String packetPolicyName = getPacketPolicyForZone(iface.getZone());
+    String packetPolicyName = getPacketPolicyForZone(zone);
     if (packetPolicyName != null) {
       newIface.setRoutingPolicy(packetPolicyName);
     }
@@ -1438,55 +1350,104 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> lines =
         ImmutableList.builder();
     for (NatRule rule : natRules) {
-      RuleEndpoint translatedAddress =
-          Optional.ofNullable(rule.getDestinationTranslation())
-              .map(DestinationTranslation::getTranslatedAddress)
-              .orElse(null);
       Zone toZone = vsys.getZones().get(rule.getTo());
       if (toZone == null) {
         continue;
       }
 
-      // Conditions under which to apply dest NAT
+      // Conditions under which to apply this NAT rule
       MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
       BoolExpr condition =
           Conjunction.of(
               new PacketMatchExpr(matchHeaderSpace),
-              // Only apply dest NAT if flow is exiting an interface in the to-zone
+              // Only apply NAT if flow is exiting an interface in the to-zone
               new FibLookupOutgoingInterfaceIsOneOf(
                   IngressInterfaceVrf.instance(), toZone.getInterfaceNames()));
 
-      List<Statement> actionsIfMatched = new ArrayList<>();
-      if (translatedAddress != null) {
-        // Rule applies a destination translation. Add dest NAT transformation to actions if matched
-        RangeSet<Ip> pool = ruleEndpointToIpRangeSet(translatedAddress, vsys, _w);
-        if (pool.isEmpty()) {
-          // Can't apply a dest IP translation with empty IP pool
-          // TODO: Check real behavior in this scenario
-          _w.redFlag(
-              String.format(
-                  "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
-                  rule.getName(), vsys.getName()));
-        } else {
-          Transformation transform =
-              new Transformation(
-                  // No need to guard: packet policy already encodes this rule's match conditions
-                  TrueExpr.INSTANCE,
-                  ImmutableList.of(
-                      new AssignIpAddressFromPool(
-                          TransformationType.DEST_NAT, IpField.DESTINATION, pool)),
-                  null,
-                  null);
-          actionsIfMatched.add(new ApplyTransformation(transform));
-        }
-      }
-
-      // Always do a FIB lookup and return if matched
+      // Actions to take when NAT rule is matched: transformation, FIB lookup, return
+      ImmutableList.Builder<Statement> actionsIfMatched = ImmutableList.builder();
+      convertRuleToTransformation(rule, vsys)
+          .ifPresent(transform -> actionsIfMatched.add(new ApplyTransformation(transform)));
       actionsIfMatched.add(new Return(new FibLookup(IngressInterfaceVrf.instance())));
-      lines.add(new org.batfish.datamodel.packet_policy.If(condition, actionsIfMatched));
+
+      // Add packet policy line for matching this rule
+      lines.add(new org.batfish.datamodel.packet_policy.If(condition, actionsIfMatched.build()));
     }
     return new PacketPolicy(
         name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
+  }
+
+  /**
+   * Converts the given {@link NatRule} to a {@link Transformation} with a TRUE guard. There is no
+   * need for a nontrivial guard because all transformations are applied in PBR, and the rule's
+   * match conditions are converted to a {@link BoolExpr} condition on the packet policy line that
+   * applies the transformation.
+   */
+  private Optional<Transformation> convertRuleToTransformation(NatRule rule, Vsys vsys) {
+    List<TransformationStep> transformationSteps =
+        ImmutableList.<TransformationStep>builder()
+            .addAll(getSourceTransformationSteps(rule, vsys))
+            .addAll(getDestinationTransformationSteps(rule, vsys))
+            .build();
+
+    return transformationSteps.isEmpty()
+        ? Optional.empty()
+        : Optional.of(Transformation.always().apply(transformationSteps).build());
+  }
+
+  private List<TransformationStep> getSourceTransformationSteps(NatRule rule, Vsys vsys) {
+    List<RuleEndpoint> translatedSrcAddrs =
+        Optional.ofNullable(rule.getSourceTranslation())
+            .map(SourceTranslation::getDynamicIpAndPort)
+            .map(DynamicIpAndPort::getTranslatedAddresses)
+            .orElse(null);
+    if (translatedSrcAddrs == null) {
+      // No source translation
+      return ImmutableList.of();
+    }
+
+    RangeSet<Ip> pool = ipRangeSetFromRuleEndpoints(translatedSrcAddrs, vsys, _w);
+    if (pool.isEmpty()) {
+      // Can't apply a source IP translation with empty IP pool
+      // TODO: Check real behavior in this scenario
+      _w.redFlag(
+          String.format(
+              "NAT rule %s of VSYS %s will not apply source translation because its source translation pool is empty",
+              rule.getName(), vsys.getName()));
+      return ImmutableList.of();
+    }
+
+    // Create steps to transform src IP and port
+    return ImmutableList.of(
+        new AssignIpAddressFromPool(TransformationType.SOURCE_NAT, IpField.SOURCE, pool),
+        TransformationStep.assignSourcePort(
+            NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number()));
+  }
+
+  private List<TransformationStep> getDestinationTransformationSteps(NatRule rule, Vsys vsys) {
+    RuleEndpoint translatedDstAddr =
+        Optional.ofNullable(rule.getDestinationTranslation())
+            .map(DestinationTranslation::getTranslatedAddress)
+            .orElse(null);
+    if (translatedDstAddr == null) {
+      // No destination translation
+      return ImmutableList.of();
+    }
+
+    RangeSet<Ip> pool = ruleEndpointToIpRangeSet(translatedDstAddr, vsys, _w);
+    if (pool.isEmpty()) {
+      // Can't apply a dest IP translation with empty IP pool
+      // TODO: Check real behavior in this scenario
+      _w.redFlag(
+          String.format(
+              "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
+              rule.getName(), vsys.getName()));
+      return ImmutableList.of();
+    }
+
+    // Create step to transform dst IP
+    return ImmutableList.of(
+        new AssignIpAddressFromPool(TransformationType.DEST_NAT, IpField.DESTINATION, pool));
   }
 
   /** Return a list of all valid NAT rules to apply to packets entering the specified zone. */
@@ -1495,6 +1456,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return getAllNatRules(vsys)
         .filter(
             rule ->
+                // Note: This isn't a good place to file warnings for invalid NAT rules because it
+                // leaves out rules that aren't in a zone. Instead file warnings per vsys.
                 checkNatRuleValid(rule, false)
                     && (rule.getFrom().contains(zone.getName())
                         || rule.getFrom().contains(CATCHALL_ZONE_NAME)))
@@ -1862,16 +1825,66 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Apply the specified device-group "pseudo-config" to this PaloAltoConfiguration. Any previously
-   * made changes will be overwritten in this process.
+   * Copy configuration from specified source vsys to specified target vsys. Any previously made
+   * changes will be overwritten in this process. Note: this only supports copying device-group vsys
+   * configuration (objects and rules) and rules are merged by appending pre-rulebase and prepending
+   * post-rulebase.
    */
-  private void applyDeviceGroup(PaloAltoConfiguration template) {
-    // Currently, we only support device-group attributes, which are associated w/ the Panorama vsys
-    // So just copy the Panorama vsys for now
-    Vsys panorama = template.getPanorama();
-    if (panorama != null) {
-      _virtualSystems.put(PANORAMA_VSYS_NAME, panorama);
+  private void applyVsys(@Nullable Vsys source, Vsys target) {
+    if (source == null) {
+      return;
     }
+    // Merge (and replace) objects
+    target.getApplications().putAll(source.getApplications());
+    target.getApplicationGroups().putAll(source.getApplicationGroups());
+    target.getAddressObjects().putAll(source.getAddressObjects());
+    target.getAddressGroups().putAll(source.getAddressGroups());
+    target.getServices().putAll(source.getServices());
+    target.getServiceGroups().putAll(source.getServiceGroups());
+    target.getTags().putAll(source.getTags());
+
+    /*
+     * Merge rules. Pre-rulebase rules should be appended, post-rulebase rules should be prepended.
+     * Note: "regular" rulebase does not apply to panorama
+     */
+    // NAT pre
+    target.getPreRulebase().getNatRules().putAll(source.getPreRulebase().getNatRules());
+    // Security pre
+    target.getPreRulebase().getSecurityRules().putAll(source.getPreRulebase().getSecurityRules());
+
+    // NAT post
+    // Note: using LinkedHashMaps to preserve insertion order
+    Map<String, NatRule> postRulebaseNat =
+        new LinkedHashMap<>(source.getPostRulebase().getNatRules());
+    Map<String, NatRule> targetPostNat = target.getPostRulebase().getNatRules();
+    postRulebaseNat.putAll(targetPostNat);
+    targetPostNat.clear();
+    targetPostNat.putAll(postRulebaseNat);
+    // Security post
+    // Note: using LinkedHashMaps to preserve insertion order
+    Map<String, SecurityRule> postRulebaseSecurity =
+        new LinkedHashMap<>(source.getPostRulebase().getSecurityRules());
+    Map<String, SecurityRule> targetPostSecurity = target.getPostRulebase().getSecurityRules();
+    postRulebaseSecurity.putAll(targetPostSecurity);
+    targetPostSecurity.clear();
+    targetPostSecurity.putAll(postRulebaseSecurity);
+  }
+
+  /**
+   * Apply the specified device-group "pseudo-config" and shared config to this
+   * PaloAltoConfiguration. Any previously made changes will be overwritten in this process.
+   */
+  private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
+    // Create the target vsys (it shouldn't already exist)
+    Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
+    assert _panorama == null;
+    _panorama = target;
+
+    // Apply shared config first
+    applyVsys(shared, target);
+
+    // Apply the actual device-group after shared, to overwrite conflicting shared config
+    applyVsys(template.getPanorama(), target);
   }
 
   /**
@@ -1981,10 +1994,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                                     name, deviceGroupEntry.getKey()));
                           } else {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
+                            c.setWarnings(_w);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
-                            c.applyDeviceGroup(deviceGroupEntry.getValue());
+                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
                             managedConfigurations.put(name, c);
                           }
                         }));
@@ -2002,6 +2016,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           // Create new managed config if one doesn't already exist for this device
                           if (c == null) {
                             c = new PaloAltoConfiguration();
+                            c.setWarnings(_w);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);

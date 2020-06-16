@@ -84,25 +84,13 @@ ss_file_transfer
 ss_host
 :
    HOST
-   (
-      ip4 = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | host = variable
-   )
-   (
-      ss_host_use_vrf
-      |
-      (
-         (
-            ss_host_informs
-            | ss_host_traps
-            | ss_host_version
-         )* comm_or_username = variable_snmp_host
-         (
-            traps += variable_snmp_host
-         )*
-      )
-   ) NEWLINE
+   (ip4 = IP_ADDRESS | ip6 = IPV6_ADDRESS | host = variable)
+   ss_host_vrf?
+   (ss_host_informs | ss_host_traps)?
+   ss_host_version?
+   comm_or_username = variable_snmp_host
+   ss_host_udp_port?
+   NEWLINE
 ;
 
 ss_host_informs
@@ -120,12 +108,9 @@ ss_host_traps
    TRAPS
 ;
 
-ss_host_use_vrf
+ss_host_udp_port
 :
-   (
-      USE_VRF
-      | VRF
-   ) vrf = variable
+  UDP_PORT num = DEC
 ;
 
 ss_host_version
@@ -136,6 +121,11 @@ ss_host_version
       | NOAUTH
       | PRIV
    )?
+;
+
+ss_host_vrf
+:
+   VRF vrf = variable
 ;
 
 ss_mib

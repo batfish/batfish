@@ -64,6 +64,7 @@ final class VpcEndpointGateway extends VpcEndpoint {
     Configuration cfgNode =
         Utils.newAwsConfiguration(_id, "aws", _tags, DeviceModel.AWS_VPC_ENDPOINT_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
+    cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
 
     Interface serviceInterface =
         Utils.newInterface(

@@ -9,6 +9,7 @@ import static org.batfish.representation.aws.VpcEndpointGateway.computeServicePr
 import static org.batfish.representation.aws.VpcEndpointGateway.serviceInterfaceName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -31,6 +32,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
@@ -84,6 +86,10 @@ public class VpcEndpointGatewayTest {
         vpceGateway.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(vpceGwConfig, hasDeviceModel(DeviceModel.AWS_VPC_ENDPOINT_GATEWAY));
     assertThat(vpceGwConfig.getHumanName(), equalTo("humanName"));
+    AwsFamily family = vpceGwConfig.getVendorFamily().getAws();
+    assertThat(family, notNullValue());
+    assertThat(family.getRegion(), equalTo(region.getName()));
+    assertThat(family.getVpcId(), equalTo(vpc.getId()));
 
     // gateway should have interfaces to the service and the vpc
     assertThat(

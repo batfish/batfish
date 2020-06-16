@@ -5,8 +5,7 @@ import static org.batfish.bddreachability.transition.Transitions.addLastHopConst
 import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
-import static org.batfish.bddreachability.transition.Transitions.removeLastHopConstraint;
-import static org.batfish.bddreachability.transition.Transitions.removeSourceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.removeNodeSpecificConstraints;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -70,6 +69,7 @@ public class SessionInstrumentation {
   private final Map<String, Configuration> _configs;
   private final Map<String, BDDSourceManager> _srcMgrs;
   private final LastHopOutgoingInterfaceManager _lastHopMgr;
+  private final Map<String, BDDOutgoingOriginalFlowFilterManager> _outgoingOriginalFlowFilterMgrs;
 
   // Can be null for ignoreFilters
   private final @Nullable Map<String, Map<String, Supplier<BDD>>> _filterBdds;
@@ -82,10 +82,12 @@ public class SessionInstrumentation {
       Map<String, Configuration> configs,
       Map<String, BDDSourceManager> srcMgrs,
       LastHopOutgoingInterfaceManager lastHopMgr,
+      Map<String, BDDOutgoingOriginalFlowFilterManager> outgoingOriginalFlowFilterMgrs,
       @Nullable Map<String, Map<String, Supplier<BDD>>> filterBdds) {
     _configs = configs;
     _srcMgrs = srcMgrs;
     _lastHopMgr = lastHopMgr;
+    _outgoingOriginalFlowFilterMgrs = outgoingOriginalFlowFilterMgrs;
     _filterBdds = filterBdds;
     _one = bddPacket.getFactory().one();
   }
@@ -95,12 +97,14 @@ public class SessionInstrumentation {
       Map<String, Configuration> configs,
       Map<String, BDDSourceManager> srcMgrs,
       LastHopOutgoingInterfaceManager lastHopMgr,
+      Map<String, BDDOutgoingOriginalFlowFilterManager> outgoingOriginalFlowFilterMgrs,
       Map<String, Map<String, Supplier<BDD>>> filterBdds,
       Stream<Edge> originalEdges,
       Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions,
       BDDFibGenerator bddFibGenerator) {
     SessionInstrumentation instrumentation =
-        new SessionInstrumentation(bddPacket, configs, srcMgrs, lastHopMgr, filterBdds);
+        new SessionInstrumentation(
+            bddPacket, configs, srcMgrs, lastHopMgr, outgoingOriginalFlowFilterMgrs, filterBdds);
     Stream<Edge> newEdges = instrumentation.computeNewEdges(initializedSessions);
 
     /* Instrument the original graph by adding an additional constraint to the out-edges from
@@ -310,6 +314,8 @@ public class SessionInstrumentation {
     String outIface = forwardOutInterface.getOutgoingInterface();
     String hostname = sessionInfo.getHostname();
     BDDSourceManager srcMgr = _srcMgrs.get(hostname);
+    BDDOutgoingOriginalFlowFilterManager outgoingOriginalFlowFilterMgr =
+        _outgoingOriginalFlowFilterMgrs.get(hostname);
     StateExpr postState = new PreInInterface(nextHop.getHostname(), nextHop.getInterface());
 
     Transition outAcl = constraint(getOutgoingSessionFilterBdd(hostname, outIface));
@@ -338,8 +344,8 @@ public class SessionInstrumentation {
                                   constraint(sessionFlows.and(inAclBdd)),
                                   sessionInfo.getTransformation(),
                                   outAcl,
-                                  removeSourceConstraint(srcMgr),
-                                  removeLastHopConstraint(_lastHopMgr, hostname),
+                                  removeNodeSpecificConstraints(
+                                      hostname, _lastHopMgr, outgoingOriginalFlowFilterMgr, srcMgr),
                                   addSourceIfaceConstraint,
                                   addLastHop);
                           if (transition == Zero.INSTANCE) {
@@ -389,6 +395,8 @@ public class SessionInstrumentation {
                 String outIface = forwardOutInterface.getOutgoingInterface();
                 String hostname = sessionInfo.getHostname();
                 BDDSourceManager srcMgr = _srcMgrs.get(hostname);
+                BDDOutgoingOriginalFlowFilterManager outgoingOriginalFlowFilterMgr =
+                    _outgoingOriginalFlowFilterMgrs.get(hostname);
                 StateExpr postState = new NodeDropAclOut(hostname);
                 BDD sessionFlows = sessionInfo.getSessionFlows();
 
@@ -413,8 +421,11 @@ public class SessionInstrumentation {
                                               constraint(sessionFlows.and(inAclBdd)),
                                               sessionInfo.getTransformation(),
                                               denyOutAcl,
-                                              removeSourceConstraint(srcMgr),
-                                              removeLastHopConstraint(_lastHopMgr, hostname));
+                                              removeNodeSpecificConstraints(
+                                                  hostname,
+                                                  _lastHopMgr,
+                                                  outgoingOriginalFlowFilterMgr,
+                                                  srcMgr));
                                       if (transition == Zero.INSTANCE) {
                                         return null;
                                       }
@@ -507,6 +518,8 @@ public class SessionInstrumentation {
 
     String hostname = sessionInfo.getHostname();
     BDDSourceManager srcMgr = _srcMgrs.get(hostname);
+    BDDOutgoingOriginalFlowFilterManager outgoingOriginalFlowFilterMgr =
+        _outgoingOriginalFlowFilterMgrs.get(hostname);
 
     StateExpr postState = new NodeAccept(hostname);
     return sessionInfo
@@ -526,8 +539,11 @@ public class SessionInstrumentation {
                               compose(
                                   constraint(sessionInfo.getSessionFlows().and(inAclBdd)),
                                   sessionInfo.getTransformation(),
-                                  removeSourceConstraint(srcMgr),
-                                  removeLastHopConstraint(_lastHopMgr, hostname));
+                                  removeNodeSpecificConstraints(
+                                      hostname,
+                                      _lastHopMgr,
+                                      outgoingOriginalFlowFilterMgr,
+                                      srcMgr));
                           if (transition == Zero.INSTANCE) {
                             return null;
                           }
@@ -557,6 +573,8 @@ public class SessionInstrumentation {
 
     String hostname = sessionInfo.getHostname();
     BDDSourceManager srcMgr = _srcMgrs.get(hostname);
+    BDDOutgoingOriginalFlowFilterManager outgoingOriginalFlowFilterMgr =
+        _outgoingOriginalFlowFilterMgrs.get(hostname);
 
     StateExpr postState = new NodeDropAclIn(hostname);
     BDD sessionFlows = sessionInfo.getSessionFlows();
@@ -576,8 +594,11 @@ public class SessionInstrumentation {
                           Transition transition =
                               compose(
                                   constraint(sessionFlows.diff(inAclPermitBdd)),
-                                  removeSourceConstraint(srcMgr),
-                                  removeLastHopConstraint(_lastHopMgr, hostname));
+                                  removeNodeSpecificConstraints(
+                                      hostname,
+                                      _lastHopMgr,
+                                      outgoingOriginalFlowFilterMgr,
+                                      srcMgr));
                           if (transition == Zero.INSTANCE) {
                             return null;
                           }

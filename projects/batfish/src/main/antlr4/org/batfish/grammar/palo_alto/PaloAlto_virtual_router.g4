@@ -123,7 +123,7 @@ vrrt_admin_dist
 
 vrrt_destination
 :
-    DESTINATION destination = IP_PREFIX
+    DESTINATION destination = ip_prefix
 ;
 
 vrrt_interface

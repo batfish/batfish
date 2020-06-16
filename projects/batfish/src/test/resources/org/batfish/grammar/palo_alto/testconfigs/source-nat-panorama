@@ -19,9 +19,6 @@ policy {
       PAN_POST_NEW_ADDR {
         ip-netmask 1.1.1.101/32;
       }
-      SERVER_OLD_ADDR {
-        ip-netmask 1.1.1.2/32;
-      }
     }
     pre-rulebase {
       nat {
@@ -39,19 +36,6 @@ policy {
           }
         }
       }
-      security {
-        rules {
-          PERMIT_TRANSLATED {
-            to OUTSIDE;
-            from INSIDE;
-            source [ PAN_PRE_NEW_ADDR];
-            destination any;
-            application any;
-            service any;
-            action allow;
-          }
-        }
-      }
     }
     post-rulebase {
       nat {
@@ -66,19 +50,6 @@ policy {
             from INSIDE;
             source SOURCE_ADDR_BROADEST;
             destination any;
-          }
-        }
-      }
-      security {
-        rules {
-          PERMIT_TRANSLATED {
-            to OUTSIDE;
-            from INSIDE;
-            source [ PAN_POST_NEW_ADDR];
-            destination any;
-            application any;
-            service any;
-            action allow;
           }
         }
       }
@@ -147,10 +118,10 @@ config {
             }
             security {
               rules {
-                PERMIT_TRANSLATED {
+                PERMIT_ALL {
                   to OUTSIDE;
                   from any;
-                  source [ VSYS_NAT_NEW_ADDR];
+                  source any;
                   destination any;
                   application any;
                   service any;
