@@ -207,6 +207,11 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * BDD, but if the BDD is later constrained to a specific egress interface, this constraint will
    * cause {@link #_permitVar} to be true iff the original flow was permitted by that interface's
    * outgoingOriginalFlowFilter.
+   *
+   * <p>Always use {@link
+   * org.batfish.bddreachability.transition.Transitions#addOutgoingOriginalFlowFiltersConstraint(BDDOutgoingOriginalFlowFilterManager)
+   * addOutgoingOriginalFlowFiltersConstraint} to apply this constraint to edges; otherwise
+   * backwards transition will not erase vars.
    */
   public BDD outgoingOriginalFlowFiltersConstraint() {
     return getInterfaceBDDs().keySet().stream()

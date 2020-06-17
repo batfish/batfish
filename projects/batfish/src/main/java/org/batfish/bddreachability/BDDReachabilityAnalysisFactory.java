@@ -9,6 +9,7 @@ import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.addLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addNoLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.addOutgoingOriginalFlowFiltersConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -942,10 +943,6 @@ public final class BDDReachabilityAnalysisFactory {
               String nodeName = iface.getOwner().getHostname();
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
-              BDD outgoingOriginalFlowFiltersConstraint =
-                  _bddOutgoingOriginalFlowFilterManagers
-                      .get(nodeName)
-                      .outgoingOriginalFlowFiltersConstraint();
               Map<FibLookup, Transition> transitionByFibLookup =
                   _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
               VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
@@ -960,7 +957,8 @@ public final class BDDReachabilityAnalysisFactory {
                             preInInterface,
                             new PbrFibLookup(nodeName, vrfName, lookupVrf),
                             compose(
-                                constraint(outgoingOriginalFlowFiltersConstraint),
+                                addOutgoingOriginalFlowFiltersConstraint(
+                                    _bddOutgoingOriginalFlowFilterManagers.get(nodeName)),
                                 transitionByFibLookupEntry.getValue()));
                       });
             });
@@ -1062,15 +1060,12 @@ public final class BDDReachabilityAnalysisFactory {
               PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
               BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
-              BDD outgoingOriginalFlowFiltersConstraint =
-                  _bddOutgoingOriginalFlowFilterManagers
-                      .get(nodeName)
-                      .outgoingOriginalFlowFiltersConstraint();
 
               Transition transition =
                   compose(
                       constraint(inAclBDD),
-                      constraint(outgoingOriginalFlowFiltersConstraint),
+                      addOutgoingOriginalFlowFiltersConstraint(
+                          _bddOutgoingOriginalFlowFilterManagers.get(nodeName)),
                       _bddIncomingTransformations.get(nodeName).get(ifaceName));
               return new Edge(preState, postState, transition);
             });
