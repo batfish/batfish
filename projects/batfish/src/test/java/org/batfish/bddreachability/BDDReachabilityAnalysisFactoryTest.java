@@ -1,6 +1,7 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.EdgeMatchers.edge;
+import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -31,6 +32,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -50,6 +52,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +60,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
@@ -1953,13 +1957,22 @@ public final class BDDReachabilityAnalysisFactoryTest {
     String i2 = "i2";
     SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(true, false);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
-    BDD originalFlowFiltersConstraint =
-        factory
-            .getBddOutgoingOriginalFlowFilterManagers()
-            .get(c1)
-            .outgoingOriginalFlowFiltersConstraint();
+    BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+        factory.getBddOutgoingOriginalFlowFilterManagers().get(c1);
+    BDD outgoingConstraint = originalFlowFilterMgr.outgoingOriginalFlowFiltersConstraint();
+    BDD permittedOutI1 = originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(i1);
     // Sanity check: make sure there really is a constraint due to an outgoingOriginalFlowFilter
-    assertFalse(originalFlowFiltersConstraint.isOne());
+    assertFalse(outgoingConstraint.isOne());
+    assertFalse(permittedOutI1.isOne());
+
+    // Create BDD of header space permitted by the outgoing original flows filter, which permits
+    // flows with these three src IPs
+    BDD permittedByFilter =
+        Stream.of(Ip.parse("1.0.0.0"), Ip.parse("2.0.0.0"), Ip.parse("3.0.0.0"))
+            .map(ip -> PKT.getSrcIp().value(ip.asLong()))
+            .reduce(BDD::or)
+            .orElse(null);
+    assert permittedByFilter != null;
 
     List<Edge> edges =
         factory
@@ -1972,12 +1985,67 @@ public final class BDDReachabilityAnalysisFactoryTest {
     StateExpr postInInterface1 = new PostInInterface(c1, i1);
     StateExpr postInInterface2 = new PostInInterface(c1, i2);
     Matcher<Transition> addsOriginalFlowFiltersConstraint =
-        mapsForward(ONE, originalFlowFiltersConstraint);
+        allOf(
+            mapsForward(ONE, outgoingConstraint), mapsBackward(permittedOutI1, permittedByFilter));
     assertThat(
         edges,
         containsInAnyOrder(
             edge(preInInterface1, postInInterface1, addsOriginalFlowFiltersConstraint),
             edge(preInInterface2, postInInterface2, addsOriginalFlowFiltersConstraint)));
+  }
+
+  @Test
+  public void testAddOutgoingOriginalFlowFiltersConstraint_Originate() throws IOException {
+    /*
+    Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows originating in a
+    VRF or interface on a node with an interface with an outgoingOriginalFlowFilter. In this case,
+    c1 has interfaces i1 and i2, and i1 has an outgoingOriginalFlowFilter.
+     */
+    String c1 = "c1";
+    String i1 = "i1";
+    String i2 = "i2";
+    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(true, false);
+    String vrf = configs.get(c1).getAllInterfaces().get(i1).getVrfName();
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
+    BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+        factory.getBddOutgoingOriginalFlowFilterManagers().get(c1);
+    BDD outgoingConstraint = originalFlowFilterMgr.outgoingOriginalFlowFiltersConstraint();
+    BDD permittedOutI1 = originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(i1);
+    // Sanity check: make sure there really is a constraint due to an outgoingOriginalFlowFilter
+    assertFalse(outgoingConstraint.isOne());
+    assertFalse(permittedOutI1.isOne());
+
+    // Create BDD of header space permitted by the outgoing original flows filter, which permits
+    // flows with these three src IPs
+    BDD permittedByFilter =
+        Stream.of(Ip.parse("1.0.0.0"), Ip.parse("2.0.0.0"), Ip.parse("3.0.0.0"))
+            .map(ip -> PKT.getSrcIp().value(ip.asLong()))
+            .reduce(BDD::or)
+            .orElse(null);
+
+    StateExpr originateIface1 = new OriginateInterface(c1, i1);
+    StateExpr originateIface2 = new OriginateInterface(c1, i2);
+    StateExpr originateVrf = new OriginateVrf(c1, vrf);
+    List<Edge> edges =
+        Streams.concat(
+                factory.generateRootEdges_OriginateInterface_PostInVrf(
+                    ImmutableMap.of(originateIface1, ONE, originateIface2, ONE)),
+                factory.generateRootEdges_OriginateVrf_PostInVrf(
+                    ImmutableMap.of(originateVrf, ONE)))
+            .collect(ImmutableList.toImmutableList());
+
+    // Wherever the flow originates, the constraint for going out i1 should be added. (No need to
+    // add originatingFromDevice constraint because source manager is trivial.)
+    StateExpr postInVrf = new PostInVrf(c1, vrf);
+    Matcher<Transition> addsOriginalFlowFiltersConstraint =
+        allOf(
+            mapsForward(ONE, outgoingConstraint), mapsBackward(permittedOutI1, permittedByFilter));
+    assertThat(
+        edges,
+        containsInAnyOrder(
+            edge(originateIface1, postInVrf, addsOriginalFlowFiltersConstraint),
+            edge(originateIface2, postInVrf, addsOriginalFlowFiltersConstraint),
+            edge(originateVrf, postInVrf, addsOriginalFlowFiltersConstraint)));
   }
 
   @Test
@@ -1997,15 +2065,16 @@ public final class BDDReachabilityAnalysisFactoryTest {
     IpAccessList filter =
         nf.aclBuilder().setOwner(c).setLines(accepting(matchSrc(srcIp1)), REJECT_ALL).build();
     c.getAllInterfaces().get(i1).setOutgoingOriginalFlowFilter(filter);
+    BDD permittedByFilter = PKT.getSrcIp().value(srcIp1.asLong());
 
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
-    BDD originalFlowFiltersConstraint =
-        factory
-            .getBddOutgoingOriginalFlowFilterManagers()
-            .get(c1)
-            .outgoingOriginalFlowFiltersConstraint();
+    BDDOutgoingOriginalFlowFilterManager originalFlowsMgr =
+        factory.getBddOutgoingOriginalFlowFilterManagers().get(c1);
+    BDD originalFlowFiltersConstraint = originalFlowsMgr.outgoingOriginalFlowFiltersConstraint();
+    BDD permittedOutI1 = originalFlowsMgr.permittedByOriginalFlowEgressFilter(i1);
     // Sanity check: make sure there really is a constraint due to an outgoingOriginalFlowFilter
     assertFalse(originalFlowFiltersConstraint.isOne());
+    assertFalse(permittedOutI1.isOne());
 
     // Flows will also be constrained to those not dropped by the packet policy
     Prefix pbrPrefix = Prefix.parse("8.8.8.0/24");
@@ -2018,8 +2087,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     StateExpr preInInterface = new PreInInterface(c1, INGRESS_IFACE);
     StateExpr pbrFibLookup = new PbrFibLookup(c1, "vrf1", "vrf2"); // (see makePBRNetwork for names)
-    BDD expectedFlows = originalFlowFiltersConstraint.and(notDroppedByPbr);
     assertThat(
-        edges, contains(edge(preInInterface, pbrFibLookup, mapsForward(ONE, expectedFlows))));
+        edges,
+        contains(
+            edge(
+                preInInterface,
+                pbrFibLookup,
+                allOf(
+                    mapsForward(ONE, originalFlowFiltersConstraint.and(notDroppedByPbr)),
+                    mapsBackward(permittedOutI1, permittedByFilter.and(notDroppedByPbr))))));
   }
 }
