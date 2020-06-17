@@ -588,6 +588,11 @@ HALF
     'half'
 ;
 
+HA
+:
+    'ha'
+;
+
 HAS_KNOWN_VULNERABILITIES
 :
     'has-known-vulnerabilities'

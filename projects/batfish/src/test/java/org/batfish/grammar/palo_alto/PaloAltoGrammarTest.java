@@ -1217,19 +1217,28 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testInterface() {
+  public void testInterfaceExtraction() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("interface");
+    Interface e1_4 = c.getInterfaces().get("ethernet1/4");
+    assertThat(e1_4, notNullValue());
+    assertThat(e1_4.getHa(), equalTo(true));
+  }
+
+  @Test
+  public void testInterfaceConversion() {
     String hostname = "interface";
     String eth1_1 = "ethernet1/1";
     String eth1_2 = "ethernet1/2";
     String eth1_3 = "ethernet1/3";
     String eth1_3_11 = "ethernet1/3.11";
+    String eth1_4 = "ethernet1/4";
     String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
     assertThat(
         c.getAllInterfaces().keySet(),
-        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_21, loopback));
+        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_21, loopback));
 
     // Confirm interface MTU is extracted
     assertThat(c, hasInterface(eth1_1, hasMtu(9001)));
@@ -1257,6 +1266,7 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(eth1_2, hasDescription("interface's long description")));
     assertThat(c, hasInterface(eth1_3, hasDescription("single quoted description")));
     assertThat(c, hasInterface(eth1_3_11, hasDescription("unit description")));
+    assertThat(c, hasInterface(eth1_4, hasDescription(nullValue())));
 
     // Confirm link speed
     assertThat(c.getAllInterfaces().get(eth1_1), allOf(hasBandwidth(1e9), hasSpeed(1e9)));

@@ -244,6 +244,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_global_protectContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ike_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snicp_ipsec_crypto_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_aggregate_groupContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_haContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
@@ -1859,10 +1860,15 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void enterSnie_aggregate_group(Snie_aggregate_groupContext ctx) {
+  public void exitSnie_aggregate_group(Snie_aggregate_groupContext ctx) {
     String aeName = getText(ctx.group);
     _currentInterface.setAggregateGroup(aeName);
     referenceStructure(INTERFACE, aeName, ETHERNET_AGGREGATE_GROUP, getLine(ctx.group.start));
+  }
+
+  @Override
+  public void exitSnie_ha(Snie_haContext ctx) {
+    _currentInterface.setHa(true);
   }
 
   @Override

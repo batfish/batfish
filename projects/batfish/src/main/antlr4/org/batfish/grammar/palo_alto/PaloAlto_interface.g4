@@ -62,6 +62,7 @@ sni_ethernet_definition
     (
         if_common
         | snie_aggregate_group
+        | snie_ha
         | snie_layer2
         | snie_layer3
         | snie_link_duplex
@@ -102,6 +103,11 @@ sni_vlan
 snie_aggregate_group
 :
     AGGREGATE_GROUP group = variable
+;
+
+snie_ha
+:
+    HA
 ;
 
 snie_layer2
