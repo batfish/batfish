@@ -12,12 +12,10 @@ tokens {
    ACL_NUM_MAC,
    ACL_NUM_PROTOCOL_TYPE_CODE,
    ACL_NUM_STANDARD,
-   AS_PATH_SET_REGEX,
    BANNER_DELIMITER_EOS,
    BANNER_BODY,
    COMMUNITY_LIST_NUM_EXPANDED,
    COMMUNITY_LIST_NUM_STANDARD,
-   COMMUNITY_SET_REGEX,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
@@ -12759,24 +12757,6 @@ M_Interface_SLASH
 ;
 
 M_Interface_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_IosRegex;
-
-M_IosRegex_COMMUNITY_SET_REGEX
-:
-   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\'' -> type ( COMMUNITY_SET_REGEX ) ,
-   popMode
-;
-
-M_IosRegex_AS_PATH_SET_REGEX
-:
-   '\'' ~'\''* '\'' -> type ( AS_PATH_SET_REGEX ) , popMode
-;
-
-M_IosRegex_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
