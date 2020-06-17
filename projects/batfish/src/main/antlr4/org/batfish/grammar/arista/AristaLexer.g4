@@ -12523,18 +12523,6 @@ M_DoubleQuote_TEXT
    ~'"'+
 ;
 
-mode M_Execute;
-
-M_Execute_TEXT
-:
-   ~'}'+
-;
-
-M_Execute_BRACE_RIGHT
-:
-   '}' -> type ( BRACE_RIGHT ) , popMode
-;
-
 mode M_Extcommunity;
 
 M_Extcommunity_COLON
@@ -12982,23 +12970,6 @@ M_Seed_WS
    F_Whitespace+ -> channel ( HIDDEN ) , mode ( M_Seed )
 ;
 
-mode M_SHA1;
-
-M_SHA1_DEC_PART
-:
-   F_Digit+
-;
-
-M_SHA1_HEX_PART
-:
-   F_HexDigit+ -> popMode
-;
-
-M_SHA1_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
 mode M_SnmpServerCommunity;
 
 M_SnmpServerCommunity_COMMUNITY
@@ -13019,18 +12990,6 @@ M_SnmpServerCommunity_DOUBLE_QUOTE
 M_SnmpServerCommunity_CHAR
 :
    F_NonWhitespace -> mode ( M_Name ), more
-;
-
-mode M_SshKey;
-
-M_SshKey_NEWLINE
-:
-   F_Newline+ -> type ( NEWLINE ) , popMode
-;
-
-M_SshKey_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_Word;
