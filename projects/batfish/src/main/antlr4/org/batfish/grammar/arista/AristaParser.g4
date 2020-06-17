@@ -1995,7 +1995,6 @@ router_multicast_tail
          INTERFACE ALL null_rest_of_line
       )
       | interface_multicast_stanza
-      | null_inner
       | peer_stanza
       | rmc_null
    )*
