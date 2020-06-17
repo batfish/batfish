@@ -675,7 +675,8 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRootEdges_OriginateVrf_PostInVrf(Map<StateExpr, BDD> rootBdds) {
+  @VisibleForTesting
+  Stream<Edge> generateRootEdges_OriginateVrf_PostInVrf(Map<StateExpr, BDD> rootBdds) {
     return rootBdds.entrySet().stream()
         .filter(entry -> entry.getKey() instanceof OriginateVrf)
         .map(
@@ -692,6 +693,8 @@ public final class BDDReachabilityAnalysisFactory {
                   postInVrf,
                   compose(
                       addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
+                      addOutgoingOriginalFlowFiltersConstraint(
+                          _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
                       constraint(rootBdd)));
             });
   }
@@ -705,12 +708,14 @@ public final class BDDReachabilityAnalysisFactory {
               OriginateInterface state = (OriginateInterface) e.getKey();
               String vrf = _interfacesToVrfsMap.get(state.getHostname()).get(state.getInterface());
               PostInVrf postInVrf = new PostInVrf(state.getHostname(), vrf);
+              String hostname = state.getHostname();
               return new Edge(
                   state,
                   postInVrf,
                   compose(
-                      addOriginatingFromDeviceConstraint(
-                          _bddSourceManagers.get(state.getHostname())),
+                      addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
+                      addOutgoingOriginalFlowFiltersConstraint(
+                          _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
                       constraint(e.getValue())));
             });
   }

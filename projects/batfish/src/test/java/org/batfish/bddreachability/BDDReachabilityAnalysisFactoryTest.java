@@ -52,6 +52,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -1991,6 +1992,60 @@ public final class BDDReachabilityAnalysisFactoryTest {
         containsInAnyOrder(
             edge(preInInterface1, postInInterface1, addsOriginalFlowFiltersConstraint),
             edge(preInInterface2, postInInterface2, addsOriginalFlowFiltersConstraint)));
+  }
+
+  @Test
+  public void testAddOutgoingOriginalFlowFiltersConstraint_Originate() throws IOException {
+    /*
+    Test that the correct outgoingOriginalFlowFiltersConstraint is placed on flows originating in a
+    VRF or interface on a node with an interface with an outgoingOriginalFlowFilter. In this case,
+    c1 has interfaces i1 and i2, and i1 has an outgoingOriginalFlowFilter.
+     */
+    String c1 = "c1";
+    String i1 = "i1";
+    String i2 = "i2";
+    SortedMap<String, Configuration> configs = makeOutgoingFiltersNetwork(true, false);
+    String vrf = configs.get(c1).getAllInterfaces().get(i1).getVrfName();
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
+    BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
+        factory.getBddOutgoingOriginalFlowFilterManagers().get(c1);
+    BDD outgoingConstraint = originalFlowFilterMgr.outgoingOriginalFlowFiltersConstraint();
+    BDD permittedOutI1 = originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(i1);
+    // Sanity check: make sure there really is a constraint due to an outgoingOriginalFlowFilter
+    assertFalse(outgoingConstraint.isOne());
+    assertFalse(permittedOutI1.isOne());
+
+    // Create BDD of header space permitted by the outgoing original flows filter, which permits
+    // flows with these three src IPs
+    BDD permittedByFilter =
+        Stream.of(Ip.parse("1.0.0.0"), Ip.parse("2.0.0.0"), Ip.parse("3.0.0.0"))
+            .map(ip -> PKT.getSrcIp().value(ip.asLong()))
+            .reduce(BDD::or)
+            .orElse(null);
+
+    StateExpr originateIface1 = new OriginateInterface(c1, i1);
+    StateExpr originateIface2 = new OriginateInterface(c1, i2);
+    StateExpr originateVrf = new OriginateVrf(c1, vrf);
+    List<Edge> edges =
+        Streams.concat(
+                factory.generateRootEdges_OriginateInterface_PostInVrf(
+                    ImmutableMap.of(originateIface1, ONE, originateIface2, ONE)),
+                factory.generateRootEdges_OriginateVrf_PostInVrf(
+                    ImmutableMap.of(originateVrf, ONE)))
+            .collect(ImmutableList.toImmutableList());
+
+    // Wherever the flow originates, the constraint for going out i1 should be added. (No need to
+    // add originatingFromDevice constraint because source manager is trivial.)
+    StateExpr postInVrf = new PostInVrf(c1, vrf);
+    Matcher<Transition> addsOriginalFlowFiltersConstraint =
+        allOf(
+            mapsForward(ONE, outgoingConstraint), mapsBackward(permittedOutI1, permittedByFilter));
+    assertThat(
+        edges,
+        containsInAnyOrder(
+            edge(originateIface1, postInVrf, addsOriginalFlowFiltersConstraint),
+            edge(originateIface2, postInVrf, addsOriginalFlowFiltersConstraint),
+            edge(originateVrf, postInVrf, addsOriginalFlowFiltersConstraint)));
   }
 
   @Test
