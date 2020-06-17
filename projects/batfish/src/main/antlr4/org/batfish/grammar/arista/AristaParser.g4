@@ -3464,7 +3464,6 @@ stanza
    | s_event_monitor
    | s_flow
    | s_flow_sampler_map
-   | s_foundry_mac_access_list
    | s_global_port_security
    | s_guest_access_email
    | s_hardware
