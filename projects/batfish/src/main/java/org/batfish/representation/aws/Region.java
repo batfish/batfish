@@ -791,8 +791,7 @@ public final class Region implements Serializable {
       if (i == null) {
         continue;
       }
-      applyAclsToInterfaceBasedOnSecurityGroups(
-          ni.getGroups(), c, i, sgIngressAcls, sgEgressAcls, warnings);
+      applyAclsToInterfaceBasedOnSecurityGroups(ni.getGroups(), c, i, sgIngressAcls, sgEgressAcls);
     }
   }
 
@@ -820,7 +819,7 @@ public final class Region implements Serializable {
       }
       for (Interface i : c.getAllInterfaces().values()) {
         applyAclsToInterfaceBasedOnSecurityGroups(
-            esd.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls, warnings);
+            esd.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls);
       }
     }
     for (RdsInstance rds : _rdsInstances.values()) {
@@ -830,7 +829,7 @@ public final class Region implements Serializable {
       }
       for (Interface i : c.getAllInterfaces().values()) {
         applyAclsToInterfaceBasedOnSecurityGroups(
-            rds.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls, warnings);
+            rds.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls);
       }
     }
   }
@@ -840,13 +839,12 @@ public final class Region implements Serializable {
       Configuration c,
       Interface i,
       Map<String, IpAccessList> sgIngressAcls,
-      Map<String, IpAccessList> sgEgressAcls,
-      Warnings w) {
+      Map<String, IpAccessList> sgEgressAcls) {
     // Sorted for stability across snapshots; order does not matter semantically and is not
     // consistent/preserved in AWS.
     Iterable<String> stableGroups = ImmutableSortedSet.copyOf(groups);
-    applyIngressAcl(stableGroups, sgIngressAcls, w, c, i);
-    applyEgressAcl(stableGroups, sgEgressAcls, w, c, i);
+    applyIngressAcl(stableGroups, sgIngressAcls, c, i);
+    applyEgressAcl(stableGroups, sgEgressAcls, c, i);
     // Set up reverse sessions for outbound traffic.
     i.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(i.getName()), null, null));
@@ -854,11 +852,7 @@ public final class Region implements Serializable {
   }
 
   private void applyIngressAcl(
-      Iterable<String> groups,
-      Map<String, IpAccessList> acls,
-      Warnings w,
-      Configuration c,
-      Interface i) {
+      Iterable<String> groups, Map<String, IpAccessList> acls, Configuration c, Interface i) {
     // Create one AclAclLine to allow the flows matched in each security group.
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
     for (String g : groups) {
@@ -887,11 +881,7 @@ public final class Region implements Serializable {
   }
 
   private void applyEgressAcl(
-      Iterable<String> groups,
-      Map<String, IpAccessList> acls,
-      Warnings w,
-      Configuration c,
-      Interface i) {
+      Iterable<String> groups, Map<String, IpAccessList> acls, Configuration c, Interface i) {
     // Create one AclAclLine to allow the flows matched in each security group.
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
     for (String g : groups) {
