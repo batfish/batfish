@@ -2032,7 +2032,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .map(PaloAltoConfiguration::toVendorIndependentConfiguration)
             .collect(ImmutableList.toImmutableList()));
 
-    if (managedConfigurations.size() > 0) {
+    if (!managedConfigurations.isEmpty()) {
       primaryConfig.setDeviceModel(DeviceModel.PALO_ALTO_PANORAMA);
     }
     return outputConfigurations.build();
