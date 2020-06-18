@@ -3100,4 +3100,36 @@ public final class PaloAltoGrammarTest {
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
         contains("Unable to identify application undefined_app in vsys RULE1 rule panorama"));
   }
+
+  @Test
+  public void testPanoramaConfigurationFormat() {
+    String panoramaHostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    Configuration panorama =
+        viConfigs.stream()
+            .filter(vi -> vi.getHostname().equals(panoramaHostname))
+            .findFirst()
+            .get();
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+    Configuration firewall3 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
+
+    // All should be the same configuration format
+    assertThat(panorama.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+    assertThat(firewall1.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+    assertThat(firewall2.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+    assertThat(firewall3.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+  }
 }
