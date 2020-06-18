@@ -42,7 +42,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
   public static final String CONFIGURATION_FORMAT = "Configuration_Format";
   public static final String DEFAULT_CROSS_ZONE_ACTION = "Default_Cross_Zone_Action";
   public static final String DEFAULT_INBOUND_ACTION = "Default_Inbound_Action";
-  public static final String DEVICE_TYPE = "Device_Type";
   public static final String DNS_SERVERS = "DNS_Servers";
   public static final String DNS_SOURCE_INTERFACE = "DNS_Source_Interface";
   public static final String DOMAIN_NAME = "Domain_Name";
