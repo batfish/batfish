@@ -45,6 +45,13 @@ public class TransitGatewayAttachmentTest {
                     "tgw-01e19888e3ba041ac",
                     ResourceType.VPC,
                     "vpc-0de868624d5f787db",
-                    null))));
+                    null),
+                "tgw-attach-0dbe0fb191f73f405",
+                new TransitGatewayAttachment(
+                    "tgw-attach-0dbe0fb191f73f405",
+                    "tgw-0984f045a02daba60",
+                    ResourceType.DIRECT_CONNECT_GATEWAY,
+                    "a0cb33f1-da2c-4b16-94b9-09cf843d672f",
+                    new Association("tgw-rtb-0dce4e83c56c46fa9", "associated")))));
   }
 }

@@ -55,6 +55,21 @@
       "TransitGatewayAttachmentId": "tgw-attach-0ce5cf730c95980d9",
       "TransitGatewayId": "tgw-01e19888e3ba041ac",
       "TransitGatewayOwnerId": "554773406868"
+    },
+    {
+      "Association": {
+        "State": "associated",
+        "TransitGatewayRouteTableId": "tgw-rtb-0dce4e83c56c46fa9"
+      },
+      "CreationTime": "2020-04-15 06:05:26+00:00",
+      "ResourceId": "a0cb33f1-da2c-4b16-94b9-09cf843d672f",
+      "ResourceOwnerId": "094218548868",
+      "ResourceType": "direct-connect-gateway",
+      "State": "available",
+      "Tags": [],
+      "TransitGatewayAttachmentId": "tgw-attach-0dbe0fb191f73f405",
+      "TransitGatewayId": "tgw-0984f045a02daba60",
+      "TransitGatewayOwnerId": "094218548868"
     }
   ]
 }
