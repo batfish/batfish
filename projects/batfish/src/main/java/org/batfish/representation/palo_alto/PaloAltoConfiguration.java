@@ -1995,6 +1995,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           } else {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
+                            c.setVendor(_vendor);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
@@ -2017,6 +2018,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           if (c == null) {
                             c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
+                            c.setVendor(_vendor);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
