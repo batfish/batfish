@@ -21,6 +21,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
 
   /** Different types of TGW attachments */
   enum ResourceType {
+    DIRECT_CONNECT_GATEWAY,
     PEERING,
     VPC,
     VPN
@@ -107,7 +108,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
     return new TransitGatewayAttachment(
         attachmentId,
         gatewayId,
-        Enum.valueOf(ResourceType.class, resourceType.toUpperCase()),
+        Enum.valueOf(ResourceType.class, resourceType.toUpperCase().replace('-', '_')),
         resourceId,
         association);
   }
