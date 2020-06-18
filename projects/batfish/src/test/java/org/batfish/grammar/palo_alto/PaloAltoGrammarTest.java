@@ -102,6 +102,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -142,6 +143,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -2859,6 +2861,50 @@ public final class PaloAltoGrammarTest {
 
     // Make sure post-device-group config is attached to the main config as expected
     assertThat(c.getHostname(), equalTo("device-group"));
+  }
+
+  @Test
+  public void testFirewallDeviceModel() {
+    String hostname = "basic-parsing";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Single firewall should be recognized as such, not Panorama management device
+    assertThat(viConfigs, iterableWithSize(1));
+    assertThat(viConfigs.get(0).getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
+  }
+
+  @Test
+  public void testPanoramaDeviceModel() {
+    String panoramaHostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    Configuration panorama =
+        viConfigs.stream()
+            .filter(vi -> vi.getHostname().equals(panoramaHostname))
+            .findFirst()
+            .get();
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+    Configuration firewall3 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
+
+    // Management device should be detected as Panorama
+    assertThat(panorama.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_PANORAMA));
+    // Other devices should be detected as firewalls
+    assertThat(firewall1.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
+    assertThat(firewall2.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
+    assertThat(firewall3.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
   }
 
   @Test
