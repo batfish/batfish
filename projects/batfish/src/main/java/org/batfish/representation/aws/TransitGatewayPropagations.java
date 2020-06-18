@@ -52,7 +52,7 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
 
       return new Propagation(
           attachmentId,
-          ResourceType.valueOf(resourceType.toUpperCase()),
+          ResourceType.valueOf(resourceType.toUpperCase().replace('-', '_')),
           resourceId,
           state.equalsIgnoreCase("enabled"));
     }
