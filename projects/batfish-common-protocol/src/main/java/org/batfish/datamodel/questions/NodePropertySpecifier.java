@@ -15,7 +15,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.specifier.ConstantEnumSetSpecifier;
@@ -118,16 +117,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
                           .map(Object::toString)
                           .collect(Collectors.joining(", "))
                       + ") for traffic destined for this node"))
-          .put(
-              DEVICE_TYPE,
-              new PropertyDescriptor<>(
-                  Configuration::getDeviceType,
-                  Schema.STRING,
-                  "Device type of this node ("
-                      + Arrays.stream(DeviceType.values())
-                          .map(Object::toString)
-                          .collect(Collectors.joining(", "))
-                      + ")"))
           .put(
               DNS_SERVERS,
               new PropertyDescriptor<>(
