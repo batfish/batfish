@@ -276,6 +276,8 @@ public enum NamedPort {
   RADIUS_2_ACCT(1813),
   /** RADIUS (variant 2, port 1812) Auth Protocol. */
   RADIUS_2_AUTH(1812),
+  /** Remote Desktop Protocol. */
+  RDP(3389),
   /** Remove Mail Checking Protocol. */
   RE_MAIL_CK(50),
   /** RFS Server. */
