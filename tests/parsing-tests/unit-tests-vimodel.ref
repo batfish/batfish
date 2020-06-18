@@ -34085,6 +34085,7 @@
         "name" : "palo_alto_virtual_routers",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -34115,6 +34116,7 @@
         "name" : "paloalto_applications",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
         "vendorFamily" : { }
       },
@@ -34123,6 +34125,7 @@
         "name" : "paloalto_interfaces",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ethernet1/1" : {
@@ -34656,6 +34659,7 @@
         "name" : "paloalto_nat",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
         "vendorFamily" : { }
       },
@@ -34664,6 +34668,7 @@
         "name" : "paloalto_policy",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
         "ipSpaceMetadata" : {
           "rfc1918_10" : {
@@ -34684,6 +34689,7 @@
         "name" : "paloalto_zones",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ethernet1/1" : {
