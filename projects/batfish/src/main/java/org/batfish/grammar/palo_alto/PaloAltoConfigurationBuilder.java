@@ -219,6 +219,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdgd_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
@@ -421,6 +422,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoConfiguration _currentConfiguration;
   private CryptoProfile _currentCrytoProfile;
   private DeviceGroup _currentDeviceGroup;
+  private String _currentDeviceGroupVsys;
   private String _currentDeviceName;
   private String _currentExternalListName;
   private Interface _currentInterface;
@@ -1659,7 +1661,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSdg_devices(Sdg_devicesContext ctx) {
-    _currentDeviceGroup.addDevice(getText(ctx.device));
+    if (_currentDeviceGroupVsys == null) {
+      _currentDeviceGroup.addDevice(getText(ctx.device));
+    } else {
+      _currentDeviceGroup.addVsys(getText(ctx.device), _currentDeviceGroupVsys);
+    }
+    _currentDeviceGroupVsys = null;
+  }
+
+  @Override
+  public void exitSdgd_vsys(Sdgd_vsysContext ctx) {
+    _currentDeviceGroupVsys = getText(ctx.name);
   }
 
   @Override
