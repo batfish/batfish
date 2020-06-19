@@ -1876,6 +1876,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * PaloAltoConfiguration. Any previously made changes will be overwritten in this process.
    */
   private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
+    // TODO support applying device-group to specific vsys
+    // https://github.com/batfish/batfish/issues/5910
+
     // Create the target vsys (it shouldn't already exist)
     Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
     assert _panorama == null;
@@ -1976,7 +1979,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Build configs for each managed device, if applicable
     // Map of managed device ID to managed device config
     Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
-    // Apply device-groups
+    // Apply device-groups to firewalls
     _deviceGroups
         .entrySet()
         .forEach(
@@ -2003,6 +2006,33 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             c.setHostname(name);
                             c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
                             managedConfigurations.put(name, c);
+                          }
+                        }));
+    // Apply device-groups to individual vsyses
+    _deviceGroups
+        .entrySet()
+        .forEach(
+            deviceGroupEntry ->
+                deviceGroupEntry
+                    .getValue()
+                    .getVsys()
+                    .forEach(
+                        (deviceName, vsys) -> {
+                          // Create new managed config if one doesn't already exist for this device
+                          if (managedConfigurations.containsKey(deviceName)) {
+                            _w.redFlag(
+                                String.format(
+                                    "Associating vsys on a managed device with different device-groups is not yet supported. Ignoring association with device-group '%s' for managed device '%s'.",
+                                    deviceGroupEntry.getKey(), deviceName));
+                          } else {
+                            PaloAltoConfiguration c = new PaloAltoConfiguration();
+                            c.setWarnings(_w);
+                            c.setVendor(_vendor);
+                            // This may not actually be the device's hostname
+                            // but this is all we know at this point
+                            c.setHostname(deviceName);
+                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                            managedConfigurations.put(deviceName, c);
                           }
                         }));
     // Apply template-stacks
