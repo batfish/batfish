@@ -20,9 +20,9 @@ import org.batfish.representation.aws.LoadBalancer.Protocol;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class TargetGroup implements AwsVpcEntity, Serializable {
+public final class TargetGroup implements AwsVpcEntity, Serializable {
 
-  enum Type {
+  public enum Type {
     INSTANCE,
     IP
   }

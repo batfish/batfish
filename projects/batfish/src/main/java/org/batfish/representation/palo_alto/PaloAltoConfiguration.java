@@ -1994,6 +1994,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                                     name, deviceGroupEntry.getKey()));
                           } else {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
+                            c.setWarnings(_w);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
@@ -2015,6 +2016,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           // Create new managed config if one doesn't already exist for this device
                           if (c == null) {
                             c = new PaloAltoConfiguration();
+                            c.setWarnings(_w);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
