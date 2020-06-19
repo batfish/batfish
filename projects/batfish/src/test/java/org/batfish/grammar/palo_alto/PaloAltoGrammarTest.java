@@ -120,6 +120,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -3131,5 +3132,75 @@ public final class PaloAltoGrammarTest {
     assertThat(firewall1.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
     assertThat(firewall2.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
     assertThat(firewall3.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+  }
+
+  @Test
+  public void testDeviceGroupAttachVsys() {
+    String panoramaHostname = "device-group-attach-vsys";
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+
+    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
+
+    // Device-group should be associated with specific firewall vsys
+    assertThat(deviceGroup1.getVsys().keySet(), contains(firewallId1));
+    assertThat(deviceGroup1.getVsys().get(firewallId1), contains("vsys1"));
+  }
+
+  @Test
+  public void testDeviceGroupAttachVsysConversion() {
+    String panoramaHostname = "device-group-attach-vsys";
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get the panorama and firewall VI configs from the single panorama VS config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    assertThat(firewall1.getIpSpaces().keySet(), containsInAnyOrder("ADDR1"));
+  }
+
+  @Test
+  public void testDeviceGroupAttachMultiVsys() {
+    String panoramaHostname = "device-group-attach-multi-vsys";
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+
+    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
+    DeviceGroup deviceGroup2 = c.getOrCreateDeviceGroup("DG2");
+
+    // Device-group should be associated with only first firewall vsys
+    assertThat(deviceGroup1.getVsys().keySet(), contains(firewallId1));
+    assertThat(deviceGroup1.getVsys().get(firewallId1), contains("vsys1"));
+    // Device-group should be associated with only second firewall vsys
+    assertThat(deviceGroup2.getVsys().keySet(), contains(firewallId1));
+    assertThat(deviceGroup2.getVsys().get(firewallId1), contains("vsys2"));
+  }
+
+  @Ignore("https://github.com/batfish/batfish/issues/5910")
+  @Test
+  public void testDeviceGroupAttachMultiVsysConversion() {
+    String panoramaHostname = "device-group-attach-multi-vsys";
+    String firewallId1 = "00000001";
+    String addrVsys1 = computeObjectName("vsys1", "ADDR1");
+    String addrVsys2 = computeObjectName("vsys2", "ADDR1");
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get the panorama and firewall VI configs from the single panorama VS config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    NavigableMap<String, IpSpace> ipSpaces = firewall1.getIpSpaces();
+    assertThat(ipSpaces.keySet(), containsInAnyOrder(addrVsys1, addrVsys2));
+    // Each vsys should inherit a different definition for the same address object
+    assertIpSpacesEqual(ipSpaces.get(addrVsys1), Ip.parse("1.1.1.1").toIpSpace());
+    assertIpSpacesEqual(ipSpaces.get(addrVsys2), Ip.parse("2.2.2.2").toIpSpace());
   }
 }
