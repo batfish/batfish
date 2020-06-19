@@ -2024,16 +2024,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                                 String.format(
                                     "Associating vsys on a managed device with different device-groups is not yet supported. Ignoring association with device-group '%s' for managed device '%s'.",
                                     deviceGroupEntry.getKey(), deviceName));
-                          } else {
-                            PaloAltoConfiguration c = new PaloAltoConfiguration();
-                            c.setWarnings(_w);
-                            c.setVendor(_vendor);
-                            // This may not actually be the device's hostname
-                            // but this is all we know at this point
-                            c.setHostname(deviceName);
-                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
-                            managedConfigurations.put(deviceName, c);
+                            return;
                           }
+                          PaloAltoConfiguration c = new PaloAltoConfiguration();
+                          c.setWarnings(_w);
+                          c.setVendor(_vendor);
+                          // This may not actually be the device's hostname
+                          // but this is all we know at this point
+                          c.setHostname(deviceName);
+                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                          managedConfigurations.put(deviceName, c);
                         }));
     // Apply template-stacks
     _templateStacks
