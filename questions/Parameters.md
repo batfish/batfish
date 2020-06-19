@@ -440,7 +440,7 @@ A named structure specifier follows the [enum set grammar](#set-of-enums-or-name
 
 A specification for a set of node-level properties (e.g., those returned by the `nodeProperties` question).
 
-A node property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_Path_Access_Lists`, `Authentication_Key_Chains`, `Canonical_IP`, `Community_Lists`, `Configuration_Format`, `Default_Cross_Zone_Action`, `Default_Inbound_Action`, `Device_Type`, `DNS_Servers`, `DNS_Source_Interface`, `Domain_Name`, `Hostname`, `IKE_Phase1_Keys`, `IKE_Phase1_Policies`, `IKE_Phase1_Proposals`, `Interfaces`, `IP_Access_Lists`, `IP_Spaces`, `IP6_Access_Lists`, `IPsec_Peer_Configs`, `IPsec_Phase2_Policies`, `IPsec_Phase2_Proposals`, `IPSec_Vpns`, `Logging_Servers`, `Logging_Source_Interface`, `NTP_Servers`, `NTP_Source_Interface`, `PBR_Policies`, `Route_Filter_Lists`, `Route6_Filter_Lists`, `Routing_Policies`, `SNMP_Source_Interface`, `SNMP_Trap_Servers`, `TACACS_Servers`, `TACACS_Source_Interface`, `VRFs`, `Zones`.
+A node property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_Path_Access_Lists`, `Authentication_Key_Chains`, `Canonical_IP`, `Community_Lists`, `Configuration_Format`, `Default_Cross_Zone_Action`, `Default_Inbound_Action`, `DNS_Servers`, `DNS_Source_Interface`, `Domain_Name`, `Hostname`, `IKE_Phase1_Keys`, `IKE_Phase1_Policies`, `IKE_Phase1_Proposals`, `Interfaces`, `IP_Access_Lists`, `IP_Spaces`, `IP6_Access_Lists`, `IPsec_Peer_Configs`, `IPsec_Phase2_Policies`, `IPsec_Phase2_Proposals`, `IPSec_Vpns`, `Logging_Servers`, `Logging_Source_Interface`, `NTP_Servers`, `NTP_Source_Interface`, `PBR_Policies`, `Route_Filter_Lists`, `Route6_Filter_Lists`, `Routing_Policies`, `SNMP_Source_Interface`, `SNMP_Trap_Servers`, `TACACS_Servers`, `TACACS_Source_Interface`, `VRFs`, `Zones`.
 
 
 ### Node Specifier
@@ -450,8 +450,6 @@ A specification for nodes in the network.
 * `as1border1` indicates a node with that name.
 
 * `/^as1/` indicates all nodes whose names match the regex `^as1`, i.e., start with 'as1'.
-
-* `@deviceType(type1)` indicates all nodes of the type 'type1'. The types of devices are listed [here](#device-types).
 
 * `@role(dim, role)` indicates all nodes with role name 'role' in dimension name 'dim'.
 
@@ -468,23 +466,12 @@ nodeTerm :=
     | <b>(</b>nodeSpec<b>)</b>
 
 nodeFunc :=
-    <b>@deviceType(</b><i>device-type</i><b>)</b>
-    | <b>@role(</b>&lt;<i>dimension-name</i>&gt;<b>,</b> &lt;<i>role-name</i>&gt;<b>)</b>
+    <b>@role(</b>&lt;<i>dimension-name</i>&gt;<b>,</b> &lt;<i>role-name</i>&gt;<b>)</b>
 </pre>
 
 #### Node Specifier Resolver
 
 * `resolveNodeSpecifier` shows the set of nodes represented by the given input.
-
-#### Device Types
-
-Batfish has the following device types.
-
-* `Host`: An end host.
-* `Internet`: A logical device that represents the Internet. It is present when external connectivity is modeled.
-* `ISP`: A logical devie that represents a neighboring ISP. It is present when external connectivity is modeled.
-* `Router`: A device that does L3 routing and forwarding.
-* `Switch`: A device that only does L2 forwarding.
 
 ### OSPF Interface Property Specifier
 

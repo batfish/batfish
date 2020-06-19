@@ -14,6 +14,12 @@
           "ResourceType": "vpc",
           "State": "not-enabled",
           "TransitGatewayAttachmentId": "tgw-attach-0ae2696617bb06fb4"
+        },
+        {
+          "ResourceId": "a0cb33f1-da2c-4b16-94b9-09cf843d672f",
+          "ResourceType": "direct-connect-gateway",
+          "State": "enabled",
+          "TransitGatewayAttachmentId": "tgw-attach-0dbe0fb191f73f405"
         }
       ]
     }

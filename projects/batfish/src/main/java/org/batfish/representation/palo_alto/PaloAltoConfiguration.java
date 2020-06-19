@@ -81,6 +81,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -1969,7 +1970,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
     // Build primary config
-    outputConfigurations.add(this.toVendorIndependentConfiguration());
+    Configuration primaryConfig = this.toVendorIndependentConfiguration();
+    outputConfigurations.add(primaryConfig);
 
     // Build configs for each managed device, if applicable
     // Map of managed device ID to managed device config
@@ -1995,6 +1997,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           } else {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
+                            c.setVendor(_vendor);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
@@ -2017,6 +2020,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           if (c == null) {
                             c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
+                            c.setVendor(_vendor);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
@@ -2030,12 +2034,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .map(PaloAltoConfiguration::toVendorIndependentConfiguration)
             .collect(ImmutableList.toImmutableList()));
 
+    if (!managedConfigurations.isEmpty()) {
+      primaryConfig.setDeviceModel(DeviceModel.PALO_ALTO_PANORAMA);
+    }
     return outputConfigurations.build();
   }
 
   private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
+    _c.setDeviceModel(DeviceModel.PALO_ALTO_FIREWALL);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDnsServers(getDnsServers());
