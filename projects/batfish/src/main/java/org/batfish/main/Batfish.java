@@ -1381,9 +1381,29 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void outputAnswer(Answer answer, boolean writeLog) {
     try {
       String answerString = BatfishObjectMapper.writeString(answer);
+      boolean summarizeWorkJsonLogAnswer =
+          writeLog
+              && _settings.getQuestionName() != null
+              && !_settings.getAlwaysIncludeAnswerInWorkJsonLog()
+              && answer.getStatus() == AnswerStatus.SUCCESS;
+      // Write answer to work json log if caller requested.
+      // Summarize that answer if all of the following are true:
+      // - answering a question
+      // - question successful
+      // - client did not request full successful answers
+      String workJsonLogAnswerString;
+      if (summarizeWorkJsonLogAnswer) {
+        Answer summaryAnswer = new Answer();
+        summaryAnswer.setQuestion(answer.getQuestion());
+        summaryAnswer.setStatus(answer.getStatus());
+        summaryAnswer.setSummary(answer.getSummary());
+        // do not include answer elements
+        workJsonLogAnswerString = BatfishObjectMapper.writeString(summaryAnswer);
+      } else {
+        workJsonLogAnswerString = answerString;
+      }
       _logger.debug(answerString);
-      @Nullable String logString = writeLog ? answerString : null;
-      writeJsonAnswerWithLog(logString, answerString);
+      writeJsonAnswerWithLog(answerString, workJsonLogAnswerString, writeLog);
     } catch (Exception e) {
       BatfishException be = new BatfishException("Error in sending answer", e);
       try {
@@ -1391,8 +1411,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
         String answerString = BatfishObjectMapper.writeString(failureAnswer);
         _logger.error(answerString);
-        @Nullable String logString = writeLog ? answerString : null;
-        writeJsonAnswerWithLog(logString, answerString);
+        // write "answer" to work json log if caller requested
+        writeJsonAnswerWithLog(answerString, answerString, writeLog);
       } catch (Exception e1) {
         _logger.errorf(
             "Could not serialize failure answer. %s", Throwables.getStackTraceAsString(e1));
@@ -3137,16 +3157,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _storage.storeAnswer(structuredAnswerString, baseAnswerId);
   }
 
-  private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString)
-      throws IOException {
-    // Write log of WorkItem task to the configured path for logs
-    if (logString != null && _settings.getTaskId() != null) {
+  private void writeJsonAnswerWithLog(
+      String answerOutput, String workJsonLogAnswerString, boolean writeLog) throws IOException {
+    if (writeLog && _settings.getTaskId() != null) {
       _storage.storeWorkJson(
-          logString, _settings.getContainer(), _settings.getTestrig(), _settings.getTaskId());
+          workJsonLogAnswerString,
+          _settings.getContainer(),
+          _settings.getTestrig(),
+          _settings.getTaskId());
     }
-    // Write answer.json and answer-pretty.json if WorkItem was answering a question
+    // Write answer if WorkItem was answering a question
     if (_settings.getQuestionName() != null) {
-      writeJsonAnswer(structuredAnswerString);
+      writeJsonAnswer(answerOutput);
     }
   }
 
