@@ -411,7 +411,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpVrf
         .getIpv4Unicast()
         .getNetworks()
-        .computeIfAbsent(Prefix.parse(ctx.IP_PREFIX().getText()), BgpNetwork::new);
+        .computeIfAbsent(Prefix.parse(ctx.prefix().getText()),
+            k -> new BgpNetwork(Prefix.parse(ctx.prefix().getText()), ctx.route_map_name() != null ? ctx.route_map_name().getText() : null));
   }
 
   @Override
@@ -530,7 +531,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSb_network(Sb_networkContext ctx) {
-    _currentBgpVrf.addNetwork(toPrefix(ctx.prefix()));
+    _currentBgpVrf.addNetwork(toPrefix(ctx.prefix()), ctx.route_map_name() != null ? ctx.route_map_name().getText() : null);
   }
 
   @Override

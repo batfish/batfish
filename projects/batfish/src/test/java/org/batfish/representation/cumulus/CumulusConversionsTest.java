@@ -12,6 +12,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.addOspfInter
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNeighborImportRoutingPolicy;
+import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNetworkGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
@@ -26,6 +27,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHo
 import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
+import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusConversions.toAsPathAccessList;
@@ -215,23 +217,36 @@ public final class CumulusConversionsTest {
   @Test
   public void testGenerateGeneratedRoutes() {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
+    Prefix prefix2 = Prefix.parse("1.1.1.1/32");
+
     generateGeneratedRoutes(
-        _c, _v, ImmutableMap.of(prefix, new BgpVrfAddressFamilyAggregateNetworkConfiguration()));
+        _c, _v, ImmutableMap.of(prefix, new BgpVrfAddressFamilyAggregateNetworkConfiguration()),
+        ImmutableMap.of(prefix2, new BgpNetwork(prefix2, "TEST_RM")),
+        ImmutableMap.of("TEST_RM", new RouteMap("Test-RM"))
+        );
+
     String policyName = computeBgpGenerationPolicyName(true, _v.getName(), prefix.toString());
+    String networkPolicyName = computeBgpNetworkGenerationPolicyName(true, _v.getName(), prefix2.toString());
 
     // configuration has the generation policy
     assertThat(_c.getRoutingPolicies(), Matchers.hasKey(policyName));
+    assertThat(_c.getRoutingPolicies(), Matchers.hasKey(networkPolicyName));
 
     // vrf has generated route
     ImmutableList<GeneratedRoute> grs =
         _v.getGeneratedRoutes().stream()
-            .filter(gr -> gr.getNetwork().equals(prefix))
+            .filter(gr -> gr.getNetwork().equals(prefix) || gr.getNetwork().equals(prefix2))
             .collect(ImmutableList.toImmutableList());
-    assertThat(grs, hasSize(1));
+    assertThat(grs, hasSize(2));
 
-    GeneratedRoute gr = grs.get(0);
+    GeneratedRoute gr = grs.get(1);
     assertTrue(gr.getDiscard());
     assertThat(gr.getGenerationPolicy(), equalTo(policyName));
+
+    GeneratedRoute gr2 = grs.get(0);
+    assertFalse(gr2.getDiscard());
+    assertThat(gr2.getGenerationPolicy(), equalTo(networkPolicyName));
+    assertThat(gr2.getAttributePolicy(), equalTo("TEST_RM"));
   }
 
   @Test
@@ -525,7 +540,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(prefix, null);
 
     // the method under test
     org.batfish.datamodel.BgpProcess viBgp =
@@ -565,7 +580,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(prefix, null);
     vrf.setDefaultIpv4Unicast(false);
 
     // the method under test

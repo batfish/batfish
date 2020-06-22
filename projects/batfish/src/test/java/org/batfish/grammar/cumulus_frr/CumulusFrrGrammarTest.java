@@ -210,6 +210,17 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastNetworkRouteMap() {
+    Prefix network = Prefix.parse("1.2.3.4/24");
+    parseLines(
+        "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24 route-map RM_TEST", "exit-address-family");
+
+    assertThat(
+        _config.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks(),
+        equalTo(ImmutableMap.of(network, new BgpNetwork(network, "RM_TEST"))));
+  }
+
+  @Test
   public void testBgpAddressFamilyIpv4UnicastRedistributeConnected() {
     parseLines(
         "router bgp 1",
@@ -1237,10 +1248,20 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testBgpNetwork() {
     Prefix network = Prefix.parse("10.0.0.0/8");
-    parseLines("router bgp 10000", "network 10.0.0.0/8");
+    parseLines("router bgp 10000", "network 10.0.0.0/8\n");
     assertThat(
         _config.getBgpProcess().getDefaultVrf().getNetworks(),
-        equalTo(ImmutableMap.of(network, new BgpNetwork(network))));
+        equalTo(ImmutableMap.of(network, new BgpNetwork(network, null))));
+  }
+
+  @Test
+  public void testBgpNetwork_withRouteMap() {
+    Prefix network = Prefix.parse("10.0.0.0/8");
+    parseLines("router bgp 10000", "network 10.0.0.0/8 route-map TEST_RM-1234\n");
+
+    assertThat(
+        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        equalTo(ImmutableMap.of(network, new BgpNetwork(network, "TEST_RM-1234"))));
   }
 
   @Test
