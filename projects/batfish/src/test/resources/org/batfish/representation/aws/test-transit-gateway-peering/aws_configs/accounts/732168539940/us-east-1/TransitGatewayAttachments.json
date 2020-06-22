@@ -1,0 +1,64 @@
+{
+  "TransitGatewayAttachments": [
+    {
+      "Association": {
+        "State": "associated",
+        "TransitGatewayRouteTableId": "tgw-rtb-05d2952671d1f460a"
+      },
+      "CreationTime": "2020-06-21 03:35:39+00:00",
+      "ResourceId": "tgw-03201f1960ddb0c25",
+      "ResourceOwnerId": "804819755326",
+      "ResourceType": "peering",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat-fish"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-012e5d602f859dd80",
+      "TransitGatewayId": "tgw-0e20010ebf43d07a2",
+      "TransitGatewayOwnerId": "732168539940"
+    },
+    {
+      "Association": {
+        "State": "associated",
+        "TransitGatewayRouteTableId": "tgw-rtb-05d2952671d1f460a"
+      },
+      "CreationTime": "2020-06-21 03:35:02+00:00",
+      "ResourceId": "vpc-065ea457071dd67bb",
+      "ResourceOwnerId": "732168539940",
+      "ResourceType": "vpc",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-0068fe8d7e573c375",
+      "TransitGatewayId": "tgw-0e20010ebf43d07a2",
+      "TransitGatewayOwnerId": "732168539940"
+    },
+    {
+      "Association": {
+        "State": "associated",
+        "TransitGatewayRouteTableId": "tgw-rtb-018a5e572ec3088d1"
+      },
+      "CreationTime": "2020-06-21 03:35:02+00:00",
+      "ResourceId": "vpc-03ccec9d7758a283a",
+      "ResourceOwnerId": "732168539940",
+      "ResourceType": "vpc",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat2"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-02ff0f113900dd06d",
+      "TransitGatewayId": "tgw-0e20010ebf43d07a2",
+      "TransitGatewayOwnerId": "732168539940"
+    }
+  ]
+}

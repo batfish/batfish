@@ -111,6 +111,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_REASON = "Reason";
   String JSON_KEY_REGIONS = "Regions";
   String JSON_KEY_RESOURCE_ID = "ResourceId";
+  String JSON_KEY_RESOURCE_OWNER_ID = "ResourceOwnerId";
   String JSON_KEY_RESOURCE_TYPE = "ResourceType";
   String JSON_KEY_REQUESTER_VPC_INFO = "RequesterVpcInfo";
   String JSON_KEY_RESERVATIONS = "Reservations";
@@ -148,6 +149,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS = "TransitGatewayAttachments";
   String JSON_KEY_TRANSIT_GATEWAY_PROPAGATIONS = "TransitGatewayPropagations";
   String JSON_KEY_TRANSIT_GATEWAY_ID = "TransitGatewayId";
+  String JSON_KEY_TRANSIT_GATEWAY_OWNER_ID = "TransitGatewayOwnerId";
   String JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID = "TransitGatewayRouteTableId";
   String JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_PROPAGATIONS = "TransitGatewayRouteTablePropagations";
   String JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLES = "TransitGatewayRouteTables";

@@ -1,0 +1,27 @@
+{
+  "TransitGatewayStaticRoutes": [
+    {
+      "AdditionalRoutesAvailable": false,
+      "Routes": [
+        {
+          "DestinationCidrBlock": "192.168.0.0/16",
+          "State": "active",
+          "TransitGatewayAttachments": [
+            {
+              "ResourceId": "tgw-03201f1960ddb0c25",
+              "ResourceType": "peering",
+              "TransitGatewayAttachmentId": "tgw-attach-012e5d602f859dd80"
+            }
+          ],
+          "Type": "static"
+        }
+      ],
+      "TransitGatewayRouteTableId": "tgw-rtb-018a5e572ec3088d1"
+    },
+    {
+      "AdditionalRoutesAvailable": false,
+      "Routes": [],
+      "TransitGatewayRouteTableId": "tgw-rtb-05d2952671d1f460a"
+    }
+  ]
+}
