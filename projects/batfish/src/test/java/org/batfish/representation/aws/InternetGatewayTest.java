@@ -21,6 +21,7 @@ import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_INTERNET_GATEWAY_AS;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
+import static org.batfish.representation.aws.InternetGateway.DENIED_UNASSOCIATED_PRIVATE_IP_TRACE;
 import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
@@ -47,6 +48,7 @@ import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -55,6 +57,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.transformation.Transformation;
@@ -262,5 +265,22 @@ public class InternetGatewayTest {
                 ImmutableMap.of())
             .getAction(),
         equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testComputeUnassociatedPrivateIpFilter_noPrivateIps() {
+    IpAccessList unassociatedIpFilter = computeUnassociatedPrivateIpFilter(ImmutableList.of());
+    assertThat(
+        unassociatedIpFilter,
+        equalTo(
+            IpAccessList.builder()
+                .setName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME)
+                .setLines(
+                    ExprAclLine.builder()
+                        .setTraceElement(DENIED_UNASSOCIATED_PRIVATE_IP_TRACE)
+                        .setMatchCondition(TrueExpr.INSTANCE)
+                        .setAction(LineAction.DENY)
+                        .build())
+                .build()));
   }
 }
