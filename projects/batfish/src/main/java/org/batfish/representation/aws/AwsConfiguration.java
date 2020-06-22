@@ -124,6 +124,7 @@ public class AwsConfiguration extends VendorConfiguration {
     } catch (Exception e) {
       getWarnings().redFlag(String.format("Failed to convert transit gateways %s", e));
     }
+    TransitGatewayPeeringConnector.connect(this, _convertedConfiguration, getWarnings());
   }
 
   private void processVpcPeerings() {
