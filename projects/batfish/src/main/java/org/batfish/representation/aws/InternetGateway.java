@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
@@ -222,26 +223,31 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
   @VisibleForTesting
   static IpAccessList computeUnassociatedPrivateIpFilter(Collection<Ip> validPrivateIps) {
-    IpSpace validPrivateIpSpace =
-        IpWildcardSetIpSpace.builder()
-            .including(
-                validPrivateIps.stream().map(IpWildcard::create).collect(Collectors.toList()))
-            .build();
+    ImmutableList.Builder<AclLine> aclLines = ImmutableList.builder();
+    if (!validPrivateIps.isEmpty()) {
+      IpSpace validPrivateIpSpace =
+          IpWildcardSetIpSpace.builder()
+              .including(
+                  validPrivateIps.stream().map(IpWildcard::create).collect(Collectors.toList()))
+              .build();
+      aclLines.add(
+          ExprAclLine.builder()
+              .setTraceElement(ALLOWED_ASSOCIATED_PRIVATE_IP_TRACE_ELEMENT)
+              .setMatchCondition(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder().setSrcIps(validPrivateIpSpace).build()))
+              .setAction(LineAction.PERMIT)
+              .build());
+    }
+    aclLines.add(
+        ExprAclLine.builder()
+            .setTraceElement(DENIED_UNASSOCIATED_PRIVATE_IP_TRACE)
+            .setMatchCondition(TrueExpr.INSTANCE)
+            .setAction(LineAction.DENY)
+            .build());
     return IpAccessList.builder()
         .setName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME)
-        .setLines(
-            ExprAclLine.builder()
-                .setTraceElement(ALLOWED_ASSOCIATED_PRIVATE_IP_TRACE_ELEMENT)
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setSrcIps(validPrivateIpSpace).build()))
-                .setAction(LineAction.PERMIT)
-                .build(),
-            ExprAclLine.builder()
-                .setTraceElement(DENIED_UNASSOCIATED_PRIVATE_IP_TRACE)
-                .setMatchCondition(TrueExpr.INSTANCE)
-                .setAction(LineAction.DENY)
-                .build())
+        .setLines(aclLines.build())
         .build();
   }
 
