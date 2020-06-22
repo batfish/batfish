@@ -1,0 +1,27 @@
+{
+  "TransitGatewayRouteTables": [
+    {
+      "CreationTime": "2020-06-21 03:35:01+00:00",
+      "DefaultAssociationRouteTable": false,
+      "DefaultPropagationRouteTable": false,
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat2"
+        }
+      ],
+      "TransitGatewayId": "tgw-0e20010ebf43d07a2",
+      "TransitGatewayRouteTableId": "tgw-rtb-018a5e572ec3088d1"
+    },
+    {
+      "CreationTime": "2020-06-21 03:34:12+00:00",
+      "DefaultAssociationRouteTable": true,
+      "DefaultPropagationRouteTable": true,
+      "State": "available",
+      "Tags": [],
+      "TransitGatewayId": "tgw-0e20010ebf43d07a2",
+      "TransitGatewayRouteTableId": "tgw-rtb-05d2952671d1f460a"
+    }
+  ]
+}

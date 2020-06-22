@@ -1,0 +1,26 @@
+{
+  "TransitGatewayPropagations": [
+    {
+      "TransitGatewayRouteTableId": "tgw-rtb-018a5e572ec3088d1",
+      "TransitGatewayRouteTablePropagations": [
+        {
+          "ResourceId": "vpc-03ccec9d7758a283a",
+          "ResourceType": "vpc",
+          "State": "enabled",
+          "TransitGatewayAttachmentId": "tgw-attach-02ff0f113900dd06d"
+        }
+      ]
+    },
+    {
+      "TransitGatewayRouteTableId": "tgw-rtb-05d2952671d1f460a",
+      "TransitGatewayRouteTablePropagations": [
+        {
+          "ResourceId": "vpc-065ea457071dd67bb",
+          "ResourceType": "vpc",
+          "State": "enabled",
+          "TransitGatewayAttachmentId": "tgw-attach-0068fe8d7e573c375"
+        }
+      ]
+    }
+  ]
+}

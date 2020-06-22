@@ -1,0 +1,15 @@
+{
+  "TransitGatewayPropagations": [
+    {
+      "TransitGatewayRouteTableId": "tgw-rtb-00be87593fb2cd0ae",
+      "TransitGatewayRouteTablePropagations": [
+        {
+          "ResourceId": "vpc-0ecbcbd110fd839d1",
+          "ResourceType": "vpc",
+          "State": "enabled",
+          "TransitGatewayAttachmentId": "tgw-attach-075ea06a59d3212af"
+        }
+      ]
+    }
+  ]
+}
