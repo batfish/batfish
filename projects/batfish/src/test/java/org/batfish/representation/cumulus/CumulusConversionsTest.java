@@ -27,7 +27,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHo
 import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
 import static org.batfish.representation.cumulus.CumulusConversions.inferRouterId;
-import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.resolveLocalIpFromUpdateSource;
 import static org.batfish.representation.cumulus.CumulusConversions.suppressSummarizedPrefixes;
 import static org.batfish.representation.cumulus.CumulusConversions.toAsPathAccessList;
@@ -220,13 +219,15 @@ public final class CumulusConversionsTest {
     Prefix prefix2 = Prefix.parse("1.1.1.1/32");
 
     generateGeneratedRoutes(
-        _c, _v, ImmutableMap.of(prefix, new BgpVrfAddressFamilyAggregateNetworkConfiguration()),
+        _c,
+        _v,
+        ImmutableMap.of(prefix, new BgpVrfAddressFamilyAggregateNetworkConfiguration()),
         ImmutableMap.of(prefix2, new BgpNetwork(prefix2, "TEST_RM")),
-        ImmutableMap.of("TEST_RM", new RouteMap("Test-RM"))
-        );
+        ImmutableMap.of("TEST_RM", new RouteMap("Test-RM")));
 
     String policyName = computeBgpGenerationPolicyName(true, _v.getName(), prefix.toString());
-    String networkPolicyName = computeBgpNetworkGenerationPolicyName(true, _v.getName(), prefix2.toString());
+    String networkPolicyName =
+        computeBgpNetworkGenerationPolicyName(true, _v.getName(), prefix2.toString());
 
     // configuration has the generation policy
     assertThat(_c.getRoutingPolicies(), Matchers.hasKey(policyName));

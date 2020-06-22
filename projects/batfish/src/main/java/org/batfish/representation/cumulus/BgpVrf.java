@@ -117,6 +117,7 @@ public class BgpVrf implements Serializable {
 
   /**
    * Method returns all ipv4 network statements from both default and ipv4unicast address family
+   *
    * @return Map of networks
    */
   @Nonnull

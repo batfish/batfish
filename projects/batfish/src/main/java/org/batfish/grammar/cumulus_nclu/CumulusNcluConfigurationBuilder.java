@@ -935,8 +935,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     _currentBgpVrf
         .getIpv4Unicast()
         .getNetworks()
-        .computeIfAbsent(toPrefix(ctx.network),
-            k -> new BgpNetwork(toPrefix(ctx.network), null));
+        .computeIfAbsent(toPrefix(ctx.network), k -> new BgpNetwork(toPrefix(ctx.network), null));
   }
 
   @Override

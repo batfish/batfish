@@ -183,10 +183,11 @@ public final class CumulusConversions {
     return String.format("~AGGREGATE_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
   }
 
-  public static String computeBgpNetworkGenerationPolicyName(boolean ipv4, String vrfName, String prefix) {
+  public static String computeBgpNetworkGenerationPolicyName(
+      boolean ipv4, String vrfName, String prefix) {
     return String.format("~NETWORK_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
   }
-  
+
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
   }
@@ -274,8 +275,8 @@ public final class CumulusConversions {
   }
 
   /**
-   * Creates generated routes and route generation policies for aggregate and network
-   * routes for the input vrf.
+   * Creates generated routes and route generation policies for aggregate and network routes for the
+   * input vrf.
    */
   static void generateGeneratedRoutes(
       Configuration c,
@@ -312,17 +313,19 @@ public final class CumulusConversions {
               GeneratedRoute.builder()
                   .setNetwork(network)
                   .setGenerationPolicy(
-                      computeBgpNetworkGenerationPolicyName(true, vrf.getName(), network.toString()))
+                      computeBgpNetworkGenerationPolicyName(
+                          true, vrf.getName(), network.toString()))
                   .setDiscard(false);
 
           // Set attribute policy if it exists
           if (attributeMapName != null) {
             RouteMap attributeMap = routeMaps.get(attributeMapName);
-            if (attributeMap != null) { gr.setAttributePolicy(attributeMapName); }
+            if (attributeMap != null) {
+              gr.setAttributePolicy(attributeMapName);
+            }
           }
           vrf.getGeneratedRoutes().add(gr.build());
-        }
-    );
+        });
   }
 
   /**
@@ -486,9 +489,12 @@ public final class CumulusConversions {
           .forEach(newProc::addToOriginationSpace);
 
       // Generate network and aggregate routes
-      generateGeneratedRoutes(c, c.getVrfs().get(vrfName), ipv4Unicast.getAggregateNetworks(),
-          bgpVrf.getAllNetworks(), vsConfig.getRouteMaps());
-
+      generateGeneratedRoutes(
+          c,
+          c.getVrfs().get(vrfName),
+          ipv4Unicast.getAggregateNetworks(),
+          bgpVrf.getAllNetworks(),
+          vsConfig.getRouteMaps());
     }
 
     generateBgpCommonExportPolicy(c, vrfName, bgpVrf, vsConfig.getRouteMaps());
@@ -1300,13 +1306,14 @@ public final class CumulusConversions {
         .orElseGet(() -> Ip.parse("0.0.0.0"));
   }
 
-   /** REF:
+  /**
+   * REF:
    * https://github.com/FRRouting/frr/blob/b4b1d1ebdbee99664c0607cf4abac977dfc896b6/bgpd/bgp_attr.c#L3851
    * If FRR has a cluster-id set it will use that, otherwise it will use router-id.
    *
    * @param bgpVrf BGP vrf for which to infer cluster ID
    * @param routerId router ID of the {@code bgpVrf} (already inferred if needed)
-   **/
+   */
   @VisibleForTesting
   @Nullable
   static Long inferClusterId(final BgpVrf bgpVrf, final Ip routerId, final BgpNeighbor neighbor) {

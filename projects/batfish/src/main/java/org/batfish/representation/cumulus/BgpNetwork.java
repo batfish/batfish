@@ -34,8 +34,7 @@ public class BgpNetwork implements Serializable {
       return false;
     }
     BgpNetwork that = (BgpNetwork) o;
-    return _network.equals(that._network)
-        && Objects.equals(_routeMap, that._routeMap);
+    return _network.equals(that._network) && Objects.equals(_routeMap, that._routeMap);
   }
 
   @Override

@@ -213,7 +213,10 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamilyIpv4UnicastNetworkRouteMap() {
     Prefix network = Prefix.parse("1.2.3.4/24");
     parseLines(
-        "router bgp 1", "address-family ipv4 unicast", "network 1.2.3.4/24 route-map RM_TEST", "exit-address-family");
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "network 1.2.3.4/24 route-map RM_TEST",
+        "exit-address-family");
 
     assertThat(
         _config.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks(),
