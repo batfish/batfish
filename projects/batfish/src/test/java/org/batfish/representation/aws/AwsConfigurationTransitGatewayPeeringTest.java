@@ -138,6 +138,18 @@ public class AwsConfigurationTransitGatewayPeeringTest {
   }
 
   /**
+   * Traces from instance fish to bat must stop at the TGW fish because of the missing static route.
+   */
+  @Test
+  public void testFishToBat() {
+    testTrace(
+        getAnyFlow(_instanceFish, _instanceBatIp, _batfish),
+        FlowDisposition.NO_ROUTE,
+        ImmutableList.of(_instanceFish, _subnetFish, _vpcFish, _tgwFish),
+        _batfish);
+  }
+
+  /**
    * Traces from instance fish to bat2 must stop at the TGW bat (after crossing the peering link)
    * because of the missing propagation from bat2 to the routing table associated with the peering
    * attachment.
