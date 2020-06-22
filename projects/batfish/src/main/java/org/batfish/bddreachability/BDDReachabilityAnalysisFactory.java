@@ -9,6 +9,7 @@ import static org.batfish.bddreachability.transition.Transitions.ZERO;
 import static org.batfish.bddreachability.transition.Transitions.addLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addNoLastHopConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
+import static org.batfish.bddreachability.transition.Transitions.addOutgoingOriginalFlowFiltersConstraint;
 import static org.batfish.bddreachability.transition.Transitions.addSourceInterfaceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.branch;
 import static org.batfish.bddreachability.transition.Transitions.compose;
@@ -674,7 +675,8 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRootEdges_OriginateVrf_PostInVrf(Map<StateExpr, BDD> rootBdds) {
+  @VisibleForTesting
+  Stream<Edge> generateRootEdges_OriginateVrf_PostInVrf(Map<StateExpr, BDD> rootBdds) {
     return rootBdds.entrySet().stream()
         .filter(entry -> entry.getKey() instanceof OriginateVrf)
         .map(
@@ -691,6 +693,8 @@ public final class BDDReachabilityAnalysisFactory {
                   postInVrf,
                   compose(
                       addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
+                      addOutgoingOriginalFlowFiltersConstraint(
+                          _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
                       constraint(rootBdd)));
             });
   }
@@ -704,12 +708,14 @@ public final class BDDReachabilityAnalysisFactory {
               OriginateInterface state = (OriginateInterface) e.getKey();
               String vrf = _interfacesToVrfsMap.get(state.getHostname()).get(state.getInterface());
               PostInVrf postInVrf = new PostInVrf(state.getHostname(), vrf);
+              String hostname = state.getHostname();
               return new Edge(
                   state,
                   postInVrf,
                   compose(
-                      addOriginatingFromDeviceConstraint(
-                          _bddSourceManagers.get(state.getHostname())),
+                      addOriginatingFromDeviceConstraint(_bddSourceManagers.get(hostname)),
+                      addOutgoingOriginalFlowFiltersConstraint(
+                          _bddOutgoingOriginalFlowFilterManagers.get(hostname)),
                       constraint(e.getValue())));
             });
   }
@@ -942,10 +948,6 @@ public final class BDDReachabilityAnalysisFactory {
               String nodeName = iface.getOwner().getHostname();
               String vrfName = iface.getVrfName();
               String ifaceName = iface.getName();
-              BDD outgoingOriginalFlowFiltersConstraint =
-                  _bddOutgoingOriginalFlowFilterManagers
-                      .get(nodeName)
-                      .outgoingOriginalFlowFiltersConstraint();
               Map<FibLookup, Transition> transitionByFibLookup =
                   _convertedPacketPolicies.get(nodeName).get(ifaceName).getFibLookups();
               VrfExprNameExtractor lookupVrfExtractor = new VrfExprNameExtractor(iface);
@@ -960,7 +962,8 @@ public final class BDDReachabilityAnalysisFactory {
                             preInInterface,
                             new PbrFibLookup(nodeName, vrfName, lookupVrf),
                             compose(
-                                constraint(outgoingOriginalFlowFiltersConstraint),
+                                addOutgoingOriginalFlowFiltersConstraint(
+                                    _bddOutgoingOriginalFlowFilterManagers.get(nodeName)),
                                 transitionByFibLookupEntry.getValue()));
                       });
             });
@@ -1062,15 +1065,12 @@ public final class BDDReachabilityAnalysisFactory {
               PostInInterface postState = new PostInInterface(nodeName, ifaceName);
 
               BDD inAclBDD = ignorableAclPermitBDD(nodeName, acl);
-              BDD outgoingOriginalFlowFiltersConstraint =
-                  _bddOutgoingOriginalFlowFilterManagers
-                      .get(nodeName)
-                      .outgoingOriginalFlowFiltersConstraint();
 
               Transition transition =
                   compose(
                       constraint(inAclBDD),
-                      constraint(outgoingOriginalFlowFiltersConstraint),
+                      addOutgoingOriginalFlowFiltersConstraint(
+                          _bddOutgoingOriginalFlowFilterManagers.get(nodeName)),
                       _bddIncomingTransformations.get(nodeName).get(ifaceName));
               return new Edge(preState, postState, transition);
             });

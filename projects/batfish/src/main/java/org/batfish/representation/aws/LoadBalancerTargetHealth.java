@@ -19,7 +19,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
+public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
 
   enum HealthState {
     DRAINING,
@@ -107,7 +107,7 @@ final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static class TargetHealthDescription implements Serializable {
+  public static class TargetHealthDescription implements Serializable {
 
     @Nonnull private final LoadBalancerTarget _target;
 

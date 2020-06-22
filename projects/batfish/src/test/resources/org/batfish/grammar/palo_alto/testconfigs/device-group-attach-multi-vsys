@@ -1,0 +1,9 @@
+set deviceconfig system hostname device-group-attach-multi-vsys
+
+# Attach device-group to the first vsys on the managed device
+set device-group DG1 address ADDR1 ip-netmask 1.1.1.1
+set device-group DG1 devices 00000001 vsys vsys1
+
+# Attach a different device-group to the second vsys on the managed device
+set device-group DG2 address ADDR1 ip-netmask 2.2.2.2
+set device-group DG2 devices 00000001 vsys vsys2

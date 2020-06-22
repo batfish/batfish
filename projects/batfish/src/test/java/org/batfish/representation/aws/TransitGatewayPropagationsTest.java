@@ -46,6 +46,11 @@ public class TransitGatewayPropagationsTest {
                             "tgw-attach-0ae2696617bb06fb4",
                             ResourceType.VPC,
                             "vpc-00a31ce9d0c06675c",
-                            false))))));
+                            false),
+                        new Propagation(
+                            "tgw-attach-0dbe0fb191f73f405",
+                            ResourceType.DIRECT_CONNECT_GATEWAY,
+                            "a0cb33f1-da2c-4b16-94b9-09cf843d672f",
+                            true))))));
   }
 }

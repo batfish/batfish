@@ -81,6 +81,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -1875,6 +1876,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * PaloAltoConfiguration. Any previously made changes will be overwritten in this process.
    */
   private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
+    // TODO support applying device-group to specific vsys
+    // https://github.com/batfish/batfish/issues/5910
+
     // Create the target vsys (it shouldn't already exist)
     Vsys target = new Vsys(PANORAMA_VSYS_NAME, NamespaceType.PANORAMA);
     assert _panorama == null;
@@ -1969,12 +1973,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
     // Build primary config
-    outputConfigurations.add(this.toVendorIndependentConfiguration());
+    Configuration primaryConfig = this.toVendorIndependentConfiguration();
+    outputConfigurations.add(primaryConfig);
 
     // Build configs for each managed device, if applicable
     // Map of managed device ID to managed device config
     Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
-    // Apply device-groups
+    // Apply device-groups to firewalls
     _deviceGroups
         .entrySet()
         .forEach(
@@ -1995,12 +2000,40 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           } else {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
+                            c.setVendor(_vendor);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
                             c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
                             managedConfigurations.put(name, c);
                           }
+                        }));
+    // Apply device-groups to individual vsyses
+    _deviceGroups
+        .entrySet()
+        .forEach(
+            deviceGroupEntry ->
+                deviceGroupEntry
+                    .getValue()
+                    .getVsys()
+                    .forEach(
+                        (deviceName, vsys) -> {
+                          // Create new managed config if one doesn't already exist for this device
+                          if (managedConfigurations.containsKey(deviceName)) {
+                            _w.redFlag(
+                                String.format(
+                                    "Associating vsys on a managed device with different device-groups is not yet supported. Ignoring association with device-group '%s' for managed device '%s'.",
+                                    deviceGroupEntry.getKey(), deviceName));
+                            return;
+                          }
+                          PaloAltoConfiguration c = new PaloAltoConfiguration();
+                          c.setWarnings(_w);
+                          c.setVendor(_vendor);
+                          // This may not actually be the device's hostname
+                          // but this is all we know at this point
+                          c.setHostname(deviceName);
+                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                          managedConfigurations.put(deviceName, c);
                         }));
     // Apply template-stacks
     _templateStacks
@@ -2017,6 +2050,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           if (c == null) {
                             c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
+                            c.setVendor(_vendor);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
@@ -2030,12 +2064,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .map(PaloAltoConfiguration::toVendorIndependentConfiguration)
             .collect(ImmutableList.toImmutableList()));
 
+    if (!managedConfigurations.isEmpty()) {
+      primaryConfig.setDeviceModel(DeviceModel.PALO_ALTO_PANORAMA);
+    }
     return outputConfigurations.build();
   }
 
   private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
+    _c.setDeviceModel(DeviceModel.PALO_ALTO_FIREWALL);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDnsServers(getDnsServers());

@@ -102,6 +102,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -119,6 +120,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -142,6 +144,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -1217,19 +1220,28 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testInterface() {
+  public void testInterfaceExtraction() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("interface");
+    Interface e1_4 = c.getInterfaces().get("ethernet1/4");
+    assertThat(e1_4, notNullValue());
+    assertThat(e1_4.getHa(), equalTo(true));
+  }
+
+  @Test
+  public void testInterfaceConversion() {
     String hostname = "interface";
     String eth1_1 = "ethernet1/1";
     String eth1_2 = "ethernet1/2";
     String eth1_3 = "ethernet1/3";
     String eth1_3_11 = "ethernet1/3.11";
+    String eth1_4 = "ethernet1/4";
     String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
     assertThat(
         c.getAllInterfaces().keySet(),
-        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_21, loopback));
+        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_21, loopback));
 
     // Confirm interface MTU is extracted
     assertThat(c, hasInterface(eth1_1, hasMtu(9001)));
@@ -1257,6 +1269,7 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(eth1_2, hasDescription("interface's long description")));
     assertThat(c, hasInterface(eth1_3, hasDescription("single quoted description")));
     assertThat(c, hasInterface(eth1_3_11, hasDescription("unit description")));
+    assertThat(c, hasInterface(eth1_4, hasDescription(nullValue())));
 
     // Confirm link speed
     assertThat(c.getAllInterfaces().get(eth1_1), allOf(hasBandwidth(1e9), hasSpeed(1e9)));
@@ -2852,6 +2865,50 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testFirewallDeviceModel() {
+    String hostname = "basic-parsing";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Single firewall should be recognized as such, not Panorama management device
+    assertThat(viConfigs, iterableWithSize(1));
+    assertThat(viConfigs.get(0).getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
+  }
+
+  @Test
+  public void testPanoramaDeviceModel() {
+    String panoramaHostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    Configuration panorama =
+        viConfigs.stream()
+            .filter(vi -> vi.getHostname().equals(panoramaHostname))
+            .findFirst()
+            .get();
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+    Configuration firewall3 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
+
+    // Management device should be detected as Panorama
+    assertThat(panorama.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_PANORAMA));
+    // Other devices should be detected as firewalls
+    assertThat(firewall1.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
+    assertThat(firewall2.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
+    assertThat(firewall3.getDeviceModel(), equalTo(DeviceModel.PALO_ALTO_FIREWALL));
+  }
+
+  @Test
   public void testDeviceGroupConversion() {
     String panoramaHostname = "device-group";
     String firewallId1 = "00000001";
@@ -3043,5 +3100,107 @@ public final class PaloAltoGrammarTest {
     assertThat(
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
         contains("Unable to identify application undefined_app in vsys RULE1 rule panorama"));
+  }
+
+  @Test
+  public void testPanoramaConfigurationFormat() {
+    String panoramaHostname = "device-group";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    Configuration panorama =
+        viConfigs.stream()
+            .filter(vi -> vi.getHostname().equals(panoramaHostname))
+            .findFirst()
+            .get();
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+    Configuration firewall3 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId3)).findFirst().get();
+
+    // All should be the same configuration format
+    assertThat(panorama.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+    assertThat(firewall1.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+    assertThat(firewall2.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+    assertThat(firewall3.getConfigurationFormat(), equalTo(ConfigurationFormat.PALO_ALTO));
+  }
+
+  @Test
+  public void testDeviceGroupAttachVsys() {
+    String panoramaHostname = "device-group-attach-vsys";
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+
+    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
+
+    // Device-group should be associated with specific firewall vsys
+    assertThat(deviceGroup1.getVsys().keySet(), contains(firewallId1));
+    assertThat(deviceGroup1.getVsys().get(firewallId1), contains("vsys1"));
+  }
+
+  @Test
+  public void testDeviceGroupAttachVsysConversion() {
+    String panoramaHostname = "device-group-attach-vsys";
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get the panorama and firewall VI configs from the single panorama VS config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    assertThat(firewall1.getIpSpaces().keySet(), containsInAnyOrder("ADDR1"));
+  }
+
+  @Test
+  public void testDeviceGroupAttachMultiVsys() {
+    String panoramaHostname = "device-group-attach-multi-vsys";
+    String firewallId1 = "00000001";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+
+    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
+    DeviceGroup deviceGroup2 = c.getOrCreateDeviceGroup("DG2");
+
+    // Device-group should be associated with only first firewall vsys
+    assertThat(deviceGroup1.getVsys().keySet(), contains(firewallId1));
+    assertThat(deviceGroup1.getVsys().get(firewallId1), contains("vsys1"));
+    // Device-group should be associated with only second firewall vsys
+    assertThat(deviceGroup2.getVsys().keySet(), contains(firewallId1));
+    assertThat(deviceGroup2.getVsys().get(firewallId1), contains("vsys2"));
+  }
+
+  @Ignore("https://github.com/batfish/batfish/issues/5910")
+  @Test
+  public void testDeviceGroupAttachMultiVsysConversion() {
+    String panoramaHostname = "device-group-attach-multi-vsys";
+    String firewallId1 = "00000001";
+    String addrVsys1 = computeObjectName("vsys1", "ADDR1");
+    String addrVsys2 = computeObjectName("vsys2", "ADDR1");
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get the panorama and firewall VI configs from the single panorama VS config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+
+    NavigableMap<String, IpSpace> ipSpaces = firewall1.getIpSpaces();
+    assertThat(ipSpaces.keySet(), containsInAnyOrder(addrVsys1, addrVsys2));
+    // Each vsys should inherit a different definition for the same address object
+    assertIpSpacesEqual(ipSpaces.get(addrVsys1), Ip.parse("1.1.1.1").toIpSpace());
+    assertIpSpacesEqual(ipSpaces.get(addrVsys2), Ip.parse("2.2.2.2").toIpSpace());
   }
 }

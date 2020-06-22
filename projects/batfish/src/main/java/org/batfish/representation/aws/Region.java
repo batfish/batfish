@@ -566,8 +566,8 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, LoadBalancer> getLoadBalancers() {
-    return _loadBalancers;
+  public Set<LoadBalancer> getLoadBalancers() {
+    return ImmutableSet.copyOf(_loadBalancers.values());
   }
 
   @Nonnull
@@ -580,9 +580,19 @@ public final class Region implements Serializable {
     return _loadBalancerListeners;
   }
 
+  @Nullable
+  public LoadBalancerListener getLoadBalancerListener(String loadBalancerArn) {
+    return _loadBalancerListeners.get(loadBalancerArn);
+  }
+
   @Nonnull
   Map<String, LoadBalancerTargetHealth> getLoadBalancerTargetHealths() {
     return _loadBalancerTargetHealths;
+  }
+
+  @Nullable
+  public LoadBalancerTargetHealth getLoadBalancerTargetHealth(String targetGroupArn) {
+    return _loadBalancerTargetHealths.get(targetGroupArn);
   }
 
   @Nonnull
@@ -633,6 +643,11 @@ public final class Region implements Serializable {
   @Nonnull
   Map<String, TargetGroup> getTargetGroups() {
     return _targetGroups;
+  }
+
+  @Nullable
+  public TargetGroup getTargetGroup(String targetGroupArn) {
+    return _targetGroups.get(targetGroupArn);
   }
 
   @Nonnull
@@ -749,7 +764,7 @@ public final class Region implements Serializable {
       awsConfiguration.addNode(cfgNode);
     }
 
-    for (LoadBalancer loadBalancer : getLoadBalancers().values()) {
+    for (LoadBalancer loadBalancer : getLoadBalancers()) {
       List<Configuration> cfgNodes =
           loadBalancer.toConfigurationNodes(awsConfiguration, this, warnings);
       cfgNodes.forEach(awsConfiguration::addNode);
