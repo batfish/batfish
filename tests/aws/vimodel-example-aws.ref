@@ -365,27 +365,6 @@
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Allowed private instance IPs associated with a public IP"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -569,27 +548,6 @@
             "lines" : [
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Allowed private instance IPs associated with a public IP"
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -770,27 +728,6 @@
         "ipAccessLists" : {
           "~DENY~UNASSOCIATED~PRIVATE~IPs~" : {
             "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
-                    }
-                  }
-                },
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Allowed private instance IPs associated with a public IP"
-                    }
-                  ]
-                }
-              },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "DENY",
