@@ -1,0 +1,133 @@
+{
+  "Reservations": [
+    {
+      "Groups": [],
+      "Instances": [
+        {
+          "AmiLaunchIndex": 0,
+          "Architecture": "x86_64",
+          "BlockDeviceMappings": [
+            {
+              "DeviceName": "/dev/xvda",
+              "Ebs": {
+                "AttachTime": "2020-06-21 03:33:48+00:00",
+                "DeleteOnTermination": true,
+                "Status": "attached",
+                "VolumeId": "vol-018bd35da1ddaa04c"
+              }
+            }
+          ],
+          "CapacityReservationSpecification": {
+            "CapacityReservationPreference": "open"
+          },
+          "ClientToken": "EC67FCF8-C6F7-446F-BC84-C08F65429E98",
+          "CpuOptions": {
+            "CoreCount": 1,
+            "ThreadsPerCore": 1
+          },
+          "EbsOptimized": false,
+          "EnaSupport": true,
+          "HibernationOptions": {
+            "Configured": false
+          },
+          "Hypervisor": "xen",
+          "ImageId": "ami-09a7fe78668f1e2c0",
+          "InstanceId": "i-0afb0a59f6bf36397",
+          "InstanceType": "t2.micro",
+          "KeyName": "publicKey",
+          "LaunchTime": "2020-06-21 03:33:47+00:00",
+          "MetadataOptions": {
+            "HttpEndpoint": "enabled",
+            "HttpPutResponseHopLimit": 1,
+            "HttpTokens": "optional",
+            "State": "applied"
+          },
+          "Monitoring": {
+            "State": "disabled"
+          },
+          "NetworkInterfaces": [
+            {
+              "Association": {
+                "IpOwnerId": "amazon",
+                "PublicDnsName": "ec2-52-53-220-155.us-west-1.compute.amazonaws.com",
+                "PublicIp": "52.53.220.155"
+              },
+              "Attachment": {
+                "AttachTime": "2020-06-21 03:33:47+00:00",
+                "AttachmentId": "eni-attach-01b03b6891300c8fe",
+                "DeleteOnTermination": true,
+                "DeviceIndex": 0,
+                "Status": "attached"
+              },
+              "Description": "",
+              "Groups": [
+                {
+                  "GroupId": "sg-0365783e832fbf535",
+                  "GroupName": "terraform-20200621033345013700000001"
+                }
+              ],
+              "InterfaceType": "interface",
+              "Ipv6Addresses": [],
+              "MacAddress": "02:46:ea:ec:6d:4d",
+              "NetworkInterfaceId": "eni-0590296cf36ac8a7b",
+              "OwnerId": "804819755326",
+              "PrivateDnsName": "ip-192-168-1-100.us-west-1.compute.internal",
+              "PrivateIpAddress": "192.168.1.100",
+              "PrivateIpAddresses": [
+                {
+                  "Association": {
+                    "IpOwnerId": "amazon",
+                    "PublicDnsName": "ec2-52-53-220-155.us-west-1.compute.amazonaws.com",
+                    "PublicIp": "52.53.220.155"
+                  },
+                  "Primary": true,
+                  "PrivateDnsName": "ip-192-168-1-100.us-west-1.compute.internal",
+                  "PrivateIpAddress": "192.168.1.100"
+                }
+              ],
+              "SourceDestCheck": true,
+              "Status": "in-use",
+              "SubnetId": "subnet-0080bd39fe3626e89",
+              "VpcId": "vpc-0ecbcbd110fd839d1"
+            }
+          ],
+          "Placement": {
+            "AvailabilityZone": "us-west-1a",
+            "GroupName": "",
+            "Tenancy": "default"
+          },
+          "PrivateDnsName": "ip-192-168-1-100.us-west-1.compute.internal",
+          "PrivateIpAddress": "192.168.1.100",
+          "ProductCodes": [],
+          "PublicDnsName": "ec2-52-53-220-155.us-west-1.compute.amazonaws.com",
+          "PublicIpAddress": "52.53.220.155",
+          "RootDeviceName": "/dev/xvda",
+          "RootDeviceType": "ebs",
+          "SecurityGroups": [
+            {
+              "GroupId": "sg-0365783e832fbf535",
+              "GroupName": "terraform-20200621033345013700000001"
+            }
+          ],
+          "SourceDestCheck": true,
+          "State": {
+            "Code": 16,
+            "Name": "running"
+          },
+          "StateTransitionReason": "",
+          "SubnetId": "subnet-0080bd39fe3626e89",
+          "Tags": [
+            {
+              "Key": "Name",
+              "Value": "fish"
+            }
+          ],
+          "VirtualizationType": "hvm",
+          "VpcId": "vpc-0ecbcbd110fd839d1"
+        }
+      ],
+      "OwnerId": "804819755326",
+      "ReservationId": "r-0006c6abb20db6cf4"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "TransitGatewayVpcAttachments": [
+    {
+      "CreationTime": "2020-06-21 03:35:02+00:00",
+      "Options": {
+        "DnsSupport": "enable",
+        "Ipv6Support": "disable"
+      },
+      "State": "available",
+      "SubnetIds": [
+        "subnet-06818d8a511df9b3d"
+      ],
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-0068fe8d7e573c375",
+      "TransitGatewayId": "tgw-0e20010ebf43d07a2",
+      "VpcId": "vpc-065ea457071dd67bb",
+      "VpcOwnerId": "732168539940"
+    },
+    {
+      "CreationTime": "2020-06-21 03:35:02+00:00",
+      "Options": {
+        "DnsSupport": "enable",
+        "Ipv6Support": "disable"
+      },
+      "State": "available",
+      "SubnetIds": [
+        "subnet-0934a46c6eb5542d9"
+      ],
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat2"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-02ff0f113900dd06d",
+      "TransitGatewayId": "tgw-0e20010ebf43d07a2",
+      "VpcId": "vpc-03ccec9d7758a283a",
+      "VpcOwnerId": "732168539940"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "LoadBalancerTargetHealth": [
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:732168539940:targetgroup/tf-20200318060720975400000001/2ee8fda3607a7cb9",
+      "TargetHealthDescriptions": []
+    },
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:732168539940:targetgroup/tf-20200318060723433200000005/0fb008124bcc58f1",
+      "TargetHealthDescriptions": []
+    },
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:732168539940:targetgroup/tf-20200318063236601600000001/85191eee01283fb1",
+      "TargetHealthDescriptions": []
+    },
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:732168539940:targetgroup/tf-20200318063249354000000004/0ecb51af6ca8a5f4",
+      "TargetHealthDescriptions": []
+    },
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:732168539940:targetgroup/tf-20200318073917907400000001/b5373c6223512646",
+      "TargetHealthDescriptions": []
+    },
+    {
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:732168539940:targetgroup/tf-20200318073922715300000006/532090e75fbce3c7",
+      "TargetHealthDescriptions": []
+    }
+  ]
+}
