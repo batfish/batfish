@@ -340,11 +340,6 @@ public class Driver {
                     if (answer.getStatus() == null) {
                       answer.setStatus(AnswerStatus.SUCCESS);
                     }
-                  } catch (OutOfMemoryError e) {
-                    String msg = "FATAL ERROR: " + e.getMessage();
-                    logger.errorf(
-                        "Exception in container:%s, testrig:%s; exception:%s",
-                        snapshot.getNetwork(), snapshot.getSnapshot(), msg);
                   } catch (CleanBatfishException e) {
                     String msg = "FATAL ERROR: " + e.getMessage();
                     logger.errorf(
