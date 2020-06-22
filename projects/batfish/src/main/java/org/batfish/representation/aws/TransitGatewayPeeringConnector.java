@@ -22,7 +22,7 @@ import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 class TransitGatewayPeeringConnector {
 
   /**
-   * The main function to call to connect TGWs that peer. Before this function is called the
+   * The main function that connects TGWs that peer with each other. Before it is called the
    * following must have been created:
    *
    * <ul>
@@ -164,13 +164,28 @@ class TransitGatewayPeeringConnector {
         });
   }
 
+  /**
+   * Determine if two TGW attachments are peers of each other.
+   *
+   * <p>For two attachments to be peers,
+   *
+   * <ul>
+   *   <li>both attachments should be of type {@link ResourceType#PEERING} and their attachment ids
+   *       should be the same, and
+   *   <li>the gateway id and owner information (which describe the local TGW) at the first
+   *       attachment should match the resource id and owner information (which describe the peer
+   *       TGW) at the second attachment, and vice-versa.
+   * </ul>
+   */
   @VisibleForTesting
   static boolean arePeers(
       TransitGatewayAttachment attachment1, TransitGatewayAttachment attachment2) {
-    return attachment1.getGatewayOwnerId().equals(attachment2.getResourceOwnerId())
+    return attachment1.getResourceType() == ResourceType.PEERING
+        && attachment2.getResourceType() == ResourceType.PEERING
+        && attachment1.getId().equals(attachment2.getId())
+        && attachment1.getGatewayOwnerId().equals(attachment2.getResourceOwnerId())
         && attachment1.getResourceOwnerId().equals(attachment2.getGatewayOwnerId())
         && attachment1.getGatewayId().equals(attachment2.getResourceId())
-        && attachment1.getResourceId().equals(attachment2.getGatewayId())
-        && attachment1.getId().equals(attachment2.getId());
+        && attachment1.getResourceId().equals(attachment2.getGatewayId());
   }
 }
