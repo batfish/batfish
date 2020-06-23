@@ -1380,17 +1380,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void outputAnswer(Answer answer, boolean writeLog) {
     try {
+      // Write answer to work json log if caller requested.
+      // Summarize that answer if all of the following are true:
+      // - answering a question
+      // - question successful
+      // - client did not request full successful answers
       String answerString = BatfishObjectMapper.writeString(answer);
       boolean summarizeWorkJsonLogAnswer =
           writeLog
               && _settings.getQuestionName() != null
               && !_settings.getAlwaysIncludeAnswerInWorkJsonLog()
               && answer.getStatus() == AnswerStatus.SUCCESS;
-      // Write answer to work json log if caller requested.
-      // Summarize that answer if all of the following are true:
-      // - answering a question
-      // - question successful
-      // - client did not request full successful answers
       String workJsonLogAnswerString;
       if (summarizeWorkJsonLogAnswer) {
         Answer summaryAnswer = new Answer();
