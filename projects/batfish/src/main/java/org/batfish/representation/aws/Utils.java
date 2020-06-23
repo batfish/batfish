@@ -2,9 +2,14 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_EXPORT_POLICY_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -20,6 +25,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -31,10 +38,12 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -463,6 +472,38 @@ final class Utils {
         Subnet.instancesInterfaceName(subnet.getId()));
 
     return iface;
+  }
+
+  /**
+   * Creates the interface and BGP process on {@code cfgNode} that will peer with the AWS backbone.
+   *
+   * <p>The BGP policy announces all static routes in {#code prefixesToAnnounce}. The static routes
+   * are NOT installed in this function.
+   */
+  static void createBackboneConnection(Configuration cfgNode, PrefixSpace prefixesToAnnounce) {
+    Utils.newInterface(
+        BACKBONE_FACING_INTERFACE_NAME,
+        cfgNode,
+        LinkLocalAddress.of(LINK_LOCAL_IP),
+        "To AWS backbone");
+    BgpProcess bgpProcess =
+        BgpProcess.builder()
+            .setRouterId(LINK_LOCAL_IP)
+            .setVrf(cfgNode.getDefaultVrf())
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
+            .build();
+
+    installRoutingPolicyAdvertiseStatic(BACKBONE_EXPORT_POLICY_NAME, cfgNode, prefixesToAnnounce);
+
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(BACKBONE_FACING_INTERFACE_NAME)
+        .setRemoteAs(AWS_BACKBONE_ASN)
+        .setLocalIp(LINK_LOCAL_IP)
+        .setLocalAs(BACKBONE_PEERING_ASN)
+        .setBgpProcess(bgpProcess)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(BACKBONE_EXPORT_POLICY_NAME).build())
+        .build();
   }
 
   /** Extracts the text content of the first element with {@code tag} within {@code element}. */

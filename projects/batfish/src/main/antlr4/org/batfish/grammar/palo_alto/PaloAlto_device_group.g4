@@ -13,5 +13,10 @@ sdg_description
 
 sdg_devices
 :
-    DEVICES device = variable
+    DEVICES device = variable sdgd_vsys?
+;
+
+sdgd_vsys
+:
+    VSYS name = variable
 ;
