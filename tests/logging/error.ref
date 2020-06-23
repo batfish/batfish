@@ -1,0 +1,23 @@
+{
+  "answerElements" : [ {
+    "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+    "contents" : {
+      "0" : "org.batfish.common.BatfishException: Failed to answer question",
+      "1" : "   at org.batfish.main.Batfish.answer(Batfish.java:590)",
+      "2" : "   at org.batfish.main.Batfish.run(Batfish.java:3432)",
+      "3" : "   at org.batfish.main.Driver$1.run(Driver.java:270)",
+      "4" : "Caused by: org.batfish.common.BatfishException: error question debugging outer exception",
+      "5" : "   at org.batfish.answerer.ErrorAnswerer.answer(ErrorAnswerer.java:17)",
+      "6" : "   at org.batfish.main.Batfish.answer(Batfish.java:585)",
+      "7" : "   ... 2 more",
+      "8" : "Caused by: org.batfish.common.BatfishException: error question debugging inner exception",
+      "9" : "   at org.batfish.answerer.ErrorAnswerer.answer(ErrorAnswerer.java:18)",
+      "10" : "   ... 3 more"
+    }
+  } ],
+  "question" : {
+    "class" : "org.batfish.datamodel.questions.ErrorQuestion",
+    "differential" : false
+  },
+  "status" : "FAILURE"
+}
