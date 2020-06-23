@@ -8,7 +8,7 @@ add-batfish-option verboseparse
 add-batfish-option alwaysanswerworkjson false
 
 # some ref tests using example network
-test -compareall tests/logging/init.ref init-snapshot networks/example/live logging-example
-test tests/logging/parse-status.ref get fileparsestatus
+test -compareall tests/logging/init.ref init-snapshot tests/logging/networks/logtest logtest
+test -raw tests/logging/parse-status.ref get fileparsestatus
 test tests/logging/error.ref -error get error
 
