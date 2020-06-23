@@ -1,9 +1,10 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
@@ -40,7 +41,8 @@ public class AwsConfigurationErrorTest {
 
     List<Configuration> c = awsConfiguration.toVendorIndependentConfigurations();
 
-    assertThat(c, contains(hasHostname("vpc1")));
+    assertThat(
+        c, containsInAnyOrder(hasHostname(AWS_SERVICES_GATEWAY_NODE_NAME), hasHostname("vpc1")));
     assertThat(
         w.getRedFlagWarnings().get(0).getText(),
         allOf(

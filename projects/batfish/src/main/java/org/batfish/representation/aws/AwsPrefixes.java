@@ -35,6 +35,8 @@ class AwsPrefixes {
 
   static final String SERVICE_AMAZON = "AMAZON";
 
+  static final String SERVICE_EC2 = "EC2";
+
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static class AwsPrefix {
