@@ -2,17 +2,22 @@ package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_HUMAN_NAME;
-import static org.batfish.representation.aws.InternetGateway.BACKBONE_INTERFACE_NAME;
+import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,7 +27,16 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LinkLocalAddress;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
@@ -30,6 +44,7 @@ import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.specifier.LocationInfo;
 import org.batfish.vendor.VendorConfiguration;
 
 /** The top-level class that represent AWS configuration across different accounts */
@@ -39,6 +54,24 @@ public class AwsConfiguration extends VendorConfiguration {
   public static final String DEFAULT_REGION_NAME = "us-west-2";
   static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
   public static final String DEFAULT_ACCOUNT_NAME = "default";
+
+  /**
+   * The name to use for the logical node that represents the AWS services gateway.
+   *
+   * <p>TODO: ensure that this name does not conflict with any name that appears in the snapshot
+   */
+  static final String AWS_SERVICES_GATEWAY_NODE_NAME = "__aws-services-gateway__";
+
+  static final String AWS_SERVICES_FACING_INTERFACE_NAME = "aws-services";
+
+  /** Name of the interface on nodes that faces the backbone (e.g., IGW, services gateway) */
+  static final String BACKBONE_FACING_INTERFACE_NAME = "backbone";
+
+  /** Name of the routing policy on nodes that face the backbone (e.g., IGW, services gateway) */
+  static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
+
+  /** ASN to use for nodes that faces the backbone (e.g., IGW, services gateway) */
+  static final long BACKBONE_PEERING_ASN = 65534L;
 
   @Nullable private ConvertedConfiguration _convertedConfiguration;
   @Nonnull private final Map<String, Account> _accounts;
@@ -101,6 +134,9 @@ public class AwsConfiguration extends VendorConfiguration {
 
   private void convertConfigurations() {
     _convertedConfiguration = new ConvertedConfiguration();
+    if (!_accounts.isEmpty()) { // generate only if we have any data
+      _convertedConfiguration.addNode(generateAwsServicesGateway());
+    }
     for (Account account : getAccounts()) {
       Collection<Region> regions = account.getRegions();
       for (Region region : regions) {
@@ -150,11 +186,17 @@ public class AwsConfiguration extends VendorConfiguration {
         getAccounts().stream()
             .flatMap(a -> a.getRegions().stream())
             .flatMap(r -> r.getInternetGateways().values().stream())
-            .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_INTERFACE_NAME))
+            .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_FACING_INTERFACE_NAME))
             .map(BorderInterfaceInfo::new)
-            .collect(ImmutableList.toImmutableList());
+            .collect(Collectors.toList());
+    if (_convertedConfiguration.getNode(AWS_SERVICES_GATEWAY_NODE_NAME) != null) {
+      borderInterfaces.add(
+          new BorderInterfaceInfo(
+              NodeInterfacePair.of(
+                  AWS_SERVICES_GATEWAY_NODE_NAME, BACKBONE_FACING_INTERFACE_NAME)));
+    }
     return new IspConfiguration(
-        borderInterfaces,
+        ImmutableList.copyOf(borderInterfaces),
         IspFilter.ALLOW_ALL,
         ImmutableList.of(
             new IspNodeInfo(
@@ -163,6 +205,68 @@ public class AwsConfiguration extends VendorConfiguration {
                 AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_AMAZON).stream()
                     .map(IspAnnouncement::new)
                     .collect(ImmutableList.toImmutableList()))));
+  }
+
+  /**
+   * Generates a logical node that is the gateway to AWS services like S3.
+   *
+   * <p>This node will BGP peer with the AWS backbone (via the getIspConfiguration route), and it
+   * will announce all AWS service prefixes to the backbone.
+   */
+  static Configuration generateAwsServicesGateway() {
+    Configuration cfgNode =
+        Utils.newAwsConfiguration(
+            AWS_SERVICES_GATEWAY_NODE_NAME, "aws", DeviceModel.AWS_SERVICES_GATEWAY);
+    cfgNode.setHumanName("AWS Services Gateway");
+
+    Interface outInterface =
+        Utils.newInterface(
+            AWS_SERVICES_FACING_INTERFACE_NAME,
+            cfgNode,
+            LinkLocalAddress.of(LINK_LOCAL_IP),
+            "To AWS services");
+
+    Set<Prefix> awsServicesPrefixes =
+        Sets.difference(
+            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_AMAZON)),
+            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_EC2)));
+
+    PrefixSpace servicesPrefixSpace = new PrefixSpace();
+    awsServicesPrefixes.forEach(
+        prefix -> {
+          servicesPrefixSpace.addPrefix(prefix);
+          addStaticRoute(cfgNode, toStaticRoute(prefix, outInterface.getName()));
+        });
+
+    Utils.createBackboneConnection(cfgNode, servicesPrefixSpace);
+
+    cfgNode
+        .getAllInterfaces()
+        .get(BACKBONE_FACING_INTERFACE_NAME)
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                false, ImmutableList.of(BACKBONE_FACING_INTERFACE_NAME), null, null));
+
+    outInterface.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(
+            false, ImmutableList.of(outInterface.getName()), null, null));
+
+    // configure location info
+    IpSpace servicesIpSpace =
+        IpWildcardSetIpSpace.builder()
+            .including(
+                awsServicesPrefixes.stream().map(IpWildcard::create).collect(Collectors.toList()))
+            .build();
+    cfgNode.setLocationInfo(
+        ImmutableMap.of(
+            interfaceLinkLocation(outInterface),
+            new LocationInfo(
+                true,
+                servicesIpSpace,
+                // using LINK_LOCAL_IP gets us EXITS_NETWORK as disposition for service prefixes
+                LINK_LOCAL_IP.toIpSpace())));
+
+    return cfgNode;
   }
 
   @Override
