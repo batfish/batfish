@@ -326,8 +326,6 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
       cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
     }
 
-    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
-
     return cfgNode;
   }
 

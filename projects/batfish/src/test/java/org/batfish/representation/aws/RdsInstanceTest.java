@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
@@ -12,8 +13,8 @@ import static org.batfish.representation.aws.ElasticsearchDomainTest.matchPorts;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchTcp;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
 import static org.batfish.representation.aws.Region.instanceEgressAclName;
+import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
-import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -154,16 +155,16 @@ public class RdsInstanceTest {
     Configuration testRds = configurations.get("test-rds");
     assertThat(testRds.getAllInterfaces().entrySet(), hasSize(2));
     assertThat(
-        testRds
-            .getIpAccessLists()
-            .get("~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
-        hasLines(
-            isExprAclLineThat(
-                hasMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
-                        traceElementForAddress(
-                            "destination", "0.0.0.0/0", AddressType.CIDR_IP))))));
+        testRds,
+        hasIpAccessList(
+            "~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
+            hasLines(
+                isExprAclLineThat(
+                    hasMatchCondition(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
+                            traceElementForAddress(
+                                "destination", "0.0.0.0/0", AddressType.CIDR_IP)))))));
     assertThat(
         testRds
             .getIpAccessLists()
@@ -193,8 +194,8 @@ public class RdsInstanceTest {
                                     HeaderSpace.builder()
                                         .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
                                         .build(),
-                                    traceElementForInstance(
-                                        "Test host (i-066b1b9957b9200e7)")))))))));
+                                    traceElementEniPrivateIp(
+                                        "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))))))));
     assertThat(
         testRds.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
         equalTo(
