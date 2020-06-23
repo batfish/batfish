@@ -134,7 +134,9 @@ public class AwsConfiguration extends VendorConfiguration {
 
   private void convertConfigurations() {
     _convertedConfiguration = new ConvertedConfiguration();
-    _convertedConfiguration.addNode(generateAwsServicesGateway());
+    if (!_accounts.isEmpty()) { // generate only if we have any data
+      _convertedConfiguration.addNode(generateAwsServicesGateway());
+    }
     for (Account account : getAccounts()) {
       Collection<Region> regions = account.getRegions();
       for (Region region : regions) {
@@ -187,9 +189,12 @@ public class AwsConfiguration extends VendorConfiguration {
             .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_FACING_INTERFACE_NAME))
             .map(BorderInterfaceInfo::new)
             .collect(Collectors.toList());
-    borderInterfaces.add(
-        new BorderInterfaceInfo(
-            NodeInterfacePair.of(AWS_SERVICES_GATEWAY_NODE_NAME, BACKBONE_FACING_INTERFACE_NAME)));
+    if (_convertedConfiguration.getNode(AWS_SERVICES_GATEWAY_NODE_NAME) != null) {
+      borderInterfaces.add(
+          new BorderInterfaceInfo(
+              NodeInterfacePair.of(
+                  AWS_SERVICES_GATEWAY_NODE_NAME, BACKBONE_FACING_INTERFACE_NAME)));
+    }
     return new IspConfiguration(
         ImmutableList.copyOf(borderInterfaces),
         IspFilter.ALLOW_ALL,

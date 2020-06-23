@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.List;
@@ -31,10 +32,19 @@ import org.junit.Test;
 
 public class AwsConfigurationTest {
 
-  /** Test that the AWS services gateway node is always created */
+  /** Test that nothing is created if we have no data */
+  @Test
+  public void testToVendorConfigurations_noData() {
+    AwsConfiguration awsConfiguration = new AwsConfiguration();
+    List<Configuration> c = awsConfiguration.toVendorIndependentConfigurations();
+    assertThat(c, equalTo(ImmutableList.of()));
+  }
+
+  /** Test that the AWS services gateway node is created if we have an acccount */
   @Test
   public void testToVendorConfigurations_awsServicesGatewayNode() {
     AwsConfiguration awsConfiguration = new AwsConfiguration();
+    awsConfiguration.addOrGetAccount("123");
     List<Configuration> c = awsConfiguration.toVendorIndependentConfigurations();
     assertThat(c, contains(hasHostname(AWS_SERVICES_GATEWAY_NODE_NAME)));
   }
