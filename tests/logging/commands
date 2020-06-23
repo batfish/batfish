@@ -1,0 +1,14 @@
+#this file assumes that we are running from top-level source directory
+
+add-batfish-option haltonconverterror
+add-batfish-option haltonparseerror
+add-batfish-option verboseparse
+
+# ordinary non-batfish-client logging behavior
+add-batfish-option alwaysanswerworkjson false
+
+# some ref tests using example network
+test -compareall tests/logging/init.ref init-snapshot tests/logging/networks/logtest logtest
+test -raw tests/logging/parse-status.ref get fileparsestatus
+test tests/logging/error.ref -error get error
+

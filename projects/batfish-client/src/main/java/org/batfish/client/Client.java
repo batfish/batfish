@@ -1019,6 +1019,7 @@ public class Client extends AbstractClient implements IClient {
       activeSpan.setTag("work-id", wItem.getId().toString());
     }
     wItem.addRequestParam(BfConsts.ARG_LOG_LEVEL, _settings.getBatfishLogLevel());
+    wItem.addRequestParam(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG, "true");
     for (String option : _additionalBatfishOptions.keySet()) {
       wItem.addRequestParam(option, _additionalBatfishOptions.get(option));
     }

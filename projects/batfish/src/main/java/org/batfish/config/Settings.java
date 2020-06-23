@@ -171,6 +171,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return getDebugFlags().contains(flag);
   }
 
+  public boolean getAlwaysIncludeAnswerInWorkJsonLog() {
+    return _config.getBoolean(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG);
+  }
+
   public @Nullable AnalysisId getAnalysisName() {
     String id = _config.getString(BfConsts.ARG_ANALYSIS_NAME);
     return id != null ? new AnalysisId(id) : null;
@@ -468,6 +472,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   private void initConfigDefaults() {
+    setDefaultProperty(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG, false);
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
@@ -543,6 +548,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   }
 
   private void initOptions() {
+
+    addBooleanOption(
+        BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG,
+        "always include answer to question in work json log");
 
     addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
 
@@ -802,6 +811,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     }
 
     // REGULAR OPTIONS
+    getBooleanOptionValue(BfConsts.ARG_ALWAYS_INCLUDE_ANSWER_IN_WORK_JSON_LOG);
     getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
     getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
