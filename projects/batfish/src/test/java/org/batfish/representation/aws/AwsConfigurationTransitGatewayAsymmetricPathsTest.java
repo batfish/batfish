@@ -25,7 +25,7 @@ import org.junit.rules.TemporaryFolder;
  * <p>The configuration was pulled * manually after deployment using the setup.tf file in {@link
  * #TESTCONFIGS_DIR}.
  */
-public class AwsConfigurationTransitGatewayAsymmetricPaths {
+public class AwsConfigurationTransitGatewayAsymmetricPathsTest {
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-transit-gateway-asymmetric-paths";
