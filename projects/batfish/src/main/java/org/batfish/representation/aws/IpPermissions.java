@@ -15,11 +15,11 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_TO_PORT;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_USER_GROUP_ID_PAIRS;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
+import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForIcmpCode;
 import static org.batfish.representation.aws.Utils.traceElementForIcmpType;
-import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
 
@@ -462,7 +462,7 @@ public final class IpPermissions implements Serializable {
   private static AclLineMatchExpr toMatchExpr(SecurityGroup sg, boolean ingress) {
     ImmutableList.Builder<AclLineMatchExpr> matchExprBuilder = ImmutableList.builder();
     for (Entry<Ip, String> ipAndInstance : sg.getReferrerIps().entrySet()) {
-      TraceElement traceElement = traceElementForInstance(ipAndInstance.getValue());
+      TraceElement traceElement = traceElementEniPrivateIp(ipAndInstance.getValue());
       IpIpSpace ipSpace = ipAndInstance.getKey().toIpSpace();
       if (ingress) {
         matchExprBuilder.add(

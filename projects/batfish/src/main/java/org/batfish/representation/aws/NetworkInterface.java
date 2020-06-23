@@ -117,6 +117,11 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
         attachment == null ? null : attachment.getInstanceId());
   }
 
+  public @Nonnull String getHumanName() {
+    // TODO: it looks like _description is typically not useful. Are there other human names?
+    return _networkInterfaceId;
+  }
+
   public NetworkInterface(
       String networkInterfaceId,
       String subnetId,
