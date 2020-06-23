@@ -160,7 +160,7 @@ public class AwsConfiguration extends VendorConfiguration {
             new IspNodeInfo(
                 AWS_BACKBONE_ASN,
                 AWS_BACKBONE_HUMAN_NAME,
-                AwsPrefixes.getPrefixes().stream()
+                AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_AMAZON).stream()
                     .map(IspAnnouncement::new)
                     .collect(ImmutableList.toImmutableList()))));
   }

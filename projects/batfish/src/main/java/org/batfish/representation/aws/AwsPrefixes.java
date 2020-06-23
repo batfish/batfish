@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -30,24 +31,40 @@ class AwsPrefixes {
 
   private static final String PROP_IP_PREFIX = "ip_prefix";
 
+  private static final String PROP_SERVICE = "service";
+
+  static final String SERVICE_AMAZON = "AMAZON";
+
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static class AwsPrefix {
 
-    private final Prefix _prefix;
+    @Nonnull private final Prefix _prefix;
+
+    @Nonnull private final String _serviceName;
 
     @JsonCreator
-    private static AwsPrefix create(@Nullable @JsonProperty(PROP_IP_PREFIX) Prefix prefix) {
+    private static AwsPrefix create(
+        @Nullable @JsonProperty(PROP_IP_PREFIX) Prefix prefix,
+        @Nullable @JsonProperty(PROP_SERVICE) String serviceName) {
       checkArgument(prefix != null, "No prefix found in JSON object for AwsPrefix");
-      return new AwsPrefix(prefix);
+      checkArgument(serviceName != null, "Service name not found in JSON object for AwsPrefix");
+      return new AwsPrefix(prefix, serviceName);
     }
 
-    AwsPrefix(Prefix prefix) {
+    AwsPrefix(Prefix prefix, String serviceName) {
       _prefix = prefix;
+      _serviceName = serviceName;
     }
 
+    @Nonnull
     public Prefix getPrefix() {
       return _prefix;
+    }
+
+    @Nonnull
+    public String getServiceName() {
+      return _serviceName;
     }
   }
 
@@ -78,6 +95,13 @@ class AwsPrefixes {
 
   public static List<Prefix> getPrefixes() {
     return INSTANCE._awsPrefixes.stream()
+        .map(AwsPrefix::getPrefix)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  public static List<Prefix> getPrefixes(String serviceName) {
+    return INSTANCE._awsPrefixes.stream()
+        .filter(awsPrefix -> awsPrefix.getServiceName().equals(serviceName))
         .map(AwsPrefix::getPrefix)
         .collect(ImmutableList.toImmutableList());
   }
