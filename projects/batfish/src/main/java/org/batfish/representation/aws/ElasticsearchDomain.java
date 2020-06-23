@@ -177,8 +177,6 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
       cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
     }
 
-    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
-
     return cfgNode;
   }
 

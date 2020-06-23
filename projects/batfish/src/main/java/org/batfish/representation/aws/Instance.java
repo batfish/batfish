@@ -156,6 +156,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
 
   @Nullable private final Ip _primaryPrivateIpAddress;
 
+  // Should be unused - this is redundant with {@link NetworkInterface#getGroups()}
   @Nonnull private final List<String> _securityGroups;
 
   @Nonnull private final Status _status;
@@ -232,6 +233,14 @@ public final class Instance implements AwsVpcEntity, Serializable {
     return new InstanceBuilder();
   }
 
+  public @Nonnull String getHumanName() {
+    String tag = _tags.get(TAG_NAME);
+    if (tag == null) {
+      return _instanceId;
+    }
+    return String.format("%s (%s)", _instanceId, tag);
+  }
+
   @Override
   public String getId() {
     return _instanceId;
@@ -298,8 +307,6 @@ public final class Instance implements AwsVpcEntity, Serializable {
     }
 
     addPublicIpsRefBook(cfgNode, region);
-
-    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
     // create LocationInfo for each link location on the instance.
     cfgNode.setLocationInfo(

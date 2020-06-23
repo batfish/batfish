@@ -89,8 +89,6 @@ final class VpcEndpointInterface extends VpcEndpoint {
     Interface viIface =
         addNodeToSubnet(cfgNode, networkInterface.get(), subnet, awsConfiguration, warnings);
 
-    Utils.processSecurityGroups(region, cfgNode, networkInterface.get().getGroups(), warnings);
-
     // Create LocationInfo the interface
     cfgNode.setLocationInfo(
         ImmutableMap.of(

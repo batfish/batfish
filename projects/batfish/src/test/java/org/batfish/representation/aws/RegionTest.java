@@ -107,8 +107,7 @@ public class RegionTest {
     Region region = new Region("test");
 
     // add two security groups
-    region.updateConfigurationSecurityGroups(
-        CONFIGURATION_NAME,
+    SecurityGroup sg1 =
         new SecurityGroup(
             "sg-001",
             "sg-1",
@@ -121,9 +120,9 @@ public class RegionTest {
                     ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of())),
-            "vpc"));
-    region.updateConfigurationSecurityGroups(
-        CONFIGURATION_NAME,
+            "vpc");
+    region.getSecurityGroups().put(sg1.getId(), sg1);
+    SecurityGroup sg2 =
         new SecurityGroup(
             "sg-002",
             "sg-2",
@@ -136,7 +135,8 @@ public class RegionTest {
                     ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of())),
-            "vpc"));
+            "vpc");
+    region.getSecurityGroups().put(sg2.getId(), sg2);
 
     return region;
   }
@@ -153,22 +153,34 @@ public class RegionTest {
         nf.interfaceBuilder()
             .setOwner(c)
             .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
+            .setVrf(nf.vrfBuilder().setOwner(c).build())
             .build();
+    Region region = createTestRegion();
+    NetworkInterface ni =
+        new NetworkInterface(
+            iface.getName(),
+            "subnet",
+            "vpc",
+            ImmutableList.of("sg-001", "sg-002"),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.0"), null)),
+            "desc",
+            c.getHostname());
+    region.getNetworkInterfaces().put(ni.getId(), ni);
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
-    Region region = createTestRegion();
-    region.applyInstanceInterfaceAcls(cfg, new Warnings());
+    region.computeSecurityGroups(cfg, new Warnings());
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-1~sg-001~"));
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-2~sg-002~"));
 
+    // Decision: empty egress ACL is not converted
     assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~SECURITY-GROUP~sg-1~sg-001~")));
     assertThat(c.getIpAccessLists(), not(hasKey("~EGRESS~SECURITY-GROUP~sg-2~sg-002~")));
 
     // incoming and outgoing filter on the interface refers to the two ACLs using AclAclLines
     assertThat(
-        c.getAllInterfaces().get("~Interface_0~").getIncomingFilter().getLines(),
+        iface.getIncomingFilter().getLines(),
         equalTo(
             ImmutableList.of(
                 new AclAclLine(
@@ -181,7 +193,7 @@ public class RegionTest {
                     getTraceElementForSecurityGroup("sg-2")))));
 
     assertThat(
-        c.getAllInterfaces().get("~Interface_0~").getOutgoingFilter().getLines(),
+        iface.getOutgoingFilter().getLines(),
         equalTo(ImmutableList.of(computeAntiSpoofingFilter(iface))));
   }
 
@@ -193,14 +205,26 @@ public class RegionTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname(CONFIGURATION_NAME)
             .build();
-    nf.interfaceBuilder()
-        .setOwner(c)
-        .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
-        .build();
+    Interface i =
+        nf.interfaceBuilder()
+            .setOwner(c)
+            .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
+            .setVrf(nf.vrfBuilder().setOwner(c).build())
+            .build();
     Region region = createTestRegion();
+    NetworkInterface ni =
+        new NetworkInterface(
+            i.getName(),
+            "subnet",
+            "vpc",
+            ImmutableList.of("sg-001", "sg-002"),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.0"), null)),
+            "desc",
+            c.getHostname());
+    region.getNetworkInterfaces().put(ni.getId(), ni);
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
-    region.applyInstanceInterfaceAcls(cfg, new Warnings());
+    region.computeSecurityGroups(cfg, new Warnings());
     IpAccessList ingressAcl = c.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~");
 
     Flow permittedFlow =
