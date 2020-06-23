@@ -81,6 +81,7 @@
     },
     {
       "contents" : [
+        "node-__aws-services-gateway__",
         "aggregate-us-west-2"
       ],
       "id" : "aggregate-aws",
@@ -280,6 +281,13 @@
       "properties" : null
     },
     {
+      "id" : "interface-node-isp_16509-To-__aws-services-gateway__",
+      "name" : "To-__aws-services-gateway__",
+      "nodeId" : "node-isp_16509",
+      "type" : "UNKNOWN",
+      "properties" : null
+    },
+    {
       "id" : "interface-node-subnet-62f14104-vpc-925131f4",
       "name" : "vpc-925131f4",
       "nodeId" : "node-subnet-62f14104",
@@ -304,6 +312,13 @@
       "id" : "interface-node-subnet-62f14104-vpc-925131f4-vrf-igw-fac5839d",
       "name" : "vpc-925131f4-vrf-igw-fac5839d",
       "nodeId" : "node-subnet-62f14104",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-__aws-services-gateway__-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-__aws-services-gateway__",
       "type" : "PHYSICAL",
       "properties" : null
     },
@@ -653,6 +668,13 @@
       "properties" : null
     },
     {
+      "dstId" : "interface-node-__aws-services-gateway__-backbone",
+      "id" : "link-interface-node-isp_16509-To-__aws-services-gateway__-interface-node-__aws-services-gateway__-backbone",
+      "srcId" : "interface-node-isp_16509-To-__aws-services-gateway__",
+      "type" : "UNKNOWN",
+      "properties" : null
+    },
+    {
       "dstId" : "interface-node-vpc-925131f4-subnet-8d0cbdeb-vrf-igw-fac5839d",
       "id" : "link-interface-node-subnet-8d0cbdeb-vpc-925131f4-vrf-igw-fac5839d-interface-node-vpc-925131f4-subnet-8d0cbdeb-vrf-igw-fac5839d",
       "srcId" : "interface-node-subnet-8d0cbdeb-vpc-925131f4-vrf-igw-fac5839d",
@@ -860,6 +882,13 @@
       "id" : "link-interface-node-vgw-81fd279f-vpc-815775e7-interface-node-vpc-815775e7-vgw-81fd279f",
       "srcId" : "interface-node-vgw-81fd279f-vpc-815775e7",
       "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-isp_16509-To-__aws-services-gateway__",
+      "id" : "link-interface-node-__aws-services-gateway__-backbone-interface-node-isp_16509-To-__aws-services-gateway__",
+      "srcId" : "interface-node-__aws-services-gateway__-backbone",
+      "type" : "UNKNOWN",
       "properties" : null
     },
     {
@@ -1149,6 +1178,13 @@
       "model" : "AWS_VPC",
       "name" : "vpc-f8fad69d",
       "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-__aws-services-gateway__",
+      "model" : "AWS_SERVICES_GATEWAY",
+      "name" : "__aws-services-gateway__",
+      "type" : "ROUTER",
       "properties" : null
     },
     {

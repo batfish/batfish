@@ -350,6 +350,7 @@
     },
     "fileMap" : {
       "aws_configs" : [
+        "__aws-services-gateway__",
         "es-domain",
         "igw-068fee63",
         "igw-9b93ddfc",
