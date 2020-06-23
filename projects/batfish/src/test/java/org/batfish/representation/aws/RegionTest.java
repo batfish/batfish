@@ -166,10 +166,9 @@ public class RegionTest {
             "desc",
             c.getHostname());
     region.getNetworkInterfaces().put(ni.getId(), ni);
-    region.addNetworkInterfaceIpsToSecurityGroups(new Warnings());
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
-    region.applyNetworkInterfaceAclsToInstances(cfg, new Warnings());
+    region.computeSecurityGroups(cfg, new Warnings());
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
     assertThat(c.getIpAccessLists(), hasKey("~INGRESS~SECURITY-GROUP~sg-1~sg-001~"));
@@ -225,8 +224,7 @@ public class RegionTest {
     region.getNetworkInterfaces().put(ni.getId(), ni);
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
-    region.addNetworkInterfaceIpsToSecurityGroups(new Warnings());
-    region.applyNetworkInterfaceAclsToInstances(cfg, new Warnings());
+    region.computeSecurityGroups(cfg, new Warnings());
     IpAccessList ingressAcl = c.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~");
 
     Flow permittedFlow =

@@ -767,11 +767,8 @@ public final class Region implements Serializable {
 
     // VpcPeeringConnections and TransitGateways are processed in AwsConfiguration since they can be
     // cross region (or cross-account)
-    addNetworkInterfaceIpsToSecurityGroups(warnings);
-    addApplicationInterfaceIpsToSecurityGroups(awsConfiguration, warnings);
 
-    applyNetworkInterfaceAclsToInstances(awsConfiguration, warnings);
-    applyApplicationSecurityGroups(awsConfiguration, warnings);
+    computeSecurityGroups(awsConfiguration, warnings);
 
     // TODO: for now, set all interfaces to have the same bandwidth
     for (Configuration cfgNode : awsConfiguration.getAllNodes()) {
@@ -782,19 +779,10 @@ public final class Region implements Serializable {
   }
 
   /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
-  @VisibleForTesting
-  void applyNetworkInterfaceAclsToInstances(ConvertedConfiguration cfg, Warnings warnings) {
-    Map<String, IpAccessList> sgIngressAcls =
-        _securityGroups.entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, e -> e.getValue().toAcl(this, true, warnings)));
-    Map<String, IpAccessList> sgEgressAcls =
-        _securityGroups.entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, e -> e.getValue().toAcl(this, false, warnings)));
-
+  private void applyNetworkInterfaceAclsToInstances(
+      ConvertedConfiguration cfg,
+      Map<String, IpAccessList> sgIngressAcls,
+      Map<String, IpAccessList> sgEgressAcls) {
     for (NetworkInterface ni : _networkInterfaces.values()) {
       Optional<Configuration> configuration =
           Optional.ofNullable(ni.getAttachmentInstanceId()).map(cfg::getNode);
@@ -814,19 +802,10 @@ public final class Region implements Serializable {
    * For applications (e.g., RDS or ElasticSearch), applies their security groups to their
    * interfaces.
    */
-  @VisibleForTesting
-  void applyApplicationSecurityGroups(ConvertedConfiguration cfg, Warnings warnings) {
-    Map<String, IpAccessList> sgIngressAcls =
-        _securityGroups.entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, e -> e.getValue().toAcl(this, true, warnings)));
-    Map<String, IpAccessList> sgEgressAcls =
-        _securityGroups.entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, e -> e.getValue().toAcl(this, false, warnings)));
-
+  private void applyApplicationSecurityGroups(
+      ConvertedConfiguration cfg,
+      Map<String, IpAccessList> sgIngressAcls,
+      Map<String, IpAccessList> sgEgressAcls) {
     for (ElasticsearchDomain esd : _elasticsearchDomains.values()) {
       Configuration c = cfg.getNode(esd.getId());
       if (c == null) {
@@ -972,6 +951,28 @@ public final class Region implements Serializable {
     return attachedInstance
         .map(instance -> ni.getHumanName() + " on " + instance.getHumanName())
         .orElseGet(ni::getHumanName);
+  }
+
+  @VisibleForTesting
+  void computeSecurityGroups(ConvertedConfiguration awsConfiguration, Warnings warnings) {
+    // First, make sure all interfaces (real and generated) have their IPs added to the security
+    // groups, so that the security-group-as-IpSpace is correct.
+    addNetworkInterfaceIpsToSecurityGroups(warnings);
+    addApplicationInterfaceIpsToSecurityGroups(awsConfiguration, warnings);
+
+    // Next, actually apply the correct security groups to all interfaces (real and generated).
+    Map<String, IpAccessList> sgIngressAcls =
+        _securityGroups.entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey, e -> e.getValue().toAcl(this, true, warnings)));
+    Map<String, IpAccessList> sgEgressAcls =
+        _securityGroups.entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey, e -> e.getValue().toAcl(this, false, warnings)));
+    applyNetworkInterfaceAclsToInstances(awsConfiguration, sgIngressAcls, sgEgressAcls);
+    applyApplicationSecurityGroups(awsConfiguration, sgIngressAcls, sgEgressAcls);
   }
 
   /** Adds all private IPs for {@code ni} as referred IPs to all security groups in use. */
