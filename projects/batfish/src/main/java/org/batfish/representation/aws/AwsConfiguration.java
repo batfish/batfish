@@ -142,6 +142,7 @@ public class AwsConfiguration extends VendorConfiguration {
       for (Region region : regions) {
         try {
           region.toConfigurationNodes(_convertedConfiguration, getWarnings());
+          region.addPrefixListReferenceBook(_convertedConfiguration, getWarnings());
         } catch (Exception e) {
           getWarnings()
               .redFlag(

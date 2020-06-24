@@ -5,6 +5,7 @@ import org.batfish.datamodel.Names;
 public class GeneratedRefBookUtils {
 
   public enum BookType {
+    AwsSeviceIps,
     PoolAddresses,
     PublicIps,
     VirtualAddresses
