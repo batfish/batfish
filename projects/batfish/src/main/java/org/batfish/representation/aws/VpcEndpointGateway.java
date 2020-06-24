@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
@@ -62,9 +63,10 @@ final class VpcEndpointGateway extends VpcEndpoint {
   Configuration toConfigurationNode(
       ConvertedConfiguration awsConfiguration, Region region, Warnings warnings) {
     Configuration cfgNode =
-        Utils.newAwsConfiguration(_id, "aws", _tags, DeviceModel.AWS_VPC_ENDPOINT_GATEWAY);
+        Utils.newAwsConfiguration(_id, "aws", DeviceModel.AWS_VPC_ENDPOINT_GATEWAY);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
+    cfgNode.setHumanName(humanName(_tags, _serviceName));
 
     Interface serviceInterface =
         Utils.newInterface(
@@ -142,6 +144,12 @@ final class VpcEndpointGateway extends VpcEndpoint {
   @VisibleForTesting
   static String serviceInterfaceName(String serviceName) {
     return serviceName;
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  static String humanName(Map<String, String> tags, String serviceName) {
+    return tags.getOrDefault(TAG_NAME, serviceName);
   }
 
   @Override
