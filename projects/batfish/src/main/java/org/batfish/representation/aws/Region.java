@@ -561,15 +561,18 @@ public final class Region implements Serializable {
                 })
             .collect(ImmutableList.toImmutableList());
 
-    awsServicesNode
-        .getGeneratedReferenceBooks()
-        .put(
-            bookName,
-            ReferenceBook.builder(bookName)
-                .setAddressGroups(
-                    Streams.concat(currentBook.getAddressGroups().stream(), addressGroups.stream())
-                        .collect(ImmutableList.toImmutableList()))
-                .build());
+    if (!addressGroups.isEmpty()) { // no change needed if no new address groups were produced
+      awsServicesNode
+          .getGeneratedReferenceBooks()
+          .put(
+              bookName,
+              ReferenceBook.builder(bookName)
+                  .setAddressGroups(
+                      Streams.concat(
+                              currentBook.getAddressGroups().stream(), addressGroups.stream())
+                          .collect(ImmutableList.toImmutableList()))
+                  .build());
+    }
   }
 
   @Nonnull
