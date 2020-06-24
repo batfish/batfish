@@ -1,9 +1,10 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Objects;
@@ -46,9 +47,11 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
       @JsonProperty(PROP_SESSION_INTERFACES) @Nullable Set<String> sessionInterfaces,
       @JsonProperty(PROP_INCOMING_ACL_NAME) @Nullable String incomingAclName,
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
-    checkNotNull(sessionInterfaces, PROP_SESSION_INTERFACES + " cannot be null");
     return new FirewallSessionInterfaceInfo(
-        fibLookup, sessionInterfaces, incomingAclName, outgoingAclName);
+        fibLookup,
+        firstNonNull(sessionInterfaces, ImmutableList.of()),
+        incomingAclName,
+        outgoingAclName);
   }
 
   @Override
