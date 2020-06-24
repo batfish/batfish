@@ -10,6 +10,25 @@
         "deviceModel" : "AWS_SERVICES_GATEWAY",
         "deviceType" : "ROUTER",
         "domainName" : "aws",
+        "generatedReferenceBooks" : {
+          "AwsSeviceIps~on~__aws-services-gateway__" : {
+            "addressGroups" : [
+              {
+                "addresses" : [
+                  "52.94.28.1"
+                ],
+                "name" : "com.amazonaws.us-west-2.dynamodb"
+              },
+              {
+                "addresses" : [
+                  "54.231.160.1"
+                ],
+                "name" : "com.amazonaws.us-west-2.s3"
+              }
+            ],
+            "name" : "AwsSeviceIps~on~__aws-services-gateway__"
+          }
+        },
         "humanName" : "AWS Services Gateway",
         "interfaces" : {
           "aws-services" : {

@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
 import static org.batfish.representation.aws.SecurityGroup.SG_INGRESS_ACL_NAME;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 
@@ -13,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -46,9 +48,14 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.representation.aws.Instance.Status;
 
 /** Represents an AWS region */
@@ -515,6 +522,56 @@ public final class Region implements Serializable {
         };
       default:
         return null;
+    }
+  }
+
+  /** Adds a generated references book for prefix lists on the AWS services gateway node */
+  void addPrefixListReferenceBook(
+      ConvertedConfiguration convertedConfiguration, Warnings warnings) {
+    Configuration awsServicesNode = convertedConfiguration.getNode(AWS_SERVICES_GATEWAY_NODE_NAME);
+    if (awsServicesNode == null) {
+      warnings.redFlag("AWS service gateway not found. Cannot generate prefix list address books");
+      return;
+    }
+    String bookName =
+        GeneratedRefBookUtils.getName(awsServicesNode.getHostname(), BookType.AwsSeviceIps);
+    final ReferenceBook currentBook =
+        awsServicesNode
+            .getGeneratedReferenceBooks()
+            .getOrDefault(bookName, ReferenceBook.builder(bookName).build());
+
+    List<AddressGroup> addressGroups =
+        _prefixLists.values().stream()
+            // prefix lists names contain region in them (e.g., "com.amazonaws.us-east-1.s3"), but
+            // address group for a prefix list may already have been created via another account in
+            // the region. we keep the original list in that case.
+            .filter(plist -> !currentBook.getAddressGroup(plist.getPrefixListName()).isPresent())
+            .filter(plist -> !plist.getCidrs().isEmpty())
+            .map(
+                plist -> {
+                  Prefix cidr = plist.getCidrs().get(0);
+                  // get a *.1 address (looks better than a *.0 address)
+                  Ip representativeIp =
+                      cidr.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH
+                          ? cidr.getStartIp()
+                          : Ip.create(cidr.getStartIp().asLong() + 1);
+                  return new AddressGroup(
+                      ImmutableSortedSet.of(representativeIp.toString()),
+                      plist.getPrefixListName());
+                })
+            .collect(ImmutableList.toImmutableList());
+
+    if (!addressGroups.isEmpty()) { // no change needed if no new address groups were produced
+      awsServicesNode
+          .getGeneratedReferenceBooks()
+          .put(
+              bookName,
+              ReferenceBook.builder(bookName)
+                  .setAddressGroups(
+                      Streams.concat(
+                              currentBook.getAddressGroups().stream(), addressGroups.stream())
+                          .collect(ImmutableList.toImmutableList()))
+                  .build());
     }
   }
 

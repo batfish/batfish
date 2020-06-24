@@ -3,9 +3,11 @@ package org.batfish.representation.aws;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
+import static org.batfish.representation.aws.Utils.newAwsConfiguration;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.List;
@@ -49,6 +52,10 @@ import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.DataModelMatchers;
 import org.batfish.datamodel.trace.TraceTree;
+import org.batfish.referencelibrary.AddressGroup;
+import org.batfish.referencelibrary.GeneratedRefBookUtils;
+import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.junit.Test;
@@ -327,5 +334,52 @@ public class RegionTest {
             .setAddresses(ImmutableMap.of("1.2.3.4", addr1, "11.22.33.44", addr2))
             .build();
     assertThat(region.getAddresses(), equalTo(ImmutableSet.of(addr1, addr2)));
+  }
+
+  @Test
+  public void testAddPrefixListAddressBook() {
+    PrefixList plist1 =
+        new PrefixList("plist1", ImmutableList.of(Prefix.parse("1.1.1.0/24")), "plist1Name");
+    PrefixList plist2 =
+        new PrefixList("plist2", ImmutableList.of(Prefix.parse("2.2.2.2/32")), "plist2Name");
+    Region region =
+        Region.builder("r")
+            .setPrefixLists(ImmutableMap.of(plist1.getId(), plist1, plist2.getId(), plist2))
+            .build();
+
+    String bookName =
+        GeneratedRefBookUtils.getName(AWS_SERVICES_GATEWAY_NODE_NAME, BookType.AwsSeviceIps);
+
+    AddressGroup currentAddressGroup =
+        new AddressGroup(ImmutableSortedSet.of("3.3.3.3"), "current");
+
+    ConvertedConfiguration viConfigs = new ConvertedConfiguration();
+    Configuration awsServicesNode = newAwsConfiguration(AWS_SERVICES_GATEWAY_NODE_NAME, "aws");
+    awsServicesNode
+        .getGeneratedReferenceBooks()
+        .put(
+            bookName,
+            ReferenceBook.builder(bookName)
+                .setAddressGroups(ImmutableList.of(currentAddressGroup))
+                .build());
+    viConfigs.addNode(awsServicesNode);
+
+    region.addPrefixListReferenceBook(viConfigs, new Warnings());
+
+    assertThat(
+        awsServicesNode.getGeneratedReferenceBooks().get(bookName),
+        equalTo(
+            ReferenceBook.builder(bookName)
+                .setAddressGroups(
+                    ImmutableList.of(
+                        new AddressGroup(
+                            // .1 address is picked for 1.1.1.0/24
+                            ImmutableSortedSet.of("1.1.1.1"), plist1.getPrefixListName()),
+                        new AddressGroup(
+                            // the first and only address is picked for 2.2.2.2
+                            ImmutableSortedSet.of("2.2.2.2"), plist2.getPrefixListName()),
+                        // the original address group is still present
+                        currentAddressGroup))
+                .build()));
   }
 }
