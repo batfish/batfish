@@ -320,8 +320,8 @@ public class RegionTest {
 
   @Test
   public void testGetAddresses() {
-    Address addr1 = new Address(Ip.parse("1.2.3.4"), "i-1234", Ip.parse("4.3.2.1"));
-    Address addr2 = new Address(Ip.parse("11.22.33.44"), null, null);
+    Address addr1 = new Address(Ip.parse("1.2.3.4"), "i-1234", Ip.parse("4.3.2.1"), "alloc-1");
+    Address addr2 = new Address(Ip.parse("11.22.33.44"), null, null, "alloc-2");
     Region region =
         Region.builder("r1")
             .setAddresses(ImmutableMap.of("1.2.3.4", addr1, "11.22.33.44", addr2))
