@@ -17,6 +17,6 @@ public class AddressTest {
         "{\"AllocationId\": \"eipalloc-c0da79fd\", \"Domain\": \"vpc\", \"PublicIp\": \"34.214.188.89\"}";
     assertThat(
         BatfishObjectMapper.mapper().readValue(text, Address.class),
-        equalTo(new Address(Ip.parse("34.214.188.89"), null, null)));
+        equalTo(new Address(Ip.parse("34.214.188.89"), null, null, "eipalloc-c0da79fd")));
   }
 }
