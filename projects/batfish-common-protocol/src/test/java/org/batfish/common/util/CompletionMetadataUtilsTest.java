@@ -247,6 +247,7 @@ public final class CompletionMetadataUtilsTest {
                             addressGroupDisplayString(config, book1.getName(), "ag1"),
                             config.getHostname(),
                             config.getHumanName(),
+                            "book1",
                             "ag1")))
                 .put(
                     Ip.parse("2.2.2.2"),
@@ -255,6 +256,7 @@ public final class CompletionMetadataUtilsTest {
                             addressGroupDisplayString(config, book1.getName(), "ag1"),
                             config.getHostname(),
                             config.getHumanName(),
+                            "book1",
                             "ag1")))
                 .put(
                     Ip.parse("3.3.3.3"),
@@ -264,11 +266,13 @@ public final class CompletionMetadataUtilsTest {
                                 addressGroupDisplayString(config, book1.getName(), "ag2"),
                                 config.getHostname(),
                                 config.getHumanName(),
+                                "book1",
                                 "ag2"),
                             new IpCompletionRelevance(
                                 addressGroupDisplayString(config, book2.getName(), "ag1"),
                                 config.getHostname(),
                                 config.getHumanName(),
+                                "book2",
                                 "ag1"))))
                 .put(
                     Ip.parse("4.4.4.4"),
@@ -277,6 +281,7 @@ public final class CompletionMetadataUtilsTest {
                             addressGroupDisplayString(config, book2.getName(), "ag1"),
                             config.getHostname(),
                             config.getHumanName(),
+                            "book2",
                             "ag1")))
                 .putAll(createWellKnownIpCompletion(WELL_KNOWN_IPS))
                 .build()));
