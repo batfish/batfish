@@ -156,6 +156,7 @@ public final class CompletionMetadataUtils {
                             addressGroupDisplayString(configuration, bookName, groupName),
                             configuration.getHostname(),
                             configuration.getHumanName(),
+                            bookName,
                             groupName)));
   }
 
