@@ -100,15 +100,21 @@ public final class SearchFiltersQuestion extends Question {
   }
 
   private SearchFiltersQuery generateQuery(String type) {
-    if (type.equals("permit")) {
+    if (type.equalsIgnoreCase("permit")) {
       return PermitQuery.INSTANCE;
-    } else if (type.equals("deny")) {
+    } else if (type.equalsIgnoreCase("deny")) {
       return DenyQuery.INSTANCE;
-    } else if (type.startsWith("matchLine")) {
-      int lineNum = Integer.parseInt(type.substring("matchLine".length()).trim());
+    } else if (type.toLowerCase().startsWith("matchline")) {
+      int lineNum = Integer.parseInt(type.toLowerCase().substring("matchLine".length()).trim());
+      if (lineNum < 0) {
+        throw new BatfishException("Line index for matchLine must be zero or higher");
+      }
       return new MatchLineQuery(lineNum);
     } else {
-      throw new BatfishException("Unrecognized query type: " + type);
+      throw new BatfishException(
+          String.format(
+              "Unrecognized action '%s'. Must be one of 'permit', 'deny', or 'matchLine <line index>'.",
+              type));
     }
   }
 
