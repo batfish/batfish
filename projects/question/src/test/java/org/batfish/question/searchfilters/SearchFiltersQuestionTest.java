@@ -95,7 +95,13 @@ public class SearchFiltersQuestionTest {
     question = SearchFiltersQuestion.builder().setAction("permit").build();
     assertThat(question.getQuery(), is(PermitQuery.INSTANCE));
 
+    question = SearchFiltersQuestion.builder().setAction("PermIT").build();
+    assertThat(question.getQuery(), is(PermitQuery.INSTANCE));
+
     question = SearchFiltersQuestion.builder().setAction("deny").build();
+    assertThat(question.getQuery(), is(DenyQuery.INSTANCE));
+
+    question = SearchFiltersQuestion.builder().setAction("DenY").build();
     assertThat(question.getQuery(), is(DenyQuery.INSTANCE));
 
     question = SearchFiltersQuestion.builder().setAction("matchLine 5").build();
@@ -103,9 +109,21 @@ public class SearchFiltersQuestionTest {
     assertThat(query, instanceOf(MatchLineQuery.class));
     assertThat(((MatchLineQuery) query).getLineNum(), is(5));
 
+    question = SearchFiltersQuestion.builder().setAction("maTChLine 5").build();
+    query = question.getQuery();
+    assertThat(query, instanceOf(MatchLineQuery.class));
+    assertThat(((MatchLineQuery) query).getLineNum(), is(5));
+
     exception.expect(BatfishException.class);
-    exception.expectMessage("Unrecognized query type: foo");
+    exception.expectMessage("Unrecognized action 'foo'");
     SearchFiltersQuestion.builder().setAction("foo").build();
+  }
+
+  @Test
+  public void testGenerateQuery_badLineIndex() {
+    exception.expect(BatfishException.class);
+    exception.expectMessage("Line index for matchLine must be zero or higher");
+    SearchFiltersQuestion.builder().setAction("matchLine -1").build();
   }
 
   @Test
