@@ -119,9 +119,9 @@ class AwsPrefixes {
    * suggests that this is AMAZON prefixes minus EC2 prefixes. But in June 2020 data, there is at
    * least one prefix (3.5.16.0/21) that is listed as both EC2 and S3. This function deems such
    * prefixes to be AWS prefixes because the counter-example was also listed in the S3 prefix list
-   * (which is more likely to be reliable) and it is a better error to make than the other way
-   * around. It will interferes with analysis only in the unlikely event that an addresses in
-   * conflicting range is of interest in the snapshot.
+   * (which is more likely to be reliable) and it is a less bad error to make than the other way
+   * around. It will interfere with analysis only when an address in conflicting range appears in
+   * the snapshot.
    */
   public static Set<Prefix> getAwsServicesPrefixes() {
     return getAwsServicesPrefixes(INSTANCE._awsPrefixes);
