@@ -7,9 +7,12 @@ import static org.batfish.common.util.Resources.readResource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -39,7 +42,7 @@ class AwsPrefixes {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  private static class AwsPrefix {
+  static class AwsPrefix {
 
     @Nonnull private final Prefix _prefix;
 
@@ -106,5 +109,47 @@ class AwsPrefixes {
         .filter(awsPrefix -> awsPrefix.getServiceName().equals(serviceName))
         .map(AwsPrefix::getPrefix)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns prefixes for (first party) AWS services.
+   *
+   * <p>Online documentation
+   * (https://docs.aws.amazon.com/general/latest/gr/aws-ip-ranges.html#aws-ip-egress-control)
+   * suggests that this is AMAZON prefixes minus EC2 prefixes. But in June 2020 data, there is at
+   * least one prefix (3.5.16.0/21) that is listed as both EC2 and S3. This function deems such
+   * prefixes to be AWS prefixes because the counter-example was also listed in the S3 prefix list
+   * (which is more likely to be reliable) and it is a better error to make than the other way
+   * around. It will interferes with analysis only in the unlikely event that an addresses in
+   * conflicting range is of interest in the snapshot.
+   */
+  public static Set<Prefix> getAwsServicesPrefixes() {
+    return getAwsServicesPrefixes(INSTANCE._awsPrefixes);
+  }
+
+  @VisibleForTesting
+  static Set<Prefix> getAwsServicesPrefixes(List<AwsPrefix> allPrefixes) {
+    Set<Prefix> exclusivelyEc2Prefixes =
+        allPrefixes.stream()
+            .filter(
+                prefix ->
+                    // is an EC2 prefix and is not listed for any service other than AMAZON
+                    prefix.getServiceName().equals(SERVICE_EC2)
+                        && allPrefixes.stream()
+                            .noneMatch(
+                                otherPrefix ->
+                                    otherPrefix.getPrefix().equals(prefix.getPrefix())
+                                        && !otherPrefix.getServiceName().equals(SERVICE_AMAZON)
+                                        && !otherPrefix.getServiceName().equals(SERVICE_EC2)))
+            .map(AwsPrefix::getPrefix)
+            .collect(ImmutableSet.toImmutableSet());
+
+    return allPrefixes.stream()
+        .filter(
+            prefix ->
+                prefix.getServiceName().equals(SERVICE_AMAZON)
+                    && !exclusivelyEc2Prefixes.contains(prefix.getPrefix()))
+        .map(AwsPrefix::getPrefix)
+        .collect(ImmutableSet.toImmutableSet());
   }
 }
