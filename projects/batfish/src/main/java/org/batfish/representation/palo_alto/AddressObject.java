@@ -87,7 +87,7 @@ public final class AddressObject implements Serializable {
   }
 
   /**
-   * Get {@code InterfacePrefix} for this address, if it exists. This can be used for specifying an
+   * Get {@link IpPrefix} for this address, if it exists. This can be used for specifying an
    * interface address, so it preserves the initial (not canonical) base ip address.
    */
   @Nullable

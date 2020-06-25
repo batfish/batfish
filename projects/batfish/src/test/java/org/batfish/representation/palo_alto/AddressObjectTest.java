@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.Range;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.representation.palo_alto.AddressObject.Type;
 import org.junit.Test;
 
@@ -24,11 +23,9 @@ public class AddressObjectTest {
     assertThat(a.getType(), equalTo(Type.IP));
 
     // Setting prefix clears members and updates type
-    a.setPrefix(IpPrefix.parse("1.2.3.4/24"));
+    a.setPrefix(IpPrefix.ZERO);
     assertNull(a.getIp());
-    // Make sure we preserve pre-canonicalized form of prefix ip
-    assertThat(a.getIpPrefix().getIp(), equalTo(Ip.parse("1.2.3.4")));
-    assertThat(a.getIpPrefix().getPrefix(), equalTo(Prefix.parse("1.2.3.4/24")));
+    assertThat(a.getIpPrefix(), equalTo(IpPrefix.ZERO));
     assertThat(a.getType(), equalTo(Type.PREFIX));
 
     // Setting range clears members and updates type
