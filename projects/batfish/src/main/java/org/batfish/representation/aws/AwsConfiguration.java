@@ -177,19 +177,18 @@ public class AwsConfiguration extends VendorConfiguration {
           if (targetGroup.getTargetType() != Type.INSTANCE) {
             continue;
           }
-
           String targetGroupArn = targetEntry.getKey();
+          LoadBalancerTargetHealth lbth = region.getLoadBalancerTargetHealth(targetGroupArn);
+          if (lbth == null) {
+            continue;
+          }
+
           for (String lbArn : targetGroup.getLoadBalancerArns()) {
             LoadBalancerAttributes loadBalancerAttributes =
                 region.getLoadBalancerAttributes().get(lbArn);
             boolean crossZoneLoadBalancing =
                 loadBalancerAttributes != null
                     && loadBalancerAttributes.getCrossZoneLoadBalancing();
-            LoadBalancerTargetHealth lbth = region.getLoadBalancerTargetHealth(targetGroupArn);
-
-            if (lbth == null) {
-              continue;
-            }
             LoadBalancer lb = region.getLoadBalancers().get(lbArn);
             Set<String> azNames =
                 lb.getAvailabilityZones().stream()
@@ -202,7 +201,6 @@ public class AwsConfiguration extends VendorConfiguration {
                 .stream()
                 .filter(desc -> getTargetIp(desc.getTarget(), Type.INSTANCE, region) != null)
                 .map(desc -> region.getInstances().get(desc.getTarget().getId()))
-                .filter(instance -> region.getSubnets().containsKey(instance.getSubnetId()))
                 .forEach(
                     instance -> {
                       Subnet subnet = region.getSubnets().get(instance.getSubnetId());

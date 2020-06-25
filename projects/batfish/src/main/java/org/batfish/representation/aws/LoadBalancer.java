@@ -506,14 +506,14 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   /**
    * Gets the target IP for the given {@link LoadBalancerTarget}. Assumes that target validity has
    * already been checked with {@link #isTargetInAnyEnabledAvailabilityZone(TargetHealthDescription,
-   * TargetGroup.Type, Set, boolean, Region) isTargetInValidAvailabilityZone}.
+   * TargetGroup.Type, Set, boolean, Region) isTargetInAnyEnabledAvailabilityZone}.
    */
   @Nullable
   static Ip getTargetIp(
       LoadBalancerTarget target, TargetGroup.Type targetGroupType, Region region) {
     return targetGroupType.equals(IP)
         ? Ip.parse(target.getId())
-        // instance must exist since this target is valid (see isTargetInValidAvailabilityZone)
+        // instance must exist since this target is valid (see isTargetInAnyEnabledAvailabilityZone)
         : region.getInstances().get(target.getId()).getPrimaryPrivateIpAddress();
   }
 

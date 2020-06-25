@@ -679,9 +679,6 @@ public class LoadBalancerTest {
         new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone", ImmutableMap.of());
     Instance instance =
         Instance.builder().setInstanceId("instance").setSubnetId(subnet.getId()).build();
-    TargetGroup targetGroup =
-        new TargetGroup(
-            "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.INSTANCE);
     TargetHealthDescription targetHealthDescription =
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", instance.getId(), 80),
