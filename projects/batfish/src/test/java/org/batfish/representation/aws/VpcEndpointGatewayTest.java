@@ -112,11 +112,6 @@ public class VpcEndpointGatewayTest {
         vpceGwConfig.getAllInterfaces().get(interfaceNameToRemote(awsServicesGatewayConfig));
     Interface vpcInterface = vpceGwConfig.getAllInterfaces().get(interfaceNameToRemote(vpcConfig));
 
-    // interface is created on the service gateway and has a firewall session
-    Interface ifaceOnServiceGateway =
-        awsServicesGatewayConfig.getAllInterfaces().get(interfaceNameToRemote(vpceGwConfig));
-    assertThat(ifaceOnServiceGateway.getFirewallSessionInterfaceInfo(), notNullValue());
-
     // static routes exist to the VPC prefix and to the service
     assertThat(
         vpceGwConfig.getDefaultVrf().getStaticRoutes(),

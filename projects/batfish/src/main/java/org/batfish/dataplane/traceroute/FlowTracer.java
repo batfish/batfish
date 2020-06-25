@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -767,6 +768,14 @@ class FlowTracer {
   private boolean processSessions() {
     String inputIfaceName = _ingressInterface;
     String currentNodeName = _currentNode.getName();
+    Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
+    Interface incomingInterface =
+        inputIfaceName == null ? null : config.getAllInterfaces().get(inputIfaceName);
+    if (incomingInterface != null && incomingInterface.getFirewallSessionInterfaceInfo() == null) {
+      // Can't create sessions for flows entering this interface
+      return false;
+    }
+
     Collection<FirewallSessionTraceInfo> sessions =
         _ingressInterface != null
             ? _tracerouteContext.getSessionsForIncomingInterface(currentNodeName, inputIfaceName)
@@ -795,7 +804,6 @@ class FlowTracer {
             .setSessionAction(session.getAction())
             .setMatchCriteria(session.getMatchCriteria());
 
-    Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
     Map<String, IpSpace> ipSpaces = config.getIpSpaces();
 
@@ -812,11 +820,7 @@ class FlowTracer {
     _steps.add(new MatchSessionStep(matchDetail.build()));
 
     // apply incoming ACL if any
-    if (inputIfaceName != null) {
-      Interface incomingInterface = config.getAllInterfaces().get(inputIfaceName);
-      checkState(
-          incomingInterface.getFirewallSessionInterfaceInfo() != null,
-          "Cannot have a session entering an interface without FirewallSessionInterfaceInfo");
+    if (incomingInterface != null) {
       String incomingAclName =
           incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
       if (incomingAclName != null
@@ -887,16 +891,17 @@ class FlowTracer {
                   String outgoingInterfaceName = forwardOutInterface.getOutgoingInterface();
                   Interface outgoingInterface =
                       config.getAllInterfaces().get(outgoingInterfaceName);
-                  checkState(
-                      outgoingInterface.getFirewallSessionInterfaceInfo() != null,
-                      "Cannot have a session exiting an interface without FirewallSessionInterfaceInfo");
 
-                  // apply outgoing ACL
-                  String outgoingAclName =
-                      outgoingInterface.getFirewallSessionInterfaceInfo().getOutgoingAclName();
-                  if (outgoingAclName != null
-                      && applyFilter(ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER)
-                          == DENIED) {
+                  // apply outgoing ACL from firewall info, if any
+                  StepAction filterResult =
+                      Optional.ofNullable(outgoingInterface.getFirewallSessionInterfaceInfo())
+                          .map(FirewallSessionInterfaceInfo::getOutgoingAclName)
+                          .map(
+                              outgoingAclName ->
+                                  applyFilter(
+                                      ipAccessLists.get(outgoingAclName), FilterType.EGRESS_FILTER))
+                          .orElse(null);
+                  if (filterResult == DENIED) {
                     return null;
                   }
 
