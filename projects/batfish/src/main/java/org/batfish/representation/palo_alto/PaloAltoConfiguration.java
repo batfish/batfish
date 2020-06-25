@@ -377,6 +377,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return String.format("%s~%s", objectName, vsysName);
   }
 
+  public static String computeObjectName(@Nullable Vsys vsys, String objectName) {
+    return (vsys != null) ? computeObjectName(vsys.getName(), objectName) : objectName;
+  }
+
   /** Generate egress IpAccessList name given an interface or zone name */
   public static String computeOutgoingFilterName(String interfaceOrZoneName) {
     return String.format("~%s~OUTGOING_FILTER~", interfaceOrZoneName);
