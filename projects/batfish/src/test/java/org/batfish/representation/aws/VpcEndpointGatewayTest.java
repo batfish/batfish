@@ -1,15 +1,13 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
-import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
-import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
-import static org.batfish.representation.aws.Utils.newAwsConfiguration;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpcEndpointGateway.SERVICE_PREFIX_FILTER;
 import static org.batfish.representation.aws.VpcEndpointGateway.computeServicePrefixFilter;
-import static org.batfish.representation.aws.VpcEndpointGateway.humanName;
+import static org.batfish.representation.aws.VpcEndpointGateway.serviceInterfaceName;
+import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -35,6 +33,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.vendor_family.AwsFamily;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
 public class VpcEndpointGatewayTest {
@@ -79,16 +78,9 @@ public class VpcEndpointGatewayTest {
 
     Configuration vpcConfig =
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
-    Configuration awsServicesGatewayConfig =
-        newAwsConfiguration(AWS_SERVICES_GATEWAY_NODE_NAME, "aws");
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(
-            ImmutableMap.of(
-                vpcConfig.getHostname(),
-                vpcConfig,
-                awsServicesGatewayConfig.getHostname(),
-                awsServicesGatewayConfig));
+        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
 
     Configuration vpceGwConfig =
         vpceGateway.toConfigurationNode(awsConfiguration, region, new Warnings());
@@ -106,16 +98,14 @@ public class VpcEndpointGatewayTest {
             .collect(ImmutableList.toImmutableList()),
         equalTo(
             ImmutableList.of(
-                interfaceNameToRemote(awsServicesGatewayConfig),
-                interfaceNameToRemote(vpcConfig))));
+                serviceInterfaceName(vpceGateway.getServiceName()),
+                Utils.interfaceNameToRemote(vpcConfig))));
     Interface serviceInterface =
-        vpceGwConfig.getAllInterfaces().get(interfaceNameToRemote(awsServicesGatewayConfig));
-    Interface vpcInterface = vpceGwConfig.getAllInterfaces().get(interfaceNameToRemote(vpcConfig));
-
-    // interface is created on the service gateway and has a firewall session
-    Interface ifaceOnServiceGateway =
-        awsServicesGatewayConfig.getAllInterfaces().get(interfaceNameToRemote(vpceGwConfig));
-    assertThat(ifaceOnServiceGateway.getFirewallSessionInterfaceInfo(), notNullValue());
+        vpceGwConfig.getAllInterfaces().get(serviceInterfaceName(vpceGateway.getServiceName()));
+    Interface vpcInterface =
+        vpceGwConfig
+            .getAllInterfaces()
+            .get(serviceInterfaceName(Utils.interfaceNameToRemote(vpcConfig)));
 
     // static routes exist to the VPC prefix and to the service
     assertThat(
@@ -123,15 +113,20 @@ public class VpcEndpointGatewayTest {
         equalTo(
             Stream.concat(
                     Stream.of(
-                        toStaticRoute(vpcPrefix, interfaceNameToRemote(vpcConfig), LINK_LOCAL_IP)),
-                    Stream.of(
-                        toStaticRoute(servicePrefix, serviceInterface.getName(), LINK_LOCAL_IP)))
+                        toStaticRoute(
+                            vpcPrefix, Utils.interfaceNameToRemote(vpcConfig), LINK_LOCAL_IP)),
+                    Stream.of(toStaticRoute(servicePrefix, serviceInterface.getName())))
                 .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()))));
 
     // check the filter on vpc interface
     assertTrue(vpceGwConfig.getIpAccessLists().containsKey(SERVICE_PREFIX_FILTER));
     assertThat(
         vpcInterface.getIncomingFilter(), equalTo(computeServicePrefixFilter(servicePrefixSpace)));
+
+    // test for location info
+    assertThat(
+        vpceGwConfig.getLocationInfo().get(interfaceLinkLocation(serviceInterface)),
+        equalTo(new LocationInfo(true, servicePrefixSpace, LINK_LOCAL_IP.toIpSpace())));
   }
 
   @Test
@@ -157,11 +152,5 @@ public class VpcEndpointGatewayTest {
                 ImmutableMap.of())
             .getAction(),
         equalTo(LineAction.DENY));
-  }
-
-  @Test
-  public void testHumanName() {
-    assertThat(humanName(ImmutableMap.of(TAG_NAME, "tag"), "sname"), equalTo("tag"));
-    assertThat(humanName(ImmutableMap.of(), "sname"), equalTo("sname"));
   }
 }

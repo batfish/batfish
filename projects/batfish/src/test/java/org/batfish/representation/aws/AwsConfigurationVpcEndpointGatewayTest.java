@@ -84,10 +84,8 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   public void testFromSubnetPrivate_configuredAwsService() {
     testBidirectionalTrace(
         getTcpFlow(_instancePrivate, _configuredServiceIp, 443, _batfish),
-        ImmutableList.of(
-            _instancePrivate, _subnetPrivate, _vpc, _vpceGateway, AWS_SERVICES_GATEWAY_NODE_NAME),
-        ImmutableList.of(
-            AWS_SERVICES_GATEWAY_NODE_NAME, _vpceGateway, _vpc, _subnetPrivate, _instancePrivate),
+        ImmutableList.of(_instancePrivate, _subnetPrivate, _vpc, _vpceGateway),
+        ImmutableList.of(_vpceGateway, _vpc, _subnetPrivate, _instancePrivate),
         _batfish);
   }
 
@@ -95,10 +93,8 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   public void testFromSubnetPublic_configuredAwsService() {
     testBidirectionalTrace(
         getTcpFlow(_instancePublic, _configuredServiceIp, 443, _batfish),
-        ImmutableList.of(
-            _instancePublic, _subnetPublic, _vpc, _vpceGateway, AWS_SERVICES_GATEWAY_NODE_NAME),
-        ImmutableList.of(
-            AWS_SERVICES_GATEWAY_NODE_NAME, _vpceGateway, _vpc, _subnetPublic, _instancePublic),
+        ImmutableList.of(_instancePublic, _subnetPublic, _vpc, _vpceGateway),
+        ImmutableList.of(_vpceGateway, _vpc, _subnetPublic, _instancePublic),
         _batfish);
   }
 
