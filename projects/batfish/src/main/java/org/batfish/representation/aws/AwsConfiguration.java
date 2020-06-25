@@ -195,7 +195,7 @@ public class AwsConfiguration extends VendorConfiguration {
             boolean crossZoneLoadBalancing =
                 loadBalancerAttributes != null
                     && loadBalancerAttributes.getCrossZoneLoadBalancing();
-            LoadBalancer lb = region.getLoadBalancers().get(lbArn);
+            LoadBalancer lb = region.getLoadBalancersMap().get(lbArn);
             Set<String> azNames =
                 lb.getAvailabilityZones().stream()
                     .map(AvailabilityZone::getZoneName)

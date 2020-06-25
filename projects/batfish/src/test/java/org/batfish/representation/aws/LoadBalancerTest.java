@@ -126,8 +126,7 @@ public class LoadBalancerTest {
     assertThat(
         region.getLoadBalancers(),
         equalTo(
-            ImmutableMap.of(
-                "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
+            ImmutableSet.of(
                 new LoadBalancer(
                     "arn:aws:elasticloadbalancing:us-east-2:554773406868:loadbalancer/net/lb-lb/6f57a43b75d8f2c1",
                     ImmutableList.of(
@@ -138,7 +137,6 @@ public class LoadBalancerTest {
                     Scheme.INTERNET_FACING,
                     Type.NETWORK,
                     "vpc-08afc01f5013ddc43"),
-                "arn-application",
                 new LoadBalancer(
                     "arn-application",
                     ImmutableList.of(),
