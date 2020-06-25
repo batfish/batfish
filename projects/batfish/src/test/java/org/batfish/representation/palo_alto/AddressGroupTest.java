@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.junit.Test;
 
 /** Tests for {@link AddressGroup} */
@@ -161,7 +160,7 @@ public class AddressGroupTest {
         equalTo(ImmutableRangeSet.of(Range.singleton(Ip.ZERO))));
 
     // For address object containing a prefix
-    addressObj.setPrefix(Prefix.ZERO);
+    addressObj.setPrefix(IpPrefix.ZERO);
     assertThat(
         group.getIpRangeSet(addrObjects, groupMap),
         equalTo(ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX))));
