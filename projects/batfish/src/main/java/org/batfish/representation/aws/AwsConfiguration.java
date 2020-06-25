@@ -2,6 +2,8 @@ package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_HUMAN_NAME;
+import static org.batfish.representation.aws.LoadBalancer.getActiveTargets;
+import static org.batfish.representation.aws.LoadBalancer.getTargetIp;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
@@ -10,13 +12,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -44,6 +51,8 @@ import org.batfish.datamodel.isp_configuration.IspAnnouncement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.datamodel.isp_configuration.IspNodeInfo;
+import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
+import org.batfish.representation.aws.TargetGroup.Type;
 import org.batfish.specifier.LocationInfo;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -75,6 +84,21 @@ public class AwsConfiguration extends VendorConfiguration {
 
   @Nullable private ConvertedConfiguration _convertedConfiguration;
   @Nonnull private final Map<String, Account> _accounts;
+
+  /** A multimap from Subnet -> Instance targets within subnet */
+  private Multimap<Subnet, Instance> _subnetsToInstances;
+
+  /** A multimap from Subnet -> NLBs within subnet that have instance targets */
+  private Multimap<Subnet, LoadBalancer> _subnetsToLbs;
+
+  /** A multimap of NLB -> instance targets */
+  private Multimap<LoadBalancer, Instance> _lbsToInstances;
+
+  /**
+   * A set of VPCs with either subnets that have instance targets, or subnets that have either NLBs
+   * with instance targets
+   */
+  private Set<Vpc> _vpcsWithInstanceTargets;
 
   public AwsConfiguration() {
     this(new HashMap<>());
@@ -133,6 +157,76 @@ public class AwsConfiguration extends VendorConfiguration {
   }
 
   private void convertConfigurations() {
+    // A multimap from Subnet -> Instance targets within subnet
+    ImmutableMultimap.Builder<Subnet, Instance> subnetsToInstances = ImmutableMultimap.builder();
+
+    // A multimap from Subnet -> NLBs within subnet that have instance targets
+    ImmutableMultimap.Builder<Subnet, LoadBalancer> subnetsToLbs = ImmutableMultimap.builder();
+
+    // A multimap of NLB -> instance targets
+    ImmutableMultimap.Builder<LoadBalancer, Instance> lbsToInstances = ImmutableMultimap.builder();
+
+    // A set of VPCs with instance targets
+    ImmutableSet.Builder<Vpc> vpcsWithInstanceTargets = ImmutableSet.builder();
+
+    for (Account account : getAccounts()) {
+      Collection<Region> regions = account.getRegions();
+      for (Region region : regions) {
+        for (Entry<String, TargetGroup> targetEntry : region.getTargetGroups().entrySet()) {
+          TargetGroup targetGroup = targetEntry.getValue();
+          if (targetGroup.getTargetType() != Type.INSTANCE) {
+            continue;
+          }
+
+          String targetGroupArn = targetEntry.getKey();
+          for (String lbArn : targetGroup.getLoadBalancerArns()) {
+            LoadBalancerAttributes loadBalancerAttributes =
+                region.getLoadBalancerAttributes().get(lbArn);
+            boolean crossZoneLoadBalancing =
+                loadBalancerAttributes != null
+                    && loadBalancerAttributes.getCrossZoneLoadBalancing();
+            LoadBalancerTargetHealth lbth = region.getLoadBalancerTargetHealth(targetGroupArn);
+
+            if (lbth == null) {
+              continue;
+            }
+            LoadBalancer lb = region.getLoadBalancers().get(lbArn);
+            Set<String> azNames =
+                lb.getAvailabilityZones().stream()
+                    .map(AvailabilityZone::getZoneName)
+                    .collect(ImmutableSet.toImmutableSet());
+            AtomicBoolean hasInstanceTarget = new AtomicBoolean(false);
+
+            getActiveTargets(
+                    lbth, targetGroup, azNames, crossZoneLoadBalancing, region, false, null)
+                .stream()
+                .filter(desc -> getTargetIp(desc.getTarget(), Type.INSTANCE, region) != null)
+                .map(desc -> region.getInstances().get(desc.getTarget().getId()))
+                .filter(instance -> region.getSubnets().containsKey(instance.getSubnetId()))
+                .forEach(
+                    instance -> {
+                      Subnet subnet = region.getSubnets().get(instance.getSubnetId());
+                      subnetsToInstances.put(subnet, instance);
+                      lbsToInstances.put(lb, instance);
+                      vpcsWithInstanceTargets.add(region.getVpcs().get(instance.getVpcId()));
+                      hasInstanceTarget.set(true);
+                    });
+            if (hasInstanceTarget.get()) {
+              lb.getAvailabilityZones().stream()
+                  .map(AvailabilityZone::getSubnetId)
+                  .map(region.getSubnets()::get)
+                  .filter(Objects::nonNull)
+                  .forEach(subnet -> subnetsToLbs.put(subnet, lb));
+            }
+          }
+        }
+      }
+    }
+    _subnetsToInstances = subnetsToInstances.build();
+    _subnetsToLbs = subnetsToLbs.build();
+    _lbsToInstances = lbsToInstances.build();
+    _vpcsWithInstanceTargets = vpcsWithInstanceTargets.build();
+
     _convertedConfiguration = new ConvertedConfiguration();
     if (!_accounts.isEmpty()) { // generate only if we have any data
       _convertedConfiguration.addNode(generateAwsServicesGateway());
@@ -280,6 +374,26 @@ public class AwsConfiguration extends VendorConfiguration {
   public String getHostname() {
     // This hostname does not appear in the vendor independent configs that are returned
     return BfConsts.RELPATH_AWS_CONFIGS_FILE;
+  }
+
+  @VisibleForTesting
+  Multimap<Subnet, Instance> getSubnetsToInstances() {
+    return _subnetsToInstances;
+  }
+
+  @VisibleForTesting
+  Multimap<Subnet, LoadBalancer> getSubnetsToLbs() {
+    return _subnetsToLbs;
+  }
+
+  @VisibleForTesting
+  Multimap<LoadBalancer, Instance> getLbsToInstances() {
+    return _lbsToInstances;
+  }
+
+  @VisibleForTesting
+  Set<Vpc> getVpcsWithInstanceTargets() {
+    return _vpcsWithInstanceTargets;
   }
 
   @Override

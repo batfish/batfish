@@ -608,8 +608,8 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
-  public Set<LoadBalancer> getLoadBalancers() {
-    return ImmutableSet.copyOf(_loadBalancers.values());
+  public Map<String, LoadBalancer> getLoadBalancers() {
+    return _loadBalancers;
   }
 
   @Nonnull
@@ -805,7 +805,7 @@ public final class Region implements Serializable {
       awsConfiguration.addNode(cfgNode);
     }
 
-    for (LoadBalancer loadBalancer : getLoadBalancers()) {
+    for (LoadBalancer loadBalancer : getLoadBalancers().values()) {
       List<Configuration> cfgNodes =
           loadBalancer.toConfigurationNodes(awsConfiguration, this, warnings);
       cfgNodes.forEach(awsConfiguration::addNode);

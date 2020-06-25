@@ -1,8 +1,10 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
+import static org.batfish.representation.aws.TargetGroup.Type.IP;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
@@ -390,6 +392,57 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /**
+   * Returns the set of active {@link TargetHealthDescription} for the given {@link
+   * LoadBalancerTargetHealth}, and optionally files warnings. Note that requests are normally only
+   * routed to healthy targets, but if there are no healthy targets, requests will be routed to all
+   * targets in enabled availability zones:
+   * https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
+   */
+  @Nonnull
+  static Set<TargetHealthDescription> getActiveTargets(
+      LoadBalancerTargetHealth targetHealth,
+      TargetGroup targetGroup,
+      Set<String> lbAvailabilityZones,
+      boolean crossZoneLoadBalancing,
+      Region region,
+      boolean fileWarnings,
+      @Nullable Warnings warnings) {
+    checkArgument(
+        !fileWarnings || warnings != null, "Can't file warnings because warnings is null");
+
+    Set<TargetHealthDescription> enabledTargets =
+        targetHealth.getTargetHealthDescriptions().stream()
+            .filter(
+                desc ->
+                    isTargetInAnyEnabledAvailabilityZone(
+                        desc,
+                        targetGroup.getTargetType(),
+                        lbAvailabilityZones,
+                        crossZoneLoadBalancing,
+                        region))
+            .collect(ImmutableSet.toImmutableSet());
+    if (enabledTargets.isEmpty()) {
+      if (fileWarnings) {
+        warnings.redFlag(
+            String.format(
+                "No targets found in enabled availability zone(s) for target group ARN %s",
+                targetGroup.getId()));
+      }
+      return ImmutableSet.of();
+    }
+
+    Set<TargetHealthDescription> healthyTargets =
+        enabledTargets.stream()
+            .filter(desc -> desc.getTargetHealth().getState() == HealthState.HEALTHY)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
+    // If there are no enabled Availability Zones with a healthy target in each target group,
+    // requests are routed to targets in all enabled Availability Zones.
+    return healthyTargets.isEmpty() ? enabledTargets : healthyTargets;
+  }
+
+  /**
    * Gets {@link TransformationStep} for a {@link TargetGroup}. The load balancer sprays packets
    * across valid targets in the group. Validity is based on target health and zone criteria.
    *
@@ -419,31 +472,15 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       return null;
     }
 
-    Set<TargetHealthDescription> enabledAzTargets =
-        targetHealths.getTargetHealthDescriptions().stream()
-            .filter(
-                desc ->
-                    isTargetInEnabledAvailabilityZone(
-                        desc, targetGroup, lbAvailabilityZoneName, crossZoneLoadBalancing, region))
-            .collect(ImmutableSet.toImmutableSet());
-    if (enabledAzTargets.isEmpty()) {
-      warnings.redFlag(
-          String.format(
-              "No targets found in enabled availability zone(s) for target group ARN %s",
-              targetGroupArn));
-      return null;
-    }
-
-    Set<TargetHealthDescription> healthyTargets =
-        enabledAzTargets.stream()
-            .filter(desc -> desc.getTargetHealth().getState() == HealthState.HEALTHY)
-            .collect(ImmutableSet.toImmutableSet());
-
-    // https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
-    // If there are no enabled Availability Zones with a healthy target in each target group,
-    // requests are routed to targets in all enabled Availability Zones.
     Set<TargetHealthDescription> activeTargets =
-        healthyTargets.isEmpty() ? enabledAzTargets : healthyTargets;
+        getActiveTargets(
+            targetHealths,
+            targetGroup,
+            ImmutableSet.of(lbAvailabilityZoneName),
+            crossZoneLoadBalancing,
+            region,
+            true,
+            warnings);
 
     Set<TransformationStep> transformationSteps =
         activeTargets.stream()
@@ -467,6 +504,20 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /**
+   * Gets the target IP for the given {@link LoadBalancerTarget}. Assumes that target validity has
+   * already been checked with {@link #isTargetInAnyEnabledAvailabilityZone(TargetHealthDescription,
+   * TargetGroup.Type, Set, boolean, Region) isTargetInValidAvailabilityZone}.
+   */
+  @Nullable
+  static Ip getTargetIp(
+      LoadBalancerTarget target, TargetGroup.Type targetGroupType, Region region) {
+    return targetGroupType.equals(IP)
+        ? Ip.parse(target.getId())
+        // instance must exist since this target is valid (see isTargetInValidAvailabilityZone)
+        : region.getInstances().get(target.getId()).getPrimaryPrivateIpAddress();
+  }
+
+  /**
    * Returns the transformation step corresponding to {@code target}. This method assumes that the
    * target is valid.
    *
@@ -480,11 +531,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       Ip loadBalancerIp,
       Region region,
       Warnings warnings) {
-    Ip targetIp =
-        targetGroupType.equals(TargetGroup.Type.IP)
-            ? Ip.parse(target.getId())
-            // instance must exist since this target is valid (see isTargetInValidAvailabilityZone)
-            : region.getInstances().get(target.getId()).getPrimaryPrivateIpAddress();
+    Ip targetIp = getTargetIp(target, targetGroupType, region);
     if (targetIp == null) {
       warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
       return null;
@@ -497,21 +544,22 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /**
-   * A target is in enabled zone for this load balancer if the load balancer does cross zone load
-   * balancing; or if the target is either in zone "all" or in the same zone as the load balancer.
+   * A target is in some enabled zone for this load balancer if the load balancer does cross zone
+   * load balancing; or if the target is either in zone "all" or in any of the {@code
+   * lbAvailabilityZones}.
    */
   @VisibleForTesting
-  static boolean isTargetInEnabledAvailabilityZone(
+  static boolean isTargetInAnyEnabledAvailabilityZone(
       TargetHealthDescription targetHealthDescription,
-      TargetGroup targetGroup,
-      String lbAvailabilityZoneName,
+      TargetGroup.Type targetType,
+      Set<String> lbAvailabilityZones,
       boolean crossZoneLoadBalancing,
       Region region) {
-    switch (targetGroup.getTargetType()) {
+    switch (targetType) {
       case IP:
         return crossZoneLoadBalancing
             || "all".equals(targetHealthDescription.getTarget().getAvailabilityZone())
-            || lbAvailabilityZoneName.equals(
+            || lbAvailabilityZones.contains(
                 targetHealthDescription.getTarget().getAvailabilityZone());
       case INSTANCE:
         Instance instance = region.getInstances().get(targetHealthDescription.getTarget().getId());
@@ -521,10 +569,9 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
         Subnet subnet = region.getSubnets().get(instance.getSubnetId());
         return subnet != null
             && (crossZoneLoadBalancing
-                || lbAvailabilityZoneName.equals(subnet.getAvailabilityZone()));
+                || lbAvailabilityZones.contains(subnet.getAvailabilityZone()));
       default:
-        throw new IllegalArgumentException(
-            "Unknown target group type " + targetGroup.getTargetType());
+        throw new IllegalArgumentException("Unknown target group type " + targetType);
     }
   }
 
