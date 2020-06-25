@@ -2,7 +2,6 @@ package org.batfish.representation.palo_alto;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +27,6 @@ public class IpPrefix implements Serializable {
 
   /** Parse a {@link Prefix} from a string. */
   @Nonnull
-  @JsonCreator
   public static IpPrefix parse(@Nullable String text) {
     checkArgument(text != null, "Invalid IPv4 prefix %s", text);
     String[] parts = text.split("/");

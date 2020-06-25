@@ -91,7 +91,7 @@ public final class AddressObject implements Serializable {
    * interface address, so it preserves the initial (not canonical) base ip address.
    */
   @Nullable
-  public IpPrefix getPrefix() {
+  public IpPrefix getIpPrefix() {
     return _prefix;
   }
 
