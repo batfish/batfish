@@ -22,7 +22,6 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -73,11 +72,6 @@ final class VpcEndpointGateway extends VpcEndpoint {
       return cfgNode;
     }
     Utils.connect(awsConfiguration, cfgNode, servicesGatewayCfg);
-
-    Interface ifaceOnServicesGateway =
-        servicesGatewayCfg.getAllInterfaces().get(interfaceNameToRemote(cfgNode));
-    ifaceOnServicesGateway.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, null));
 
     List<Prefix> servicePrefixes = getServicePrefixes(_serviceName, region, warnings);
     IpSpace servicePrefixSpace =
