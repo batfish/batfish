@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,6 +35,11 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
       Iterable<String> sessionInterfaces,
       @Nullable String incomingAclName,
       @Nullable String outgoingAclName) {
+    // A FirewallSessionInterfaceInfo with no interfaces wouldn't create or match any sessions.
+    // In this case the interface should just have null FirewallSessionInterfaceInfo.
+    checkArgument(
+        sessionInterfaces.iterator().hasNext(),
+        "Cannot create FirewallSessionInterfaceInfo with zero session interfaces.");
     _sessionInterfaces = ImmutableSortedSet.copyOf(sessionInterfaces);
     _incomingAclName = incomingAclName;
     _outgoingAclName = outgoingAclName;
