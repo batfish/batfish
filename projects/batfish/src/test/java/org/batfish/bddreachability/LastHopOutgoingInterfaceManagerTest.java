@@ -63,8 +63,9 @@ public final class LastHopOutgoingInterfaceManagerTest {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
     FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
-        new FirewallSessionInterfaceInfo(false, ImmutableSet.of(), null, null);
+        new FirewallSessionInterfaceInfo(false, ImmutableSet.of("iface"), null, null);
     _ib.setActive(true)
+        .setName("iface")
         .setOwner(c)
         .setVrf(vrf)
         .setFirewallSessionInterfaceInfo(firewallSessionInterfaceInfo)
