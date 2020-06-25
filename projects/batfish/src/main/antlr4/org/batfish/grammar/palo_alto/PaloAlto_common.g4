@@ -21,6 +21,13 @@ interface_address
     | addr_with_mask = ip_prefix
 ;
 
+interface_address_or_reference
+:
+    addr = ip_address
+    | addr_with_mask = IP_PREFIX
+    | reference = variable
+;
+
 ip_address
 :
     IP_ADDRESS

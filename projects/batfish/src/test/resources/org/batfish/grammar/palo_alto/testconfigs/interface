@@ -1,4 +1,8 @@
 set deviceconfig system hostname interface
+set address ADDR1 ip-netmask 10.10.11.10
+set address ADDR2 ip-netmask 10.10.12.10/24
+set address ADDR3 ip-range 10.10.13.13-10.10.13.15
+set address 10.100.100.100 ip-netmask 10.10.11.10
 set network interface ethernet ethernet1/1 layer3 mtu 9001
 set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
 set network interface ethernet ethernet1/1 comment description
@@ -10,8 +14,14 @@ set network interface ethernet ethernet1/3 comment 'single quoted description'
 set network interface ethernet ethernet1/3 layer3 units ethernet1/3.11 comment 'unit description'
 set network interface ethernet ethernet1/3 layer3 units ethernet1/3.11 tag 11
 set network interface ethernet ethernet1/4 ha
+# Address object w/ explicit /24
+set network interface ethernet ethernet1/5 layer3 ip ADDR2
+# Valid object name, but address range cannot be used for interface address
+set network interface ethernet ethernet1/6 layer3 ip ADDR3
+# Refer to ambiguously named address object w/ implicit /32
+set network interface ethernet ethernet1/7 layer3 ip 10.100.100.100
 set network interface ethernet ethernet1/21 link-state down
 set network interface loopback ip 7.7.7.7/32
 set network interface loopback ip 7.7.7.8
 # Interfaces are not functionally active unless they are in a virtual-router
-set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 loopback ]
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/5 ethernet1/6 ethernet1/7 loopback ]

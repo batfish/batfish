@@ -206,6 +206,7 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.IbgpPeerGroupType;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.InterfaceAddress;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
 import org.batfish.representation.palo_alto.OspfAreaNormal;
@@ -285,6 +286,7 @@ public final class PaloAltoGrammarTest {
     // crash if not serializable
     pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
+    pac.setWarnings(new Warnings());
     return pac;
   }
 
@@ -566,7 +568,7 @@ public final class PaloAltoGrammarTest {
     // there are four address objects defined in the file, including the empty one
     assertThat(
         vsys.getAddressObjects().keySet(),
-        equalTo(ImmutableSet.of("addr0", "addr1", "addr2", "addr3")));
+        equalTo(ImmutableSet.of("4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4")));
 
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
@@ -1220,11 +1222,50 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testInterfaceExctactionWarning() throws IOException {
+    String hostname = "interface";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+    // Should see two warnings:
+    // 1. About extant object, but address range can't be used for interface address
+    // 2. Interface not being associated w/ virtual-router, therefore being shutdown
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        containsInAnyOrder(
+            String.format(
+                "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+                "ethernet1/3.11", NULL_VRF_NAME),
+            String.format(
+                "Could not convert InterfaceAddress to ConcreteInterfaceAddress: %s",
+                new InterfaceAddress(InterfaceAddress.Type.REFERENCE, "ADDR3"))));
+  }
+
+  @Test
   public void testInterfaceExtraction() {
     PaloAltoConfiguration c = parsePaloAltoConfig("interface");
+    Interface e1_1 = c.getInterfaces().get("ethernet1/1");
     Interface e1_4 = c.getInterfaces().get("ethernet1/4");
+    Interface e1_5 = c.getInterfaces().get("ethernet1/5");
+
+    assertThat(e1_1, notNullValue());
+    InterfaceAddress e1_1_addr = e1_1.getAddress();
+    assertThat(e1_1_addr, notNullValue());
+    assertThat(e1_1_addr.getType(), equalTo(InterfaceAddress.Type.IP_PREFIX));
+    assertThat(e1_1_addr.getValue(), equalTo("1.1.1.1/24"));
+
     assertThat(e1_4, notNullValue());
     assertThat(e1_4.getHa(), equalTo(true));
+
+    assertThat(e1_5, notNullValue());
+    InterfaceAddress e1_5_addr = e1_5.getAddress();
+    assertThat(e1_5_addr, notNullValue());
+    assertThat(e1_5_addr.getType(), equalTo(InterfaceAddress.Type.REFERENCE));
+    assertThat(e1_5_addr.getValue(), equalTo("ADDR2"));
   }
 
   @Test
@@ -1235,22 +1276,38 @@ public final class PaloAltoGrammarTest {
     String eth1_3 = "ethernet1/3";
     String eth1_3_11 = "ethernet1/3.11";
     String eth1_4 = "ethernet1/4";
+    String eth1_5 = "ethernet1/5";
+    String eth1_6 = "ethernet1/6";
+    String eth1_7 = "ethernet1/7";
     String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
     Configuration c = parseConfig(hostname);
 
     assertThat(
         c.getAllInterfaces().keySet(),
-        containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_21, loopback));
+        containsInAnyOrder(
+            eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_5, eth1_6, eth1_7, eth1_21, loopback));
 
     // Confirm interface MTU is extracted
     assertThat(c, hasInterface(eth1_1, hasMtu(9001)));
 
-    // Confirm address is extracted
+    // Confirm addresses are extracted, even when specified as address-object reference
     assertThat(
         c,
         hasInterface(
             eth1_1, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.1.1.1/24")))));
+    // From address object reference
+    assertThat(
+        c,
+        hasInterface(
+            eth1_5, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.12.10/24")))));
+    // Bad address object reference
+    assertThat(c, hasInterface(eth1_6, hasAllAddresses(emptyIterable())));
+    // From ambiguous address object reference (object name looks like an IP address)
+    assertThat(
+        c,
+        hasInterface(
+            eth1_7, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.11.10/32")))));
     assertThat(
         c,
         hasInterface(
@@ -1338,7 +1395,7 @@ public final class PaloAltoGrammarTest {
         containsInAnyOrder("ethernet1/3", "ethernet1/21", "ethernet1/22", "ae1"));
     {
       Interface iface = interfaces.get("ethernet1/3");
-      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/29")));
+      assertThat(iface.getAddress().getValue(), equalTo("10.0.0.1/29"));
     }
     {
       Interface iface = interfaces.get("ethernet1/21");
@@ -1357,13 +1414,13 @@ public final class PaloAltoGrammarTest {
       assertThat(iface.getAggregateGroup(), nullValue());
       Interface ae1_290 = iface.getUnits().get("ae1.290");
       assertThat(ae1_290.getTag(), equalTo(290));
-      assertThat(ae1_290.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.1.1./29")));
+      assertThat(ae1_290.getAddress().getValue(), equalTo("10.0.1.1/29"));
       Interface ae1_200 = iface.getUnits().get("ae1.200");
       assertThat(ae1_200.getTag(), equalTo(200));
-      assertThat(ae1_200.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.2.1./29")));
+      assertThat(ae1_200.getAddress().getValue(), equalTo("10.0.2.1/29"));
       Interface ae1_201 = iface.getUnits().get("ae1.201");
       assertThat(ae1_201.getTag(), equalTo(201));
-      assertThat(ae1_201.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.3.1./29")));
+      assertThat(ae1_201.getAddress().getValue(), equalTo("10.0.3.1/29"));
     }
   }
 
