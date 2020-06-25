@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.Range;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.representation.palo_alto.AddressObject.Type;
 import org.junit.Test;
 
@@ -24,9 +23,9 @@ public class AddressObjectTest {
     assertThat(a.getType(), equalTo(Type.IP));
 
     // Setting prefix clears members and updates type
-    a.setPrefix(Prefix.ZERO);
+    a.setPrefix(IpPrefix.ZERO);
     assertNull(a.getIp());
-    assertThat(a.getPrefix(), equalTo(Prefix.ZERO));
+    assertThat(a.getPrefix(), equalTo(IpPrefix.ZERO));
     assertThat(a.getType(), equalTo(Type.PREFIX));
 
     // Setting range clears members and updates type
