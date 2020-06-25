@@ -17,8 +17,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,10 +69,7 @@ public class AwsConfigurationTest {
         notNullValue());
 
     // static routes are defined
-    Set<Prefix> awsServicesPrefixes =
-        Sets.difference(
-            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_AMAZON)),
-            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_EC2)));
+    Set<Prefix> awsServicesPrefixes = AwsPrefixes.getAwsServicesPrefixes();
     assertThat(
         cfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
