@@ -352,6 +352,7 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.IpPrefix;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
 import org.batfish.representation.palo_alto.OspfAreaNormal;
@@ -1475,7 +1476,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (ctx.ip_address() != null) {
       _currentAddressObject.setIp(toIp(ctx.ip_address()));
     } else if (ctx.ip_prefix() != null) {
-      _currentAddressObject.setPrefix(toPrefix(ctx.ip_prefix()));
+      _currentAddressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
     } else {
       warn(ctx, "Cannot understand what follows 'ip-netmask'");
     }
@@ -2734,6 +2735,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull IpPrefix toIpPrefix(Ip_prefixContext ctx) {
+    return IpPrefix.parse(ctx.getText());
   }
 
   private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {

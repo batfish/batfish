@@ -13,7 +13,6 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
 
 /** Represents a Palo Alto address object */
 @ParametersAreNonnullByDefault
@@ -33,7 +32,7 @@ public final class AddressObject implements Serializable {
   // Only one can be set
   @Nullable private Ip _ip;
   @Nullable private Range<Ip> _ipRange;
-  @Nullable private Prefix _prefix;
+  @Nullable private IpPrefix _prefix;
 
   public AddressObject(String name) {
     _name = name;
@@ -56,7 +55,7 @@ public final class AddressObject implements Serializable {
     if (_ip != null) {
       return _ip.toIpSpace();
     } else if (_prefix != null) {
-      return _prefix.toIpSpace();
+      return _prefix.getPrefix().toIpSpace();
     } else if (_ipRange != null) {
       return IpRange.range(_ipRange.lowerEndpoint(), _ipRange.upperEndpoint());
     }
@@ -69,7 +68,8 @@ public final class AddressObject implements Serializable {
     if (_ip != null) {
       return ImmutableRangeSet.of(Range.singleton(_ip));
     } else if (_prefix != null) {
-      return ImmutableRangeSet.of(Range.closed(_prefix.getStartIp(), _prefix.getEndIp()));
+      return ImmutableRangeSet.of(
+          Range.closed(_prefix.getPrefix().getStartIp(), _prefix.getPrefix().getEndIp()));
     } else if (_ipRange != null) {
       return ImmutableRangeSet.of(_ipRange);
     }
@@ -86,8 +86,12 @@ public final class AddressObject implements Serializable {
     return _ipRange;
   }
 
+  /**
+   * Get {@link IpPrefix} for this address, if it exists. This can be used for specifying an
+   * interface address, so it preserves the initial (not canonical) base ip address.
+   */
   @Nullable
-  public Prefix getPrefix() {
+  public IpPrefix getIpPrefix() {
     return _prefix;
   }
 
@@ -122,7 +126,7 @@ public final class AddressObject implements Serializable {
     _ipRange = ipRange;
   }
 
-  public void setPrefix(@Nullable Prefix prefix) {
+  public void setPrefix(@Nullable IpPrefix prefix) {
     _type = prefix == null ? null : Type.PREFIX;
     clearAddress();
     _prefix = prefix;
