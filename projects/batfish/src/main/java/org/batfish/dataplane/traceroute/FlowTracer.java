@@ -768,13 +768,6 @@ class FlowTracer {
   private boolean processSessions() {
     String inputIfaceName = _ingressInterface;
     String currentNodeName = _currentNode.getName();
-    Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
-    Interface incomingInterface =
-        inputIfaceName == null ? null : config.getAllInterfaces().get(inputIfaceName);
-    if (incomingInterface != null && incomingInterface.getFirewallSessionInterfaceInfo() == null) {
-      // Can't create sessions for flows entering this interface
-      return false;
-    }
 
     Collection<FirewallSessionTraceInfo> sessions =
         _ingressInterface != null
@@ -804,6 +797,7 @@ class FlowTracer {
             .setSessionAction(session.getAction())
             .setMatchCriteria(session.getMatchCriteria());
 
+    Configuration config = _tracerouteContext.getConfigurations().get(currentNodeName);
     Map<String, IpAccessList> ipAccessLists = config.getIpAccessLists();
     Map<String, IpSpace> ipSpaces = config.getIpSpaces();
 
@@ -820,9 +814,14 @@ class FlowTracer {
     _steps.add(new MatchSessionStep(matchDetail.build()));
 
     // apply incoming ACL if any
-    if (incomingInterface != null) {
-      String incomingAclName =
-          incomingInterface.getFirewallSessionInterfaceInfo().getIncomingAclName();
+    if (inputIfaceName != null) {
+      FirewallSessionInterfaceInfo incomingIfaceSessionInfo =
+          config.getAllInterfaces().get(inputIfaceName).getFirewallSessionInterfaceInfo();
+      checkState(
+          incomingIfaceSessionInfo != null,
+          "Session matched, but interface %s does not have FirewallSessionInterfaceInfo.",
+          inputIfaceName);
+      String incomingAclName = incomingIfaceSessionInfo.getIncomingAclName();
       if (incomingAclName != null
           && applyFilter(ipAccessLists.get(incomingAclName), FilterType.INGRESS_FILTER) == DENIED) {
         return true;
