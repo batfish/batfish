@@ -8,8 +8,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.Serializable;
-import java.util.Comparator;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -75,8 +73,7 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof NodeInterfacePair)) {
+    } else if (!(o instanceof NodeInterfacePair)) {
       return false;
     }
     NodeInterfacePair that = (NodeInterfacePair) o;
@@ -85,13 +82,12 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
 
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _interfaceName);
+    return 31 * _hostname.hashCode() + _interfaceName.hashCode();
   }
 
   @Override
   public int compareTo(NodeInterfacePair other) {
-    return Comparator.comparing(NodeInterfacePair::getHostname)
-        .thenComparing(NodeInterfacePair::getInterface)
-        .compare(this, other);
+    int hostCmp = _hostname.compareTo(other._hostname);
+    return hostCmp != 0 ? hostCmp : _interfaceName.compareTo(other._interfaceName);
   }
 }
