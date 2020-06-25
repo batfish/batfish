@@ -94,8 +94,15 @@ public class AwsConfiguration extends VendorConfiguration {
   private Multimap<LoadBalancer, Instance> _lbsToInstances;
 
   /**
-   * A set of VPCs with either subnets that have instance targets, or subnets that have either NLBs
-   * with instance targets
+   * A set of all VPCs that contain either or both of the following:
+   *
+   * <ul>
+   *   <li>An instance used as a load balancer target
+   *   <li>A load balancer that has at least one active instance target
+   * </ul>
+   *
+   * (It's possible for a VPC to have one without the other because a load balancer's instance
+   * target does not need to be within its own VPC.)
    */
   private Set<Vpc> _vpcsWithInstanceTargets;
 
@@ -213,7 +220,11 @@ public class AwsConfiguration extends VendorConfiguration {
                   .map(AvailabilityZone::getSubnetId)
                   .map(region.getSubnets()::get)
                   .filter(Objects::nonNull)
-                  .forEach(subnet -> subnetsToLbs.put(subnet, lb));
+                  .forEach(
+                      subnet -> {
+                        subnetsToLbs.put(subnet, lb);
+                        vpcsWithInstanceTargets.add(region.getVpcs().get(subnet.getVpcId()));
+                      });
             }
           }
         }
