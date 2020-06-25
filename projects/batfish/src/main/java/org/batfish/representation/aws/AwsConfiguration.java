@@ -11,7 +11,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -227,10 +226,7 @@ public class AwsConfiguration extends VendorConfiguration {
             LinkLocalAddress.of(LINK_LOCAL_IP),
             "To AWS services");
 
-    Set<Prefix> awsServicesPrefixes =
-        Sets.difference(
-            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_AMAZON)),
-            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_EC2)));
+    Set<Prefix> awsServicesPrefixes = AwsPrefixes.getAwsServicesPrefixes();
 
     PrefixSpace servicesPrefixSpace = new PrefixSpace();
     awsServicesPrefixes.forEach(
