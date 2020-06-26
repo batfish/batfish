@@ -1245,8 +1245,8 @@ public final class PaloAltoGrammarTest {
                 "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
                 "ethernet1/3.11", NULL_VRF_NAME),
             String.format(
-                "Could not convert %s AddressObject to ConcreteInterfaceAddress.",
-                AddressObject.Type.IP_RANGE)));
+                "Could not convert %s AddressObject '%s' to ConcreteInterfaceAddress.",
+                AddressObject.Type.IP_RANGE, "ADDR3")));
 
     // Should see a warning about the loopback having a non /32 address
     assertThat(
