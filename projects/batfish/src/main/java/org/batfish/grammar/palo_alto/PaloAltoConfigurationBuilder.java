@@ -33,7 +33,9 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PE
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ETHERNET_AGGREGATE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LOOPBACK_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION_TRANSLATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_FROM_ZONE;
@@ -525,6 +527,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   /** Shallow wrapper to add structure references to the correct configuration. */
   private void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
     _mainConfiguration.referenceStructure(type, name, usage, line);
+  }
+
+  /**
+   * Add interface address reference. Adds a different type of reference based on the format of the
+   * address (e.g. something that looks like an IP address might but does not have to refer to an
+   * object, however something that looks like an object name must refer to an object).
+   */
+  private void referenceInterfaceAddress(
+      Interface_address_or_referenceContext ctx, PaloAltoStructureUsage usage) {
+    String uniqueName = computeObjectName(_currentVsys, getText(ctx));
+    if (ctx.reference != null) {
+      referenceStructure(ADDRESS_LIKE, uniqueName, usage, getLine(ctx.start));
+    } else {
+      /* Interface addresses that look like concrete addresses might still be referring to an object
+       * with an ambiguous name. */
+      referenceStructure(ADDRESS_LIKE_OR_NONE, uniqueName, usage, getLine(ctx.start));
+    }
   }
 
   /**
@@ -1921,6 +1940,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
     InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterface.addAddress(address);
+    referenceInterfaceAddress(ctx.address, LAYER3_INTERFACE_ADDRESS);
   }
 
   @Override
@@ -1955,6 +1975,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       }
     }
     _currentInterface.addAddress(address);
+    referenceInterfaceAddress(ctx.address, LOOPBACK_INTERFACE_ADDRESS);
   }
 
   @Override

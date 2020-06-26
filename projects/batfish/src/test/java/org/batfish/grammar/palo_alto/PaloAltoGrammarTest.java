@@ -609,21 +609,31 @@ public final class PaloAltoGrammarTest {
     String hostname2 = "address-groups";
     String filename2 = "configs/" + hostname2;
 
-    String name = computeObjectName(DEFAULT_VSYS_NAME, "addr1");
+    String name_1 = computeObjectName(DEFAULT_VSYS_NAME, "addr1");
+    String name_4 = computeObjectName(DEFAULT_VSYS_NAME, "addr4");
+    String name_ambiguous = computeObjectName(DEFAULT_VSYS_NAME, "4.3.2.1");
 
     // Confirm reference count is correct for used structure
     Batfish batfish1 = getBatfishForConfigurationNames(hostname1);
     ConvertConfigurationAnswerElement ccae1 =
         batfish1.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
 
-    assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name, 0));
+    assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 0));
+    // One reference from l3 interface, one from loopback
+    assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_4, 2));
+    // Should record reference for address object name that looks like a concrete IP address
+    assertThat(
+        ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_ambiguous, 1));
+    // Confirm undefined reference is detected
+    assertThat(
+        ccae1, hasUndefinedReference(filename1, PaloAltoStructureType.ADDRESS_LIKE, "addr_undef"));
 
     Batfish batfish2 = getBatfishForConfigurationNames(hostname2);
     ConvertConfigurationAnswerElement ccae2 =
         batfish2.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
 
     // Confirm reference count is correct for used structure
-    assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name, 2));
+    assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 2));
 
     // Confirm undefined reference is detected
     assertThat(
