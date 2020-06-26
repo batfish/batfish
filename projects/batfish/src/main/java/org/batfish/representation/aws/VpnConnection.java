@@ -61,6 +61,9 @@ import org.xml.sax.SAXException;
 @ParametersAreNonnullByDefault
 final class VpnConnection implements AwsVpcEntity, Serializable {
 
+  // the VRF for interfaces that underlie the IPSec tunnel. they are the ones with public IP.
+  static final String UNDERLAY_VRF_NAME = "underlay";
+
   private static DiffieHellmanGroup toDiffieHellmanGroup(String perfectForwardSecrecy) {
     switch (perfectForwardSecrecy) {
       case "group2":
@@ -363,9 +366,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ipsecPhase2Policy;
   }
 
+  /**
+   * Creates the infrastructure for this VPN connection on the gateway. This includes created
+   * underlay and IPSec tunnel interfaces, configuring IPSec, and running BGP on the tunnel
+   * interfaces.
+   */
   void applyToGateway(
       Configuration gwCfg,
-      Vrf vrf,
+      Vrf tunnelVrf,
       @Nullable String exportPolicyName,
       @Nullable String importPolicyName,
       Warnings warnings) {
@@ -382,6 +390,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigMapBuilder =
         ImmutableSortedMap.naturalOrder();
 
+    if (gwCfg.getVrfs().containsKey(UNDERLAY_VRF_NAME)) {
+      warnings.redFlag(
+          String.format("Gateway node %s already contains underlay VRF", gwCfg.getHostname()));
+      return;
+    }
+
+    Vrf underlayVrf = Vrf.builder().setOwner(gwCfg).setName(UNDERLAY_VRF_NAME).build();
+
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       String tunnelId = vpnTunnelId(_vpnConnectionId, i + 1);
       IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
@@ -394,7 +410,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       Utils.newInterface(
           externalInterfaceName,
           gwCfg,
-          vrf.getName(),
+          underlayVrf.getName(),
           externalInterfaceAddress,
           "IPSec tunnel " + tunnelId);
 
@@ -403,7 +419,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Utils.newInterface(
-          vpnIfaceName, gwCfg, vrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
+          vpnIfaceName, gwCfg, tunnelVrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
 
       // configure Ipsec
       ikePhase1ProposalMapBuilder.put(tunnelId, toIkePhase1Proposal(tunnelId, ipsecTunnel));
@@ -437,7 +453,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         BgpActivePeerConfig.builder()
             .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
             .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
-            .setBgpProcess(vrf.getBgpProcess())
+            .setBgpProcess(tunnelVrf.getBgpProcess())
             .setLocalAs(ipsecTunnel.getVgwBgpAsn())
             .setLocalIp(ipsecTunnel.getVgwInsideAddress())
             .setIpv4UnicastAddressFamily(

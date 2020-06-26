@@ -17,6 +17,7 @@ import static org.batfish.representation.aws.TransitGateway.vrfNameForRouteTable
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
+import static org.batfish.representation.aws.VpnConnection.UNDERLAY_VRF_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -374,7 +375,7 @@ public class TransitGatewayTest {
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(UNDERLAY_VRF_NAME));
   }
 
   @Test
@@ -449,7 +450,7 @@ public class TransitGatewayTest {
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(UNDERLAY_VRF_NAME));
   }
 
   @Test
