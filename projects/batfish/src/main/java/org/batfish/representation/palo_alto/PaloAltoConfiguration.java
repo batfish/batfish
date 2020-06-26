@@ -1269,6 +1269,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (mtu != null) {
       newIface.setMtu(mtu);
     }
+
+    // It is unclear which vsys is used to start the object lookup process on multi-vsys systems,
+    // since interfaces are not associated with particular vsys.
+    // Assuming default vsys is good enough for now (this is the behavior for single-vsys systems).
     ConcreteInterfaceAddress concreteAddress =
         interfaceAddressToConcreteInterfaceAddress(
             iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);

@@ -1251,6 +1251,7 @@ public final class PaloAltoGrammarTest {
     Interface e1_1 = c.getInterfaces().get("ethernet1/1");
     Interface e1_4 = c.getInterfaces().get("ethernet1/4");
     Interface e1_5 = c.getInterfaces().get("ethernet1/5");
+    Interface e1_7 = c.getInterfaces().get("ethernet1/7");
 
     assertThat(e1_1, notNullValue());
     InterfaceAddress e1_1_addr = e1_1.getAddress();
@@ -1266,6 +1267,13 @@ public final class PaloAltoGrammarTest {
     assertThat(e1_5_addr, notNullValue());
     assertThat(e1_5_addr.getType(), equalTo(InterfaceAddress.Type.REFERENCE));
     assertThat(e1_5_addr.getValue(), equalTo("ADDR2"));
+
+    assertThat(e1_7, notNullValue());
+    InterfaceAddress e1_7_addr = e1_7.getAddress();
+    assertThat(e1_7_addr, notNullValue());
+    // Object reference that looks like an IP address
+    assertThat(e1_7_addr.getType(), equalTo(InterfaceAddress.Type.IP_ADDRESS));
+    assertThat(e1_7_addr.getValue(), equalTo("10.100.100.100"));
   }
 
   @Test

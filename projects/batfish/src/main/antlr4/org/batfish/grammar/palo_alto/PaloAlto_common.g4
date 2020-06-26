@@ -24,7 +24,7 @@ interface_address
 interface_address_or_reference
 :
     addr = ip_address
-    | addr_with_mask = IP_PREFIX
+    | addr_with_mask = ip_prefix
     | reference = variable
 ;
 
