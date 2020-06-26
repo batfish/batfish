@@ -104,6 +104,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -2284,5 +2285,68 @@ public class AristaGrammarTest {
   public void testSnmpExtraction() {
     Configuration config = parseConfig("arista_snmp");
     assertThat(config.getSnmpTrapServers(), containsInAnyOrder("10.1.2.3"));
+  }
+
+  @Test
+  public void testPeerFilterExtraction() {
+    AristaConfiguration config = parseVendorConfig("arista_bgp_peer_filter");
+    assertThat(config.getPeerFilters().keySet(), containsInAnyOrder("PF", "EMPTY"));
+    assertThat(
+        config
+            .getAristaBgp()
+            .getDefaultVrf()
+            .getV4DynamicNeighbors()
+            .get(Prefix.parse("1.1.1.0/24"))
+            .getPeerFilter(),
+        equalTo("PF"));
+    assertThat(
+        config
+            .getAristaBgp()
+            .getDefaultVrf()
+            .getV4DynamicNeighbors()
+            .get(Prefix.parse("2.2.2.0/24"))
+            .getPeerFilter(),
+        equalTo("EMPTY"));
+    assertThat(
+        config
+            .getAristaBgp()
+            .getDefaultVrf()
+            .getV4DynamicNeighbors()
+            .get(Prefix.parse("3.3.3.0/24"))
+            .getPeerFilter(),
+        equalTo("DOES_NOT_EXIST"));
+  }
+
+  @Test
+  public void testPeerFilterConversion() {
+    Configuration config = parseConfig("arista_bgp_peer_filter");
+    assertThat(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getPassiveNeighbors()
+            .get(Prefix.parse("1.1.1.0/24"))
+            .getRemoteAsns(),
+        equalTo(
+            LongSpace.builder()
+                .including(Range.closed(1L, 10L))
+                .excluding(Range.closed(3L, 4L))
+                .build()));
+    assertThat(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getPassiveNeighbors()
+            .get(Prefix.parse("2.2.2.0/24"))
+            .getRemoteAsns(),
+        equalTo(BgpPeerConfig.ALL_AS_NUMBERS));
+    assertThat(
+        config
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getPassiveNeighbors()
+            .get(Prefix.parse("3.3.3.0/24"))
+            .getRemoteAsns(),
+        equalTo(BgpPeerConfig.ALL_AS_NUMBERS));
   }
 }
