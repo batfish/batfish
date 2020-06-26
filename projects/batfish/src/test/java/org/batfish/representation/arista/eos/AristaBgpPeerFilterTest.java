@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.Range;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.LongSpace;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /** Tests for {@link AristaBgpPeerFilter} */
@@ -43,12 +42,21 @@ public class AristaBgpPeerFilterTest {
   }
 
   @Test
-  @Ignore("until conversion respects order")
   public void testUnreachableReject() {
     AristaBgpPeerFilter pf = new AristaBgpPeerFilter("name");
     pf.addLine(LongSpace.of(10), AristaBgpPeerFilterLine.Action.ACCEPT);
     pf.addLine(LongSpace.of(Range.closed(11L, 20L)), AristaBgpPeerFilterLine.Action.ACCEPT);
     pf.addLine(LongSpace.of(15), AristaBgpPeerFilterLine.Action.REJECT);
+    assertThat(
+        pf.toLongSpace(), equalTo(LongSpace.builder().including(Range.closed(10L, 20L)).build()));
+  }
+
+  @Test
+  public void testUnreachableAccept() {
+    AristaBgpPeerFilter pf = new AristaBgpPeerFilter("name");
+    pf.addLine(LongSpace.of(Range.closed(10L, 20L)), AristaBgpPeerFilterLine.Action.ACCEPT);
+    pf.addLine(LongSpace.of(15), AristaBgpPeerFilterLine.Action.REJECT);
+    pf.addLine(LongSpace.of(15), AristaBgpPeerFilterLine.Action.ACCEPT);
     assertThat(
         pf.toLongSpace(), equalTo(LongSpace.builder().including(Range.closed(10L, 20L)).build()));
   }

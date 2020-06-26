@@ -7360,7 +7360,7 @@ PEER_CONFIG_CHECK_BYPASS
 
 PEER_FILTER
 :
-   'peer-filter'
+   'peer-filter' -> pushMode (M_Word)
 ;
 
 PEER_GROUP

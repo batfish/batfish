@@ -1,11 +1,11 @@
 package org.batfish.representation.arista.eos;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.LongSpace;
-import org.batfish.datamodel.LongSpace.Builder;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilterLine.Action;
 
 /**
@@ -41,27 +41,20 @@ public final class AristaBgpPeerFilter implements Serializable {
     if (_lines.isEmpty()) {
       return BgpPeerConfig.ALL_AS_NUMBERS;
     }
-    Builder builder = LongSpace.builder();
-    _lines
-        .values()
-        .forEach(
-            l -> {
-              if (l.getAction() == AristaBgpPeerFilterLine.Action.ACCEPT) {
-                builder.including(l.getRange());
-              } else if (l.getAction() == AristaBgpPeerFilterLine.Action.REJECT) {
-                builder.excluding(l.getRange());
-              } else {
-                throw new IllegalStateException(
-                    String.format("Unsupported bgp peer-filter action: %s", l.getAction()));
-              }
-            });
-    /*
-    TODO: fix inclusion semantics
-      LongSpace builder processes all inclusions first, followed by all exclusions.
-      This is equivalent to processing all reject lines first, which will crate problems if
-      a peer filter contains an unreachable reject line.
-    */
-    return builder.build();
+
+    // Build the space in the reverse order of the lines, using union/difference operations.
+    LongSpace currentSpace = LongSpace.EMPTY;
+    for (AristaBgpPeerFilterLine l : ImmutableList.copyOf(_lines.values()).reverse()) {
+      if (l.getAction() == Action.ACCEPT) {
+        currentSpace = currentSpace.union(l.getRange());
+      } else if (l.getAction() == Action.REJECT) {
+        currentSpace = currentSpace.difference(l.getRange());
+      } else {
+        throw new IllegalStateException(
+            String.format("Unsupported bgp peer-filter action: %s", l.getAction()));
+      }
+    }
+    return currentSpace;
   }
 
   private final String _name;

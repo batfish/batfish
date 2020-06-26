@@ -1020,7 +1020,6 @@ import org.batfish.representation.arista.eos.AristaBgpNeighborDefaultOriginate;
 import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilter;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilterLine;
-import org.batfish.representation.arista.eos.AristaBgpPeerFilterLine.Action;
 import org.batfish.representation.arista.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpProcess;
 import org.batfish.representation.arista.eos.AristaBgpV4DynamicNeighbor;
@@ -4063,7 +4062,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitPeer_filter_line(Peer_filter_lineContext ctx) {
     assert _currentPeerFilter != null;
-    Action action = AristaBgpPeerFilterLine.Action.valueOf(ctx.action.getText().toUpperCase());
+    AristaBgpPeerFilterLine.Action action;
+    if (ctx.ACCEPT() != null) {
+      action = AristaBgpPeerFilterLine.Action.ACCEPT;
+    } else if (ctx.REJECT() != null) {
+      action = AristaBgpPeerFilterLine.Action.REJECT;
+    } else {
+      throw new IllegalStateException("peer-filter line without known action");
+    }
     LongSpace asSpace = toAsSpace(ctx.asn_range);
     if (ctx.seq == null) {
       _currentPeerFilter.addLine(asSpace, action);

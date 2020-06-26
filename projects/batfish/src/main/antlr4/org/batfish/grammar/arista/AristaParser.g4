@@ -2734,7 +2734,7 @@ s_passwd
 
 s_peer_filter
 :
-   PEER_FILTER name = variable NEWLINE
+   PEER_FILTER name = WORD NEWLINE
    (
       peer_filter_line
    )*
@@ -2742,9 +2742,7 @@ s_peer_filter
 
 peer_filter_line
 :
-   (
-     seq = DEC MATCH | MATCH
-   )
+   (seq = DEC)? MATCH
    AS_RANGE asn_range = eos_as_range RESULT action = (ACCEPT | REJECT)
    NEWLINE
 ;
