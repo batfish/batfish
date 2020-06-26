@@ -74,8 +74,10 @@ public final class UnzipUtility {
                 destDirectory);
         if (entry.isDirectory()) {
           // Make the directory, including parent dirs.
-          if (!outputPath.toFile().mkdirs()) {
-            throw new IOException("Unable to make directory " + outputPath);
+          if (!outputPath.toFile().exists()) {
+            if (!outputPath.toFile().mkdirs()) {
+              throw new IOException("Unable to make directory " + outputPath);
+            }
           }
         } else {
           // Make sure parent directories exist, in case the zip does not contain dir entries

@@ -73,4 +73,24 @@ public class UnzipUtilityTest {
     _thrown.expect(instanceOf(IOException.class));
     UnzipUtility.unzip(pathViolation.toPath(), dest.toPath());
   }
+
+  /**
+   * Test that unzipping does not assume a specific order of zip entries. In particular that entries
+   * for parent directories appear before file entries.
+   */
+  @Test
+  public void testUnzipEntriesOutOfOrder() throws IOException {
+    byte[] contents = "contents of file.txt".getBytes();
+    File notOrdered = _folder.newFile("not_ordered");
+    try (FileOutputStream fos = new FileOutputStream(notOrdered);
+        ZipOutputStream out = new ZipOutputStream(fos)) {
+      out.putNextEntry(new ZipEntry("dir/file.txt"));
+      out.write(contents);
+      out.putNextEntry(new ZipEntry("dir/"));
+    }
+
+    File dest = _folder.newFolder("dest");
+    // Don't crash
+    UnzipUtility.unzip(notOrdered.toPath(), dest.toPath());
+  }
 }
