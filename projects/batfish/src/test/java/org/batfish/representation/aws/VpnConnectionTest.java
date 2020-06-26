@@ -8,6 +8,7 @@ import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
+import static org.batfish.representation.aws.VpnConnection.UNDERLAY_VRF_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
@@ -189,10 +191,11 @@ public class VpnConnectionTest {
   public void testApplyToGateway() {
     VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of(), ImmutableMap.of());
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
+    Vrf vpnVrf = Vrf.builder().setOwner(vgwConfig).setName("vpn").build();
     BgpProcess bgpProc =
         BgpProcess.builder()
             .setRouterId(Ip.parse("1.1.1.1"))
-            .setVrf(vgwConfig.getDefaultVrf())
+            .setVrf(vpnVrf)
             .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
             .build();
 
@@ -234,8 +237,7 @@ public class VpnConnectionTest {
             false);
 
     Warnings warnings = new Warnings(true, true, true);
-    vpnConnection.applyToGateway(
-        vgwConfig, vgwConfig.getDefaultVrf(), "ExportPolicy", "ImportPolicy", warnings);
+    vpnConnection.applyToGateway(vgwConfig, vpnVrf, "ExportPolicy", "ImportPolicy", warnings);
 
     // quick check to see if things processed fine
     assertTrue(warnings.getRedFlagWarnings().isEmpty());
@@ -246,11 +248,23 @@ public class VpnConnectionTest {
             ImmutableSet.of(
                 vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)),
                 vpnInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)))));
+    assertThat(
+        vgwConfig
+            .getAllInterfaces()
+            .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)))
+            .getVrfName(),
+        equalTo(UNDERLAY_VRF_NAME));
+    assertThat(
+        vgwConfig
+            .getAllInterfaces()
+            .get(vpnInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)))
+            .getVrfName(),
+        equalTo(vpnVrf.getName()));
 
     // TODO: check IPSec
 
     BgpActivePeerConfig bgpActivePeerConfig =
-        getOnlyElement(vgwConfig.getDefaultVrf().getBgpProcess().getActiveNeighbors().values());
+        getOnlyElement(vpnVrf.getBgpProcess().getActiveNeighbors().values());
 
     assertThat(
         bgpActivePeerConfig,

@@ -25490,7 +25490,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "default"
+            "vrf" : "underlay"
           },
           "external-vpn-ba2e34a8-2" : {
             "name" : "external-vpn-ba2e34a8-2",
@@ -25515,7 +25515,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "default"
+            "vrf" : "underlay"
           },
           "loopbackBgp" : {
             "name" : "loopbackBgp",
@@ -25819,6 +25819,10 @@
                 "tag" : -1
               }
             ]
+          },
+          "underlay" : {
+            "name" : "underlay",
+            "hasOriginatingSessions" : false
           }
         }
       },
