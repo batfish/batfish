@@ -1,9 +1,11 @@
 package org.batfish.common.util;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -72,5 +74,49 @@ public class UnzipUtilityTest {
     File dest = _folder.newFolder("dest");
     _thrown.expect(instanceOf(IOException.class));
     UnzipUtility.unzip(pathViolation.toPath(), dest.toPath());
+  }
+
+  /**
+   * Test that unzipping does not assume a specific order of zip entries. In particular that entries
+   * for parent directories appear before file entries.
+   */
+  @Test
+  public void testUnzipEntriesOutOfOrder() throws IOException {
+    byte[] contents = "contents of file.txt".getBytes();
+    File notOrdered = _folder.newFile("not_ordered");
+    try (FileOutputStream fos = new FileOutputStream(notOrdered);
+        ZipOutputStream out = new ZipOutputStream(fos)) {
+      out.putNextEntry(new ZipEntry("dir/file.txt"));
+      out.write(contents);
+      out.putNextEntry(new ZipEntry("dir/"));
+    }
+
+    File dest = _folder.newFolder("dest");
+    // Don't crash
+    UnzipUtility.unzip(notOrdered.toPath(), dest.toPath());
+  }
+
+  /** Test that unzipping still throws IO exception on legitimate file system access errors */
+  @Test
+  public void testUnzipThrowsOnMkdirErrors() {
+    File dest;
+    File test_zip;
+    try {
+      test_zip = _folder.newFile("test_zip");
+      try (FileOutputStream fos = new FileOutputStream(test_zip);
+          ZipOutputStream out = new ZipOutputStream(fos)) {
+        out.putNextEntry(new ZipEntry("dir/"));
+      }
+      dest = _folder.newFolder("dest");
+      dest.setWritable(false);
+    } catch (IOException e) {
+      throw new AssertionError("test failed with IOException for the wrong reason");
+    }
+    try {
+      UnzipUtility.unzip(test_zip.toPath(), dest.toPath());
+      fail(); // should not reach
+    } catch (IOException e) {
+      assertThat(e.getMessage(), containsString("Unable to make directory"));
+    }
   }
 }
