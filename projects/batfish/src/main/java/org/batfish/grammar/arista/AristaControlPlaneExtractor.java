@@ -38,6 +38,7 @@ import static org.batfish.representation.arista.AristaStructureType.L2TP_CLASS;
 import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.arista.AristaStructureType.NAT_POOL;
+import static org.batfish.representation.arista.AristaStructureType.PEER_FILTER;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX6_LIST;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX_LIST;
@@ -51,6 +52,7 @@ import static org.batfish.representation.arista.AristaStructureUsage.BGP_AGGREGA
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_INBOUND_ROUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureUsage.BGP_LISTEN_RANGE_PEER_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
@@ -739,6 +741,7 @@ import org.batfish.grammar.arista.AristaParser.Ospf_areaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_default_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_interface_is_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.Peer_filter_lineContext;
 import org.batfish.grammar.arista.AristaParser.Peer_sa_filterContext;
 import org.batfish.grammar.arista.AristaParser.Pi_iosicd_dropContext;
 import org.batfish.grammar.arista.AristaParser.Pi_iosicd_passContext;
@@ -832,6 +835,7 @@ import org.batfish.grammar.arista.AristaParser.S_mac_access_list_extendedContext
 import org.batfish.grammar.arista.AristaParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.arista.AristaParser.S_no_access_list_standardContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
+import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ospfContext;
 import org.batfish.grammar.arista.AristaParser.S_router_ripContext;
@@ -1014,6 +1018,8 @@ import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMo
 import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
 import org.batfish.representation.arista.eos.AristaBgpNeighborDefaultOriginate;
 import org.batfish.representation.arista.eos.AristaBgpNetworkConfiguration;
+import org.batfish.representation.arista.eos.AristaBgpPeerFilter;
+import org.batfish.representation.arista.eos.AristaBgpPeerFilterLine;
 import org.batfish.representation.arista.eos.AristaBgpPeerGroupNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpProcess;
 import org.batfish.representation.arista.eos.AristaBgpV4DynamicNeighbor;
@@ -1239,6 +1245,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private String _currentOspfInterface;
 
   private OspfProcess _currentOspfProcess;
+
+  @Nullable private AristaBgpPeerFilter _currentPeerFilter;
 
   private Prefix6List _currentPrefix6List;
 
@@ -2695,7 +2703,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       neighbor.setRemoteAs(toAsNum(ctx.asn));
     }
     if (ctx.peer_filter != null) {
-      warn(ctx, "Peer filters are currently not supported");
+      String peerFilterName = ctx.peer_filter.getText();
+      neighbor.setPeerFilter(peerFilterName);
+      _configuration.referenceStructure(
+          PEER_FILTER, peerFilterName, BGP_LISTEN_RANGE_PEER_FILTER, ctx.getStart().getLine());
     }
   }
 
@@ -4032,6 +4043,38 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.variable_policy_map_header() != null) {
       String name = ctx.variable_policy_map_header().getText();
       _configuration.defineStructure(POLICY_MAP, name, ctx);
+    }
+  }
+
+  @Override
+  public void enterS_peer_filter(S_peer_filterContext ctx) {
+    String name = ctx.name.getText();
+    _currentPeerFilter =
+        _configuration.getPeerFilters().computeIfAbsent(name, AristaBgpPeerFilter::new);
+    _configuration.defineStructure(PEER_FILTER, name, ctx);
+  }
+
+  @Override
+  public void exitS_peer_filter(S_peer_filterContext ctx) {
+    _currentPeerFilter = null;
+  }
+
+  @Override
+  public void exitPeer_filter_line(Peer_filter_lineContext ctx) {
+    assert _currentPeerFilter != null;
+    AristaBgpPeerFilterLine.Action action;
+    if (ctx.ACCEPT() != null) {
+      action = AristaBgpPeerFilterLine.Action.ACCEPT;
+    } else if (ctx.REJECT() != null) {
+      action = AristaBgpPeerFilterLine.Action.REJECT;
+    } else {
+      throw new IllegalStateException("peer-filter line without known action");
+    }
+    LongSpace asSpace = toAsSpace(ctx.asn_range);
+    if (ctx.seq == null) {
+      _currentPeerFilter.addLine(asSpace, action);
+    } else {
+      _currentPeerFilter.addLine(toInteger(ctx.seq), asSpace, action);
     }
   }
 
