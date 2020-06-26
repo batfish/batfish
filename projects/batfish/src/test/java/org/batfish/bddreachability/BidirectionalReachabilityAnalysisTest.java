@@ -740,7 +740,8 @@ public final class BidirectionalReachabilityAnalysisTest {
     IpAccessList permitUdpAcl =
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(permitUdpLine)).build();
     fwI2.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, permitUdpAcl.getName()));
+        new FirewallSessionInterfaceInfo(
+            false, ImmutableList.of(fwI2.getName()), null, permitUdpAcl.getName()));
 
     // transform source IP before setting up session on fwI3
     Ip poolIp = Ip.parse("5.5.5.5");
