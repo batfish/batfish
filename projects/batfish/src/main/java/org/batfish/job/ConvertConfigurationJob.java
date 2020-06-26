@@ -166,10 +166,22 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       @Nonnull String purpose,
       Warnings w) {
     @Nullable IpAccessList acl = getter.get();
-    if (acl == null || acls.containsKey(acl.getName())) {
+    if (acl == null) {
       return;
     }
-    w.redFlag(String.format("The device ACL map does not contain %s %s.", acl.getName(), purpose));
+    @Nullable IpAccessList inMap = acls.get(acl.getName());
+    // Deliberate == comparison.
+    if (inMap == acl) {
+      return;
+    }
+    if (inMap == null) {
+      w.redFlag(
+          String.format("The device ACL map does not contain %s %s.", purpose, acl.getName()));
+    } else {
+      w.redFlag(
+          String.format(
+              "The device ACL map has a different version of %s %s.", purpose, acl.getName()));
+    }
     setter.accept(null);
   }
 
