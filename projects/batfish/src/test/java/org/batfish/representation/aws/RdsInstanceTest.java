@@ -12,7 +12,8 @@ import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchPorts;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchTcp;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
-import static org.batfish.representation.aws.Region.instanceEgressAclName;
+import static org.batfish.representation.aws.Region.eniEgressAclName;
+import static org.batfish.representation.aws.Region.eniIngressAclName;
 import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
@@ -196,26 +197,25 @@ public class RdsInstanceTest {
                                         .build(),
                                     traceElementEniPrivateIp(
                                         "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))))))));
-    assertThat(
-        testRds.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
-        equalTo(
-            ImmutableList.of(
-                new AclAclLine(
-                    "Security Group Test Security Group",
-                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
-                    Utils.getTraceElementForSecurityGroup("Test Security Group")))));
     for (Interface iface : testRds.getAllInterfaces().values()) {
-      assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
+      assertThat(iface.getIncomingFilter().getName(), equalTo(eniIngressAclName(iface.getName())));
+      assertThat(iface.getOutgoingFilter().getName(), equalTo(eniEgressAclName(iface.getName())));
       assertThat(
-          iface.getOutgoingFilter().getName(), equalTo(instanceEgressAclName(iface.getName())));
-      assertThat(
-          testRds.getIpAccessLists().get(instanceEgressAclName(iface.getName())).getLines(),
+          testRds.getIpAccessLists().get(eniEgressAclName(iface.getName())).getLines(),
           equalTo(
               ImmutableList.of(
                   computeAntiSpoofingFilter(iface),
                   new AclAclLine(
                       "Security Group Test Security Group",
                       "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~",
+                      Utils.getTraceElementForSecurityGroup("Test Security Group")))));
+      assertThat(
+          testRds.getIpAccessLists().get(eniIngressAclName(iface.getName())).getLines(),
+          equalTo(
+              ImmutableList.of(
+                  new AclAclLine(
+                      "Security Group Test Security Group",
+                      "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
                       Utils.getTraceElementForSecurityGroup("Test Security Group")))));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),
