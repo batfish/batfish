@@ -20,12 +20,12 @@ public abstract class AbstractIpSpaceContainsIp implements GenericIpSpaceVisitor
 
   @Override
   public final Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
-    return aclIpSpace.getLines().stream()
-        .filter(line -> line.getIpSpace().accept(this))
-        .map(AclIpSpaceLine::getAction)
-        .findFirst()
-        .map(action -> action == LineAction.PERMIT)
-        .orElse(false);
+    for (AclIpSpaceLine line : aclIpSpace.getLines()) {
+      if (line.getIpSpace().accept(this)) {
+        return line.getAction() == LineAction.PERMIT;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -45,8 +45,17 @@ public abstract class AbstractIpSpaceContainsIp implements GenericIpSpaceVisitor
 
   @Override
   public final Boolean visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    return ipWildcardSetIpSpace.getBlacklist().stream().noneMatch(w -> w.containsIp(_ip))
-        && ipWildcardSetIpSpace.getWhitelist().stream().anyMatch(w -> w.containsIp(_ip));
+    for (IpWildcard w : ipWildcardSetIpSpace.getBlacklist()) {
+      if (w.containsIp(_ip)) {
+        return false;
+      }
+    }
+    for (IpWildcard w : ipWildcardSetIpSpace.getWhitelist()) {
+      if (w.containsIp(_ip)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
