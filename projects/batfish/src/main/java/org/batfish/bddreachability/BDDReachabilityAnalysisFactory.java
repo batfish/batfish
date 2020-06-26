@@ -741,7 +741,6 @@ public final class BDDReachabilityAnalysisFactory {
   private Stream<Edge> generateEdges() {
     return Streams.concat(
         generateRules_PreInInterface_NodeDropAclIn(),
-        generateRules_PreInInterface_NodeDropAclIn_PBR(),
         generateRules_PreInInterface_PostInInterface(),
         generateRules_PreInInterface_PbrFibLookup(),
         generateRules_PostInInterface_NodeDropAclIn(),
@@ -895,36 +894,22 @@ public final class BDDReachabilityAnalysisFactory {
 
   private Stream<Edge> generateRules_PreInInterface_NodeDropAclIn() {
     return getInterfaces()
-        // Policy-based routing rules are generated elsewhere
-        .filter(iface -> iface.getRoutingPolicyName() == null && iface.getIncomingFilter() != null)
+        .filter(iface -> iface.getRoutingPolicyName() != null || iface.getIncomingFilter() != null)
         .map(
             i -> {
+              String node = i.getOwner().getHostname();
+              String iface = i.getName();
+              Transition denyTransition;
+
+              // There are two ways to drop based on ACLs: incoming filter, or PBR.
+              // They are exclusive.
               IpAccessList acl = i.getIncomingFilter();
-              String node = i.getOwner().getHostname();
-              String iface = i.getName();
-
-              BDD aclDenyBDD = ignorableAclDenyBDD(node, acl);
-              return new Edge(
-                  new PreInInterface(node, iface),
-                  new NodeDropAclIn(node),
-                  compose(
-                      constraint(aclDenyBDD),
-                      removeNodeSpecificConstraints(
-                          node,
-                          _lastHopMgr,
-                          _bddOutgoingOriginalFlowFilterManagers.get(node),
-                          _bddSourceManagers.get(node))));
-            });
-  }
-
-  private Stream<Edge> generateRules_PreInInterface_NodeDropAclIn_PBR() {
-    return getInterfaces()
-        .filter(iface -> iface.getRoutingPolicyName() != null)
-        .map(
-            i -> {
-              String node = i.getOwner().getHostname();
-              String iface = i.getName();
-              Transition denyTransition = _convertedPacketPolicies.get(node).get(iface).getToDrop();
+              if (acl != null) {
+                assert i.getRoutingPolicyName() == null;
+                denyTransition = constraint(ignorableAclDenyBDD(node, acl));
+              } else {
+                denyTransition = _convertedPacketPolicies.get(node).get(iface).getToDrop();
+              }
 
               return new Edge(
                   new PreInInterface(node, iface),
