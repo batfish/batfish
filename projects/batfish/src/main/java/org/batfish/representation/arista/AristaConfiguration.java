@@ -164,6 +164,7 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.representation.arista.Tunnel.TunnelMode;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
+import org.batfish.representation.arista.eos.AristaBgpPeerFilter;
 import org.batfish.representation.arista.eos.AristaBgpProcess;
 import org.batfish.representation.arista.eos.AristaBgpRedistributionPolicy;
 import org.batfish.representation.arista.eos.AristaBgpVrf;
@@ -371,6 +372,8 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private String _ntpSourceInterface;
 
+  private final Map<String, AristaBgpPeerFilter> _peerFilters;
+
   private final Map<String, Prefix6List> _prefix6Lists;
 
   private final Map<String, PrefixList> _prefixLists;
@@ -424,6 +427,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _natPools = new TreeMap<>();
     _namedVlans = new HashMap<>();
+    _peerFilters = new HashMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
     _routeMaps = new TreeMap<>();
@@ -621,6 +625,10 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public String getNtpSourceInterface() {
     return _ntpSourceInterface;
+  }
+
+  public Map<String, AristaBgpPeerFilter> getPeerFilters() {
+    return _peerFilters;
   }
 
   public Map<String, Prefix6List> getPrefix6Lists() {
@@ -1043,7 +1051,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     // Process passive neighbors next
     Map<Prefix, BgpPassivePeerConfig> passiveNeighbors =
         AristaConversions.getPassiveNeighbors(
-            c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
+            c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _peerFilters, _w);
     newBgpProcess.setPassiveNeighbors(ImmutableSortedMap.copyOf(passiveNeighbors));
 
     return newBgpProcess;
