@@ -29,7 +29,6 @@ import org.batfish.datamodel.IpAccessList;
 public final class SecurityGroup implements AwsVpcEntity, Serializable {
   static final String INGRESS = "INGRESS";
   static final String EGRESS = "EGRESS";
-  static final String SG_INGRESS_ACL_NAME = "~SECURITY_GROUP_INGRESS_ACL~";
 
   @Nullable private final String _description;
 
