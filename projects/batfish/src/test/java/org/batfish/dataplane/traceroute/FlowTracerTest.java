@@ -1329,7 +1329,7 @@ public final class FlowTracerTest {
         Transformation.always().apply(assignDestinationIp(dstIp2)).build());
 
     // must add a breadcrumb before forking
-    breadcrumbs.push(new Breadcrumb(c.getHostname(), vrf.getName(), flow));
+    breadcrumbs.push(new Breadcrumb(c.getHostname(), vrf.getName(), null, flow));
     FlowTracer flowTracer2 = flowTracer.forkTracerSameNode();
 
     // only current flow is transformed
