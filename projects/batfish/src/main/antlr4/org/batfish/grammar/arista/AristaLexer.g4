@@ -62,6 +62,11 @@ ACAP
    'acap'
 ;
 
+ACCEPT
+:
+   'accept'
+;
+
 ACCEPT_DIALIN
 :
    'accept-dialin'
@@ -719,6 +724,11 @@ AS_NUMBER
 AS_PATH
 :
    'as-path' -> pushMode ( M_AsPath )
+;
+
+AS_RANGE
+:
+   'as-range'
 ;
 
 ASPATH_CMP_INCLUDE_NEXTHOP
@@ -8303,6 +8313,11 @@ REGULATORY_DOMAIN_PROFILE
    'regulatory-domain-profile'
 ;
 
+REJECT
+:
+   'reject'
+;
+
 RELAY
 :
    'relay'
@@ -8461,6 +8476,11 @@ RESTRICT
 RESTRICTED
 :
    'restricted'
+;
+
+RESULT
+:
+   'result'
 ;
 
 RESULT_TYPE

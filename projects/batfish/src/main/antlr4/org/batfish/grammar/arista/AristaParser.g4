@@ -2732,6 +2732,23 @@ s_passwd
    NO? PASSWD pass = variable ENCRYPTED? NEWLINE
 ;
 
+s_peer_filter
+:
+   PEER_FILTER name = variable NEWLINE
+   (
+      peer_filter_line
+   )*
+;
+
+peer_filter_line
+:
+   (
+     seq = DEC MATCH | MATCH
+   )
+   AS_RANGE asn_range = eos_as_range RESULT action = (ACCEPT | REJECT)
+   NEWLINE
+;
+
 s_phone_proxy
 :
    NO? PHONE_PROXY null_rest_of_line
@@ -3523,6 +3540,7 @@ stanza
    | s_nv
    | s_openflow
    | s_passwd
+   | s_peer_filter
    | s_phone_proxy
    | s_policy_map
    | s_policy_map_ios

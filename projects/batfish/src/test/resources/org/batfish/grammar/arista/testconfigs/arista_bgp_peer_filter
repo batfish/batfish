@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_peer_filter
+!
+router bgp 1
+  router-id 1.2.3.4
+  neighbor PG peer-group
+  bgp listen range 1.1.1.0/24 peer-group PG peer-filter PF
+  bgp listen range 2.2.2.0/24 peer-group PG peer-filter EMPTY
+  bgp listen range 3.3.3.0/24 peer-group PG peer-filter DOES_NOT_EXIST
+
+peer-filter PF
+  10 match as-range 1 result accept
+  match as-range 3-4 result reject
+  31 match as-range 2-10 result accept
+
+peer-filter EMPTY

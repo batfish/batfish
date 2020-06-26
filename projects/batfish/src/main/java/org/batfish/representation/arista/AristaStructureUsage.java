@@ -12,6 +12,7 @@ public enum AristaStructureUsage implements StructureUsage {
   BGP_INBOUND_PREFIX6_LIST("bgp inbound ipv6 prefix-list"),
   BGP_INBOUND_ROUTE_MAP("bgp inbound route-map"),
   BGP_INBOUND_ROUTE6_MAP("bgp inbound ipv6 route-map"),
+  BGP_LISTEN_RANGE_PEER_FILTER("bgp listen range peer-filter"),
   BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN("bgp neighbor distribute-list access-list in"),
   BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT("bgp neighbor distribute-list access-list out"),
   BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN("bgp neighbor distribute-list ipv6 access-list in"),
