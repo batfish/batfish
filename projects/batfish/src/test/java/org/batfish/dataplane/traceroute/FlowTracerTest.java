@@ -9,9 +9,11 @@ import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.dataplane.traceroute.FlowTracer.buildFirewallSessionTraceInfo;
@@ -40,16 +42,20 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.Stack;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -70,16 +76,20 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.MockFib;
 import org.batfish.datamodel.MockForwardingAnalysis;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
@@ -105,10 +115,16 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.main.Batfish;
+import org.batfish.main.BatfishTestUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link FlowTracer}. */
 public final class FlowTracerTest {
+  @Rule public TemporaryFolder _temporaryFolder = new TemporaryFolder();
+
   @Test
   public void testBuildDeniedTraceNoNewSessions() {
     NetworkFactory nf = new NetworkFactory();
@@ -1145,6 +1161,127 @@ public final class FlowTracerTest {
     }
   }
 
+  /**
+   * Builds a 2-node network where n1[i1] -> n2 -> n1[i2] have static routes forcing a loop.
+   * However, n1's egress ACL denies all flows that come in via i2, so no loops should actually be
+   * possible - instead, the flow should be DENIED_OUT.
+   */
+  @Test
+  public void testDeniedOutNotLoop() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration n1 =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf v1 = nf.vrfBuilder().setOwner(n1).build();
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setOwner(n1)
+            .setVrf(v1)
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/31"))
+            .build();
+    List<AclLine> lines =
+        ImmutableList.<AclLine>builder()
+            .add(
+                new ExprAclLine(
+                    LineAction.DENY,
+                    AclLineMatchExprs.matchSrcInterface(i1.getName()),
+                    "deny-from-i1"))
+            .add(new ExprAclLine(LineAction.PERMIT, TrueExpr.INSTANCE, "permit-all"))
+            .build();
+    Interface i2 =
+        nf.interfaceBuilder()
+            .setOwner(n1)
+            .setOutgoingFilter(
+                IpAccessList.builder().setName("Deny-from-i1").setLines(lines).build())
+            .setVrf(v1)
+            .setAddress(ConcreteInterfaceAddress.parse("2.0.0.0/31"))
+            .build();
+    v1.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setAdministrativeCost(1)
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(Ip.parse("2.0.0.1"))
+                .build()));
+    Configuration n2 =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf v2 = nf.vrfBuilder().setOwner(n2).build();
+    v2.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setAdministrativeCost(1)
+                .setNetwork(Prefix.ZERO)
+                .setNextHopIp(Ip.parse("1.0.0.0"))
+                .build()));
+    nf.interfaceBuilder()
+        .setOwner(n2)
+        .setVrf(v2)
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/31"))
+        .build();
+    nf.interfaceBuilder()
+        .setOwner(n2)
+        .setVrf(v2)
+        .setAddress(ConcreteInterfaceAddress.parse("2.0.0.1/31"))
+        .build();
+
+    SortedMap<String, Configuration> configs =
+        ImmutableSortedMap.of(n1.getHostname(), n1, n2.getHostname(), n2);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _temporaryFolder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    Flow fromI1 =
+        Flow.builder()
+            .setIngressNode(n1.getHostname())
+            .setIngressVrf(i1.getVrf().getName())
+            .setSrcIp(Ip.parse("4.4.4.4"))
+            .setDstIp(Ip.parse("8.8.8.8"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+            .setDstPort(NamedPort.HTTPS.number())
+            .setTcpFlags(TcpFlags.builder().setSyn(true).build())
+            .build();
+    Flow enteringI1 =
+        fromI1.toBuilder().setIngressInterface(i1.getName()).setIngressVrf(null).build();
+    Flow enteringI2 = fromI1.toBuilder().setIngressInterface(i2.getName()).build();
+    Map<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(batfish.getSnapshot())
+            .computeTraces(ImmutableSet.of(enteringI1, enteringI2, fromI1), false);
+    {
+      // Entering n1[i1] is denied_out immediately upon being routed towards n2.
+      Trace enteringTrace = Iterables.getOnlyElement(traces.get(enteringI1));
+      assertThat(
+          enteringTrace,
+          allOf(hasHops(contains(hasNodeName(n1.getHostname()))), hasDisposition(DENIED_OUT)));
+    }
+    {
+      // Originating from n1[v1] gets forwarded to n2, then back to n1, then denied_out before
+      // heading back to n2.
+      Trace fromTrace = Iterables.getOnlyElement(traces.get(fromI1));
+      assertThat(
+          fromTrace,
+          allOf(
+              hasHops(
+                  contains(
+                      hasNodeName(n1.getHostname()),
+                      hasNodeName(n2.getHostname()),
+                      hasNodeName(n1.getHostname()))),
+              hasDisposition(DENIED_OUT)));
+    }
+    {
+      // Entering n1[i2] is like originating from n1[v1].
+      Trace enteringTrace = Iterables.getOnlyElement(traces.get(enteringI2));
+      assertThat(
+          enteringTrace,
+          allOf(
+              hasHops(
+                  contains(
+                      hasNodeName(n1.getHostname()),
+                      hasNodeName(n2.getHostname()),
+                      hasNodeName(n1.getHostname()))),
+              hasDisposition(DENIED_OUT)));
+    }
+  }
+
   @Test
   public void testForkTracerSameNode_transformation() {
     NetworkFactory nf = new NetworkFactory();
@@ -1192,7 +1329,7 @@ public final class FlowTracerTest {
         Transformation.always().apply(assignDestinationIp(dstIp2)).build());
 
     // must add a breadcrumb before forking
-    breadcrumbs.push(new Breadcrumb(c.getHostname(), vrf.getName(), flow));
+    breadcrumbs.push(new Breadcrumb(c.getHostname(), vrf.getName(), null, flow));
     FlowTracer flowTracer2 = flowTracer.forkTracerSameNode();
 
     // only current flow is transformed
