@@ -52,6 +52,7 @@ public class AwsConfigurationPrivateSubnetTest {
   private static String _vpc = "vpc-0b966fdeb36d5e43f";
   private static String _vgw = "vgw-0c09bd7fadac961bf";
   private static Ip _privateIp = Ip.parse("10.0.1.204");
+  private static Ip _vgwUnderlayIp = Ip.parse("18.217.248.9");
   private static String _onPremRouter = onPremRouterFile; // no hostname in the file, so name = file
 
   @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
@@ -97,6 +98,16 @@ public class AwsConfigurationPrivateSubnetTest {
   public void testToOnPrem() {
     testTrace(
         getAnyFlow(_instance, Ip.parse("8.8.8.8"), _batfish), // On prem announces default
+        FlowDisposition.NO_ROUTE,
+        ImmutableList.of(_instance, _subnet, _vpc, _vgw, _onPremRouter),
+        _batfish);
+  }
+
+  /** Packets to the underlay interface Ip on VGW should not end up at the VGW */
+  @Test
+  public void testInstanceToUnderlayInterfaceIp() {
+    testTrace(
+        getAnyFlow(_instance, _vgwUnderlayIp, _batfish),
         FlowDisposition.NO_ROUTE,
         ImmutableList.of(_instance, _subnet, _vpc, _vgw, _onPremRouter),
         _batfish);
