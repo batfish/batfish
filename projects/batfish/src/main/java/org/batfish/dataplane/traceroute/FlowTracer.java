@@ -708,7 +708,8 @@ class FlowTracer {
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
       Stack<Breadcrumb> intraHopBreadcrumbs) {
     // Loop detection
-    Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, _currentFlow);
+    Breadcrumb breadcrumb =
+        new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace();
       return;
@@ -879,7 +880,8 @@ class FlowTracer {
               @Override
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
                 // cycle detection
-                Breadcrumb breadcrumb = new Breadcrumb(currentNodeName, _vrfName, originalFlow);
+                Breadcrumb breadcrumb =
+                    new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, originalFlow);
                 if (_breadcrumbs.contains(breadcrumb)) {
                   buildLoopTrace();
                   return null;
