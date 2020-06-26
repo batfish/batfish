@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -69,7 +70,7 @@ public final class AddressObject implements Serializable {
    * of address objects this is not possible and returns {@code null} instead.
    */
   @Nullable
-  public ConcreteInterfaceAddress toConcreteInterfaceAddress() {
+  public ConcreteInterfaceAddress toConcreteInterfaceAddress(Warnings w) {
     if (_ip != null) {
       return ConcreteInterfaceAddress.create(_ip, Prefix.MAX_PREFIX_LENGTH);
     } else if (_prefix != null) {
@@ -77,6 +78,8 @@ public final class AddressObject implements Serializable {
           _prefix.getIp(), _prefix.getPrefix().getPrefixLength());
     }
     // Cannot convert ambiguous address objects like ip-range objects to concrete iface address
+    w.redFlag(
+        String.format("Could not convert %s AddressObject to ConcreteInterfaceAddress.", _type));
     return null;
   }
 

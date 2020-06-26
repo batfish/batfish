@@ -1947,13 +1947,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnil_ip(Snil_ipContext ctx) {
     InterfaceAddress address = toInterfaceAddress(ctx.address);
-    if (ctx.address.addr_with_mask != null) {
-      if (Prefix.parse(getText(ctx.address.addr_with_mask)).getPrefixLength()
-          != Prefix.MAX_PREFIX_LENGTH) {
-        warn(ctx, ctx.address, "Loopback ip address must be /32 or without mask");
-        return;
-      }
-    }
     _currentInterface.addAddress(address);
   }
 

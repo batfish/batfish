@@ -1097,12 +1097,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // object regardless of the type of interface address we're expecting.
     if (vsys.getAddressObjects().containsKey(addressText)) {
       AddressObject addrObject = vsys.getAddressObjects().get(addressText);
-      ConcreteInterfaceAddress concreteIfaceAddr = addrObject.toConcreteInterfaceAddress();
+      ConcreteInterfaceAddress concreteIfaceAddr = addrObject.toConcreteInterfaceAddress(_w);
       if (concreteIfaceAddr != null) {
         return concreteIfaceAddr;
       }
       // If we cannot build a concrete interface address from the address object, assume we're
-      // referencing some object in a different namespace
+      // either using the literal value (for names that look like addresses) or referencing some
+      // object in a different namespace.
+
+      // NOTE: not sure if real devices actually check other namespaces or just fail here.
     }
     switch (vsys.getNamespaceType()) {
       case LEAF:
@@ -1124,9 +1127,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             return ConcreteInterfaceAddress.parse(addressText);
           case REFERENCE:
           default:
-            w.redFlag(
-                String.format(
-                    "Could not convert InterfaceAddress to ConcreteInterfaceAddress: %s", address));
+            // Assume warning is surfaced in undefined references or in conversion to concrete addr
             return null;
         }
     }
@@ -1265,6 +1266,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .setName(name)
             .setOwner(_c)
             .setType(batfishInterfaceType(iface.getType(), parentType, _w));
+
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);
@@ -1277,6 +1279,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         interfaceAddressToConcreteInterfaceAddress(
             iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);
     if (concreteAddress != null) {
+      if (iface.getType() == Interface.Type.LOOPBACK) {
+        if (concreteAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+          _w.redFlag("Loopback ip address must be /32 or without mask");
+        }
+      }
+
       newIface.setAddress(concreteAddress);
       newIface.setSecondaryAddresses(
           Sets.difference(

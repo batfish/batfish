@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.Range;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.representation.palo_alto.AddressObject.Type;
@@ -17,20 +18,21 @@ public class AddressObjectTest {
   @Test
   public void testGetConcreteInterfaceAddress() {
     AddressObject a = new AddressObject("name");
+    Warnings w = new Warnings();
 
     a.setPrefix(IpPrefix.parse("1.2.3.4/24"));
     assertThat(
-        a.toConcreteInterfaceAddress(), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
+        a.toConcreteInterfaceAddress(w), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/24")));
 
     // Implied /32
     a.setIp(Ip.parse("1.2.3.4"));
     assertThat(
-        a.toConcreteInterfaceAddress(), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/32")));
+        a.toConcreteInterfaceAddress(w), equalTo(ConcreteInterfaceAddress.parse("1.2.3.4/32")));
 
     // Cannot convert ip range to concrete interface address
     Range<Ip> range = Range.closed(Ip.ZERO, Ip.parse("1.1.1.1"));
     a.setIpRange(range);
-    assertThat(a.toConcreteInterfaceAddress(), nullValue());
+    assertThat(a.toConcreteInterfaceAddress(w), nullValue());
   }
 
   @Test
