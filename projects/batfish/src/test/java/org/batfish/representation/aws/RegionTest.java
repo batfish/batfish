@@ -5,6 +5,7 @@ import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
+import static org.batfish.representation.aws.Region.eniIngressAclName;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 import static org.batfish.representation.aws.Utils.newAwsConfiguration;
@@ -232,7 +233,7 @@ public class RegionTest {
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
     region.computeSecurityGroups(cfg, new Warnings());
-    IpAccessList ingressAcl = c.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~");
+    IpAccessList ingressAcl = c.getIpAccessLists().get(eniIngressAclName(ni.getId()));
 
     Flow permittedFlow =
         Flow.builder()
