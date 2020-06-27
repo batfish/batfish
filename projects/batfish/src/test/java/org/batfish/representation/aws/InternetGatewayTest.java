@@ -14,14 +14,14 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
-import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_EXPORT_POLICY_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.InternetGateway.DENIED_UNASSOCIATED_PRIVATE_IP_TRACE;
+import static org.batfish.representation.aws.InternetGateway.IGW_TO_BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.InternetGateway.UNASSOCIATED_PRIVATE_IP_FILTER_NAME;
 import static org.batfish.representation.aws.InternetGateway.computeUnassociatedPrivateIpFilter;
 import static org.batfish.representation.aws.InternetGateway.configureNat;
@@ -169,7 +169,7 @@ public class InternetGatewayTest {
         IpAccessListMatchers.hasName(UNASSOCIATED_PRIVATE_IP_FILTER_NAME));
 
     assertThat(
-        igwConfig.getRoutingPolicies().get(BACKBONE_EXPORT_POLICY_NAME).getStatements(),
+        igwConfig.getRoutingPolicies().get(IGW_TO_BACKBONE_EXPORT_POLICY_NAME).getStatements(),
         equalTo(
             Collections.singletonList(
                 IspModelingUtils.getAdvertiseStaticStatement(
@@ -198,7 +198,7 @@ public class InternetGatewayTest {
                 .setPeerInterface(bbInterface.getName())
                 .setIpv4UnicastAddressFamily(
                     Ipv4UnicastAddressFamily.builder()
-                        .setExportPolicy(BACKBONE_EXPORT_POLICY_NAME)
+                        .setExportPolicy(IGW_TO_BACKBONE_EXPORT_POLICY_NAME)
                         .build())
                 .build()));
   }

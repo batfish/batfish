@@ -1,7 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
