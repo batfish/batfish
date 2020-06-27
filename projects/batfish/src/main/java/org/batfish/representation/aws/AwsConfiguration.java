@@ -220,7 +220,7 @@ public class AwsConfiguration extends VendorConfiguration {
   static Configuration generateAwsServicesGateway() {
     Configuration cfgNode =
         Configuration.builder()
-            // we don't use AWS config format because want this node to be part of the AWS aggregate
+            // don't use AWS config format; we don't want this node to be part of the AWS aggregate
             // cisco_ios is a placeholder we use for isps as well
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .setHostname(AWS_SERVICES_GATEWAY_NODE_NAME)
