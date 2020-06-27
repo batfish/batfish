@@ -21,10 +21,9 @@ import org.junit.rules.TemporaryFolder;
  * single private subnet along with a VPN gateway and the customer gateway. The on-prem router
  * config was generated via AWS.
  */
-public class AwsConfigurationPrivateSubnetTest {
+public class AwsConfigurationVpnGatewayTest {
 
-  private static final String TESTCONFIGS_DIR =
-      "org/batfish/representation/aws/test-private-subnet";
+  private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-vpn-gateway";
 
   private static final List<String> fileNames =
       ImmutableList.of(
