@@ -1,17 +1,16 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.AWS_BACKBONE_HOSTNAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testBidirectionalTrace;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.junit.BeforeClass;
@@ -116,11 +115,11 @@ public class AwsConfigurationVpcEndpointGatewayTest {
             _subnetPublic,
             _vpc,
             _igw,
-            IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN),
+            AWS_BACKBONE_HOSTNAME,
             AWS_SERVICES_GATEWAY_NODE_NAME),
         ImmutableList.of(
             AWS_SERVICES_GATEWAY_NODE_NAME,
-            IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN),
+            AWS_BACKBONE_HOSTNAME,
             _igw,
             _vpc,
             _subnetPublic,

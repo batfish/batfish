@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.collect.Iterators.getOnlyElement;
+import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -25,6 +27,9 @@ import org.junit.rules.TemporaryFolder;
 
 /** Collection of utilities for AWS e2e tests */
 public final class AwsConfigurationTestUtils {
+
+  static final String AWS_BACKBONE_HOSTNAME =
+      IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN);
 
   static IBatfish testSetup(String testconfigsDir, List<String> fileNames, TemporaryFolder folder)
       throws IOException {

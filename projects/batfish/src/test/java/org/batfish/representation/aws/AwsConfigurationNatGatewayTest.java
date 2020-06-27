@@ -1,16 +1,15 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.AWS_BACKBONE_HOSTNAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -32,9 +31,6 @@ import org.junit.rules.TemporaryFolder;
  * the tests below but were part of the definition file (and pulled data) for manual testing.
  */
 public class AwsConfigurationNatGatewayTest {
-
-  private static final String AWS_BACKBONE_HOSTNAME =
-      IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN);
 
   private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-nat-gateway";
 
