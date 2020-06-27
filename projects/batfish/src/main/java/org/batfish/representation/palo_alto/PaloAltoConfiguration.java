@@ -1279,22 +1279,21 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         interfaceAddressToConcreteInterfaceAddress(
             iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);
     if (concreteAddress != null) {
-      if (iface.getType() == Interface.Type.LOOPBACK) {
-        if (concreteAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
-          _w.redFlag("Loopback ip address must be /32 or without mask");
-        }
+      if (iface.getType() == Interface.Type.LOOPBACK
+          && concreteAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+        _w.redFlag("Loopback ip address must be /32 or without mask");
+      } else {
+        newIface.setAddress(concreteAddress);
+        newIface.setSecondaryAddresses(
+            Sets.difference(
+                iface.getAllAddresses().stream()
+                    .map(
+                        a ->
+                            interfaceAddressToConcreteInterfaceAddress(
+                                a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
+                    .collect(Collectors.toSet()),
+                ImmutableSet.of(concreteAddress)));
       }
-
-      newIface.setAddress(concreteAddress);
-      newIface.setSecondaryAddresses(
-          Sets.difference(
-              iface.getAllAddresses().stream()
-                  .map(
-                      a ->
-                          interfaceAddressToConcreteInterfaceAddress(
-                              a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
-                  .collect(Collectors.toSet()),
-              ImmutableSet.of(concreteAddress)));
     }
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());

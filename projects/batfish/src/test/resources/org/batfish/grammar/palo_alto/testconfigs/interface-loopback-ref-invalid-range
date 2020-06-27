@@ -1,0 +1,5 @@
+set deviceconfig system hostname interface-loopback-ref-invalid-range
+set address ADDR1 ip-range 10.10.13.13-10.10.13.15
+set network interface loopback ip ADDR1
+# Interfaces are not functionally active unless they are in a virtual-router
+set network virtual-router default interface loopback
