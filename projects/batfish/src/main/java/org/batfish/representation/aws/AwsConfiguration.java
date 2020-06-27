@@ -78,9 +78,6 @@ public class AwsConfiguration extends VendorConfiguration {
   /** ASN to use for nodes that faces the backbone (e.g., IGW, services gateway) */
   static final long BACKBONE_PEERING_ASN = 65534L;
 
-  /** The prefix of underlay VPN prefixes */
-  static final String VPN_EXTERNAL_INTERFACE_PREFIX = "external-";
-
   @Nullable private ConvertedConfiguration _convertedConfiguration;
   @Nonnull private final Map<String, Account> _accounts;
 
@@ -322,7 +319,7 @@ public class AwsConfiguration extends VendorConfiguration {
   }
 
   public static String vpnExternalInterfaceName(String tunnelId) {
-    return VPN_EXTERNAL_INTERFACE_PREFIX + tunnelId;
+    return "external-" + tunnelId;
   }
 
   public static String vpnTunnelId(String vpnConnectionId, int idNum) {
