@@ -81,7 +81,6 @@
     },
     {
       "contents" : [
-        "node-__aws-services-gateway__",
         "aggregate-us-west-2"
       ],
       "id" : "aggregate-aws",
@@ -316,13 +315,6 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-__aws-services-gateway__-backbone",
-      "name" : "backbone",
-      "nodeId" : "node-__aws-services-gateway__",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
       "id" : "interface-node-vpc-b390fad5-subnet-1641fa70",
       "name" : "subnet-1641fa70",
       "nodeId" : "node-vpc-b390fad5",
@@ -495,6 +487,13 @@
       "name" : "vpc-f8fad69d-vrf-igw-068fee63",
       "nodeId" : "node-subnet-9c8adceb",
       "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-__aws-services-gateway__-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-__aws-services-gateway__",
+      "type" : "UNKNOWN",
       "properties" : null
     },
     {

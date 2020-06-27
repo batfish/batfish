@@ -3,13 +3,12 @@
     "class" : "org.batfish.question.VIModelQuestionPlugin$VIModelAnswerElement",
     "nodes" : {
       "__aws-services-gateway__" : {
-        "configurationFormat" : "AWS",
+        "configurationFormat" : "CISCO_IOS",
         "name" : "__aws-services-gateway__",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "AWS_SERVICES_GATEWAY",
         "deviceType" : "ROUTER",
-        "domainName" : "aws",
         "generatedReferenceBooks" : {
           "AwsSeviceIps~on~__aws-services-gateway__" : {
             "addressGroups" : [
@@ -29,7 +28,7 @@
             "name" : "AwsSeviceIps~on~__aws-services-gateway__"
           }
         },
-        "humanName" : "AWS Services Gateway",
+        "humanName" : "public aws services gateway",
         "interfaces" : {
           "aws-services" : {
             "name" : "aws-services",
@@ -56,7 +55,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "UNKNOWN",
             "vrf" : "default"
           },
           "backbone" : {
@@ -84,7 +83,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "UNKNOWN",
             "vrf" : "default"
           }
         },
@@ -881,9 +880,7 @@
             ]
           }
         },
-        "vendorFamily" : {
-          "aws" : { }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
