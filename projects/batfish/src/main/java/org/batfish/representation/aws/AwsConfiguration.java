@@ -152,7 +152,8 @@ public class AwsConfiguration extends VendorConfiguration {
     return ImmutableList.copyOf(_convertedConfiguration.getAllNodes());
   }
 
-  private void convertConfigurations() {
+  @VisibleForTesting
+  void populatePrecomputedMaps() {
     // A multimap from Subnet -> Instance targets within subnet
     ImmutableMultimap.Builder<Subnet, Instance> subnetsToInstances = ImmutableMultimap.builder();
 
@@ -220,7 +221,10 @@ public class AwsConfiguration extends VendorConfiguration {
     _subnetsToLbs = subnetsToLbs.build();
     _lbsToInstances = lbsToInstances.build();
     _vpcsWithInstanceTargets = vpcsWithInstanceTargets.build();
+  }
 
+  private void convertConfigurations() {
+    populatePrecomputedMaps();
     _convertedConfiguration = new ConvertedConfiguration();
     if (!_accounts.isEmpty()) { // generate only if we have any data
       _convertedConfiguration.addNode(generateAwsServicesGateway());
