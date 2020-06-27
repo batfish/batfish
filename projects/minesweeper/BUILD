@@ -39,6 +39,8 @@ java_library(
     ],
     deps = [
         ":minesweeper",
+        "//projects/batfish-common-protocol:common",
+        "@maven//:com_google_guava_guava",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )

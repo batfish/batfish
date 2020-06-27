@@ -10,6 +10,9 @@ import org.batfish.common.BatfishException;
 
 public final class PrefixRange implements Serializable, Comparable<PrefixRange> {
 
+  /** A prefix range representing all prefixes. */
+  public static final PrefixRange ALL = fromString("0.0.0.0/0:0-32");
+
   public PrefixRange(Prefix prefix, SubRange lengthRange) {
     // Canonicalize the prefix by dropping extra bits in the address that are longer than any
     // relevant length.
