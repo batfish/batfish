@@ -1,10 +1,9 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_EXPORT_POLICY_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
 import static org.batfish.representation.aws.Utils.createBackboneConnection;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
@@ -33,7 +32,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.referencelibrary.AddressGroup;
@@ -208,14 +206,11 @@ public class UtilsTest {
   @Test
   public void testCreateBackboneConnection() {
     Configuration cfg = newAwsConfiguration("test", "aws");
+    String policyName = "export policy";
 
-    PrefixSpace prefixSpace = new PrefixSpace();
-    prefixSpace.addPrefix(Prefix.parse("1.1.1.1/32"));
-
-    createBackboneConnection(cfg, prefixSpace);
+    createBackboneConnection(cfg, cfg.getDefaultVrf(), policyName);
 
     assertTrue(cfg.getAllInterfaces().containsKey(BACKBONE_FACING_INTERFACE_NAME));
-    assertTrue(cfg.getRoutingPolicies().containsKey(BACKBONE_EXPORT_POLICY_NAME));
     assertThat(cfg.getDefaultVrf().getBgpProcess().getRouterId(), equalTo(LINK_LOCAL_IP));
     assertThat(
         cfg.getDefaultVrf().getBgpProcess().getInterfaceNeighbors(),
@@ -228,9 +223,7 @@ public class UtilsTest {
                     .setLocalIp(LINK_LOCAL_IP)
                     .setLocalAs(BACKBONE_PEERING_ASN)
                     .setIpv4UnicastAddressFamily(
-                        Ipv4UnicastAddressFamily.builder()
-                            .setExportPolicy(BACKBONE_EXPORT_POLICY_NAME)
-                            .build())
+                        Ipv4UnicastAddressFamily.builder().setExportPolicy(policyName).build())
                     .build())));
   }
 }

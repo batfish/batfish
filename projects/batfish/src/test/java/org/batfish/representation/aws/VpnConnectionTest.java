@@ -3,13 +3,17 @@ package org.batfish.representation.aws;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPN_CONNECTIONS;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
-import static org.batfish.representation.aws.VpnConnection.UNDERLAY_VRF_NAME;
+import static org.batfish.representation.aws.VpnConnection.EXPORT_CONNECTED_STATEMENT;
+import static org.batfish.representation.aws.VpnConnection.VPN_TO_BACKBONE_EXPORT_POLICY_NAME;
+import static org.batfish.representation.aws.VpnConnection.VPN_UNDERLAY_VRF_NAME;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -20,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +38,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.VpnConnection.GatewayType;
 import org.junit.Test;
 
@@ -188,9 +194,26 @@ public class VpnConnectionTest {
   }
 
   @Test
+  public void testInitVpnConnection() {
+    Configuration vgwConfig = Utils.newAwsConfiguration("vgw", "awstest");
+    VpnConnection.initVpnConnectionsInfrastructure(vgwConfig);
+
+    assertThat(vgwConfig.getVrfs(), hasKey(VPN_UNDERLAY_VRF_NAME));
+    assertThat(
+        vgwConfig.getRoutingPolicies().get(VPN_TO_BACKBONE_EXPORT_POLICY_NAME),
+        equalTo(
+            RoutingPolicy.builder()
+                .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
+                .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
+                .build()));
+    assertThat(vgwConfig.getAllInterfaces(), hasKey(BACKBONE_FACING_INTERFACE_NAME));
+  }
+
+  @Test
   public void testApplyToGateway() {
     VpnGateway vgw = new VpnGateway("vpn", ImmutableList.of(), ImmutableMap.of());
     Configuration vgwConfig = Utils.newAwsConfiguration(vgw.getId(), "awstest");
+    VpnConnection.initVpnConnectionsInfrastructure(vgwConfig);
     Vrf vpnVrf = Vrf.builder().setOwner(vgwConfig).setName("vpn").build();
     BgpProcess bgpProc =
         BgpProcess.builder()
@@ -246,6 +269,7 @@ public class VpnConnectionTest {
         vgwConfig.getAllInterfaces().keySet(),
         equalTo(
             ImmutableSet.of(
+                BACKBONE_FACING_INTERFACE_NAME,
                 vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)),
                 vpnInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)))));
     assertThat(
@@ -253,7 +277,7 @@ public class VpnConnectionTest {
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getVpnConnectionId(), 1)))
             .getVrfName(),
-        equalTo(UNDERLAY_VRF_NAME));
+        equalTo(VPN_UNDERLAY_VRF_NAME));
     assertThat(
         vgwConfig
             .getAllInterfaces()

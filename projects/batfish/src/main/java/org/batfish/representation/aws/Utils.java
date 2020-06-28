@@ -2,14 +2,12 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
-import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_EXPORT_POLICY_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -38,7 +36,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
@@ -475,26 +472,23 @@ final class Utils {
   }
 
   /**
-   * Creates the interface and BGP process on {@code cfgNode} that will peer with the AWS backbone.
-   *
-   * <p>The BGP policy announces all static routes in {#code prefixesToAnnounce}. The static routes
-   * are NOT installed in this function.
+   * Creates an interface, BGP process, and BGP peer to connect to the backbone. {@code
+   * exportPolicyName} is configured on the peer. This policy must be installed on the node
+   * separately.
    */
-  static void createBackboneConnection(Configuration cfgNode, PrefixSpace prefixesToAnnounce) {
+  static void createBackboneConnection(Configuration cfgNode, Vrf vrf, String exportPolicyName) {
     Utils.newInterface(
         BACKBONE_FACING_INTERFACE_NAME,
         cfgNode,
+        vrf.getName(),
         LinkLocalAddress.of(LINK_LOCAL_IP),
         "To AWS backbone");
     BgpProcess bgpProcess =
         BgpProcess.builder()
             .setRouterId(LINK_LOCAL_IP)
-            .setVrf(cfgNode.getDefaultVrf())
+            .setVrf(vrf)
             .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
             .build();
-
-    installRoutingPolicyAdvertiseStatic(BACKBONE_EXPORT_POLICY_NAME, cfgNode, prefixesToAnnounce);
-
     BgpUnnumberedPeerConfig.builder()
         .setPeerInterface(BACKBONE_FACING_INTERFACE_NAME)
         .setRemoteAs(AWS_BACKBONE_ASN)
@@ -502,7 +496,7 @@ final class Utils {
         .setLocalAs(BACKBONE_PEERING_ASN)
         .setBgpProcess(bgpProcess)
         .setIpv4UnicastAddressFamily(
-            Ipv4UnicastAddressFamily.builder().setExportPolicy(BACKBONE_EXPORT_POLICY_NAME).build())
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(exportPolicyName).build())
         .build();
   }
 
