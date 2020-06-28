@@ -490,6 +490,13 @@
       "properties" : null
     },
     {
+      "id" : "interface-node-vgw-81fd279f-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-vgw-81fd279f",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
       "id" : "interface-node-__aws-services-gateway__-backbone",
       "name" : "backbone",
       "nodeId" : "node-__aws-services-gateway__",
@@ -541,6 +548,13 @@
     {
       "id" : "interface-node-isp_16509-To-igw-068fee63",
       "name" : "To-igw-068fee63",
+      "nodeId" : "node-isp_16509",
+      "type" : "UNKNOWN",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_16509-To-vgw-81fd279f",
+      "name" : "To-vgw-81fd279f",
       "nodeId" : "node-isp_16509",
       "type" : "UNKNOWN",
       "properties" : null
@@ -898,6 +912,13 @@
       "properties" : null
     },
     {
+      "dstId" : "interface-node-vgw-81fd279f-backbone",
+      "id" : "link-interface-node-isp_16509-To-vgw-81fd279f-interface-node-vgw-81fd279f-backbone",
+      "srcId" : "interface-node-isp_16509-To-vgw-81fd279f",
+      "type" : "UNKNOWN",
+      "properties" : null
+    },
+    {
       "dstId" : "interface-node-vpc-f8fad69d-subnet-d9cafabc-vrf-igw-068fee63",
       "id" : "link-interface-node-subnet-d9cafabc-vpc-f8fad69d-vrf-igw-068fee63-interface-node-vpc-f8fad69d-subnet-d9cafabc-vrf-igw-068fee63",
       "srcId" : "interface-node-subnet-d9cafabc-vpc-f8fad69d-vrf-igw-068fee63",
@@ -1063,6 +1084,13 @@
       "id" : "link-interface-node-subnet-7044ff16-vpc-b390fad5-vrf-igw-9b93ddfc-interface-node-vpc-b390fad5-subnet-7044ff16-vrf-igw-9b93ddfc",
       "srcId" : "interface-node-subnet-7044ff16-vpc-b390fad5-vrf-igw-9b93ddfc",
       "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-isp_16509-To-vgw-81fd279f",
+      "id" : "link-interface-node-vgw-81fd279f-backbone-interface-node-isp_16509-To-vgw-81fd279f",
+      "srcId" : "interface-node-vgw-81fd279f-backbone",
+      "type" : "UNKNOWN",
       "properties" : null
     },
     {

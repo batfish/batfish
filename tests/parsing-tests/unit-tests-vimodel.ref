@@ -69,8 +69,8 @@
           }
         },
         "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
+          "~asgw~to~backbone~export~policy~" : {
+            "name" : "~asgw~to~backbone~export~policy~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -887,10 +887,7 @@
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
+                    "exportPolicy" : "~asgw~to~backbone~export~policy~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,

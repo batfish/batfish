@@ -1,6 +1,9 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.AWS_BACKBONE_HOSTNAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
 
 import com.google.common.collect.ImmutableList;
@@ -21,10 +24,9 @@ import org.junit.rules.TemporaryFolder;
  * single private subnet along with a VPN gateway and the customer gateway. The on-prem router
  * config was generated via AWS.
  */
-public class AwsConfigurationPrivateSubnetTest {
+public class AwsConfigurationVpnGatewayTest {
 
-  private static final String TESTCONFIGS_DIR =
-      "org/batfish/representation/aws/test-private-subnet";
+  private static final String TESTCONFIGS_DIR = "org/batfish/representation/aws/test-vpn-gateway";
 
   private static final List<String> fileNames =
       ImmutableList.of(
@@ -110,6 +112,16 @@ public class AwsConfigurationPrivateSubnetTest {
         getAnyFlow(_instance, _vgwUnderlayIp, _batfish),
         FlowDisposition.NO_ROUTE,
         ImmutableList.of(_instance, _subnet, _vpc, _vgw, _onPremRouter),
+        _batfish);
+  }
+
+  /** Underlay interface Ip should be accessible from the Internet */
+  @Test
+  public void testInternetToUnderlayInterfaceIp() {
+    testTrace(
+        getTcpFlow(INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _vgwUnderlayIp, 80),
+        FlowDisposition.ACCEPTED,
+        ImmutableList.of(INTERNET_HOST_NAME, AWS_BACKBONE_HOSTNAME, _vgw),
         _batfish);
   }
 }
