@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
@@ -52,11 +53,8 @@ import org.batfish.datamodel.transformation.TransformationStep;
 @ParametersAreNonnullByDefault
 final class InternetGateway implements AwsVpcEntity, Serializable {
 
-  /** ASN to use for AWS backbone */
-  static final long AWS_BACKBONE_ASN = 16509L;
-
-  /** Human name to use for AWS backbone */
-  static final String AWS_BACKBONE_HUMAN_NAME = "aws-backbone";
+  /** Name of the export policy to backbone */
+  static final String IGW_TO_BACKBONE_EXPORT_POLICY_NAME = "~igw~to~backbone~export~policy~";
 
   /** Name of the filter that drops from private IPs without an associated public IP */
   static final String UNASSOCIATED_PRIVATE_IP_FILTER_NAME = "~DENY~UNASSOCIATED~PRIVATE~IPs~";
@@ -175,7 +173,10 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
                   cfgNode, toStaticRoute(publicIp.toPrefix(), NULL_INTERFACE_NAME, true));
             });
 
-    Utils.createBackboneConnection(cfgNode, publicPrefixSpace);
+    installRoutingPolicyAdvertiseStatic(
+        IGW_TO_BACKBONE_EXPORT_POLICY_NAME, cfgNode, publicPrefixSpace);
+    Utils.createBackboneConnection(
+        cfgNode, cfgNode.getDefaultVrf(), IGW_TO_BACKBONE_EXPORT_POLICY_NAME);
 
     configureNat(cfgNode.getAllInterfaces().get(BACKBONE_FACING_INTERFACE_NAME), privatePublicMap);
 
