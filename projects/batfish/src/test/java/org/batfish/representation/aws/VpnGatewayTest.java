@@ -4,10 +4,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
+import static org.batfish.representation.aws.VpnConnection.EXPORT_CONNECTED_STATEMENT;
+import static org.batfish.representation.aws.VpnConnection.VPN_TO_BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.VpnGateway.VGW_IMPORT_POLICY_NAME;
 import static org.hamcrest.Matchers.equalTo;
@@ -102,7 +105,9 @@ public class VpnGatewayTest {
     // ensure the connection to VPC
     assertThat(
         vgwConfig.getAllInterfaces().keySet(),
-        equalTo(ImmutableSet.of(Utils.interfaceNameToRemote(vpcConfig))));
+        equalTo(
+            ImmutableSet.of(
+                Utils.interfaceNameToRemote(vpcConfig), BACKBONE_FACING_INTERFACE_NAME)));
   }
 
   @Test
@@ -147,7 +152,11 @@ public class VpnGatewayTest {
     assertThat(vgwConfig.getDefaultVrf().getBgpProcess(), notNullValue());
     assertThat(
         vgwConfig.getAllInterfaces().keySet(),
-        equalTo(ImmutableSet.of("loopbackBgp", Utils.interfaceNameToRemote(vpcConfig))));
+        equalTo(
+            ImmutableSet.of(
+                "loopbackBgp",
+                Utils.interfaceNameToRemote(vpcConfig),
+                BACKBONE_FACING_INTERFACE_NAME)));
     assertThat(
         vgwConfig.getDefaultVrf().getStaticRoutes(),
         equalTo(
@@ -174,6 +183,11 @@ public class VpnGatewayTest {
                 RoutingPolicy.builder()
                     .setName(VGW_IMPORT_POLICY_NAME)
                     .setStatements(Collections.singletonList(ACCEPT_ALL_BGP))
+                    .build(),
+                VPN_TO_BACKBONE_EXPORT_POLICY_NAME,
+                RoutingPolicy.builder()
+                    .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
+                    .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
                     .build())));
   }
 }

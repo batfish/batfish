@@ -89,8 +89,8 @@
           }
         },
         "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
+          "~asgw~to~backbone~export~policy~" : {
+            "name" : "~asgw~to~backbone~export~policy~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -909,10 +909,7 @@
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
+                    "exportPolicy" : "~asgw~to~backbone~export~policy~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
@@ -8062,8 +8059,8 @@
           }
         },
         "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
+          "~igw~to~backbone~export~policy~" : {
+            "name" : "~igw~to~backbone~export~policy~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -8135,10 +8132,7 @@
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
+                    "exportPolicy" : "~igw~to~backbone~export~policy~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
@@ -8245,8 +8239,8 @@
           }
         },
         "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
+          "~igw~to~backbone~export~policy~" : {
+            "name" : "~igw~to~backbone~export~policy~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -8318,10 +8312,7 @@
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
+                    "exportPolicy" : "~igw~to~backbone~export~policy~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
@@ -8427,8 +8418,8 @@
           }
         },
         "routingPolicies" : {
-          "AwsInternetGatewayExportPolicy" : {
-            "name" : "AwsInternetGatewayExportPolicy",
+          "~igw~to~backbone~export~policy~" : {
+            "name" : "~igw~to~backbone~export~policy~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -8500,10 +8491,7 @@
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
-                    "exportPolicy" : "AwsInternetGatewayExportPolicy",
-                    "exportPolicySources" : [
-                      "AwsInternetGatewayExportPolicy"
-                    ],
+                    "exportPolicy" : "~igw~to~backbone~export~policy~",
                     "routeReflectorClient" : false
                   },
                   "localAs" : 65534,
@@ -8800,6 +8788,26 @@
           },
           "To-igw-fac5839d" : {
             "name" : "To-igw-fac5839d",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
+          "To-vgw-81fd279f" : {
+            "name" : "To-vgw-81fd279f",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -10555,6 +10563,31 @@
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-igw-fac5839d",
+                  "remoteAsns" : "65534"
+                },
+                "To-vgw-81fd279f" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "exportPolicyOnIspToCustomers",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 16509,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "To-vgw-81fd279f",
                   "remoteAsns" : "65534"
                 }
               },
@@ -25467,6 +25500,28 @@
           }
         },
         "interfaces" : {
+          "backbone" : {
+            "name" : "backbone",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "description" : "To AWS backbone",
+            "mtu" : 1500,
+            "prefix" : "link-local:169.254.0.1",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-vpn-underlay"
+          },
           "external-vpn-ba2e34a8-1" : {
             "name" : "external-vpn-ba2e34a8-1",
             "active" : true,
@@ -25490,7 +25545,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "underlay"
+            "vrf" : "vrf-vpn-underlay"
           },
           "external-vpn-ba2e34a8-2" : {
             "name" : "external-vpn-ba2e34a8-2",
@@ -25515,7 +25570,7 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
-            "vrf" : "underlay"
+            "vrf" : "vrf-vpn-underlay"
           },
           "loopbackBgp" : {
             "name" : "loopbackBgp",
@@ -25734,6 +25789,33 @@
                 ]
               }
             ]
+          },
+          "~vpn~to~backbone~export~policy~" : {
+            "name" : "~vpn~to~backbone~export~policy~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "connected"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "incomplete"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -25820,8 +25902,43 @@
               }
             ]
           },
-          "underlay" : {
-            "name" : "underlay",
+          "vrf-vpn-underlay" : {
+            "name" : "vrf-vpn-underlay",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "169.254.0.1",
+              "interfaceNeighbors" : {
+                "backbone" : {
+                  "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "defaultMetric" : 0,
+                  "ebgpMultihop" : false,
+                  "enforceFirstAs" : false,
+                  "ipv4UnicastAddressFamily" : {
+                    "addressFamilyCapabilities" : {
+                      "additionalPathsReceive" : false,
+                      "additionalPathsSelectAll" : false,
+                      "additionalPathsSend" : false,
+                      "advertiseExternal" : false,
+                      "advertiseInactive" : false,
+                      "allowLocalAsIn" : false,
+                      "allowRemoteAsOut" : false,
+                      "sendCommunity" : false,
+                      "sendExtendedCommunity" : false
+                    },
+                    "exportPolicy" : "~vpn~to~backbone~export~policy~",
+                    "routeReflectorClient" : false
+                  },
+                  "localAs" : 65534,
+                  "localIp" : "169.254.0.1",
+                  "peerInterface" : "backbone",
+                  "remoteAsns" : "16509"
+                }
+              },
+              "multipathEbgp" : false,
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            },
             "hasOriginatingSessions" : false
           }
         }
