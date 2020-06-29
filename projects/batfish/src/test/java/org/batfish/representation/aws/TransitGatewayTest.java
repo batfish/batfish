@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
@@ -17,6 +18,7 @@ import static org.batfish.representation.aws.TransitGateway.vrfNameForRouteTable
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
+import static org.batfish.representation.aws.VpnConnection.VPN_UNDERLAY_VRF_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -366,6 +368,10 @@ public class TransitGatewayTest {
     Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
+    // check that vpn connection was property initialized
+    assertTrue(tgwCfg.getVrfs().containsKey(VPN_UNDERLAY_VRF_NAME));
+    assertTrue(tgwCfg.getAllInterfaces().containsKey(BACKBONE_FACING_INTERFACE_NAME));
+
     // check that the vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
@@ -374,7 +380,7 @@ public class TransitGatewayTest {
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(VPN_UNDERLAY_VRF_NAME));
   }
 
   @Test
@@ -437,6 +443,10 @@ public class TransitGatewayTest {
     assertThat(tgwCfg.getHumanName(), equalTo("tgw-name"));
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
+    // check that vpn connection was property initialized
+    assertTrue(tgwCfg.getVrfs().containsKey(VPN_UNDERLAY_VRF_NAME));
+    assertTrue(tgwCfg.getAllInterfaces().containsKey(BACKBONE_FACING_INTERFACE_NAME));
+
     // check that the vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
@@ -449,7 +459,7 @@ public class TransitGatewayTest {
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(VPN_UNDERLAY_VRF_NAME));
   }
 
   @Test

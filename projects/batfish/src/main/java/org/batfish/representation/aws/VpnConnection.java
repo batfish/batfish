@@ -6,6 +6,7 @@ import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfa
 import static org.batfish.representation.aws.AwsConfiguration.vpnInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.createBackboneConnection;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -18,6 +19,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -47,9 +49,18 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -60,6 +71,23 @@ import org.xml.sax.SAXException;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 final class VpnConnection implements AwsVpcEntity, Serializable {
+
+  // the VRF for interfaces that underlie the IPSec tunnel. they are the ones with public IP.
+  static final String VPN_UNDERLAY_VRF_NAME = "vrf-vpn-underlay";
+
+  /** Export policy to backbone */
+  static final String VPN_TO_BACKBONE_EXPORT_POLICY_NAME = "~vpn~to~backbone~export~policy~";
+
+  /**
+   * Routing policy statement that exports connected routes. It is used to advertize underlay
+   * interface addresses (public IPs) to the backbone.
+   */
+  static Statement EXPORT_CONNECTED_STATEMENT =
+      new If(
+          new MatchProtocol(RoutingProtocol.CONNECTED),
+          ImmutableList.of(
+              new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)),
+              Statements.ExitAccept.toStaticStatement()));
 
   private static DiffieHellmanGroup toDiffieHellmanGroup(String perfectForwardSecrecy) {
     switch (perfectForwardSecrecy) {
@@ -363,9 +391,33 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ipsecPhase2Policy;
   }
 
+  /**
+   * Sets up what is what needed to establish VPN connections to remote nodes: the underlay VRF,
+   * routing export policy to backbone, and the connection to backbone.
+   */
+  static void initVpnConnectionsInfrastructure(Configuration gwCfg) {
+    Vrf underlayVrf = Vrf.builder().setOwner(gwCfg).setName(VPN_UNDERLAY_VRF_NAME).build();
+
+    RoutingPolicy.builder()
+        .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
+        .setOwner(gwCfg)
+        .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
+        .build();
+
+    createBackboneConnection(gwCfg, underlayVrf, VPN_TO_BACKBONE_EXPORT_POLICY_NAME);
+  }
+
+  /**
+   * Creates the infrastructure for this VPN connection on the gateway. This includes created
+   * underlay and IPSec tunnel interfaces, configuring IPSec, and running BGP on the tunnel
+   * interfaces.
+   *
+   * <p>The underlay and overlay VRFs and export/import policies must be instantiated before calling
+   * this function.
+   */
   void applyToGateway(
       Configuration gwCfg,
-      Vrf vrf,
+      Vrf tunnelVrf,
       @Nullable String exportPolicyName,
       @Nullable String importPolicyName,
       Warnings warnings) {
@@ -382,6 +434,17 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigMapBuilder =
         ImmutableSortedMap.naturalOrder();
 
+    if (gwCfg.getVrfs().get(VPN_UNDERLAY_VRF_NAME) == null) {
+      warnings.redFlag(
+          String.format("Underlay VRF does not exist on gateway %s", gwCfg.getHostname()));
+      return;
+    }
+    if (gwCfg.getVrfs().get(tunnelVrf.getName()) == null) {
+      warnings.redFlag(
+          String.format("Tunnel VRF does not exist on gateway %s", gwCfg.getHostname()));
+      return;
+    }
+
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       String tunnelId = vpnTunnelId(_vpnConnectionId, i + 1);
       IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
@@ -394,7 +457,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       Utils.newInterface(
           externalInterfaceName,
           gwCfg,
-          vrf.getName(),
+          VPN_UNDERLAY_VRF_NAME,
           externalInterfaceAddress,
           "IPSec tunnel " + tunnelId);
 
@@ -403,7 +466,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
           ConcreteInterfaceAddress.create(
               ipsecTunnel.getVgwInsideAddress(), ipsecTunnel.getVgwInsidePrefixLength());
       Utils.newInterface(
-          vpnIfaceName, gwCfg, vrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
+          vpnIfaceName, gwCfg, tunnelVrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
 
       // configure Ipsec
       ikePhase1ProposalMapBuilder.put(tunnelId, toIkePhase1Proposal(tunnelId, ipsecTunnel));
@@ -437,7 +500,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         BgpActivePeerConfig.builder()
             .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
             .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
-            .setBgpProcess(vrf.getBgpProcess())
+            .setBgpProcess(tunnelVrf.getBgpProcess())
             .setLocalAs(ipsecTunnel.getVgwBgpAsn())
             .setLocalIp(ipsecTunnel.getVgwInsideAddress())
             .setIpv4UnicastAddressFamily(

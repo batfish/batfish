@@ -2,8 +2,8 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_FACING_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
-import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsConfiguration.generateAwsServicesGateway;
@@ -181,6 +181,6 @@ public class AwsConfigurationTest {
                 LINK_LOCAL_IP.toIpSpace())));
 
     // bgp policy has been created
-    assertTrue(cfg.getRoutingPolicies().containsKey(BACKBONE_EXPORT_POLICY_NAME));
+    assertTrue(cfg.getRoutingPolicies().containsKey(AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME));
   }
 }

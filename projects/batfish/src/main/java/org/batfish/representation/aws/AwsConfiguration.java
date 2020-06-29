@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_HUMAN_NAME;
+import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.representation.aws.LoadBalancer.getActiveTargets;
 import static org.batfish.representation.aws.LoadBalancer.getTargetIp;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
@@ -15,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -72,11 +72,16 @@ public class AwsConfiguration extends VendorConfiguration {
 
   static final String AWS_SERVICES_FACING_INTERFACE_NAME = "aws-services";
 
+  static final String AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME = "~asgw~to~backbone~export~policy~";
+
+  /** Human name to use for AWS backbone */
+  static final String AWS_BACKBONE_HUMAN_NAME = "aws-backbone";
+
+  /** ASN to use for AWS backbone */
+  static final long AWS_BACKBONE_ASN = 16509L;
+
   /** Name of the interface on nodes that faces the backbone (e.g., IGW, services gateway) */
   static final String BACKBONE_FACING_INTERFACE_NAME = "backbone";
-
-  /** Name of the routing policy on nodes that face the backbone (e.g., IGW, services gateway) */
-  static final String BACKBONE_EXPORT_POLICY_NAME = "AwsInternetGatewayExportPolicy";
 
   /** ASN to use for nodes that faces the backbone (e.g., IGW, services gateway) */
   static final long BACKBONE_PEERING_ASN = 65534L;
@@ -275,19 +280,31 @@ public class AwsConfiguration extends VendorConfiguration {
   @Override
   @Nonnull
   public IspConfiguration getIspConfiguration() {
+    if (_convertedConfiguration == null) {
+      throw new IllegalStateException(
+          "getIspConfiguration called when converted configuration is null");
+    }
     List<BorderInterfaceInfo> borderInterfaces =
         getAccounts().stream()
             .flatMap(a -> a.getRegions().stream())
-            .flatMap(r -> r.getInternetGateways().values().stream())
-            .map(igw -> NodeInterfacePair.of(igw.getId(), BACKBONE_FACING_INTERFACE_NAME))
+            .flatMap(
+                r ->
+                    Streams.concat(
+                            // all types of nodes that connect to the backbone
+                            r.getInternetGateways().keySet().stream(),
+                            r.getTransitGateways().keySet().stream(),
+                            r.getVpnGateways().keySet().stream(),
+                            Stream.of(AWS_SERVICES_GATEWAY_NODE_NAME))
+                        .filter(
+                            gw ->
+                                _convertedConfiguration.getNode(gw) != null
+                                    && Objects.requireNonNull(_convertedConfiguration.getNode(gw))
+                                            .getAllInterfaces()
+                                            .get(BACKBONE_FACING_INTERFACE_NAME)
+                                        != null)
+                        .map(gw -> NodeInterfacePair.of(gw, BACKBONE_FACING_INTERFACE_NAME)))
             .map(BorderInterfaceInfo::new)
             .collect(Collectors.toList());
-    if (_convertedConfiguration.getNode(AWS_SERVICES_GATEWAY_NODE_NAME) != null) {
-      borderInterfaces.add(
-          new BorderInterfaceInfo(
-              NodeInterfacePair.of(
-                  AWS_SERVICES_GATEWAY_NODE_NAME, BACKBONE_FACING_INTERFACE_NAME)));
-    }
     return new IspConfiguration(
         ImmutableList.copyOf(borderInterfaces),
         IspFilter.ALLOW_ALL,
@@ -328,7 +345,10 @@ public class AwsConfiguration extends VendorConfiguration {
           addStaticRoute(cfgNode, toStaticRoute(prefix, outInterface.getName()));
         });
 
-    Utils.createBackboneConnection(cfgNode, servicesPrefixSpace);
+    installRoutingPolicyAdvertiseStatic(
+        AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, servicesPrefixSpace);
+    Utils.createBackboneConnection(
+        cfgNode, cfgNode.getDefaultVrf(), AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME);
 
     cfgNode
         .getAllInterfaces()

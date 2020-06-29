@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -149,16 +151,22 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
     }
 
     // process all VPN connections
-    region.getVpnConnections().values().stream()
-        .filter(c -> _vpnGatewayId.equals(c.getAwsGatewayId()))
-        .forEach(
-            c ->
-                c.applyToGateway(
-                    cfgNode,
-                    cfgNode.getDefaultVrf(),
-                    VGW_EXPORT_POLICY_NAME,
-                    VGW_IMPORT_POLICY_NAME,
-                    warnings));
+    Set<VpnConnection> vpnConnections =
+        region.getVpnConnections().values().stream()
+            .filter(c -> _vpnGatewayId.equals(c.getAwsGatewayId()))
+            .collect(Collectors.toSet());
+
+    if (!vpnConnections.isEmpty()) {
+      VpnConnection.initVpnConnectionsInfrastructure(cfgNode);
+      vpnConnections.forEach(
+          c ->
+              c.applyToGateway(
+                  cfgNode,
+                  cfgNode.getDefaultVrf(),
+                  VGW_EXPORT_POLICY_NAME,
+                  VGW_IMPORT_POLICY_NAME,
+                  warnings));
+    }
 
     return cfgNode;
   }

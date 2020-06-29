@@ -1,11 +1,11 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.AWS_BACKBONE_HOSTNAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTraces;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -32,9 +32,6 @@ import org.junit.rules.TemporaryFolder;
  * manually.
  */
 public class AwsConfigurationPublicPrivateSubnetTest {
-
-  private static final String AWS_BACKBONE_HOSTNAME =
-      IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN);
 
   private static final String TESTCONFIGS_DIR =
       "org/batfish/representation/aws/test-public-private-subnet";
