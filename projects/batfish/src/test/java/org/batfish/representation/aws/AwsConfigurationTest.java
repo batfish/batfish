@@ -123,12 +123,13 @@ public class AwsConfigurationTest {
     account.addRegion(region);
 
     c.populatePrecomputedMaps();
-    assertThat(c.getSubnetsToInstances(), equalTo(ImmutableMultimap.of(instanceSubnet, instance)));
     assertThat(
-        c.getSubnetsToLbs(),
+        c.getSubnetsToInstanceTargets(), equalTo(ImmutableMultimap.of(instanceSubnet, instance)));
+    assertThat(
+        c.getSubnetsToNlbs(),
         equalTo(
             ImmutableMultimap.of(noInstanceSubnet, loadBalancer, instanceSubnet, loadBalancer)));
-    assertThat(c.getLbsToInstances(), equalTo(ImmutableMultimap.of(loadBalancer, instance)));
+    assertThat(c.getNlbsToInstanceTargets(), equalTo(ImmutableMultimap.of(loadBalancer, instance)));
     assertThat(c.getVpcsWithInstanceTargets(), contains(vpc));
   }
 

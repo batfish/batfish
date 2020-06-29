@@ -90,13 +90,13 @@ public class AwsConfiguration extends VendorConfiguration {
   @Nonnull private final Map<String, Account> _accounts;
 
   /** A multimap from Subnet -> Instance targets within subnet */
-  private Multimap<Subnet, Instance> _subnetsToInstances;
+  private Multimap<Subnet, Instance> _subnetsToInstanceTargets;
 
   /** A multimap from Subnet -> NLBs within subnet that have instance targets */
-  private Multimap<Subnet, LoadBalancer> _subnetsToLbs;
+  private Multimap<Subnet, LoadBalancer> _subnetsToNlbs;
 
   /** A multimap of NLB -> instance targets */
-  private Multimap<LoadBalancer, Instance> _lbsToInstances;
+  private Multimap<LoadBalancer, Instance> _nlbsToInstanceTargets;
 
   /** A set of all VPCs that contain load balancers with active instance targets */
   private Set<Vpc> _vpcsWithInstanceTargets;
@@ -160,13 +160,15 @@ public class AwsConfiguration extends VendorConfiguration {
   @VisibleForTesting
   void populatePrecomputedMaps() {
     // A multimap from Subnet -> Instance targets within subnet
-    ImmutableMultimap.Builder<Subnet, Instance> subnetsToInstances = ImmutableMultimap.builder();
+    ImmutableMultimap.Builder<Subnet, Instance> subnetsToInstanceTargets =
+        ImmutableMultimap.builder();
 
     // A multimap from Subnet -> NLBs within subnet that have instance targets
-    ImmutableMultimap.Builder<Subnet, LoadBalancer> subnetsToLbs = ImmutableMultimap.builder();
+    ImmutableMultimap.Builder<Subnet, LoadBalancer> subnetsToNlbs = ImmutableMultimap.builder();
 
     // A multimap of NLB -> instance targets
-    ImmutableMultimap.Builder<LoadBalancer, Instance> lbsToInstances = ImmutableMultimap.builder();
+    ImmutableMultimap.Builder<LoadBalancer, Instance> nlbsToInstanceTargets =
+        ImmutableMultimap.builder();
 
     // A set of VPCs with instance targets
     ImmutableSet.Builder<Vpc> vpcsWithInstanceTargets = ImmutableSet.builder();
@@ -206,8 +208,8 @@ public class AwsConfiguration extends VendorConfiguration {
                 .forEach(
                     instance -> {
                       Subnet subnet = region.getSubnets().get(instance.getSubnetId());
-                      subnetsToInstances.put(subnet, instance);
-                      lbsToInstances.put(lb, instance);
+                      subnetsToInstanceTargets.put(subnet, instance);
+                      nlbsToInstanceTargets.put(lb, instance);
                       vpcsWithInstanceTargets.add(region.getVpcs().get(instance.getVpcId()));
                       hasInstanceTarget.set(true);
                     });
@@ -216,15 +218,15 @@ public class AwsConfiguration extends VendorConfiguration {
                   .map(AvailabilityZone::getSubnetId)
                   .map(region.getSubnets()::get)
                   .filter(Objects::nonNull)
-                  .forEach(subnet -> subnetsToLbs.put(subnet, lb));
+                  .forEach(subnet -> subnetsToNlbs.put(subnet, lb));
             }
           }
         }
       }
     }
-    _subnetsToInstances = subnetsToInstances.build();
-    _subnetsToLbs = subnetsToLbs.build();
-    _lbsToInstances = lbsToInstances.build();
+    _subnetsToInstanceTargets = subnetsToInstanceTargets.build();
+    _subnetsToNlbs = subnetsToNlbs.build();
+    _nlbsToInstanceTargets = nlbsToInstanceTargets.build();
     _vpcsWithInstanceTargets = vpcsWithInstanceTargets.build();
   }
 
@@ -392,18 +394,18 @@ public class AwsConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  Multimap<Subnet, Instance> getSubnetsToInstances() {
-    return _subnetsToInstances;
+  Multimap<Subnet, Instance> getSubnetsToInstanceTargets() {
+    return _subnetsToInstanceTargets;
   }
 
   @VisibleForTesting
-  Multimap<Subnet, LoadBalancer> getSubnetsToLbs() {
-    return _subnetsToLbs;
+  Multimap<Subnet, LoadBalancer> getSubnetsToNlbs() {
+    return _subnetsToNlbs;
   }
 
   @VisibleForTesting
-  Multimap<LoadBalancer, Instance> getLbsToInstances() {
-    return _lbsToInstances;
+  Multimap<LoadBalancer, Instance> getNlbsToInstanceTargets() {
+    return _nlbsToInstanceTargets;
   }
 
   @VisibleForTesting
