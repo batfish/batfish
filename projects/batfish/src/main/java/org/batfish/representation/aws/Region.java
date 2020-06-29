@@ -616,6 +616,11 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
+  Map<String, LoadBalancer> getLoadBalancersMap() {
+    return ImmutableMap.copyOf(_loadBalancers);
+  }
+
+  @Nonnull
   Map<String, LoadBalancerAttributes> getLoadBalancerAttributes() {
     return _loadBalancerAttributes;
   }
