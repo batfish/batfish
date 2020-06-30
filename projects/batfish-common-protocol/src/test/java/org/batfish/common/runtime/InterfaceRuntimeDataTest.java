@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.InterfaceAddress;
 import org.junit.Test;
 
 /** Tests of {@link InterfaceRuntimeData} */
@@ -14,7 +13,7 @@ public class InterfaceRuntimeDataTest {
 
   @Test
   public void testInterfaceRuntimeDataEquals() {
-    InterfaceAddress address = ConcreteInterfaceAddress.parse("1.2.3.4/24");
+    ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.2.3.4/24");
     double bandwidth = 1;
     boolean lineUp = true;
     double speed = 3;
