@@ -10,3 +10,11 @@ set address addr2 ip-netmask 10.1.1.2
 set address addr2 tag [ tag2 "tag with spaces"]
 
 set address addr3 ip-range 1.1.1.1-1.1.1.2
+
+set address addr4 ip-netmask 10.1.1.1/32
+set address 4.3.2.1 ip-netmask 44.33.22.11/32
+set network interface ethernet ethernet1/1 layer3 ip addr4
+set network interface ethernet ethernet1/2 layer3 ip 1.2.3.4
+set network interface ethernet ethernet1/3 layer3 ip 4.3.2.1
+set network interface ethernet ethernet1/4 layer3 ip addr_undef
+set network interface loopback ip addr4
