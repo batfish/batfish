@@ -6,12 +6,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** Represents runtime data for an interface */
 public final class InterfaceRuntimeData {
   static final class Builder {
-    @Nullable private InterfaceAddress _address;
+    @Nullable private ConcreteInterfaceAddress _address;
     @Nullable private Double _bandwidth;
     @Nullable private Boolean _lineUp;
     @Nullable private Double _speed;
@@ -22,7 +22,7 @@ public final class InterfaceRuntimeData {
       return new InterfaceRuntimeData(_address, _bandwidth, _lineUp, _speed);
     }
 
-    Builder setAddress(@Nullable InterfaceAddress address) {
+    Builder setAddress(@Nullable ConcreteInterfaceAddress address) {
       _address = address;
       return this;
     }
@@ -55,7 +55,7 @@ public final class InterfaceRuntimeData {
   private static final String PROP_SPEED = "speed";
 
   // All properties should be nullable since a given interface may have runtime data for any/all
-  @Nullable private final InterfaceAddress _address;
+  @Nullable private final ConcreteInterfaceAddress _address;
   @Nullable private final Double _bandwidth;
   @Nullable private final Boolean _lineUp;
   @Nullable private final Double _speed;
@@ -63,7 +63,7 @@ public final class InterfaceRuntimeData {
   @JsonCreator
   @VisibleForTesting
   InterfaceRuntimeData(
-      @Nullable @JsonProperty(PROP_ADDRESS) InterfaceAddress address,
+      @Nullable @JsonProperty(PROP_ADDRESS) ConcreteInterfaceAddress address,
       @Nullable @JsonProperty(PROP_BANDWIDTH) Double bandwidth,
       @Nullable @JsonProperty(PROP_LINE_UP) Boolean lineUp,
       @Nullable @JsonProperty(PROP_SPEED) Double speed) {
@@ -75,7 +75,7 @@ public final class InterfaceRuntimeData {
 
   @JsonProperty(PROP_ADDRESS)
   @Nullable
-  public InterfaceAddress getAddress() {
+  public ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
