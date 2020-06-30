@@ -1234,13 +1234,17 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testInterfaceExctactionWarning() throws IOException {
     String hostname = "interface";
+    String hostnameBadLoopback = "interface-bad-loopback-addr";
 
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname, hostnameBadLoopback);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostnameBadLoopback)));
     Warnings warn = ccae.getWarnings().get(hostname);
+    Warnings warnBadLoopback = ccae.getWarnings().get(hostnameBadLoopback);
+
     // Should see two warnings:
     // 1. About extant object, but address range can't be used for interface address
     // 2. Interface not being associated w/ virtual-router, therefore being shutdown
@@ -1251,8 +1255,15 @@ public final class PaloAltoGrammarTest {
                 "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
                 "ethernet1/3.11", NULL_VRF_NAME),
             String.format(
-                "Could not convert InterfaceAddress to ConcreteInterfaceAddress: %s",
-                new InterfaceAddress(InterfaceAddress.Type.REFERENCE, "ADDR3"))));
+                "Could not convert %s AddressObject '%s' to ConcreteInterfaceAddress.",
+                AddressObject.Type.IP_RANGE, "ADDR3")));
+
+    // Should see a warning about the loopback having a non /32 address
+    assertThat(
+        warnBadLoopback.getRedFlagWarnings().stream()
+            .map(Warning::getText)
+            .collect(Collectors.toSet()),
+        contains("Loopback ip address must be /32 or without mask"));
   }
 
   @Test
@@ -1289,6 +1300,9 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testInterfaceConversion() {
     String hostname = "interface";
+    String hostnameLoopbackRef = "interface-loopback-ref";
+    String hostnameLoopbackRefInvalid = "interface-loopback-ref-invalid";
+    String hostnameLoopbackRefInvalidRange = "interface-loopback-ref-invalid-range";
     String eth1_1 = "ethernet1/1";
     String eth1_2 = "ethernet1/2";
     String eth1_3 = "ethernet1/3";
@@ -1297,14 +1311,22 @@ public final class PaloAltoGrammarTest {
     String eth1_5 = "ethernet1/5";
     String eth1_6 = "ethernet1/6";
     String eth1_7 = "ethernet1/7";
+    String eth1_8 = "ethernet1/8";
     String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
     Configuration c = parseConfig(hostname);
+    Configuration cLoopbackRef = parseConfig(hostnameLoopbackRef);
+    Configuration cLoopbackRefInvalid = parseConfig(hostnameLoopbackRefInvalid);
+    Configuration cLoopbackRefInvalidRange = parseConfig(hostnameLoopbackRefInvalidRange);
 
     assertThat(
         c.getAllInterfaces().keySet(),
         containsInAnyOrder(
-            eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_5, eth1_6, eth1_7, eth1_21, loopback));
+            eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_5, eth1_6, eth1_7, eth1_8, eth1_21,
+            loopback));
+    assertThat(cLoopbackRef.getAllInterfaces().keySet(), contains(loopback));
+    assertThat(cLoopbackRefInvalid.getAllInterfaces().keySet(), contains(loopback));
+    assertThat(cLoopbackRefInvalidRange.getAllInterfaces().keySet(), contains(loopback));
 
     // Confirm interface MTU is extracted
     assertThat(c, hasInterface(eth1_1, hasMtu(9001)));
@@ -1326,6 +1348,8 @@ public final class PaloAltoGrammarTest {
         c,
         hasInterface(
             eth1_7, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.11.10/32")))));
+    // Address-group object reference is not allowed
+    assertThat(c, hasInterface(eth1_8, hasAllAddresses(emptyIterable())));
     assertThat(
         c,
         hasInterface(
@@ -1338,6 +1362,15 @@ public final class PaloAltoGrammarTest {
                         ConcreteInterfaceAddress.parse("7.7.7.8/32"))),
                 hasBandwidth(nullValue()),
                 hasSpeed(nullValue()))));
+
+    // Confirm loopback addresses are extracted, even when specified as address-object reference
+    assertThat(
+        cLoopbackRef,
+        hasInterface(
+            loopback, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.10.10/32")))));
+    // Bad address object references
+    assertThat(cLoopbackRefInvalid, hasInterface(loopback, hasAllAddresses(emptyIterable())));
+    assertThat(cLoopbackRefInvalidRange, hasInterface(loopback, hasAllAddresses(emptyIterable())));
 
     // Confirm comments are extracted
     assertThat(c, hasInterface(eth1_1, hasDescription("description")));

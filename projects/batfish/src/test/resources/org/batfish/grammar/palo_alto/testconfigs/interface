@@ -3,6 +3,7 @@ set address ADDR1 ip-netmask 10.10.11.10
 set address ADDR2 ip-netmask 10.10.12.10/24
 set address ADDR3 ip-range 10.10.13.13-10.10.13.15
 set address 10.100.100.100 ip-netmask 10.10.11.10
+set address-group GRP1 static ADDR1
 set network interface ethernet ethernet1/1 layer3 mtu 9001
 set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
 set network interface ethernet ethernet1/1 comment description
@@ -20,6 +21,8 @@ set network interface ethernet ethernet1/5 layer3 ip ADDR2
 set network interface ethernet ethernet1/6 layer3 ip ADDR3
 # Refer to ambiguously named address object w/ implicit /32
 set network interface ethernet ethernet1/7 layer3 ip 10.100.100.100
+# Valid object name, but address-groups cannot be used for interface addresses
+set network interface ethernet ethernet1/8 layer3 ip GRP1
 set network interface ethernet ethernet1/21 link-state down
 set network interface loopback ip 7.7.7.7/32
 set network interface loopback ip 7.7.7.8

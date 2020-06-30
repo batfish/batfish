@@ -49,7 +49,7 @@ public final class InterfaceAddress implements Serializable {
       return false;
     }
     InterfaceAddress o = (InterfaceAddress) obj;
-    return _type == o._type && Objects.equals(_value, o._value);
+    return _type == o._type && _value.equals(o._value);
   }
 
   @Override
