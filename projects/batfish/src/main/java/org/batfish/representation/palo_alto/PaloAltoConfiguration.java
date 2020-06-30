@@ -28,6 +28,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -73,6 +74,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.runtime.InterfaceRuntimeData;
+import org.batfish.common.runtime.RuntimeData;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -1261,7 +1263,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    InterfaceRuntimeData ifaceRuntimeData = _runtimeData.getInterface(iface.getName());
+    RuntimeData hostRuntimeData =
+        MoreObjects.firstNonNull(
+            (_hostname == null)
+                ? RuntimeData.EMPTY_RUNTIME_DATA
+                : _runtimeData.getRuntimeData(_hostname),
+            RuntimeData.EMPTY_RUNTIME_DATA);
+    InterfaceRuntimeData ifaceRuntimeData = hostRuntimeData.getInterface(iface.getName());
     Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
