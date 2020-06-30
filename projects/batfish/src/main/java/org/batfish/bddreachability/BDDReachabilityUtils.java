@@ -6,6 +6,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Streams;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
@@ -106,10 +107,36 @@ public final class BDDReachabilityUtils {
     }
   }
 
+  /**
+   * Runs a fixpoint through the given graph backwards from the given states.
+   *
+   * <p>If this function will be called more than once on the same edge table, prefer {@link
+   * #backwardFixpointTransposed(Table, Map)} on a transposed, materialized edge table (see {@link
+   * BDDReachabilityUtils#transposeAndMaterialize(Table)}) to save redundant computations.
+   */
   public static void backwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable,
       Map<StateExpr, BDD> reverseReachable) {
-    fixpoint(reverseReachable, Tables.transpose(forwardEdgeTable), Transition::transitBackward);
+    backwardFixpointTransposed(transposeAndMaterialize(forwardEdgeTable), reverseReachable);
+  }
+
+  /** See {@link #backwardFixpoint(Table, Map)}. */
+  public static void backwardFixpointTransposed(
+      Table<StateExpr, StateExpr, Transition> transposedEdgeTable,
+      Map<StateExpr, BDD> reverseReachable) {
+    fixpoint(reverseReachable, transposedEdgeTable, Transition::transitBackward);
+  }
+
+  /**
+   * Returns an immutable copy of the input table that has been materialized in transposed form.
+   *
+   * <p>Use this instead of {@link Tables#transpose(Table)} if the result will be iterated on in
+   * row-major order. Transposing the table alone does not change the row-major vs column-major
+   * internal representation so the performance of row-oriented operations is abysmal. Instead, we
+   * need to actually materialize the transposed representation.
+   */
+  public static <R, C, V> Table<C, R, V> transposeAndMaterialize(Table<R, C, V> edgeTable) {
+    return ImmutableTable.copyOf(Tables.transpose(edgeTable));
   }
 
   static void forwardFixpoint(
