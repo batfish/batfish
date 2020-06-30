@@ -1,0 +1,30 @@
+set deviceconfig system hostname panorama
+
+set template T1 config deviceconfig system hostname firewall1
+set template T1 config deviceconfig system ip-address 10.1.0.1
+set template T1 config vsys vsys1 zone Z1 network layer3 ethernet1/1
+set template T1 config vsys vsys1 zone Z2 network layer3 ethernet1/2
+set template T1 config vsys vsys1 zone Z3 network layer3 ethernet1/3
+set template T1 config vsys vsys1 import network interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
+set template T1 config network interface ethernet ethernet1/1 layer3 ip 10.1.1.1/30
+set template T1 config network interface ethernet ethernet1/2 layer3 ip 10.1.2.1/30
+set template T1 config network interface ethernet ethernet1/3 comment 'iface with no explicit ip addr, e.g. dhcp'
+set template T1 config network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
+
+set template T2 config deviceconfig system hostname firewall2
+set template T2 config deviceconfig system ip-address 10.2.0.1
+set template T2 config vsys vsys1 zone Z1 network layer3 ethernet1/1
+set template T2 config vsys vsys1 zone Z2 network layer3 ethernet1/2
+set template T2 config vsys vsys1 zone Z3 network layer3 ethernet1/3
+set template T2 config vsys vsys1 import network interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
+set template T2 config network interface loopback comment 'iface with no explicit ip addr'
+set template T2 config network interface ethernet ethernet1/1 layer3 ip 10.2.1.1/30
+set template T2 config network interface ethernet ethernet1/2 comment 'iface with no explicit ip addr'
+set template T2 config network interface ethernet ethernet1/3 comment 'iface with no explicit ip addr'
+set template T2 config network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
+
+set template-stack TS1 templates T1
+set template-stack TS1 devices 00000001
+
+set template-stack TS2 templates T2
+set template-stack TS2 devices 00000002
