@@ -28,7 +28,6 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -1264,7 +1263,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     RuntimeData hostRuntimeData =
-        MoreObjects.firstNonNull(
+        firstNonNull(
             (_hostname == null)
                 ? RuntimeData.EMPTY_RUNTIME_DATA
                 : _runtimeData.getRuntimeData(_hostname),
