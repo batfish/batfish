@@ -75,7 +75,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     NETWORK
   }
 
-  enum Protocol {
+  /** Protocols supported by elastic load balancers */
+  public enum Protocol {
     HTTP,
     HTTPS,
     TCP,
