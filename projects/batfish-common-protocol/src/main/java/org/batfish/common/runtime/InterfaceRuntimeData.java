@@ -6,10 +6,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.InterfaceAddress;
 
 /** Represents runtime data for an interface */
 public final class InterfaceRuntimeData {
   static final class Builder {
+    @Nullable private InterfaceAddress _address;
     @Nullable private Double _bandwidth;
     @Nullable private Boolean _lineUp;
     @Nullable private Double _speed;
@@ -17,7 +19,12 @@ public final class InterfaceRuntimeData {
     private Builder() {}
 
     InterfaceRuntimeData build() {
-      return new InterfaceRuntimeData(_bandwidth, _lineUp, _speed);
+      return new InterfaceRuntimeData(_address, _bandwidth, _lineUp, _speed);
+    }
+
+    Builder setAddress(@Nullable InterfaceAddress address) {
+      _address = address;
+      return this;
     }
 
     Builder setBandwidth(@Nullable Double bandwidth) {
@@ -42,11 +49,13 @@ public final class InterfaceRuntimeData {
 
   static final InterfaceRuntimeData EMPTY_INTERFACE_RUNTIME_DATA = builder().build();
 
+  private static final String PROP_ADDRESS = "address";
   private static final String PROP_BANDWIDTH = "bandwidth";
   private static final String PROP_LINE_UP = "lineUp";
   private static final String PROP_SPEED = "speed";
 
   // All properties should be nullable since a given interface may have runtime data for any/all
+  @Nullable private final InterfaceAddress _address;
   @Nullable private final Double _bandwidth;
   @Nullable private final Boolean _lineUp;
   @Nullable private final Double _speed;
@@ -54,12 +63,20 @@ public final class InterfaceRuntimeData {
   @JsonCreator
   @VisibleForTesting
   InterfaceRuntimeData(
+      @Nullable @JsonProperty(PROP_ADDRESS) InterfaceAddress address,
       @Nullable @JsonProperty(PROP_BANDWIDTH) Double bandwidth,
       @Nullable @JsonProperty(PROP_LINE_UP) Boolean lineUp,
       @Nullable @JsonProperty(PROP_SPEED) Double speed) {
+    _address = address;
     _bandwidth = bandwidth;
     _lineUp = lineUp;
     _speed = speed;
+  }
+
+  @JsonProperty(PROP_ADDRESS)
+  @Nullable
+  public InterfaceAddress getAddress() {
+    return _address;
   }
 
   @JsonProperty(PROP_BANDWIDTH)
@@ -75,7 +92,11 @@ public final class InterfaceRuntimeData {
   }
 
   Builder toBuilder() {
-    return builder().setBandwidth(_bandwidth).setLineUp(_lineUp).setSpeed(_speed);
+    return builder()
+        .setAddress(_address)
+        .setBandwidth(_bandwidth)
+        .setLineUp(_lineUp)
+        .setSpeed(_speed);
   }
 
   @JsonProperty(PROP_SPEED)
@@ -92,20 +113,22 @@ public final class InterfaceRuntimeData {
       return false;
     }
     InterfaceRuntimeData o = (InterfaceRuntimeData) obj;
-    return Objects.equals(_bandwidth, o._bandwidth)
+    return Objects.equals(_address, o._address)
+        && Objects.equals(_bandwidth, o._bandwidth)
         && Objects.equals(_lineUp, o._lineUp)
         && Objects.equals(_speed, o._speed);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_bandwidth, _lineUp, _speed);
+    return Objects.hash(_address, _bandwidth, _lineUp, _speed);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .omitNullValues()
+        .add(PROP_ADDRESS, _address)
         .add(PROP_BANDWIDTH, _bandwidth)
         .add(PROP_LINE_UP, _lineUp)
         .add(PROP_SPEED, _speed)
