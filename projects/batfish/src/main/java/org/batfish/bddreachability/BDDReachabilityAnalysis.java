@@ -3,6 +3,7 @@ package org.batfish.bddreachability;
 import static org.batfish.bddreachability.BDDReachabilityUtils.computeForwardEdgeTable;
 import static org.batfish.bddreachability.BDDReachabilityUtils.getIngressLocationBdds;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
@@ -50,8 +52,10 @@ import org.batfish.symbolic.state.StateExpr;
 public class BDDReachabilityAnalysis {
   private final BDDPacket _bddPacket;
 
-  // preState --> postState --> predicate
+  // preState --> postState --> transition from pre to post
   private final Table<StateExpr, StateExpr, Transition> _forwardEdgeTable;
+  // postState --> preState --> transition from pre to post
+  private final Supplier<Table<StateExpr, StateExpr, Transition>> _transposedEdgeTable;
 
   // stateExprs that correspond to the IngressLocations of interest
   private final ImmutableSet<StateExpr> _ingressLocationStates;
@@ -68,6 +72,8 @@ public class BDDReachabilityAnalysis {
       assert scope != null; // avoid unused warning
       _bddPacket = packet;
       _forwardEdgeTable = computeForwardEdgeTable(edges);
+      _transposedEdgeTable =
+          Suppliers.memoize(() -> BDDReachabilityUtils.transposeAndMaterialize(_forwardEdgeTable));
       _ingressLocationStates = ImmutableSet.copyOf(ingressLocationStates);
       _queryHeaderSpaceBdd = queryHeaderSpaceBdd;
     } finally {
@@ -85,7 +91,8 @@ public class BDDReachabilityAnalysis {
       assert span != null; // avoid unused warning
       Map<StateExpr, BDD> reverseReachableStates = new HashMap<>();
       reverseReachableStates.put(Query.INSTANCE, _queryHeaderSpaceBdd);
-      BDDReachabilityUtils.backwardFixpoint(_forwardEdgeTable, reverseReachableStates);
+      BDDReachabilityUtils.backwardFixpointTransposed(
+          _transposedEdgeTable.get(), reverseReachableStates);
       return ImmutableMap.copyOf(reverseReachableStates);
     } finally {
       span.finish();
@@ -99,7 +106,8 @@ public class BDDReachabilityAnalysis {
    */
   public Map<StateExpr, BDD> computeReverseReachableStates(Map<StateExpr, BDD> roots) {
     Map<StateExpr, BDD> reverseReachableStates = new HashMap<>(roots);
-    BDDReachabilityUtils.backwardFixpoint(_forwardEdgeTable, reverseReachableStates);
+    BDDReachabilityUtils.backwardFixpointTransposed(
+        _transposedEdgeTable.get(), reverseReachableStates);
     return ImmutableMap.copyOf(reverseReachableStates);
   }
 
