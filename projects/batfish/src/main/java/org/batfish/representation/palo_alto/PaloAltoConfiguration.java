@@ -1258,15 +1258,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
-  private int getPrefixLength(org.batfish.datamodel.InterfaceAddress interfaceAddress) {
-    int interfaceAddressPrefixLength = Prefix.MAX_PREFIX_LENGTH;
-    if (interfaceAddress instanceof ConcreteInterfaceAddress) {
-      ConcreteInterfaceAddress concreteAddress = (ConcreteInterfaceAddress) interfaceAddress;
-      interfaceAddressPrefixLength = concreteAddress.getPrefix().getPrefixLength();
-    }
-    return interfaceAddressPrefixLength;
-  }
-
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
@@ -1286,7 +1277,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // It is unclear which vsys is used to start the object lookup process on multi-vsys systems,
     // since interfaces are not associated with particular vsys.
     // Assuming default vsys is good enough for now (this is the behavior for single-vsys systems).
-    org.batfish.datamodel.InterfaceAddress interfaceAddress =
+    ConcreteInterfaceAddress interfaceAddress =
         interfaceAddressToConcreteInterfaceAddress(
             iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);
     // No explicit address detected, fallback to runtime data
@@ -1296,7 +1287,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     if (interfaceAddress != null) {
       if (iface.getType() == Interface.Type.LOOPBACK
-          && getPrefixLength(interfaceAddress) != Prefix.MAX_PREFIX_LENGTH) {
+          && interfaceAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
         _w.redFlag("Loopback ip address must be /32 or without mask");
       } else {
         newIface.setAddress(interfaceAddress);
