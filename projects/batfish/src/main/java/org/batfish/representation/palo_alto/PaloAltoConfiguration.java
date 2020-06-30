@@ -2313,7 +2313,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         true,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE);
-    // Handle ambiguous interface addresses
+    // Handle ambiguous interface addresses (e.g. address object names can look like IP addresses)
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.ADDRESS_OBJECT_OR_NONE,
         ImmutableList.of(PaloAltoStructureType.ADDRESS_OBJECT),

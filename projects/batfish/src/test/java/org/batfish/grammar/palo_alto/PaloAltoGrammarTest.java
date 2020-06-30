@@ -623,14 +623,14 @@ public final class PaloAltoGrammarTest {
         batfish1.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
 
     assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 0));
-    // Should identify a valid object reference (even though it cannot be converted)
+    // Should identify a valid object reference (even though it cannot be converted, wrong subtype)
     assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_3, 1));
     // One reference from l3 interface, one from loopback
     assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_4, 2));
     // Should record reference for address object name that looks like a concrete IP address
     assertThat(
         ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_ambiguous, 1));
-    // Confirm undefined references is detected
+    // Confirm undefined reference is detected
     assertThat(
         ccae1,
         hasUndefinedReference(filename1, PaloAltoStructureType.ADDRESS_OBJECT, "addr_undef"));
@@ -641,7 +641,7 @@ public final class PaloAltoGrammarTest {
 
     // Confirm reference count is correct for used structure
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 2));
-    // Confirm undefined reference are detected
+    // Confirm undefined reference is detected
     assertThat(
         ccae2, hasUndefinedReference(filename2, PaloAltoStructureType.ADDRESS_LIKE, "addr3"));
 
