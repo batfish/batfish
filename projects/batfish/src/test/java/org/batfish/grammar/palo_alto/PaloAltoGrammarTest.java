@@ -133,6 +133,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.runtime.RuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -187,6 +188,7 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.TestrigText;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AddressPrefix;
@@ -246,6 +248,7 @@ import org.junit.rules.TemporaryFolder;
 
 public final class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
+  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/palo_alto/snapshots/";
   private static final BDDPacket PKT = new BDDPacket();
   private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
 
@@ -286,6 +289,7 @@ public final class PaloAltoGrammarTest {
     // crash if not serializable
     pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
+    pac.setRuntimeData(RuntimeData.EMPTY_RUNTIME_DATA);
     pac.setWarnings(new Warnings());
     return pac;
   }
@@ -3319,5 +3323,58 @@ public final class PaloAltoGrammarTest {
     // Each vsys should inherit a different definition for the same address object
     assertIpSpacesEqual(ipSpaces.get(addrVsys1), Ip.parse("1.1.1.1").toIpSpace());
     assertIpSpacesEqual(ipSpaces.get(addrVsys2), Ip.parse("2.2.2.2").toIpSpace());
+  }
+
+  @Test
+  public void testInterfaceRuntimeAddressConversion() throws IOException {
+    String snapshotName = "runtime_data";
+    String hostname = "panorama";
+    String firewall1 = "firewall1";
+    String firewall2 = "firewall2";
+    String eth1_1 = "ethernet1/1";
+    String eth1_2 = "ethernet1/2";
+    String eth1_3 = "ethernet1/3";
+    String eth_lo = "loopback";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, ImmutableSet.of(hostname))
+                .setRuntimeDataPrefix(SNAPSHOTS_PREFIX + snapshotName)
+                .build(),
+            _folder);
+
+    Configuration c1 = batfish.loadConfigurations(batfish.getSnapshot()).get(firewall1);
+    Configuration c2 = batfish.loadConfigurations(batfish.getSnapshot()).get(firewall2);
+    Map<String, org.batfish.datamodel.Interface> interfaces1 = c1.getAllInterfaces();
+    Map<String, org.batfish.datamodel.Interface> interfaces2 = c2.getAllInterfaces();
+
+    assertThat(interfaces1.keySet(), containsInAnyOrder(eth1_1, eth1_2, eth1_3));
+    assertThat(interfaces2.keySet(), containsInAnyOrder(eth1_1, eth1_2, eth1_3, eth_lo));
+
+    // Should use configured interface address from config where applicable
+    assertThat(
+        interfaces1.get(eth1_1).getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("10.1.1.1/30")));
+    assertThat(
+        interfaces1.get(eth1_2).getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("10.1.2.1/30")));
+    // For an interface without configured address, address should be pulled from runtime data
+    assertThat(
+        interfaces1.get(eth1_3).getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("192.168.3.1/24")));
+
+    // Use configured interface address from config where applicable
+    assertThat(
+        interfaces2.get(eth1_1).getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("10.2.1.1/30")));
+    // For interfaces without configured address, address should be pulled from runtime data
+    assertThat(
+        interfaces2.get(eth1_2).getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("192.168.2.1/24")));
+    assertThat(
+        interfaces2.get(eth1_3).getConcreteAddress(),
+        equalTo(ConcreteInterfaceAddress.parse("192.168.3.1/24")));
+    // Non /32 address should not be associated with loopback
+    assertThat(interfaces2.get(eth_lo).getConcreteAddress(), nullValue());
   }
 }
