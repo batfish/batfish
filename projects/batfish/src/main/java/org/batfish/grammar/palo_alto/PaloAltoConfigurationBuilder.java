@@ -11,6 +11,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_LIKE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_LIKE_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
@@ -33,7 +34,9 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PE
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ETHERNET_AGGREGATE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER2_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LOOPBACK_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION_TRANSLATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_FROM_ZONE;
@@ -150,6 +153,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_address_or_referenceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
@@ -352,6 +356,7 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.InterfaceAddress;
 import org.batfish.representation.palo_alto.IpPrefix;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
@@ -526,6 +531,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   /**
+   * Add interface address reference. Adds a different type of reference based on the format of the
+   * address (e.g. something that looks like an IP address might but does not have to refer to an
+   * object, however something that looks like an object name must refer to an object).
+   */
+  private void referenceInterfaceAddress(
+      Interface_address_or_referenceContext ctx, PaloAltoStructureUsage usage) {
+    String uniqueName = computeObjectName(_currentVsys, getText(ctx));
+    if (ctx.reference != null) {
+      referenceStructure(ADDRESS_OBJECT, uniqueName, usage, getLine(ctx.start));
+    } else {
+      /* Interface addresses that look like concrete addresses might still be referring to an object
+       * with an ambiguous name. */
+      referenceStructure(ADDRESS_OBJECT_OR_NONE, uniqueName, usage, getLine(ctx.start));
+    }
+  }
+
+  /**
    * Helper function to add the correct service reference type for a given reference. For references
    * that may be pointing to built-in services, this is needed to make sure we don't create false
    * positive undefined references.
@@ -613,6 +635,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return null;
     }
     return convProblem(IpsecAuthenticationAlgorithm.class, ctx, null);
+  }
+
+  /** Convert address or reference into an InterfaceAddress */
+  private InterfaceAddress toInterfaceAddress(Interface_address_or_referenceContext ctx) {
+    String text = getText(ctx);
+    if (ctx.addr != null) {
+      return new InterfaceAddress(InterfaceAddress.Type.IP_ADDRESS, text);
+    } else if (ctx.addr_with_mask != null) {
+      return new InterfaceAddress(InterfaceAddress.Type.IP_PREFIX, text);
+    }
+    return new InterfaceAddress(InterfaceAddress.Type.REFERENCE, text);
   }
 
   /** Convert source or destination list item into an appropriate IpSpace */
@@ -836,7 +869,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgppgp_la_ip(Bgppgp_la_ipContext ctx) {
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.interface_address());
+    ConcreteInterfaceAddress address = toConcreteInterfaceAddress(ctx.interface_address());
     _currentBgpPeer.setLocalAddress(address.getIp());
   }
 
@@ -1906,8 +1939,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterface.addAddress(address);
+    referenceInterfaceAddress(ctx.address, LAYER3_INTERFACE_ADDRESS);
   }
 
   @Override
@@ -1933,12 +1967,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnil_ip(Snil_ipContext ctx) {
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
-    if (address.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
-      warn(ctx, ctx.address, "Loopback ip address must be /32 or without mask");
-      return;
-    }
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterface.addAddress(address);
+    referenceInterfaceAddress(ctx.address, LOOPBACK_INTERFACE_ADDRESS);
   }
 
   @Override
@@ -2724,7 +2755,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return false;
   }
 
-  private static @Nonnull ConcreteInterfaceAddress toInterfaceAddress(
+  private static @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(
       Interface_addressContext ctx) {
     if (ctx.addr != null) {
       // PAN allows implicit /32 in lots of places.
@@ -2747,7 +2778,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private @Nonnull Optional<Ip> toIp(
       ParserRuleContext ctx, Ip_address_or_slash32Context addr, String ipType) {
-    ConcreteInterfaceAddress ip = toInterfaceAddress(addr.addr);
+    ConcreteInterfaceAddress ip = toConcreteInterfaceAddress(addr.addr);
     if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
       warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
       return Optional.empty();
