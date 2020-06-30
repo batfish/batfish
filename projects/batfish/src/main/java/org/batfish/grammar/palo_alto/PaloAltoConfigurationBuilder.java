@@ -11,6 +11,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_LIKE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_LIKE_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT_OR_NONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
@@ -538,11 +539,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       Interface_address_or_referenceContext ctx, PaloAltoStructureUsage usage) {
     String uniqueName = computeObjectName(_currentVsys, getText(ctx));
     if (ctx.reference != null) {
-      referenceStructure(ADDRESS_LIKE, uniqueName, usage, getLine(ctx.start));
+      referenceStructure(ADDRESS_OBJECT, uniqueName, usage, getLine(ctx.start));
     } else {
       /* Interface addresses that look like concrete addresses might still be referring to an object
        * with an ambiguous name. */
-      referenceStructure(ADDRESS_LIKE_OR_NONE, uniqueName, usage, getLine(ctx.start));
+      referenceStructure(ADDRESS_OBJECT_OR_NONE, uniqueName, usage, getLine(ctx.start));
     }
   }
 

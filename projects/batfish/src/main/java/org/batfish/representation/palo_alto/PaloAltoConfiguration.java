@@ -2295,7 +2295,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Handle interface addresses
     markAbstractStructureFromUnknownNamespace(
-        PaloAltoStructureType.ADDRESS_LIKE,
+        PaloAltoStructureType.ADDRESS_OBJECT,
         ImmutableList.of(PaloAltoStructureType.ADDRESS_OBJECT),
         false,
         PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS,
@@ -2315,7 +2315,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE);
     // Handle ambiguous interface addresses
     markAbstractStructureFromUnknownNamespace(
-        PaloAltoStructureType.ADDRESS_LIKE_OR_NONE,
+        PaloAltoStructureType.ADDRESS_OBJECT_OR_NONE,
         ImmutableList.of(PaloAltoStructureType.ADDRESS_OBJECT),
         true,
         PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS,
