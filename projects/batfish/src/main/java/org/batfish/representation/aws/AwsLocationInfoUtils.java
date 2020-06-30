@@ -52,6 +52,6 @@ public final class AwsLocationInfoUtils {
    * balancers and NAT gateways have concrete addresses. We configure those interfaces such that
    * they don't act as default sources or sinks.
    */
-  static LocationInfo INFRASTRUCTURE_LOCATION_INFO =
+  static final LocationInfo INFRASTRUCTURE_LOCATION_INFO =
       new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
 }
