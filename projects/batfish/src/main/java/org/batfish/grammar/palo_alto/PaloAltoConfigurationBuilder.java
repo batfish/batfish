@@ -150,6 +150,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Cp_lifetimeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.If_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Interface_address_or_referenceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
@@ -352,6 +353,7 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ExportNexthopMode;
 import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.Interface;
+import org.batfish.representation.palo_alto.InterfaceAddress;
 import org.batfish.representation.palo_alto.IpPrefix;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
@@ -615,6 +617,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return convProblem(IpsecAuthenticationAlgorithm.class, ctx, null);
   }
 
+  /** Convert address or reference into an InterfaceAddress */
+  private InterfaceAddress toInterfaceAddress(Interface_address_or_referenceContext ctx) {
+    String text = getText(ctx);
+    if (ctx.addr != null) {
+      return new InterfaceAddress(InterfaceAddress.Type.IP_ADDRESS, text);
+    } else if (ctx.addr_with_mask != null) {
+      return new InterfaceAddress(InterfaceAddress.Type.IP_PREFIX, text);
+    }
+    return new InterfaceAddress(InterfaceAddress.Type.REFERENCE, text);
+  }
+
   /** Convert source or destination list item into an appropriate IpSpace */
   private RuleEndpoint toRuleEndpoint(Src_or_dst_list_itemContext ctx) {
     String text = getText(ctx);
@@ -836,7 +849,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitBgppgp_la_ip(Bgppgp_la_ipContext ctx) {
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.interface_address());
+    ConcreteInterfaceAddress address = toConcreteInterfaceAddress(ctx.interface_address());
     _currentBgpPeer.setLocalAddress(address.getIp());
   }
 
@@ -1906,7 +1919,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSniel3_ip(Sniel3_ipContext ctx) {
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterface.addAddress(address);
   }
 
@@ -1933,11 +1946,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnil_ip(Snil_ipContext ctx) {
-    ConcreteInterfaceAddress address = toInterfaceAddress(ctx.address);
-    if (address.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
-      warn(ctx, ctx.address, "Loopback ip address must be /32 or without mask");
-      return;
-    }
+    InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterface.addAddress(address);
   }
 
@@ -2724,7 +2733,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return false;
   }
 
-  private static @Nonnull ConcreteInterfaceAddress toInterfaceAddress(
+  private static @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(
       Interface_addressContext ctx) {
     if (ctx.addr != null) {
       // PAN allows implicit /32 in lots of places.
@@ -2747,7 +2756,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private @Nonnull Optional<Ip> toIp(
       ParserRuleContext ctx, Ip_address_or_slash32Context addr, String ipType) {
-    ConcreteInterfaceAddress ip = toInterfaceAddress(addr.addr);
+    ConcreteInterfaceAddress ip = toConcreteInterfaceAddress(addr.addr);
     if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
       warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
       return Optional.empty();

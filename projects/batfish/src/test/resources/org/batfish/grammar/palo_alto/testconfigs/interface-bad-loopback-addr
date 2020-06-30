@@ -1,0 +1,5 @@
+set deviceconfig system hostname interface-bad-loopback-addr
+set address ADDR1 ip-netmask 10.10.10.10/24
+set network interface loopback ip ADDR1
+# Interfaces are not functionally active unless they are in a virtual-router
+set network virtual-router default interface loopback
