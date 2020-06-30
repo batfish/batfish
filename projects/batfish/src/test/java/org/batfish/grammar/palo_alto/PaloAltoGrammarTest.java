@@ -601,14 +601,10 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testAddressObjectReference() throws IOException {
-    // addr1 is not referenced
     String hostname1 = "address-objects";
     String filename1 = "configs/" + hostname1;
-
-    // addr1 is referenced by two groups
     String hostname2 = "address-groups";
     String filename2 = "configs/" + hostname2;
-
     String hostname3 = "interface";
     String filename3 = "configs/" + hostname3;
 
@@ -617,13 +613,14 @@ public final class PaloAltoGrammarTest {
     String name_4 = computeObjectName(DEFAULT_VSYS_NAME, "addr4");
     String name_ambiguous = computeObjectName(DEFAULT_VSYS_NAME, "4.3.2.1");
 
-    // Confirm reference count is correct for used structure
+    // Confirm reference count is correct for used structures
     Batfish batfish1 = getBatfishForConfigurationNames(hostname1);
     ConvertConfigurationAnswerElement ccae1 =
         batfish1.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
-
+    // No reference to unused structure
     assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 0));
-    // Should identify a valid object reference (even though it cannot be converted, wrong subtype)
+    // Should identify what looks like a valid object reference
+    // Even though it cannot be converted as an interface address, it's a range
     assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_3, 1));
     // One reference from l3 interface, one from loopback
     assertThat(ccae1, hasNumReferrers(filename1, PaloAltoStructureType.ADDRESS_OBJECT, name_4, 2));
@@ -638,7 +635,6 @@ public final class PaloAltoGrammarTest {
     Batfish batfish2 = getBatfishForConfigurationNames(hostname2);
     ConvertConfigurationAnswerElement ccae2 =
         batfish2.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
-
     // Confirm reference count is correct for used structure
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 2));
     // Confirm undefined reference is detected
