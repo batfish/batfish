@@ -40,6 +40,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.Route.State;
+import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
 
 /**
@@ -265,6 +266,13 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         table ->
             Vrf.builder().setOwner(cfgNode).setName(vrfNameForRouteTable(table.getId())).build());
 
+    // initialize VPN infrastructure if this TGW has any VPN attachments
+    if (region.getTransitGatewayAttachments().values().stream()
+        .anyMatch(
+            a -> a.getGatewayId().equals(_gatewayId) && a.getResourceType() == ResourceType.VPN)) {
+      VpnConnection.initVpnConnectionsInfrastructure(cfgNode);
+    }
+
     // make connections to the attachments
     region.getTransitGatewayAttachments().values().stream()
         .filter(a -> a.getGatewayId().equals(_gatewayId))
@@ -361,7 +369,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           if (!vpnConnection.isPresent()) {
             warnings.redFlag(
                 String.format(
-                    "VPN connection %s for transit gateway %s",
+                    "VPN connection %s for transit gateway %s not found",
                     attachment.getResourceId(), tgwCfg.getHostname()));
             return;
           }

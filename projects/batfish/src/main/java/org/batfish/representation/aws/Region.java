@@ -4,7 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
-import static org.batfish.representation.aws.SecurityGroup.SG_INGRESS_ACL_NAME;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -66,8 +65,12 @@ public final class Region implements Serializable {
     void accept(T t) throws E, IOException;
   }
 
-  static String instanceEgressAclName(String interfaceName) {
+  static String eniEgressAclName(String interfaceName) {
     return String.format("~EGRESS_ACL~%s", interfaceName);
+  }
+
+  static String eniIngressAclName(String interfaceName) {
+    return String.format("~INGRESS_ACL~%s", interfaceName);
   }
 
   static final TraceElement DENY_SPOOFED_SOURCE_IP_TRACE_ELEMENT =
@@ -613,6 +616,11 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
+  Map<String, LoadBalancer> getLoadBalancersMap() {
+    return ImmutableMap.copyOf(_loadBalancers);
+  }
+
+  @Nonnull
   Map<String, LoadBalancerAttributes> getLoadBalancerAttributes() {
     return _loadBalancerAttributes;
   }
@@ -924,7 +932,7 @@ public final class Region implements Serializable {
 
     IpAccessList inAcl =
         IpAccessList.builder()
-            .setName(SG_INGRESS_ACL_NAME)
+            .setName(eniIngressAclName(i.getName()))
             .setLines(lines.build())
             .setOwner(c)
             .build();
@@ -954,7 +962,7 @@ public final class Region implements Serializable {
     // egress ACL is spoofing protection plus egress SGs
     IpAccessList outAcl =
         IpAccessList.builder()
-            .setName(instanceEgressAclName(i.getName()))
+            .setName(eniEgressAclName(i.getName()))
             .setLines(
                 ImmutableList.<AclLine>builder()
                     .add(computeAntiSpoofingFilter(i))

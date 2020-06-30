@@ -1,17 +1,16 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.AWS_BACKBONE_HOSTNAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testBidirectionalTrace;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.junit.BeforeClass;
@@ -84,10 +83,8 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   public void testFromSubnetPrivate_configuredAwsService() {
     testBidirectionalTrace(
         getTcpFlow(_instancePrivate, _configuredServiceIp, 443, _batfish),
-        ImmutableList.of(
-            _instancePrivate, _subnetPrivate, _vpc, _vpceGateway, AWS_SERVICES_GATEWAY_NODE_NAME),
-        ImmutableList.of(
-            AWS_SERVICES_GATEWAY_NODE_NAME, _vpceGateway, _vpc, _subnetPrivate, _instancePrivate),
+        ImmutableList.of(_instancePrivate, _subnetPrivate, _vpc, _vpceGateway),
+        ImmutableList.of(_vpceGateway, _vpc, _subnetPrivate, _instancePrivate),
         _batfish);
   }
 
@@ -95,10 +92,8 @@ public class AwsConfigurationVpcEndpointGatewayTest {
   public void testFromSubnetPublic_configuredAwsService() {
     testBidirectionalTrace(
         getTcpFlow(_instancePublic, _configuredServiceIp, 443, _batfish),
-        ImmutableList.of(
-            _instancePublic, _subnetPublic, _vpc, _vpceGateway, AWS_SERVICES_GATEWAY_NODE_NAME),
-        ImmutableList.of(
-            AWS_SERVICES_GATEWAY_NODE_NAME, _vpceGateway, _vpc, _subnetPublic, _instancePublic),
+        ImmutableList.of(_instancePublic, _subnetPublic, _vpc, _vpceGateway),
+        ImmutableList.of(_vpceGateway, _vpc, _subnetPublic, _instancePublic),
         _batfish);
   }
 
@@ -120,11 +115,11 @@ public class AwsConfigurationVpcEndpointGatewayTest {
             _subnetPublic,
             _vpc,
             _igw,
-            IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN),
+            AWS_BACKBONE_HOSTNAME,
             AWS_SERVICES_GATEWAY_NODE_NAME),
         ImmutableList.of(
             AWS_SERVICES_GATEWAY_NODE_NAME,
-            IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN),
+            AWS_BACKBONE_HOSTNAME,
             _igw,
             _vpc,
             _subnetPublic,

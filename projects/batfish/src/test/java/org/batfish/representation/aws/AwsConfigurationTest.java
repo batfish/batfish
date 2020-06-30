@@ -2,8 +2,8 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_FACING_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
-import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_EXPORT_POLICY_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsConfiguration.generateAwsServicesGateway;
@@ -17,16 +17,26 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.representation.aws.Instance.Status;
+import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
+import org.batfish.representation.aws.LoadBalancer.Protocol;
+import org.batfish.representation.aws.LoadBalancer.Scheme;
+import org.batfish.representation.aws.LoadBalancer.Type;
+import org.batfish.representation.aws.LoadBalancerTargetHealth.HealthState;
+import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealth;
+import org.batfish.representation.aws.LoadBalancerTargetHealth.TargetHealthDescription;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Test;
 
@@ -40,13 +50,87 @@ public class AwsConfigurationTest {
     assertThat(c, equalTo(ImmutableList.of()));
   }
 
-  /** Test that the AWS services gateway node is created if we have an acccount */
+  /** Test that the AWS services gateway node is created if we have an account */
   @Test
   public void testToVendorConfigurations_awsServicesGatewayNode() {
     AwsConfiguration awsConfiguration = new AwsConfiguration();
     awsConfiguration.addOrGetAccount("123");
     List<Configuration> c = awsConfiguration.toVendorIndependentConfigurations();
     assertThat(c, contains(hasHostname(AWS_SERVICES_GATEWAY_NODE_NAME)));
+  }
+
+  @Test
+  public void testPopulatePrecomputedMaps() {
+    AwsConfiguration c = new AwsConfiguration();
+    Account account = c.addOrGetAccount("123");
+    String vpcId = "vpc";
+    String noInstanceZoneName = "zone1";
+    String instanceZoneName = "zone2";
+    String noInstanceSubnetId = "subnet1";
+    String instanceSubnetId = "subnet2";
+    String instanceId = "instance";
+    String lbArn = "lbArn";
+    String tgArn = "tgArn";
+    Vpc vpc = new Vpc(vpcId, ImmutableSet.of(), ImmutableMap.of());
+    AvailabilityZone noInstanceZone = new AvailabilityZone(noInstanceSubnetId, noInstanceZoneName);
+    AvailabilityZone instanceZone = new AvailabilityZone(instanceSubnetId, instanceZoneName);
+    Prefix prefix1 = Prefix.parse("1.1.1.0/24");
+    Prefix prefix2 = Prefix.parse("2.2.2.0/24");
+    Subnet noInstanceSubnet =
+        new Subnet(prefix1, noInstanceSubnetId, vpcId, noInstanceZoneName, ImmutableMap.of());
+    Subnet instanceSubnet =
+        new Subnet(prefix2, instanceSubnetId, vpcId, instanceZoneName, ImmutableMap.of());
+    Instance instance =
+        new Instance(
+            instanceId,
+            vpcId,
+            instanceSubnetId,
+            ImmutableList.of(),
+            ImmutableList.of(),
+            Ip.parse("3.3.3.3"),
+            ImmutableMap.of(),
+            Status.RUNNING);
+
+    TargetGroup targetGroup =
+        new TargetGroup(
+            tgArn, ImmutableList.of(lbArn), Protocol.TCP, 80, "tgName", TargetGroup.Type.INSTANCE);
+    TargetHealthDescription targetHealthDescription =
+        new TargetHealthDescription(
+            new LoadBalancerTarget(lbArn, instanceId, 80), new TargetHealth(HealthState.HEALTHY));
+    LoadBalancerTargetHealth targetHealth =
+        new LoadBalancerTargetHealth("tgArn", ImmutableList.of(targetHealthDescription));
+    LoadBalancer loadBalancer =
+        new LoadBalancer(
+            lbArn,
+            ImmutableList.of(instanceZone, noInstanceZone),
+            "lbDnsName",
+            "lbName",
+            Scheme.INTERNET_FACING,
+            Type.NETWORK,
+            "vpc");
+
+    Region region =
+        Region.builder("region")
+            .setInstances(ImmutableMap.of(instanceId, instance))
+            .setSubnets(
+                ImmutableMap.of(
+                    noInstanceSubnetId, noInstanceSubnet, instanceSubnetId, instanceSubnet))
+            .setVpcs(ImmutableMap.of(vpcId, vpc))
+            .setLoadBalancers(ImmutableMap.of(lbArn, loadBalancer))
+            .setLoadBalancerTargetHealths(ImmutableMap.of(tgArn, targetHealth))
+            .setTargetGroups(ImmutableMap.of(tgArn, targetGroup))
+            .build();
+    account.addRegion(region);
+
+    c.populatePrecomputedMaps();
+    assertThat(
+        c.getSubnetsToInstanceTargets(), equalTo(ImmutableMultimap.of(instanceSubnet, instance)));
+    assertThat(
+        c.getSubnetsToNlbs(),
+        equalTo(
+            ImmutableMultimap.of(noInstanceSubnet, loadBalancer, instanceSubnet, loadBalancer)));
+    assertThat(c.getNlbsToInstanceTargets(), equalTo(ImmutableMultimap.of(loadBalancer, instance)));
+    assertThat(c.getVpcsWithInstanceTargets(), contains(vpc));
   }
 
   @Test
@@ -71,10 +155,7 @@ public class AwsConfigurationTest {
         notNullValue());
 
     // static routes are defined
-    Set<Prefix> awsServicesPrefixes =
-        Sets.difference(
-            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_AMAZON)),
-            ImmutableSet.copyOf(AwsPrefixes.getPrefixes(AwsPrefixes.SERVICE_EC2)));
+    Set<Prefix> awsServicesPrefixes = AwsPrefixes.getAwsServicesPrefixes();
     assertThat(
         cfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
@@ -101,6 +182,6 @@ public class AwsConfigurationTest {
                 LINK_LOCAL_IP.toIpSpace())));
 
     // bgp policy has been created
-    assertTrue(cfg.getRoutingPolicies().containsKey(BACKBONE_EXPORT_POLICY_NAME));
+    assertTrue(cfg.getRoutingPolicies().containsKey(AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME));
   }
 }
