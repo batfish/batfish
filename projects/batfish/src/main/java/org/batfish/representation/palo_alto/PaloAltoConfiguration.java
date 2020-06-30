@@ -2293,9 +2293,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
         PaloAltoStructureUsage.SECURITY_RULE_SERVICE);
 
-    // Handle marking rule endpoints
-    // First, handle those which may or may not be referencing objects (e.g. "1.2.3.4" may be IP
+    // First, handle things which may or may not be referencing objects (e.g. "1.2.3.4" may be IP
     // address or a named object)
+    // Handle marking rule endpoints
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.ADDRESS_LIKE_OR_NONE,
         ImmutableList.of(
@@ -2305,6 +2305,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         true,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE);
+    // Handle ambiguous interface addresses (e.g. address object names can look like IP addresses)
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.ADDRESS_OBJECT_OR_NONE,
+        ImmutableList.of(PaloAltoStructureType.ADDRESS_OBJECT),
+        true,
+        PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS,
+        PaloAltoStructureUsage.LOOPBACK_INTERFACE_ADDRESS);
+
     // Next, handle address object references which are definitely referencing objects
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.ADDRESS_LIKE,
@@ -2315,6 +2323,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
         PaloAltoStructureUsage.SECURITY_RULE_SOURCE);
+
+    // Handle interface addresses
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.ADDRESS_OBJECT,
+        ImmutableList.of(PaloAltoStructureType.ADDRESS_OBJECT),
+        false,
+        PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS,
+        PaloAltoStructureUsage.LOOPBACK_INTERFACE_ADDRESS);
 
     // Applications or Application-Groups
     markAbstractStructureFromUnknownNamespace(

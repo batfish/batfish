@@ -9,6 +9,7 @@ public enum PaloAltoStructureType implements StructureType {
   // may actually refer to constants like an IP addresses
   ADDRESS_LIKE_OR_NONE("address-like or none"),
   ADDRESS_OBJECT("address object"),
+  ADDRESS_OBJECT_OR_NONE("address object or none"),
   APPLICATION("application"),
   APPLICATION_GROUP("application-group"),
   APPLICATION_GROUP_OR_APPLICATION("application-group or application"),
