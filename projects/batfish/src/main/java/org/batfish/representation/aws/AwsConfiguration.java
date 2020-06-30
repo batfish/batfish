@@ -40,9 +40,11 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
@@ -69,6 +71,8 @@ public class AwsConfiguration extends VendorConfiguration {
    * <p>TODO: ensure that this name does not conflict with any name that appears in the snapshot
    */
   static final String AWS_SERVICES_GATEWAY_NODE_NAME = "__aws-services-gateway__";
+
+  static final String AWS_SERVICES_GATEWAY_HUMAN_NAME = "public aws services gateway";
 
   static final String AWS_SERVICES_FACING_INTERFACE_NAME = "aws-services";
 
@@ -327,9 +331,17 @@ public class AwsConfiguration extends VendorConfiguration {
    */
   static Configuration generateAwsServicesGateway() {
     Configuration cfgNode =
-        Utils.newAwsConfiguration(
-            AWS_SERVICES_GATEWAY_NODE_NAME, "aws", DeviceModel.AWS_SERVICES_GATEWAY);
-    cfgNode.setHumanName("AWS Services Gateway");
+        Configuration.builder()
+            // don't use AWS config format; we don't want this node to be part of the AWS aggregate
+            // cisco_ios is a placeholder we use for isps as well
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(AWS_SERVICES_GATEWAY_NODE_NAME)
+            .setHumanName(AWS_SERVICES_GATEWAY_HUMAN_NAME)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDeviceModel(DeviceModel.AWS_SERVICES_GATEWAY)
+            .build();
+    Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(cfgNode).build();
 
     Interface outInterface =
         Utils.newInterface(
