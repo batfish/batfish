@@ -72,6 +72,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
+import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -1260,6 +1261,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
+    InterfaceRuntimeData ifaceRuntimeData = _runtimeData.getInterface(iface.getName());
     Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
@@ -1275,15 +1277,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // It is unclear which vsys is used to start the object lookup process on multi-vsys systems,
     // since interfaces are not associated with particular vsys.
     // Assuming default vsys is good enough for now (this is the behavior for single-vsys systems).
-    ConcreteInterfaceAddress concreteAddress =
+    ConcreteInterfaceAddress interfaceAddress =
         interfaceAddressToConcreteInterfaceAddress(
             iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);
-    if (concreteAddress != null) {
+    // No explicit address detected, fallback to runtime data
+    if (interfaceAddress == null && ifaceRuntimeData != null) {
+      interfaceAddress = ifaceRuntimeData.getAddress();
+    }
+
+    if (interfaceAddress != null) {
       if (iface.getType() == Interface.Type.LOOPBACK
-          && concreteAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+          && interfaceAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
         _w.redFlag("Loopback ip address must be /32 or without mask");
       } else {
-        newIface.setAddress(concreteAddress);
+        newIface.setAddress(interfaceAddress);
         newIface.setSecondaryAddresses(
             Sets.difference(
                 iface.getAllAddresses().stream()
@@ -1292,7 +1299,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             interfaceAddressToConcreteInterfaceAddress(
                                 a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
                     .collect(Collectors.toSet()),
-                ImmutableSet.of(concreteAddress)));
+                ImmutableSet.of(interfaceAddress)));
       }
     }
     newIface.setActive(iface.getActive());
@@ -2079,6 +2086,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             PaloAltoConfiguration c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
                             c.setVendor(_vendor);
+                            c.setRuntimeData(_runtimeData);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
@@ -2107,6 +2115,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           PaloAltoConfiguration c = new PaloAltoConfiguration();
                           c.setWarnings(_w);
                           c.setVendor(_vendor);
+                          c.setRuntimeData(_runtimeData);
                           // This may not actually be the device's hostname
                           // but this is all we know at this point
                           c.setHostname(deviceName);
@@ -2129,6 +2138,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             c = new PaloAltoConfiguration();
                             c.setWarnings(_w);
                             c.setVendor(_vendor);
+                            c.setRuntimeData(_runtimeData);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
