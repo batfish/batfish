@@ -17,4 +17,6 @@ set network interface ethernet ethernet1/1 layer3 ip addr4
 set network interface ethernet ethernet1/2 layer3 ip 1.2.3.4
 set network interface ethernet ethernet1/3 layer3 ip 4.3.2.1
 set network interface ethernet ethernet1/4 layer3 ip addr_undef
+# Valid object name, but invalid subtype (ip-range)
+set network interface ethernet ethernet1/5 layer3 ip addr3
 set network interface loopback ip addr4
