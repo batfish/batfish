@@ -133,6 +133,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.runtime.RuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -288,6 +289,7 @@ public final class PaloAltoGrammarTest {
     // crash if not serializable
     pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
+    pac.setRuntimeData(RuntimeData.EMPTY_RUNTIME_DATA);
     pac.setWarnings(new Warnings());
     return pac;
   }
