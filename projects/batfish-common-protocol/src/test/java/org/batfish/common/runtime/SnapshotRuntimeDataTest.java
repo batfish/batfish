@@ -63,9 +63,6 @@ public class SnapshotRuntimeDataTest {
     // Non-existent hostname: should return empty runtime data
     assertThat(srd.getRuntimeData("other"), equalTo(RuntimeData.EMPTY_RUNTIME_DATA));
 
-    // Null hostname: should return empty runtime data
-    assertThat(srd.getRuntimeData(null), equalTo(RuntimeData.EMPTY_RUNTIME_DATA));
-
     // Non-canonical hostname: should throw
     _thrown.expect(AssertionError.class);
     srd.getRuntimeData(hostname.toUpperCase());
