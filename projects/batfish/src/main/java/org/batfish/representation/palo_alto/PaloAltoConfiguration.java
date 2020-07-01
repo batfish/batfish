@@ -1261,8 +1261,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    InterfaceRuntimeData ifaceRuntimeData =
-        _runtimeData.getRuntimeData(_hostname).getInterface(iface.getName());
+    Optional<InterfaceRuntimeData> ifaceRuntimeData =
+        Optional.ofNullable(_hostname)
+            .map(h -> _runtimeData.getRuntimeData(h))
+            .map(d -> d.getInterface(name));
     Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
@@ -1282,8 +1284,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         interfaceAddressToConcreteInterfaceAddress(
             iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);
     // No explicit address detected, fallback to runtime data
-    if (interfaceAddress == null && ifaceRuntimeData != null) {
-      interfaceAddress = ifaceRuntimeData.getAddress();
+    if (interfaceAddress == null) {
+      interfaceAddress = ifaceRuntimeData.map(InterfaceRuntimeData::getAddress).orElse(null);
     }
 
     if (interfaceAddress != null) {
