@@ -137,7 +137,10 @@ public final class SnapshotRuntimeData {
 
   @JsonIgnore
   @Nonnull
-  public RuntimeData getRuntimeData(String hostname) {
+  public RuntimeData getRuntimeData(@Nullable String hostname) {
+    if (hostname == null) {
+      return RuntimeData.EMPTY_RUNTIME_DATA;
+    }
     assert hostname.equals(hostname.toLowerCase());
     return _runtimeData.getOrDefault(hostname, RuntimeData.EMPTY_RUNTIME_DATA);
   }

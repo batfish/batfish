@@ -1261,7 +1261,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific interface into vendor independent model interface */
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
-    InterfaceRuntimeData ifaceRuntimeData = _runtimeData.getInterface(iface.getName());
+    InterfaceRuntimeData ifaceRuntimeData =
+        _runtimeData.getRuntimeData(_hostname).getInterface(iface.getName());
     Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
     org.batfish.datamodel.Interface.Builder newIface =
         org.batfish.datamodel.Interface.builder()
