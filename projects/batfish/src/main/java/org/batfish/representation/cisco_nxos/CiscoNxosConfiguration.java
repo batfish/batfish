@@ -1784,7 +1784,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setType(toInterfaceType(type, parent != null));
 
     Optional<InterfaceRuntimeData> runtimeData =
-        Optional.ofNullable(_runtimeData.getInterface(ifaceName));
+        Optional.ofNullable(_runtimeData.getRuntimeData(_hostname).getInterface(ifaceName));
     Double runtimeBandwidth = runtimeData.map(InterfaceRuntimeData::getBandwidth).orElse(null);
     Double runtimeSpeed = runtimeData.map(InterfaceRuntimeData::getSpeed).orElse(null);
 

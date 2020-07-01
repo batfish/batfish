@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.common.runtime.RuntimeData;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
@@ -40,14 +40,17 @@ import org.batfish.vendor.VendorConfiguration;
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
   private Object _configObject;
-  @Nonnull private final RuntimeData _runtimeData;
+  @Nonnull private final SnapshotRuntimeData _runtimeData;
   private String _name;
 
   public ConvertConfigurationJob(
-      Settings settings, @Nullable RuntimeData runtimeData, Object configObject, String name) {
+      Settings settings,
+      @Nullable SnapshotRuntimeData runtimeData,
+      Object configObject,
+      String name) {
     super(settings);
     _configObject = configObject;
-    _runtimeData = firstNonNull(runtimeData, RuntimeData.EMPTY_RUNTIME_DATA);
+    _runtimeData = firstNonNull(runtimeData, SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     _name = name;
   }
 

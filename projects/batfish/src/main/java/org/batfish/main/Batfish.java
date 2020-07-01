@@ -776,8 +776,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<String, VendorConfiguration> config : vendorConfigurations.entrySet()) {
       VendorConfiguration vc = config.getValue();
       ConvertConfigurationJob job =
-          new ConvertConfigurationJob(
-              _settings, runtimeData.getRuntimeData(config.getKey()), vc, config.getKey());
+          new ConvertConfigurationJob(_settings, runtimeData, vc, config.getKey());
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(

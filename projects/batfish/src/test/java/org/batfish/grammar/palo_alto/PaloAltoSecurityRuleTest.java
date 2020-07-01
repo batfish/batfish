@@ -24,7 +24,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.runtime.RuntimeData;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -81,7 +81,7 @@ public class PaloAltoSecurityRuleTest {
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     pac = SerializationUtils.clone(pac);
-    pac.setRuntimeData(RuntimeData.EMPTY_RUNTIME_DATA);
+    pac.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     pac.setAnswerElement(answerElement);
     return pac;
   }
