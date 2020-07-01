@@ -133,7 +133,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.runtime.RuntimeData;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -289,7 +289,7 @@ public final class PaloAltoGrammarTest {
     // crash if not serializable
     pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
-    pac.setRuntimeData(RuntimeData.EMPTY_RUNTIME_DATA);
+    pac.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     pac.setWarnings(new Warnings());
     return pac;
   }
@@ -3358,10 +3358,8 @@ public final class PaloAltoGrammarTest {
     assertThat(
         interfaces1.get(eth1_2).getConcreteAddress(),
         equalTo(ConcreteInterfaceAddress.parse("10.1.2.1/30")));
-    // For an interface without configured address, address should be pulled from runtime data
-    assertThat(
-        interfaces1.get(eth1_3).getConcreteAddress(),
-        equalTo(ConcreteInterfaceAddress.parse("192.168.3.1/24")));
+    // No address specified for this interface on firewall1
+    assertThat(interfaces1.get(eth1_3).getConcreteAddress(), nullValue());
 
     // Use configured interface address from config where applicable
     assertThat(

@@ -1,6 +1,6 @@
 {
   "runtimeData": {
-    "panorama": {
+    "firewall2": {
       "interfaces": {
         "ethernet1/1": {
           "address": "192.168.1.1/24"
