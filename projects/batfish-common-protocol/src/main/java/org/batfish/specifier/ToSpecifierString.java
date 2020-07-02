@@ -1,5 +1,7 @@
 package org.batfish.specifier;
 
+import static org.batfish.datamodel.Names.escapeNameIfNeeded;
+
 import org.batfish.common.util.isp.IspModelingUtils;
 
 /** Converts a {@link Location} to its specifier string */
@@ -24,12 +26,15 @@ public final class ToSpecifierString implements LocationVisitor<String> {
     }
     return String.format(
         "@enter(%s[%s])",
-        interfaceLinkLocation.getNodeName(), interfaceLinkLocation.getInterfaceName());
+        escapeNameIfNeeded(interfaceLinkLocation.getNodeName()),
+        escapeNameIfNeeded(interfaceLinkLocation.getInterfaceName()));
   }
 
   @Override
   public String visitInterfaceLocation(InterfaceLocation interfaceLocation) {
     return String.format(
-        "%s[%s]", interfaceLocation.getNodeName(), interfaceLocation.getInterfaceName());
+        "%s[%s]",
+        escapeNameIfNeeded(interfaceLocation.getNodeName()),
+        escapeNameIfNeeded(interfaceLocation.getInterfaceName()));
   }
 }
