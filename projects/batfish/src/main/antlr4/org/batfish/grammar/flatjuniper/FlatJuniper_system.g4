@@ -68,7 +68,46 @@ sy_ntp
    (
       syn_null
       | syn_server
+      | syn_source_address
    )
+;
+
+syn_null
+:
+   (
+      BOOT_SERVER
+      | BROADCAST_CLIENT
+   ) null_filler
+;
+
+syn_server
+:
+   SERVER hostname = variable
+   (
+       syn_server_key
+       | syn_server_version
+       | syn_server_prefer
+   )*
+;
+
+syn_source_address
+:
+   SOURCE_ADDRESS address = IP_ADDRESS
+;
+
+syn_server_key
+:
+    KEY DEC
+;
+
+syn_server_prefer
+:
+    PREFER
+;
+
+syn_server_version
+:
+    VERSION VERSION_STRING
 ;
 
 sy_null
@@ -139,7 +178,53 @@ sy_syslog
    (
       sys_host
       | sys_null
+      | sys_source_address
    )
+;
+
+sys_host
+:
+   HOST hostname = variable
+   (
+      sysh_null
+   )
+;
+
+sys_null
+:
+   (
+      ARCHIVE
+      | CONSOLE
+      | FILE
+      | TIME_FORMAT
+      | USER
+   ) null_filler
+;
+
+sys_source_address
+:
+  SOURCE_ADDRESS address = IP_ADDRESS
+;
+
+sysh_null
+:
+   (
+      ALLOW_DUPLICATES
+      | ANY
+      | CHANGE_LOG
+      | DAEMON
+      | EXPLICIT_PRIORITY
+      | FACILITY_OVERRIDE
+      | FIREWALL
+      | INTERACTIVE_COMMANDS
+      | KERNEL
+      | LOG_PREFIX
+      | MATCH
+      | PORT
+      | SOURCE_ADDRESS
+      | STRUCTURED_DATA
+      | USER
+   ) null_filler
 ;
 
 sy_security_profile
@@ -218,40 +303,6 @@ sy_tacplus_server
    )
 ;
 
-syn_null
-:
-   (
-      BOOT_SERVER
-      | BROADCAST_CLIENT
-      | SOURCE_ADDRESS
-   ) null_filler
-;
-
-syn_server
-:
-   SERVER hostname = variable
-   (
-       syn_server_key
-       | syn_server_version
-       | syn_server_prefer
-   )*
-;
-
-syn_server_key
-:
-    KEY DEC
-;
-
-syn_server_prefer
-:
-    PREFER
-;
-
-syn_server_version
-:
-    VERSION VERSION_STRING
-;
-
 syp_disable
 :
    DISABLE
@@ -269,47 +320,6 @@ syp_null
 syr_encrypted_password
 :
    ENCRYPTED_PASSWORD password = variable
-;
-
-sys_host
-:
-   HOST hostname = variable
-   (
-      sysh_null
-   )
-;
-
-sys_null
-:
-   (
-      ARCHIVE
-      | CONSOLE
-      | FILE
-      | SOURCE_ADDRESS
-      | TIME_FORMAT
-      | USER
-   ) null_filler
-;
-
-sysh_null
-:
-   (
-      ALLOW_DUPLICATES
-      | ANY
-      | CHANGE_LOG
-      | DAEMON
-      | EXPLICIT_PRIORITY
-      | FACILITY_OVERRIDE
-      | FIREWALL
-      | INTERACTIVE_COMMANDS
-      | KERNEL
-      | LOG_PREFIX
-      | MATCH
-      | PORT
-      | SOURCE_ADDRESS
-      | STRUCTURED_DATA
-      | USER
-   ) null_filler
 ;
 
 sysl_null
