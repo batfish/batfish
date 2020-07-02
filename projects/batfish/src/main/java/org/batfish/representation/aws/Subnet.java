@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +41,13 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
@@ -271,6 +275,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
                       warnings));
     }
 
+    addNlbInstanceTargetInterfaces(awsConfiguration, cfgNode, vpcConfigNode);
+
     installNetworkAcls(cfgNode, region, warnings);
 
     // create LocationInfo for each link location on the node.
@@ -286,6 +292,65 @@ public class Subnet implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
 
     return cfgNode;
+  }
+
+  private void addNlbInstanceTargetInterfaces(
+      ConvertedConfiguration awsConfiguration, Configuration subnetCfg, Configuration vpcCfg) {
+    Collection<Instance> instanceTargets = awsConfiguration.getSubnetsToInstanceTargets().get(this);
+    Collection<LoadBalancer> nlbs = awsConfiguration.getSubnetsToNlbs().get(this);
+    if (instanceTargets == null && nlbs == null) {
+      return;
+    }
+    //  New VRF called "NLB_instance_targets" in subnet and VPC nodes
+    String vrfName = "NLB_instance_targets";
+    Vrf.builder().setName(vrfName).setOwner(subnetCfg).build();
+    if (!vpcCfg.getVrfs().containsKey(vrfName)) {
+      Vrf.builder().setName(vrfName).setOwner(vpcCfg).build();
+    }
+
+    String ifaceSuffix = "nlb-instance-targets";
+    Utils.connect(awsConfiguration, subnetCfg, vrfName, vpcCfg, vrfName, ifaceSuffix);
+
+    // Add firewall session info on new subnet interface to VPC
+    String subnetIfaceName = interfaceNameToRemote(vpcCfg, ifaceSuffix);
+    Interface subnetToVpcIface = subnetCfg.getAllInterfaces().get(subnetIfaceName);
+    subnetToVpcIface.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(false, ImmutableList.of(subnetIfaceName), null, null));
+
+    if (nlbs != null) {
+      // For each NLB in the subnet: new interface connecting to NLB, no filters
+      for (LoadBalancer nlb : nlbs) {
+        Configuration nlbConfig =
+            awsConfiguration.getNode(LoadBalancer.getNodeId(nlb.getDnsName(), _availabilityZone));
+        Utils.connect(
+            awsConfiguration,
+            subnetCfg,
+            vrfName,
+            nlbConfig,
+            nlbConfig.getDefaultVrf().getName(),
+            ifaceSuffix);
+
+        // Add firewall session info on NLB interface to this subnet
+        String nlbIfaceName = interfaceNameToRemote(subnetCfg, ifaceSuffix);
+        Interface nlbIface = nlbConfig.getAllInterfaces().get(nlbIfaceName);
+        nlbIface.setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(false, ImmutableList.of(nlbIfaceName), null, null));
+      }
+    }
+    if (instanceTargets != null) {
+      // For each instance target in the subnet: New interface connecting to instance, no filters
+      for (Instance instanceTarget : instanceTargets) {
+        Configuration instanceConfig =
+            awsConfiguration.getNode(Instance.instanceHostname(instanceTarget.getId()));
+        Utils.connect(
+            awsConfiguration,
+            subnetCfg,
+            vrfName,
+            instanceConfig,
+            instanceConfig.getDefaultVrf().getName(),
+            ifaceSuffix);
+      }
+    }
   }
 
   /**
