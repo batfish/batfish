@@ -1,6 +1,5 @@
 package org.batfish.representation.aws;
 
-import static org.batfish.representation.aws.AwsConfigurationTestUtils.getOnlyNodeIp;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testBidirectionalTrace;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
@@ -15,6 +14,7 @@ import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.LocationSpecifier;
@@ -72,6 +72,8 @@ public class AwsConfigurationLoadBalancerTest {
       LoadBalancer.getNodeId("test-lb-725b996cb6be8fba.elb.us-east-2.amazonaws.com", "us-east-2b");
   private static String _nodeLoadBalancer2 =
       LoadBalancer.getNodeId("test-lb-725b996cb6be8fba.elb.us-east-2.amazonaws.com", "us-east-2a");
+  private static String _nlb1Iface = "eni-01f261dccaba46564";
+  private static String _nlb2Iface = "eni-0c82d6f7254ae6695";
 
   private static int _listenerPort = 80;
 
@@ -118,12 +120,24 @@ public class AwsConfigurationLoadBalancerTest {
   public void testClientToLbTrace() {
     // traces could have gone to either server, but because of deterministic processing of
     // transformations server2 is hit. reachability test below tests that server1 can also be hit.
+    Ip nlb1Ip =
+        _batfish
+            .loadConfigurations(_batfish.getSnapshot())
+            .get(_nodeLoadBalancer1)
+            .getAllInterfaces()
+            .get(_nlb1Iface)
+            .getConcreteAddress()
+            .getIp();
+    Ip nlb2Ip =
+        _batfish
+            .loadConfigurations(_batfish.getSnapshot())
+            .get(_nodeLoadBalancer2)
+            .getAllInterfaces()
+            .get(_nlb2Iface)
+            .getConcreteAddress()
+            .getIp();
     testBidirectionalTrace(
-        getTcpFlow(
-            _instanceClient,
-            getOnlyNodeIp(_nodeLoadBalancer1, _batfish),
-            _listenerPort,
-            _batfish), // to first LB IP
+        getTcpFlow(_instanceClient, nlb1Ip, _listenerPort, _batfish), // to first LB IP
         ImmutableList.of(
             _instanceClient,
             _subnetClient,
@@ -146,11 +160,7 @@ public class AwsConfigurationLoadBalancerTest {
             _instanceClient),
         _batfish);
     testBidirectionalTrace(
-        getTcpFlow(
-            _instanceClient,
-            getOnlyNodeIp(_nodeLoadBalancer2, _batfish),
-            _listenerPort,
-            _batfish), // to second LB IP
+        getTcpFlow(_instanceClient, nlb2Ip, _listenerPort, _batfish), // to second LB IP
         ImmutableList.of(
             _instanceClient, _subnetClient, _vpc, _subnetS2, _nodeLoadBalancer2, _instanceS2),
         ImmutableList.of(
@@ -167,21 +177,29 @@ public class AwsConfigurationLoadBalancerTest {
   /** The client sends a packet to the load balancer on a non-listened port. */
   @Test
   public void testClientToLb_nonListenedPort() {
+    Ip nlb1Ip =
+        _batfish
+            .loadConfigurations(_batfish.getSnapshot())
+            .get(_nodeLoadBalancer1)
+            .getAllInterfaces()
+            .get(_nlb1Iface)
+            .getConcreteAddress()
+            .getIp();
+    Ip nlb2Ip =
+        _batfish
+            .loadConfigurations(_batfish.getSnapshot())
+            .get(_nodeLoadBalancer2)
+            .getAllInterfaces()
+            .get(_nlb2Iface)
+            .getConcreteAddress()
+            .getIp();
     testTrace(
-        getTcpFlow(
-            _instanceClient,
-            getOnlyNodeIp(_nodeLoadBalancer1, _batfish),
-            _listenerPort + 1,
-            _batfish), // to first LB IP
+        getTcpFlow(_instanceClient, nlb1Ip, _listenerPort + 1, _batfish), // to first LB IP
         FlowDisposition.DENIED_IN,
         ImmutableList.of(_instanceClient, _subnetClient, _vpc, _subnetS1, _nodeLoadBalancer1),
         _batfish);
     testTrace(
-        getTcpFlow(
-            _instanceClient,
-            getOnlyNodeIp(_nodeLoadBalancer2, _batfish),
-            _listenerPort + 1,
-            _batfish), // to second LB IP
+        getTcpFlow(_instanceClient, nlb2Ip, _listenerPort + 1, _batfish), // to second LB IP
         FlowDisposition.DENIED_IN,
         ImmutableList.of(_instanceClient, _subnetClient, _vpc, _subnetS2, _nodeLoadBalancer2),
         _batfish);

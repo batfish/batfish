@@ -298,7 +298,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       ConvertedConfiguration awsConfiguration, Configuration subnetCfg, Configuration vpcCfg) {
     Collection<Instance> instanceTargets = awsConfiguration.getSubnetsToInstanceTargets().get(this);
     Collection<LoadBalancer> nlbs = awsConfiguration.getSubnetsToNlbs().get(this);
-    if (instanceTargets == null && nlbs == null) {
+    if (instanceTargets.isEmpty() && nlbs.isEmpty()) {
       return;
     }
     //  New VRF called "NLB_instance_targets" in subnet and VPC nodes
@@ -317,39 +317,35 @@ public class Subnet implements AwsVpcEntity, Serializable {
     subnetToVpcIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(subnetIfaceName), null, null));
 
-    if (nlbs != null) {
-      // For each NLB in the subnet: new interface connecting to NLB, no filters
-      for (LoadBalancer nlb : nlbs) {
-        Configuration nlbConfig =
-            awsConfiguration.getNode(LoadBalancer.getNodeId(nlb.getDnsName(), _availabilityZone));
-        Utils.connect(
-            awsConfiguration,
-            subnetCfg,
-            vrfName,
-            nlbConfig,
-            nlbConfig.getDefaultVrf().getName(),
-            ifaceSuffix);
+    // For each NLB in the subnet: new interface connecting to NLB, no filters
+    for (LoadBalancer nlb : nlbs) {
+      Configuration nlbConfig =
+          awsConfiguration.getNode(LoadBalancer.getNodeId(nlb.getDnsName(), _availabilityZone));
+      Utils.connect(
+          awsConfiguration,
+          subnetCfg,
+          vrfName,
+          nlbConfig,
+          nlbConfig.getDefaultVrf().getName(),
+          ifaceSuffix);
 
-        // Add firewall session info on NLB interface to this subnet
-        String nlbIfaceName = interfaceNameToRemote(subnetCfg, ifaceSuffix);
-        Interface nlbIface = nlbConfig.getAllInterfaces().get(nlbIfaceName);
-        nlbIface.setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(false, ImmutableList.of(nlbIfaceName), null, null));
-      }
+      // Add firewall session info on NLB interface to this subnet
+      String nlbIfaceName = interfaceNameToRemote(subnetCfg, ifaceSuffix);
+      Interface nlbIface = nlbConfig.getAllInterfaces().get(nlbIfaceName);
+      nlbIface.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(false, ImmutableList.of(nlbIfaceName), null, null));
     }
-    if (instanceTargets != null) {
-      // For each instance target in the subnet: New interface connecting to instance, no filters
-      for (Instance instanceTarget : instanceTargets) {
-        Configuration instanceConfig =
-            awsConfiguration.getNode(Instance.instanceHostname(instanceTarget.getId()));
-        Utils.connect(
-            awsConfiguration,
-            subnetCfg,
-            vrfName,
-            instanceConfig,
-            instanceConfig.getDefaultVrf().getName(),
-            ifaceSuffix);
-      }
+    // For each instance target in the subnet: New interface connecting to instance, no filters
+    for (Instance instanceTarget : instanceTargets) {
+      Configuration instanceConfig =
+          awsConfiguration.getNode(Instance.instanceHostname(instanceTarget.getId()));
+      Utils.connect(
+          awsConfiguration,
+          subnetCfg,
+          vrfName,
+          instanceConfig,
+          instanceConfig.getDefaultVrf().getName(),
+          ifaceSuffix);
     }
   }
 
