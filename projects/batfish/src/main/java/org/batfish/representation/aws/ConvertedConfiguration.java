@@ -66,7 +66,8 @@ class ConvertedConfiguration implements Serializable {
         ImmutableSet.of());
   }
 
-  private ConvertedConfiguration(
+  @VisibleForTesting
+  ConvertedConfiguration(
       Map<String, Configuration> configurationNodes,
       Set<Layer1Edge> layer1Edges,
       Multimap<Subnet, Instance> subnetsToInstanceTargets,

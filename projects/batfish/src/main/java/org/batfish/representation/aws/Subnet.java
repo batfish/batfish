@@ -294,7 +294,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
-  private void addNlbInstanceTargetInterfaces(
+  @VisibleForTesting
+  void addNlbInstanceTargetInterfaces(
       ConvertedConfiguration awsConfiguration, Configuration subnetCfg, Configuration vpcCfg) {
     Collection<Instance> instanceTargets = awsConfiguration.getSubnetsToInstanceTargets().get(this);
     Collection<LoadBalancer> nlbs = awsConfiguration.getSubnetsToNlbs().get(this);
@@ -302,13 +303,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
       return;
     }
     //  New VRF called "NLB_instance_targets" in subnet and VPC nodes
-    String vrfName = "NLB_instance_targets";
+    String vrfName = nlbInstanceTargetsVrfName();
     Vrf.builder().setName(vrfName).setOwner(subnetCfg).build();
     if (!vpcCfg.getVrfs().containsKey(vrfName)) {
       Vrf.builder().setName(vrfName).setOwner(vpcCfg).build();
     }
 
-    String ifaceSuffix = "nlb-instance-targets";
+    String ifaceSuffix = nlbInstanceTargetsIfaceSuffix();
     Utils.connect(awsConfiguration, subnetCfg, vrfName, vpcCfg, vrfName, ifaceSuffix);
 
     // Add firewall session info on new subnet interface to VPC
@@ -572,5 +573,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
   public static String instancesInterfaceName(String subnetId) {
     // since there is only one such interface per subnet node, we can keep it simple
     return "to-instances";
+  }
+
+  public static String nlbInstanceTargetsVrfName() {
+    return "NLB_instance_targets";
+  }
+
+  public static String nlbInstanceTargetsIfaceSuffix() {
+    return "nlb-instance-targets";
   }
 }
