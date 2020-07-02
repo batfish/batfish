@@ -73,10 +73,14 @@ public class GroupWildcard extends BaseParser<String> {
   @SuppressSubnodes
   Rule AllLiterals() {
     // Skipping special characters until proven otherwise
-    Rule base = FirstOf(ClassLiterals(), Dot());
+    Rule base = FirstOf(ClassLiterals(), NonClassLiterals(), Dot());
     return Sequence(
         base, // pop()
         ZeroOrMore(base, push(pop(1) + pop())));
+  }
+
+  Rule NonClassLiterals() {
+    return Sequence(Ch('/'), push(match()));
   }
 
   Rule Dot() {
