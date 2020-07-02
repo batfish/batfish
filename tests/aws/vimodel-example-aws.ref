@@ -22813,36 +22813,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "vpc-b390fad5-nlb-instance-targets" : {
-            "name" : "vpc-b390fad5-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-b390fad5-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "vpc-b390fad5-vrf-igw-9b93ddfc" : {
             "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
             "active" : true,
@@ -22968,10 +22938,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -23056,60 +23022,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-b390fad5-NLB_instance_targets" : {
-            "name" : "vpc-b390fad5-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-NLB_instance_targets",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-b390fad5-nlb-instance-targets" : {
-            "name" : "vpc-b390fad5-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-b390fad5-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-b390fad5-vrf-igw-9b93ddfc" : {
             "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
@@ -23236,10 +23148,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -23323,36 +23231,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-f8fad69d-nlb-instance-targets" : {
-            "name" : "vpc-f8fad69d-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-f8fad69d-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-f8fad69d-vrf-igw-068fee63" : {
             "name" : "vpc-f8fad69d-vrf-igw-068fee63",
@@ -23491,10 +23369,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -23579,60 +23453,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-b390fad5-NLB_instance_targets" : {
-            "name" : "vpc-b390fad5-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-NLB_instance_targets",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-b390fad5-nlb-instance-targets" : {
-            "name" : "vpc-b390fad5-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-b390fad5-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-b390fad5-vrf-igw-9b93ddfc" : {
             "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
@@ -23759,10 +23579,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -23847,60 +23663,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-925131f4-NLB_instance_targets" : {
-            "name" : "vpc-925131f4-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-925131f4-NLB_instance_targets",
-            "incomingFilter" : "acl-3d4f745b_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-3d4f745b_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-925131f4-nlb-instance-targets" : {
-            "name" : "vpc-925131f4-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-925131f4-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-925131f4-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-3d4f745b_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-3d4f745b_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-925131f4-vrf-igw-fac5839d" : {
             "name" : "vpc-925131f4-vrf-igw-fac5839d",
@@ -24027,10 +23789,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -24115,60 +23873,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-b390fad5-NLB_instance_targets" : {
-            "name" : "vpc-b390fad5-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-NLB_instance_targets",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-b390fad5-nlb-instance-targets" : {
-            "name" : "vpc-b390fad5-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-b390fad5-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-b390fad5-vrf-igw-9b93ddfc" : {
             "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
@@ -24295,10 +23999,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -24383,36 +24083,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-925131f4-nlb-instance-targets" : {
-            "name" : "vpc-925131f4-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-925131f4-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-925131f4-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-3d4f745b_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-3d4f745b_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-925131f4-vrf-igw-fac5839d" : {
             "name" : "vpc-925131f4-vrf-igw-fac5839d",
@@ -24539,10 +24209,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -24626,60 +24292,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-f8fad69d-NLB_instance_targets" : {
-            "name" : "vpc-f8fad69d-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-NLB_instance_targets",
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-f8fad69d-nlb-instance-targets" : {
-            "name" : "vpc-f8fad69d-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-f8fad69d-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-f8fad69d-vrf-igw-068fee63" : {
             "name" : "vpc-f8fad69d-vrf-igw-068fee63",
@@ -24818,10 +24430,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -24905,60 +24513,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-f8fad69d-NLB_instance_targets" : {
-            "name" : "vpc-f8fad69d-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-NLB_instance_targets",
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-f8fad69d-nlb-instance-targets" : {
-            "name" : "vpc-f8fad69d-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-f8fad69d-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-f8fad69d-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-4db39c28_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-4db39c28_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-f8fad69d-vrf-igw-068fee63" : {
             "name" : "vpc-f8fad69d-vrf-igw-068fee63",
@@ -25097,10 +24651,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -25185,60 +24735,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "vpc-b390fad5-NLB_instance_targets" : {
-            "name" : "vpc-b390fad5-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-NLB_instance_targets",
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
-          "vpc-b390fad5-nlb-instance-targets" : {
-            "name" : "vpc-b390fad5-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To vpc-b390fad5-nlb-instance-targets",
-            "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
-              "sessionInterfaces" : [
-                "vpc-b390fad5-nlb-instance-targets"
-              ]
-            },
-            "incomingFilter" : "acl-7b78771d_ingress",
-            "mtu" : 1500,
-            "outgoingFilter" : "acl-7b78771d_egress",
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "vpc-b390fad5-vrf-igw-9b93ddfc" : {
             "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
@@ -25365,10 +24861,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -26583,50 +26075,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-62f14104-NLB_instance_targets" : {
-            "name" : "subnet-62f14104-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-62f14104-NLB_instance_targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
-          "subnet-62f14104-nlb-instance-targets" : {
-            "name" : "subnet-62f14104-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-62f14104-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "subnet-62f14104-vrf-igw-fac5839d" : {
             "name" : "subnet-62f14104-vrf-igw-fac5839d",
             "active" : true,
@@ -26671,28 +26119,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-8d0cbdeb-nlb-instance-targets" : {
-            "name" : "subnet-8d0cbdeb-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-8d0cbdeb-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "subnet-8d0cbdeb-vrf-igw-fac5839d" : {
             "name" : "subnet-8d0cbdeb-vrf-igw-fac5839d",
             "active" : true,
@@ -26723,21 +26149,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false,
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "10.0.0.0/24",
-                "nextHopInterface" : "subnet-62f14104-NLB_instance_targets",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              }
-            ]
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -26869,28 +26280,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-073b8061-nlb-instance-targets" : {
-            "name" : "subnet-073b8061-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-073b8061-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "subnet-073b8061-vrf-igw-9b93ddfc" : {
             "name" : "subnet-073b8061-vrf-igw-9b93ddfc",
             "active" : true,
@@ -26934,50 +26323,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "subnet-1641fa70-NLB_instance_targets" : {
-            "name" : "subnet-1641fa70-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-1641fa70-NLB_instance_targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
-          "subnet-1641fa70-nlb-instance-targets" : {
-            "name" : "subnet-1641fa70-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-1641fa70-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "subnet-1641fa70-vrf-igw-9b93ddfc" : {
             "name" : "subnet-1641fa70-vrf-igw-9b93ddfc",
@@ -27023,50 +26368,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-30398256-NLB_instance_targets" : {
-            "name" : "subnet-30398256-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-30398256-NLB_instance_targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
-          "subnet-30398256-nlb-instance-targets" : {
-            "name" : "subnet-30398256-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-30398256-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "subnet-30398256-vrf-igw-9b93ddfc" : {
             "name" : "subnet-30398256-vrf-igw-9b93ddfc",
             "active" : true,
@@ -27110,50 +26411,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "subnet-7044ff16-NLB_instance_targets" : {
-            "name" : "subnet-7044ff16-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-7044ff16-NLB_instance_targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
-          "subnet-7044ff16-nlb-instance-targets" : {
-            "name" : "subnet-7044ff16-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-7044ff16-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "subnet-7044ff16-vrf-igw-9b93ddfc" : {
             "name" : "subnet-7044ff16-vrf-igw-9b93ddfc",
@@ -27199,50 +26456,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-f73a8191-NLB_instance_targets" : {
-            "name" : "subnet-f73a8191-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-f73a8191-NLB_instance_targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
-          "subnet-f73a8191-nlb-instance-targets" : {
-            "name" : "subnet-f73a8191-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-f73a8191-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "subnet-f73a8191-vrf-igw-9b93ddfc" : {
             "name" : "subnet-f73a8191-vrf-igw-9b93ddfc",
             "active" : true,
@@ -27273,48 +26486,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false,
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.1.0/24",
-                "nextHopInterface" : "subnet-1641fa70-NLB_instance_targets",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.2.0/28",
-                "nextHopInterface" : "subnet-7044ff16-NLB_instance_targets",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.2.32/28",
-                "nextHopInterface" : "subnet-30398256-NLB_instance_targets",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "192.168.2.48/28",
-                "nextHopInterface" : "subnet-f73a8191-NLB_instance_targets",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              }
-            ]
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
@@ -27499,28 +26670,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-1f315846-nlb-instance-targets" : {
-            "name" : "subnet-1f315846-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-1f315846-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "subnet-1f315846-vrf-igw-068fee63" : {
             "name" : "subnet-1f315846-vrf-igw-068fee63",
             "active" : true,
@@ -27564,50 +26713,6 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
-          },
-          "subnet-9c8adceb-NLB_instance_targets" : {
-            "name" : "subnet-9c8adceb-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-9c8adceb-NLB_instance_targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
-          "subnet-9c8adceb-nlb-instance-targets" : {
-            "name" : "subnet-9c8adceb-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-9c8adceb-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
           },
           "subnet-9c8adceb-vrf-igw-068fee63" : {
             "name" : "subnet-9c8adceb-vrf-igw-068fee63",
@@ -27653,50 +26758,6 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "subnet-d9cafabc-NLB_instance_targets" : {
-            "name" : "subnet-d9cafabc-NLB_instance_targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-d9cafabc-NLB_instance_targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
-          "subnet-d9cafabc-nlb-instance-targets" : {
-            "name" : "subnet-d9cafabc-nlb-instance-targets",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E12,
-            "description" : "To subnet-d9cafabc-nlb-instance-targets",
-            "mtu" : 1500,
-            "prefix" : "link-local:169.254.0.1",
-            "proxyArp" : false,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "NLB_instance_targets"
-          },
           "subnet-d9cafabc-vrf-igw-068fee63" : {
             "name" : "subnet-d9cafabc-vrf-igw-068fee63",
             "active" : true,
@@ -27727,30 +26788,6 @@
           }
         },
         "vrfs" : {
-          "NLB_instance_targets" : {
-            "name" : "NLB_instance_targets",
-            "hasOriginatingSessions" : false,
-            "staticRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "172.31.16.0/20",
-                "nextHopInterface" : "subnet-d9cafabc-NLB_instance_targets",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "172.31.32.0/20",
-                "nextHopInterface" : "subnet-9c8adceb-NLB_instance_targets",
-                "nextHopIp" : "169.254.0.1",
-                "tag" : -1
-              }
-            ]
-          },
           "default" : {
             "name" : "default",
             "hasOriginatingSessions" : false,
