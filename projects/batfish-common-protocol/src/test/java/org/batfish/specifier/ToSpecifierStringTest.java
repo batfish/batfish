@@ -12,11 +12,16 @@ public final class ToSpecifierStringTest {
   @Test
   public void testInterfaceLocation() {
     assertEquals("n[i]", toSpecifierString(new InterfaceLocation("n", "i")));
+    assertEquals(
+        "\"001\"[\"/Common/Foo\"]", toSpecifierString(new InterfaceLocation("001", "/Common/Foo")));
   }
 
   @Test
   public void testInterfaceLinkLocation() {
     assertEquals("@enter(n[i])", toSpecifierString(new InterfaceLinkLocation("n", "i")));
+    assertEquals(
+        "@enter(\"001\"[\"/Common/Foo\"])",
+        toSpecifierString(new InterfaceLinkLocation("001", "/Common/Foo")));
   }
 
   @Test
