@@ -289,6 +289,9 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     // get subnets for the availability zone set for this instance
     List<String> subnets = _azsSubnetIds.get(_availabilityZone);
 
+    // put the node in first subnet for topology hierarchy
+    cfgNode.getVendorFamily().getAws().setSubnetId(subnets.isEmpty() ? null : subnets.get(0));
+
     // create an interface per subnet
     for (String subnetId : subnets) {
       Subnet subnet = region.getSubnets().get(subnetId);

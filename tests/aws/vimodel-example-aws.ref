@@ -7948,6 +7948,7 @@
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
+            "subnetId" : "subnet-1641fa70",
             "vpcId" : "vpc-b390fad5"
           }
         },
@@ -25388,6 +25389,7 @@
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
+            "subnetId" : "subnet-1641fa70",
             "vpcId" : "vpc-b390fad5"
           }
         },

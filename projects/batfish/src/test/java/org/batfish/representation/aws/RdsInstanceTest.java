@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AclAclLine;
@@ -53,6 +54,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -279,5 +281,28 @@ public class RdsInstanceTest {
         new RdsInstance(
                 "id", "az", "vpc", false, "stopped", ImmutableListMultimap.of(), ImmutableList.of())
             .isUp());
+  }
+
+  /** Test that the hierarchy is configured properly */
+  @Test
+  public void testToConfigurationNode_hierarchy() {
+    RdsInstance rds =
+        new RdsInstance(
+            "id",
+            "az",
+            "vpc",
+            false,
+            "available",
+            ImmutableListMultimap.of("az", "subnet-1", "az", "subnet-2"),
+            ImmutableList.of());
+
+    Configuration cfg =
+        rds.toConfigurationNode(
+            new ConvertedConfiguration(), Region.builder("r1").build(), new Warnings());
+
+    AwsFamily awsFamily = cfg.getVendorFamily().getAws();
+    assertThat(awsFamily.getSubnetId(), equalTo("subnet-1"));
+    assertThat(awsFamily.getVpcId(), equalTo("vpc"));
+    assertThat(awsFamily.getRegion(), equalTo("r1"));
   }
 }
