@@ -11,10 +11,10 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
+import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_IFACE_SUFFIX;
+import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_VRF_NAME;
 import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Subnet.instancesInterfaceName;
-import static org.batfish.representation.aws.Subnet.nlbInstanceTargetsIfaceSuffix;
-import static org.batfish.representation.aws.Subnet.nlbInstanceTargetsVrfName;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
@@ -677,7 +677,6 @@ public class SubnetTest {
     String lbDnsName = "lbDnsName";
     String subnetHostname = Subnet.nodeName(subnet.getId());
     String vpcHostname = Vpc.nodeName(subnet.getVpcId());
-    String newVrfName = nlbInstanceTargetsVrfName();
 
     // Subnet has no NLBs or instance targets: no VRFs or interfaces created
     Map<String, Configuration> configs =
@@ -693,7 +692,7 @@ public class SubnetTest {
         .values()
         .forEach(
             cfg -> {
-              assertThat(cfg.getVrfs(), not(hasKey(newVrfName)));
+              assertThat(cfg.getVrfs(), not(hasKey(NLB_INSTANCE_TARGETS_VRF_NAME)));
               assertThat(cfg.getAllInterfaces(), anEmptyMap());
             });
   }
@@ -735,8 +734,6 @@ public class SubnetTest {
     String vpcHostname = Vpc.nodeName(subnet.getVpcId());
     String nlbHostname = LoadBalancer.getNodeId(lbDnsName, subnet.getAvailabilityZone());
     String instanceHostname = Instance.instanceHostname(instanceId);
-    String newVrfName = nlbInstanceTargetsVrfName();
-    String ifaceNameSuffix = nlbInstanceTargetsIfaceSuffix();
 
     // Subnet has an NLB, no instance targets: Should create VRFs on subnet and VPC, connect subnet
     // to NLB and VPC
@@ -758,24 +755,38 @@ public class SubnetTest {
     subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg);
 
     // New VRFs created in subnet and VPC configs
-    assertThat(subnetCfg.getVrfs(), hasKey(newVrfName));
-    assertThat(vpcCfg.getVrfs(), hasKey(newVrfName));
+    assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
+    assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
     // Subnet should be connected to VPC on their new VRFs; subnet iface should have session info
     assertThat(
-        subnetCfg.getAllInterfaces().get(interfaceNameToRemote(vpcCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(notNullValue())));
+        subnetCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(notNullValue())));
     assertThat(
-        vpcCfg.getAllInterfaces().get(interfaceNameToRemote(subnetCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(nullValue())));
+        vpcCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(nullValue())));
 
     // Subnet should be connected to NLB on subnet's new VRF, NLB's default VRF; NLB iface should
     // have session info
     assertThat(
-        subnetCfg.getAllInterfaces().get(interfaceNameToRemote(nlbCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(nullValue())));
+        subnetCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(nlbCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(nullValue())));
     assertThat(
-        nlbCfg.getAllInterfaces().get(interfaceNameToRemote(subnetCfg, ifaceNameSuffix)),
+        nlbCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
         allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(notNullValue())));
 
     // Instance should be unaffected
@@ -819,8 +830,6 @@ public class SubnetTest {
     String vpcHostname = Vpc.nodeName(subnet.getVpcId());
     String nlbHostname = LoadBalancer.getNodeId(lbDnsName, subnet.getAvailabilityZone());
     String instanceHostname = Instance.instanceHostname(instanceId);
-    String newVrfName = nlbInstanceTargetsVrfName();
-    String ifaceNameSuffix = nlbInstanceTargetsIfaceSuffix();
 
     // Subnet has an instance target, no NLBs: Should create VRFs on subnet and VPC, connect subnet
     // to VPC and instance target
@@ -842,23 +851,37 @@ public class SubnetTest {
     subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg);
 
     // New VRFs created in subnet and VPC configs
-    assertThat(subnetCfg.getVrfs(), hasKey(newVrfName));
-    assertThat(vpcCfg.getVrfs(), hasKey(newVrfName));
+    assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
+    assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
     // Subnet should be connected to VPC on their new VRFs; subnet iface should have session info
     assertThat(
-        subnetCfg.getAllInterfaces().get(interfaceNameToRemote(vpcCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(notNullValue())));
+        subnetCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(notNullValue())));
     assertThat(
-        vpcCfg.getAllInterfaces().get(interfaceNameToRemote(subnetCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(nullValue())));
+        vpcCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(nullValue())));
 
     // Instance target should be connected to subnet on subnet's new VRF, instance's default VRF
     assertThat(
-        subnetCfg.getAllInterfaces().get(interfaceNameToRemote(instanceCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(nullValue())));
+        subnetCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(instanceCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(nullValue())));
     assertThat(
-        instanceCfg.getAllInterfaces().get(interfaceNameToRemote(subnetCfg, ifaceNameSuffix)),
+        instanceCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
         allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
 
     // NLB should be unaffected
@@ -902,8 +925,6 @@ public class SubnetTest {
     String vpcHostname = Vpc.nodeName(subnet.getVpcId());
     String nlbHostname = LoadBalancer.getNodeId(lbDnsName, subnet.getAvailabilityZone());
     String instanceHostname = Instance.instanceHostname(instanceId);
-    String newVrfName = nlbInstanceTargetsVrfName();
-    String ifaceNameSuffix = nlbInstanceTargetsIfaceSuffix();
 
     // Subnet has an instance target and its NLB: Should create VRFs on subnet and VPC, connect
     // subnet to instance target, NLB, and VPC
@@ -925,32 +946,52 @@ public class SubnetTest {
     subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg);
 
     // New VRFs created in subnet and VPC configs
-    assertThat(subnetCfg.getVrfs(), hasKey(newVrfName));
-    assertThat(vpcCfg.getVrfs(), hasKey(newVrfName));
+    assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
+    assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
     // Subnet should be connected to VPC on their new VRFs; subnet iface should have session info
     assertThat(
-        subnetCfg.getAllInterfaces().get(interfaceNameToRemote(vpcCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(notNullValue())));
+        subnetCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(notNullValue())));
     assertThat(
-        vpcCfg.getAllInterfaces().get(interfaceNameToRemote(subnetCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(nullValue())));
+        vpcCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(nullValue())));
 
     // Subnet should be connected to NLB on subnet's new VRF, NLB's default VRF; NLB iface should
     // have session info
     assertThat(
-        subnetCfg.getAllInterfaces().get(interfaceNameToRemote(nlbCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(nullValue())));
+        subnetCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(nlbCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(nullValue())));
     assertThat(
-        nlbCfg.getAllInterfaces().get(interfaceNameToRemote(subnetCfg, ifaceNameSuffix)),
+        nlbCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
         allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(notNullValue())));
 
     // Instance target should be connected to subnet on subnet's new VRF, instance's default VRF
     assertThat(
-        subnetCfg.getAllInterfaces().get(interfaceNameToRemote(instanceCfg, ifaceNameSuffix)),
-        allOf(hasVrfName(newVrfName), hasFirewallSessionInterfaceInfo(nullValue())));
+        subnetCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(instanceCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        allOf(
+            hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
+            hasFirewallSessionInterfaceInfo(nullValue())));
     assertThat(
-        instanceCfg.getAllInterfaces().get(interfaceNameToRemote(subnetCfg, ifaceNameSuffix)),
+        instanceCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
         allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
   }
 

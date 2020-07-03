@@ -59,6 +59,8 @@ import org.batfish.representation.aws.Route.TargetType;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 public class Subnet implements AwsVpcEntity, Serializable {
+  @VisibleForTesting static final String NLB_INSTANCE_TARGETS_VRF_NAME = "NLB_instance_targets";
+  @VisibleForTesting static final String NLB_INSTANCE_TARGETS_IFACE_SUFFIX = "nlb-instance-targets";
 
   @Nonnull private final String _availabilityZone;
 
@@ -302,18 +304,22 @@ public class Subnet implements AwsVpcEntity, Serializable {
     if (instanceTargets.isEmpty() && nlbs.isEmpty()) {
       return;
     }
-    //  New VRF called "NLB_instance_targets" in subnet and VPC nodes
-    String vrfName = nlbInstanceTargetsVrfName();
-    Vrf.builder().setName(vrfName).setOwner(subnetCfg).build();
-    if (!vpcCfg.getVrfs().containsKey(vrfName)) {
-      Vrf.builder().setName(vrfName).setOwner(vpcCfg).build();
+    //  New VRF in subnet and VPC nodes
+    Vrf.builder().setName(NLB_INSTANCE_TARGETS_VRF_NAME).setOwner(subnetCfg).build();
+    if (!vpcCfg.getVrfs().containsKey(NLB_INSTANCE_TARGETS_VRF_NAME)) {
+      Vrf.builder().setName(NLB_INSTANCE_TARGETS_VRF_NAME).setOwner(vpcCfg).build();
     }
 
-    String ifaceSuffix = nlbInstanceTargetsIfaceSuffix();
-    Utils.connect(awsConfiguration, subnetCfg, vrfName, vpcCfg, vrfName, ifaceSuffix);
+    Utils.connect(
+        awsConfiguration,
+        subnetCfg,
+        NLB_INSTANCE_TARGETS_VRF_NAME,
+        vpcCfg,
+        NLB_INSTANCE_TARGETS_VRF_NAME,
+        NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
 
     // Add firewall session info on new subnet interface to VPC
-    String subnetIfaceName = interfaceNameToRemote(vpcCfg, ifaceSuffix);
+    String subnetIfaceName = interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     Interface subnetToVpcIface = subnetCfg.getAllInterfaces().get(subnetIfaceName);
     subnetToVpcIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(subnetIfaceName), null, null));
@@ -325,13 +331,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Utils.connect(
           awsConfiguration,
           subnetCfg,
-          vrfName,
+          NLB_INSTANCE_TARGETS_VRF_NAME,
           nlbConfig,
           nlbConfig.getDefaultVrf().getName(),
-          ifaceSuffix);
+          NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
 
       // Add firewall session info on NLB interface to this subnet
-      String nlbIfaceName = interfaceNameToRemote(subnetCfg, ifaceSuffix);
+      String nlbIfaceName = interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
       Interface nlbIface = nlbConfig.getAllInterfaces().get(nlbIfaceName);
       nlbIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(false, ImmutableList.of(nlbIfaceName), null, null));
@@ -343,10 +349,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Utils.connect(
           awsConfiguration,
           subnetCfg,
-          vrfName,
+          NLB_INSTANCE_TARGETS_VRF_NAME,
           instanceConfig,
           instanceConfig.getDefaultVrf().getName(),
-          ifaceSuffix);
+          NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     }
   }
 
@@ -573,13 +579,5 @@ public class Subnet implements AwsVpcEntity, Serializable {
   public static String instancesInterfaceName(String subnetId) {
     // since there is only one such interface per subnet node, we can keep it simple
     return "to-instances";
-  }
-
-  public static String nlbInstanceTargetsVrfName() {
-    return "NLB_instance_targets";
-  }
-
-  public static String nlbInstanceTargetsIfaceSuffix() {
-    return "nlb-instance-targets";
   }
 }
