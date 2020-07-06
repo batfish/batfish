@@ -236,7 +236,7 @@ public class AwsConfiguration extends VendorConfiguration {
 
   private void convertConfigurations() {
     populatePrecomputedMaps();
-    _convertedConfiguration = new ConvertedConfiguration();
+    _convertedConfiguration = new ConvertedConfiguration(this);
     if (!_accounts.isEmpty()) { // generate only if we have any data
       _convertedConfiguration.addNode(generateAwsServicesGateway());
     }
