@@ -88,6 +88,55 @@ public class PaloAltoNatTest {
   }
 
   @Test
+  public void testNatService() throws IOException {
+    Configuration c = parseConfig("nat-service");
+    String insideName = "ethernet1/1"; // 192.168.1.1/24
+    String outsideName = "ethernet1/2"; // 10.0.2.1/24
+    String serverAddr = "10.0.1.1";
+    int servicePort = 1234;
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    // This flow is NAT'd
+    Flow flowMatch =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(outsideName)
+            .setSrcIp(Ip.parse("10.0.2.100"))
+            .setDstIp(Ip.parse(serverAddr))
+            .setSrcPort(123)
+            .setDstPort(servicePort)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    // This flow is not NAT'd
+    Flow flowNoMatch =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(outsideName)
+            .setSrcIp(Ip.parse("10.0.2.100"))
+            .setDstIp(Ip.parse(serverAddr))
+            .setSrcPort(123)
+            // Any port other than service port
+            .setDstPort(servicePort + 1)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowMatch, flowNoMatch), false);
+
+    Ip newDstIp = Ip.parse("192.168.1.100");
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowMatch))),
+        flowMatch.toBuilder().setDstIp(newDstIp).build());
+
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatch))), flowNoMatch);
+  }
+
+  @Test
   public void testSourceNat() throws IOException {
     /* Test source NAT for traffic from inside zone to outside zone. There is one NAT rule that
       matches flows from inside to outside with src 1.1.1.2, and translates src to 1.1.1.99.

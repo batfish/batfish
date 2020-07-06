@@ -2325,6 +2325,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSrn_service(Srn_serviceContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String serviceName = getText(var);
+      // TODO finish
+      // _currentSecurityRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
+      referenceService(var, SECURITY_RULE_SERVICE);
+    }
+  }
+
+  @Override
   public void exitSrn_from(Srn_fromContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String zoneName = getText(var);
