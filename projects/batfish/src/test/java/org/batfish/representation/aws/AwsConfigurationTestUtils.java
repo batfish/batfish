@@ -70,6 +70,17 @@ public final class AwsConfigurationTestUtils {
         .getIp();
   }
 
+  /** Returns the IP address of the given interface on the given node. */
+  static Ip getInterfaceIp(String nodeName, String ifaceName, IBatfish batfish) {
+    return batfish
+        .loadConfigurations(batfish.getSnapshot())
+        .get(nodeName)
+        .getAllInterfaces()
+        .get(ifaceName)
+        .getConcreteAddress()
+        .getIp();
+  }
+
   /** Returns the names of the nodes in the trace */
   static List<String> getTraceHops(Trace trace) {
     return trace.getHops().stream()

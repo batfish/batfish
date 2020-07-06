@@ -9,6 +9,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -34,6 +35,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDependencies;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEigrp;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasEncapsulationVlan;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasFirewallSessionInterfaceInfo;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpGroup;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasHsrpVersion;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasInterfaceType;
@@ -441,6 +443,12 @@ public final class InterfaceMatchers {
   /** Provides a matcher that matches if the interface's vrfName is {@code expectedVrfName}. */
   public static @Nonnull Matcher<Interface> hasVrfName(@Nonnull String expectedVrfName) {
     return new HasVrfName(equalTo(expectedVrfName));
+  }
+
+  /** Matcher for the interface's {@link org.batfish.datamodel.FirewallSessionInterfaceInfo}. */
+  public static @Nonnull Matcher<Interface> hasFirewallSessionInterfaceInfo(
+      @Nonnull Matcher<? super FirewallSessionInterfaceInfo> matcher) {
+    return new HasFirewallSessionInterfaceInfo(matcher);
   }
 
   /**
