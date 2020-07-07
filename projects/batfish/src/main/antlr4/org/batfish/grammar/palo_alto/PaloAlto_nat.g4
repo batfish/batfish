@@ -63,7 +63,7 @@ srn_source
 
 srn_service
 :
-    SERVICE variable
+    SERVICE service = variable
 ;
 
 srnst_dynamic_ip_and_port

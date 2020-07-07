@@ -1424,32 +1424,34 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return packetPolicyName;
   }
 
-  /** Build {@link BoolExpr} for service in specified {@link NatRule}. */
-  private Optional<BoolExpr> getNatServiceBoolExpr(NatRule rule, Vsys vsys) {
-    ServiceOrServiceGroupReference service = rule.getService();
-    if (service != null) {
-      String serviceName = service.getName();
-      // Check for matching object before using built-ins
-      String vsysName = service.getVsysName(this, vsys);
+  /**
+   * Build {@link BoolExpr} for service in specified {@link NatRule}. Returns {@link
+   * Optional#empty()} if no service is specified or if a reference cannot be resolved.
+   */
+  private Optional<BoolExpr> getNatServiceBoolExpr(
+      @Nullable ServiceOrServiceGroupReference service, Vsys vsys) {
+    if (service == null) {
+      return Optional.empty();
+    }
+    String serviceName = service.getName();
+    // Check for matching object before using built-ins
+    String vsysName = service.getVsysName(this, vsys);
 
-      if (vsysName != null) {
-        return Optional.of(
-            new PacketMatchExpr(
-                permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName))));
-      } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
-        // Anything is allowed
-        return Optional.empty();
-      } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
-        return Optional.of(
-            new PacketMatchExpr(
-                new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace())));
-      } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-        return Optional.of(
-            new PacketMatchExpr(
-                new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace())));
-      } else {
-        _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
-      }
+    if (vsysName != null) {
+      return Optional.of(
+          new PacketMatchExpr(
+              permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName))));
+    } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
+      // Anything is allowed
+      return Optional.of(new PacketMatchExpr(TrueExpr.INSTANCE));
+    } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
+      return Optional.of(
+          new PacketMatchExpr(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace())));
+    } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
+      return Optional.of(
+          new PacketMatchExpr(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace())));
+    } else {
+      _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
     }
     return Optional.empty();
   }
@@ -1467,7 +1469,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     boolExprs.add(
         new PacketMatchExpr(
             new MatchHeaderSpace(headerSpace.setSrcIps(srcIps).setDstIps(dstIps).build())));
-    getNatServiceBoolExpr(rule, vsys).ifPresent(boolExprs::add);
+    getNatServiceBoolExpr(rule.getService(), vsys).ifPresent(boolExprs::add);
     return boolExprs.build();
   }
 
