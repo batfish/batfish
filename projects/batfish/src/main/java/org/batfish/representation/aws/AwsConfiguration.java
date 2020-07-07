@@ -9,6 +9,7 @@ import static org.batfish.specifier.Location.interfaceLinkLocation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -198,6 +199,10 @@ public class AwsConfiguration extends VendorConfiguration {
                 loadBalancerAttributes != null
                     && loadBalancerAttributes.getCrossZoneLoadBalancing();
             LoadBalancer lb = region.getLoadBalancersMap().get(lbArn);
+            if (lb.getType() == LoadBalancer.Type.APPLICATION) {
+              // Application load balancers not supported
+              continue;
+            }
             Set<String> azNames =
                 lb.getAvailabilityZones().stream()
                     .map(AvailabilityZone::getZoneName)
@@ -236,7 +241,7 @@ public class AwsConfiguration extends VendorConfiguration {
 
   private void convertConfigurations() {
     populatePrecomputedMaps();
-    _convertedConfiguration = new ConvertedConfiguration();
+    _convertedConfiguration = new ConvertedConfiguration(this);
     if (!_accounts.isEmpty()) { // generate only if we have any data
       _convertedConfiguration.addNode(generateAwsServicesGateway());
     }
@@ -251,7 +256,7 @@ public class AwsConfiguration extends VendorConfiguration {
               .redFlag(
                   String.format(
                       "Failed conversion for account %s, region %s\n%s",
-                      account.getId(), region.getName(), e));
+                      account.getId(), region.getName(), Throwables.getStackTraceAsString(e)));
         }
       }
     }

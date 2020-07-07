@@ -88,6 +88,74 @@ public class PaloAltoNatTest {
   }
 
   @Test
+  public void testNatService() throws IOException {
+    // Test service match condition is applied correctly for NAT rules
+    Configuration c = parseConfig("nat-service");
+    String outsideName = "ethernet1/2"; // 10.0.2.1/24
+    String outsideAddr = "10.0.2.100";
+    String serverAddr1 = "10.0.1.1"; // For RULE_GROUP
+    String serverAddr2 = "10.0.1.2"; // For RULE_BUILTIN
+    int servicePort1 = 1234;
+    int servicePort2 = 2345;
+    int servicePort3 = 3456;
+    int builtinPort = 80;
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    // This flow is NAT'd by RULE_GROUP
+    Flow flowMatch1a =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(outsideName)
+            .setSrcIp(Ip.parse(outsideAddr))
+            .setDstIp(Ip.parse(serverAddr1))
+            // Arbitrary src port
+            .setSrcPort(123)
+            .setDstPort(servicePort1)
+            .setIpProtocol(IpProtocol.TCP)
+            .build();
+    // This flow is also NAT'd by RULE_GROUP
+    Flow flowMatch1b = flowMatch1a.toBuilder().setDstPort(servicePort2).build();
+    // This flow is not NAT'd
+    Flow flowNoMatch1 = flowMatch1a.toBuilder().setDstPort(servicePort3).build();
+
+    // This flow is NAT'd by RULE_BUILTIN
+    Flow flowMatch2 =
+        flowMatch1a.toBuilder().setDstIp(Ip.parse(serverAddr2)).setDstPort(builtinPort).build();
+    // This flow is not NAT'd
+    Flow flowNoMatch2 = flowMatch2.toBuilder().setDstPort(builtinPort + 1).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(
+                ImmutableSet.of(flowMatch1a, flowMatch1b, flowMatch2, flowNoMatch1, flowNoMatch2),
+                false);
+
+    // Non-NAT'd flows should be unchanged
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatch1))), flowNoMatch1);
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowNoMatch2))), flowNoMatch2);
+
+    // NAT'd flows should have src IP and port NAT'd
+    Ip newSrcIp = Ip.parse("192.168.1.100");
+    int ephemeralPort = NamedPort.EPHEMERAL_LOWEST.number();
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowMatch1a))),
+        flowMatch1a.toBuilder().setSrcIp(newSrcIp).setSrcPort(ephemeralPort).build());
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowMatch1b))),
+        flowMatch1b.toBuilder().setSrcIp(newSrcIp).setSrcPort(ephemeralPort).build());
+
+    Ip newSrcIp2 = Ip.parse("192.168.1.101");
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(flowMatch2))),
+        flowMatch2.toBuilder().setSrcIp(newSrcIp2).setSrcPort(ephemeralPort).build());
+  }
+
+  @Test
   public void testSourceNat() throws IOException {
     /* Test source NAT for traffic from inside zone to outside zone. There is one NAT rule that
       matches flows from inside to outside with src 1.1.1.2, and translates src to 1.1.1.99.

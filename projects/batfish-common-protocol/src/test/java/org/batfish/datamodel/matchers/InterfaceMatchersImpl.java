@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -451,6 +452,22 @@ final class InterfaceMatchersImpl {
     @Override
     protected String featureValueOf(Interface actual) {
       return actual.getVrfName();
+    }
+  }
+
+  static final class HasFirewallSessionInterfaceInfo
+      extends FeatureMatcher<Interface, FirewallSessionInterfaceInfo> {
+    HasFirewallSessionInterfaceInfo(
+        @Nonnull Matcher<? super FirewallSessionInterfaceInfo> subMatcher) {
+      super(
+          subMatcher,
+          "an Interface with FirewallSessionInterfaceInfo:",
+          "firewallSessionInterfaceInfo");
+    }
+
+    @Override
+    protected FirewallSessionInterfaceInfo featureValueOf(Interface actual) {
+      return actual.getFirewallSessionInterfaceInfo();
     }
   }
 

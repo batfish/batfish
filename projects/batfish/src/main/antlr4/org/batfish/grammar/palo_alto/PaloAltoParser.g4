@@ -171,6 +171,8 @@ statement_device_group
     | s_pre_rulebase
     | sdg_description
     | sdg_devices
+    | sdg_profiles
+    | sdg_profile_group
 ;
 
 set_line_tail
