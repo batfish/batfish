@@ -16,6 +16,11 @@ sdg_devices
     DEVICES device = variable sdgd_vsys?
 ;
 
+sdg_profile_group
+:
+    PROFILE_GROUP null_rest_of_line
+;
+
 sdg_profiles
 :
     PROFILES null_rest_of_line
