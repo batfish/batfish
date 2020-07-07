@@ -49,7 +49,9 @@ newline
 s_null
 :
     (
-        MGT_CONFIG
+        LOG_COLLECTOR
+        | LOG_COLLECTOR_GROUP
+        | MGT_CONFIG
     )
     null_rest_of_line
 ;
