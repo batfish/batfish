@@ -199,6 +199,10 @@ public class AwsConfiguration extends VendorConfiguration {
                 loadBalancerAttributes != null
                     && loadBalancerAttributes.getCrossZoneLoadBalancing();
             LoadBalancer lb = region.getLoadBalancersMap().get(lbArn);
+            if (lb.getType() == LoadBalancer.Type.APPLICATION) {
+              // Application load balancers not supported
+              continue;
+            }
             Set<String> azNames =
                 lb.getAvailabilityZones().stream()
                     .map(AvailabilityZone::getZoneName)
