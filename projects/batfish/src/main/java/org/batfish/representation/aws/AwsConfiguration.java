@@ -9,6 +9,7 @@ import static org.batfish.specifier.Location.interfaceLinkLocation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -251,7 +252,7 @@ public class AwsConfiguration extends VendorConfiguration {
               .redFlag(
                   String.format(
                       "Failed conversion for account %s, region %s\n%s",
-                      account.getId(), region.getName(), e));
+                      account.getId(), region.getName(), Throwables.getStackTraceAsString(e)));
         }
       }
     }
