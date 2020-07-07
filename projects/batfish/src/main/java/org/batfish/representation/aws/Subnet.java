@@ -329,7 +329,6 @@ public class Subnet implements AwsVpcEntity, Serializable {
       // These ACLs should be applied to all subnet interfaces that don't face instances
       @Nullable IpAccessList ingressNetworkAcl,
       @Nullable IpAccessList egressNetworkAcl) {
-    Collection<Instance> instanceTargets = awsConfiguration.getSubnetsToInstanceTargets().get(this);
     Collection<LoadBalancer> nlbs = awsConfiguration.getSubnetsToNlbs().get(this);
     if (!awsConfiguration.getSubnetsToInstanceTargets().containsKey(this) && nlbs.isEmpty()) {
       return;
