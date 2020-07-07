@@ -142,6 +142,9 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
+    // put the node in first subnet for topology hierarchy
+    cfgNode.getVendorFamily().getAws().setSubnetId(_subnets.isEmpty() ? null : _subnets.get(0));
+
     // create an interface per subnet
     for (String subnetId : _subnets) {
       Subnet subnet = region.getSubnets().get(subnetId);
