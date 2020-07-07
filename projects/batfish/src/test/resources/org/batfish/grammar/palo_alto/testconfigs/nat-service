@@ -1,0 +1,54 @@
+set deviceconfig system hostname nat-service
+
+set network interface ethernet ethernet1/1 layer3 ip 192.168.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set zone INSIDE network layer3 ethernet1/1
+set zone OUTSIDE network layer3 ethernet1/2
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+
+set service SERVICE1 protocol tcp port 1234
+set service SERVICE2 protocol tcp port 2345
+set service SERVICE3 protocol tcp port 3456
+set service-group SERVICE_GROUP1 members [ SERVICE1 SERVICE2]
+
+# Match defined service-group (tcp 1234 and 2345)
+set rulebase nat rules RULE_GROUP to INSIDE
+set rulebase nat rules RULE_GROUP from OUTSIDE
+set rulebase nat rules RULE_GROUP source any
+set rulebase nat rules RULE_GROUP destination 10.0.1.1
+set rulebase nat rules RULE_GROUP source-translation dynamic-ip-and-port translated-address 192.168.1.100
+set rulebase nat rules RULE_GROUP service SERVICE3
+# Overwrite SERVICE3
+set rulebase nat rules RULE_GROUP service SERVICE_GROUP1
+
+# Match builtin service (http)
+set rulebase nat rules RULE_BUILTIN to INSIDE
+set rulebase nat rules RULE_BUILTIN from OUTSIDE
+set rulebase nat rules RULE_BUILTIN source any
+set rulebase nat rules RULE_BUILTIN destination 10.0.1.2
+set rulebase nat rules RULE_BUILTIN source-translation dynamic-ip-and-port translated-address 192.168.1.101
+set rulebase nat rules RULE_BUILTIN service service-http
+
+# Reference undefined service
+set rulebase nat rules RULE3 to INSIDE
+set rulebase nat rules RULE3 from OUTSIDE
+set rulebase nat rules RULE3 source any
+set rulebase nat rules RULE3 destination 10.0.1.3
+set rulebase nat rules RULE3 source-translation dynamic-ip-and-port translated-address 192.168.1.102
+set rulebase nat rules RULE3 service SERVICE_UNDEF
+
+set rulebase security rules PERMIT_ALL from any
+set rulebase security rules PERMIT_ALL to any
+set rulebase security rules PERMIT_ALL source any
+set rulebase security rules PERMIT_ALL destination any
+set rulebase security rules PERMIT_ALL application any
+set rulebase security rules PERMIT_ALL service any
+set rulebase security rules PERMIT_ALL action allow
+
+set network virtual-router default routing-table ip static-route ROUTE1 interface ethernet1/1
+set network virtual-router default routing-table ip static-route ROUTE1 destination 192.168.0.0/16
+set network virtual-router default routing-table ip static-route ROUTE2 interface ethernet1/1
+set network virtual-router default routing-table ip static-route ROUTE2 destination 10.0.1.0/24
+set network virtual-router default routing-table ip static-route ROUTE3 interface ethernet1/2
+set network virtual-router default routing-table ip static-route ROUTE3 destination 0.0.0.0/0
+set network virtual-router default routing-table ip static-route ROUTE3 nexthop ip-address 1.1.1.1

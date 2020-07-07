@@ -2169,6 +2169,25 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testNatServiceReference() throws IOException {
+    String hostname = "nat-service";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    String serviceGroupName = computeObjectName(DEFAULT_VSYS_NAME, "SERVICE_GROUP1");
+
+    // Confirm reference count is correct for the used service group
+    assertThat(
+        ccae, hasNumReferrers(filename, PaloAltoStructureType.SERVICE_GROUP, serviceGroupName, 1));
+
+    // Confirm we get an undefined reference for the undefined service/group
+    assertThat(ccae, hasUndefinedReference(filename, SERVICE_OR_SERVICE_GROUP, "SERVICE_UNDEF"));
+  }
+
+  @Test
   public void testRulebaseReference() throws IOException {
     String hostname = "rulebase";
     String filename = "configs/" + hostname;

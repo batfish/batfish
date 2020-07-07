@@ -15,6 +15,7 @@ public enum PaloAltoStructureUsage implements StructureUsage {
   NAT_RULE_DESTINATION("rulebase nat rules destination"),
   NAT_RULE_DESTINATION_TRANSLATION("rulebase nat rules destination-translation"),
   NAT_RULE_FROM_ZONE("rulebase nat rules from"),
+  NAT_RULE_SERVICE("rulebase nat rules service"),
   NAT_RULE_SOURCE("rulebase nat rules source"),
   NAT_RULE_SOURCE_TRANSLATION("rulebase nat rules source-translation"),
   NAT_RULE_SELF_REF("rulebase nat rules"),
