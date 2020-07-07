@@ -49,8 +49,6 @@ set network virtual-router default routing-table ip static-route ROUTE1 interfac
 set network virtual-router default routing-table ip static-route ROUTE1 destination 192.168.0.0/16
 set network virtual-router default routing-table ip static-route ROUTE2 interface ethernet1/1
 set network virtual-router default routing-table ip static-route ROUTE2 destination 10.0.1.0/24
-
-# set network virtual-router default routing-table ip static-route ROUTE1 nexthop ip-address 1.1.1.1
 set network virtual-router default routing-table ip static-route ROUTE3 interface ethernet1/2
 set network virtual-router default routing-table ip static-route ROUTE3 destination 0.0.0.0/0
 set network virtual-router default routing-table ip static-route ROUTE3 nexthop ip-address 1.1.1.1
