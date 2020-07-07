@@ -41,6 +41,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RU
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_DESTINATION_TRANSLATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_FROM_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_SELF_REF;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_SERVICE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_SOURCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_SOURCE_TRANSLATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.NAT_RULE_TO_ZONE;
@@ -267,6 +268,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_addressContext;
@@ -553,15 +555,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
    * positive undefined references.
    */
   private void referenceService(Variable_list_itemContext var, PaloAltoStructureUsage usage) {
-    String serviceName = getText(var);
+    referenceService(getText(var), getLine(var.start), usage);
+  }
+
+  private void referenceService(VariableContext var, PaloAltoStructureUsage usage) {
+    referenceService(getText(var), getLine(var.start), usage);
+  }
+
+  private void referenceService(String serviceName, int start, PaloAltoStructureUsage usage) {
     // Use constructed object name so same-named refs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys, serviceName);
 
     if (Arrays.stream(ServiceBuiltIn.values()).anyMatch(n -> serviceName.equals(n.getName()))) {
       // Built-in services can be overridden, so add optional object reference
-      referenceStructure(SERVICE_OR_SERVICE_GROUP_OR_NONE, uniqueName, usage, getLine(var.start));
+      referenceStructure(SERVICE_OR_SERVICE_GROUP_OR_NONE, uniqueName, usage, start);
     } else {
-      referenceStructure(SERVICE_OR_SERVICE_GROUP, uniqueName, usage, getLine(var.start));
+      referenceStructure(SERVICE_OR_SERVICE_GROUP, uniqueName, usage, start);
     }
   }
 
@@ -2326,12 +2335,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrn_service(Srn_serviceContext ctx) {
-    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
-      String serviceName = getText(var);
-      // TODO finish
-      // _currentSecurityRule.getService().add(new ServiceOrServiceGroupReference(serviceName));
-      referenceService(var, SECURITY_RULE_SERVICE);
-    }
+    String serviceName = getText(ctx.variable());
+    _currentNatRule.setService(new ServiceOrServiceGroupReference(serviceName));
+    referenceService(ctx.variable(), NAT_RULE_SERVICE);
   }
 
   @Override

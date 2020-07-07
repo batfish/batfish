@@ -1424,10 +1424,51 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return packetPolicyName;
   }
 
-  private MatchHeaderSpace getRuleMatchHeaderSpace(NatRule rule, Vsys vsys) {
+  /** Build {@link BoolExpr} for service in specified {@link NatRule}. */
+  private Optional<BoolExpr> getNatServiceBoolExpr(NatRule rule, Vsys vsys) {
+    ServiceOrServiceGroupReference service = rule.getService();
+    if (service != null) {
+      String serviceName = service.getName();
+      // Check for matching object before using built-ins
+      String vsysName = service.getVsysName(this, vsys);
+
+      if (vsysName != null) {
+        return Optional.of(
+            new PacketMatchExpr(
+                permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName))));
+      } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
+        // Anything is allowed
+        return Optional.empty();
+      } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
+        return Optional.of(
+            new PacketMatchExpr(
+                new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace())));
+      } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
+        return Optional.of(
+            new PacketMatchExpr(
+                new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace())));
+      } else {
+        _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
+      }
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Get a list of all {@link BoolExpr}s describing the header space matching the specified {@link
+   * NatRule}.
+   */
+  private List<BoolExpr> getNatRuleHeaderSpaceBoolExprs(NatRule rule, Vsys vsys) {
+    ImmutableList.Builder<BoolExpr> boolExprs = ImmutableList.builder();
+    HeaderSpace.Builder headerSpace = HeaderSpace.builder();
+
     IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
     IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
-    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).setDstIps(dstIps).build());
+    boolExprs.add(
+        new PacketMatchExpr(
+            new MatchHeaderSpace(headerSpace.setSrcIps(srcIps).setDstIps(dstIps).build())));
+    getNatServiceBoolExpr(rule, vsys).ifPresent(boolExprs::add);
+    return boolExprs.build();
   }
 
   /** Build a routing policy for the specified NAT rule + vsys entries in the specified vsys. */
@@ -1440,14 +1481,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         continue;
       }
 
+      ImmutableList.Builder<BoolExpr> conditions = ImmutableList.builder();
       // Conditions under which to apply this NAT rule
-      MatchHeaderSpace matchHeaderSpace = getRuleMatchHeaderSpace(rule, vsys);
-      BoolExpr condition =
-          Conjunction.of(
-              new PacketMatchExpr(matchHeaderSpace),
-              // Only apply NAT if flow is exiting an interface in the to-zone
-              new FibLookupOutgoingInterfaceIsOneOf(
-                  IngressInterfaceVrf.instance(), toZone.getInterfaceNames()));
+      conditions.addAll(getNatRuleHeaderSpaceBoolExprs(rule, vsys));
+      // Only apply NAT if flow is exiting an interface in the to-zone
+      conditions.add(
+          new FibLookupOutgoingInterfaceIsOneOf(
+              IngressInterfaceVrf.instance(), toZone.getInterfaceNames()));
 
       // Actions to take when NAT rule is matched: transformation, FIB lookup, return
       ImmutableList.Builder<Statement> actionsIfMatched = ImmutableList.builder();
@@ -1456,7 +1496,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       actionsIfMatched.add(new Return(new FibLookup(IngressInterfaceVrf.instance())));
 
       // Add packet policy line for matching this rule
-      lines.add(new org.batfish.datamodel.packet_policy.If(condition, actionsIfMatched.build()));
+      lines.add(
+          new org.batfish.datamodel.packet_policy.If(
+              Conjunction.of(conditions.build()), actionsIfMatched.build()));
     }
     return new PacketPolicy(
         name, lines.build(), new Return(new FibLookup(IngressInterfaceVrf.instance())));
@@ -2299,12 +2341,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
         true,
         PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
-        PaloAltoStructureUsage.SECURITY_RULE_SERVICE);
+        PaloAltoStructureUsage.SECURITY_RULE_SERVICE,
+        PaloAltoStructureUsage.NAT_RULE_SERVICE);
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.SERVICE_OR_SERVICE_GROUP,
         ImmutableList.of(PaloAltoStructureType.SERVICE, PaloAltoStructureType.SERVICE_GROUP),
         PaloAltoStructureUsage.SERVICE_GROUP_MEMBER,
-        PaloAltoStructureUsage.SECURITY_RULE_SERVICE);
+        PaloAltoStructureUsage.SECURITY_RULE_SERVICE,
+        PaloAltoStructureUsage.NAT_RULE_SERVICE);
 
     // First, handle things which may or may not be referencing objects (e.g. "1.2.3.4" may be IP
     // address or a named object)
