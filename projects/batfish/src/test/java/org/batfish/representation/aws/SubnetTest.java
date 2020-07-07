@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasProperty;
@@ -840,6 +841,9 @@ public class SubnetTest {
                         subnetToVpcIfaceName,
                         AwsConfiguration.LINK_LOCAL_IP)))));
 
+    // VPC should have no static routes since it only gets routes for instance targets in the subnet
+    assertThat(vpcCfg, hasVrf(NLB_INSTANCE_TARGETS_VRF_NAME, hasStaticRoutes(empty())));
+
     // Instance should be unaffected
     assertThat(instanceCfg.getAllInterfaces(), anEmptyMap());
   }
@@ -910,6 +914,8 @@ public class SubnetTest {
     assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
     // Subnet should be connected to VPC on their new VRFs; subnet iface should have session info
+    String vpcToSubnetIfaceName =
+        interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     assertThat(
         subnetCfg
             .getAllInterfaces()
@@ -921,9 +927,7 @@ public class SubnetTest {
             hasFirewallSessionInterfaceInfo(
                 hasProperty("incomingAclName", equalTo(ingressAcl.getName())))));
     assertThat(
-        vpcCfg
-            .getAllInterfaces()
-            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        vpcCfg.getAllInterfaces().get(vpcToSubnetIfaceName),
         allOf(
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(nullValue()),
@@ -956,6 +960,18 @@ public class SubnetTest {
                     toStaticRoute(
                         instanceIp.toPrefix(),
                         subnetToInstanceIfaceName,
+                        AwsConfiguration.LINK_LOCAL_IP)))));
+
+    // VPC should have static route to instance IP out the interface to subnet
+    assertThat(
+        vpcCfg,
+        hasVrf(
+            NLB_INSTANCE_TARGETS_VRF_NAME,
+            hasStaticRoutes(
+                contains(
+                    toStaticRoute(
+                        instanceIp.toPrefix(),
+                        vpcToSubnetIfaceName,
                         AwsConfiguration.LINK_LOCAL_IP)))));
 
     // NLB should be unaffected
@@ -1028,6 +1044,8 @@ public class SubnetTest {
     assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
     // Subnet should be connected to VPC on their new VRFs; subnet iface should have session info
+    String vpcToSubnetIfaceName =
+        interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     assertThat(
         subnetCfg
             .getAllInterfaces()
@@ -1039,9 +1057,7 @@ public class SubnetTest {
             hasFirewallSessionInterfaceInfo(
                 hasProperty("incomingAclName", equalTo(ingressAcl.getName())))));
     assertThat(
-        vpcCfg
-            .getAllInterfaces()
-            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        vpcCfg.getAllInterfaces().get(vpcToSubnetIfaceName),
         allOf(
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(nullValue()),
@@ -1095,6 +1111,18 @@ public class SubnetTest {
                     toStaticRoute(
                         instanceIp.toPrefix(),
                         subnetToInstanceIfaceName,
+                        AwsConfiguration.LINK_LOCAL_IP)))));
+
+    // VPC should have static route to instance IP out the interface to subnet
+    assertThat(
+        vpcCfg,
+        hasVrf(
+            NLB_INSTANCE_TARGETS_VRF_NAME,
+            hasStaticRoutes(
+                contains(
+                    toStaticRoute(
+                        instanceIp.toPrefix(),
+                        vpcToSubnetIfaceName,
                         AwsConfiguration.LINK_LOCAL_IP)))));
   }
 
