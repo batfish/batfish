@@ -11,6 +11,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasFirewallSessionInterfaceInfo;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_IFACE_SUFFIX;
@@ -26,6 +27,7 @@ import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasProperty;
@@ -708,15 +710,23 @@ public class SubnetTest {
     Vpc vpc = new Vpc(subnet.getVpcId(), ImmutableSet.of(subnet.getCidrBlock()), ImmutableMap.of());
 
     // Create instance target not in subnet
+    Subnet otherSubnet =
+        new Subnet(
+            Prefix.parse("1.1.1.0/24"),
+            "otherSubnetId",
+            subnet.getVpcId(),
+            subnet.getAvailabilityZone(),
+            ImmutableMap.of());
     String instanceId = "instanceId";
-    Instance instanceNotInSubnet =
+    Ip instanceIp = Ip.parse("1.1.1.1");
+    Instance instanceInOtherSubnet =
         new Instance(
             instanceId,
             subnet.getVpcId(),
-            "otherSubnetId",
+            otherSubnet.getId(),
             ImmutableList.of(),
             ImmutableList.of(),
-            null,
+            instanceIp,
             ImmutableMap.of(),
             Status.RUNNING);
 
@@ -755,9 +765,9 @@ public class SubnetTest {
         new ConvertedConfiguration(
             configs,
             new HashSet<>(), // layer 1 edges
-            ImmutableMultimap.of(), // subnets to targets
+            ImmutableMultimap.of(otherSubnet, instanceInOtherSubnet), // subnets to targets
             ImmutableMultimap.of(subnet, loadBalancerInSubnet), // subnets to NLBs
-            ImmutableMultimap.of(loadBalancerInSubnet, instanceNotInSubnet), // NLBs to targets
+            ImmutableMultimap.of(loadBalancerInSubnet, instanceInOtherSubnet), // NLBs to targets
             ImmutableSet.of(vpc)); // VPCs with instance targets
     subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
@@ -766,10 +776,9 @@ public class SubnetTest {
     assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
     // Subnet should be connected to VPC on their new VRFs; subnet iface should have session info
+    String subnetToVpcIfaceName = interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     assertThat(
-        subnetCfg
-            .getAllInterfaces()
-            .get(interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        subnetCfg.getAllInterfaces().get(subnetToVpcIfaceName),
         allOf(
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(equalTo(ingressAcl)),
@@ -807,6 +816,18 @@ public class SubnetTest {
             hasOutgoingFilter(nullValue()),
             hasFirewallSessionInterfaceInfo(notNullValue())));
 
+    // Subnet should have static route to instance IP out the interface to VPC
+    assertThat(
+        subnetCfg,
+        hasVrf(
+            NLB_INSTANCE_TARGETS_VRF_NAME,
+            hasStaticRoutes(
+                contains(
+                    toStaticRoute(
+                        instanceIp.toPrefix(),
+                        subnetToVpcIfaceName,
+                        AwsConfiguration.LINK_LOCAL_IP)))));
+
     // Instance should be unaffected
     assertThat(instanceCfg.getAllInterfaces(), anEmptyMap());
   }
@@ -819,6 +840,7 @@ public class SubnetTest {
 
     // Create instance target in subnet
     String instanceId = "instanceId";
+    Ip instanceIp = Ip.parse("1.1.1.1");
     Instance instanceInSubnet =
         new Instance(
             instanceId,
@@ -826,7 +848,7 @@ public class SubnetTest {
             subnet.getId(),
             ImmutableList.of(),
             ImmutableList.of(),
-            null,
+            instanceIp,
             ImmutableMap.of(),
             Status.RUNNING);
 
@@ -897,10 +919,10 @@ public class SubnetTest {
             hasFirewallSessionInterfaceInfo(nullValue())));
 
     // Instance target should be connected to subnet on subnet's new VRF, instance's default VRF
+    String subnetToInstanceIfaceName =
+        interfaceNameToRemote(instanceCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     assertThat(
-        subnetCfg
-            .getAllInterfaces()
-            .get(interfaceNameToRemote(instanceCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        subnetCfg.getAllInterfaces().get(subnetToInstanceIfaceName),
         allOf(
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(nullValue()),
@@ -911,6 +933,18 @@ public class SubnetTest {
             .getAllInterfaces()
             .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
         allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
+
+    // Subnet should have static route to instance IP out the interface to the instance target
+    assertThat(
+        subnetCfg,
+        hasVrf(
+            NLB_INSTANCE_TARGETS_VRF_NAME,
+            hasStaticRoutes(
+                contains(
+                    toStaticRoute(
+                        instanceIp.toPrefix(),
+                        subnetToInstanceIfaceName,
+                        AwsConfiguration.LINK_LOCAL_IP)))));
 
     // NLB should be unaffected
     assertThat(nlbCfg.getAllInterfaces(), anEmptyMap());
@@ -924,6 +958,7 @@ public class SubnetTest {
 
     // Create instance target in subnet
     String instanceId = "instanceId";
+    Ip instanceIp = Ip.parse("1.1.1.1");
     Instance instanceInSubnet =
         new Instance(
             instanceId,
@@ -931,7 +966,7 @@ public class SubnetTest {
             subnet.getId(),
             ImmutableList.of(),
             ImmutableList.of(),
-            null,
+            instanceIp,
             ImmutableMap.of(),
             Status.RUNNING);
 
@@ -1023,10 +1058,10 @@ public class SubnetTest {
             hasFirewallSessionInterfaceInfo(notNullValue())));
 
     // Instance target should be connected to subnet on subnet's new VRF, instance's default VRF
+    String subnetToInstanceIfaceName =
+        interfaceNameToRemote(instanceCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     assertThat(
-        subnetCfg
-            .getAllInterfaces()
-            .get(interfaceNameToRemote(instanceCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
+        subnetCfg.getAllInterfaces().get(subnetToInstanceIfaceName),
         allOf(
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(nullValue()),
@@ -1037,6 +1072,18 @@ public class SubnetTest {
             .getAllInterfaces()
             .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
         allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
+
+    // Subnet should have static route to instance IP out the interface to the instance target
+    assertThat(
+        subnetCfg,
+        hasVrf(
+            NLB_INSTANCE_TARGETS_VRF_NAME,
+            hasStaticRoutes(
+                contains(
+                    toStaticRoute(
+                        instanceIp.toPrefix(),
+                        subnetToInstanceIfaceName,
+                        AwsConfiguration.LINK_LOCAL_IP)))));
   }
 
   /**
