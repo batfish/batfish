@@ -99,38 +99,59 @@ public class AwsConfigurationTest {
             new LoadBalancerTarget(lbArn, instanceId, 80), new TargetHealth(HealthState.HEALTHY));
     LoadBalancerTargetHealth targetHealth =
         new LoadBalancerTargetHealth("tgArn", ImmutableList.of(targetHealthDescription));
-    LoadBalancer loadBalancer =
-        new LoadBalancer(
-            lbArn,
-            ImmutableList.of(instanceZone, noInstanceZone),
-            "lbDnsName",
-            "lbName",
-            Scheme.INTERNET_FACING,
-            Type.NETWORK,
-            "vpc");
 
-    Region region =
+    // Set up region with everything except load balancers
+    Region.RegionBuilder regionBuilder =
         Region.builder("region")
             .setInstances(ImmutableMap.of(instanceId, instance))
             .setSubnets(
                 ImmutableMap.of(
                     noInstanceSubnetId, noInstanceSubnet, instanceSubnetId, instanceSubnet))
             .setVpcs(ImmutableMap.of(vpcId, vpc))
-            .setLoadBalancers(ImmutableMap.of(lbArn, loadBalancer))
             .setLoadBalancerTargetHealths(ImmutableMap.of(tgArn, targetHealth))
-            .setTargetGroups(ImmutableMap.of(tgArn, targetGroup))
-            .build();
-    account.addRegion(region);
+            .setTargetGroups(ImmutableMap.of(tgArn, targetGroup));
 
-    c.populatePrecomputedMaps();
-    assertThat(
-        c.getSubnetsToInstanceTargets(), equalTo(ImmutableMultimap.of(instanceSubnet, instance)));
-    assertThat(
-        c.getSubnetsToNlbs(),
-        equalTo(
-            ImmutableMultimap.of(noInstanceSubnet, loadBalancer, instanceSubnet, loadBalancer)));
-    assertThat(c.getNlbsToInstanceTargets(), equalTo(ImmutableMultimap.of(loadBalancer, instance)));
-    assertThat(c.getVpcsWithInstanceTargets(), contains(vpc));
+    {
+      // Network load balancer: Maps should get populated
+      LoadBalancer nlb =
+          new LoadBalancer(
+              lbArn,
+              ImmutableList.of(instanceZone, noInstanceZone),
+              "lbDnsName",
+              "lbName",
+              Scheme.INTERNET_FACING,
+              Type.NETWORK,
+              "vpc");
+      account.addRegion(regionBuilder.setLoadBalancers(ImmutableMap.of(lbArn, nlb)).build());
+
+      c.populatePrecomputedMaps();
+      assertThat(
+          c.getSubnetsToInstanceTargets(), equalTo(ImmutableMultimap.of(instanceSubnet, instance)));
+      assertThat(
+          c.getSubnetsToNlbs(),
+          equalTo(ImmutableMultimap.of(noInstanceSubnet, nlb, instanceSubnet, nlb)));
+      assertThat(c.getNlbsToInstanceTargets(), equalTo(ImmutableMultimap.of(nlb, instance)));
+      assertThat(c.getVpcsWithInstanceTargets(), contains(vpc));
+    }
+    {
+      // Application load balancer (not supported): Maps should not get populated
+      LoadBalancer alb =
+          new LoadBalancer(
+              lbArn,
+              ImmutableList.of(instanceZone, noInstanceZone),
+              "lbDnsName",
+              "lbName",
+              Scheme.INTERNET_FACING,
+              Type.APPLICATION,
+              "vpc");
+      account.addRegion(regionBuilder.setLoadBalancers(ImmutableMap.of(lbArn, alb)).build());
+
+      c.populatePrecomputedMaps();
+      assertTrue(c.getSubnetsToInstanceTargets().isEmpty());
+      assertTrue(c.getSubnetsToNlbs().isEmpty());
+      assertTrue(c.getNlbsToInstanceTargets().isEmpty());
+      assertTrue(c.getVpcsWithInstanceTargets().isEmpty());
+    }
   }
 
   @Test
