@@ -51,6 +51,8 @@ srs_definition
         | srs_disabled
         | srs_from
         | srs_hip_profiles
+        | srs_log_end
+        | srs_log_start
         | srs_negate_destination
         | srs_negate_source
         | srs_service
@@ -107,6 +109,16 @@ srs_from
 srs_hip_profiles
 :
     HIP_PROFILES ANY // only support any
+;
+
+srs_log_end
+:
+    LOG_END yn = yes_or_no
+;
+
+srs_log_start
+:
+    LOG_START yn = yes_or_no
 ;
 
 srs_negate_destination
