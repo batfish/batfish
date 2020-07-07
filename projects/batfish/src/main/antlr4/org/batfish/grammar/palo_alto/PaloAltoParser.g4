@@ -174,6 +174,7 @@ statement_device_group
     | sdg_description
     | sdg_devices
     | sdg_profiles
+    | sdg_profile_group
 ;
 
 set_line_tail
