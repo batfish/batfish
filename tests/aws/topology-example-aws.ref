@@ -27,9 +27,9 @@
         "aggregate-vpc-815775e7",
         "node-igw-068fee63",
         "aggregate-vpc-925131f4",
-        "aggregate-vpc-b390fad5",
         "node-igw-fac5839d",
-        "node-vgw-81fd279f"
+        "node-vgw-81fd279f",
+        "aggregate-vpc-b390fad5"
       ],
       "id" : "aggregate-us-west-2",
       "name" : "us-west-2",
@@ -43,22 +43,6 @@
       "id" : "aggregate-subnet-d9cafabc",
       "name" : "subnet-d9cafabc",
       "type" : "SUBNET",
-      "properties" : null
-    },
-    {
-      "contents" : [
-        "aggregate-subnet-7044ff16",
-        "aggregate-subnet-f73a8191",
-        "node-vpc-b390fad5",
-        "aggregate-subnet-30398256",
-        "aggregate-subnet-073b8061",
-        "aggregate-subnet-1641fa70",
-        "node-es-domain",
-        "node-test-rds"
-      ],
-      "id" : "aggregate-vpc-b390fad5",
-      "name" : "vpc-b390fad5",
-      "type" : "VNET",
       "properties" : null
     },
     {
@@ -77,6 +61,20 @@
       "id" : "aggregate-subnet-073b8061",
       "name" : "subnet-073b8061",
       "type" : "SUBNET",
+      "properties" : null
+    },
+    {
+      "contents" : [
+        "aggregate-subnet-7044ff16",
+        "aggregate-subnet-f73a8191",
+        "node-vpc-b390fad5",
+        "aggregate-subnet-30398256",
+        "aggregate-subnet-073b8061",
+        "aggregate-subnet-1641fa70"
+      ],
+      "id" : "aggregate-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
+      "type" : "VNET",
       "properties" : null
     },
     {
@@ -131,19 +129,21 @@
     },
     {
       "contents" : [
-        "node-subnet-30398256"
+        "node-subnet-1641fa70",
+        "node-es-domain",
+        "node-test-rds"
       ],
-      "id" : "aggregate-subnet-30398256",
-      "name" : "subnet-30398256",
+      "id" : "aggregate-subnet-1641fa70",
+      "name" : "subnet-1641fa70",
       "type" : "SUBNET",
       "properties" : null
     },
     {
       "contents" : [
-        "node-subnet-1641fa70"
+        "node-subnet-30398256"
       ],
-      "id" : "aggregate-subnet-1641fa70",
-      "name" : "subnet-1641fa70",
+      "id" : "aggregate-subnet-30398256",
+      "name" : "subnet-30398256",
       "type" : "SUBNET",
       "properties" : null
     },
