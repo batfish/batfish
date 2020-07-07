@@ -22,6 +22,9 @@ public final class NatRule implements Serializable {
   @Nonnull private final List<RuleEndpoint> _source;
   @Nonnull private final List<RuleEndpoint> _destination;
 
+  // Services
+  @Nullable private ServiceOrServiceGroupReference _service;
+
   // Translations
   @Nullable private SourceTranslation _sourceTranslation;
   @Nullable private DestinationTranslation _destinationTranslation;
@@ -53,6 +56,11 @@ public final class NatRule implements Serializable {
     return _name;
   }
 
+  @Nullable
+  public ServiceOrServiceGroupReference getService() {
+    return _service;
+  }
+
   @Nonnull
   public List<RuleEndpoint> getSource() {
     return _source;
@@ -70,6 +78,10 @@ public final class NatRule implements Serializable {
 
   public void setDestinationTranslation(DestinationTranslation destinationTranslation) {
     _destinationTranslation = destinationTranslation;
+  }
+
+  public void setService(ServiceOrServiceGroupReference service) {
+    _service = service;
   }
 
   public void setSourceTranslation(SourceTranslation sourceTranslation) {
