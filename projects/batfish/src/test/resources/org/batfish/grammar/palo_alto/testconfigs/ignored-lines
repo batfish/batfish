@@ -104,3 +104,5 @@ set template T1 config devices localhost.localdomain network virtual-wire
 
 set device-group DGNAME profiles spyware NAME rules NAME2 packet-capture disable
 set device-group DGNAME profiles vulnerability NAME rules NAME2 action alert
+set device-group DGNAME profile-group GROUPNAME spyware NAME2
+set device-group DGNAME profile-group GROUPNAME vulnerability NAME2
