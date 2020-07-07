@@ -2335,9 +2335,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrn_service(Srn_serviceContext ctx) {
-    String serviceName = getText(ctx.variable());
+    String serviceName = getText(ctx.service);
     _currentNatRule.setService(new ServiceOrServiceGroupReference(serviceName));
-    referenceService(ctx.variable(), NAT_RULE_SERVICE);
+    referenceService(ctx.service, NAT_RULE_SERVICE);
   }
 
   @Override
