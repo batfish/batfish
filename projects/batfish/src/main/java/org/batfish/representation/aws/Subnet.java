@@ -207,6 +207,24 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Utils.newInterface(
         instancesIfaceName, cfgNode, instancesIfaceAddress, "To instances " + _subnetId);
 
+    IpAccessList ingressAcl = null;
+    IpAccessList egressAcl = null;
+    {
+      // This network ACL should be applied to every subnet interface not facing an instance.
+      // NOTE: Every call to NetworkAcl#getIngressAcl or NetworkAcl#getEgressAcl returns a *new*
+      // IpAccessList object, which is why it's in a limited scope: they should only be called once.
+      Optional<NetworkAcl> networkAcl = getNetworkAcl(region, warnings);
+      if (networkAcl.isPresent()) {
+        ingressAcl = networkAcl.get().getIngressAcl();
+        egressAcl = networkAcl.get().getEgressAcl();
+        cfgNode.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
+        cfgNode.getIpAccessLists().put(egressAcl.getName(), egressAcl);
+      }
+    }
+    // defined separately so they can be final and thus used in lambda expressions
+    IpAccessList ingressNetworkAcl = ingressAcl;
+    IpAccessList egressNetworkAcl = egressAcl;
+
     // connect to the VPC on each of its VRFs. add static routes on the VPC to this subnet.
     Configuration vpcConfigNode = awsConfiguration.getNode(Vpc.nodeName(_vpcId));
     vpcConfigNode
@@ -223,14 +241,18 @@ public class Subnet implements AwsVpcEntity, Serializable {
                   vrf.getName(),
                   interfaceSuffix);
 
-              // add a static route on the vpc router for this subnet;
+              String subnetToVpcIfaceName = interfaceNameToRemote(vpcConfigNode, interfaceSuffix);
+              Interface subnetIfaceToVpc = cfgNode.getAllInterfaces().get(subnetToVpcIfaceName);
+              subnetIfaceToVpc.setIncomingFilter(ingressNetworkAcl);
+              subnetIfaceToVpc.setOutgoingFilter(egressNetworkAcl);
+
+              // add a static route on the vpc router for this subnet
               addStaticRoute(
                   vrf,
                   toStaticRoute(
                       _cidrBlock,
                       interfaceNameToRemote(cfgNode, interfaceSuffix),
-                      getInterfaceLinkLocalIp(
-                          cfgNode, interfaceNameToRemote(vpcConfigNode, interfaceSuffix))));
+                      getInterfaceLinkLocalIp(cfgNode, subnetToVpcIfaceName)));
             });
 
     @Nullable
@@ -277,9 +299,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
                       warnings));
     }
 
-    addNlbInstanceTargetInterfaces(awsConfiguration, cfgNode, vpcConfigNode);
-
-    installNetworkAcls(cfgNode, region, warnings);
+    addNlbInstanceTargetInterfaces(
+        awsConfiguration, cfgNode, vpcConfigNode, ingressNetworkAcl, egressNetworkAcl);
 
     // create LocationInfo for each link location on the node.
     cfgNode.setLocationInfo(
@@ -296,9 +317,18 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
+  /**
+   * Adds VRFs and connected interfaces required for NLBs with instance targets, if this subnet is
+   * connected to any instance targets or NLBs with instance targets.
+   */
   @VisibleForTesting
   void addNlbInstanceTargetInterfaces(
-      ConvertedConfiguration awsConfiguration, Configuration subnetCfg, Configuration vpcCfg) {
+      ConvertedConfiguration awsConfiguration,
+      Configuration subnetCfg,
+      Configuration vpcCfg,
+      // These ACLs should be applied to all subnet interfaces that don't face instances
+      @Nullable IpAccessList ingressNetworkAcl,
+      @Nullable IpAccessList egressNetworkAcl) {
     Collection<Instance> instanceTargets = awsConfiguration.getSubnetsToInstanceTargets().get(this);
     Collection<LoadBalancer> nlbs = awsConfiguration.getSubnetsToNlbs().get(this);
     if (instanceTargets.isEmpty() && nlbs.isEmpty()) {
@@ -321,8 +351,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // Add firewall session info on new subnet interface to VPC
     String subnetIfaceName = interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     Interface subnetToVpcIface = subnetCfg.getAllInterfaces().get(subnetIfaceName);
+    subnetToVpcIface.setIncomingFilter(ingressNetworkAcl);
+    subnetToVpcIface.setOutgoingFilter(egressNetworkAcl);
+    String incomingAclName = ingressNetworkAcl == null ? null : ingressNetworkAcl.getName();
     subnetToVpcIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(subnetIfaceName), null, null));
+        new FirewallSessionInterfaceInfo(
+            false, ImmutableList.of(subnetIfaceName), incomingAclName, null));
 
     // For each NLB in the subnet: new interface connecting to NLB, no filters
     for (LoadBalancer nlb : nlbs) {
@@ -356,11 +390,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
   }
 
-  /**
-   * Install network ACLs on all interfaces except the ones facing the instances. This method should
-   * be called after all interfaces expected to be on the subnet node have been created
-   */
-  private void installNetworkAcls(Configuration subnetCfg, Region region, Warnings warnings) {
+  /** Get {@link NetworkAcl} for this subnet, if one is present, and file warnings if needed. */
+  private Optional<NetworkAcl> getNetworkAcl(Region region, Warnings warnings) {
     List<NetworkAcl> myNetworkAcls =
         findSubnetNetworkAcl(region.getNetworkAcls(), _vpcId, _subnetId);
     if (!myNetworkAcls.isEmpty()) {
@@ -372,21 +403,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
                 "Found multiple network ACLs %s for subnet %s. Using %s.",
                 aclIds, _subnetId, myNetworkAcls.get(0).getId()));
       }
-      IpAccessList ingressAcl = myNetworkAcls.get(0).getIngressAcl();
-      IpAccessList egressAcl = myNetworkAcls.get(0).getEgressAcl();
-      subnetCfg.getIpAccessLists().put(ingressAcl.getName(), ingressAcl);
-      subnetCfg.getIpAccessLists().put(egressAcl.getName(), egressAcl);
-
-      subnetCfg.getAllInterfaces().values().stream()
-          .filter(iface -> !iface.getName().equals(instancesInterfaceName(_subnetId)))
-          .forEach(
-              iface -> {
-                iface.setIncomingFilter(ingressAcl);
-                iface.setOutgoingFilter(egressAcl);
-              });
-    } else {
-      warnings.redFlag("Could not find a network ACL for subnet " + _subnetId);
+      return Optional.of(myNetworkAcls.get(0));
     }
+    warnings.redFlag("Could not find a network ACL for subnet " + _subnetId);
+    return Optional.empty();
   }
 
   /**
