@@ -828,6 +828,18 @@ public class SubnetTest {
                         subnetToVpcIfaceName,
                         AwsConfiguration.LINK_LOCAL_IP)))));
 
+    // Subnet should have static route to instance IP out the interface to VPC
+    assertThat(
+        subnetCfg,
+        hasVrf(
+            NLB_INSTANCE_TARGETS_VRF_NAME,
+            hasStaticRoutes(
+                contains(
+                    toStaticRoute(
+                        instanceIp.toPrefix(),
+                        subnetToVpcIfaceName,
+                        AwsConfiguration.LINK_LOCAL_IP)))));
+
     // Instance should be unaffected
     assertThat(instanceCfg.getAllInterfaces(), anEmptyMap());
   }
