@@ -101,3 +101,6 @@ set template T1 config mgt-config users
 set template T1 config shared
 set template T1 config devices localhost.localdomain network vlan
 set template T1 config devices localhost.localdomain network virtual-wire
+
+set device-group DGNAME profiles spyware NAME rules NAME2 packet-capture disable
+set device-group DGNAME profiles vulnerability NAME rules NAME2 action alert
