@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_frr;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
+import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNetworkGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
@@ -17,6 +18,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isA;
@@ -55,6 +57,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
@@ -63,6 +66,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -1729,5 +1733,111 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _frr.getVrfs().get("VRF").getStaticRoutes(),
         contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), null, "eth0", null)));
+  }
+
+  @Test
+  public void testBgpNetworkStatement_behavior() throws IOException {
+    /*
+     There are two nodes in the topology arranged in a line.
+       - frr-originator -- ios-listener
+
+     frr-originator has the network statements and a collection of route-maps
+
+     frr-originator should:
+     1) Allow 10.2.2.2/32 and 10.3.3.3/32 in its bgp table with community 1234:12.
+     2) Allow 10.4.4.4/32 into its table with default attributes
+     3) Re-advertise 10.2.2.2/32 and 10.3.3.3/32 to ios-listener
+     4) Deny 10.4.4.4/32
+     ios-listener should only have 2.2.2.2/32 in its BGP table
+    */
+
+    String snapshotName = "network-statement";
+    List<String> configurationNames =
+        ImmutableList.of("frr-originator", "ios-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+
+    String networkPolicyName1 =
+        computeBgpNetworkGenerationPolicyName(true, "default", "10.2.2.2/32");
+
+    String networkPolicyName2 =
+        computeBgpNetworkGenerationPolicyName(true, "default", "10.3.3.3/32");
+
+    String networkPolicyName3 =
+        computeBgpNetworkGenerationPolicyName(true, "default", "10.4.4.4/32");
+
+    // frr-originator should have only 2.2.2.2/32 as a generated route
+        assertThat(
+            dp.getRibs().get("frr-originator").get(DEFAULT_VRF_NAME).getRoutes(),
+            hasItem(
+                equalTo(
+                    GeneratedRoute.builder()
+                        .setNetwork(Prefix.parse("10.2.2.2/32"))
+                        .setNextHopIp(null)
+                        .setNextHopInterface(("dynamic"))
+                        .setAttributePolicy("TEST_PERMIT_RM")
+                        .setGenerationPolicy(networkPolicyName1)
+                        .setDiscard(false)
+                        .build())
+            )
+            );
+    assertThat(
+        dp.getRibs().get("frr-originator").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                GeneratedRoute.builder()
+                    .setNetwork(Prefix.parse("10.3.3.3/32"))
+                    .setNextHopIp(null)
+                    .setNextHopInterface(("dynamic"))
+                    .setAttributePolicy("TEST_PERMIT_RM")
+                    .setGenerationPolicy(networkPolicyName2)
+                    .setDiscard(false)
+                    .build())
+        )
+    );
+
+    assertThat(
+        dp.getRibs().get("frr-originator").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                GeneratedRoute.builder()
+                    .setNetwork(Prefix.parse("10.4.4.4/32"))
+                    .setNextHopIp(null)
+                    .setNextHopInterface(("dynamic"))
+                    .setAttributePolicy(null)
+                    .setGenerationPolicy(networkPolicyName3)
+                    .setDiscard(false)
+                    .build())
+        )
+    );
+
+    // ios-listener should get a copy of 10.3.3.3/32 from frr-originator
+    assertThat(
+        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItems(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.parse("10.3.3.3/32"))
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setNextHopInterface("dynamic")
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(1234, 12)))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())
+        ));
   }
 }

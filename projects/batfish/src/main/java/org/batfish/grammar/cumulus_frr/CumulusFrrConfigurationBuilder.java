@@ -411,9 +411,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpVrf
         .getIpv4Unicast()
         .getNetworks()
-        .computeIfAbsent(
-            Prefix.parse(ctx.prefix().getText()),
-            k ->
+        .put(Prefix.parse(ctx.prefix().getText()),
                 new BgpNetwork(
                     Prefix.parse(ctx.prefix().getText()),
                     ctx.route_map_name() != null ? ctx.route_map_name().getText() : null));

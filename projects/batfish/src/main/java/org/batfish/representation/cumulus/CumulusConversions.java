@@ -303,9 +303,12 @@ public final class CumulusConversions {
 
     networks.forEach(
         (network, bgpNetwork) -> {
+
+          // NOTE: If there is a deny statement on a route-map for network-statements then
+          // this behavior will be incorrect.  The fix will be to utilize the attached route-map
+          // for Generation as well as Attributes.
           generateNetworkGenerationPolicy(c, vrf.getName(), network);
-          // Create Attribute Policy
-          String attributeMapName = bgpNetwork.getRouteMap();
+          String routeMapName = bgpNetwork.getRouteMap();
 
           // One caveat of generated routes is that they are aggregates by default instead of BGP.
           // This is not the case in FRR and further enhancement is needed to match FRR behavior.
@@ -318,10 +321,10 @@ public final class CumulusConversions {
                   .setDiscard(false);
 
           // Set attribute policy if it exists
-          if (attributeMapName != null) {
-            RouteMap attributeMap = routeMaps.get(attributeMapName);
+          if (routeMapName != null) {
+            RouteMap attributeMap = routeMaps.get(routeMapName);
             if (attributeMap != null) {
-              gr.setAttributePolicy(attributeMapName);
+              gr.setAttributePolicy(routeMapName);
             }
           }
           vrf.getGeneratedRoutes().add(gr.build());
@@ -354,6 +357,10 @@ public final class CumulusConversions {
   /**
    * Creates a generation policy for the aggregate network with the given {@link Prefix}. The
    * generation policy generates unconditionally: http://docs.frrouting.org/en/latest/bgp.html
+   *
+   * NOTE: This behavior is not quite right in Batfish because route-maps can prevent a network
+   * from being advertised (so it is not quite unconditional).  The fix will be to add the
+   * attached Route-map to the generation policy
    *
    * @param c {@link Configuration} in which to create the generation policy
    * @param vrfName Name of VRF in which the aggregate network exists
@@ -1027,13 +1034,6 @@ public final class CumulusConversions {
                       new MatchPrefixSet(
                           DestinationNetwork.instance(),
                           new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-              /*
-              Don't need to explicitly exclude BGP and iBGP routes here because those routes will
-              already be matched earlier in exportConditions (which are disjuncts).
-               */
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
               exportNetworkConditions.getConjuncts().add(we);
               exportConditions.add(exportNetworkConditions);
             });

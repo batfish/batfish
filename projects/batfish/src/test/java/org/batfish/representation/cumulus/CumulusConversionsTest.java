@@ -229,7 +229,7 @@ public final class CumulusConversionsTest {
     String networkPolicyName =
         computeBgpNetworkGenerationPolicyName(true, _v.getName(), prefix2.toString());
 
-    // configuration has the generation policy
+    // configuration has the generation policies
     assertThat(_c.getRoutingPolicies(), Matchers.hasKey(policyName));
     assertThat(_c.getRoutingPolicies(), Matchers.hasKey(networkPolicyName));
 
