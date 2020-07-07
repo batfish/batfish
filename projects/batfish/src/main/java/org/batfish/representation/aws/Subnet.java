@@ -117,6 +117,18 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return _allocatedIps;
   }
 
+  /** Returns {@code true} if this subnet has an available IP address. */
+  boolean hasNextIp() {
+    for (long ipAsLong = _lastGeneratedIp + 1;
+        ipAsLong < _cidrBlock.getEndIp().asLong();
+        ipAsLong++) {
+      if (!_allocatedIps.contains(ipAsLong)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Ip getNextIp() {
     for (long ipAsLong = _lastGeneratedIp + 1;
         ipAsLong < _cidrBlock.getEndIp().asLong();

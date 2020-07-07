@@ -17,6 +17,7 @@ import static org.batfish.representation.aws.Region.eniIngressAclName;
 import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Collection;
@@ -102,7 +104,8 @@ public class RdsInstanceTest {
     Map<String, Configuration> configurations = loadAwsConfigurations();
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
 
-    // check that RDS instance is a neighbor of both  subnets in which its interfaces are
+    // check that RDS instance is a neighbor of the deterministically chosen subnets in which its
+    // interfaces are located.
     assertThat(
         topology.getEdges(),
         hasItem(
@@ -110,13 +113,6 @@ public class RdsInstanceTest {
                 NodeInterfacePair.of(
                     "subnet-073b8061", Subnet.instancesInterfaceName("subnet-073b8061")),
                 NodeInterfacePair.of("test-rds", "test-rds-subnet-073b8061"))));
-    assertThat(
-        topology.getEdges(),
-        hasItem(
-            new Edge(
-                NodeInterfacePair.of(
-                    "subnet-1f315846", Subnet.instancesInterfaceName("subnet-1f315846")),
-                NodeInterfacePair.of("test-rds", "test-rds-subnet-1f315846"))));
   }
 
   @Test
@@ -140,14 +136,12 @@ public class RdsInstanceTest {
   @Test
   public void testDefaultRoute() throws IOException {
     Map<String, Configuration> configurations = loadAwsConfigurations();
-    StaticRoute defaultRoute1 = _staticRouteBuilder.setNextHopIp(Ip.parse("172.31.0.1")).build();
-    StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
+    StaticRoute defaultRoute = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
 
-    // checking that both default routes exist(to both the subnets) in RDS instance
+    // checking that the default route is installed to the deterministically chosen subnet.
     assertThat(configurations, hasKey("test-rds"));
     assertThat(
-        configurations.get("test-rds").getDefaultVrf().getStaticRoutes(),
-        containsInAnyOrder(defaultRoute1, defaultRoute2));
+        configurations.get("test-rds").getDefaultVrf().getStaticRoutes(), contains(defaultRoute));
   }
 
   @Test
@@ -156,7 +150,7 @@ public class RdsInstanceTest {
 
     assertThat(configurations, hasKey("test-rds"));
     Configuration testRds = configurations.get("test-rds");
-    assertThat(testRds.getAllInterfaces().entrySet(), hasSize(2));
+    assertThat(testRds.getAllInterfaces().entrySet(), hasSize(1));
     assertThat(
         testRds,
         hasIpAccessList(
@@ -296,12 +290,17 @@ public class RdsInstanceTest {
             ImmutableListMultimap.of("az", "subnet-1", "az", "subnet-2"),
             ImmutableList.of());
 
+    Subnet s2 = new Subnet(Prefix.parse("10.0.0.0/24"), "subnet-2", "vpc", "az", ImmutableMap.of());
+
     Configuration cfg =
         rds.toConfigurationNode(
-            new ConvertedConfiguration(), Region.builder("r1").build(), new Warnings());
+            new ConvertedConfiguration(),
+            Region.builder("r1").setSubnets(ImmutableMap.of(s2.getId(), s2)).build(),
+            new Warnings());
 
     AwsFamily awsFamily = cfg.getVendorFamily().getAws();
-    assertThat(awsFamily.getSubnetId(), equalTo("subnet-1"));
+    // should pick subnet-2 since subnet-1 is missing.
+    assertThat(awsFamily.getSubnetId(), equalTo("subnet-2"));
     assertThat(awsFamily.getVpcId(), equalTo("vpc"));
     assertThat(awsFamily.getRegion(), equalTo("r1"));
   }
