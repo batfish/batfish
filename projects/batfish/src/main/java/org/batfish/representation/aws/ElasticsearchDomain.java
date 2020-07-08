@@ -237,6 +237,7 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setSubnetId(subnetId);
     cfgNode.setHumanName(_domainName);
 
+    // TODO: a better way to get IPs in the subnet, use the network interface data or DNS queries
     String instancesIfaceName = subnetId;
     Ip instancesIfaceIp = subnet.getNextIp();
     ConcreteInterfaceAddress instancesIfaceAddress =
