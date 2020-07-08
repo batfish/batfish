@@ -98,6 +98,7 @@ import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.RouteInfo;
@@ -686,7 +687,12 @@ public final class FlowTracerTest {
     // - next-vr should occur in the first step
     // - next-vr should occur in the second step
 
-    assertThat(steps, contains(instanceOf(RoutingStep.class), instanceOf(RoutingStep.class)));
+    assertThat(
+        steps,
+        contains(
+            instanceOf(RoutingStep.class),
+            instanceOf(RoutingStep.class),
+            instanceOf(LoopStep.class)));
     assertThat(
         ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
         equalTo(vrf2Name));

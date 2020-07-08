@@ -84,6 +84,7 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.batfish.datamodel.flow.IncomingSessionScope;
+import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 import org.batfish.datamodel.flow.OriginateStep;
@@ -1166,6 +1167,7 @@ class FlowTracer {
   }
 
   private void buildLoopTrace() {
+    _steps.add(LoopStep.INSTANCE);
     _hops.add(new Hop(_currentNode, _steps));
     Trace trace = new Trace(FlowDisposition.LOOP, _hops);
     _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
