@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
   @JsonSubTypes.Type(value = ExitOutputIfaceStep.class, name = "ExitOutputInterface"),
   @JsonSubTypes.Type(value = FilterStep.class, name = "Filter"),
   @JsonSubTypes.Type(value = InboundStep.class, name = "Inbound"),
+    @JsonSubTypes.Type(value = LoopStep.class, name = "Loop"),
   @JsonSubTypes.Type(value = MatchSessionStep.class, name = "MatchSession"),
   @JsonSubTypes.Type(value = OriginateStep.class, name = "Originate"),
   @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
