@@ -26,7 +26,7 @@ import org.batfish.datamodel.Prefix;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-class AwsPrefixes {
+public class AwsPrefixes {
 
   private static final String PREFIXES_FILE = "org/batfish/representation/aws/ip-ranges.json";
 
@@ -39,6 +39,8 @@ class AwsPrefixes {
   static final String SERVICE_AMAZON = "AMAZON";
 
   static final String SERVICE_EC2 = "EC2";
+
+  static final String SERVICE_S3 = "S3";
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -125,6 +127,10 @@ class AwsPrefixes {
    */
   public static Set<Prefix> getAwsServicesPrefixes() {
     return getAwsServicesPrefixes(INSTANCE._awsPrefixes);
+  }
+
+  public static List<Prefix> getAwsS3Prefixes() {
+    return getPrefixes(SERVICE_S3);
   }
 
   @VisibleForTesting
