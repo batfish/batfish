@@ -22,19 +22,25 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteConstraints;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -63,7 +69,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
 
-  private final RouteConstraints _routeConstraints;
+  private final RouteConstraints _inputConstraints;
+  private final RouteConstraints _outputConstraints;
   private final String _nodes;
   private final String _policies;
   private final Action _action;
@@ -71,19 +78,21 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   private Graph _g;
   private PolicyQuotient _pq;
 
-  private BDD _routeConstraintsBDD;
+  private BDD _inputConstraintsBDD;
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
-    _routeConstraints = question.getRouteConstraints();
+    _inputConstraints = question.getInputConstraints();
+    _outputConstraints = question.getOutputConstraints();
     _nodes = question.getNodes();
     _policies = question.getPolicies();
     _action = question.getAction();
 
     _g = new Graph(batfish, batfish.getSnapshot());
-    _pq = new PolicyQuotient(_g);
+    _pq = new PolicyQuotient();
 
-    _routeConstraintsBDD = routeConstraintsToBDD();
+    _inputConstraintsBDD =
+        routeConstraintsToBDD(_inputConstraints, new BDDRoute(_g.getAllCommunities()));
   }
 
   /**
@@ -93,29 +102,42 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param bdd the bdd
    * @return the corresponding route
    */
-  private Bgpv4Route bddToRoute(BDD bdd) {
+  private Bgpv4Route bddToRoute(BDD bdd, BDDRoute r) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP);
-
-    BDDRoute dummy = new BDDRoute(_g.getAllCommunities());
-    Ip ip = Ip.create(dummy.getPrefix().satAssignmentToLong(bdd));
-    long len = dummy.getPrefixLength().satAssignmentToLong(bdd);
+    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(bdd));
+    long len = r.getPrefixLength().satAssignmentToLong(bdd);
     builder.setNetwork(Prefix.create(ip, (int) len));
 
-    builder.setLocalPreference(dummy.getLocalPref().satAssignmentToLong(bdd));
-    builder.setAdmin((int) (long) dummy.getAdminDist().satAssignmentToLong(bdd));
+    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(bdd));
+    builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(bdd));
     // TODO: BDDRoute has a med and a metric -- what is the difference?
-    builder.setMetric(dummy.getMed().satAssignmentToLong(bdd));
+    builder.setMetric(r.getMed().satAssignmentToLong(bdd));
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
-    for (Entry<CommunityVar, BDD> commEntry : dummy.getCommunities().entrySet()) {
+    for (Entry<CommunityVar, BDD> commEntry : r.getCommunities().entrySet()) {
       CommunityVar commVar = commEntry.getKey();
       BDD commBDD = commEntry.getValue();
       if (!commBDD.and(bdd).isZero()) {
-        comms.add(StandardCommunity.parse(commVar.getRegex()));
+        // TODO for now we only handle regexes that represent literal community values
+        Community lit = commVar.getLiteralValue();
+        if (lit != null) {
+          comms.add(commVar.getLiteralValue());
+        } else {
+          String regex = commVar.getRegex();
+          if (regex.startsWith("^") && regex.endsWith("$")) {
+            try {
+              comms.add(Community.fromString(regex.substring(1, regex.length() - 1)));
+            } catch (Exception e) {
+              throw new BatfishException("Unhandled community regex: " + regex, e);
+            }
+          } else {
+            throw new BatfishException("Unhandled community regex: " + regex);
+          }
+        }
       }
     }
     builder.setCommunities(comms.build());
@@ -138,31 +160,80 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
-  private BDD routeConstraintsToBDD() {
-    return isRelevantFor(new BDDRoute(_g.getAllCommunities()), _routeConstraints.getPrefixRange());
+  private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
+    BDDFactory factory = r.getPrefix().getFactory();
+    if (space.isEmpty()) {
+      return factory.one();
+    } else {
+      BDD result = factory.zero();
+      for (PrefixRange range : space.getPrefixRanges()) {
+        BDD rangeBDD = isRelevantFor(r, range);
+        result = result.or(rangeBDD);
+      }
+      if (complementPrefixes) {
+        result = result.not();
+      }
+      return result;
+    }
+  }
+
+  private BDD integerSpaceToBDD(IntegerSpace space, BDDInteger bddInt) {
+    if (space.isEmpty()) {
+      return bddInt.getFactory().one();
+    } else {
+      BDD result = bddInt.getFactory().zero();
+      for (SubRange range : space.getSubRanges()) {
+        result = result.or(bddInt.range(range.getStart(), range.getEnd()));
+      }
+      return result;
+    }
+  }
+
+  private BDD routeConstraintsToBDD(RouteConstraints constraints, BDDRoute r) {
+    BDD prefixRange =
+        prefixSpaceToBDD(constraints.getPrefixSpace(), r, constraints.getComplementPrefixSpace());
+    BDD localPref = integerSpaceToBDD(constraints.getLocalPref(), r.getLocalPref());
+    BDD med = integerSpaceToBDD(constraints.getMed(), r.getMed());
+
+    return prefixRange.and(localPref).and(med);
   }
 
   private Optional<Result> searchPolicy(RoutingPolicy policy) {
-    TransferBDD tbdd = new TransferBDD(_g, policy.getOwner(), policy.getStatements(), _pq);
+    TransferBDD tbdd;
+    try {
+      tbdd = new TransferBDD(_g, policy.getOwner(), policy.getStatements(), _pq);
+    } catch (Exception e) {
+      throw new BatfishException(
+          "Unsupported features in route policy "
+              + policy.getName()
+              + " in node "
+              + policy.getOwner().getHostname(),
+          e);
+    }
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outputRoute = result.getFirst();
     BDD intersection;
     if (_action == Action.PERMIT) {
-      intersection = acceptedAnnouncements.and(_routeConstraintsBDD);
+      // incorporate the constraints on the output route as well
+      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute);
+      intersection = acceptedAnnouncements.and(_inputConstraintsBDD).and(outConstraints);
     } else {
-      intersection = acceptedAnnouncements.not().and(_routeConstraintsBDD);
+      intersection = acceptedAnnouncements.not().and(_inputConstraintsBDD);
     }
 
     if (intersection.isZero()) {
       return Optional.empty();
     } else {
-      BDD exampleModel = intersection.fullSatOne();
-      Bgpv4Route exampleRoute = bddToRoute(exampleModel);
+      BDD model = intersection.fullSatOne();
+      Bgpv4Route inRoute = bddToRoute(model, new BDDRoute(_g.getAllCommunities()));
+      Bgpv4Route outRoute = _action == Action.PERMIT ? bddToRoute(model, outputRoute) : null;
       return Optional.of(
           new Result(
               new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
-              exampleRoute,
-              _action));
+              inRoute,
+              _action,
+              outRoute));
     }
   }
 
@@ -222,14 +293,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
             new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
             new ColumnMetadata(
-                COL_ACTION, STRING, "The action of the policy on the input route", false, true));
+                COL_ACTION, STRING, "The action of the policy on the input route", false, true),
+            new ColumnMetadata(COL_OUTPUT_ROUTE, BGP_ROUTE, "The input route", false, false));
     return new TableMetadata(
-        columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
+        columnMetadata, String.format("Results for policy ${%s}", COL_POLICY_NAME));
   }
 
   private static Row toRow(Result result) {
     org.batfish.datamodel.questions.BgpRoute inputRoute =
         toQuestionsBgpRoute(result.getInputRoute());
+    org.batfish.datamodel.questions.BgpRoute outputRoute =
+        toQuestionsBgpRoute(result.getOutputRoute());
     Action action = result.getAction();
     RoutingPolicyId policyId = result.getPolicyId();
     return Row.builder()
@@ -237,6 +311,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         .put(COL_POLICY_NAME, policyId.getPolicy())
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
+        .put(COL_OUTPUT_ROUTE, outputRoute)
         .build();
   }
 }

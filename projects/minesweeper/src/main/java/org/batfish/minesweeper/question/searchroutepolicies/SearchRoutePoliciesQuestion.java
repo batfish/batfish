@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,20 +13,22 @@ import org.batfish.datamodel.questions.Question;
 /** A question for testing routing policies. */
 @ParametersAreNonnullByDefault
 public final class SearchRoutePoliciesQuestion extends Question {
-  private static final String PROP_ROUTE_CONSTRAINTS = "routeConstraints";
+  private static final String PROP_INPUT_CONSTRAINTS = "inputConstraints";
+  private static final String PROP_OUTPUT_CONSTRAINTS = "outputConstraints";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_POLICIES = "policies";
   private static final String PROP_ACTION = "action";
 
   private static final RouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
       RouteConstraints.builder().build();
-  private static final String DEFAULT_NODE = "";
-  private static final String DEFAULT_POLICY = "";
+  private static final String DEFAULT_NODES = "";
+  private static final String DEFAULT_POLICIES = "";
   private static final Action DEFAULT_ACTION = Action.PERMIT;
 
   private final String _nodes;
   private final String _policies;
-  private final RouteConstraints _routeConstraints;
+  private final RouteConstraints _inputConstraints;
+  private final RouteConstraints _outputConstraints;
   private final Action _action;
 
   public enum Action {
@@ -35,31 +37,40 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   public SearchRoutePoliciesQuestion() {
-    this(DEFAULT_ROUTE_CONSTRAINTS, DEFAULT_NODE, DEFAULT_POLICY, DEFAULT_ACTION);
+    this(
+        DEFAULT_ROUTE_CONSTRAINTS,
+        DEFAULT_ROUTE_CONSTRAINTS,
+        DEFAULT_NODES,
+        DEFAULT_POLICIES,
+        DEFAULT_ACTION);
   }
 
   public SearchRoutePoliciesQuestion(
-      @JsonProperty(PROP_ROUTE_CONSTRAINTS) RouteConstraints routeConstraints,
+      @JsonProperty(PROP_INPUT_CONSTRAINTS) RouteConstraints inputConstraints,
+      @JsonProperty(PROP_OUTPUT_CONSTRAINTS) RouteConstraints outputConstraints,
       @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_POLICIES) String policies,
       @JsonProperty(PROP_ACTION) Action action) {
     _nodes = nodes;
     _policies = policies;
-    _routeConstraints = routeConstraints;
+    _inputConstraints = inputConstraints;
+    _outputConstraints = outputConstraints;
     _action = action;
   }
 
   @JsonCreator
   private static SearchRoutePoliciesQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_ROUTE_CONSTRAINTS) RouteConstraints routeConstraints,
+      @Nullable @JsonProperty(PROP_INPUT_CONSTRAINTS) RouteConstraints inputConstraints,
+      @Nullable @JsonProperty(PROP_OUTPUT_CONSTRAINTS) RouteConstraints outputConstraints,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_POLICIES) String policies,
       @Nullable @JsonProperty(PROP_ACTION) Action action) {
-    checkNotNull(routeConstraints, "%s must not be null", PROP_ROUTE_CONSTRAINTS);
-    checkNotNull(nodes, "%s must not be null", PROP_NODES);
-    checkNotNull(policies, "%s must not be null", PROP_POLICIES);
-    checkNotNull(action, "%s must not be null", PROP_ACTION);
-    return new SearchRoutePoliciesQuestion(routeConstraints, nodes, policies, action);
+    return new SearchRoutePoliciesQuestion(
+        firstNonNull(inputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
+        firstNonNull(outputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
+        firstNonNull(nodes, DEFAULT_NODES),
+        firstNonNull(policies, DEFAULT_POLICIES),
+        firstNonNull(action, DEFAULT_ACTION));
   }
 
   @JsonIgnore
@@ -68,15 +79,20 @@ public final class SearchRoutePoliciesQuestion extends Question {
     return false;
   }
 
-  @JsonProperty(PROP_ROUTE_CONSTRAINTS)
-  public RouteConstraints getRouteConstraints() {
-    return _routeConstraints;
+  @JsonProperty(PROP_INPUT_CONSTRAINTS)
+  public RouteConstraints getInputConstraints() {
+    return _inputConstraints;
+  }
+
+  @JsonProperty(PROP_OUTPUT_CONSTRAINTS)
+  public RouteConstraints getOutputConstraints() {
+    return _outputConstraints;
   }
 
   @JsonIgnore
   @Override
   public String getName() {
-    return "searchRoutePolicies";
+    return "searchroutepolicies";
   }
 
   @JsonProperty(PROP_NODES)

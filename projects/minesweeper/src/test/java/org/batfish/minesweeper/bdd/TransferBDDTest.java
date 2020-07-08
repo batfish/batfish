@@ -3,7 +3,6 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -12,15 +11,12 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.SortedMap;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -30,19 +26,12 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -81,6 +70,7 @@ public class TransferBDDTest {
             return ImmutableSortedMap.of(HOSTNAME, _baseConfig);
           }
 
+          @Override
           public TopologyProvider getTopologyProvider() {
             return new TopologyProviderTestAdapter(_batfish) {
               @Override
@@ -170,7 +160,7 @@ public class TransferBDDTest {
 
     BDD expectedBDD =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    assertTrue(acceptedAnnouncements.equals(expectedBDD));
+    assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), announcementUpdates);
   }
@@ -195,7 +185,7 @@ public class TransferBDDTest {
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
     BDD expectedBDD2 =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(25, 32)));
-    assertTrue(acceptedAnnouncements.equals(expectedBDD1.or(expectedBDD2)));
+    assertEquals(acceptedAnnouncements, expectedBDD1.or(expectedBDD2));
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), announcementUpdates);
   }
@@ -222,77 +212,44 @@ public class TransferBDDTest {
 
     BDD expectedBDD =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 24)));
-    assertTrue(acceptedAnnouncements.equals(expectedBDD));
+    assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), announcementUpdates);
   }
 
-  @Test
-  public void testMatchLocalPrefNotSupported() {
-    _policyBuilder.addStatement(
-        new If(
-            new MatchLocalPreference(IntComparator.EQ, new LiteralInt(3)),
-            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
-    RoutingPolicy policy = _policyBuilder.build();
-
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
-    try {
-      TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-      // BDD acceptedAnnouncements = result.getSecond();
-      // BDDRoute announcementUpdates = result.getFirst();
-      fail();
-    } catch (BatfishException ignored) {
-    }
-  }
-
-  @Test
-  public void testMatchLiteralCommunityNotSupported() {
-    _policyBuilder.addStatement(
-        new If(
-            new MatchCommunitySet(new LiteralCommunity(StandardCommunity.of(23))),
-            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
-    RoutingPolicy policy = _policyBuilder.build();
-
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
-
-    try {
-      TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-      //   BDD acceptedAnnouncements = result.getSecond();
-      //   BDDRoute announcementUpdates = result.getFirst();
-      fail();
-    } catch (BatfishException ignored) {
-    }
-  }
-
-  // TODO: some version of this should work, but we seem to need to declare the community list first
-  // in the config
-  @Test
-  public void testMatchCommunityList() {
-    _baseConfig.setCommunityLists(
-        ImmutableMap.of(
-            "clist",
-            new CommunityList(
-                "clist",
-                ImmutableList.of(
-                    CommunityListLine.accepting(new LiteralCommunity(StandardCommunity.of(23)))),
-                false)));
-    _g = new Graph(_batfish, null, ImmutableMap.of(HOSTNAME, _baseConfig));
-    _policyBuilder.addStatement(
-        new If(
-            new MatchCommunitySet(new NamedCommunitySet("clist")),
-            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
-    RoutingPolicy policy = _policyBuilder.build();
-
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
-    try {
-      TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-      // BDD acceptedAnnouncements = result.getSecond();
-      // BDDRoute announcementUpdates = result.getFirst();
-      fail();
-    } catch (Exception ignored) {
-    }
-  }
-
+  /**
+   * ** @Test public void testMatchLocalPrefNotSupported() { _policyBuilder.addStatement( new If(
+   * new MatchLocalPreference(IntComparator.EQ, new LiteralInt(3)), ImmutableList.of(new
+   * StaticStatement(Statements.ExitAccept)))); RoutingPolicy policy = _policyBuilder.build();
+   *
+   * <p>TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq); try {
+   * tbdd.compute(ImmutableSet.of()).getReturnValue(); // BDD acceptedAnnouncements =
+   * result.getSecond(); // BDDRoute announcementUpdates = result.getFirst(); fail(); } catch
+   * (BatfishException ignored) { } } @Test public void testMatchLiteralCommunityNotSupported() {
+   * _policyBuilder.addStatement( new If( new MatchCommunitySet(new
+   * LiteralCommunity(StandardCommunity.of(23))), ImmutableList.of(new
+   * StaticStatement(Statements.ExitAccept)))); RoutingPolicy policy = _policyBuilder.build();
+   *
+   * <p>TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+   *
+   * <p>try { TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue(); // BDD
+   * acceptedAnnouncements = result.getSecond(); // BDDRoute announcementUpdates =
+   * result.getFirst(); fail(); } catch (BatfishException ignored) { } }
+   *
+   * <p>// TODO: some version of this should work, but we seem to need to declare the community list
+   * first // in the config @Test public void testMatchCommunityList() {
+   * _baseConfig.setCommunityLists( ImmutableMap.of( "clist", new CommunityList( "clist",
+   * ImmutableList.of( CommunityListLine.accepting(new LiteralCommunity(StandardCommunity.of(23)))),
+   * false))); _g = new Graph(_batfish, null, ImmutableMap.of(HOSTNAME, _baseConfig));
+   * _policyBuilder.addStatement( new If( new MatchCommunitySet(new NamedCommunitySet("clist")),
+   * ImmutableList.of(new StaticStatement(Statements.ExitAccept)))); RoutingPolicy policy =
+   * _policyBuilder.build();
+   *
+   * <p>TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq); try {
+   * TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue(); // BDD
+   * acceptedAnnouncements = result.getSecond(); // BDDRoute announcementUpdates =
+   * result.getFirst(); fail(); } catch (Exception ignored) { } }
+   */
   @Test
   public void testSetLocalPrefLiteral() {
     RoutingPolicy policy =
@@ -334,7 +291,7 @@ public class TransferBDDTest {
 
     BDD expectedBDD =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    assertTrue(acceptedAnnouncements.equals(expectedBDD));
+    assertEquals(acceptedAnnouncements, expectedBDD);
 
     // the local preference is 42 when the prefix is in the specified range
     BDDRoute prefRoute = _anyRoute;

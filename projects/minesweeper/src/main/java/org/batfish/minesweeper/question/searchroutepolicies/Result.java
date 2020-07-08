@@ -1,6 +1,9 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
 
@@ -38,11 +41,20 @@ final class Result {
   private final RoutingPolicyId _policyId;
   private final Bgpv4Route _inputRoute;
   private final Action _action;
+  private final Bgpv4Route _outputRoute;
 
-  Result(RoutingPolicyId policyId, Bgpv4Route inputRoute, Action action) {
+  Result(
+      RoutingPolicyId policyId,
+      Bgpv4Route inputRoute,
+      Action action,
+      @Nullable Bgpv4Route outputRoute) {
+    checkArgument(
+        (action == Action.DENY) == (outputRoute == null),
+        "outputRoute is null if and only if action is DENY");
     _policyId = policyId;
     _action = action;
     _inputRoute = inputRoute;
+    _outputRoute = outputRoute;
   }
 
   @Override
@@ -65,6 +77,10 @@ final class Result {
 
   public Bgpv4Route getInputRoute() {
     return _inputRoute;
+  }
+
+  public Bgpv4Route getOutputRoute() {
+    return _outputRoute;
   }
 
   public Key getKey() {
