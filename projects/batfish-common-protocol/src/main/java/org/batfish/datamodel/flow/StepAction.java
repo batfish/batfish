@@ -16,6 +16,8 @@ public enum StepAction {
   FORWARDED_TO_NEXT_VRF,
   /** Action if information is insufficient to tell the final fate of the flow */
   INSUFFICIENT_INFO,
+  /** Action if a forwarding loop is detected */
+  LOOP,
   /** Action if flow matches a session. */
   MATCHED_SESSION,
   /** Action when next neighbor is unreachable at the last hop */
@@ -35,5 +37,5 @@ public enum StepAction {
   /** Action to show the transmission of a flow from an output interface */
   TRANSMITTED,
   /** Action that a filter permits a packet */
-  PERMITTED
+  PERMITTED;
 }
