@@ -4,6 +4,7 @@ import static org.batfish.representation.aws.AwsPrefixes.SERVICE_AMAZON;
 import static org.batfish.representation.aws.AwsPrefixes.SERVICE_EC2;
 import static org.batfish.representation.aws.AwsPrefixes.getAwsServicesPrefixes;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -47,5 +48,11 @@ public class AwsPrefixesTest {
 
     assertThat(
         getAwsServicesPrefixes(all), equalTo(ImmutableSet.of(onlyAmazon, conflict, onlyOther)));
+  }
+
+  @Test
+  public void testGetAwsS3Prefixes() {
+    List<Prefix> s3Prefixes = AwsPrefixes.getAwsS3Prefixes();
+    assertFalse(s3Prefixes.isEmpty());
   }
 }
