@@ -1,7 +1,10 @@
 load("@rules_java//java:defs.bzl", "java_library")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
-package(default_visibility = ["//visibility:public"])
+package(default_visibility = [
+    "//projects/symbolic:__pkg__",
+    "//projects/symbolic/src/test:__subpackages__",
+])
 
 java_library(
     name = "core",
