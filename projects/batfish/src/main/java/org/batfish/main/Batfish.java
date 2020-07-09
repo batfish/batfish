@@ -7,6 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.bddreachability.BDDReachabilityUtils.constructFlows;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -2842,32 +2843,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               params.getFinalNodes(),
               params.getActions());
 
-      Set<Flow> flows =
-          reachableBDDs.entrySet().stream()
-              .flatMap(
-                  entry -> {
-                    IngressLocation loc = entry.getKey();
-                    BDD headerSpace = entry.getValue();
-                    Optional<Flow.Builder> optionalFlow = pkt.getFlow(headerSpace);
-                    if (!optionalFlow.isPresent()) {
-                      return Stream.of();
-                    }
-                    Flow.Builder flow = optionalFlow.get();
-                    flow.setIngressNode(loc.getNode());
-                    switch (loc.getType()) {
-                      case INTERFACE_LINK:
-                        flow.setIngressInterface(loc.getInterface());
-                        break;
-                      case VRF:
-                        flow.setIngressVrf(loc.getVrf());
-                        break;
-                      default:
-                        throw new BatfishException(
-                            "Unexpected IngressLocation Type: " + loc.getType().name());
-                    }
-                    return Stream.of(flow.build());
-                  })
-              .collect(ImmutableSet.toImmutableSet());
+      Set<Flow> flows = constructFlows(pkt, reachableBDDs);
 
       return new TraceWrapperAsAnswerElement(buildFlows(snapshot, flows, ignoreFilters));
     } finally {
