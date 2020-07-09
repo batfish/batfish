@@ -15,13 +15,18 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.bddreachability.transition.Transitions;
+import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDIpProtocol;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.symbolic.state.OriginateInterfaceLink;
@@ -157,5 +162,33 @@ public final class BDDReachabilityUtils {
         .map(ipProtocol::value)
         .reduce(BDD::or)
         .get();
+  }
+
+  public static Set<Flow> constructFlows(BDDPacket pkt, Map<IngressLocation, BDD> reachableBdds) {
+    return reachableBdds.entrySet().stream()
+        .flatMap(
+            entry -> {
+              IngressLocation loc = entry.getKey();
+              BDD headerSpace = entry.getValue();
+              Optional<Builder> optionalFlow = pkt.getFlow(headerSpace);
+              if (!optionalFlow.isPresent()) {
+                return Stream.of();
+              }
+              Flow.Builder flow = optionalFlow.get();
+              flow.setIngressNode(loc.getNode());
+              switch (loc.getType()) {
+                case INTERFACE_LINK:
+                  flow.setIngressInterface(loc.getInterface());
+                  break;
+                case VRF:
+                  flow.setIngressVrf(loc.getVrf());
+                  break;
+                default:
+                  throw new BatfishException(
+                      "Unexpected IngressLocation Type: " + loc.getType().name());
+              }
+              return Stream.of(flow.build());
+            })
+        .collect(ImmutableSet.toImmutableSet());
   }
 }
