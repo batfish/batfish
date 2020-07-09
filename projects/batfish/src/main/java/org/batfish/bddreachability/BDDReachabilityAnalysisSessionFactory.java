@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.immutableEntry;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.groupingBy;
@@ -35,6 +36,7 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Vrf;
@@ -164,7 +166,7 @@ final class BDDReachabilityAnalysisSessionFactory {
 
     List<String> sessionOriginateVrfs =
         config.getVrfs().values().stream()
-            .filter(Vrf::hasOriginatingSessions)
+            .filter(vrf -> vrf.getFirewallSessionVrfInfo() != null)
             .map(Vrf::getName)
             .collect(ImmutableList.toImmutableList());
 
@@ -515,7 +517,11 @@ final class BDDReachabilityAnalysisSessionFactory {
         String hostname = ((VrfAccept) state).getHostname();
         String vrf = ((VrfAccept) state).getVrf();
         Configuration c = configs.get(hostname);
-        if (c.getVrfs().get(vrf).hasOriginatingSessions()) {
+        FirewallSessionVrfInfo firewallSessionVrfInfo = c.getVrfs()
+            .get(vrf)
+            .getFirewallSessionVrfInfo();
+        if (firewallSessionVrfInfo != null) {
+          checkState(firewallSessionVrfInfo.getFibLookup(), "FirewallSessionVrfInfo with FibLookup=false not supported");
           reachableBdds
               .computeIfAbsent(hostname, k -> new HashMap<>())
               .computeIfAbsent(vrf, k -> new ArrayList<>())

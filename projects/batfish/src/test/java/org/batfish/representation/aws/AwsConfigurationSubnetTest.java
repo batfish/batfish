@@ -123,7 +123,7 @@ public class AwsConfigurationSubnetTest {
     // Instances should allow originating sessions (sessions can be established by inbound packets)
     Configuration instance1 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(INSTANCE_1);
     Configuration instance2 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(INSTANCE_2);
-    assertTrue(instance1.getVrfs().values().stream().allMatch(Vrf::hasOriginatingSessions));
-    assertTrue(instance2.getVrfs().values().stream().allMatch(Vrf::hasOriginatingSessions));
+    assertTrue(instance1.getVrfs().values().stream().allMatch(vrf -> vrf.getFirewallSessionVrfInfo() != null));
+    assertTrue(instance2.getVrfs().values().stream().allMatch(vrf -> vrf.getFirewallSessionVrfInfo() != null));
   }
 }

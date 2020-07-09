@@ -1,5 +1,6 @@
 package org.batfish.dataplane.traceroute;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
@@ -66,6 +67,7 @@ import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.FlowDisposition;
@@ -210,33 +212,24 @@ public final class FlowTracerTest {
                 hasNewFirewallSessions(contains(sessionInfo)))));
   }
 
-  @Test
-  public void testBuildAcceptTraceNewSessions() {
+  private TraceAndReverseFlow getAcceptTraceWithOriginatingSession(boolean fibLookup, String hostname, String vrfName, String acceptingInterface,
+      NodeInterfacePair lastHopNodeAndOutgoingInterface, Flow flow) {
+    checkArgument(flow.getIngressNode().equals(hostname), "Flow must originate at input hostname");
+    checkArgument(flow.getIngressInterface() != null, "Flow must enter an interface");
+
     /* Simulates an incoming flow that is accepted and causes a session to be set up. */
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    vrf.setHasOriginatingSessions(true);
-    Interface iface = nf.interfaceBuilder().setOwner(c).setVrf(vrf).build();
-
-    Ip srcIp = Ip.parse("1.1.1.1");
-    Ip dstIp = Ip.parse("2.2.2.2");
-    int srcPort = 22;
-    int dstPort = 40;
-    Flow flow =
-        Flow.builder()
-            .setSrcIp(srcIp)
-            .setDstIp(dstIp)
-            .setIngressNode(c.getHostname())
-            .setIngressInterface(iface.getName())
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcPort(srcPort)
-            .setDstPort(dstPort)
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname(hostname)
             .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(vrfName).build();
+    vrf.setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(fibLookup));
+    Interface ingressIface =
+        nf.interfaceBuilder().setOwner(c).setVrf(vrf).setName(flow.getIngressInterface()).build();
 
     // Accepting interface should be the one that owns the dst IP, not necessarily ingress interface
-    String acceptingIfaceName = "acceptingIface";
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
@@ -248,7 +241,8 @@ public final class FlowTracerTest {
                                 c.getHostname(),
                                 ImmutableMap.of(
                                     vrf.getName(),
-                                    ImmutableMap.of(acceptingIfaceName, dstIp.toIpSpace()))))
+                                    ImmutableMap.of(
+                                        acceptingInterface, flow.getDstIp().toIpSpace()))))
                         .build())
                 .build(),
             Topology.EMPTY,
@@ -261,10 +255,9 @@ public final class FlowTracerTest {
         new FlowTracer(
             ctxt,
             c,
-            iface.getName(),
+            ingressIface.getName(),
             new Node(c.getHostname()),
-            traces::add,
-            NodeInterfacePair.of("node", "iface"),
+            traces::add, lastHopNodeAndOutgoingInterface,
             new HashSet<>(),
             flow,
             vrf.getName(),
@@ -272,30 +265,92 @@ public final class FlowTracerTest {
             new ArrayList<>(),
             new Stack<>(),
             flow);
+    flowTracer.buildAcceptTrace();
+    return Iterables.getOnlyElement(traces);
+  }
+
+  @Test
+  public void testBuildAcceptTraceNewSessions() {
+    String hostname = "hostname";
+    String vrfName = "vrf";
+    String ifaceName = "iface";
+
+    Ip srcIp = Ip.parse("1.1.1.1");
+    Ip dstIp = Ip.parse("2.2.2.2");
+    int srcPort = 22;
+    int dstPort = 40;
+    Flow flow =
+        Flow.builder()
+            .setSrcIp(srcIp)
+            .setDstIp(dstIp)
+            .setIngressNode(hostname)
+            .setIngressInterface(ifaceName)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(srcPort)
+            .setDstPort(dstPort)
+            .build();
+
+    NodeInterfacePair lastHopNodeAndOutgoingInterface = NodeInterfacePair.of("node", "iface");
 
     // To match session, return flow must have same protocol and port and swapped src/dst IPs
     SessionMatchExpr flowMatchingNewSession =
         new SessionMatchExpr(IpProtocol.TCP, dstIp, srcIp, dstPort, srcPort);
-    FirewallSessionTraceInfo expectedNewSession =
-        new FirewallSessionTraceInfo(
-            c.getHostname(),
-            FibLookup.INSTANCE,
-            new OriginatingSessionScope(vrf.getName()),
-            flowMatchingNewSession,
-            null);
-    flowTracer.buildAcceptTrace();
-    TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
-    Trace trace = traceAndReverseFlow.getTrace();
-    Set<FirewallSessionTraceInfo> newSessions = traceAndReverseFlow.getNewFirewallSessions();
-    assertThat(trace, hasDisposition(ACCEPTED));
-    assertThat(
-        trace.getHops().get(0).getSteps(),
-        contains(
-            // Trace should include a SetupSessionStep
-            instanceOf(SetupSessionStep.class),
-            // Inbound step should show accepting interface, not ingress interface
-            hasProperty("detail", hasProperty("interface", equalTo(acceptingIfaceName)))));
-    assertThat(newSessions, contains(expectedNewSession));
+
+    // test trace
+    {
+      String acceptingIface = "acceptingIface";
+      TraceAndReverseFlow traceAndReverseFlow =
+          getAcceptTraceWithOriginatingSession(true, hostname, vrfName, acceptingIface,
+              lastHopNodeAndOutgoingInterface,
+              flow);
+      Trace trace = traceAndReverseFlow.getTrace();
+      assertThat(trace, hasDisposition(ACCEPTED));
+      assertThat(
+          trace.getHops().get(0).getSteps(),
+          contains(
+              // Trace should include a SetupSessionStep
+              instanceOf(SetupSessionStep.class),
+              // Inbound step should show accepting interface, not ingress interface
+              hasProperty("detail", hasProperty("interface", equalTo(acceptingIface)))));
+    }
+
+    // test session created when fibLookup = true
+    {
+      TraceAndReverseFlow traceAndReverseFlow =
+          getAcceptTraceWithOriginatingSession(
+              true, hostname, vrfName, flow.getIngressInterface(),
+              lastHopNodeAndOutgoingInterface,
+              flow);
+      Trace trace = traceAndReverseFlow.getTrace();
+      Set<FirewallSessionTraceInfo> newSessions = traceAndReverseFlow.getNewFirewallSessions();
+      FirewallSessionTraceInfo expectedNewSession =
+          new FirewallSessionTraceInfo(
+              hostname,
+              FibLookup.INSTANCE,
+              new OriginatingSessionScope(vrfName),
+              flowMatchingNewSession,
+              null);
+      assertThat(newSessions, contains(expectedNewSession));
+    }
+
+    // test session created when fibLookup = false
+    {
+      TraceAndReverseFlow traceAndReverseFlow =
+          getAcceptTraceWithOriginatingSession(
+              false, hostname, vrfName, flow.getIngressInterface(),
+              lastHopNodeAndOutgoingInterface,
+              flow);
+      Trace trace = traceAndReverseFlow.getTrace();
+      Set<FirewallSessionTraceInfo> newSessions = traceAndReverseFlow.getNewFirewallSessions();
+      FirewallSessionTraceInfo expectedNewSession =
+          new FirewallSessionTraceInfo(
+              hostname,
+              new ForwardOutInterface(flow.getIngressInterface(),lastHopNodeAndOutgoingInterface),
+              new OriginatingSessionScope(vrfName),
+              flowMatchingNewSession,
+              null);
+      assertThat(newSessions, contains(expectedNewSession));
+    }
   }
 
   @Test
@@ -305,7 +360,7 @@ public final class FlowTracerTest {
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    vrf.setHasOriginatingSessions(true);
+    vrf.setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
 
     Ip srcIp = Ip.parse("1.1.1.1");
     Ip dstIp = Ip.parse("2.2.2.2");
@@ -373,7 +428,7 @@ public final class FlowTracerTest {
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    vrf.setHasOriginatingSessions(true);
+    vrf.setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
     String ifaceName = "ifaceName";
     nf.interfaceBuilder()
         .setOwner(c)
