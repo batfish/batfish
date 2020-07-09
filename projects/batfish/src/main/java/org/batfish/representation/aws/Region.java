@@ -663,7 +663,7 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, PrefixList> getPrefixLists() {
+  public Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
   }
 
