@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 
@@ -8,8 +9,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,6 +88,8 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
 
   @Nonnull private final String _vpcId;
 
+  @Nonnull private final Map<String, String> _tags;
+
   @JsonCreator
   private static NetworkInterface create(
       @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) String networkInterfaceId,
@@ -94,7 +99,8 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
       @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESSES)
           List<PrivateIpAddress> privateIpAddresses,
       @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
-      @Nullable @JsonProperty(JSON_KEY_ATTACHMENT) Attachment attachment) {
+      @Nullable @JsonProperty(JSON_KEY_ATTACHMENT) Attachment attachment,
+      @Nullable @JsonProperty(JSON_KEY_TAGSET) List<Tag> tags) {
     /*
      We do not parse the top-level privateIpAddress field -- that address shows up in privateIpAddresses list.
      We do not parse the top-level association field -- that object shows up as a sub-field of privateIpAddresses.
@@ -114,7 +120,9 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
         groups.stream().map(Group::getId).collect(ImmutableList.toImmutableList()),
         privateIpAddresses,
         description,
-        attachment == null ? null : attachment.getInstanceId());
+        attachment == null ? null : attachment.getInstanceId(),
+        firstNonNull(tags, ImmutableList.<Tag>of()).stream()
+            .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
   public @Nonnull String getHumanName() {
@@ -129,7 +137,8 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
       List<String> groups,
       List<PrivateIpAddress> privateIpAddresses,
       String description,
-      @Nullable String attachmentInstanceId) {
+      @Nullable String attachmentInstanceId,
+      Map<String, String> tags) {
     _networkInterfaceId = networkInterfaceId;
     _subnetId = subnetId;
     _vpcId = vpcId;
@@ -137,6 +146,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     _privateIpAddresses = privateIpAddresses;
     _description = description;
     _attachmentInstanceId = attachmentInstanceId;
+    _tags = tags;
 
     // sanity check that we have at least one primary ip
     getPrimaryPrivateIp();
@@ -185,6 +195,11 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
+  @Nonnull
+  public Map<String, String> getTags() {
+    return _tags;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -200,7 +215,8 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
         && Objects.equals(_privateIpAddresses, that._privateIpAddresses)
         && Objects.equals(_networkInterfaceId, that._networkInterfaceId)
         && Objects.equals(_subnetId, that._subnetId)
-        && Objects.equals(_vpcId, that._vpcId);
+        && Objects.equals(_vpcId, that._vpcId)
+        && Objects.equals(_tags, that._tags);
   }
 
   @Override
@@ -212,7 +228,8 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
         _privateIpAddresses,
         _networkInterfaceId,
         _subnetId,
-        _vpcId);
+        _vpcId,
+        _tags);
   }
 
   @Override
@@ -225,6 +242,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
         .add("_networkInterfaceId", _networkInterfaceId)
         .add("_subnetId", _subnetId)
         .add("_vpcId", _vpcId)
+        .add("_tags", _tags)
         .toString();
   }
 }

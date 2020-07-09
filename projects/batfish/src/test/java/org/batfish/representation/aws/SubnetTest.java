@@ -128,7 +128,8 @@ public class SubnetTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, privateIp, null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
 
