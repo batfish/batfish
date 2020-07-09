@@ -84,7 +84,8 @@ public class InstanceWithMultipleInterfacesTest {
             ImmutableList.of(sgSSH.getId()),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.0.0.1"), null)),
             "primary",
-            instanceId);
+            instanceId,
+            ImmutableMap.of());
     region.getNetworkInterfaces().put(primary.getId(), primary);
     NetworkInterface secondary =
         new NetworkInterface(
@@ -94,7 +95,8 @@ public class InstanceWithMultipleInterfacesTest {
             ImmutableList.of(sgHTTP.getId()),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.0.0.2"), null)),
             "secondary",
-            instanceId);
+            instanceId,
+            ImmutableMap.of());
     region.getNetworkInterfaces().put(secondary.getId(), secondary);
 
     Instance i =

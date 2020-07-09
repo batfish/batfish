@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +44,8 @@ public class NetworkInterfaceTest {
                     ImmutableList.of("sg-adcd87d0"),
                     ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.100.1.71"), null)),
                     "Primary network interface",
-                    "i-05f467abe21e9b883"),
+                    "i-05f467abe21e9b883",
+                    ImmutableMap.of("Name", "primary", "ExampleTag", "ExampleValue")),
                 new NetworkInterface(
                     "eni-a9d44c8a",
                     "subnet-9a0c48fc",
@@ -51,6 +53,7 @@ public class NetworkInterfaceTest {
                     ImmutableList.of("sg-adcd87d0"),
                     ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.100.1.20"), null)),
                     "Primary network interface",
-                    null))));
+                    null,
+                    ImmutableMap.of()))));
   }
 }

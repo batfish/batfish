@@ -140,6 +140,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_SUBNET_STATUS = "SubnetStatus";
   String JSON_KEY_SUBNETS = "Subnets";
   String JSON_KEY_TAGS = "Tags";
+  String JSON_KEY_TAGSET = "TagSet";
   String JSON_KEY_TARGET = "Target";
   String JSON_KEY_TARGET_HEALTH = "TargetHealth";
   String JSON_KEY_TARGET_HEALTH_DESCRIPTIONS = "TargetHealthDescriptions";
