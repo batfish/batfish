@@ -944,7 +944,7 @@ public class SubnetTest {
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(nullValue()),
             hasOutgoingFilter(nullValue()),
-            hasFirewallSessionInterfaceInfo(nullValue())));
+            hasFirewallSessionInterfaceInfo(notNullValue())));
     assertThat(
         instanceCfg
             .getAllInterfaces()
@@ -1095,7 +1095,7 @@ public class SubnetTest {
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(nullValue()),
             hasOutgoingFilter(nullValue()),
-            hasFirewallSessionInterfaceInfo(nullValue())));
+            hasFirewallSessionInterfaceInfo(notNullValue())));
     assertThat(
         instanceCfg
             .getAllInterfaces()
