@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
-import static org.batfish.representation.aws.TargetGroup.Type.INSTANCE;
 import static org.batfish.representation.aws.TargetGroup.Type.IP;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
@@ -541,15 +540,21 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     TransformationStep transformDstIp = TransformationStep.assignDestinationIp(targetIp, targetIp);
     TransformationStep transformDstPort =
         TransformationStep.assignDestinationPort(target.getPort(), target.getPort());
-    if (targetGroupType == INSTANCE) {
-      // No source NAT for instance targets
-      return new ApplyAll(transformDstIp, transformDstPort);
+    switch (targetGroupType) {
+      case INSTANCE:
+        // No source NAT for instance targets
+        return new ApplyAll(transformDstIp, transformDstPort);
+      case IP:
+        return new ApplyAll(
+            TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
+            TransformationStep.assignSourcePort(
+                EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
+            transformDstIp,
+            transformDstPort);
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unrecognized target group type %s", targetGroupType));
     }
-    return new ApplyAll(
-        TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
-        TransformationStep.assignSourcePort(EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
-        transformDstIp,
-        transformDstPort);
   }
 
   /**
