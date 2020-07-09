@@ -323,12 +323,7 @@ public final class FlowTracerTest {
     {
       TraceAndReverseFlow traceAndReverseFlow =
           getAcceptTraceWithOriginatingSession(
-              true,
-              hostname,
-              vrfName,
-              acceptingIface,
-              lastHopNodeAndOutgoingInterface,
-              flow);
+              true, hostname, vrfName, acceptingIface, lastHopNodeAndOutgoingInterface, flow);
       Set<FirewallSessionTraceInfo> newSessions = traceAndReverseFlow.getNewFirewallSessions();
       FirewallSessionTraceInfo expectedNewSession =
           new FirewallSessionTraceInfo(
@@ -344,12 +339,7 @@ public final class FlowTracerTest {
     {
       TraceAndReverseFlow traceAndReverseFlow =
           getAcceptTraceWithOriginatingSession(
-              false,
-              hostname,
-              vrfName,
-              acceptingIface,
-              lastHopNodeAndOutgoingInterface,
-              flow);
+              false, hostname, vrfName, acceptingIface, lastHopNodeAndOutgoingInterface, flow);
       Set<FirewallSessionTraceInfo> newSessions = traceAndReverseFlow.getNewFirewallSessions();
       FirewallSessionTraceInfo expectedNewSession =
           new FirewallSessionTraceInfo(
