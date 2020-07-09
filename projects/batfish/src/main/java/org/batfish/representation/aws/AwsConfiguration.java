@@ -137,9 +137,8 @@ public class AwsConfiguration extends VendorConfiguration {
     return getAllVpc().filter(v -> vpcId.equals(v.getId())).findFirst().orElse(null);
   }
 
-  @VisibleForTesting
   @Nonnull
-  Account addOrGetAccount(String accountId) {
+  public Account addOrGetAccount(String accountId) {
     return _accounts.computeIfAbsent(accountId, Account::new);
   }
 
