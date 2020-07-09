@@ -4,11 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Data that determines how to create sessions for flows that are ACCEPTED by a VRF. In particular,
  * sessions are needed for bidirectional traceroute and reachability, specifically for return flows.
  */
+@ParametersAreNonnullByDefault
 public final class FirewallSessionVrfInfo implements Serializable {
   private static final String PROP_FIB_LOOKUP = "fibLookup";
 
@@ -31,7 +34,7 @@ public final class FirewallSessionVrfInfo implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
