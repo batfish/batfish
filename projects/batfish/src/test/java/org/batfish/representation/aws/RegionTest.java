@@ -172,7 +172,8 @@ public class RegionTest {
             ImmutableList.of("sg-001", "sg-002"),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.0"), null)),
             "desc",
-            c.getHostname());
+            c.getHostname(),
+            ImmutableMap.of());
     region.getNetworkInterfaces().put(ni.getId(), ni);
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
@@ -228,7 +229,8 @@ public class RegionTest {
             ImmutableList.of("sg-001", "sg-002"),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.0"), null)),
             "desc",
-            c.getHostname());
+            c.getHostname(),
+            ImmutableMap.of());
     region.getNetworkInterfaces().put(ni.getId(), ni);
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);

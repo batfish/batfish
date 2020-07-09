@@ -105,7 +105,8 @@ public class InternetGatewayTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, privateIp, publicIp)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     InternetGateway internetGateway =
         new InternetGateway(
