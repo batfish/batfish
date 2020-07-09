@@ -572,11 +572,24 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
       return null;
     }
-    return new ApplyAll(
-        TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
-        TransformationStep.assignSourcePort(EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
-        TransformationStep.assignDestinationIp(targetIp, targetIp),
-        TransformationStep.assignDestinationPort(target.getPort(), target.getPort()));
+    TransformationStep transformDstIp = TransformationStep.assignDestinationIp(targetIp, targetIp);
+    TransformationStep transformDstPort =
+        TransformationStep.assignDestinationPort(target.getPort(), target.getPort());
+    switch (targetGroupType) {
+      case INSTANCE:
+        // No source NAT for instance targets
+        return new ApplyAll(transformDstIp, transformDstPort);
+      case IP:
+        return new ApplyAll(
+            TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
+            TransformationStep.assignSourcePort(
+                EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
+            transformDstIp,
+            transformDstPort);
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unrecognized target group type %s", targetGroupType));
+    }
   }
 
   /**

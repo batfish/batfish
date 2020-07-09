@@ -640,26 +640,26 @@ public class LoadBalancerTest {
   public void testComputeTargetTransformationStep_instanceTarget() {
     Ip targetIp = Ip.parse("1.1.1.1");
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
-    LoadBalancerTarget target = new LoadBalancerTarget("zone", targetIp.toString(), 80);
+    String instanceId = "instance";
+    LoadBalancerTarget target = new LoadBalancerTarget("zone", instanceId, 80);
 
     Region region =
         Region.builder("r1")
             .setInstances(
                 ImmutableMap.of(
-                    "instance",
+                    instanceId,
                     Instance.builder()
-                        .setInstanceId("instance")
+                        .setInstanceId(instanceId)
                         .setPrimaryPrivateIpAddress(targetIp)
                         .build()))
             .build();
+
+    // Should only do dst NAT for instance targets
     assertThat(
         computeTargetTransformationStep(
-            target, TargetGroup.Type.IP, loadBalancerIp, region, new Warnings()),
+            target, TargetGroup.Type.INSTANCE, loadBalancerIp, region, new Warnings()),
         equalTo(
             new ApplyAll(
-                TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
-                TransformationStep.assignSourcePort(
-                    EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
                 TransformationStep.assignDestinationIp(targetIp, targetIp),
                 TransformationStep.assignDestinationPort(target.getPort(), target.getPort()))));
   }
