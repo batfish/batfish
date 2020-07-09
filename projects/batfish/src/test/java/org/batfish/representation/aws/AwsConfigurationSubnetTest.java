@@ -19,7 +19,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.FilterStep;
 import org.batfish.datamodel.flow.Trace;
 import org.junit.BeforeClass;
@@ -123,7 +122,11 @@ public class AwsConfigurationSubnetTest {
     // Instances should allow originating sessions (sessions can be established by inbound packets)
     Configuration instance1 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(INSTANCE_1);
     Configuration instance2 = _batfish.loadConfigurations(_batfish.getSnapshot()).get(INSTANCE_2);
-    assertTrue(instance1.getVrfs().values().stream().allMatch(vrf -> vrf.getFirewallSessionVrfInfo() != null));
-    assertTrue(instance2.getVrfs().values().stream().allMatch(vrf -> vrf.getFirewallSessionVrfInfo() != null));
+    assertTrue(
+        instance1.getVrfs().values().stream()
+            .allMatch(vrf -> vrf.getFirewallSessionVrfInfo() != null));
+    assertTrue(
+        instance2.getVrfs().values().stream()
+            .allMatch(vrf -> vrf.getFirewallSessionVrfInfo() != null));
   }
 }

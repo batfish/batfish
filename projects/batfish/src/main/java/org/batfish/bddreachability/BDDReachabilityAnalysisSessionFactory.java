@@ -517,11 +517,12 @@ final class BDDReachabilityAnalysisSessionFactory {
         String hostname = ((VrfAccept) state).getHostname();
         String vrf = ((VrfAccept) state).getVrf();
         Configuration c = configs.get(hostname);
-        FirewallSessionVrfInfo firewallSessionVrfInfo = c.getVrfs()
-            .get(vrf)
-            .getFirewallSessionVrfInfo();
+        FirewallSessionVrfInfo firewallSessionVrfInfo =
+            c.getVrfs().get(vrf).getFirewallSessionVrfInfo();
         if (firewallSessionVrfInfo != null) {
-          checkState(firewallSessionVrfInfo.getFibLookup(), "FirewallSessionVrfInfo with FibLookup=false not supported");
+          checkState(
+              firewallSessionVrfInfo.getFibLookup(),
+              "FirewallSessionVrfInfo with FibLookup=false not supported");
           reachableBdds
               .computeIfAbsent(hostname, k -> new HashMap<>())
               .computeIfAbsent(vrf, k -> new ArrayList<>())

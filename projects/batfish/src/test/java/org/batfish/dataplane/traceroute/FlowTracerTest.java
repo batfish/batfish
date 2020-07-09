@@ -212,8 +212,13 @@ public final class FlowTracerTest {
                 hasNewFirewallSessions(contains(sessionInfo)))));
   }
 
-  private TraceAndReverseFlow getAcceptTraceWithOriginatingSession(boolean fibLookup, String hostname, String vrfName, String acceptingInterface,
-      NodeInterfacePair lastHopNodeAndOutgoingInterface, Flow flow) {
+  private TraceAndReverseFlow getAcceptTraceWithOriginatingSession(
+      boolean fibLookup,
+      String hostname,
+      String vrfName,
+      String acceptingInterface,
+      NodeInterfacePair lastHopNodeAndOutgoingInterface,
+      Flow flow) {
     checkArgument(flow.getIngressNode().equals(hostname), "Flow must originate at input hostname");
     checkArgument(flow.getIngressInterface() != null, "Flow must enter an interface");
 
@@ -257,7 +262,8 @@ public final class FlowTracerTest {
             c,
             ingressIface.getName(),
             new Node(c.getHostname()),
-            traces::add, lastHopNodeAndOutgoingInterface,
+            traces::add,
+            lastHopNodeAndOutgoingInterface,
             new HashSet<>(),
             flow,
             vrf.getName(),
@@ -300,9 +306,8 @@ public final class FlowTracerTest {
     {
       String acceptingIface = "acceptingIface";
       TraceAndReverseFlow traceAndReverseFlow =
-          getAcceptTraceWithOriginatingSession(true, hostname, vrfName, acceptingIface,
-              lastHopNodeAndOutgoingInterface,
-              flow);
+          getAcceptTraceWithOriginatingSession(
+              true, hostname, vrfName, acceptingIface, lastHopNodeAndOutgoingInterface, flow);
       Trace trace = traceAndReverseFlow.getTrace();
       assertThat(trace, hasDisposition(ACCEPTED));
       assertThat(
@@ -318,7 +323,10 @@ public final class FlowTracerTest {
     {
       TraceAndReverseFlow traceAndReverseFlow =
           getAcceptTraceWithOriginatingSession(
-              true, hostname, vrfName, flow.getIngressInterface(),
+              true,
+              hostname,
+              vrfName,
+              flow.getIngressInterface(),
               lastHopNodeAndOutgoingInterface,
               flow);
       Trace trace = traceAndReverseFlow.getTrace();
@@ -337,7 +345,10 @@ public final class FlowTracerTest {
     {
       TraceAndReverseFlow traceAndReverseFlow =
           getAcceptTraceWithOriginatingSession(
-              false, hostname, vrfName, flow.getIngressInterface(),
+              false,
+              hostname,
+              vrfName,
+              flow.getIngressInterface(),
               lastHopNodeAndOutgoingInterface,
               flow);
       Trace trace = traceAndReverseFlow.getTrace();
@@ -345,7 +356,7 @@ public final class FlowTracerTest {
       FirewallSessionTraceInfo expectedNewSession =
           new FirewallSessionTraceInfo(
               hostname,
-              new ForwardOutInterface(flow.getIngressInterface(),lastHopNodeAndOutgoingInterface),
+              new ForwardOutInterface(flow.getIngressInterface(), lastHopNodeAndOutgoingInterface),
               new OriginatingSessionScope(vrfName),
               flowMatchingNewSession,
               null);

@@ -173,8 +173,8 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   /**
-   * If nonnull, VRF should create a session for ACCEPTED flows. The info object controls details
-   * of the session.
+   * If nonnull, VRF should create a session for ACCEPTED flows. The info object controls details of
+   * the session.
    */
   @JsonProperty(PROP_FIREWALL_SESSION_VRF_INFO)
   public @Nullable FirewallSessionVrfInfo getFirewallSessionVrfInfo() {
@@ -293,9 +293,7 @@ public class Vrf extends ComparableStructure<String> {
     _description = description;
   }
 
-  /**
-   * Preserved for backward compatibility.
-   */
+  /** Preserved for backward compatibility. */
   @Deprecated
   @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
   private void setHasOriginatingSessions(boolean hasOriginatingSessions) {
