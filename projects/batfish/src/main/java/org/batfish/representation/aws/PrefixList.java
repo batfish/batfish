@@ -17,7 +17,7 @@ import org.batfish.datamodel.Prefix;
 /** Represents an AWS prefix list */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class PrefixList implements AwsVpcEntity, Serializable {
+public final class PrefixList implements AwsVpcEntity, Serializable {
 
   @Nonnull private final List<Prefix> _cidrs;
 
@@ -37,7 +37,7 @@ final class PrefixList implements AwsVpcEntity, Serializable {
     return new PrefixList(prefixListId, cidrs, prefixListName);
   }
 
-  PrefixList(String prefixListId, List<Prefix> cidrs, String prefixListName) {
+  public PrefixList(String prefixListId, List<Prefix> cidrs, String prefixListName) {
     _cidrs = cidrs;
     _prefixListId = prefixListId;
     _prefixListName = prefixListName;
