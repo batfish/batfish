@@ -280,6 +280,7 @@ public final class FlowTracerTest {
     String hostname = "hostname";
     String vrfName = "vrf";
     String ifaceName = "iface";
+    String acceptingIface = "acceptingIface";
 
     Ip srcIp = Ip.parse("1.1.1.1");
     Ip dstIp = Ip.parse("2.2.2.2");
@@ -304,7 +305,6 @@ public final class FlowTracerTest {
 
     // test trace
     {
-      String acceptingIface = "acceptingIface";
       TraceAndReverseFlow traceAndReverseFlow =
           getAcceptTraceWithOriginatingSession(
               true, hostname, vrfName, acceptingIface, lastHopNodeAndOutgoingInterface, flow);
@@ -326,10 +326,9 @@ public final class FlowTracerTest {
               true,
               hostname,
               vrfName,
-              flow.getIngressInterface(),
+              acceptingIface,
               lastHopNodeAndOutgoingInterface,
               flow);
-      Trace trace = traceAndReverseFlow.getTrace();
       Set<FirewallSessionTraceInfo> newSessions = traceAndReverseFlow.getNewFirewallSessions();
       FirewallSessionTraceInfo expectedNewSession =
           new FirewallSessionTraceInfo(
@@ -348,10 +347,9 @@ public final class FlowTracerTest {
               false,
               hostname,
               vrfName,
-              flow.getIngressInterface(),
+              acceptingIface,
               lastHopNodeAndOutgoingInterface,
               flow);
-      Trace trace = traceAndReverseFlow.getTrace();
       Set<FirewallSessionTraceInfo> newSessions = traceAndReverseFlow.getNewFirewallSessions();
       FirewallSessionTraceInfo expectedNewSession =
           new FirewallSessionTraceInfo(
