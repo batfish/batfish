@@ -125,7 +125,8 @@ public class VpcEndpointInterfaceTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.1.1.1"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
     VpcEndpointInterface vpcEndpointInterface =
         new VpcEndpointInterface(
             "endpoint",

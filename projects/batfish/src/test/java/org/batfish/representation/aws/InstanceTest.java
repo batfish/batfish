@@ -115,7 +115,8 @@ public class InstanceTest {
             ImmutableList.of(
                 new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("3.3.3.3"))),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     Instance instance =
         Instance.builder()
@@ -197,7 +198,8 @@ public class InstanceTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     NetworkInterface networkInterface20 =
         new NetworkInterface(
@@ -207,7 +209,8 @@ public class InstanceTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.20.10"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     NetworkInterface networkInterface21 =
         new NetworkInterface(
@@ -217,7 +220,8 @@ public class InstanceTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.20.11"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     Instance instance =
         Instance.builder()

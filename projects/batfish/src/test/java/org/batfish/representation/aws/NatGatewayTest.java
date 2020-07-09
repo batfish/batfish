@@ -110,7 +110,8 @@ public class NatGatewayTest {
             ImmutableList.of(
                 new PrivateIpAddress(true, ngwAddress.getPrivateIp(), ngw.getPublicIp())),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
     Region region =
         Region.builder("r1")
             .setSubnets(ImmutableMap.of(subnet.getId(), subnet))

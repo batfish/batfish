@@ -57,7 +57,8 @@ public class UtilsTest {
             ImmutableList.of(
                 new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("5.5.5.5"))),
             "desc2",
-            null);
+            null,
+            ImmutableMap.of());
 
     NetworkInterface networkInterface2 =
         new NetworkInterface(
@@ -69,7 +70,8 @@ public class UtilsTest {
                 new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("3.3.3.3")),
                 new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("4.4.4.4"))),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     NetworkInterface networkInterface0 =
         new NetworkInterface(
@@ -79,7 +81,8 @@ public class UtilsTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     Configuration cfgNode = new Configuration("cfg", ConfigurationFormat.AWS);
     String bookName = GeneratedRefBookUtils.getName(cfgNode.getHostname(), BookType.PublicIps);
@@ -187,7 +190,8 @@ public class UtilsTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("2.2.2.2"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     // invalid because subnet prefix is different from interface IP
     Subnet subnet =
