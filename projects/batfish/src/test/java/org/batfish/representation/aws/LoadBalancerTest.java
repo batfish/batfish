@@ -5,7 +5,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.LoadBalancer.FINAL_TRANSFORMATION;
 import static org.batfish.representation.aws.LoadBalancer.LISTENER_FILTER_NAME;
@@ -22,13 +24,17 @@ import static org.batfish.representation.aws.LoadBalancer.getTraceElementForMatc
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNoMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNotForwardedPackets;
 import static org.batfish.representation.aws.LoadBalancer.isTargetInAnyEnabledAvailabilityZone;
+import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_IFACE_SUFFIX;
+import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -37,9 +43,12 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +67,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -69,6 +79,7 @@ import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.representation.aws.Instance.Status;
 import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
 import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.LoadBalancer.Scheme;
@@ -91,13 +102,16 @@ public class LoadBalancerTest {
   private static final String _loadBalancerArn =
       String.format(
           "arn:aws:elasticloadbalancing:region:123456789:loadbalancer/%s", _loadBalancerArnSuffix);
+  private static final String _subnet1Name = "subnet1";
+  private static final String _subnet2Name = "subnet2";
 
   /** Default load balancer object to use in tests */
   private static final LoadBalancer _loadBalancer =
       new LoadBalancer(
           _loadBalancerArn,
           ImmutableList.of(
-              new AvailabilityZone("subnet1", "zone1"), new AvailabilityZone("subnet2", "zone2")),
+              new AvailabilityZone(_subnet1Name, "zone1"),
+              new AvailabilityZone(_subnet2Name, "zone2")),
           "lbDnsName",
           _loadBalancerName,
           Scheme.INTERNET_FACING,
@@ -928,5 +942,55 @@ public class LoadBalancerTest {
             ImmutableMap.of(),
             ImmutableMap.of()),
         contains(hasTraceElement(getTraceElementForForwardedPackets())));
+  }
+
+  @Test
+  public void testInstanceTargetStaticRoutes() {
+    List<Configuration> cfgNodes =
+        _loadBalancer.toConfigurationNodes(
+            new ConvertedConfiguration(), Region.builder("r1").build(), new Warnings());
+    cfgNodes.forEach(cfgNode -> assertThat(cfgNode.getDefaultVrf().getStaticRoutes(), empty()));
+  }
+
+  @Test
+  public void testInstanceTargetStaticRoutes_noInstanceTargets() {
+    Ip instanceIp = Ip.parse("20.20.20.20");
+    Instance instance =
+        new Instance(
+            "instanceId",
+            _loadBalancer.getVpcId(),
+            _subnet1Name,
+            ImmutableList.of(),
+            ImmutableList.of(),
+            instanceIp,
+            ImmutableMap.of(),
+            Status.RUNNING);
+    List<Configuration> cfgNodes =
+        _loadBalancer.toConfigurationNodes(
+            new ConvertedConfiguration(
+                new HashMap<>(),
+                new HashSet<>(),
+                ImmutableMultimap.of(),
+                ImmutableMultimap.of(),
+                ImmutableMultimap.of(_loadBalancer, instance),
+                ImmutableSet.of()),
+            Region.builder("r1").build(),
+            new Warnings());
+
+    StaticRoute expectedRouteViaSubnet1 =
+        toStaticRoute(
+            instanceIp.toPrefix(),
+            interfaceNameToRemote(Subnet.nodeName(_subnet1Name), NLB_INSTANCE_TARGETS_IFACE_SUFFIX),
+            AwsConfiguration.LINK_LOCAL_IP);
+    StaticRoute expectedRouteViaSubnet2 =
+        toStaticRoute(
+            instanceIp.toPrefix(),
+            interfaceNameToRemote(Subnet.nodeName(_subnet2Name), NLB_INSTANCE_TARGETS_IFACE_SUFFIX),
+            AwsConfiguration.LINK_LOCAL_IP);
+    assertThat(
+        cfgNodes,
+        containsInAnyOrder(
+            hasDefaultVrf(hasStaticRoutes(contains(expectedRouteViaSubnet1))),
+            hasDefaultVrf(hasStaticRoutes(contains(expectedRouteViaSubnet2)))));
   }
 }
