@@ -2,13 +2,14 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Data that determines how to create sessions for flows that are ACCEPTED by a VRF. In particular,
  * sessions are needed for bidirectional traceroute and reachability, specifically for return flows.
  */
-public final class FirewallSessionVrfInfo {
+public final class FirewallSessionVrfInfo implements Serializable {
   private static final String PROP_FIB_LOOKUP = "fibLookup";
 
   private final boolean _fibLookup;
