@@ -205,7 +205,9 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : true,
+            "firewallSessionVrfInfo" : {
+              "fibLookup" : true
+            },
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -423,7 +425,9 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : true,
+            "firewallSessionVrfInfo" : {
+              "fibLookup" : true
+            },
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -1872,7 +1876,6 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -13427,7 +13430,6 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -13607,7 +13609,6 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -13786,7 +13787,6 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -13937,7 +13937,6 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -16464,7 +16463,6 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -33876,7 +33874,6 @@
               },
               "tieBreaker" : "ROUTER_ID"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -34095,7 +34092,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -34305,7 +34301,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -34526,7 +34521,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -34736,7 +34730,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -34946,7 +34939,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -35156,7 +35148,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -35366,7 +35357,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -35587,7 +35577,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -35808,7 +35797,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -36018,7 +36006,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -36550,7 +36537,9 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : true,
+            "firewallSessionVrfInfo" : {
+              "fibLookup" : true
+            },
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37042,7 +37031,6 @@
               },
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37091,8 +37079,7 @@
               "multipathEbgp" : false,
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            },
-            "hasOriginatingSessions" : false
+            }
           }
         }
       },
@@ -37138,7 +37125,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37153,7 +37139,6 @@
           },
           "vrf-vgw-81fd279f" : {
             "name" : "vrf-vgw-81fd279f",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37307,7 +37292,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37340,7 +37324,6 @@
           },
           "vrf-igw-fac5839d" : {
             "name" : "vrf-igw-fac5839d",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37644,7 +37627,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37704,7 +37686,6 @@
           },
           "vrf-igw-9b93ddfc" : {
             "name" : "vrf-igw-9b93ddfc",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37946,7 +37927,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -37988,7 +37968,6 @@
           },
           "vrf-igw-068fee63" : {
             "name" : "vrf-igw-068fee63",
-            "hasOriginatingSessions" : false,
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
