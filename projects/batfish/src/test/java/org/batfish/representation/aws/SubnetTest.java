@@ -777,7 +777,7 @@ public class SubnetTest {
     assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
     assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
-    // Subnet should be connected to VPC on their new VRFs; subnet iface should have session info
+    // Subnet should be connected to VPC on their new VRFs; subnet iface does not need session info
     String subnetToVpcIfaceName = interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     assertThat(
         subnetCfg.getAllInterfaces().get(subnetToVpcIfaceName),
@@ -785,8 +785,7 @@ public class SubnetTest {
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(equalTo(ingressAcl)),
             hasOutgoingFilter(equalTo(egressAcl)),
-            hasFirewallSessionInterfaceInfo(
-                hasProperty("incomingAclName", equalTo(ingressAcl.getName())))));
+            hasFirewallSessionInterfaceInfo(nullValue())));
     assertThat(
         vpcCfg
             .getAllInterfaces()
