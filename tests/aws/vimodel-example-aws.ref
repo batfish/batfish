@@ -206,7 +206,7 @@
           "default" : {
             "name" : "default",
             "firewallSessionVrfInfo" : {
-              "fibLookup" : true
+              "fibLookup" : false
             },
             "staticRoutes" : [
               {
@@ -426,7 +426,7 @@
           "default" : {
             "name" : "default",
             "firewallSessionVrfInfo" : {
-              "fibLookup" : true
+              "fibLookup" : false
             },
             "staticRoutes" : [
               {
@@ -36538,7 +36538,7 @@
           "default" : {
             "name" : "default",
             "firewallSessionVrfInfo" : {
-              "fibLookup" : true
+              "fibLookup" : false
             },
             "staticRoutes" : [
               {
