@@ -20,7 +20,7 @@ import org.batfish.datamodel.Configuration;
 /** Represents an AWS VPC endpoint */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
+public abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
 
   @Nonnull protected final String _id;
 
