@@ -347,11 +347,15 @@ final class Utils {
   }
 
   static String interfaceNameToRemote(Configuration remoteCfg) {
-    return interfaceNameToRemote(remoteCfg, "");
+    return interfaceNameToRemote(remoteCfg.getHostname(), "");
   }
 
   static String interfaceNameToRemote(Configuration remoteCfg, String suffix) {
-    return suffix.isEmpty() ? remoteCfg.getHostname() : remoteCfg.getHostname() + "-" + suffix;
+    return interfaceNameToRemote(remoteCfg.getHostname(), suffix);
+  }
+
+  static String interfaceNameToRemote(String remoteCfgHostname, String suffix) {
+    return suffix.isEmpty() ? remoteCfgHostname : remoteCfgHostname + "-" + suffix;
   }
 
   /** Adds a bidirectional layer1 edge between the interfaces and nodes */
