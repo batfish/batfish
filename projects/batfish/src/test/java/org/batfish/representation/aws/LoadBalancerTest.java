@@ -945,7 +945,8 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testInstanceTargetStaticRoutes() {
+  public void testInstanceTargetStaticRoutes_noInstanceTargets() {
+    // Load balancers with no instance targets should not have any static routes
     List<Configuration> cfgNodes =
         _loadBalancer.toConfigurationNodes(
             new ConvertedConfiguration(), Region.builder("r1").build(), new Warnings());
@@ -953,7 +954,9 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testInstanceTargetStaticRoutes_noInstanceTargets() {
+  public void testInstanceTargetStaticRoutes() {
+    // Load balancers with instance targets should have static routes to each instance target via
+    // their subnet
     Ip instanceIp = Ip.parse("20.20.20.20");
     Instance instance =
         new Instance(
