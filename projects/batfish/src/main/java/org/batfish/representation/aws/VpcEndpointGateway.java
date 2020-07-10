@@ -39,7 +39,7 @@ import org.batfish.specifier.LocationInfo;
 /** Represents an AWS VPC endpoint of type gateway */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class VpcEndpointGateway extends VpcEndpoint {
+public final class VpcEndpointGateway extends VpcEndpoint {
 
   /** Name of the filter that permits destination IPs that belong to the service and drops rest */
   static final String SERVICE_PREFIX_FILTER = "~SERVICE~PREFIX~FILTER";
@@ -49,7 +49,7 @@ final class VpcEndpointGateway extends VpcEndpoint {
   static final TraceElement DENY_NON_SERVICE_IPS =
       TraceElement.of("Denied IPs not in service prefixes");
 
-  VpcEndpointGateway(String id, String serviceName, String vpcId, Map<String, String> tags) {
+  public VpcEndpointGateway(String id, String serviceName, String vpcId, Map<String, String> tags) {
     super(id, serviceName, vpcId, tags);
   }
 
