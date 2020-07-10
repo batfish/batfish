@@ -149,9 +149,21 @@ public class AwsConfigurationLoadBalancerTest {
     testBidirectionalTrace(
         getTcpFlow(_instanceClient, nlb2Ip, _listenerPort, _batfish), // to second LB IP
         ImmutableList.of(
-            _instanceClient, _subnetClient, _vpc, _subnetS2, _nodeLoadBalancer2, _instanceS2),
+            _instanceClient,
+            _subnetClient,
+            _vpc,
+            _subnetS2,
+            _nodeLoadBalancer2,
+            _subnetS2,
+            _instanceS2),
         ImmutableList.of(
-            _instanceS2, _nodeLoadBalancer2, _subnetS2, _vpc, _subnetClient, _instanceClient),
+            _instanceS2,
+            _subnetS2,
+            _nodeLoadBalancer2,
+            _subnetS2,
+            _vpc,
+            _subnetClient,
+            _instanceClient),
         _batfish);
   }
 
