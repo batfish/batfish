@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.not;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
+import static org.batfish.representation.aws.ElasticsearchDomain.getNodeName;
 import static org.batfish.representation.aws.Utils.getTraceElementForSecurityGroup;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -39,6 +41,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -661,7 +664,7 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, PrefixList> getPrefixLists() {
+  public Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
   }
 
@@ -780,10 +783,13 @@ public final class Region implements Serializable {
     }
 
     for (ElasticsearchDomain elasticsearchDomain : getElasticSearchDomains().values()) {
-      Configuration cfgNode =
-          elasticsearchDomain.toConfigurationNode(awsConfiguration, this, warnings);
-      cfgNode.setDeviceType(DeviceType.HOST);
-      awsConfiguration.addNode(cfgNode);
+      elasticsearchDomain
+          .toConfigurationNodes(awsConfiguration, this, warnings)
+          .forEach(
+              cfgNode -> {
+                cfgNode.setDeviceType(DeviceType.HOST);
+                awsConfiguration.addNode(cfgNode);
+              });
     }
 
     for (InternetGateway igw : getInternetGateways().values()) {
@@ -872,14 +878,19 @@ public final class Region implements Serializable {
       Map<String, IpAccessList> sgIngressAcls,
       Map<String, IpAccessList> sgEgressAcls) {
     for (ElasticsearchDomain esd : _elasticsearchDomains.values()) {
-      Configuration c = cfg.getNode(esd.getId());
-      if (c == null) {
-        continue;
-      }
-      for (Interface i : c.getAllInterfaces().values()) {
-        applyAclsToInterfaceBasedOnSecurityGroups(
-            esd.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls);
-      }
+      IntStream.range(0, esd.getInstanceCount())
+          .forEach(
+              instanceNum -> {
+                Configuration c =
+                    cfg.getNode(getNodeName(instanceNum, esd.getId(), esd.getVpcEndpoint()));
+                if (c == null) {
+                  return;
+                }
+                for (Interface i : c.getAllInterfaces().values()) {
+                  applyAclsToInterfaceBasedOnSecurityGroups(
+                      esd.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls);
+                }
+              });
     }
     for (RdsInstance rds : _rdsInstances.values()) {
       Configuration c = cfg.getNode(rds.getId());
@@ -907,7 +918,7 @@ public final class Region implements Serializable {
     // Set up reverse sessions for outbound traffic.
     i.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(i.getName()), null, null));
-    i.getVrf().setHasOriginatingSessions(true);
+    i.getVrf().setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
   }
 
   private void applyIngressAcl(

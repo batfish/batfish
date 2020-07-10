@@ -133,7 +133,8 @@ public class IpPermissionsTest {
             ImmutableList.of(SG_ID),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.2.3.4"), null)),
             "no desc",
-            null);
+            null,
+            ImmutableMap.of());
     region.getNetworkInterfaces().put(ni.getId(), ni);
     region.getSecurityGroups().put(sg1.getId(), sg1);
 

@@ -9,6 +9,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_ADDRESSES = "Addresses";
   String JSON_KEY_ALLOCATION_ID = "AllocationId";
   String JSON_KEY_AMAZON_SIDE_ASN = "AmazonSideAsn";
+  String JSON_KEY_ARN = "ARN";
   String JSON_KEY_ASSOCIATION = "Association";
   String JSON_KEY_ASSOCIATION_DEFAULT_ROUTE_TABLE_ID = "AssociationDefaultRouteTableId";
   String JSON_KEY_ASSOCIATIONS = "Associations";
@@ -47,6 +48,8 @@ public interface AwsVpcEntity {
   String JSON_KEY_DOMAIN_NAME = "DomainName";
   String JSON_KEY_DOMAIN_STATUS_LIST = "DomainStatusList";
   String JSON_KEY_EGRESS = "Egress";
+  String JSON_KEY_ELASTIC_SEARCH_CLUSTER_CONFIG = "ElasticsearchClusterConfig";
+  String JSON_KEY_ENDPOINTS = "Endpoints";
   String JSON_KEY_ENTRIES = "Entries";
   String JSON_KEY_FROM = "From";
   String JSON_KEY_FROM_PORT = "FromPort";
@@ -56,6 +59,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_GROUPS = "Groups";
   String JSON_KEY_ICMP_TYPE_CODE = "IcmpTypeCode";
   String JSON_KEY_ID = "Id";
+  String JSON_KEY_INSTANCE_COUNT = "InstanceCount";
   String JSON_KEY_INSTANCE_ID = "InstanceId";
   String JSON_KEY_INSTANCE_STATUSES = "InstanceStatuses";
   String JSON_KEY_INSTANCES = "Instances";
@@ -136,6 +140,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_SUBNET_STATUS = "SubnetStatus";
   String JSON_KEY_SUBNETS = "Subnets";
   String JSON_KEY_TAGS = "Tags";
+  String JSON_KEY_TAGSET = "TagSet";
   String JSON_KEY_TARGET = "Target";
   String JSON_KEY_TARGET_HEALTH = "TargetHealth";
   String JSON_KEY_TARGET_HEALTH_DESCRIPTIONS = "TargetHealthDescriptions";

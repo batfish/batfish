@@ -32,6 +32,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
@@ -85,6 +86,10 @@ public class AwsConfiguration extends VendorConfiguration {
   /** ASN to use for AWS backbone */
   static final long AWS_BACKBONE_ASN = 16509L;
 
+  /** Hostname to use for AWS backbone */
+  public static final String AWS_BACKBONE_HOSTNAME =
+      IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN);
+
   /** Name of the interface on nodes that faces the backbone (e.g., IGW, services gateway) */
   static final String BACKBONE_FACING_INTERFACE_NAME = "backbone";
 
@@ -132,9 +137,8 @@ public class AwsConfiguration extends VendorConfiguration {
     return getAllVpc().filter(v -> vpcId.equals(v.getId())).findFirst().orElse(null);
   }
 
-  @VisibleForTesting
   @Nonnull
-  Account addOrGetAccount(String accountId) {
+  public Account addOrGetAccount(String accountId) {
     return _accounts.computeIfAbsent(accountId, Account::new);
   }
 

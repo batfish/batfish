@@ -34,7 +34,16 @@
       "SourceDestCheck": true,
       "Status": "in-use",
       "SubnetId": "subnet-9a0c48fc",
-      "TagSet": [],
+      "TagSet": [
+        {
+          "Key": "Name",
+          "Value": "primary"
+        },
+        {
+          "Key": "ExampleTag",
+          "Value": "ExampleValue"
+        }
+      ],
       "VpcId": "vpc-815775e7"
     },
     {

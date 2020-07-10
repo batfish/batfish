@@ -205,7 +205,8 @@ public class LoadBalancerTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, publicIp)),
             LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
-            null);
+            null,
+            ImmutableMap.of());
     Region region =
         Region.builder("r1")
             .setNetworkInterfaces(ImmutableMap.of("interface", networkInterface))
@@ -812,7 +813,8 @@ public class LoadBalancerTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.1.1.1"), null)),
             LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
-            null);
+            null,
+            ImmutableMap.of());
     // right description but wrong subnet
     NetworkInterface networkInterface2 =
         new NetworkInterface(
@@ -822,7 +824,8 @@ public class LoadBalancerTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.1.1.1"), null)),
             LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
-            null);
+            null,
+            ImmutableMap.of());
     Region region =
         Region.builder("r1")
             .setNetworkInterfaces(
