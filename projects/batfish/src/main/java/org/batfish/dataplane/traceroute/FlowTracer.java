@@ -59,6 +59,7 @@ import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -1133,14 +1134,19 @@ class FlowTracer {
                 // Currently we will only resort to this if a session is matched.
                 () -> _currentConfig.getActiveInterfaces(_vrfName).keySet().iterator().next());
 
-    if (_ingressInterface != null
-        && _currentConfig.getVrfs().get(_vrfName).hasOriginatingSessions()) {
+    FirewallSessionVrfInfo firewallSessionVrfInfo =
+        _currentConfig.getVrfs().get(_vrfName).getFirewallSessionVrfInfo();
+    if (_ingressInterface != null && firewallSessionVrfInfo != null) {
       // Set up a session that will match return traffic originating from this VRF.
       // TODO Ensure this behavior is valid for all vendors.
       //  - Is FibLookup the right action for all vendors?
       //  - Do any vendors set up sessions for intranode traffic? AWS should not. If others do, then
       //    for those cases we would need to set up a session even if ingressInterface is null.
-      SessionAction action = org.batfish.datamodel.flow.FibLookup.INSTANCE;
+      SessionAction action =
+          getSessionAction(
+              firewallSessionVrfInfo.getFibLookup(),
+              _ingressInterface,
+              _lastHopNodeAndOutgoingInterface);
       @Nullable
       FirewallSessionTraceInfo session =
           buildFirewallSessionTraceInfo(action, new OriginatingSessionScope(_vrfName));

@@ -41,6 +41,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -917,7 +918,7 @@ public final class Region implements Serializable {
     // Set up reverse sessions for outbound traffic.
     i.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(i.getName()), null, null));
-    i.getVrf().setHasOriginatingSessions(true);
+    i.getVrf().setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
   }
 
   private void applyIngressAcl(
