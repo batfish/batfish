@@ -4,10 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
+import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_IFACE_SUFFIX;
 import static org.batfish.representation.aws.TargetGroup.Type.IP;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
 import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
+import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 
@@ -20,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +47,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -247,6 +252,11 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setSubnetId(availabilityZone.getSubnetId());
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
+    // Add static routes to any instance targets
+    getInstanceTargetStaticRoutes(
+            awsConfiguration.getNlbsToInstanceTargets().get(this), availabilityZone.getSubnetId())
+        .forEach(staticRoute -> Utils.addStaticRoute(cfgNode, staticRoute));
+
     Optional<NetworkInterface> networkInterface =
         findMyInterface(availabilityZone.getSubnetId(), _arn, region);
     if (!networkInterface.isPresent()) {
@@ -307,6 +317,31 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
             INFRASTRUCTURE_LOCATION_INFO));
 
     return cfgNode;
+  }
+
+  /**
+   * Creates static routes to the IP of each of the given {@code instanceTargets} via subnet {@code
+   * lbSubnetId} (that is, using an interface to that subnet's instance target VRF as their next
+   * hop). The instance targets will be in the load balancer's VPC, but may not be in the given
+   * subnet's availability zone.
+   */
+  @VisibleForTesting
+  static List<StaticRoute> getInstanceTargetStaticRoutes(
+      Collection<Instance> instanceTargets, String lbSubnetId) {
+    return instanceTargets.stream()
+        .map(
+            instance -> {
+              String subnetCfgHostname = Subnet.nodeName(lbSubnetId);
+              String instanceTargetsIface =
+                  interfaceNameToRemote(subnetCfgHostname, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
+              // Guaranteed by isTargetInAnyEnabledAvailabilityZone
+              assert instance.getPrimaryPrivateIpAddress() != null;
+              return toStaticRoute(
+                  instance.getPrimaryPrivateIpAddress().toPrefix(),
+                  instanceTargetsIface,
+                  AwsConfiguration.LINK_LOCAL_IP);
+            })
+        .collect(ImmutableList.toImmutableList());
   }
 
   @VisibleForTesting
@@ -537,11 +572,24 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
       return null;
     }
-    return new ApplyAll(
-        TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
-        TransformationStep.assignSourcePort(EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
-        TransformationStep.assignDestinationIp(targetIp, targetIp),
-        TransformationStep.assignDestinationPort(target.getPort(), target.getPort()));
+    TransformationStep transformDstIp = TransformationStep.assignDestinationIp(targetIp, targetIp);
+    TransformationStep transformDstPort =
+        TransformationStep.assignDestinationPort(target.getPort(), target.getPort());
+    switch (targetGroupType) {
+      case INSTANCE:
+        // No source NAT for instance targets
+        return new ApplyAll(transformDstIp, transformDstPort);
+      case IP:
+        return new ApplyAll(
+            TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
+            TransformationStep.assignSourcePort(
+                EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
+            transformDstIp,
+            transformDstPort);
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unrecognized target group type %s", targetGroupType));
+    }
   }
 
   /**

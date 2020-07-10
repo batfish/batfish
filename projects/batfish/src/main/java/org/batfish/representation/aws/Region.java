@@ -918,7 +918,7 @@ public final class Region implements Serializable {
     // Set up reverse sessions for outbound traffic.
     i.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(i.getName()), null, null));
-    i.getVrf().setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
+    i.getVrf().setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(false));
   }
 
   private void applyIngressAcl(
