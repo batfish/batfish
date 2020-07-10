@@ -365,15 +365,18 @@ public class Subnet implements AwsVpcEntity, Serializable {
     String subnetToVpcIfaceName = interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     String vpcToSubnetIfaceName =
         interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
+    Interface vpcToSubnetIface = vpcCfg.getAllInterfaces().get(vpcToSubnetIfaceName);
     Interface subnetToVpcIface = subnetCfg.getAllInterfaces().get(subnetToVpcIfaceName);
     subnetToVpcIface.setIncomingFilter(ingressNetworkAcl);
     subnetToVpcIface.setOutgoingFilter(egressNetworkAcl);
     String incomingAclName = ingressNetworkAcl == null ? null : ingressNetworkAcl.getName();
-    // If subnet has target instances, use a session to direct return traffic back to VPC
-    if (awsConfiguration.getSubnetsToInstanceTargets().containsKey(this)) {
+    String outgoingAclName = egressNetworkAcl == null ? null : egressNetworkAcl.getName();
+    // If subnet has NLBs, use a session to direct return traffic from an instance target in another
+    // subnet back to the NLB
+    if (!nlbs.isEmpty()) {
       subnetToVpcIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              false, ImmutableList.of(subnetToVpcIfaceName), incomingAclName, null));
+              false, ImmutableList.of(subnetToVpcIfaceName), incomingAclName, outgoingAclName));
     }
 
     // For each NLB in the subnet: new interface connecting to NLB, no filters
@@ -430,10 +433,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
         staticRouteNextHopIface = subnetToInstanceIfaceName;
 
-        // Give the VPC static routes to this subnet's instances
+        // Give the VPC static routes to this subnet's instances, and set up session info on its
+        // interface to the subnet so that return traffic will be routed back
         Utils.addStaticRoute(
             newVpcVrf,
             toStaticRoute(instancePrefix, vpcToSubnetIfaceName, AwsConfiguration.LINK_LOCAL_IP));
+        vpcToSubnetIface.setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                false, ImmutableList.of(vpcToSubnetIfaceName), null, null));
       }
 
       /*
