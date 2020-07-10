@@ -78,6 +78,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_BGP_PROCESS = "bgpProcess";
   private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_HAS_ORIGINATING_SESSIONS = "hasOriginatingSessions";
+  private static final String PROP_FIREWALL_SESSION_VRF_INFO = "firewallSessionVrfInfo";
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
   private static final String PROP_CROSS_VRF_IMPORT_POLICY = "crossVrfImportPolicy";
   private static final String PROP_CROSS_VRF_IMPORT_VRFS = "crossVrfImportVrfs";
@@ -100,7 +101,7 @@ public class Vrf extends ComparableStructure<String> {
   private SortedMap<RoutingProtocol, RibGroup> _appliedRibGroups;
   private BgpProcess _bgpProcess;
   private String _description;
-  private boolean _hasOriginatingSessions;
+  private FirewallSessionVrfInfo _firewallSessionVrfInfo;
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
@@ -164,9 +165,20 @@ public class Vrf extends ComparableStructure<String> {
   /**
    * Whether this VRF sets up sessions with an {@link OriginatingSessionScope} for accepted traffic.
    */
+  @Deprecated
+  @JsonIgnore
   @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
-  public boolean hasOriginatingSessions() {
-    return _hasOriginatingSessions;
+  private boolean hasOriginatingSessions() {
+    return false;
+  }
+
+  /**
+   * If nonnull, VRF should create a session for ACCEPTED flows. The info object controls details of
+   * the session.
+   */
+  @JsonProperty(PROP_FIREWALL_SESSION_VRF_INFO)
+  public @Nullable FirewallSessionVrfInfo getFirewallSessionVrfInfo() {
+    return _firewallSessionVrfInfo;
   }
 
   /** Generated IPV6 routes for this VRF. */
@@ -281,9 +293,16 @@ public class Vrf extends ComparableStructure<String> {
     _description = description;
   }
 
+  /** Preserved for backward compatibility. */
+  @Deprecated
   @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
-  public void setHasOriginatingSessions(boolean hasOriginatingSessions) {
-    _hasOriginatingSessions = hasOriginatingSessions;
+  private void setHasOriginatingSessions(boolean hasOriginatingSessions) {
+    _firewallSessionVrfInfo = new FirewallSessionVrfInfo(true);
+  }
+
+  @JsonProperty(PROP_FIREWALL_SESSION_VRF_INFO)
+  public void setFirewallSessionVrfInfo(FirewallSessionVrfInfo firewallSessionVrfInfo) {
+    _firewallSessionVrfInfo = firewallSessionVrfInfo;
   }
 
   public void setGeneratedIpv6Routes(NavigableSet<GeneratedRoute6> generatedIpv6Routes) {
