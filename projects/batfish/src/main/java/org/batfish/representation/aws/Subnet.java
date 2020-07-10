@@ -369,9 +369,12 @@ public class Subnet implements AwsVpcEntity, Serializable {
     subnetToVpcIface.setIncomingFilter(ingressNetworkAcl);
     subnetToVpcIface.setOutgoingFilter(egressNetworkAcl);
     String incomingAclName = ingressNetworkAcl == null ? null : ingressNetworkAcl.getName();
-    subnetToVpcIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(
-            false, ImmutableList.of(subnetToVpcIfaceName), incomingAclName, null));
+    // If subnet has target instances, use a session to direct return traffic back to VPC
+    if (awsConfiguration.getSubnetsToInstanceTargets().containsKey(this)) {
+      subnetToVpcIface.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(
+              false, ImmutableList.of(subnetToVpcIfaceName), incomingAclName, null));
+    }
 
     // For each NLB in the subnet: new interface connecting to NLB, no filters
     for (LoadBalancer nlb : nlbs) {
