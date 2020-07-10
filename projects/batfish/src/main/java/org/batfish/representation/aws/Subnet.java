@@ -365,6 +365,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     String subnetToVpcIfaceName = interfaceNameToRemote(vpcCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     String vpcToSubnetIfaceName =
         interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
+    Interface vpcToSubnetIface = vpcCfg.getAllInterfaces().get(vpcToSubnetIfaceName);
     Interface subnetToVpcIface = subnetCfg.getAllInterfaces().get(subnetToVpcIfaceName);
     subnetToVpcIface.setIncomingFilter(ingressNetworkAcl);
     subnetToVpcIface.setOutgoingFilter(egressNetworkAcl);
@@ -430,10 +431,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
         staticRouteNextHopIface = subnetToInstanceIfaceName;
 
-        // Give the VPC static routes to this subnet's instances
+        // Give the VPC static routes to this subnet's instances, and set up session info on its
+        // interface to the subnet so that return traffic will be routed back
         Utils.addStaticRoute(
             newVpcVrf,
             toStaticRoute(instancePrefix, vpcToSubnetIfaceName, AwsConfiguration.LINK_LOCAL_IP));
+        vpcToSubnetIface.setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                false, ImmutableList.of(vpcToSubnetIfaceName), incomingAclName, null));
       }
 
       /*
