@@ -5,7 +5,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_HIGHEST;
 import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.LoadBalancer.FINAL_TRANSFORMATION;
 import static org.batfish.representation.aws.LoadBalancer.LISTENER_FILTER_NAME;
@@ -15,18 +17,24 @@ import static org.batfish.representation.aws.LoadBalancer.computeListenerFilter;
 import static org.batfish.representation.aws.LoadBalancer.computeNotForwardedFilter;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetGroupTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetTransformationStep;
+import static org.batfish.representation.aws.LoadBalancer.getActiveTargets;
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForForwardedPackets;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNoMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNotForwardedPackets;
-import static org.batfish.representation.aws.LoadBalancer.isTargetInEnabledAvailabilityZone;
+import static org.batfish.representation.aws.LoadBalancer.isTargetInAnyEnabledAvailabilityZone;
+import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_IFACE_SUFFIX;
+import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
+import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.batfish.specifier.Location.interfaceLocation;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -35,12 +43,16 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -55,6 +67,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -66,6 +79,7 @@ import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.representation.aws.Instance.Status;
 import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
 import org.batfish.representation.aws.LoadBalancer.Protocol;
 import org.batfish.representation.aws.LoadBalancer.Scheme;
@@ -88,13 +102,16 @@ public class LoadBalancerTest {
   private static final String _loadBalancerArn =
       String.format(
           "arn:aws:elasticloadbalancing:region:123456789:loadbalancer/%s", _loadBalancerArnSuffix);
+  private static final String _subnet1Name = "subnet1";
+  private static final String _subnet2Name = "subnet2";
 
   /** Default load balancer object to use in tests */
   private static final LoadBalancer _loadBalancer =
       new LoadBalancer(
           _loadBalancerArn,
           ImmutableList.of(
-              new AvailabilityZone("subnet1", "zone1"), new AvailabilityZone("subnet2", "zone2")),
+              new AvailabilityZone(_subnet1Name, "zone1"),
+              new AvailabilityZone(_subnet2Name, "zone2")),
           "lbDnsName",
           _loadBalancerName,
           Scheme.INTERNET_FACING,
@@ -188,7 +205,8 @@ public class LoadBalancerTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, _loadBalancerIp, publicIp)),
             LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
-            null);
+            null,
+            ImmutableMap.of());
     Region region =
         Region.builder("r1")
             .setNetworkInterfaces(ImmutableMap.of("interface", networkInterface))
@@ -542,29 +560,106 @@ public class LoadBalancerTest {
   }
 
   @Test
+  public void testGetActiveTargets() {
+    TargetHealthDescription unhealthyTarget =
+        new TargetHealthDescription(
+            new LoadBalancerTarget("zone1", "6.6.6.6", 80),
+            new TargetHealth(HealthState.UNHEALTHY));
+    TargetHealthDescription healthyTarget1 =
+        new TargetHealthDescription(
+            new LoadBalancerTarget("zone1", "1.1.1.1", 80), new TargetHealth(HealthState.HEALTHY));
+    TargetHealthDescription healthyTarget2 =
+        new TargetHealthDescription(
+            new LoadBalancerTarget("zone2", "2.2.2.2", 80), new TargetHealth(HealthState.HEALTHY));
+    TargetHealthDescription healthyTargetAll =
+        new TargetHealthDescription(
+            new LoadBalancerTarget("all", "3.3.3.3", 80), new TargetHealth(HealthState.HEALTHY));
+
+    String targetGroupArn = "tgArn";
+    TargetGroup targetGroup =
+        new TargetGroup(
+            targetGroupArn, ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.IP);
+    Region.RegionBuilder rb =
+        Region.builder("r1").setTargetGroups(ImmutableMap.of(targetGroupArn, targetGroup));
+
+    // Cross-zone load balancing on. All healthy targets should be included.
+    {
+      LoadBalancerTargetHealth targetHealth =
+          new LoadBalancerTargetHealth(
+              targetGroupArn,
+              ImmutableList.of(unhealthyTarget, healthyTarget1, healthyTarget2, healthyTargetAll));
+      rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
+      assertThat(
+          getActiveTargets(
+              targetHealth, targetGroup, ImmutableSet.of("x"), true, rb.build(), false, null),
+          containsInAnyOrder(healthyTarget1, healthyTarget2, healthyTargetAll));
+    }
+
+    // Cross-zone load balancing off, load balancer includes zone 1. Healthy targets with zone zone1
+    // or zone "all" should be included.
+    {
+      LoadBalancerTargetHealth targetHealth =
+          new LoadBalancerTargetHealth(
+              targetGroupArn,
+              ImmutableList.of(unhealthyTarget, healthyTarget1, healthyTarget2, healthyTargetAll));
+      rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
+      assertThat(
+          getActiveTargets(
+              targetHealth, targetGroup, ImmutableSet.of("zone1"), false, rb.build(), false, null),
+          containsInAnyOrder(healthyTarget1, healthyTargetAll));
+    }
+
+    // Cross-zone load balancing off, load balancer includes zone 1, which only has an unhealthy
+    // target. However, a healthy zone "all" target exists, so should get that.
+    {
+      LoadBalancerTargetHealth targetHealth =
+          new LoadBalancerTargetHealth(
+              targetGroupArn, ImmutableList.of(unhealthyTarget, healthyTarget2, healthyTargetAll));
+      rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
+      assertThat(
+          getActiveTargets(
+              targetHealth, targetGroup, ImmutableSet.of("zone1"), false, rb.build(), false, null),
+          containsInAnyOrder(healthyTargetAll));
+    }
+
+    // Cross-zone load balancing off, load balancer includes zone 1, which only has an unhealthy
+    // target. No zone "all" targets exist. Should use the unhealthy target.
+    {
+      LoadBalancerTargetHealth targetHealth =
+          new LoadBalancerTargetHealth(
+              targetGroupArn, ImmutableList.of(unhealthyTarget, healthyTarget2));
+      rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
+      assertThat(
+          getActiveTargets(
+              targetHealth, targetGroup, ImmutableSet.of("zone1"), false, rb.build(), false, null),
+          containsInAnyOrder(unhealthyTarget));
+    }
+  }
+
+  @Test
   public void testComputeTargetTransformationStep_instanceTarget() {
     Ip targetIp = Ip.parse("1.1.1.1");
     Ip loadBalancerIp = Ip.parse("10.10.10.10");
-    LoadBalancerTarget target = new LoadBalancerTarget("zone", targetIp.toString(), 80);
+    String instanceId = "instance";
+    LoadBalancerTarget target = new LoadBalancerTarget("zone", instanceId, 80);
 
     Region region =
         Region.builder("r1")
             .setInstances(
                 ImmutableMap.of(
-                    "instance",
+                    instanceId,
                     Instance.builder()
-                        .setInstanceId("instance")
+                        .setInstanceId(instanceId)
                         .setPrimaryPrivateIpAddress(targetIp)
                         .build()))
             .build();
+
+    // Should only do dst NAT for instance targets
     assertThat(
         computeTargetTransformationStep(
-            target, TargetGroup.Type.IP, loadBalancerIp, region, new Warnings()),
+            target, TargetGroup.Type.INSTANCE, loadBalancerIp, region, new Warnings()),
         equalTo(
             new ApplyAll(
-                TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
-                TransformationStep.assignSourcePort(
-                    EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
                 TransformationStep.assignDestinationIp(targetIp, targetIp),
                 TransformationStep.assignDestinationPort(target.getPort(), target.getPort()))));
   }
@@ -597,9 +692,6 @@ public class LoadBalancerTest {
         new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone", ImmutableMap.of());
     Instance instance =
         Instance.builder().setInstanceId("instance").setSubnetId(subnet.getId()).build();
-    TargetGroup targetGroup =
-        new TargetGroup(
-            "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.INSTANCE);
     TargetHealthDescription targetHealthDescription =
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", instance.getId(), 80),
@@ -610,25 +702,28 @@ public class LoadBalancerTest {
             .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
             .build();
 
+    Set<String> targetZone = ImmutableSet.of("targetZone");
+    Set<String> otherZone = ImmutableSet.of("otherZone");
+
     // LB in same zone; cross zone load balancing is off
     assertTrue(
-        isTargetInEnabledAvailabilityZone(
-            targetHealthDescription, targetGroup, "targetZone", false, region));
+        isTargetInAnyEnabledAvailabilityZone(
+            targetHealthDescription, TargetGroup.Type.INSTANCE, targetZone, false, region));
 
     // LB in same zone; cross zone load balancing is on
     assertTrue(
-        isTargetInEnabledAvailabilityZone(
-            targetHealthDescription, targetGroup, "targetZone", true, region));
+        isTargetInAnyEnabledAvailabilityZone(
+            targetHealthDescription, TargetGroup.Type.INSTANCE, targetZone, true, region));
 
     // LB in different zone; cross zone load balancing is off
     assertFalse(
-        isTargetInEnabledAvailabilityZone(
-            targetHealthDescription, targetGroup, "otherZone", false, region));
+        isTargetInAnyEnabledAvailabilityZone(
+            targetHealthDescription, TargetGroup.Type.INSTANCE, otherZone, false, region));
 
     // LB in different zone; cross zone load balancing is on
     assertTrue(
-        isTargetInEnabledAvailabilityZone(
-            targetHealthDescription, targetGroup, "otherZone", true, region));
+        isTargetInAnyEnabledAvailabilityZone(
+            targetHealthDescription, TargetGroup.Type.INSTANCE, otherZone, true, region));
   }
 
   @Test
@@ -640,47 +735,53 @@ public class LoadBalancerTest {
         new TargetHealthDescription(
             new LoadBalancerTarget("targetZone", "1.1.1.1", 80),
             new TargetHealth(HealthState.HEALTHY));
+    Set<String> targetZone = ImmutableSet.of("targetZone");
+    Set<String> otherZone = ImmutableSet.of("otherZone");
 
     // LB in same zone; cross zone load balancing is off
     assertTrue(
-        isTargetInEnabledAvailabilityZone(
+        isTargetInAnyEnabledAvailabilityZone(
             targetHealthDescription,
-            targetGroup,
-            "targetZone",
+            targetGroup.getTargetType(),
+            targetZone,
             false,
             Region.builder("r1").build()));
 
     // LB in same zone; cross zone load balancing is on
     assertTrue(
-        isTargetInEnabledAvailabilityZone(
+        isTargetInAnyEnabledAvailabilityZone(
             targetHealthDescription,
-            targetGroup,
-            "targetZone",
+            targetGroup.getTargetType(),
+            targetZone,
             true,
             Region.builder("r1").build()));
 
     // LB in different zone; cross zone load balancing is off
     assertFalse(
-        isTargetInEnabledAvailabilityZone(
+        isTargetInAnyEnabledAvailabilityZone(
             targetHealthDescription,
-            targetGroup,
-            "otherZone",
+            targetGroup.getTargetType(),
+            otherZone,
             false,
             Region.builder("r1").build()));
 
     // LB in different zone; cross zone load balancing is on
     assertTrue(
-        isTargetInEnabledAvailabilityZone(
-            targetHealthDescription, targetGroup, "otherZone", true, Region.builder("r1").build()));
+        isTargetInAnyEnabledAvailabilityZone(
+            targetHealthDescription,
+            targetGroup.getTargetType(),
+            otherZone,
+            true,
+            Region.builder("r1").build()));
 
     // Target in zone "all"; cross zone is off
     assertTrue(
-        isTargetInEnabledAvailabilityZone(
+        isTargetInAnyEnabledAvailabilityZone(
             new TargetHealthDescription(
                 new LoadBalancerTarget("all", "1.1.1.1", 80),
                 new TargetHealth(HealthState.HEALTHY)),
-            targetGroup,
-            "otherZone",
+            targetGroup.getTargetType(),
+            otherZone,
             false,
             Region.builder("r1").build()));
   }
@@ -712,7 +813,8 @@ public class LoadBalancerTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.1.1.1"), null)),
             LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
-            null);
+            null,
+            ImmutableMap.of());
     // right description but wrong subnet
     NetworkInterface networkInterface2 =
         new NetworkInterface(
@@ -722,7 +824,8 @@ public class LoadBalancerTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.1.1.1"), null)),
             LOAD_BALANCER_INTERFACE_DESCRIPTION_PREFIX + _loadBalancerArnSuffix,
-            null);
+            null,
+            ImmutableMap.of());
     Region region =
         Region.builder("r1")
             .setNetworkInterfaces(
@@ -842,5 +945,58 @@ public class LoadBalancerTest {
             ImmutableMap.of(),
             ImmutableMap.of()),
         contains(hasTraceElement(getTraceElementForForwardedPackets())));
+  }
+
+  @Test
+  public void testInstanceTargetStaticRoutes_noInstanceTargets() {
+    // Load balancers with no instance targets should not have any static routes
+    List<Configuration> cfgNodes =
+        _loadBalancer.toConfigurationNodes(
+            new ConvertedConfiguration(), Region.builder("r1").build(), new Warnings());
+    cfgNodes.forEach(cfgNode -> assertThat(cfgNode.getDefaultVrf().getStaticRoutes(), empty()));
+  }
+
+  @Test
+  public void testInstanceTargetStaticRoutes() {
+    // Load balancers with instance targets should have static routes to each instance target via
+    // their subnet
+    Ip instanceIp = Ip.parse("20.20.20.20");
+    Instance instance =
+        new Instance(
+            "instanceId",
+            _loadBalancer.getVpcId(),
+            _subnet1Name,
+            ImmutableList.of(),
+            ImmutableList.of(),
+            instanceIp,
+            ImmutableMap.of(),
+            Status.RUNNING);
+    List<Configuration> cfgNodes =
+        _loadBalancer.toConfigurationNodes(
+            new ConvertedConfiguration(
+                new HashMap<>(),
+                new HashSet<>(),
+                ImmutableMultimap.of(),
+                ImmutableMultimap.of(),
+                ImmutableMultimap.of(_loadBalancer, instance),
+                ImmutableSet.of()),
+            Region.builder("r1").build(),
+            new Warnings());
+
+    StaticRoute expectedRouteViaSubnet1 =
+        toStaticRoute(
+            instanceIp.toPrefix(),
+            interfaceNameToRemote(Subnet.nodeName(_subnet1Name), NLB_INSTANCE_TARGETS_IFACE_SUFFIX),
+            AwsConfiguration.LINK_LOCAL_IP);
+    StaticRoute expectedRouteViaSubnet2 =
+        toStaticRoute(
+            instanceIp.toPrefix(),
+            interfaceNameToRemote(Subnet.nodeName(_subnet2Name), NLB_INSTANCE_TARGETS_IFACE_SUFFIX),
+            AwsConfiguration.LINK_LOCAL_IP);
+    assertThat(
+        cfgNodes,
+        containsInAnyOrder(
+            hasDefaultVrf(hasStaticRoutes(contains(expectedRouteViaSubnet1))),
+            hasDefaultVrf(hasStaticRoutes(contains(expectedRouteViaSubnet2)))));
   }
 }

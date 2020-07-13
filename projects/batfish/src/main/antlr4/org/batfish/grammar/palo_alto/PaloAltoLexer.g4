@@ -788,9 +788,29 @@ LOCAL_PORT
     'local-port'
 ;
 
+LOG_COLLECTOR
+:
+    'log-collector'
+;
+
+LOG_COLLECTOR_GROUP
+:
+    'log-collector-group'
+;
+
+LOG_END
+:
+    'log-end'
+;
+
 LOG_SETTINGS
 :
     'log-settings'
+;
+
+LOG_START
+:
+    'log-start'
 ;
 
 LOOPBACK

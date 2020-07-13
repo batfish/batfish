@@ -6,9 +6,9 @@ import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchConditi
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
+import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
-import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -24,9 +24,6 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -35,7 +32,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclTracer;
@@ -108,12 +104,12 @@ public class IpPermissionsTest {
                             HeaderSpace.builder()
                                 .setSrcIps(Ip.parse("1.1.1.1").toIpSpace())
                                 .build(),
-                            traceElementForInstance(INSTANCE_1)),
+                            traceElementEniPrivateIp(INSTANCE_1)),
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
                                 .setSrcIps(Ip.parse("2.2.2.2").toIpSpace())
                                 .build(),
-                            traceElementForInstance(INSTANCE_2))),
+                            traceElementEniPrivateIp(INSTANCE_2))),
                     traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP)))));
     // check if rule description is populated from UserIdGroup description
     assertThat(
@@ -122,21 +118,27 @@ public class IpPermissionsTest {
   }
 
   private static Region createTestRegion() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration cg =
-        nf.configurationBuilder()
-            .setHostname("conf1")
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
-            .build();
-    nf.interfaceBuilder()
-        .setOwner(cg)
-        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
-        .build();
     Region region = new Region("test");
+    String vpcId = "vpc";
+    String subnetId = "subnet";
+    String ifaceName = "eni-123";
     SecurityGroup sg1 =
-        new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of(), "vpc");
-    sg1.updateConfigIps(cg);
+        new SecurityGroup(SG_ID, SG_NAME, ImmutableList.of(), ImmutableList.of(), vpcId);
+
+    NetworkInterface ni =
+        new NetworkInterface(
+            ifaceName,
+            subnetId,
+            vpcId,
+            ImmutableList.of(SG_ID),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("1.2.3.4"), null)),
+            "no desc",
+            null,
+            ImmutableMap.of());
+    region.getNetworkInterfaces().put(ni.getId(), ni);
     region.getSecurityGroups().put(sg1.getId(), sg1);
+
+    region.addNetworkInterfaceIpsToSecurityGroups(new Warnings());
     return region;
   }
 
@@ -186,7 +188,7 @@ public class IpPermissionsTest {
                                     "source", SG_NAME, AddressType.SECURITY_GROUP)),
                             hasChildren(
                                 containsInAnyOrder(
-                                    hasTraceElement(traceElementForInstance("conf1"))))))))));
+                                    hasTraceElement(traceElementEniPrivateIp("eni-123"))))))))));
 
     Flow deniedFlow =
         Flow.builder()

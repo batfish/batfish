@@ -40,6 +40,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.representation.aws.Route.State;
+import org.batfish.representation.aws.TransitGatewayAttachment.ResourceType;
 import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
 
 /**
@@ -265,10 +266,20 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         table ->
             Vrf.builder().setOwner(cfgNode).setName(vrfNameForRouteTable(table.getId())).build());
 
+    // initialize VPN infrastructure if this TGW has any VPN attachments
+    if (region.getTransitGatewayAttachments().values().stream()
+        .anyMatch(
+            a -> a.getGatewayId().equals(_gatewayId) && a.getResourceType() == ResourceType.VPN)) {
+      VpnConnection.initVpnConnectionsInfrastructure(cfgNode);
+    }
+
     // make connections to the attachments
     region.getTransitGatewayAttachments().values().stream()
         .filter(a -> a.getGatewayId().equals(_gatewayId))
-        .forEach(a -> connectAttachment(cfgNode, a, vsConfig, awsConfiguration, region, warnings));
+        .forEach(
+            a ->
+                connectAttachment(
+                    cfgNode, a, routeTables, vsConfig, awsConfiguration, region, warnings));
 
     // propagate routes
     routeTables.forEach(
@@ -315,11 +326,26 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   private static void connectAttachment(
       Configuration tgwCfg,
       TransitGatewayAttachment attachment,
+      Set<TransitGatewayRouteTable> routeTables,
       AwsConfiguration vsConfiguration,
       ConvertedConfiguration awsConfiguration,
       Region region,
       Warnings warnings) {
     switch (attachment.getResourceType()) {
+      case PEERING:
+        {
+          // for peerings, we create interfaces here, so we point static routes to it
+          // the interfaces are connected when we process peerings after creating all TGWs
+          routeTables.forEach(
+              rt ->
+                  Utils.newInterface(
+                      sendSidePeeringInterfaceName(rt.getId(), attachment.getId()),
+                      tgwCfg,
+                      vrfNameForRouteTable(rt.getId()),
+                      LinkLocalAddress.of(LINK_LOCAL_IP),
+                      "To " + attachment.getResourceId()));
+          return;
+        }
       case VPC:
         {
           Optional<TransitGatewayVpcAttachment> vpcAttachment =
@@ -343,7 +369,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           if (!vpnConnection.isPresent()) {
             warnings.redFlag(
                 String.format(
-                    "VPN connection %s for transit gateway %s",
+                    "VPN connection %s for transit gateway %s not found",
                     attachment.getResourceId(), tgwCfg.getHostname()));
             return;
           }
@@ -698,6 +724,16 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return;
     }
     switch (tgwAttachment.getResourceType()) {
+      case PEERING:
+        {
+          addStaticRoute(
+              vrf,
+              toStaticRoute(
+                  route.getDestinationCidrBlock(),
+                  sendSidePeeringInterfaceName(routeTableId, attachmentId),
+                  LINK_LOCAL_IP));
+          return;
+        }
       case VPC:
         {
           Configuration vpcCfg =
@@ -772,6 +808,17 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
   /** Returns the {@link Configuration} node name given to transit gateway with the provided id */
   static String nodeName(String gatewayId) {
     return gatewayId;
+  }
+
+  /** Return the interface name used for TGW peering interfaces on the receiver side */
+  static String receiveSidePeeringInterfaceName(
+      String sendSideRouteTableId, String attachmentId, String associatedRouteTableId) {
+    return sendSideRouteTableId + "-" + attachmentId + "-" + associatedRouteTableId;
+  }
+
+  /** Return the interface name used for TGW peering interfaces on the sender side */
+  static String sendSidePeeringInterfaceName(String routeTableId, String attachmentId) {
+    return routeTableId + "-" + attachmentId;
   }
 
   /** Return the VRF name used for a route table */

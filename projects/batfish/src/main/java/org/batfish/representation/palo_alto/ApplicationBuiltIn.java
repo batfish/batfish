@@ -17,6 +17,24 @@ import org.batfish.datamodel.SubRange;
  */
 @ParametersAreNonnullByDefault
 public final class ApplicationBuiltIn {
+  public static final Application AMAZON_CLOUD_DRIVE_BASE =
+      Application.builder("amazon-cloud-drive-base")
+          .setDescription("built-in application amazon-cloud-drive-base")
+          .addService(
+              Service.builder("amazon-cloud-drive-base")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPorts(80, 443)
+                  .build())
+          .build();
+  public static final Application AMAZON_CLOUD_DRIVE_UPLOADING =
+      Application.builder("amazon-cloud-drive-uploading")
+          .setDescription("built-in application amazon-cloud-drive-uploading")
+          .addService(
+              Service.builder("amazon-cloud-drive-uploading")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPorts(80, 443)
+                  .build())
+          .build();
   public static final Application AOL_MESSAGEBOARD_POSTING =
       Application.builder("aol-messageboard-posting")
           .setDescription("built-in application aol-messageboard-posting")
@@ -43,7 +61,13 @@ public final class ApplicationBuiltIn {
           .addService(
               Service.builder("dhcp-udp").setIpProtocol(IpProtocol.TCP).addPorts(67, 68).build())
           .build();
-
+  public static final Application DNS =
+      Application.builder("dns")
+          .setDescription("built-in application dns")
+          .addService(Service.builder("dns-tcp").setIpProtocol(IpProtocol.TCP).addPorts(53).build())
+          .addService(
+              Service.builder("dns-udp").setIpProtocol(IpProtocol.UDP).addPorts(53, 5353).build())
+          .build();
   public static final Application FINGER =
       Application.builder("finger")
           .setDescription("built-in application finger")
@@ -167,6 +191,15 @@ public final class ApplicationBuiltIn {
           .addService(
               Service.builder("ntp udp").setIpProtocol(IpProtocol.UDP).addPorts(123).build())
           .build();
+  public static final Application OFFICE365_ENTERPRISE_ACCESS =
+      Application.builder("office365-enterprise-access")
+          .setDescription("built-in application office365-enterprise-access")
+          .addService(
+              Service.builder("office365-enterprise-access")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPorts(80, 443)
+                  .build())
+          .build();
   public static final Application PAN_DB_CLOUD =
       Application.builder("pan-db-cloud")
           .setDescription("built-in application pan-db-cloud")
@@ -242,9 +275,12 @@ public final class ApplicationBuiltIn {
 
   private static final List<Application> BUILTIN_LIST =
       ImmutableList.of(
+          AMAZON_CLOUD_DRIVE_BASE,
+          AMAZON_CLOUD_DRIVE_UPLOADING,
           AOL_MESSAGEBOARD_POSTING,
           AOL_PROXY,
           DHCP,
+          DNS,
           FINGER,
           FTP,
           GNUTELLA,
@@ -260,6 +296,7 @@ public final class ApplicationBuiltIn {
           MSRPC,
           NETBIOS_SS,
           NTP,
+          OFFICE365_ENTERPRISE_ACCESS,
           PAN_DB_CLOUD,
           PC_ANYWHERE,
           PING,

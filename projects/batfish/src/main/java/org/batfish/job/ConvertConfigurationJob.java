@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.common.runtime.RuntimeData;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.CommunityList;
@@ -40,14 +40,17 @@ import org.batfish.vendor.VendorConfiguration;
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
   private Object _configObject;
-  @Nonnull private final RuntimeData _runtimeData;
+  @Nonnull private final SnapshotRuntimeData _runtimeData;
   private String _name;
 
   public ConvertConfigurationJob(
-      Settings settings, @Nullable RuntimeData runtimeData, Object configObject, String name) {
+      Settings settings,
+      @Nullable SnapshotRuntimeData runtimeData,
+      Object configObject,
+      String name) {
     super(settings);
     _configObject = configObject;
-    _runtimeData = firstNonNull(runtimeData, RuntimeData.EMPTY_RUNTIME_DATA);
+    _runtimeData = firstNonNull(runtimeData, SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     _name = name;
   }
 
@@ -166,10 +169,22 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       @Nonnull String purpose,
       Warnings w) {
     @Nullable IpAccessList acl = getter.get();
-    if (acl == null || acls.containsKey(acl.getName())) {
+    if (acl == null) {
       return;
     }
-    w.redFlag(String.format("The device ACL map does not contain %s %s.", acl.getName(), purpose));
+    @Nullable IpAccessList inMap = acls.get(acl.getName());
+    // Deliberate == comparison.
+    if (inMap == acl) {
+      return;
+    }
+    if (inMap == null) {
+      w.redFlag(
+          String.format("The device ACL map does not contain %s %s.", purpose, acl.getName()));
+    } else {
+      w.redFlag(
+          String.format(
+              "The device ACL map has a different version of %s %s.", purpose, acl.getName()));
+    }
     setter.accept(null);
   }
 

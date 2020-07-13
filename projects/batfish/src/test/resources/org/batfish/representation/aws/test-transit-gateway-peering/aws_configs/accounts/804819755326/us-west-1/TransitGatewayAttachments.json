@@ -1,0 +1,44 @@
+{
+  "TransitGatewayAttachments": [
+    {
+      "Association": {
+        "State": "associated",
+        "TransitGatewayRouteTableId": "tgw-rtb-00be87593fb2cd0ae"
+      },
+      "CreationTime": "2020-06-21 03:35:09+00:00",
+      "ResourceId": "tgw-0e20010ebf43d07a2",
+      "ResourceOwnerId": "732168539940",
+      "ResourceType": "peering",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat-fish"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-012e5d602f859dd80",
+      "TransitGatewayId": "tgw-03201f1960ddb0c25",
+      "TransitGatewayOwnerId": "804819755326"
+    },
+    {
+      "Association": {
+        "State": "associated",
+        "TransitGatewayRouteTableId": "tgw-rtb-00be87593fb2cd0ae"
+      },
+      "CreationTime": "2020-06-21 03:35:09+00:00",
+      "ResourceId": "vpc-0ecbcbd110fd839d1",
+      "ResourceOwnerId": "804819755326",
+      "ResourceType": "vpc",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "fish"
+        }
+      ],
+      "TransitGatewayAttachmentId": "tgw-attach-075ea06a59d3212af",
+      "TransitGatewayId": "tgw-03201f1960ddb0c25",
+      "TransitGatewayOwnerId": "804819755326"
+    }
+  ]
+}

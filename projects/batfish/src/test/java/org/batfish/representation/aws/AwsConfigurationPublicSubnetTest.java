@@ -1,13 +1,14 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.common.util.isp.IspModelingUtils.INTERNET_HOST_NAME;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_HOSTNAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTcpFlow;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
-import static org.batfish.representation.aws.InternetGateway.AWS_BACKBONE_ASN;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
@@ -17,7 +18,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -66,9 +66,6 @@ public class AwsConfigurationPublicSubnetTest {
   private static Ip _publicIp = Ip.parse("18.216.80.133");
   private static Ip _privateIp = Ip.parse("10.0.0.91");
 
-  private static final String AWS_BACKBONE_HOSTNAME =
-      IspModelingUtils.getDefaultIspNodeName(AWS_BACKBONE_ASN);
-
   @ClassRule public static TemporaryFolder _folder = new TemporaryFolder();
 
   private static IBatfish _batfish;
@@ -80,23 +77,12 @@ public class AwsConfigurationPublicSubnetTest {
 
   @Test
   public void testFromInternetToValidPublicIp() {
-    Flow flowFromInternet =
-        Flow.builder()
-            .setIngressNode(IspModelingUtils.INTERNET_HOST_NAME)
-            .setSrcIp(Ip.parse("8.8.8.8"))
-            .setDstIp(_publicIp)
-            .build();
     Trace trace =
         testTrace(
-            flowFromInternet,
+            getTcpFlow(INTERNET_HOST_NAME, Ip.parse("8.8.8.8"), _publicIp, 80),
             FlowDisposition.DENIED_IN, // by the default security settings
             ImmutableList.of(
-                IspModelingUtils.INTERNET_HOST_NAME,
-                AWS_BACKBONE_HOSTNAME,
-                _igw,
-                _vpc,
-                _subnet,
-                _instance),
+                INTERNET_HOST_NAME, AWS_BACKBONE_HOSTNAME, _igw, _vpc, _subnet, _instance),
             _batfish);
 
     // Test NAT behavior
@@ -114,14 +100,14 @@ public class AwsConfigurationPublicSubnetTest {
   public void testFromInternetToInvalidPublicIp() {
     Flow flowFromInternet =
         Flow.builder()
-            .setIngressNode(IspModelingUtils.INTERNET_HOST_NAME)
+            .setIngressNode(INTERNET_HOST_NAME)
             .setSrcIp(Ip.parse("8.8.8.8"))
             .setDstIp(Ip.parse("54.191.107.23"))
             .build();
     testTrace(
         flowFromInternet,
         FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME, AWS_BACKBONE_HOSTNAME),
+        ImmutableList.of(INTERNET_HOST_NAME, AWS_BACKBONE_HOSTNAME),
         _batfish);
   }
 
@@ -129,16 +115,16 @@ public class AwsConfigurationPublicSubnetTest {
   public void testFromInternetToPrivateIp() {
     // we get insufficient info for private IPs that exist somewhere in the network
     testTrace(
-        getAnyFlow(IspModelingUtils.INTERNET_HOST_NAME, _privateIp, _batfish),
+        getAnyFlow(INTERNET_HOST_NAME, _privateIp, _batfish),
         FlowDisposition.NULL_ROUTED,
-        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME),
+        ImmutableList.of(INTERNET_HOST_NAME),
         _batfish);
 
     // we get exits network for arbitrary private IPs
     testTrace(
-        getAnyFlow(IspModelingUtils.INTERNET_HOST_NAME, Ip.parse("192.18.0.8"), _batfish),
+        getAnyFlow(INTERNET_HOST_NAME, Ip.parse("192.18.0.8"), _batfish),
         FlowDisposition.EXITS_NETWORK,
-        ImmutableList.of(IspModelingUtils.INTERNET_HOST_NAME),
+        ImmutableList.of(INTERNET_HOST_NAME),
         _batfish);
   }
 
@@ -149,12 +135,7 @@ public class AwsConfigurationPublicSubnetTest {
             getAnyFlow(_instance, Ip.parse("8.8.8.8"), _batfish),
             FlowDisposition.EXITS_NETWORK,
             ImmutableList.of(
-                _instance,
-                _subnet,
-                _vpc,
-                _igw,
-                AWS_BACKBONE_HOSTNAME,
-                IspModelingUtils.INTERNET_HOST_NAME),
+                _instance, _subnet, _vpc, _igw, AWS_BACKBONE_HOSTNAME, INTERNET_HOST_NAME),
             _batfish);
 
     // Test NAT behavior

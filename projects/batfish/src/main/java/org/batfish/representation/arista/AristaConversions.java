@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.arista.AristaConfiguration.MAX_ADMINISTRATIVE_COST;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -65,6 +66,7 @@ import org.batfish.representation.arista.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
 import org.batfish.representation.arista.eos.AristaBgpNeighborAddressFamily;
+import org.batfish.representation.arista.eos.AristaBgpPeerFilter;
 import org.batfish.representation.arista.eos.AristaBgpProcess;
 import org.batfish.representation.arista.eos.AristaBgpV4DynamicNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpV4Neighbor;
@@ -186,7 +188,7 @@ final class AristaConversions {
     }
 
     // No remote AS set.
-    if (neighbor.getRemoteAs() == null) {
+    if (neighbor.getRemoteAs() == null && neighbor.getPeerFilter() == null) {
       w.redFlag("No remote-as configured for " + name);
       return false;
     }
@@ -222,6 +224,7 @@ final class AristaConversions {
                             e.getValue(),
                             false,
                             vxlan,
+                            ImmutableMap.of(), // peer filters not needed for non-dynamic peers
                             warnings)));
   }
 
@@ -233,6 +236,7 @@ final class AristaConversions {
       AristaBgpProcess bgpConfig,
       AristaBgpVrf bgpVrf,
       @Nullable AristaEosVxlan vxlan,
+      Map<String, AristaBgpPeerFilter> peerFilters,
       Warnings warnings) {
     return bgpVrf.getV4DynamicNeighbors().entrySet().stream()
         .peek(e -> e.getValue().inherit(bgpConfig, bgpVrf, warnings))
@@ -252,6 +256,7 @@ final class AristaConversions {
                             e.getValue(),
                             true,
                             vxlan,
+                            peerFilters,
                             warnings)));
   }
 
@@ -304,6 +309,26 @@ final class AristaConversions {
     return null;
   }
 
+  /** Compute the remote AS space for a dynamic BGP neighbor */
+  @Nonnull
+  @VisibleForTesting
+  static LongSpace getAsnSpace(
+      AristaBgpV4DynamicNeighbor neighbor, Map<String, AristaBgpPeerFilter> peerFilters) {
+    if (neighbor.getRemoteAs() != null) {
+      return LongSpace.of(neighbor.getRemoteAs());
+    } else if (neighbor.getPeerFilter() != null) {
+      AristaBgpPeerFilter peerFilter = peerFilters.get(neighbor.getPeerFilter());
+      if (peerFilter == null) {
+        // If the filter does not exist, accept any ASN:
+        // http://www.arista.com/en/um-eos/eos-section-33-2-configuring-bgp#ww1319501
+        return BgpPeerConfig.ALL_AS_NUMBERS;
+      }
+      return peerFilter.toLongSpace();
+    } else {
+      return LongSpace.EMPTY;
+    }
+  }
+
   @Nonnull
   private static BgpPeerConfig toBgpNeighbor(
       Configuration c,
@@ -315,18 +340,17 @@ final class AristaConversions {
       AristaBgpNeighbor neighbor,
       boolean dynamic,
       @Nullable AristaEosVxlan vxlan,
+      Map<String, AristaBgpPeerFilter> peerFilters,
       Warnings warnings) {
     // We should be converting only concrete (active or dynamic) neighbors
     assert neighbor instanceof AristaBgpHasPeerGroup;
 
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
     if (dynamic) {
+      assert neighbor instanceof AristaBgpV4DynamicNeighbor;
       newNeighborBuilder =
           BgpPassivePeerConfig.builder()
-              .setRemoteAsns(
-                  Optional.ofNullable(neighbor.getRemoteAs())
-                      .map(LongSpace::of)
-                      .orElse(LongSpace.EMPTY))
+              .setRemoteAsns(getAsnSpace((AristaBgpV4DynamicNeighbor) neighbor, peerFilters))
               .setPeerPrefix(prefix);
     } else {
       newNeighborBuilder =

@@ -5,16 +5,19 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchPorts;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchTcp;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
-import static org.batfish.representation.aws.Region.instanceEgressAclName;
+import static org.batfish.representation.aws.Region.eniEgressAclName;
+import static org.batfish.representation.aws.Region.eniIngressAclName;
+import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
-import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -28,6 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Collection;
@@ -35,6 +39,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.common.Warnings;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AclAclLine;
@@ -51,6 +56,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -98,7 +104,8 @@ public class RdsInstanceTest {
     Map<String, Configuration> configurations = loadAwsConfigurations();
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
 
-    // check that RDS instance is a neighbor of both  subnets in which its interfaces are
+    // check that RDS instance is a neighbor of the deterministically chosen subnets in which its
+    // interfaces are located.
     assertThat(
         topology.getEdges(),
         hasItem(
@@ -106,13 +113,6 @@ public class RdsInstanceTest {
                 NodeInterfacePair.of(
                     "subnet-073b8061", Subnet.instancesInterfaceName("subnet-073b8061")),
                 NodeInterfacePair.of("test-rds", "test-rds-subnet-073b8061"))));
-    assertThat(
-        topology.getEdges(),
-        hasItem(
-            new Edge(
-                NodeInterfacePair.of(
-                    "subnet-1f315846", Subnet.instancesInterfaceName("subnet-1f315846")),
-                NodeInterfacePair.of("test-rds", "test-rds-subnet-1f315846"))));
   }
 
   @Test
@@ -136,14 +136,12 @@ public class RdsInstanceTest {
   @Test
   public void testDefaultRoute() throws IOException {
     Map<String, Configuration> configurations = loadAwsConfigurations();
-    StaticRoute defaultRoute1 = _staticRouteBuilder.setNextHopIp(Ip.parse("172.31.0.1")).build();
-    StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
+    StaticRoute defaultRoute = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
 
-    // checking that both default routes exist(to both the subnets) in RDS instance
+    // checking that the default route is installed to the deterministically chosen subnet.
     assertThat(configurations, hasKey("test-rds"));
     assertThat(
-        configurations.get("test-rds").getDefaultVrf().getStaticRoutes(),
-        containsInAnyOrder(defaultRoute1, defaultRoute2));
+        configurations.get("test-rds").getDefaultVrf().getStaticRoutes(), contains(defaultRoute));
   }
 
   @Test
@@ -152,18 +150,18 @@ public class RdsInstanceTest {
 
     assertThat(configurations, hasKey("test-rds"));
     Configuration testRds = configurations.get("test-rds");
-    assertThat(testRds.getAllInterfaces().entrySet(), hasSize(2));
+    assertThat(testRds.getAllInterfaces().entrySet(), hasSize(1));
     assertThat(
-        testRds
-            .getIpAccessLists()
-            .get("~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
-        hasLines(
-            isExprAclLineThat(
-                hasMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
-                        traceElementForAddress(
-                            "destination", "0.0.0.0/0", AddressType.CIDR_IP))))));
+        testRds,
+        hasIpAccessList(
+            "~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
+            hasLines(
+                isExprAclLineThat(
+                    hasMatchCondition(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
+                            traceElementForAddress(
+                                "destination", "0.0.0.0/0", AddressType.CIDR_IP)))))));
     assertThat(
         testRds
             .getIpAccessLists()
@@ -193,28 +191,27 @@ public class RdsInstanceTest {
                                     HeaderSpace.builder()
                                         .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
                                         .build(),
-                                    traceElementForInstance(
-                                        "Test host (i-066b1b9957b9200e7)")))))))));
-    assertThat(
-        testRds.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
-        equalTo(
-            ImmutableList.of(
-                new AclAclLine(
-                    "Security Group Test Security Group",
-                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
-                    Utils.getTraceElementForSecurityGroup("Test Security Group")))));
+                                    traceElementEniPrivateIp(
+                                        "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))))))));
     for (Interface iface : testRds.getAllInterfaces().values()) {
-      assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
+      assertThat(iface.getIncomingFilter().getName(), equalTo(eniIngressAclName(iface.getName())));
+      assertThat(iface.getOutgoingFilter().getName(), equalTo(eniEgressAclName(iface.getName())));
       assertThat(
-          iface.getOutgoingFilter().getName(), equalTo(instanceEgressAclName(iface.getName())));
-      assertThat(
-          testRds.getIpAccessLists().get(instanceEgressAclName(iface.getName())).getLines(),
+          testRds.getIpAccessLists().get(eniEgressAclName(iface.getName())).getLines(),
           equalTo(
               ImmutableList.of(
                   computeAntiSpoofingFilter(iface),
                   new AclAclLine(
                       "Security Group Test Security Group",
                       "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~",
+                      Utils.getTraceElementForSecurityGroup("Test Security Group")))));
+      assertThat(
+          testRds.getIpAccessLists().get(eniIngressAclName(iface.getName())).getLines(),
+          equalTo(
+              ImmutableList.of(
+                  new AclAclLine(
+                      "Security Group Test Security Group",
+                      "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
                       Utils.getTraceElementForSecurityGroup("Test Security Group")))));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),
@@ -278,5 +275,33 @@ public class RdsInstanceTest {
         new RdsInstance(
                 "id", "az", "vpc", false, "stopped", ImmutableListMultimap.of(), ImmutableList.of())
             .isUp());
+  }
+
+  /** Test that the hierarchy is configured properly */
+  @Test
+  public void testToConfigurationNode_hierarchy() {
+    RdsInstance rds =
+        new RdsInstance(
+            "id",
+            "az",
+            "vpc",
+            false,
+            "available",
+            ImmutableListMultimap.of("az", "subnet-1", "az", "subnet-2"),
+            ImmutableList.of());
+
+    Subnet s2 = new Subnet(Prefix.parse("10.0.0.0/24"), "subnet-2", "vpc", "az", ImmutableMap.of());
+
+    Configuration cfg =
+        rds.toConfigurationNode(
+            new ConvertedConfiguration(),
+            Region.builder("r1").setSubnets(ImmutableMap.of(s2.getId(), s2)).build(),
+            new Warnings());
+
+    AwsFamily awsFamily = cfg.getVendorFamily().getAws();
+    // should pick subnet-2 since subnet-1 is missing.
+    assertThat(awsFamily.getSubnetId(), equalTo("subnet-2"));
+    assertThat(awsFamily.getVpcId(), equalTo("vpc"));
+    assertThat(awsFamily.getRegion(), equalTo("r1"));
   }
 }

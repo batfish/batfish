@@ -37,6 +37,7 @@ public enum AristaStructureType implements StructureType {
   MAC_ACCESS_LIST("mac acl"),
   NAMED_RSA_PUB_KEY("crypto named rsa pubkey"),
   NAT_POOL("nat pool"),
+  PEER_FILTER("peer-filter"),
   POLICY_MAP("policy-map"),
   PREFIX_LIST("ipv4 prefix-list"),
   PREFIX6_LIST("ipv6 prefix-list"),

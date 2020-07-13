@@ -350,7 +350,9 @@
     },
     "fileMap" : {
       "aws_configs" : [
-        "es-domain",
+        "0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+        "1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+        "__aws-services-gateway__",
         "igw-068fee63",
         "igw-9b93ddfc",
         "igw-fac5839d",

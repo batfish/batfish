@@ -1,0 +1,52 @@
+{
+  "Vpcs": [
+    {
+      "CidrBlock": "10.10.0.0/16",
+      "CidrBlockAssociationSet": [
+        {
+          "AssociationId": "vpc-cidr-assoc-08a5ab898ae8879ee",
+          "CidrBlock": "10.10.0.0/16",
+          "CidrBlockState": {
+            "State": "associated"
+          }
+        }
+      ],
+      "DhcpOptionsId": "dopt-6aa00410",
+      "InstanceTenancy": "default",
+      "IsDefault": false,
+      "OwnerId": "732168539940",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat"
+        }
+      ],
+      "VpcId": "vpc-065ea457071dd67bb"
+    },
+    {
+      "CidrBlock": "10.20.0.0/16",
+      "CidrBlockAssociationSet": [
+        {
+          "AssociationId": "vpc-cidr-assoc-0b38cee626e01e9de",
+          "CidrBlock": "10.20.0.0/16",
+          "CidrBlockState": {
+            "State": "associated"
+          }
+        }
+      ],
+      "DhcpOptionsId": "dopt-6aa00410",
+      "InstanceTenancy": "default",
+      "IsDefault": false,
+      "OwnerId": "732168539940",
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "bat2"
+        }
+      ],
+      "VpcId": "vpc-03ccec9d7758a283a"
+    }
+  ]
+}

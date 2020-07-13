@@ -20,14 +20,15 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 
 /** Represents an AWS security group */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
 public final class SecurityGroup implements AwsVpcEntity, Serializable {
+  static final String INGRESS = "INGRESS";
+  static final String EGRESS = "EGRESS";
 
   @Nullable private final String _description;
 
@@ -100,6 +101,17 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     _vpcId = vpcId;
   }
 
+  IpAccessList toAcl(Region region, boolean ingress, Warnings warnings) {
+    List<AclLine> aclLines = toAclLines(region, ingress, warnings);
+    // See note about naming on SecurityGroup#getGroupName.
+    return IpAccessList.builder()
+        .setName(
+            String.format(
+                "~%s~SECURITY-GROUP~%s~%s~", ingress ? INGRESS : EGRESS, _groupName, _groupId))
+        .setLines(aclLines)
+        .build();
+  }
+
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
   List<AclLine> toAclLines(Region region, boolean ingress, Warnings warnings) {
     ImmutableList.Builder<AclLine> aclLines = ImmutableList.builder();
@@ -163,18 +175,12 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _vpcId;
   }
 
-  private static String humanReadableInstanceName(Configuration c) {
-    if (c.getHumanName() == null) {
-      return c.getHostname();
-    }
-    return String.format("%s (%s)", c.getHumanName(), c.getHostname());
+  void addReferrerIp(Ip ip, String referrer) {
+    _referrerIps.put(ip, referrer);
   }
 
-  void updateConfigIps(Configuration configuration) {
-    configuration.getAllInterfaces().values().stream()
-        .flatMap(iface -> iface.getAllConcreteAddresses().stream())
-        .map(ConcreteInterfaceAddress::getIp)
-        .forEach(ip -> _referrerIps.put(ip, humanReadableInstanceName(configuration)));
+  void addReferrerIps(List<PrivateIpAddress> ips, String referrer) {
+    ips.forEach(pip -> addReferrerIp(pip.getPrivateIp(), referrer));
   }
 
   @Override

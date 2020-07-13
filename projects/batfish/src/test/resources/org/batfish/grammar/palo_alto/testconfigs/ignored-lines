@@ -62,6 +62,11 @@ set policy panorama application-filter SOFTWARE-UPDATES subcategory software-upd
 set policy panorama application-filter SOFTWARE-UPDATES technology client-server
 set policy panorama profiles virus
 #
+set log-collector NAME deviceconfig system service disable-icmp no
+set log-collector NAME secure-conn-client certificate-type none
+set log-collector-group GNAME logfwd-setting collectors NAME
+set log-collector-group GNAME general-setting management quota-settings disk-quota detailed 50
+#
 set shared botnet configuration http dynamic-dns enabled yes
 set shared botnet configuration other-applications irc yes
 set shared botnet configuration unknown-applications unknown-tcp destinations-per-hour 10
@@ -81,6 +86,8 @@ set mgt-config users admin public-key c3NoLX...
 set rulebase security rules RULE1 category streaming
 set rulebase security rules RULE1 hip-profiles any
 set rulebase security rules RULE1 source-user any
+set rulebase security rules RULE1 log-end no
+set rulebase security rules RULE1 log-start yes
 #
 set vsys vsys1 log-settings syslog NAME server NAME facility LOG_LOCAL0
 set vsys vsys1 log-settings syslog NAME server NAME format IETF
@@ -101,3 +108,8 @@ set template T1 config mgt-config users
 set template T1 config shared
 set template T1 config devices localhost.localdomain network vlan
 set template T1 config devices localhost.localdomain network virtual-wire
+
+set device-group DGNAME profiles spyware NAME rules NAME2 packet-capture disable
+set device-group DGNAME profiles vulnerability NAME rules NAME2 action alert
+set device-group DGNAME profile-group GROUPNAME spyware NAME2
+set device-group DGNAME profile-group GROUPNAME vulnerability NAME2

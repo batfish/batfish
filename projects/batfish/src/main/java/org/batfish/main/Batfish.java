@@ -7,6 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.bddreachability.BDDMultipathInconsistency.computeMultipathInconsistencies;
+import static org.batfish.bddreachability.BDDReachabilityUtils.constructFlows;
 import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
@@ -776,8 +777,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Entry<String, VendorConfiguration> config : vendorConfigurations.entrySet()) {
       VendorConfiguration vc = config.getValue();
       ConvertConfigurationJob job =
-          new ConvertConfigurationJob(
-              _settings, runtimeData.getRuntimeData(config.getKey()), vc, config.getKey());
+          new ConvertConfigurationJob(_settings, runtimeData, vc, config.getKey());
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -1380,10 +1380,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void outputAnswer(Answer answer, boolean writeLog) {
     try {
+      // Write answer to work json log if caller requested.
+      // Summarize that answer if all of the following are true:
+      // - answering a question
+      // - question successful
+      // - client did not request full successful answers
       String answerString = BatfishObjectMapper.writeString(answer);
+      boolean summarizeWorkJsonLogAnswer =
+          writeLog
+              && _settings.getQuestionName() != null
+              && !_settings.getAlwaysIncludeAnswerInWorkJsonLog()
+              && answer.getStatus() == AnswerStatus.SUCCESS;
+      String workJsonLogAnswerString;
+      if (summarizeWorkJsonLogAnswer) {
+        Answer summaryAnswer = new Answer();
+        summaryAnswer.setQuestion(answer.getQuestion());
+        summaryAnswer.setStatus(answer.getStatus());
+        summaryAnswer.setSummary(answer.getSummary());
+        // do not include answer elements
+        workJsonLogAnswerString = BatfishObjectMapper.writeString(summaryAnswer);
+      } else {
+        workJsonLogAnswerString = answerString;
+      }
       _logger.debug(answerString);
-      @Nullable String logString = writeLog ? answerString : null;
-      writeJsonAnswerWithLog(logString, answerString);
+      writeJsonAnswerWithLog(answerString, workJsonLogAnswerString, writeLog);
     } catch (Exception e) {
       BatfishException be = new BatfishException("Error in sending answer", e);
       try {
@@ -1391,8 +1411,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         failureAnswer.addAnswerElement(be.getBatfishStackTrace());
         String answerString = BatfishObjectMapper.writeString(failureAnswer);
         _logger.error(answerString);
-        @Nullable String logString = writeLog ? answerString : null;
-        writeJsonAnswerWithLog(logString, answerString);
+        // write "answer" to work json log if caller requested
+        writeJsonAnswerWithLog(answerString, answerString, writeLog);
       } catch (Exception e1) {
         _logger.errorf(
             "Could not serialize failure answer. %s", Throwables.getStackTraceAsString(e1));
@@ -2823,32 +2843,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               params.getFinalNodes(),
               params.getActions());
 
-      Set<Flow> flows =
-          reachableBDDs.entrySet().stream()
-              .flatMap(
-                  entry -> {
-                    IngressLocation loc = entry.getKey();
-                    BDD headerSpace = entry.getValue();
-                    Optional<Flow.Builder> optionalFlow = pkt.getFlow(headerSpace);
-                    if (!optionalFlow.isPresent()) {
-                      return Stream.of();
-                    }
-                    Flow.Builder flow = optionalFlow.get();
-                    flow.setIngressNode(loc.getNode());
-                    switch (loc.getType()) {
-                      case INTERFACE_LINK:
-                        flow.setIngressInterface(loc.getInterface());
-                        break;
-                      case VRF:
-                        flow.setIngressVrf(loc.getVrf());
-                        break;
-                      default:
-                        throw new BatfishException(
-                            "Unexpected IngressLocation Type: " + loc.getType().name());
-                    }
-                    return Stream.of(flow.build());
-                  })
-              .collect(ImmutableSet.toImmutableSet());
+      Set<Flow> flows = constructFlows(pkt, reachableBDDs);
 
       return new TraceWrapperAsAnswerElement(buildFlows(snapshot, flows, ignoreFilters));
     } finally {
@@ -3137,16 +3132,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _storage.storeAnswer(structuredAnswerString, baseAnswerId);
   }
 
-  private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString)
-      throws IOException {
-    // Write log of WorkItem task to the configured path for logs
-    if (logString != null && _settings.getTaskId() != null) {
+  private void writeJsonAnswerWithLog(
+      String answerOutput, String workJsonLogAnswerString, boolean writeLog) throws IOException {
+    if (writeLog && _settings.getTaskId() != null) {
       _storage.storeWorkJson(
-          logString, _settings.getContainer(), _settings.getTestrig(), _settings.getTaskId());
+          workJsonLogAnswerString,
+          _settings.getContainer(),
+          _settings.getTestrig(),
+          _settings.getTaskId());
     }
-    // Write answer.json and answer-pretty.json if WorkItem was answering a question
+    // Write answer if WorkItem was answering a question
     if (_settings.getQuestionName() != null) {
-      writeJsonAnswer(structuredAnswerString);
+      writeJsonAnswer(answerOutput);
     }
   }
 

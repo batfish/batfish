@@ -26,6 +26,7 @@ srn_definition
         | srn_from
         | srn_source
         | srn_destination
+        | srn_service
     )?
 ;
 
@@ -58,6 +59,11 @@ srn_destination
 srn_source
 :
     SOURCE src_or_dst_list
+;
+
+srn_service
+:
+    SERVICE service = variable
 ;
 
 srnst_dynamic_ip_and_port

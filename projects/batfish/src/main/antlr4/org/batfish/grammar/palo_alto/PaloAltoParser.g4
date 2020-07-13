@@ -49,7 +49,9 @@ newline
 s_null
 :
     (
-        MGT_CONFIG
+        LOG_COLLECTOR
+        | LOG_COLLECTOR_GROUP
+        | MGT_CONFIG
     )
     null_rest_of_line
 ;
@@ -171,6 +173,8 @@ statement_device_group
     | s_pre_rulebase
     | sdg_description
     | sdg_devices
+    | sdg_profiles
+    | sdg_profile_group
 ;
 
 set_line_tail

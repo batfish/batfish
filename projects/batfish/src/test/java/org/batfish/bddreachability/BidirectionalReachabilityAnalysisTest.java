@@ -65,6 +65,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.FlowDisposition;
@@ -740,7 +741,8 @@ public final class BidirectionalReachabilityAnalysisTest {
     IpAccessList permitUdpAcl =
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(permitUdpLine)).build();
     fwI2.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(), null, permitUdpAcl.getName()));
+        new FirewallSessionInterfaceInfo(
+            false, ImmutableList.of(fwI2.getName()), null, permitUdpAcl.getName()));
 
     // transform source IP before setting up session on fwI3
     Ip poolIp = Ip.parse("5.5.5.5");
@@ -1047,7 +1049,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     // Now allow the VRF to originate sessions. Return flows should succeed, as long as they aren't
     // destined for the interface address (i.e. original flow's src IP wasn't interface address).
-    vrf.setHasOriginatingSessions(true);
+    vrf.setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
     BDD expectedSuccessDstIp = PKT.getDstIp().value(SFL_INGRESS_IFACE_ADDRESS.getIp().asLong());
     BDD expectedSuccessSrcIps =
         PKT.getSrcIp().value(SFL_INGRESS_IFACE_ADDRESS.getIp().asLong()).not();

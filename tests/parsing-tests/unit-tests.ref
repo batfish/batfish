@@ -1553,9 +1553,9 @@
             "      VARIABLE:'arista_bgp'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        BOOT:'boot'",
+            "    (s_boot",
+            "      BOOT:'boot'",
+            "      (null_rest_of_line",
             "        SYSTEM:'system'",
             "        FLASH:'flash'",
             "        VARIABLE:'fake.swi'",
@@ -2101,9 +2101,9 @@
           "sentences" : [
             "(arista_configuration",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        BOOT:'boot'",
+            "    (s_boot",
+            "      BOOT:'boot'",
+            "      (null_rest_of_line",
             "        SYSTEM:'system'",
             "        FLASH:'flash'",
             "        VARIABLE:'this-is-an-arista-device.swi'",
@@ -64136,10 +64136,9 @@
             "            SYSTEM:'system'",
             "            (sy_ntp",
             "              NTP:'ntp'",
-            "              (syn_null",
+            "              (syn_source_address",
             "                SOURCE_ADDRESS:'source-address'",
-            "                (null_filler",
-            "                  IP_ADDRESS:'2.3.4.5')))))))",
+            "                address = IP_ADDRESS:'2.3.4.5'))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -68932,10 +68931,9 @@
             "            SYSTEM:'system'",
             "            (sy_syslog",
             "              SYSLOG:'syslog'",
-            "              (sys_null",
+            "              (sys_source_address",
             "                SOURCE_ADDRESS:'source-address'",
-            "                (null_filler",
-            "                  IP_ADDRESS:'5.6.7.8')))))))",
+            "                address = IP_ADDRESS:'5.6.7.8'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -86542,6 +86540,7 @@
       },
       "fileMap" : {
         "aws_configs" : [
+          "__aws-services-gateway__",
           "nat-08c21704416f06046",
           "nat-09fd8f73171d2d9a3"
         ],
@@ -95404,6 +95403,18 @@
       },
       "version" : "0.36.0",
       "warnings" : {
+        "__aws-services-gateway__" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Network interface eni-dba5f6e8 not found for NAT gateway nat-08c21704416f06046."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Network interface eni-3f245d1f not found for NAT gateway nat-09fd8f73171d2d9a3."
+            }
+          ]
+        },
         "address_family" : {
           "Red flags" : [
             {

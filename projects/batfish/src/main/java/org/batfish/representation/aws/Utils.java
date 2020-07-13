@@ -3,6 +3,9 @@ package org.batfish.representation.aws;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 
@@ -20,6 +23,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -35,6 +40,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -161,36 +167,6 @@ final class Utils {
         .setAddress(primaryAddress)
         .setDescription(description)
         .build();
-  }
-
-  /**
-   * Updates {@link Region}'s mapping between {@link Configuration} names and {@link SecurityGroup}
-   * for a given configuration. Also updates {@link org.batfish.datamodel.Ip} of instances in {@link
-   * SecurityGroup}
-   *
-   * @param region {@link Region} in which the configuration is in
-   * @param configuration {@link Configuration} for which security groups are to be processed
-   * @param securityGroupsIds {@link List} of security group IDs
-   * @param warnings {@link Warnings} for the configuration
-   */
-  static void processSecurityGroups(
-      Region region,
-      Configuration configuration,
-      List<String> securityGroupsIds,
-      Warnings warnings) {
-    for (String sGroupId : securityGroupsIds) {
-      SecurityGroup securityGroup = region.getSecurityGroups().get(sGroupId);
-      if (securityGroup == null) {
-        warnings.pedantic(
-            String.format(
-                "Security group \"%s\" for \"%s\" not found",
-                sGroupId, configuration.getHostname()));
-        continue;
-      }
-      region.updateConfigurationSecurityGroups(configuration.getHostname(), securityGroup);
-
-      securityGroup.updateConfigIps(configuration);
-    }
   }
 
   @Nullable
@@ -371,11 +347,15 @@ final class Utils {
   }
 
   static String interfaceNameToRemote(Configuration remoteCfg) {
-    return interfaceNameToRemote(remoteCfg, "");
+    return interfaceNameToRemote(remoteCfg.getHostname(), "");
   }
 
   static String interfaceNameToRemote(Configuration remoteCfg, String suffix) {
-    return suffix.isEmpty() ? remoteCfg.getHostname() : remoteCfg.getHostname() + "-" + suffix;
+    return interfaceNameToRemote(remoteCfg.getHostname(), suffix);
+  }
+
+  static String interfaceNameToRemote(String remoteCfgHostname, String suffix) {
+    return suffix.isEmpty() ? remoteCfgHostname : remoteCfgHostname + "-" + suffix;
   }
 
   /** Adds a bidirectional layer1 edge between the interfaces and nodes */
@@ -495,6 +475,35 @@ final class Utils {
     return iface;
   }
 
+  /**
+   * Creates an interface, BGP process, and BGP peer to connect to the backbone. {@code
+   * exportPolicyName} is configured on the peer. This policy must be installed on the node
+   * separately.
+   */
+  static void createBackboneConnection(Configuration cfgNode, Vrf vrf, String exportPolicyName) {
+    Utils.newInterface(
+        BACKBONE_FACING_INTERFACE_NAME,
+        cfgNode,
+        vrf.getName(),
+        LinkLocalAddress.of(LINK_LOCAL_IP),
+        "To AWS backbone");
+    BgpProcess bgpProcess =
+        BgpProcess.builder()
+            .setRouterId(LINK_LOCAL_IP)
+            .setVrf(vrf)
+            .setAdminCostsToVendorDefaults(ConfigurationFormat.AWS)
+            .build();
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(BACKBONE_FACING_INTERFACE_NAME)
+        .setRemoteAs(AWS_BACKBONE_ASN)
+        .setLocalIp(LINK_LOCAL_IP)
+        .setLocalAs(BACKBONE_PEERING_ASN)
+        .setBgpProcess(bgpProcess)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder().setExportPolicy(exportPolicyName).build())
+        .build();
+  }
+
   /** Extracts the text content of the first element with {@code tag} within {@code element}. */
   static String textOfFirstXmlElementWithTag(Element element, String tag) {
     NodeList nodes = element.getElementsByTagName(tag);
@@ -545,8 +554,8 @@ final class Utils {
     return TraceElement.of(String.format("Matched destination ports [%s-%s]", low, high));
   }
 
-  static TraceElement traceElementForInstance(String instanceName) {
-    return TraceElement.of(String.format("Matched instance %s", instanceName));
+  static TraceElement traceElementEniPrivateIp(String eniDescription) {
+    return TraceElement.of(String.format("Matched private IP of %s", eniDescription));
   }
 
   static TraceElement traceElementForIcmpType(int type) {

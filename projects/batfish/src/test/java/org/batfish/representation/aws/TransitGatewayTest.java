@@ -5,16 +5,20 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.TransitGateway.connectVpc;
 import static org.batfish.representation.aws.TransitGateway.createBgpProcess;
+import static org.batfish.representation.aws.TransitGateway.sendSidePeeringInterfaceName;
 import static org.batfish.representation.aws.TransitGateway.supportedVpnBgpConfiguration;
 import static org.batfish.representation.aws.TransitGateway.vrfNameForRouteTable;
 import static org.batfish.representation.aws.TransitGatewayAttachment.STATE_ASSOCIATED;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
+import static org.batfish.representation.aws.VpnConnection.VPN_UNDERLAY_VRF_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertFalse;
@@ -25,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import org.batfish.common.Warnings;
@@ -116,8 +121,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "tgw-attach",
             tgw.getId(),
+            "account",
             ResourceType.VPC,
             vpc.getId(),
+            "account",
             new Association(routeTableId, STATE_ASSOCIATED));
 
     TransitGatewayVpcAttachment vpcAttachment =
@@ -193,8 +200,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "tgw-attach",
             tgwId,
+            "account",
             ResourceType.VPC,
             vpc.getId(),
+            "account",
             new Association(routeTableId, STATE_ASSOCIATED));
 
     Region region =
@@ -252,7 +261,8 @@ public class TransitGatewayTest {
     Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
 
     TransitGatewayAttachment tgwAttachment =
-        new TransitGatewayAttachment("tgw-attach", tgwId, ResourceType.VPC, vpc.getId(), null);
+        new TransitGatewayAttachment(
+            "tgw-attach", tgwId, "account", ResourceType.VPC, vpc.getId(), "account", null);
 
     Region region =
         Region.builder("region")
@@ -332,8 +342,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "tgw-attach",
             tgw.getId(),
+            "account",
             ResourceType.VPN,
             vpnConnection.getId(),
+            "account",
             new Association(routeTableId, STATE_ASSOCIATED));
 
     Region region =
@@ -356,6 +368,10 @@ public class TransitGatewayTest {
     Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
+    // check that vpn connection was property initialized
+    assertTrue(tgwCfg.getVrfs().containsKey(VPN_UNDERLAY_VRF_NAME));
+    assertTrue(tgwCfg.getAllInterfaces().containsKey(BACKBONE_FACING_INTERFACE_NAME));
+
     // check that the vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
@@ -364,7 +380,7 @@ public class TransitGatewayTest {
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(VPN_UNDERLAY_VRF_NAME));
   }
 
   @Test
@@ -394,8 +410,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "tgw-attach",
             tgw.getId(),
+            "account",
             ResourceType.VPN,
             vpnConnection.getId(),
+            "account",
             new Association(routeTableId, STATE_ASSOCIATED));
 
     TransitGatewayPropagations associatedPropagation =
@@ -425,6 +443,10 @@ public class TransitGatewayTest {
     assertThat(tgwCfg.getHumanName(), equalTo("tgw-name"));
     assertThat(tgwCfg, hasDeviceModel(DeviceModel.AWS_TRANSIT_GATEWAY));
 
+    // check that vpn connection was property initialized
+    assertTrue(tgwCfg.getVrfs().containsKey(VPN_UNDERLAY_VRF_NAME));
+    assertTrue(tgwCfg.getAllInterfaces().containsKey(BACKBONE_FACING_INTERFACE_NAME));
+
     // check that the vrf exists
     assertTrue(tgwCfg.getVrfs().containsKey(vrfNameForRouteTable(routeTableId)));
 
@@ -437,7 +459,92 @@ public class TransitGatewayTest {
         tgwCfg
             .getAllInterfaces()
             .get(vpnExternalInterfaceName(vpnTunnelId(vpnConnection.getId(), 1)));
-    assertThat(tgwInterface, hasVrfName(vrfNameForRouteTable(routeTableId)));
+    assertThat(tgwInterface, hasVrfName(VPN_UNDERLAY_VRF_NAME));
+  }
+
+  @Test
+  public void testConnectPeeringAttachment() {
+
+    String routeTable1Id = "rtb-1";
+    String routeTable2Id = "rtb-2";
+    TransitGateway tgw =
+        new TransitGateway(
+            "tgw",
+            new TransitGatewayOptions(0L, true, routeTable1Id, true, "tgw-rtb", true),
+            "123456789012",
+            ImmutableMap.of());
+
+    TransitGatewayAttachment tgwAttachment =
+        new TransitGatewayAttachment(
+            "tgw-attach",
+            tgw.getId(),
+            "account",
+            ResourceType.PEERING,
+            "peerTgwId",
+            "peerAccountId",
+            new Association(routeTable1Id, STATE_ASSOCIATED));
+
+    Prefix prefix1 = Prefix.parse("1.1.1.1/32");
+    Prefix prefix2 = Prefix.parse("2.2.2.2/32");
+    TransitGatewayStaticRoutes staticRoutes =
+        new TransitGatewayStaticRoutes(
+            routeTable1Id,
+            ImmutableList.of(
+                new TransitGatewayRouteV4(
+                    prefix1, State.ACTIVE, Type.STATIC, ImmutableList.of(tgwAttachment.getId())),
+                new TransitGatewayRouteV4(
+                    prefix2, State.ACTIVE, Type.STATIC, ImmutableList.of(tgwAttachment.getId()))));
+
+    Region region =
+        Region.builder("region")
+            .setTransitGateways(ImmutableMap.of(tgw.getId(), tgw))
+            .setTransitGatewayAttachments(ImmutableMap.of(tgwAttachment.getId(), tgwAttachment))
+            .setTransitGatewayRouteTables(
+                ImmutableMap.of(
+                    routeTable1Id,
+                    new TransitGatewayRouteTable(routeTable1Id, tgw.getId(), true, true),
+                    routeTable2Id,
+                    new TransitGatewayRouteTable(routeTable2Id, tgw.getId(), true, true)))
+            .setTransitGatewayStaticRoutes(ImmutableMap.of(staticRoutes.getId(), staticRoutes))
+            .build();
+
+    AwsConfiguration vsConfig = new AwsConfiguration();
+    vsConfig.addOrGetAccount("acc").addRegion(region);
+
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+
+    Warnings warnings = new Warnings(true, true, true);
+    Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
+
+    // interfaces are created
+    assertThat(
+        tgwCfg.getAllInterfaces().keySet(),
+        equalTo(
+            ImmutableSet.of(
+                sendSidePeeringInterfaceName(routeTable1Id, tgwAttachment.getId()),
+                sendSidePeeringInterfaceName(routeTable2Id, tgwAttachment.getId()))));
+
+    // has the right VRF
+    assertThat(
+        tgwCfg
+            .getAllInterfaces()
+            .get(sendSidePeeringInterfaceName(routeTable1Id, tgwAttachment.getId()))
+            .getVrfName(),
+        equalTo(vrfNameForRouteTable(routeTable1Id)));
+
+    // routes are added
+    assertThat(
+        tgwCfg.getVrfs().get(vrfNameForRouteTable(routeTable1Id)).getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.of(
+                toStaticRoute(
+                    prefix1,
+                    sendSidePeeringInterfaceName(routeTable1Id, tgwAttachment.getId()),
+                    LINK_LOCAL_IP),
+                toStaticRoute(
+                    prefix2,
+                    sendSidePeeringInterfaceName(routeTable1Id, tgwAttachment.getId()),
+                    LINK_LOCAL_IP))));
   }
 
   @Test
@@ -474,8 +581,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "tgw-attach",
             tgw.getId(),
+            "account",
             ResourceType.VPC,
             vpc.getId(),
+            "account",
             new Association(routeTableId, STATE_ASSOCIATED));
 
     TransitGatewayVpcAttachment vpcAttachment =
@@ -551,8 +660,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "tgw-attach",
             tgw.getId(),
+            "account",
             ResourceType.VPC,
             vpc.getId(),
+            "account",
             new Association(routeTableId, STATE_ASSOCIATED));
 
     TransitGatewayVpcAttachment vpcAttachment =
@@ -643,8 +754,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "tgw-attach",
             tgw.getId(),
+            "account",
             ResourceType.VPN,
             vpnConnection.getId(),
+            "account",
             new Association(routeTableId, STATE_ASSOCIATED));
 
     TransitGatewayRouteTable routeTable =
@@ -694,8 +807,10 @@ public class TransitGatewayTest {
         new TransitGatewayAttachment(
             "attachment",
             "tgw",
+            "account",
             ResourceType.VPN,
             "vpn",
+            "account",
             new Association(routeTableId, "associated"));
     VpnConnection vpnConnection =
         new VpnConnection(

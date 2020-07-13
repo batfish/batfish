@@ -1480,7 +1480,7 @@ eos_rbibl_range
   )
   (PEER_GROUP | PEER GROUP) pg = variable
   (
-    PEER_FILTER peer_filter = variable
+    PEER_FILTER peer_filter = WORD
     | REMOTE_AS asn = bgp_asn
   )
   NEWLINE

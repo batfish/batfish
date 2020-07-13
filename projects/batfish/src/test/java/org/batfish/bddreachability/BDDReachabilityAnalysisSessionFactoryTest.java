@@ -37,6 +37,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
@@ -179,7 +180,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
     Interface fwi2;
     {
       Vrf vrf = nf.vrfBuilder().setName(FW_VRF).setOwner(fw).build();
-      vrf.setHasOriginatingSessions(true);
+      vrf.setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(true));
       ib.setOwner(fw).setVrf(vrf);
       fwi1 = ib.setName(FWI1).build();
       fwi2 = ib.setName(FWI2).build();

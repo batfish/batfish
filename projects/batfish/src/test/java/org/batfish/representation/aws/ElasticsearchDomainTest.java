@@ -10,13 +10,16 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceMode
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DOMAIN_STATUS_LIST;
+import static org.batfish.representation.aws.ElasticsearchDomain.getNodeName;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
-import static org.batfish.representation.aws.Region.instanceEgressAclName;
+import static org.batfish.representation.aws.Region.eniEgressAclName;
+import static org.batfish.representation.aws.Region.eniIngressAclName;
+import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
-import static org.batfish.representation.aws.Utils.traceElementForInstance;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.batfish.representation.aws.Utils.traceTextForAddress;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -27,13 +30,17 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
+import org.batfish.common.Warnings;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AclAclLine;
@@ -52,6 +59,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.vendor_family.AwsFamily;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -66,6 +74,9 @@ public class ElasticsearchDomainTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   private StaticRoute.Builder _staticRouteBuilder;
+  private Map<String, Configuration> _configurations;
+  private String _node0Name;
+  private String _node1Name;
 
   public static final MatchHeaderSpace matchTcp =
       new MatchHeaderSpace(
@@ -78,15 +89,26 @@ public class ElasticsearchDomainTest {
   }
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     _staticRouteBuilder =
         StaticRoute.builder()
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
             .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
             .setNetwork(Prefix.ZERO);
+    _node0Name =
+        getNodeName(
+            0,
+            "arn:aws:es:us-west-2:118292266645:domain/es-domain",
+            "vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com");
+    _node1Name =
+        getNodeName(
+            1,
+            "arn:aws:es:us-west-2:118292266645:domain/es-domain",
+            "vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com");
+    _configurations = loadAwsConfigurations();
   }
 
-  public Map<String, Configuration> loadAwsConfigurations() throws IOException {
+  private Map<String, Configuration> loadAwsConfigurations() throws IOException {
     List<String> awsFilenames =
         ImmutableList.of(
             "ElasticsearchDomains.json",
@@ -107,8 +129,7 @@ public class ElasticsearchDomainTest {
 
   @Test
   public void testEsSubnetEdge() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
-    Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
+    Topology topology = TopologyUtil.synthesizeL3Topology(_configurations);
 
     // check that ES instance is a neighbor of both  subnets in which its interfaces are
     assertThat(
@@ -117,23 +138,21 @@ public class ElasticsearchDomainTest {
             new Edge(
                 NodeInterfacePair.of(
                     "subnet-073b8061", Subnet.instancesInterfaceName("subnet-073b8061")),
-                NodeInterfacePair.of("es-domain", "es-domain-subnet-073b8061"))));
+                NodeInterfacePair.of(_node0Name, "subnet-073b8061"))));
     assertThat(
         topology.getEdges(),
         hasItem(
             new Edge(
                 NodeInterfacePair.of(
                     "subnet-1f315846", Subnet.instancesInterfaceName("subnet-1f315846")),
-                NodeInterfacePair.of("es-domain", "es-domain-subnet-1f315846"))));
+                NodeInterfacePair.of(_node1Name, "subnet-1f315846"))));
   }
 
+  /** Check that IPs are unique for all the interfaces */
   @Test
   public void testUniqueIps() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
-
-    // check that  IPs are unique for all the interfaces
     List<Ip> ipsAsList =
-        configurations.values().stream()
+        _configurations.values().stream()
             .map(Configuration::getAllInterfaces)
             .map(Map::values)
             .flatMap(Collection::stream)
@@ -146,16 +165,17 @@ public class ElasticsearchDomainTest {
   }
 
   @Test
-  public void testDefaultRoute() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
+  public void testDefaultRoute() {
+    StaticRoute defaultRoute0 = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
     StaticRoute defaultRoute1 = _staticRouteBuilder.setNextHopIp(Ip.parse("172.31.0.1")).build();
-    StaticRoute defaultRoute2 = _staticRouteBuilder.setNextHopIp(Ip.parse("192.168.2.17")).build();
 
-    // checking that both default routes exist(to both the subnets) in RDS instance
-    assertThat(configurations, hasKey("es-domain"));
+    assertThat(_configurations, allOf(hasKey(_node0Name), hasKey(_node1Name)));
     assertThat(
-        configurations.get("es-domain").getDefaultVrf().getStaticRoutes(),
-        containsInAnyOrder(defaultRoute1, defaultRoute2));
+        _configurations.get(_node0Name).getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(defaultRoute0));
+    assertThat(
+        _configurations.get(_node1Name).getDefaultVrf().getStaticRoutes(),
+        containsInAnyOrder(defaultRoute1));
   }
 
   @Test
@@ -177,23 +197,23 @@ public class ElasticsearchDomainTest {
         equalTo(
             ImmutableList.of(
                 new ElasticsearchDomain(
+                    "arn:aws:es:us-west-2:118292266645:domain/es-domain",
                     "es-domain",
                     "vpc-b390fad5",
+                    "vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+                    2,
                     ImmutableList.of("sg-55510831"),
                     ImmutableList.of("subnet-7044ff16"),
                     true))));
   }
 
   @Test
-  public void testSecurityGroupsAcl() throws IOException {
-    Map<String, Configuration> configurations = loadAwsConfigurations();
-
-    assertThat(configurations, hasKey("es-domain"));
-    Configuration esDomain = configurations.get("es-domain");
-    assertThat(esDomain, hasDeviceModel(DeviceModel.AWS_ELASTICSEARCH_DOMAIN));
-    assertThat(esDomain.getAllInterfaces().entrySet(), hasSize(2));
+  public void testSecurityGroupsAcl() {
+    Configuration node0 = _configurations.get(_node0Name);
+    assertThat(node0, hasDeviceModel(DeviceModel.AWS_ELASTICSEARCH_DOMAIN));
+    assertThat(node0.getAllInterfaces().entrySet(), hasSize(1));
     assertThat(
-        esDomain
+        node0
             .getIpAccessLists()
             .get("~EGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
@@ -204,7 +224,7 @@ public class ElasticsearchDomainTest {
                         traceElementForAddress(
                             "destination", "0.0.0.0/0", AddressType.CIDR_IP))))));
     assertThat(
-        esDomain
+        node0
             .getIpAccessLists()
             .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
@@ -232,22 +252,13 @@ public class ElasticsearchDomainTest {
                                     HeaderSpace.builder()
                                         .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
                                         .build(),
-                                    traceElementForInstance(
-                                        "Test host (i-066b1b9957b9200e7)")))))))));
-    assertThat(
-        esDomain.getIpAccessLists().get("~SECURITY_GROUP_INGRESS_ACL~").getLines(),
-        equalTo(
-            ImmutableList.of(
-                new AclAclLine(
-                    "Security Group Test Security Group",
-                    "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
-                    Utils.getTraceElementForSecurityGroup("Test Security Group")))));
-    for (Interface iface : esDomain.getAllInterfaces().values()) {
-      assertThat(iface.getIncomingFilter().getName(), equalTo("~SECURITY_GROUP_INGRESS_ACL~"));
+                                    traceElementEniPrivateIp(
+                                        "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))))))));
+    for (Interface iface : node0.getAllInterfaces().values()) {
+      assertThat(iface.getIncomingFilter().getName(), equalTo(eniIngressAclName(iface.getName())));
+      assertThat(iface.getOutgoingFilter().getName(), equalTo(eniEgressAclName(iface.getName())));
       assertThat(
-          iface.getOutgoingFilter().getName(), equalTo(instanceEgressAclName(iface.getName())));
-      assertThat(
-          esDomain.getIpAccessLists().get(instanceEgressAclName(iface.getName())).getLines(),
+          node0.getIpAccessLists().get(eniEgressAclName(iface.getName())).getLines(),
           equalTo(
               ImmutableList.of(
                   computeAntiSpoofingFilter(iface),
@@ -256,10 +267,134 @@ public class ElasticsearchDomainTest {
                       "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~",
                       Utils.getTraceElementForSecurityGroup("Test Security Group")))));
       assertThat(
+          node0.getIpAccessLists().get(eniIngressAclName(iface.getName())).getLines(),
+          equalTo(
+              ImmutableList.of(
+                  new AclAclLine(
+                      "Security Group Test Security Group",
+                      "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
+                      Utils.getTraceElementForSecurityGroup("Test Security Group")))));
+      assertThat(
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(
               new FirewallSessionInterfaceInfo(
                   false, ImmutableList.of(iface.getName()), null, null)));
     }
+  }
+
+  /** Test that the hierarchy and human name is configured properly */
+  @Test
+  public void testToConfigurationNode() {
+    Subnet subnet =
+        new Subnet(Prefix.parse("1.1.1.0/24"), "subnet", "vpc", "az", ImmutableMap.of());
+    ElasticsearchDomain esd =
+        new ElasticsearchDomain(
+            "arn",
+            "es-domain",
+            "vpc",
+            "vpcEndpoint",
+            4,
+            ImmutableList.of("sg"),
+            ImmutableList.of(subnet.getId()),
+            true);
+
+    Configuration cfg =
+        esd.toConfigurationNode(
+            0,
+            subnet.getId(),
+            new ConvertedConfiguration(),
+            Region.builder("r1").setSubnets(ImmutableMap.of(subnet.getId(), subnet)).build(),
+            new Warnings());
+
+    AwsFamily awsFamily = cfg.getVendorFamily().getAws();
+    assertThat(awsFamily.getSubnetId(), equalTo(esd.getSubnets().get(0)));
+    assertThat(awsFamily.getVpcId(), equalTo("vpc"));
+    assertThat(awsFamily.getRegion(), equalTo("r1"));
+    assertThat(cfg.getHumanName(), equalTo(esd.getDomainName()));
+  }
+
+  /** Test that the expected set of nodes is generated by the entry function */
+  @Test
+  public void testToConfigurationNodes() {
+    Subnet subnet0 =
+        new Subnet(Prefix.parse("1.1.1.0/24"), "subnet0", "vpc", "az", ImmutableMap.of());
+    Subnet subnet1 =
+        new Subnet(Prefix.parse("1.1.1.0/24"), "subnet1", "vpc", "az", ImmutableMap.of());
+    ElasticsearchDomain esd =
+        new ElasticsearchDomain(
+            "arn",
+            "es-domain",
+            "vpc",
+            "vpcendpoint",
+            4,
+            ImmutableList.of("sg"),
+            ImmutableList.of(subnet0.getId(), subnet1.getId()),
+            true);
+
+    List<Configuration> configurations =
+        esd.toConfigurationNodes(
+            new ConvertedConfiguration(),
+            Region.builder("r1")
+                .setSubnets(ImmutableMap.of(subnet0.getId(), subnet0, subnet1.getId(), subnet1))
+                .build(),
+            new Warnings());
+
+    assertThat(
+        configurations.stream()
+            .map(Configuration::getHostname)
+            .collect(ImmutableList.toImmutableList()),
+        equalTo(
+            IntStream.range(0, esd.getInstanceCount())
+                .mapToObj(i -> getNodeName(i, esd.getId(), esd.getVpcEndpoint()))
+                .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn", "domain", "vpc", "point", 1, ImmutableList.of(), ImmutableList.of(), true),
+            new ElasticsearchDomain(
+                "arn", "domain", "vpc", "point", 1, ImmutableList.of(), ImmutableList.of(), true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "other", "domain", "vpc", "point", 1, ImmutableList.of(), ImmutableList.of(), true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn", "other", "vpc", "point", 1, ImmutableList.of(), ImmutableList.of(), true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn", "domain", "other", "point", 1, ImmutableList.of(), ImmutableList.of(), true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn", "domain", "vpc", "other", 1, ImmutableList.of(), ImmutableList.of(), true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn", "domain", "vpc", "point", 0, ImmutableList.of(), ImmutableList.of(), true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn",
+                "domain",
+                "vpc",
+                "point",
+                1,
+                ImmutableList.of("other"),
+                ImmutableList.of(),
+                true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn",
+                "domain",
+                "vpc",
+                "point",
+                1,
+                ImmutableList.of(),
+                ImmutableList.of("other"),
+                true))
+        .addEqualityGroup(
+            new ElasticsearchDomain(
+                "arn", "domain", "vpc", "point", 1, ImmutableList.of(), ImmutableList.of(), false))
+        .testEquals();
   }
 }

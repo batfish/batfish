@@ -14,6 +14,7 @@ import com.google.common.collect.Multimap;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -286,19 +287,22 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     cfgNode.getVendorFamily().getAws().setVpcId(_vpcId);
     cfgNode.getVendorFamily().getAws().setRegion(region.getName());
 
-    // get subnets for the availability zone set for this instance
-    List<String> subnets = _azsSubnetIds.get(_availabilityZone);
-
-    // create an interface per subnet
-    for (String subnetId : subnets) {
-      Subnet subnet = region.getSubnets().get(subnetId);
-      if (subnet == null) {
-        warnings.redFlag(
-            String.format(
-                "Subnet \"%s\" for RDS instance \"%s\" not found",
-                subnetId, _dbInstanceIdentifier));
-        continue;
-      }
+    // Deterministically pick a subnet in the right AZ that exists and has an available IP.
+    // TODO: this should be based on the rds-instance ENIs in the NetworkInterfaces.json, also by
+    // DNS address of the RDS interface.
+    List<String> subnetsInAz = _azsSubnetIds.get(_availabilityZone);
+    Optional<Subnet> matchingSubnet =
+        subnetsInAz.stream()
+            .sorted()
+            .map(s -> region.getSubnets().get(s))
+            .filter(Objects::nonNull) // exists
+            .filter(Subnet::hasNextIp) // has available IP
+            .findFirst();
+    // If such a subnet exists, put the instance in its aggregate and hook it up.
+    if (matchingSubnet.isPresent()) {
+      Subnet subnet = matchingSubnet.get();
+      String subnetId = subnet.getId();
+      cfgNode.getVendorFamily().getAws().setSubnetId(subnetId);
 
       String instancesIfaceName = String.format("%s-%s", _dbInstanceIdentifier, subnetId);
       Ip instancesIfaceIp = subnet.getNextIp();
@@ -312,8 +316,8 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
           awsConfiguration,
           cfgNode.getHostname(),
           instancesIfaceName,
-          Subnet.nodeName(subnet.getId()),
-          Subnet.instancesInterfaceName(subnet.getId()));
+          Subnet.nodeName(subnetId),
+          Subnet.instancesInterfaceName(subnetId));
 
       Ip defaultGatewayAddress = subnet.computeInstancesIfaceIp();
       StaticRoute defaultRoute =
@@ -325,8 +329,6 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
               .build();
       cfgNode.getDefaultVrf().getStaticRoutes().add(defaultRoute);
     }
-
-    Utils.processSecurityGroups(region, cfgNode, _securityGroups, warnings);
 
     return cfgNode;
   }

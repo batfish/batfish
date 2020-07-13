@@ -6,6 +6,7 @@ import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpcEndpointGateway.SERVICE_PREFIX_FILTER;
 import static org.batfish.representation.aws.VpcEndpointGateway.computeServicePrefixFilter;
+import static org.batfish.representation.aws.VpcEndpointGateway.humanName;
 import static org.batfish.representation.aws.VpcEndpointGateway.serviceInterfaceName;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.hamcrest.Matchers.equalTo;
@@ -152,5 +153,11 @@ public class VpcEndpointGatewayTest {
                 ImmutableMap.of())
             .getAction(),
         equalTo(LineAction.DENY));
+  }
+
+  @Test
+  public void testHumanName() {
+    assertThat(humanName(ImmutableMap.of(TAG_NAME, "tag"), "sname"), equalTo("tag"));
+    assertThat(humanName(ImmutableMap.of(), "sname"), equalTo("sname"));
   }
 }

@@ -1,7 +1,13 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
+import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
+import static org.batfish.representation.aws.Utils.createBackboneConnection;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
+import static org.batfish.representation.aws.Utils.newAwsConfiguration;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
@@ -19,6 +25,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -26,6 +33,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
@@ -49,7 +57,8 @@ public class UtilsTest {
             ImmutableList.of(
                 new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("5.5.5.5"))),
             "desc2",
-            null);
+            null,
+            ImmutableMap.of());
 
     NetworkInterface networkInterface2 =
         new NetworkInterface(
@@ -61,7 +70,8 @@ public class UtilsTest {
                 new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("3.3.3.3")),
                 new PrivateIpAddress(true, Ip.parse("10.10.10.10"), Ip.parse("4.4.4.4"))),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     NetworkInterface networkInterface0 =
         new NetworkInterface(
@@ -71,7 +81,8 @@ public class UtilsTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("10.10.10.10"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     Configuration cfgNode = new Configuration("cfg", ConfigurationFormat.AWS);
     String bookName = GeneratedRefBookUtils.getName(cfgNode.getHostname(), BookType.PublicIps);
@@ -179,7 +190,8 @@ public class UtilsTest {
             ImmutableList.of(),
             ImmutableList.of(new PrivateIpAddress(true, Ip.parse("2.2.2.2"), null)),
             "desc",
-            null);
+            null,
+            ImmutableMap.of());
 
     // invalid because subnet prefix is different from interface IP
     Subnet subnet =
@@ -193,5 +205,29 @@ public class UtilsTest {
     assertThat(warnings.getRedFlagWarnings().get(0).getText(), containsString("No valid address"));
 
     assertThat(iface.getConcreteAddress(), nullValue());
+  }
+
+  @Test
+  public void testCreateBackboneConnection() {
+    Configuration cfg = newAwsConfiguration("test", "aws");
+    String policyName = "export policy";
+
+    createBackboneConnection(cfg, cfg.getDefaultVrf(), policyName);
+
+    assertTrue(cfg.getAllInterfaces().containsKey(BACKBONE_FACING_INTERFACE_NAME));
+    assertThat(cfg.getDefaultVrf().getBgpProcess().getRouterId(), equalTo(LINK_LOCAL_IP));
+    assertThat(
+        cfg.getDefaultVrf().getBgpProcess().getInterfaceNeighbors(),
+        equalTo(
+            ImmutableMap.of(
+                BACKBONE_FACING_INTERFACE_NAME,
+                BgpUnnumberedPeerConfig.builder()
+                    .setPeerInterface(BACKBONE_FACING_INTERFACE_NAME)
+                    .setRemoteAs(AWS_BACKBONE_ASN)
+                    .setLocalIp(LINK_LOCAL_IP)
+                    .setLocalAs(BACKBONE_PEERING_ASN)
+                    .setIpv4UnicastAddressFamily(
+                        Ipv4UnicastAddressFamily.builder().setExportPolicy(policyName).build())
+                    .build())));
   }
 }

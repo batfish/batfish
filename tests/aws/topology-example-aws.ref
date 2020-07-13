@@ -27,9 +27,9 @@
         "aggregate-vpc-815775e7",
         "node-igw-068fee63",
         "aggregate-vpc-925131f4",
-        "aggregate-vpc-b390fad5",
         "node-igw-fac5839d",
-        "node-vgw-81fd279f"
+        "node-vgw-81fd279f",
+        "aggregate-vpc-b390fad5"
       ],
       "id" : "aggregate-us-west-2",
       "name" : "us-west-2",
@@ -47,22 +47,6 @@
     },
     {
       "contents" : [
-        "aggregate-subnet-7044ff16",
-        "aggregate-subnet-f73a8191",
-        "node-vpc-b390fad5",
-        "aggregate-subnet-30398256",
-        "aggregate-subnet-073b8061",
-        "aggregate-subnet-1641fa70",
-        "node-es-domain",
-        "node-test-rds"
-      ],
-      "id" : "aggregate-vpc-b390fad5",
-      "name" : "vpc-b390fad5",
-      "type" : "VNET",
-      "properties" : null
-    },
-    {
-      "contents" : [
         "node-vpc-815775e7"
       ],
       "id" : "aggregate-vpc-815775e7",
@@ -72,10 +56,45 @@
     },
     {
       "contents" : [
+        "node-subnet-1641fa70",
+        "node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+        "node-test-rds"
+      ],
+      "id" : "aggregate-subnet-1641fa70",
+      "name" : "subnet-1641fa70",
+      "type" : "SUBNET",
+      "properties" : null
+    },
+    {
+      "contents" : [
         "node-subnet-073b8061"
       ],
       "id" : "aggregate-subnet-073b8061",
       "name" : "subnet-073b8061",
+      "type" : "SUBNET",
+      "properties" : null
+    },
+    {
+      "contents" : [
+        "aggregate-subnet-7044ff16",
+        "aggregate-subnet-f73a8191",
+        "node-vpc-b390fad5",
+        "aggregate-subnet-30398256",
+        "aggregate-subnet-073b8061",
+        "aggregate-subnet-1641fa70"
+      ],
+      "id" : "aggregate-vpc-b390fad5",
+      "name" : "vpc-b390fad5",
+      "type" : "VNET",
+      "properties" : null
+    },
+    {
+      "contents" : [
+        "node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+        "node-subnet-7044ff16"
+      ],
+      "id" : "aggregate-subnet-7044ff16",
+      "name" : "subnet-7044ff16",
       "type" : "SUBNET",
       "properties" : null
     },
@@ -122,28 +141,10 @@
     },
     {
       "contents" : [
-        "node-subnet-7044ff16"
-      ],
-      "id" : "aggregate-subnet-7044ff16",
-      "name" : "subnet-7044ff16",
-      "type" : "SUBNET",
-      "properties" : null
-    },
-    {
-      "contents" : [
         "node-subnet-30398256"
       ],
       "id" : "aggregate-subnet-30398256",
       "name" : "subnet-30398256",
-      "type" : "SUBNET",
-      "properties" : null
-    },
-    {
-      "contents" : [
-        "node-subnet-1641fa70"
-      ],
-      "id" : "aggregate-subnet-1641fa70",
-      "name" : "subnet-1641fa70",
       "type" : "SUBNET",
       "properties" : null
     },
@@ -210,6 +211,13 @@
       "properties" : null
     },
     {
+      "id" : "interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70",
+      "name" : "subnet-1641fa70",
+      "nodeId" : "node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
       "id" : "interface-node-isp_16509-To-igw-9b93ddfc",
       "name" : "To-igw-9b93ddfc",
       "nodeId" : "node-isp_16509",
@@ -224,16 +232,16 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-es-domain-es-domain-subnet-7044ff16",
-      "name" : "es-domain-subnet-7044ff16",
-      "nodeId" : "node-es-domain",
+      "id" : "interface-node-vpc-b390fad5-subnet-f73a8191",
+      "name" : "subnet-f73a8191",
+      "nodeId" : "node-vpc-b390fad5",
       "type" : "PHYSICAL",
       "properties" : null
     },
     {
-      "id" : "interface-node-vpc-b390fad5-subnet-f73a8191",
-      "name" : "subnet-f73a8191",
-      "nodeId" : "node-vpc-b390fad5",
+      "id" : "interface-node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-7044ff16",
+      "name" : "subnet-7044ff16",
+      "nodeId" : "node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
       "type" : "PHYSICAL",
       "properties" : null
     },
@@ -277,6 +285,13 @@
       "name" : "subnet-d9cafabc",
       "nodeId" : "node-vpc-f8fad69d",
       "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_16509-To-__aws-services-gateway__",
+      "name" : "To-__aws-services-gateway__",
+      "nodeId" : "node-isp_16509",
+      "type" : "UNKNOWN",
       "properties" : null
     },
     {
@@ -434,13 +449,6 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "name" : "es-domain-subnet-1641fa70",
-      "nodeId" : "node-es-domain",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
       "id" : "interface-node-vpc-b390fad5-subnet-073b8061-vrf-igw-9b93ddfc",
       "name" : "subnet-073b8061-vrf-igw-9b93ddfc",
       "nodeId" : "node-vpc-b390fad5",
@@ -480,6 +488,20 @@
       "name" : "vpc-f8fad69d-vrf-igw-068fee63",
       "nodeId" : "node-subnet-9c8adceb",
       "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-vgw-81fd279f-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-vgw-81fd279f",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-__aws-services-gateway__-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-__aws-services-gateway__",
+      "type" : "UNKNOWN",
       "properties" : null
     },
     {
@@ -527,6 +549,13 @@
     {
       "id" : "interface-node-isp_16509-To-igw-068fee63",
       "name" : "To-igw-068fee63",
+      "nodeId" : "node-isp_16509",
+      "type" : "UNKNOWN",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_16509-To-vgw-81fd279f",
+      "name" : "To-vgw-81fd279f",
       "nodeId" : "node-isp_16509",
       "type" : "UNKNOWN",
       "properties" : null
@@ -597,20 +626,6 @@
   ],
   "links" : [
     {
-      "dstId" : "interface-node-subnet-7044ff16-to-instances",
-      "id" : "link-interface-node-es-domain-es-domain-subnet-7044ff16-interface-node-subnet-7044ff16-to-instances",
-      "srcId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
-      "dstId" : "interface-node-es-domain-es-domain-subnet-7044ff16",
-      "id" : "link-interface-node-subnet-7044ff16-to-instances-interface-node-es-domain-es-domain-subnet-7044ff16",
-      "srcId" : "interface-node-subnet-7044ff16-to-instances",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
       "dstId" : "interface-node-subnet-1641fa70-vpc-b390fad5-vrf-igw-9b93ddfc",
       "id" : "link-interface-node-vpc-b390fad5-subnet-1641fa70-vrf-igw-9b93ddfc-interface-node-subnet-1641fa70-vpc-b390fad5-vrf-igw-9b93ddfc",
       "srcId" : "interface-node-vpc-b390fad5-subnet-1641fa70-vrf-igw-9b93ddfc",
@@ -639,6 +654,13 @@
       "properties" : null
     },
     {
+      "dstId" : "interface-node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-7044ff16",
+      "id" : "link-interface-node-subnet-7044ff16-to-instances-interface-node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-7044ff16",
+      "srcId" : "interface-node-subnet-7044ff16-to-instances",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
       "dstId" : "interface-node-subnet-30398256-vpc-b390fad5",
       "id" : "link-interface-node-vpc-b390fad5-subnet-30398256-interface-node-subnet-30398256-vpc-b390fad5",
       "srcId" : "interface-node-vpc-b390fad5-subnet-30398256",
@@ -650,6 +672,13 @@
       "id" : "link-interface-node-subnet-1f315846-vpc-f8fad69d-vrf-igw-068fee63-interface-node-vpc-f8fad69d-subnet-1f315846-vrf-igw-068fee63",
       "srcId" : "interface-node-subnet-1f315846-vpc-f8fad69d-vrf-igw-068fee63",
       "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-__aws-services-gateway__-backbone",
+      "id" : "link-interface-node-isp_16509-To-__aws-services-gateway__-interface-node-__aws-services-gateway__-backbone",
+      "srcId" : "interface-node-isp_16509-To-__aws-services-gateway__",
+      "type" : "UNKNOWN",
       "properties" : null
     },
     {
@@ -793,6 +822,13 @@
       "properties" : null
     },
     {
+      "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
+      "id" : "link-interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
+      "srcId" : "interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
       "dstId" : "interface-node-vpc-925131f4-subnet-8d0cbdeb",
       "id" : "link-interface-node-subnet-8d0cbdeb-vpc-925131f4-interface-node-vpc-925131f4-subnet-8d0cbdeb",
       "srcId" : "interface-node-subnet-8d0cbdeb-vpc-925131f4",
@@ -803,6 +839,13 @@
       "dstId" : "interface-node-igw-068fee63-vpc-f8fad69d",
       "id" : "link-interface-node-vpc-f8fad69d-igw-068fee63-interface-node-igw-068fee63-vpc-f8fad69d",
       "srcId" : "interface-node-vpc-f8fad69d-igw-068fee63",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-subnet-1641fa70-to-instances",
+      "id" : "link-interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70-interface-node-subnet-1641fa70-to-instances",
+      "srcId" : "interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70",
       "type" : "PHYSICAL",
       "properties" : null
     },
@@ -863,10 +906,38 @@
       "properties" : null
     },
     {
+      "dstId" : "interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70",
+      "id" : "link-interface-node-subnet-1641fa70-to-instances-interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70",
+      "srcId" : "interface-node-subnet-1641fa70-to-instances",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-isp_16509-To-__aws-services-gateway__",
+      "id" : "link-interface-node-__aws-services-gateway__-backbone-interface-node-isp_16509-To-__aws-services-gateway__",
+      "srcId" : "interface-node-__aws-services-gateway__-backbone",
+      "type" : "UNKNOWN",
+      "properties" : null
+    },
+    {
       "dstId" : "interface-node-vpc-f8fad69d-subnet-9c8adceb-vrf-igw-068fee63",
       "id" : "link-interface-node-subnet-9c8adceb-vpc-f8fad69d-vrf-igw-068fee63-interface-node-vpc-f8fad69d-subnet-9c8adceb-vrf-igw-068fee63",
       "srcId" : "interface-node-subnet-9c8adceb-vpc-f8fad69d-vrf-igw-068fee63",
       "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-subnet-7044ff16-to-instances",
+      "id" : "link-interface-node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-7044ff16-interface-node-subnet-7044ff16-to-instances",
+      "srcId" : "interface-node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-7044ff16",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-vgw-81fd279f-backbone",
+      "id" : "link-interface-node-isp_16509-To-vgw-81fd279f-interface-node-vgw-81fd279f-backbone",
+      "srcId" : "interface-node-isp_16509-To-vgw-81fd279f",
+      "type" : "UNKNOWN",
       "properties" : null
     },
     {
@@ -884,20 +955,6 @@
       "properties" : null
     },
     {
-      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "id" : "link-interface-node-subnet-1641fa70-to-instances-interface-node-es-domain-es-domain-subnet-1641fa70",
-      "srcId" : "interface-node-subnet-1641fa70-to-instances",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
-      "dstId" : "interface-node-subnet-1641fa70-to-instances",
-      "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-subnet-1641fa70-to-instances",
-      "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
       "dstId" : "interface-node-vpc-925131f4-igw-fac5839d",
       "id" : "link-interface-node-igw-fac5839d-vpc-925131f4-interface-node-vpc-925131f4-igw-fac5839d",
       "srcId" : "interface-node-igw-fac5839d-vpc-925131f4",
@@ -908,6 +965,13 @@
       "dstId" : "interface-node-vpc-b390fad5-subnet-7044ff16",
       "id" : "link-interface-node-subnet-7044ff16-vpc-b390fad5-interface-node-vpc-b390fad5-subnet-7044ff16",
       "srcId" : "interface-node-subnet-7044ff16-vpc-b390fad5",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70",
+      "id" : "link-interface-node-test-rds-test-rds-subnet-1641fa70-interface-node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com-subnet-1641fa70",
+      "srcId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
       "type" : "PHYSICAL",
       "properties" : null
     },
@@ -936,13 +1000,6 @@
       "dstId" : "interface-node-vpc-b390fad5-subnet-30398256-vrf-igw-9b93ddfc",
       "id" : "link-interface-node-subnet-30398256-vpc-b390fad5-vrf-igw-9b93ddfc-interface-node-vpc-b390fad5-subnet-30398256-vrf-igw-9b93ddfc",
       "srcId" : "interface-node-subnet-30398256-vpc-b390fad5-vrf-igw-9b93ddfc",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
-      "dstId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "id" : "link-interface-node-test-rds-test-rds-subnet-1641fa70-interface-node-es-domain-es-domain-subnet-1641fa70",
-      "srcId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
       "type" : "PHYSICAL",
       "properties" : null
     },
@@ -996,13 +1053,6 @@
       "properties" : null
     },
     {
-      "dstId" : "interface-node-test-rds-test-rds-subnet-1641fa70",
-      "id" : "link-interface-node-es-domain-es-domain-subnet-1641fa70-interface-node-test-rds-test-rds-subnet-1641fa70",
-      "srcId" : "interface-node-es-domain-es-domain-subnet-1641fa70",
-      "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
       "dstId" : "interface-node-vpc-b390fad5-subnet-f73a8191-vrf-igw-9b93ddfc",
       "id" : "link-interface-node-subnet-f73a8191-vpc-b390fad5-vrf-igw-9b93ddfc-interface-node-vpc-b390fad5-subnet-f73a8191-vrf-igw-9b93ddfc",
       "srcId" : "interface-node-subnet-f73a8191-vpc-b390fad5-vrf-igw-9b93ddfc",
@@ -1038,6 +1088,13 @@
       "properties" : null
     },
     {
+      "dstId" : "interface-node-isp_16509-To-vgw-81fd279f",
+      "id" : "link-interface-node-vgw-81fd279f-backbone-interface-node-isp_16509-To-vgw-81fd279f",
+      "srcId" : "interface-node-vgw-81fd279f-backbone",
+      "type" : "UNKNOWN",
+      "properties" : null
+    },
+    {
       "dstId" : "interface-node-subnet-1f315846-vpc-f8fad69d-vrf-igw-068fee63",
       "id" : "link-interface-node-vpc-f8fad69d-subnet-1f315846-vrf-igw-068fee63-interface-node-subnet-1f315846-vpc-f8fad69d-vrf-igw-068fee63",
       "srcId" : "interface-node-vpc-f8fad69d-subnet-1f315846-vrf-igw-068fee63",
@@ -1068,13 +1125,6 @@
       "properties" : null
     },
     {
-      "id" : "node-subnet-d9cafabc",
-      "model" : "AWS_SUBNET_PUBLIC",
-      "name" : "subnet-d9cafabc",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
       "id" : "node-isp_16509",
       "model" : "BATFISH_ISP",
       "name" : "isp_16509",
@@ -1089,16 +1139,79 @@
       "properties" : null
     },
     {
-      "id" : "node-es-domain",
-      "model" : "AWS_ELASTICSEARCH_DOMAIN",
-      "name" : "es-domain",
+      "id" : "node-test-rds",
+      "model" : "AWS_RDS_INSTANCE",
+      "name" : "test-rds",
       "type" : "HOST",
       "properties" : null
     },
     {
-      "id" : "node-test-rds",
-      "model" : "AWS_RDS_INSTANCE",
-      "name" : "test-rds",
+      "id" : "node-subnet-1f315846",
+      "model" : "AWS_SUBNET_PUBLIC",
+      "name" : "subnet-1f315846",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-subnet-073b8061",
+      "model" : "AWS_SUBNET_PUBLIC",
+      "name" : "subnet-073b8061",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-subnet-1641fa70",
+      "model" : "AWS_SUBNET_PUBLIC",
+      "name" : "subnet-1641fa70",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "model" : "AWS_ELASTICSEARCH_DOMAIN",
+      "name" : "1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "type" : "HOST",
+      "properties" : null
+    },
+    {
+      "id" : "node-__aws-services-gateway__",
+      "model" : "AWS_SERVICES_GATEWAY",
+      "name" : "__aws-services-gateway__",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
+      "id" : "node-igw-068fee63",
+      "model" : "AWS_INTERNET_GATEWAY",
+      "name" : "igw-068fee63",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
+      "id" : "node-subnet-8d0cbdeb",
+      "model" : "AWS_SUBNET_PRIVATE",
+      "name" : "subnet-8d0cbdeb",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-vpc-925131f4",
+      "model" : "AWS_VPC",
+      "name" : "vpc-925131f4",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-subnet-d9cafabc",
+      "model" : "AWS_SUBNET_PUBLIC",
+      "name" : "subnet-d9cafabc",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
+      "model" : "AWS_ELASTICSEARCH_DOMAIN",
+      "name" : "0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
       "type" : "HOST",
       "properties" : null
     },
@@ -1124,27 +1237,6 @@
       "properties" : null
     },
     {
-      "id" : "node-subnet-1f315846",
-      "model" : "AWS_SUBNET_PUBLIC",
-      "name" : "subnet-1f315846",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-subnet-073b8061",
-      "model" : "AWS_SUBNET_PUBLIC",
-      "name" : "subnet-073b8061",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-subnet-1641fa70",
-      "model" : "AWS_SUBNET_PUBLIC",
-      "name" : "subnet-1641fa70",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
       "id" : "node-vpc-f8fad69d",
       "model" : "AWS_VPC",
       "name" : "vpc-f8fad69d",
@@ -1156,13 +1248,6 @@
       "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-62f14104",
       "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-igw-068fee63",
-      "model" : "AWS_INTERNET_GATEWAY",
-      "name" : "igw-068fee63",
-      "type" : "ROUTER",
       "properties" : null
     },
     {
@@ -1180,13 +1265,6 @@
       "properties" : null
     },
     {
-      "id" : "node-subnet-8d0cbdeb",
-      "model" : "AWS_SUBNET_PRIVATE",
-      "name" : "subnet-8d0cbdeb",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
       "id" : "node-vgw-81fd279f",
       "model" : "AWS_VPN_GATEWAY",
       "name" : "vgw-81fd279f",
@@ -1197,13 +1275,6 @@
       "id" : "node-subnet-f73a8191",
       "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-f73a8191",
-      "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-vpc-925131f4",
-      "model" : "AWS_VPC",
-      "name" : "vpc-925131f4",
       "type" : "SWITCH",
       "properties" : null
     }

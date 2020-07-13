@@ -30,7 +30,13 @@ public final class CompletionMetadataUtils {
 
   /** We will add these well-known IPs to assist with autocompletion */
   public static Map<Ip, String> WELL_KNOWN_IPS =
-      ImmutableMap.of(Ip.parse("8.8.8.8"), "Google DNS", Ip.parse("1.1.1.1"), "Cloudflare DNS");
+      ImmutableMap.of(
+          Ip.parse("8.8.8.8"),
+          "Google DNS",
+          Ip.parse("1.1.1.1"),
+          "Cloudflare DNS",
+          Ip.parse("52.95.110.1"),
+          "AWS Route53");
 
   public static Set<String> getFilterNames(Map<String, Configuration> configurations) {
     ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
@@ -136,6 +142,10 @@ public final class CompletionMetadataUtils {
         GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.PublicIps))) {
       return String.format("%s public IP%s", configuration.getHostname(), suffix);
     }
+    if (bookName.equals(
+        GeneratedRefBookUtils.getName(configuration.getHostname(), BookType.AwsSeviceIps))) {
+      return groupName;
+    }
     // Don't know what type of address this is; use default value.
     return String.format(
         "%s in %s on %s%s", groupName, bookName, configuration.getHostname(), suffix);
@@ -156,6 +166,7 @@ public final class CompletionMetadataUtils {
                             addressGroupDisplayString(configuration, bookName, groupName),
                             configuration.getHostname(),
                             configuration.getHumanName(),
+                            bookName,
                             groupName)));
   }
 

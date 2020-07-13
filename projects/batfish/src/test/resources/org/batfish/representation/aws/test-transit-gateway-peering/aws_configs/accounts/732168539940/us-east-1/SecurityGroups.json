@@ -1,0 +1,202 @@
+{
+  "SecurityGroups": [
+    {
+      "Description": "Managed by Terraform",
+      "GroupId": "sg-04a980b7d3abb3c6f",
+      "GroupName": "terraform-20200621033347944500000003",
+      "IpPermissions": [
+        {
+          "FromPort": 33434,
+          "IpProtocol": "udp",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Traceroute Access"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 33534,
+          "UserIdGroupPairs": []
+        },
+        {
+          "FromPort": 22,
+          "IpProtocol": "tcp",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "SSH Access"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 22,
+          "UserIdGroupPairs": []
+        },
+        {
+          "FromPort": 8,
+          "IpProtocol": "icmp",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "ICMP Access"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 0,
+          "UserIdGroupPairs": []
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Allow all"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "732168539940",
+      "VpcId": "vpc-03ccec9d7758a283a"
+    },
+    {
+      "Description": "Managed by Terraform",
+      "GroupId": "sg-08b3e3645d30630ba",
+      "GroupName": "terraform-20200621033347649200000002",
+      "IpPermissions": [
+        {
+          "FromPort": 33434,
+          "IpProtocol": "udp",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Traceroute Access"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 33534,
+          "UserIdGroupPairs": []
+        },
+        {
+          "FromPort": 22,
+          "IpProtocol": "tcp",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "SSH Access"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 22,
+          "UserIdGroupPairs": []
+        },
+        {
+          "FromPort": 8,
+          "IpProtocol": "icmp",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "ICMP Access"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "ToPort": 0,
+          "UserIdGroupPairs": []
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0",
+              "Description": "Allow all"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "732168539940",
+      "VpcId": "vpc-065ea457071dd67bb"
+    },
+    {
+      "Description": "default VPC security group",
+      "GroupId": "sg-09812582ec1257594",
+      "GroupName": "default",
+      "IpPermissions": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": [
+            {
+              "GroupId": "sg-09812582ec1257594",
+              "UserId": "732168539940"
+            }
+          ]
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "732168539940",
+      "VpcId": "vpc-03ccec9d7758a283a"
+    },
+    {
+      "Description": "default VPC security group",
+      "GroupId": "sg-0ef58de4eabe64468",
+      "GroupName": "default",
+      "IpPermissions": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": [
+            {
+              "GroupId": "sg-0ef58de4eabe64468",
+              "UserId": "732168539940"
+            }
+          ]
+        }
+      ],
+      "IpPermissionsEgress": [
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ],
+          "Ipv6Ranges": [],
+          "PrefixListIds": [],
+          "UserIdGroupPairs": []
+        }
+      ],
+      "OwnerId": "732168539940",
+      "VpcId": "vpc-065ea457071dd67bb"
+    }
+  ]
+}

@@ -26,22 +26,29 @@ public final class Address implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Ip _publicIp;
 
+  @Nonnull private final String _allocationId;
+
   @JsonCreator
   private static Address create(
       @Nullable @JsonProperty(JSON_KEY_PUBLIC_IP) String publicIp,
       @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId,
-      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) String privateIpAddress) {
+      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) String privateIpAddress,
+      @Nullable @JsonProperty(JSON_KEY_ALLOCATION_ID) String allocationId) {
     checkArgument(publicIp != null, "Public IP of an EC2 address cannot be null");
+    checkArgument(allocationId != null, "Allocation ID of an Elastic IP address cannot be null");
     return new Address(
         Ip.parse(publicIp),
         instanceId,
-        privateIpAddress == null ? null : Ip.parse(privateIpAddress));
+        privateIpAddress == null ? null : Ip.parse(privateIpAddress),
+        allocationId);
   }
 
-  public Address(Ip publicIp, @Nullable String instanceId, @Nullable Ip privateIp) {
+  public Address(
+      Ip publicIp, @Nullable String instanceId, @Nullable Ip privateIp, String allocationId) {
     _publicIp = publicIp;
     _instanceId = instanceId;
     _privateIp = privateIp;
+    _allocationId = allocationId;
   }
 
   @Override
@@ -64,6 +71,11 @@ public final class Address implements AwsVpcEntity, Serializable {
     return _publicIp;
   }
 
+  @Nonnull
+  public String getAllocationId() {
+    return _allocationId;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -75,11 +87,12 @@ public final class Address implements AwsVpcEntity, Serializable {
     Address address = (Address) o;
     return Objects.equals(_instanceId, address._instanceId)
         && Objects.equals(_privateIp, address._privateIp)
-        && Objects.equals(_publicIp, address._publicIp);
+        && Objects.equals(_publicIp, address._publicIp)
+        && Objects.equals(_allocationId, address._allocationId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_instanceId, _privateIp, _publicIp);
+    return Objects.hash(_instanceId, _privateIp, _publicIp, _allocationId);
   }
 }
