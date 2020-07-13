@@ -177,6 +177,7 @@ public class RegionTest {
     region.getNetworkInterfaces().put(ni.getId(), ni);
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
+    region.convertSecurityGroupsToAcls(new Warnings());
     region.computeSecurityGroups(cfg, new Warnings());
 
     // security groups sg-001 and sg-002 converted to ExprAclLines
@@ -234,6 +235,7 @@ public class RegionTest {
     region.getNetworkInterfaces().put(ni.getId(), ni);
     ConvertedConfiguration cfg = new ConvertedConfiguration();
     cfg.addNode(c);
+    region.convertSecurityGroupsToAcls(new Warnings());
     region.computeSecurityGroups(cfg, new Warnings());
     IpAccessList ingressAcl = c.getIpAccessLists().get(eniIngressAclName(ni.getId()));
 

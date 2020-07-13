@@ -139,6 +139,9 @@ public final class Region implements Serializable {
 
   @Nonnull private final Map<String, VpnGateway> _vpnGateways;
 
+  private Map<String, IpAccessList> _sgIngressAcls;
+  private Map<String, IpAccessList> _sgEgressAcls;
+
   public Region(String name) {
     this(
         name,
@@ -773,9 +776,24 @@ public final class Region implements Serializable {
     }
   }
 
+  @VisibleForTesting
+  void convertSecurityGroupsToAcls(Warnings warnings) {
+    _sgIngressAcls =
+        _securityGroups.entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey, e -> e.getValue().toAcl(this, true, warnings)));
+    _sgEgressAcls =
+        _securityGroups.entrySet().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    Entry::getKey, e -> e.getValue().toAcl(this, false, warnings)));
+  }
+
   void toConfigurationNodes(ConvertedConfiguration awsConfiguration, Warnings warnings) {
 
     updateSubnetAllocatedIps();
+    convertSecurityGroupsToAcls(warnings);
 
     for (Vpc vpc : getVpcs().values()) {
       Configuration cfgNode = vpc.toConfigurationNode(awsConfiguration, this, warnings);
@@ -850,10 +868,7 @@ public final class Region implements Serializable {
   }
 
   /** Convert security groups of all nodes to IpAccessLists and apply to all interfaces */
-  private void applyNetworkInterfaceAclsToInstances(
-      ConvertedConfiguration cfg,
-      Map<String, IpAccessList> sgIngressAcls,
-      Map<String, IpAccessList> sgEgressAcls) {
+  private void applyNetworkInterfaceAclsToInstances(ConvertedConfiguration cfg) {
     for (NetworkInterface ni : _networkInterfaces.values()) {
       Optional<Configuration> configuration =
           Optional.ofNullable(ni.getAttachmentInstanceId()).map(cfg::getNode);
@@ -865,7 +880,7 @@ public final class Region implements Serializable {
       if (i == null) {
         continue;
       }
-      applyAclsToInterfaceBasedOnSecurityGroups(ni.getGroups(), c, i, sgIngressAcls, sgEgressAcls);
+      applyAclsToInterfaceBasedOnSecurityGroups(ni.getGroups(), c, i);
     }
   }
 
@@ -873,10 +888,7 @@ public final class Region implements Serializable {
    * For applications (e.g., RDS or ElasticSearch), applies their security groups to their
    * interfaces.
    */
-  private void applyApplicationSecurityGroups(
-      ConvertedConfiguration cfg,
-      Map<String, IpAccessList> sgIngressAcls,
-      Map<String, IpAccessList> sgEgressAcls) {
+  private void applyApplicationSecurityGroups(ConvertedConfiguration cfg) {
     for (ElasticsearchDomain esd : _elasticsearchDomains.values()) {
       IntStream.range(0, esd.getInstanceCount())
           .forEach(
@@ -887,8 +899,7 @@ public final class Region implements Serializable {
                   return;
                 }
                 for (Interface i : c.getAllInterfaces().values()) {
-                  applyAclsToInterfaceBasedOnSecurityGroups(
-                      esd.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls);
+                  applyAclsToInterfaceBasedOnSecurityGroups(esd.getSecurityGroups(), c, i);
                 }
               });
     }
@@ -898,35 +909,29 @@ public final class Region implements Serializable {
         continue;
       }
       for (Interface i : c.getAllInterfaces().values()) {
-        applyAclsToInterfaceBasedOnSecurityGroups(
-            rds.getSecurityGroups(), c, i, sgIngressAcls, sgEgressAcls);
+        applyAclsToInterfaceBasedOnSecurityGroups(rds.getSecurityGroups(), c, i);
       }
     }
   }
 
   public void applyAclsToInterfaceBasedOnSecurityGroups(
-      Iterable<String> groups,
-      Configuration c,
-      Interface i,
-      Map<String, IpAccessList> sgIngressAcls,
-      Map<String, IpAccessList> sgEgressAcls) {
+      Iterable<String> groups, Configuration c, Interface i) {
     // Sorted for stability across snapshots; order does not matter semantically and is not
     // consistent/preserved in AWS.
     Iterable<String> stableGroups = ImmutableSortedSet.copyOf(groups);
-    applyIngressAcl(stableGroups, sgIngressAcls, c, i);
-    applyEgressAcl(stableGroups, sgEgressAcls, c, i);
+    applyIngressAcl(stableGroups, c, i);
+    applyEgressAcl(stableGroups, c, i);
     // Set up reverse sessions for outbound traffic.
     i.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(false, ImmutableList.of(i.getName()), null, null));
     i.getVrf().setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(false));
   }
 
-  private void applyIngressAcl(
-      Iterable<String> groups, Map<String, IpAccessList> acls, Configuration c, Interface i) {
+  private void applyIngressAcl(Iterable<String> groups, Configuration c, Interface i) {
     // Create one AclAclLine to allow the flows matched in each security group.
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
     for (String g : groups) {
-      IpAccessList acl = acls.get(g);
+      IpAccessList acl = _sgIngressAcls.get(g);
       if (acl == null || acl.getLines().isEmpty()) {
         // undefined (we already warned about this) or empty (we choose not to include).
         continue;
@@ -950,12 +955,11 @@ public final class Region implements Serializable {
     i.setIncomingFilter(inAcl);
   }
 
-  private void applyEgressAcl(
-      Iterable<String> groups, Map<String, IpAccessList> acls, Configuration c, Interface i) {
+  private void applyEgressAcl(Iterable<String> groups, Configuration c, Interface i) {
     // Create one AclAclLine to allow the flows matched in each security group.
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
     for (String g : groups) {
-      IpAccessList acl = acls.get(g);
+      IpAccessList acl = _sgEgressAcls.get(g);
       if (acl == null || acl.getLines().isEmpty()) {
         // undefined (we already warned about this) or empty (we choose not to include).
         continue;
@@ -1037,18 +1041,8 @@ public final class Region implements Serializable {
     addApplicationInterfaceIpsToSecurityGroups(awsConfiguration, warnings);
 
     // Next, actually apply the correct security groups to all interfaces (real and generated).
-    Map<String, IpAccessList> sgIngressAcls =
-        _securityGroups.entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, e -> e.getValue().toAcl(this, true, warnings)));
-    Map<String, IpAccessList> sgEgressAcls =
-        _securityGroups.entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey, e -> e.getValue().toAcl(this, false, warnings)));
-    applyNetworkInterfaceAclsToInstances(awsConfiguration, sgIngressAcls, sgEgressAcls);
-    applyApplicationSecurityGroups(awsConfiguration, sgIngressAcls, sgEgressAcls);
+    applyNetworkInterfaceAclsToInstances(awsConfiguration);
+    applyApplicationSecurityGroups(awsConfiguration);
   }
 
   /** Adds all private IPs for {@code ni} as referred IPs to all security groups in use. */

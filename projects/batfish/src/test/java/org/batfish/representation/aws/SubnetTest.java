@@ -694,7 +694,8 @@ public class SubnetTest {
     Configuration subnetCfg = configs.get(subnetHostname);
     Configuration vpcCfg = configs.get(vpcHostname);
     ConvertedConfiguration awsConf = new ConvertedConfiguration(configs);
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, null, null);
+    Region region = new Region("region");
+    subnet.addNlbInstanceTargetInterfaces(awsConf, region, subnetCfg, vpcCfg, null, null);
 
     // Nothing should have gotten a new VRF or any interfaces
     configs
@@ -772,7 +773,9 @@ public class SubnetTest {
             ImmutableMultimap.of(subnet, loadBalancerInSubnet), // subnets to NLBs
             ImmutableMultimap.of(loadBalancerInSubnet, instanceInOtherSubnet), // NLBs to targets
             ImmutableSet.of(vpc)); // VPCs with instance targets
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, ingressAcl, egressAcl);
+    Region region = new Region("region");
+    subnet.addNlbInstanceTargetInterfaces(
+        awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
     // New VRFs created in subnet and VPC configs
     assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
@@ -909,7 +912,9 @@ public class SubnetTest {
             ImmutableMultimap.of(), // subnets to NLBs
             ImmutableMultimap.of(loadBalancerNotInSubnet, instanceInSubnet), // NLBs to targets
             ImmutableSet.of(vpc)); // VPCs with instance targets
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, ingressAcl, egressAcl);
+    Region region = new Region("region");
+    subnet.addNlbInstanceTargetInterfaces(
+        awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
     // New VRFs created in subnet and VPC configs
     assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
@@ -949,7 +954,7 @@ public class SubnetTest {
         instanceCfg
             .getAllInterfaces()
             .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
-        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
+        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(hasNoAcls())));
 
     // Subnet should have static route to instance IP out the interface to the instance target
     assertThat(
@@ -1038,7 +1043,9 @@ public class SubnetTest {
             ImmutableMultimap.of(subnet, loadBalancerInSubnet), // subnets to NLBs
             ImmutableMultimap.of(loadBalancerInSubnet, instanceInSubnet), // NLBs to targets
             ImmutableSet.of(vpc)); // VPCs with instance targets
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, ingressAcl, egressAcl);
+    Region region = new Region("region");
+    subnet.addNlbInstanceTargetInterfaces(
+        awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
     // New VRFs created in subnet and VPC configs
     assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
@@ -1099,7 +1106,7 @@ public class SubnetTest {
         instanceCfg
             .getAllInterfaces()
             .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
-        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
+        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(hasNoAcls())));
 
     // Subnet should have static route to instance IP out the interface to the instance target
     assertThat(
