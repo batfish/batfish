@@ -25,6 +25,7 @@ set rulebase nat rules 2nd_RULE source-translation dynamic-ip-and-port translate
 set rulebase nat rules 2nd_RULE source-translation dynamic-ip-and-port translated-address SRC_3
 set rulebase nat rules 2nd_RULE destination-translation translated-address DST_1
 set rulebase nat rules 2nd_RULE destination-translation translated-address DST_2
+set rulebase nat rules 2nd_RULE destination-translation translated-port 1234
 
 # Add modification to RULE1 after referencing other rule
 set rulebase nat rules RULE1 source-translation dynamic-ip-and-port translated-address [ 1.1.1.1 2.2.2.0/24 3.3.3.3-4.4.4.4]

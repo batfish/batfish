@@ -32,7 +32,10 @@ srn_definition
 
 srn_destination_translation
 :
-    DESTINATION_TRANSLATION srndt_translated_address
+    DESTINATION_TRANSLATION (
+        srndt_translated_address
+        | srndt_translated_port
+    )
 ;
 
 srn_source_translation
@@ -74,6 +77,11 @@ srnst_dynamic_ip_and_port
 srndt_translated_address
 :
     TRANSLATED_ADDRESS translated_address_list_item
+;
+
+srndt_translated_port
+:
+    TRANSLATED_PORT port = port_number
 ;
 
 srnst_translated_address

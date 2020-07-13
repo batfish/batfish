@@ -2288,6 +2288,7 @@ public final class PaloAltoGrammarTest {
     assertThat(
         rule2.getDestinationTranslation().getTranslatedAddress(),
         equalTo(new RuleEndpoint(REFERENCE, "DST_2")));
+    assertThat(rule2.getDestinationTranslation().getTranslatedPort(), equalTo(1234));
 
     // TODO: Test semantics after conversion
   }
