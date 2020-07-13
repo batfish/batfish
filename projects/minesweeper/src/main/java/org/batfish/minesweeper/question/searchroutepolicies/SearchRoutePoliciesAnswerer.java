@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -91,6 +93,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     _g = new Graph(batfish, batfish.getSnapshot());
     _pq = new PolicyQuotient();
 
+    initializeRouteConstraints();
+  }
+
+  private void initializeRouteConstraints() {
+    // add any communities from the input and output constraints to the Graph so that
+    // they will be represented symbolically in our BDD computation
+    _g.addCommunities(_inputConstraints.getCommunities().getCommunities());
+    _g.addCommunities(_outputConstraints.getCommunities().getCommunities());
+
     _inputConstraintsBDD =
         routeConstraintsToBDD(_inputConstraints, new BDDRoute(_g.getAllCommunities()));
   }
@@ -122,7 +133,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       CommunityVar commVar = commEntry.getKey();
       BDD commBDD = commEntry.getValue();
       if (!commBDD.and(bdd).isZero()) {
-        // TODO for now we only handle regexes that represent literal community values
+        // TODO: for now we only handle regexes that represent literal community values
         Community lit = commVar.getLiteralValue();
         if (lit != null) {
           comms.add(commVar.getLiteralValue());
@@ -189,19 +200,49 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  private BDD routeConstraintsToBDD(RouteConstraints constraints, BDDRoute r) {
-    BDD prefixRange =
-        prefixSpaceToBDD(constraints.getPrefixSpace(), r, constraints.getComplementPrefixSpace());
-    BDD localPref = integerSpaceToBDD(constraints.getLocalPref(), r.getLocalPref());
-    BDD med = integerSpaceToBDD(constraints.getMed(), r.getMed());
+  private BDD communityConstraintsToBDD(
+      CommunitySet communitySet,
+      Map<CommunityVar, BDD> commMap,
+      boolean complementCommunities,
+      BDDFactory factory) {
+    Set<Community> communities = communitySet.getCommunities();
+    if (communities.isEmpty()) {
+      return factory.one();
+    } else {
+      BDD result = factory.zero();
+      for (Community c : communitySet.getCommunities()) {
+        CommunityVar cvar = CommunityVar.from(c);
+        BDD commBDD = commMap.get(cvar);
+        result = result.or(commBDD);
+      }
+      if (complementCommunities) {
+        result = result.not();
+      }
+      return result;
+    }
+  }
 
-    return prefixRange.and(localPref).and(med);
+  private BDD routeConstraintsToBDD(RouteConstraints constraints, BDDRoute r) {
+    BDD result =
+        prefixSpaceToBDD(constraints.getPrefixSpace(), r, constraints.getComplementPrefixSpace());
+    result = result.and(integerSpaceToBDD(constraints.getLocalPref(), r.getLocalPref()));
+    result = result.and(integerSpaceToBDD(constraints.getMed(), r.getMed()));
+    result =
+        result.and(
+            communityConstraintsToBDD(
+                constraints.getCommunities(),
+                r.getCommunities(),
+                constraints.getComplementCommunities(),
+                r.getFactory()));
+
+    return result;
   }
 
   private Optional<Result> searchPolicy(RoutingPolicy policy) {
-    TransferBDD tbdd;
+    TransferReturn result;
     try {
-      tbdd = new TransferBDD(_g, policy.getOwner(), policy.getStatements(), _pq);
+      TransferBDD tbdd = new TransferBDD(_g, policy.getOwner(), policy.getStatements(), _pq);
+      result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
           "Unsupported features in route policy "
@@ -210,7 +251,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
               + policy.getOwner().getHostname(),
           e);
     }
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;

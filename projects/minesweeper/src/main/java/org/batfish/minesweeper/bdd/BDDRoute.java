@@ -245,6 +245,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _communities = communities;
   }
 
+  public BDDFactory getFactory() {
+    return factory;
+  }
+
   public BDDInteger getLocalPref() {
     return _localPref;
   }

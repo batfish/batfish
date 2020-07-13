@@ -42,6 +42,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -885,6 +886,14 @@ public class Graph {
 
   public Map<String, String> getNamedCommunities() {
     return _namedCommunities;
+  }
+
+  public void addCommunities(Set<Community> communities) {
+    for (Community c : communities) {
+      _allCommunities.add(CommunityVar.from(c));
+    }
+    // this could be optimized to only compute dependencies for the new communities
+    initCommDependencies();
   }
 
   /*
