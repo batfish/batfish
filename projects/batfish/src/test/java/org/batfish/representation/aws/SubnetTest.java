@@ -64,6 +64,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.representation.aws.Instance.Status;
+import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
 import org.batfish.representation.aws.LoadBalancer.Scheme;
 import org.batfish.representation.aws.LoadBalancer.Type;
@@ -1131,6 +1132,124 @@ public class SubnetTest {
                         instanceIp.toPrefix(),
                         vpcToSubnetIfaceName,
                         AwsConfiguration.LINK_LOCAL_IP)))));
+  }
+
+  @Test
+  public void testAddNlbInstanceTargetInterfaces_appliesInstanceSecurityGroups() {
+    // addNlbInstanceTargetInterfaces should apply security groups to instance's new interface
+    Subnet subnet = _subnetList.get(0);
+    Vpc vpc = new Vpc(subnet.getVpcId(), ImmutableSet.of(subnet.getCidrBlock()), ImmutableMap.of());
+
+    // Create instance target in subnet
+    String instanceId = "instanceId";
+    Ip instanceIp = Ip.parse("1.1.1.1");
+    Instance instanceInSubnet =
+        new Instance(
+            instanceId,
+            subnet.getVpcId(),
+            subnet.getId(),
+            ImmutableList.of(),
+            ImmutableList.of(),
+            instanceIp,
+            ImmutableMap.of(),
+            Status.RUNNING);
+
+    // Create load balancer not in subnet
+    String lbArn = "lbArn";
+    String lbDnsName = "lbDnsName";
+    AvailabilityZone otherAz = new AvailabilityZone("otherSubnetId", subnet.getAvailabilityZone());
+    LoadBalancer loadBalancerNotInSubnet =
+        new LoadBalancer(
+            lbArn,
+            ImmutableList.of(otherAz),
+            lbDnsName,
+            "name",
+            Scheme.INTERNAL,
+            Type.NETWORK,
+            subnet.getVpcId());
+
+    String niSecurityGroupName = "niSecurityGroup";
+    Ip ipPermittedIn = Ip.parse("1.1.1.1");
+    Ip ipPermittedOut = Ip.parse("2.2.2.2");
+    IpPermissions inPermissions =
+        new IpPermissions(
+            "tcp",
+            null,
+            null,
+            ImmutableList.of(new IpRange(ipPermittedIn.toPrefix())),
+            ImmutableList.of(),
+            ImmutableList.of());
+    IpPermissions outPermissions =
+        new IpPermissions(
+            "tcp",
+            null,
+            null,
+            ImmutableList.of(new IpRange(ipPermittedOut.toPrefix())),
+            ImmutableList.of(),
+            ImmutableList.of());
+    SecurityGroup niSecurityGroup =
+        new SecurityGroup(
+            niSecurityGroupName,
+            niSecurityGroupName,
+            ImmutableList.of(outPermissions),
+            ImmutableList.of(inPermissions),
+            subnet.getVpcId());
+
+    String networkInterfaceId = "ni";
+    NetworkInterface networkInterface =
+        new NetworkInterface(
+            networkInterfaceId,
+            subnet.getId(),
+            subnet.getVpcId(),
+            ImmutableList.of(niSecurityGroupName),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("2.2.2.2"), null)),
+            "",
+            instanceId,
+            ImmutableMap.of());
+
+    String subnetHostname = Subnet.nodeName(subnet.getId());
+    String vpcHostname = Vpc.nodeName(subnet.getVpcId());
+    String instanceHostname = Instance.instanceHostname(instanceId);
+
+    // Subnet has an instance target, no NLBs: Should create VRFs on subnet and VPC, connect subnet
+    // to VPC and instance target
+    Map<String, Configuration> configs =
+        createConfigs(
+            subnet.getId(), subnet.getVpcId(), lbDnsName, subnet.getAvailabilityZone(), instanceId);
+    Configuration subnetCfg = configs.get(subnetHostname);
+    Configuration vpcCfg = configs.get(vpcHostname);
+    Configuration instanceCfg = configs.get(instanceHostname);
+    ConvertedConfiguration awsConf =
+        new ConvertedConfiguration(
+            configs,
+            new HashSet<>(), // layer 1 edges
+            ImmutableMultimap.of(subnet, instanceInSubnet), // subnets to targets
+            ImmutableMultimap.of(), // subnets to NLBs
+            ImmutableMultimap.of(loadBalancerNotInSubnet, instanceInSubnet), // NLBs to targets
+            ImmutableSet.of(vpc)); // VPCs with instance targets
+    Region region =
+        Region.builder("region")
+            .setSecurityGroups(ImmutableMap.of(niSecurityGroupName, niSecurityGroup))
+            .setNetworkInterfaces(ImmutableMap.of(networkInterfaceId, networkInterface))
+            .build();
+    region.convertSecurityGroupsToAcls(new Warnings());
+    subnet.addNlbInstanceTargetInterfaces(awsConf, region, subnetCfg, vpcCfg, null, null);
+
+    // New interface on instance should filter with AclAclLines with ACL defined by security group
+    String secGroupIngressAclName = niSecurityGroup.toAcl(region, true, new Warnings()).getName();
+    String secGroupEgressAclName = niSecurityGroup.toAcl(region, false, new Warnings()).getName();
+    Interface newInstanceIface =
+        instanceCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX));
+    assertThat(
+        newInstanceIface.getIncomingFilter().getLines(),
+        contains(hasProperty("aclName", equalTo(secGroupIngressAclName))));
+    assertThat(
+        newInstanceIface.getOutgoingFilter().getLines(),
+        contains(
+            equalTo(Region.computeAntiSpoofingFilter(newInstanceIface)),
+            hasProperty("aclName", equalTo(secGroupEgressAclName))));
   }
 
   /**
