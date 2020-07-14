@@ -282,8 +282,10 @@ public class PaloAltoNatTest {
 
   @Test
   public void testDestNat() throws IOException {
-    // Test destination NAT is applied correctly. There is one NAT rule that matches flows from
-    // outside to inside with src 1.1.1.2, and translates dst to 1.1.1.99.
+    // Test destination NAT is applied correctly. There are two NAT rules that matche flows from
+    // outside to inside:
+    // 1) src 1.1.1.2, and translates dst to 1.1.1.99
+    // 2) src 1.1.1.22, and translates dst to 1.1.1.99:1234.
     Configuration c = parseConfig("destination-nat");
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -301,7 +303,7 @@ public class PaloAltoNatTest {
     assertThat(outside1Policy, notNullValue());
 
     // This flow is NAT'd
-    Flow outsideToInsideMatch =
+    Flow outsideToInsideMatch1 =
         Flow.builder()
             .setIngressNode(c.getHostname())
             .setIngressInterface(outside1Name)
@@ -311,23 +313,37 @@ public class PaloAltoNatTest {
             .setDstPort(222)
             .setIpProtocol(IpProtocol.TCP)
             .build();
+    // This flow is also NAT'd
+    Flow outsideToInsideMatch2 =
+        outsideToInsideMatch1.toBuilder().setSrcIp(Ip.parse("1.2.1.22")).build();
+
     // This flow is not NAT'd (does not match source address constraint)
     Flow outsideToInsideNoMatch =
-        outsideToInsideMatch.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
+        outsideToInsideMatch1.toBuilder().setSrcIp(Ip.parse("1.2.1.200")).build();
     // This flow is not NAT'd (does not match from-interface constraint)
-    Flow insideToInside = outsideToInsideMatch.toBuilder().setIngressInterface(inside2Name).build();
+    Flow insideToInside =
+        outsideToInsideMatch1.toBuilder().setIngressInterface(inside2Name).build();
 
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine(snapshot)
             .computeTraces(
-                ImmutableSet.of(outsideToInsideMatch, outsideToInsideNoMatch, insideToInside),
+                ImmutableSet.of(
+                    outsideToInsideMatch1,
+                    outsideToInsideMatch2,
+                    outsideToInsideNoMatch,
+                    insideToInside),
                 false);
 
     Ip newDstIp = Ip.parse("1.1.1.99");
     assertEquals(
-        getTransformedFlow(Iterables.getOnlyElement(traces.get(outsideToInsideMatch))),
-        outsideToInsideMatch.toBuilder().setDstIp(newDstIp).build());
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(outsideToInsideMatch1))),
+        outsideToInsideMatch1.toBuilder().setDstIp(newDstIp).build());
+    int newDstPort = 1234;
+    // This flow should have dest IP and port translated
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(outsideToInsideMatch2))),
+        outsideToInsideMatch2.toBuilder().setDstIp(newDstIp).setDstPort(newDstPort).build());
 
     assertEquals(
         getTransformedFlow(Iterables.getOnlyElement(traces.get(outsideToInsideNoMatch))),

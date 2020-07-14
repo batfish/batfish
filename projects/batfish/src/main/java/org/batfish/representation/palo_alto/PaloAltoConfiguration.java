@@ -131,7 +131,9 @@ import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.Statement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
+import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
+import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
@@ -1553,14 +1555,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number()));
   }
 
-  private List<TransformationStep> getDestinationTransformationSteps(NatRule rule, Vsys vsys) {
-    RuleEndpoint translatedDstAddr =
-        Optional.ofNullable(rule.getDestinationTranslation())
-            .map(DestinationTranslation::getTranslatedAddress)
-            .orElse(null);
+  private Optional<TransformationStep> getDestinationAddressTransformation(
+      NatRule rule, Vsys vsys, DestinationTranslation destinationTranslation) {
+    RuleEndpoint translatedDstAddr = destinationTranslation.getTranslatedAddress();
     if (translatedDstAddr == null) {
-      // No destination translation
-      return ImmutableList.of();
+      // No destination address translation
+      return Optional.empty();
     }
 
     RangeSet<Ip> pool = ruleEndpointToIpRangeSet(translatedDstAddr, vsys, _w);
@@ -1571,12 +1571,28 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           String.format(
               "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
               rule.getName(), vsys.getName()));
+      return Optional.empty();
+    }
+    return Optional.of(
+        new AssignIpAddressFromPool(TransformationType.DEST_NAT, IpField.DESTINATION, pool));
+  }
+
+  private Optional<TransformationStep> getDestinationPortTransformation(NatRule rule) {
+    return Optional.ofNullable(rule.getDestinationTranslation())
+        .map(DestinationTranslation::getTranslatedPort)
+        .map(p -> new AssignPortFromPool(TransformationType.DEST_NAT, PortField.DESTINATION, p, p));
+  }
+
+  private List<TransformationStep> getDestinationTransformationSteps(NatRule rule, Vsys vsys) {
+    DestinationTranslation destinationTranslation = rule.getDestinationTranslation();
+    if (destinationTranslation == null) {
       return ImmutableList.of();
     }
 
-    // Create step to transform dst IP
-    return ImmutableList.of(
-        new AssignIpAddressFromPool(TransformationType.DEST_NAT, IpField.DESTINATION, pool));
+    ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
+    getDestinationAddressTransformation(rule, vsys, destinationTranslation).ifPresent(steps::add);
+    getDestinationPortTransformation(rule).ifPresent(steps::add);
+    return steps.build();
   }
 
   /** Return a list of all valid NAT rules to apply to packets entering the specified zone. */
