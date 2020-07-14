@@ -12,8 +12,6 @@ public class DestinationTranslation implements Serializable {
   @Nullable private RuleEndpoint _translatedAddress;
   @Nullable private Integer _translatedPort;
 
-  public DestinationTranslation() {}
-
   @Nullable
   public RuleEndpoint getTranslatedAddress() {
     return _translatedAddress;

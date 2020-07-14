@@ -24,6 +24,8 @@ set rulebase nat rules 2nd_RULE destination [ DST_2 DST_3]
 set rulebase nat rules 2nd_RULE source-translation dynamic-ip-and-port translated-address [ SRC_1 SRC_2]
 set rulebase nat rules 2nd_RULE source-translation dynamic-ip-and-port translated-address SRC_3
 set rulebase nat rules 2nd_RULE destination-translation translated-address DST_1
+set rulebase nat rules 2nd_RULE destination-translation translated-port 123
+# Overwrite previously set addr and port
 set rulebase nat rules 2nd_RULE destination-translation translated-address DST_2
 set rulebase nat rules 2nd_RULE destination-translation translated-port 1234
 
