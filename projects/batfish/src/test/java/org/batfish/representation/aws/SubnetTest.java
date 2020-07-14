@@ -1140,6 +1140,23 @@ public class SubnetTest {
     Subnet subnet = _subnetList.get(0);
     Vpc vpc = new Vpc(subnet.getVpcId(), ImmutableSet.of(subnet.getCidrBlock()), ImmutableMap.of());
 
+    String sgName = "sg";
+    IpPermissions ipPermissions =
+        new IpPermissions(
+            "tcp",
+            null,
+            null,
+            ImmutableList.of(new IpRange(Prefix.parse("1.1.1.0/24"))),
+            ImmutableList.of(),
+            ImmutableList.of());
+    SecurityGroup sg =
+        new SecurityGroup(
+            sgName,
+            sgName,
+            ImmutableList.of(ipPermissions),
+            ImmutableList.of(ipPermissions),
+            subnet.getVpcId());
+
     // Create instance target in subnet
     String instanceId = "instanceId";
     Ip instanceIp = Ip.parse("1.1.1.1");
@@ -1148,7 +1165,7 @@ public class SubnetTest {
             instanceId,
             subnet.getVpcId(),
             subnet.getId(),
-            ImmutableList.of(),
+            ImmutableList.of(sgName),
             ImmutableList.of(),
             instanceIp,
             ImmutableMap.of(),
@@ -1167,45 +1184,6 @@ public class SubnetTest {
             Scheme.INTERNAL,
             Type.NETWORK,
             subnet.getVpcId());
-
-    String niSecurityGroupName = "niSecurityGroup";
-    Ip ipPermittedIn = Ip.parse("1.1.1.1");
-    Ip ipPermittedOut = Ip.parse("2.2.2.2");
-    IpPermissions inPermissions =
-        new IpPermissions(
-            "tcp",
-            null,
-            null,
-            ImmutableList.of(new IpRange(ipPermittedIn.toPrefix())),
-            ImmutableList.of(),
-            ImmutableList.of());
-    IpPermissions outPermissions =
-        new IpPermissions(
-            "tcp",
-            null,
-            null,
-            ImmutableList.of(new IpRange(ipPermittedOut.toPrefix())),
-            ImmutableList.of(),
-            ImmutableList.of());
-    SecurityGroup niSecurityGroup =
-        new SecurityGroup(
-            niSecurityGroupName,
-            niSecurityGroupName,
-            ImmutableList.of(outPermissions),
-            ImmutableList.of(inPermissions),
-            subnet.getVpcId());
-
-    String networkInterfaceId = "ni";
-    NetworkInterface networkInterface =
-        new NetworkInterface(
-            networkInterfaceId,
-            subnet.getId(),
-            subnet.getVpcId(),
-            ImmutableList.of(niSecurityGroupName),
-            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("2.2.2.2"), null)),
-            "",
-            instanceId,
-            ImmutableMap.of());
 
     String subnetHostname = Subnet.nodeName(subnet.getId());
     String vpcHostname = Vpc.nodeName(subnet.getVpcId());
@@ -1229,15 +1207,15 @@ public class SubnetTest {
             ImmutableSet.of(vpc)); // VPCs with instance targets
     Region region =
         Region.builder("region")
-            .setSecurityGroups(ImmutableMap.of(niSecurityGroupName, niSecurityGroup))
-            .setNetworkInterfaces(ImmutableMap.of(networkInterfaceId, networkInterface))
+            .setSecurityGroups(ImmutableMap.of(sgName, sg))
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
             .build();
     region.computeSecurityGroups(awsConf, new Warnings());
     subnet.addNlbInstanceTargetInterfaces(awsConf, region, subnetCfg, vpcCfg, null, null);
 
     // New interface on instance should filter with AclAclLines with ACL defined by security group
-    String secGroupIngressAclName = niSecurityGroup.toAcl(region, true, new Warnings()).getName();
-    String secGroupEgressAclName = niSecurityGroup.toAcl(region, false, new Warnings()).getName();
+    String secGroupIngressAclName = sg.toAcl(region, true, new Warnings()).getName();
+    String secGroupEgressAclName = sg.toAcl(region, false, new Warnings()).getName();
     Interface newInstanceIface =
         instanceCfg
             .getAllInterfaces()

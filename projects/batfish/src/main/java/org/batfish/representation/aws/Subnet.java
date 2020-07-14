@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.Collection;
@@ -434,13 +433,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
             instanceConfig.getAllInterfaces().get(instanceToSubnetIfaceName);
 
         // New interface on instance target needs security groups
-        Set<String> instanceSecurityGroups =
-            region.getNetworkInterfaces().values().stream()
-                .filter(ni -> instanceTarget.getId().equals(ni.getAttachmentInstanceId()))
-                .flatMap(ni -> ni.getGroups().stream())
-                .collect(ImmutableSet.toImmutableSet());
         region.applyAclsToInterfaceBasedOnSecurityGroups(
-            instanceSecurityGroups, instanceConfig, newInstanceIface);
+            instanceTarget.getSecurityGroups(), instanceConfig, newInstanceIface);
 
         // Subnet needs to set up a session for return traffic from the instance
         subnetToInstanceIface.setFirewallSessionInterfaceInfo(
