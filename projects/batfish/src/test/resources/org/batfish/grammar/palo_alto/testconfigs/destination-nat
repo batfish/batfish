@@ -51,8 +51,11 @@ config {
       vsys {
         vsys1 {
           address {
-            SOURCE_ADDR {
+            SOURCE_ADDR1 {
               ip-netmask 1.2.1.2/32;
+            }
+            SOURCE_ADDR2 {
+              ip-netmask 1.2.1.22/32;
             }
             SERVER_NEW_ADDR {
               ip-netmask 1.1.1.99/32;
@@ -64,13 +67,13 @@ config {
           rulebase {
             nat {
               rules {
-                DEST_NAT_NAME {
+                DEST_NAT_NAME1 {
                   destination-translation {
                     translated-address SERVER_NEW_ADDR;
                   }
                   to INSIDE;
                   from OUTSIDE;
-                  source SOURCE_ADDR;
+                  source SOURCE_ADDR1;
                   destination any;
                 }
                 # Should never apply this NAT since previous rule will always be applied first
@@ -80,7 +83,17 @@ config {
                   }
                   to INSIDE;
                   from OUTSIDE;
-                  source SOURCE_ADDR;
+                  source SOURCE_ADDR1;
+                  destination any;
+                }
+                DEST_NAT_NAME2 {
+                  destination-translation {
+                    translated-address SERVER_NEW_ADDR;
+                    translated-port 1234;
+                  }
+                  to INSIDE;
+                  from OUTSIDE;
+                  source SOURCE_ADDR2;
                   destination any;
                 }
               }
