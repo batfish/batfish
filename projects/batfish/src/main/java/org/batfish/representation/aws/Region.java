@@ -836,8 +836,8 @@ public final class Region implements Serializable {
 
     // Must happen after ESD and RDS are converted (for security groups to get all referrer IPs) but
     // before subnets are converted (so that target instances' special interfaces can get the
-    // instance's security groups applied)
-    computeSecurityGroups(awsConfiguration, warnings);
+    // instance's security groups applied; these interfaces are not covered by applySecurityGroups).
+    convertSecurityGroups(awsConfiguration, warnings);
 
     for (Subnet subnet : getSubnets().values()) {
       Configuration cfgNode = subnet.toConfigurationNode(awsConfiguration, this, warnings);
@@ -846,6 +846,9 @@ public final class Region implements Serializable {
 
     // VpcPeeringConnections and TransitGateways are processed in AwsConfiguration since they can be
     // cross region (or cross-account)
+
+    // Should happen after all interfaces are created
+    applySecurityGroups(awsConfiguration, warnings);
 
     // TODO: for now, set all interfaces to have the same bandwidth
     for (Configuration cfgNode : awsConfiguration.getAllNodes()) {
@@ -1022,9 +1025,9 @@ public final class Region implements Serializable {
   }
 
   @VisibleForTesting
-  void computeSecurityGroups(ConvertedConfiguration awsConfiguration, Warnings warnings) {
-    // First, make sure all interfaces (real and generated) have their IPs added to the security
-    // groups, so that the security-group-as-IpSpace is correct.
+  void convertSecurityGroups(ConvertedConfiguration awsConfiguration, Warnings warnings) {
+    // Finalize security groups by adding referrer IPs from RDS and ESD instances, so that the
+    // security-group-as-IpSpace is correct, then convert security groups to ACLs.
     addNetworkInterfaceIpsToSecurityGroups(warnings);
     addApplicationInterfaceIpsToSecurityGroups(awsConfiguration, warnings);
     _sgIngressAcls =
@@ -1037,8 +1040,11 @@ public final class Region implements Serializable {
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey, e -> e.getValue().toAcl(this, false, warnings)));
+  }
 
-    // Next, actually apply the correct security groups to all interfaces (real and generated).
+  @VisibleForTesting
+  void applySecurityGroups(ConvertedConfiguration awsConfiguration, Warnings warnings) {
+    // Apply the correct security groups to all interfaces (real and generated).
     applyNetworkInterfaceAclsToInstances(awsConfiguration);
     applyApplicationSecurityGroups(awsConfiguration);
   }

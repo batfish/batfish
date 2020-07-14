@@ -1210,7 +1210,7 @@ public class SubnetTest {
             .setSecurityGroups(ImmutableMap.of(sgName, sg))
             .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
             .build();
-    region.computeSecurityGroups(awsConf, new Warnings());
+    region.convertSecurityGroups(awsConf, new Warnings());
     subnet.addNlbInstanceTargetInterfaces(awsConf, region, subnetCfg, vpcCfg, null, null);
 
     // New interface on instance should filter with AclAclLines with ACL defined by security group
