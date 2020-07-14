@@ -837,6 +837,9 @@ public final class Region implements Serializable {
     // Must happen after ESD and RDS are converted (for security groups to get all referrer IPs) but
     // before subnets are converted (so that target instances' special interfaces can get the
     // instance's security groups applied; these interfaces are not covered by applySecurityGroups).
+    // It's safe to evaluate security groups' IP spaces before converting subnets because all
+    // interfaces created during subnet conversion either use link local addresses or are on subnet
+    // nodes, whose interface addresses don't affect security group IP spaces.
     convertSecurityGroups(awsConfiguration, warnings);
 
     for (Subnet subnet : getSubnets().values()) {
@@ -1026,8 +1029,8 @@ public final class Region implements Serializable {
 
   @VisibleForTesting
   void convertSecurityGroups(ConvertedConfiguration awsConfiguration, Warnings warnings) {
-    // Finalize security groups by adding referrer IPs from RDS and ESD instances, so that the
-    // security-group-as-IpSpace is correct, then convert security groups to ACLs.
+    // Finalize security groups by adding referrer IPs from all interfaces (real and generated), so
+    // that the security-group-as-IpSpace is correct, then convert security groups to ACLs.
     addNetworkInterfaceIpsToSecurityGroups(warnings);
     addApplicationInterfaceIpsToSecurityGroups(awsConfiguration, warnings);
     _sgIngressAcls =
