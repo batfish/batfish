@@ -1555,7 +1555,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             NamedPort.EPHEMERAL_LOWEST.number(), NamedPort.EPHEMERAL_HIGHEST.number()));
   }
 
-  private Optional<TransformationStep> getDestinationAddressTransformation(
+  private Optional<TransformationStep> getDestinationAddressTransformationStep(
       NatRule rule, Vsys vsys, DestinationTranslation destinationTranslation) {
     RuleEndpoint translatedDstAddr = destinationTranslation.getTranslatedAddress();
     if (translatedDstAddr == null) {
@@ -1577,9 +1577,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         new AssignIpAddressFromPool(TransformationType.DEST_NAT, IpField.DESTINATION, pool));
   }
 
-  private Optional<TransformationStep> getDestinationPortTransformation(NatRule rule) {
-    return Optional.ofNullable(rule.getDestinationTranslation())
-        .map(DestinationTranslation::getTranslatedPort)
+  private Optional<TransformationStep> getDestinationPortTransformationStep(
+      DestinationTranslation destinationTranslation) {
+    return Optional.ofNullable(destinationTranslation.getTranslatedPort())
         .map(p -> new AssignPortFromPool(TransformationType.DEST_NAT, PortField.DESTINATION, p, p));
   }
 
@@ -1590,8 +1590,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     ImmutableList.Builder<TransformationStep> steps = ImmutableList.builder();
-    getDestinationAddressTransformation(rule, vsys, destinationTranslation).ifPresent(steps::add);
-    getDestinationPortTransformation(rule).ifPresent(steps::add);
+    getDestinationAddressTransformationStep(rule, vsys, destinationTranslation)
+        .ifPresent(steps::add);
+    getDestinationPortTransformationStep(destinationTranslation).ifPresent(steps::add);
     return steps.build();
   }
 
