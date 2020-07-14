@@ -1453,6 +1453,11 @@ TRANSLATED_ADDRESS
     'translated-address'
 ;
 
+TRANSLATED_PORT
+:
+    'translated-port'
+;
+
 TRANSPORT
 :
     'transport'
