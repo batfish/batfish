@@ -402,7 +402,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // Add static routes in subnet's new VRF and connect subnet to its instance targets
     for (Entry<String, Instance> e : awsConfiguration.getSubnetsToInstanceTargets().entries()) {
       String subnetId = e.getKey();
-      if (!region.getSubnets().get(subnetId).getVpcId().equals(_vpcId)) {
+      Subnet subnet = region.getSubnets().get(subnetId);
+      if (subnet == null || !subnet.getVpcId().equals(_vpcId)) {
+        // Skip subnets not in this region or VPC
         continue;
       }
       Instance instanceTarget = e.getValue();
