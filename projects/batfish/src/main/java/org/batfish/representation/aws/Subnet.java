@@ -312,7 +312,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
 
     addNlbInstanceTargetInterfaces(
-        awsConfiguration, cfgNode, vpcConfigNode, ingressNetworkAcl, egressNetworkAcl);
+        awsConfiguration, region, cfgNode, vpcConfigNode, ingressNetworkAcl, egressNetworkAcl);
 
     // create LocationInfo for each link location on the node.
     cfgNode.setLocationInfo(
@@ -336,6 +336,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   void addNlbInstanceTargetInterfaces(
       ConvertedConfiguration awsConfiguration,
+      Region region,
       Configuration subnetCfg,
       Configuration vpcCfg,
       // These ACLs should be applied to all subnet interfaces that don't face instances
@@ -422,11 +423,20 @@ public class Subnet implements AwsVpcEntity, Serializable {
             instanceConfig.getDefaultVrf().getName(),
             NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
 
-        // Subnet needs to set up a session for return traffic from the instance
         String subnetToInstanceIfaceName =
             interfaceNameToRemote(instanceConfig, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
         Interface subnetToInstanceIface =
             subnetCfg.getAllInterfaces().get(subnetToInstanceIfaceName);
+        String instanceToSubnetIfaceName =
+            interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
+        Interface newInstanceIface =
+            instanceConfig.getAllInterfaces().get(instanceToSubnetIfaceName);
+
+        // New interface on instance target needs security groups
+        region.applyAclsToInterfaceBasedOnSecurityGroups(
+            instanceTarget.getSecurityGroups(), instanceConfig, newInstanceIface);
+
+        // Subnet needs to set up a session for return traffic from the instance
         subnetToInstanceIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 false, ImmutableList.of(subnetToInstanceIfaceName), null, null));
