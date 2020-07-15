@@ -60,15 +60,15 @@ public final class LargeCommunity extends Community {
   public static LargeCommunity of(long globalAdministrator, long localData1, long localData2) {
     checkArgument(
         globalAdministrator >= 0 && globalAdministrator <= 0xFFFFFFFFL,
-        "Invalid global administrator value: %d",
+        "Invalid global administrator value: %s",
         globalAdministrator);
     checkArgument(
         localData1 >= 0 && localData1 <= 0xFFFFFFFFL,
-        "Invalid local administrator value: %d",
+        "Invalid local administrator value: %s",
         localData1);
     checkArgument(
         localData2 >= 0 && localData2 <= 0xFFFFFFFFL,
-        "Invalid local administrator value: %d",
+        "Invalid local administrator value: %s",
         localData2);
     return new LargeCommunity(globalAdministrator, localData1, localData2);
   }

@@ -32,12 +32,12 @@ public final class BDDPrefix {
   public BDDPrefix(BDDInteger ip, BDDInteger prefixLength) {
     checkArgument(
         ip.getBitvec().length == IP_LENGTH,
-        "Expected size of ip BDDInteger to be %d but was %d",
+        "Expected size of ip BDDInteger to be %s but was %s",
         IP_LENGTH,
         ip.getBitvec().length);
     checkArgument(
         prefixLength.getBitvec().length == PREFIX_LENGTH_LENGTH,
-        "Expected size of prefixLength BDDInteger to be %d but was %d",
+        "Expected size of prefixLength BDDInteger to be %s but was %s",
         PREFIX_LENGTH_LENGTH,
         ip.getBitvec().length);
     checkArgument(

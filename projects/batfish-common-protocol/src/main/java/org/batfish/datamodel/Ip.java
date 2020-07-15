@@ -130,7 +130,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   public static Ip create(long ipAsLong) {
-    checkArgument(ipAsLong <= 0xFFFFFFFFL, "Invalid IP value: %d", ipAsLong);
+    checkArgument(ipAsLong <= 0xFFFFFFFFL, "Invalid IP value: %s", ipAsLong);
     Ip ip = new Ip(ipAsLong);
     return CACHE.getUnchecked(ip);
   }

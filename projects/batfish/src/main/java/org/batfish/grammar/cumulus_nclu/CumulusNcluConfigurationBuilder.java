@@ -309,7 +309,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         range.upperBoundType() == BoundType.CLOSED
             ? upperBound.longValue() <= maxValue
             : upperBound.longValue() < maxValue,
-        "Invalid range %s, max value allowed is %d",
+        "Invalid range %s, max value allowed is %s",
         rangeSet,
         maxValue);
   }
