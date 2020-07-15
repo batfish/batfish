@@ -179,7 +179,7 @@ public class AsPathRegex extends BaseParser<String> {
   static String rangeToOr(String lowAsn, String highAsn) {
     long start = Long.parseLong(lowAsn.substring(1)); // needed to remove leading space from ASN().
     long end = Long.parseLong(highAsn.substring(1)); // needed to remove leading space from ASN().
-    checkArgument(start <= end, "Invalid range %d-%d", start, end);
+    checkArgument(start <= end, "Invalid range %s-%s", start, end);
     String bigOr =
         LongStream.range(start, end + 1).mapToObj(l -> " " + l).collect(Collectors.joining("|"));
     return "(" + bigOr + ')';
