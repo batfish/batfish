@@ -24,7 +24,7 @@ public final class StandardCommunity extends Community {
 
   private StandardCommunity(long value) {
     checkArgument(
-        value >= 0 && value <= 0xFFFFFFFFL, "Community value %d is not in the valid range", value);
+        value >= 0 && value <= 0xFFFFFFFFL, "Community value %s is not in the valid range", value);
     _value = value;
   }
 
@@ -73,8 +73,8 @@ public final class StandardCommunity extends Community {
 
   @Nonnull
   public static StandardCommunity of(int high, int low) {
-    checkArgument(low >= 0 && low <= 0xFFFF, "Invalid low value: %d", low);
-    checkArgument(high >= 0 && high <= 0xFFFF, "Invalid high value: %d", low);
+    checkArgument(low >= 0 && low <= 0xFFFF, "Invalid low value: %s", low);
+    checkArgument(high >= 0 && high <= 0xFFFF, "Invalid high value: %s", low);
     return new StandardCommunity((long) high << 16 | low);
   }
 

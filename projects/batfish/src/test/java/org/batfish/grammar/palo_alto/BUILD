@@ -11,6 +11,7 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
+        "//projects/batfish/src/test/resources/org/batfish/grammar/palo_alto/snapshots",
         "//projects/batfish/src/test/resources/org/batfish/grammar/palo_alto/testconfigs",
     ],
     deps = [

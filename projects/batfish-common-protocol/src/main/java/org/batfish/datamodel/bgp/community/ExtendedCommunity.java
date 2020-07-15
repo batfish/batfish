@@ -151,11 +151,11 @@ public final class ExtendedCommunity extends Community {
   public static ExtendedCommunity of(int type, long globalAdministrator, long localAdministrator) {
     checkArgument(
         type >= 0 && type <= 0xFFFF,
-        "Extended community type %d is not within the allowed range",
+        "Extended community type %s is not within the allowed range",
         type);
     byte typeByte = (byte) (type >> 8);
     checkArgument(
-        _validTypes.contains(typeByte), "Not a valid BGP extended community type: %d", type);
+        _validTypes.contains(typeByte), "Not a valid BGP extended community type: %s", type);
     checkArgument(
         globalAdministrator >= 0 && localAdministrator >= 0,
         "Administrator values must be positive");
