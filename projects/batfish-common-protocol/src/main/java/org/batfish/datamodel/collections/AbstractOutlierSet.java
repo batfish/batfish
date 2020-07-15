@@ -72,6 +72,11 @@ public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
         && Objects.equals(getRole(), rhs.getRole());
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(_conformers, _outliers, getRole());
+  }
+
   @JsonProperty(PROP_CONFORMERS)
   @Override
   public SortedSet<String> getConformers() {

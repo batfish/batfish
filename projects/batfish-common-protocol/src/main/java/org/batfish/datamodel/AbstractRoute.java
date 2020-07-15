@@ -43,7 +43,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   protected AbstractRoute(
       @Nullable Prefix network, int admin, long tag, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
-    checkArgument(admin >= 0, "Invalid admin distance for a route: %d", admin);
+    checkArgument(admin >= 0, "Invalid admin distance for a route: %s", admin);
     _network = network;
     _admin = admin;
     _nonForwarding = nonForwarding;

@@ -21,7 +21,7 @@ public abstract class RipRoute extends AbstractRoute {
     super(network, admin, tag, false, false);
     checkArgument(
         metric >= 0 && metric <= MAX_ROUTE_METRIC,
-        "Invalid RIP route metric %d. Must be between 0 and %d",
+        "Invalid RIP route metric %s. Must be between 0 and %s",
         metric,
         MAX_ROUTE_METRIC);
     _metric = metric;

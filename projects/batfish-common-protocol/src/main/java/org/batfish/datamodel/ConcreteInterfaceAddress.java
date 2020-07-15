@@ -34,7 +34,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
   public static ConcreteInterfaceAddress create(Ip ip, int networkBits) {
     checkArgument(
         networkBits > 0 && networkBits <= Prefix.MAX_PREFIX_LENGTH,
-        "Invalid network mask %d, must be between 1 and %d",
+        "Invalid network mask %s, must be between 1 and %s",
         networkBits,
         Prefix.MAX_PREFIX_LENGTH);
     return new ConcreteInterfaceAddress(ip, networkBits);
