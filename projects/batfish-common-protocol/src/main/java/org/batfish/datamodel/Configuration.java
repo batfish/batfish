@@ -284,8 +284,8 @@ public final class Configuration implements Serializable {
     return new Configuration(hostname, configurationFormat);
   }
 
-  public Configuration(String hostname, @Nonnull ConfigurationFormat configurationFormat) {
-    _name = hostname;
+  public Configuration(@Nonnull String hostname, @Nonnull ConfigurationFormat configurationFormat) {
+    _name = hostname.toLowerCase();
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityLists = new TreeMap<>();

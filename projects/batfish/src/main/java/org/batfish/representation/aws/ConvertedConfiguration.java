@@ -77,7 +77,7 @@ class ConvertedConfiguration implements Serializable {
       Multimap<String, Instance> nlbsToInstanceTargets) {
     _configurationNodes = new HashMap<>();
     for (Configuration node : configurationNodes) {
-      _configurationNodes.put(node.getHostname().toLowerCase(), node);
+      _configurationNodes.put(node.getHostname(), node);
     }
     _layer1Edges = layer1Edges;
     _subnetsToInstanceTargets = ImmutableMultimap.copyOf(subnetsToInstanceTargets);
@@ -101,7 +101,7 @@ class ConvertedConfiguration implements Serializable {
   }
 
   void addNode(Configuration cfgNode) {
-    _configurationNodes.put(cfgNode.getHostname().toLowerCase(), cfgNode);
+    _configurationNodes.put(cfgNode.getHostname(), cfgNode);
   }
 
   void addEdge(String nodeName1, String ifaceName1, String nodeName2, String ifaceName2) {
