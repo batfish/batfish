@@ -267,7 +267,10 @@ public class AwsConfiguration extends VendorConfiguration {
       TransitGatewayConverter.convertTransitGateways(this, _convertedConfiguration)
           .forEach(_convertedConfiguration::addNode);
     } catch (Exception e) {
-      getWarnings().redFlag(String.format("Failed to convert transit gateways %s", e));
+      getWarnings()
+          .redFlag(
+              String.format(
+                  "Failed to convert transit gateways %s", Throwables.getStackTraceAsString(e)));
     }
     TransitGatewayPeeringConnector.connect(this, _convertedConfiguration, getWarnings());
   }
@@ -284,7 +287,10 @@ public class AwsConfiguration extends VendorConfiguration {
       vpcPeeringConnections.forEach(
           c -> c.createConnection(_convertedConfiguration, getWarnings()));
     } catch (Exception e) {
-      getWarnings().redFlag(String.format("Failed to process VPC peerings %s", e));
+      getWarnings()
+          .redFlag(
+              String.format(
+                  "Failed to process VPC peerings %s", Throwables.getStackTraceAsString(e)));
     }
   }
 
