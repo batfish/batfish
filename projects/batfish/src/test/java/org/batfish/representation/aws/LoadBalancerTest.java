@@ -47,7 +47,6 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -974,7 +973,7 @@ public class LoadBalancerTest {
     List<Configuration> cfgNodes =
         _loadBalancer.toConfigurationNodes(
             new ConvertedConfiguration(
-                new HashMap<>(),
+                ImmutableList.of(),
                 new HashSet<>(),
                 ImmutableMultimap.of(),
                 ImmutableMultimap.of(),

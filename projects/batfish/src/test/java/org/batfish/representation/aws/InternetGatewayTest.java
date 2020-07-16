@@ -125,7 +125,7 @@ public class InternetGatewayTest {
         .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration igwConfig =
         internetGateway.toConfigurationNode(awsConfiguration, region, new Warnings());
@@ -135,7 +135,7 @@ public class InternetGatewayTest {
     // gateway should have interfaces to the backbone and vpc
     assertThat(
         igwConfig.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
+            .map(Interface::getName)
             .collect(ImmutableList.toImmutableList()),
         equalTo(
             ImmutableList.of(

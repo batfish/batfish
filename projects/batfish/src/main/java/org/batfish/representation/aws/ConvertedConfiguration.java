@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
@@ -19,7 +20,9 @@ import org.batfish.datamodel.Configuration;
 @ParametersAreNonnullByDefault
 class ConvertedConfiguration implements Serializable {
 
+  /** Map from hostname to Configuration. Hostname lookup is case-insensitive. */
   @Nonnull private final Map<String, Configuration> _configurationNodes;
+
   @Nonnull private final Set<Layer1Edge> _layer1Edges;
   /**
    * Multimap of subnet IDs to {@link Instance} in that subnet used as targets by some {@link
@@ -38,7 +41,7 @@ class ConvertedConfiguration implements Serializable {
 
   public ConvertedConfiguration(AwsConfiguration awsConfiguration) {
     this(
-        new HashMap<>(),
+        ImmutableList.of(),
         new HashSet<>(),
         awsConfiguration.getSubnetsToInstanceTargets(),
         awsConfiguration.getSubnetsToNlbs(),
@@ -48,7 +51,7 @@ class ConvertedConfiguration implements Serializable {
   @VisibleForTesting
   public ConvertedConfiguration() {
     this(
-        new HashMap<>(),
+        ImmutableList.of(),
         new HashSet<>(),
         ImmutableMultimap.of(),
         ImmutableMultimap.of(),
@@ -56,7 +59,7 @@ class ConvertedConfiguration implements Serializable {
   }
 
   @VisibleForTesting
-  ConvertedConfiguration(Map<String, Configuration> configurationNodes) {
+  ConvertedConfiguration(Iterable<Configuration> configurationNodes) {
     this(
         configurationNodes,
         new HashSet<>(),
@@ -67,12 +70,15 @@ class ConvertedConfiguration implements Serializable {
 
   @VisibleForTesting
   ConvertedConfiguration(
-      Map<String, Configuration> configurationNodes,
+      Iterable<Configuration> configurationNodes,
       Set<Layer1Edge> layer1Edges,
       Multimap<String, Instance> subnetsToInstanceTargets,
       Multimap<String, LoadBalancer> subnetsToNlbs,
       Multimap<String, Instance> nlbsToInstanceTargets) {
-    _configurationNodes = configurationNodes;
+    _configurationNodes = new HashMap<>();
+    for (Configuration node : configurationNodes) {
+      _configurationNodes.put(node.getHostname().toLowerCase(), node);
+    }
     _layer1Edges = layer1Edges;
     _subnetsToInstanceTargets = ImmutableMultimap.copyOf(subnetsToInstanceTargets);
     _subnetsToNlbs = ImmutableMultimap.copyOf(subnetsToNlbs);
@@ -86,7 +92,7 @@ class ConvertedConfiguration implements Serializable {
 
   @Nullable
   public Configuration getNode(String hostname) {
-    return _configurationNodes.get(hostname);
+    return _configurationNodes.get(hostname.toLowerCase());
   }
 
   @Nonnull
@@ -95,7 +101,7 @@ class ConvertedConfiguration implements Serializable {
   }
 
   void addNode(Configuration cfgNode) {
-    _configurationNodes.put(cfgNode.getHostname(), cfgNode);
+    _configurationNodes.put(cfgNode.getHostname().toLowerCase(), cfgNode);
   }
 
   void addEdge(String nodeName1, String ifaceName1, String nodeName2, String ifaceName2) {
