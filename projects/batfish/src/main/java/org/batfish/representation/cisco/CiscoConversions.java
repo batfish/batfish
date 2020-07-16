@@ -93,7 +93,6 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -172,7 +171,7 @@ public class CiscoConversions {
    * IpsecPeerConfig}
    */
   private static void convertCryptoMapEntry(
-      final Configuration c,
+      Configuration c,
       CryptoMapEntry cryptoMapEntry,
       String cryptoMapNameSeqNumber,
       String cryptoMapName,
@@ -481,14 +480,6 @@ public class CiscoConversions {
             firstNonNull(iptoIfaceName.get(tunnel.getSourceAddress()), INVALID_LOCAL_INTERFACE));
       }
     }
-  }
-
-  static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
-    List<AsPathAccessListLine> lines =
-        asPathSet.getElements().stream()
-            .map(CiscoConversions::toAsPathAccessListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new AsPathAccessList(asPathSet.getName(), lines);
   }
 
   static AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
@@ -1527,12 +1518,6 @@ public class CiscoConversions {
         .setMatchCondition(match)
         .setName(line.getName())
         .build();
-  }
-
-  private static AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
-    String regex = CiscoConfiguration.toJavaRegex(elem.regex());
-    AsPathAccessListLine line = new AsPathAccessListLine(LineAction.PERMIT, regex);
-    return line;
   }
 
   private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
