@@ -427,8 +427,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
-  private final Map<String, AsPathSet> _asPathSets;
-
   private final CiscoFamily _cf;
 
   private final Map<String, CryptoMapSet> _cryptoMapSets;
@@ -568,7 +566,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
-    _asPathSets = new TreeMap<>();
     _cf = new CiscoFamily();
     _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
@@ -698,11 +695,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _asPathAccessLists;
   }
 
-  public Map<String, AsPathSet> getAsPathSets() {
-    return _asPathSets;
-  }
-
-  private Ip getBgpRouterId(final Configuration c, String vrfName, BgpProcess proc) {
+  private Ip getBgpRouterId(Configuration c, String vrfName, BgpProcess proc) {
     Ip processRouterId = proc.getRouterId();
     if (processRouterId == null) {
       processRouterId = _vrfs.get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getRouterId();
@@ -1179,7 +1172,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
-      final Configuration c, BgpProcess proc, String vrfName) {
+      Configuration c, BgpProcess proc, String vrfName) {
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
@@ -2682,7 +2675,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newProcess;
   }
 
-  private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
+  private RoutingPolicy toRoutingPolicy(Configuration c, RouteMap map) {
     boolean hasContinue =
         map.getClauses().values().stream().anyMatch(clause -> clause.getContinueLine() != null);
     if (hasContinue) {
@@ -2852,7 +2845,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
-    final Configuration c = new Configuration(_hostname, _vendor);
+    Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
@@ -2910,12 +2903,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // convert as path access lists to vendor independent format
     for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
       AsPathAccessList apList = CiscoConversions.toAsPathAccessList(pathList);
-      c.getAsPathAccessLists().put(apList.getName(), apList);
-    }
-
-    // convert as-path-sets to vendor independent format
-    for (AsPathSet asPathSet : _asPathSets.values()) {
-      AsPathAccessList apList = CiscoConversions.toAsPathAccessList(asPathSet);
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
