@@ -19,19 +19,15 @@ interface swp1
 router bgp 1
  bgp router-id 1.1.1.1
  neighbor 10.1.1.4 remote-as 4
- neighbor 10.1.1.4 route-map PEER_POLICY out
+ neighbor 10.1.1.4 route-map MATCH_COMM_OUT out
  network 10.2.2.2/32 route-map SET_COMM
- network 10.3.3.3/32 route-map SET_COMM
- network 10.4.4.4/32
-!
-! ip prefix-list TEST_PREFIX_LIST seq 10 permit 10.2.2.2/32
 !
 ip community-list standard TEST_COMM permit 12345:123
 !
-route-map SET_COMM permit 10
+route-map SET_COMM permit 20
  set community 12345:123
 !
-route-map PEER_POLICY permit 20
+route-map MATCH_COMM_OUT permit 10
  match community TEST_COMM
 !
 end

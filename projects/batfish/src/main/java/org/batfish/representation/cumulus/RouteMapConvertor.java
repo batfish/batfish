@@ -60,6 +60,10 @@ class RouteMapConvertor {
 
     ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
     for (RouteMapEntry currentEntry : _routeMap.getEntries().values()) {
+//      if (currentRoutingPolicyName.equals("PEER_POLICY")) {
+//        System.out.println(currentEntry.getMatchCommunity() != null ? currentEntry.getMatchCommunity().getNames() : null);
+//      }
+
       int currentSequence = currentEntry.getNumber();
       if (_continueTargets.contains(currentSequence)) {
         // finalize the routing policy consisting of queued statements up to this point
@@ -75,6 +79,7 @@ class RouteMapConvertor {
       } // or else undefined reference
       currentRoutingPolicyStatements.add(toStatement(currentEntry));
     }
+
     // finalize last routing policy
     // TODO: do default action, which changes when continuing from a permit
     currentRoutingPolicyStatements.add(ROUTE_MAP_DENY_STATEMENT);
@@ -83,6 +88,8 @@ class RouteMapConvertor {
         .setOwner(_c)
         .setStatements(currentRoutingPolicyStatements.build())
         .build();
+
+    //System.out.println(_c.getRoutingPolicies().get(routeMapName).getStatements());
     return _c.getRoutingPolicies().get(_routeMap.getName());
   }
 

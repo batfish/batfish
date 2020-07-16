@@ -116,6 +116,10 @@ public class RoutingPolicy implements Serializable {
   public Result call(Environment environment) {
     for (Statement statement : _statements) {
       Result result = statement.execute(environment);
+//      if (_name.equals("PEER_POLICY")) {
+//        System.out.println(statement);
+//        System.out.println(result);
+//      }
       if (result.getExit()) {
         return result;
       }

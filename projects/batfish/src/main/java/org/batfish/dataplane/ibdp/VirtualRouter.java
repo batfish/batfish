@@ -1784,6 +1784,7 @@ public class VirtualRouter implements Serializable {
                   // Activate route and convert to BGP if activated
                   Bgpv4Route bgpv4Route =
                       processNeighborSpecificGeneratedRoute(r, sessionProperties.getHeadIp());
+                  //System.out.println(bgpv4Route);
                   if (bgpv4Route == null) {
                     // Route was not activated
                     return Optional.<Bgpv4Route>empty();

@@ -1,0 +1,34 @@
+frr-re-advertise
+# This file describes the network interfaces
+auto lo
+iface lo inet loopback
+
+auto swp1
+iface swp1
+
+# ports.conf --
+frr version
+frr defaults datacenter
+!
+interface lo
+ ip address 4.4.4.4/32
+!
+interface swp1
+ ip address 10.1.1.4/24
+!
+router bgp 4
+ bgp router-id 4.4.4.4
+ neighbor 10.1.1.1 remote-as 1
+ neighbor 10.1.1.5 remote-as 5
+ neighbor 10.1.1.1 route-map SET_COMM_IN in
+ neighbor 10.1.1.5 route-map MATCH_COMM_OUT out
+!
+ip community-list standard TEST_COMM permit 12345:123
+!
+route-map MATCH_COMM_OUT permit 10
+ match community TEST_COMM
+!
+route-map SET_COMM_IN permit 10
+ set community 12345:123
+!
+end

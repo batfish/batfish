@@ -579,6 +579,67 @@ public final class CumulusConversions {
         c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
+  /**
+   * Create generated routes and route-maps for network statements.
+   *
+   * @param bgpVrf
+   * @return
+   */
+  private static Set<GeneratedRoute> generateNetworkStatementGeneratedRoutes(Configuration c, BgpVrf bgpVrf,
+      Map<String, RouteMap> routeMaps) {
+    Set<GeneratedRoute> generatedRoutes = new HashSet<>();
+
+    // Make sure we actually have ipv4 bgp
+    if (bgpVrf.isIpv4UnicastActive()) {
+      BgpIpv4UnicastAddressFamily ipv4Unicast = firstNonNull(bgpVrf.getIpv4Unicast(),
+          new BgpIpv4UnicastAddressFamily());
+
+      Stream.concat(bgpVrf.getNetworks().values().stream(),
+          ipv4Unicast.getNetworks().values().stream()).forEach(bgpNetwork -> {
+
+        String networkRoutingPolicyName = bgpNetwork.getRouteMap();
+        generateNetworkGenerationPolicy(c, bgpVrf.getVrfName(), bgpNetwork.getNetwork());
+
+        GeneratedRoute.Builder networkStatement = GeneratedRoute.builder()
+            .setNetwork(bgpNetwork.getNetwork())
+            .setGenerationPolicy(
+                computeBgpNetworkGenerationPolicyName(
+                    true, bgpVrf.getVrfName(), bgpNetwork.getNetwork().toString()))
+            .setDiscard(false);
+
+        if (networkRoutingPolicyName != null) {
+          RouteMap attributeMap = routeMaps.get(networkRoutingPolicyName);
+          if (attributeMap != null) {
+            networkStatement.setAttributePolicy(networkRoutingPolicyName);
+          }
+        }
+
+        generatedRoutes.add(networkStatement.build());
+      });
+
+    }
+
+    return generatedRoutes;
+  }
+
+
+@Nullable
+static Set<GeneratedRoute> generateBGPPeerGeneratedRoutes(
+    Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf, Map<String, RouteMap> routeMaps
+    ) {
+    // Hack to add support for network statements.  The right way to do this will be to add support for
+    // Unconditional origination of network statements (no rib-resolution) and support routing policy
+    // for these routes.  The artifact of this hack is that local bgp rib does NOT display the network statements as expected
+    //  However, all other functionality happens as expected.
+
+    Set<GeneratedRoute> bgpPeerGeneratedRoutes = new HashSet<>();
+    bgpPeerGeneratedRoutes.addAll(bgpDefaultOriginate(neighbor) ? ImmutableSet.of(
+    GENERATED_DEFAULT_ROUTE) : new HashSet<>());
+    bgpPeerGeneratedRoutes.addAll(generateNetworkStatementGeneratedRoutes(c, bgpVrf, routeMaps));
+
+    return bgpPeerGeneratedRoutes.size() > 0 ? bgpPeerGeneratedRoutes : null;
+    }
+
   @VisibleForTesting
   static void generateBgpCommonPeerConfig(
       Configuration c,
@@ -604,7 +665,7 @@ public final class CumulusConversions {
         .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         .setGeneratedRoutes(
-            bgpDefaultOriginate(neighbor) ? ImmutableSet.of(GENERATED_DEFAULT_ROUTE) : null)
+            generateBGPPeerGeneratedRoutes(c, neighbor, bgpVrf, vsConfig.getRouteMaps()))
         // Ipv4 unicast is enabled by default
         .setIpv4UnicastAddressFamily(
             convertIpv4UnicastAddressFamily(
@@ -715,6 +776,7 @@ public final class CumulusConversions {
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
 
+    //System.out.println(peerExportConditions);
     peerExportPolicy.addStatement(
         new If(
             "peer-export policy main conditional: exitAccept if true / exitReject if false",

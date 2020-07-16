@@ -93,6 +93,8 @@ import org.batfish.representation.cumulus.IpAsPathAccessList;
 import org.batfish.representation.cumulus.IpAsPathAccessListLine;
 import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
+import org.batfish.representation.cumulus.IpCommunityListStandard;
+import org.batfish.representation.cumulus.IpCommunityListStandardLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
@@ -972,6 +974,23 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrIpCommunityListStandard() {
+    String name = "NAME";
+
+    parse(String.format("ip community-list standard %s permit 10000:10\n", name));
+
+    IpCommunityListStandard communityList =
+        (IpCommunityListStandard) _frr.getIpCommunityLists().get(name);
+
+    List<IpCommunityListStandardLine> expected =
+        Lists.newArrayList(new IpCommunityListStandardLine(LineAction.PERMIT,
+            ImmutableSet.of(StandardCommunity.of(10000, 10))));
+    List<IpCommunityListStandardLine> actual = communityList.getLines();
+    assertThat(expected.size(), equalTo(actual.size()));
+    assertThat(expected.get(0).getAction(), equalTo(actual.get(0).getAction()));
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapMatchInterface() {
     String name = "ROUTE-MAP-NAME";
 
@@ -1746,14 +1765,21 @@ public class CumulusFrrGrammarTest {
      frr-originator should:
      1) Allow 10.2.2.2/32 and 10.3.3.3/32 in its bgp table with community 1234:12.
      2) Allow 10.4.4.4/32 into its table with default attributes
-     3) Re-advertise 10.2.2.2/32 and 10.3.3.3/32 to ios-listener
-     4) Deny 10.4.4.4/32
-     ios-listener should only have 2.2.2.2/32 in its BGP table
+     3) Re-advertise 10.3.3.3/32 to ios-listener
+     4) Deny 10.4.4.4/32 and 10.3.3.3/32
+
+     ios-listener should only have 10.2.2.2/32 in its BGP table
+
+     NOTE: Technically, according to true FRR functionality, frr-originator should also advertise 10.2.2.2/32
+     However, Batfish isn't capable of doing a two-pass on route-maps.  Peer export happens prior to
+     the application of attribute maps to network statements, which is the key behavioral problem.
+     We need Batfish to apply attributes to network statements PRIOR to evaluation of the peer export policy.
+     Given the potential scope of such a change, we are punting on this for now.
     */
 
     String snapshotName = "network-statement";
     List<String> configurationNames =
-        ImmutableList.of("frr-originator", "ios-listener");
+        ImmutableList.of("frr-originator", "frr-listener");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
@@ -1821,7 +1847,7 @@ public class CumulusFrrGrammarTest {
 
     // ios-listener should get a copy of 10.3.3.3/32 from frr-originator
     assertThat(
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItems(
             equalTo(
                 Bgpv4Route.builder()
@@ -1839,5 +1865,74 @@ public class CumulusFrrGrammarTest {
                     .setLocalPreference(100)
                     .build())
         ));
+
+    // ios-listener should get a copy of 10.3.3.3/32 from frr-originator
+//    assertThat(
+//        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+//        hasItems(
+//            equalTo(
+//                Bgpv4Route.builder()
+//                    .setNetwork(Prefix.parse("10.2.2.2/32"))
+//                    .setNextHopIp(Ip.parse("10.1.1.1"))
+//                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+//                    .setNextHopInterface("dynamic")
+//                    .setOriginType(OriginType.IGP)
+//                    .setProtocol(RoutingProtocol.BGP)
+//                    .setSrcProtocol(RoutingProtocol.BGP)
+//                    .setCommunities(ImmutableSet.of(StandardCommunity.of(1234, 12)))
+//                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+//                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+//                    .setAdmin(20)
+//                    .setLocalPreference(100)
+//                    .build())
+//        ));
   }
+
+  @Test
+  public void testBgpCommunityMatch_behavior() throws IOException {
+    /*
+     There are two nodes in the topology arranged in a line.
+       - frr-originator -- ios-listener
+
+     frr-originator has the network statements and a collection of route-maps
+
+     frr-originator should:
+     1) Allow 10.2.2.2/32 and 10.3.3.3/32 in its bgp table with community 1234:12.
+     2) Allow 10.4.4.4/32 into its table with default attributes
+     3) Re-advertise 10.3.3.3/32 to ios-listener
+     4) Deny 10.4.4.4/32 and 10.3.3.3/32
+
+     ios-listener should only have 10.2.2.2/32 in its BGP table
+
+     NOTE: Technically, according to true FRR functionality, frr-originator should also advertise 10.2.2.2/32
+     However, Batfish isn't capable of doing a two-pass on route-maps.  Peer export happens prior to
+     the application of attribute maps to network statements, which is the key behavioral problem.
+     We need Batfish to apply attributes to network statements PRIOR to evaluation of the peer export policy.
+     Given the potential scope of such a change, we are punting on this for now.
+    */
+
+    String snapshotName = "community-match";
+    List<String> configurationNames =
+        ImmutableList.of("frr-originator", "frr-listener", "frr-re-advertise");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+
+    String networkPolicyName1 =
+        computeBgpNetworkGenerationPolicyName(true, "default", "10.2.2.2/32");
+
+    String networkPolicyName2 =
+        computeBgpNetworkGenerationPolicyName(true, "default", "10.3.3.3/32");
+
+    String networkPolicyName3 =
+        computeBgpNetworkGenerationPolicyName(true, "default", "10.4.4.4/32");
+  }
+
 }
