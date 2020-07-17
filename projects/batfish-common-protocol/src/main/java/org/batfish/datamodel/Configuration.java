@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.not;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -27,7 +28,6 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -276,11 +276,10 @@ public final class Configuration implements Serializable {
 
   @JsonCreator
   private static Configuration makeConfiguration(
-      @JsonProperty(PROP_NAME) String hostname,
+      @Nullable @JsonProperty(PROP_NAME) String hostname,
       @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
-    if (configurationFormat == null) {
-      throw new BatfishException("Configuration format cannot be null");
-    }
+    checkNotNull(hostname, "%s cannot be null", PROP_NAME);
+    checkNotNull(configurationFormat, "%s cannot be null", PROP_CONFIGURATION_FORMAT);
     return new Configuration(hostname, configurationFormat);
   }
 
