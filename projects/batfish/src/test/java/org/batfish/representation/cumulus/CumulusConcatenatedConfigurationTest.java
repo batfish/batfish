@@ -37,7 +37,7 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testInitializeAllInterfaces_createLoopback() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    CumulusConcatenatedConfiguration.builder().build().initializeAllInterfaces(c);
+    CumulusConcatenatedConfiguration.builder().setHostname("c").build().initializeAllInterfaces(c);
     assertTrue(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
     assertThat(
         c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getBandwidth(),
@@ -50,6 +50,7 @@ public class CumulusConcatenatedConfigurationTest {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     InterfacesInterface bridge = new InterfacesInterface(BRIDGE_NAME);
     CumulusConcatenatedConfiguration.builder()
+        .setHostname("c")
         .addInterfaces(ImmutableMap.of(bridge.getName(), bridge))
         .build()
         .initializeAllInterfaces(c);
@@ -63,6 +64,7 @@ public class CumulusConcatenatedConfigurationTest {
     InterfacesInterface iface1 = new InterfacesInterface("interfaces");
     iface1.setVrf("vrf1");
     CumulusConcatenatedConfiguration.builder()
+        .setHostname("c")
         .addInterfaces(ImmutableMap.of(iface1.getName(), iface1))
         .build()
         .initializeAllInterfaces(c);
@@ -80,6 +82,7 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
     frrConfiguration.getInterfaces().put(iface1.getName(), iface1);
     CumulusConcatenatedConfiguration.builder()
+        .setHostname("c")
         .setFrrConfiguration(frrConfiguration)
         .build()
         .initializeAllInterfaces(c);
@@ -95,6 +98,7 @@ public class CumulusConcatenatedConfigurationTest {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     InterfacesInterface iface1 = new InterfacesInterface("swp1.2");
     CumulusConcatenatedConfiguration.builder()
+        .setHostname("c")
         .addInterfaces(ImmutableMap.of(iface1.getName(), iface1))
         .build()
         .initializeAllInterfaces(c);
@@ -109,6 +113,7 @@ public class CumulusConcatenatedConfigurationTest {
     InterfacesInterface iface1 = new InterfacesInterface("vni4001");
     iface1.setVxlanId(10001);
     CumulusConcatenatedConfiguration.builder()
+        .setHostname("c")
         .addInterfaces(ImmutableMap.of(iface1.getName(), iface1))
         .build()
         .initializeAllInterfaces(c);
@@ -120,6 +125,7 @@ public class CumulusConcatenatedConfigurationTest {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
             .build();
     assertTrue(
@@ -135,6 +141,7 @@ public class CumulusConcatenatedConfigurationTest {
     InterfacesInterface vsIface = new InterfacesInterface("swp1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
             .setPorts(
                 ImmutableMap.of(
@@ -153,6 +160,7 @@ public class CumulusConcatenatedConfigurationTest {
     InterfacesInterface vsIface = new InterfacesInterface("swp1s1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
             .build();
     assertTrue(
@@ -168,6 +176,7 @@ public class CumulusConcatenatedConfigurationTest {
     InterfacesInterface vsIface = new InterfacesInterface("swp1s1");
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
             .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
             .setPorts(
                 ImmutableMap.of(
@@ -299,6 +308,7 @@ public class CumulusConcatenatedConfigurationTest {
 
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
             .addInterfaces(
                 ImmutableMap.of(
                     iface1.getName(), iface1, iface2.getName(), iface2, iface3.getName(), iface3))

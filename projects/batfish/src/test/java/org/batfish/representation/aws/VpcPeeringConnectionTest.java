@@ -95,9 +95,7 @@ public class VpcPeeringConnectionTest {
             ImmutableList.of(vpc2Prefix));
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(
-            ImmutableMap.of(
-                Vpc.nodeName(vpc1.getId()), vpc1Cfg, Vpc.nodeName(vpc2.getId()), vpc2Cfg));
+        new ConvertedConfiguration(ImmutableList.of(vpc1Cfg, vpc2Cfg));
 
     connection.createConnection(awsConfiguration, new Warnings());
 
@@ -135,8 +133,7 @@ public class VpcPeeringConnectionTest {
     // VPC2 is in a different account.
     Prefix vpc2Prefix = Prefix.parse("10.10.20.0/24");
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(Vpc.nodeName(vpc1.getId()), vpc1Cfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpc1Cfg));
 
     // Requester in other account.
     {

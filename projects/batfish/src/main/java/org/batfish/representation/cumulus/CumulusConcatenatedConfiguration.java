@@ -63,7 +63,7 @@ import org.batfish.vendor.VendorConfiguration;
 public class CumulusConcatenatedConfiguration extends VendorConfiguration
     implements CumulusNodeConfiguration {
 
-  private String _hostname;
+  @Nonnull private String _hostname;
 
   @Nonnull private final CumulusInterfacesConfiguration _interfacesConfiguration;
 
@@ -87,14 +87,15 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     _portsConfiguration = ports;
   }
 
+  @Nonnull
   @Override
   public String getHostname() {
     return _hostname;
   }
 
   @Override
-  public void setHostname(String hostname) {
-    _hostname = hostname == null ? null : hostname.toLowerCase();
+  public void setHostname(@Nonnull String hostname) {
+    _hostname = hostname.toLowerCase();
   }
 
   @Override
