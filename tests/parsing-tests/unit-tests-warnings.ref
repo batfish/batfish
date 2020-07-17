@@ -1230,21 +1230,21 @@
         "Line" : 18,
         "Text" : "Bundle-Ether101",
         "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
-        "Comment" : "OSPF interface Bundle-Ethernet101 not declared before OSPF process"
+        "Comment" : "OSPF interface Bundle-Ether101 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 24,
         "Text" : "Bundle-Ether103",
         "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
-        "Comment" : "OSPF interface Bundle-Ethernet103 not declared before OSPF process"
+        "Comment" : "OSPF interface Bundle-Ether103 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 28,
         "Text" : "Bundle-Ether201",
         "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
-        "Comment" : "OSPF interface Bundle-Ethernet201 not declared before OSPF process"
+        "Comment" : "OSPF interface Bundle-Ether201 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",

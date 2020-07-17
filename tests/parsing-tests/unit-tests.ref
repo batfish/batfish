@@ -77810,19 +77810,19 @@
               "Text" : "maximum paths 16"
             },
             {
-              "Comment" : "OSPF interface Bundle-Ethernet101 not declared before OSPF process",
+              "Comment" : "OSPF interface Bundle-Ether101 not declared before OSPF process",
               "Line" : 18,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether101"
             },
             {
-              "Comment" : "OSPF interface Bundle-Ethernet103 not declared before OSPF process",
+              "Comment" : "OSPF interface Bundle-Ether103 not declared before OSPF process",
               "Line" : 24,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether103"
             },
             {
-              "Comment" : "OSPF interface Bundle-Ethernet201 not declared before OSPF process",
+              "Comment" : "OSPF interface Bundle-Ether201 not declared before OSPF process",
               "Line" : 28,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether201"
@@ -77834,31 +77834,31 @@
               "Text" : "Loopback0"
             },
             {
-              "Comment" : "OSPF interface TenGigabitEthernet0/0/0/4 not declared before OSPF process",
+              "Comment" : "OSPF interface TenGigE0/0/0/4 not declared before OSPF process",
               "Line" : 36,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/4"
             },
             {
-              "Comment" : "OSPF interface TenGigabitEthernet0/0/0/5 not declared before OSPF process",
+              "Comment" : "OSPF interface TenGigE0/0/0/5 not declared before OSPF process",
               "Line" : 39,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/5"
             },
             {
-              "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/0.292 not declared before OSPF process",
+              "Comment" : "OSPF interface HundredGigE0/2/0/0.292 not declared before OSPF process",
               "Line" : 42,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "HundredGigE0/2/0/0.292"
             },
             {
-              "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/3 not declared before OSPF process",
+              "Comment" : "OSPF interface HundredGigE0/2/0/3 not declared before OSPF process",
               "Line" : 44,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "HundredGigE0/2/0/3"
             },
             {
-              "Comment" : "OSPF interface TenGigabitEthernet0/0/0/2 not declared before OSPF process",
+              "Comment" : "OSPF interface TenGigE0/0/0/2 not declared before OSPF process",
               "Line" : 51,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/2"
@@ -90850,27 +90850,27 @@
         },
         "configs/ios_xr_ospf" : {
           "interface" : {
-            "Bundle-Ethernet101" : {
+            "Bundle-Ether101" : {
               "router ospf area interface" : [
                 18
               ]
             },
-            "Bundle-Ethernet103" : {
+            "Bundle-Ether103" : {
               "router ospf area interface" : [
                 24
               ]
             },
-            "Bundle-Ethernet201" : {
+            "Bundle-Ether201" : {
               "router ospf area interface" : [
                 28
               ]
             },
-            "HundredGigabitEthernet0/2/0/0.292" : {
+            "HundredGigE0/2/0/0.292" : {
               "router ospf area interface" : [
                 42
               ]
             },
-            "HundredGigabitEthernet0/2/0/3" : {
+            "HundredGigE0/2/0/3" : {
               "router ospf area interface" : [
                 44
               ]
@@ -90880,17 +90880,17 @@
                 33
               ]
             },
-            "TenGigabitEthernet0/0/0/2" : {
+            "TenGigE0/0/0/2" : {
               "router ospf area interface" : [
                 51
               ]
             },
-            "TenGigabitEthernet0/0/0/4" : {
+            "TenGigE0/0/0/4" : {
               "router ospf area interface" : [
                 36
               ]
             },
-            "TenGigabitEthernet0/0/0/5" : {
+            "TenGigE0/0/0/5" : {
               "router ospf area interface" : [
                 39
               ]
@@ -91087,7 +91087,7 @@
                 16
               ]
             },
-            "TenGigabitEthernet0/0/2/3" : {
+            "TenGigE0/0/2/3" : {
               "router static route" : [
                 8
               ]
@@ -94709,27 +94709,27 @@
         },
         "configs/ios_xr_ospf" : {
           "interface" : {
-            "Bundle-Ethernet101" : {
+            "Bundle-Ether101" : {
               "router ospf area interface" : [
                 18
               ]
             },
-            "Bundle-Ethernet103" : {
+            "Bundle-Ether103" : {
               "router ospf area interface" : [
                 24
               ]
             },
-            "Bundle-Ethernet201" : {
+            "Bundle-Ether201" : {
               "router ospf area interface" : [
                 28
               ]
             },
-            "HundredGigabitEthernet0/2/0/0.292" : {
+            "HundredGigE0/2/0/0.292" : {
               "router ospf area interface" : [
                 42
               ]
             },
-            "HundredGigabitEthernet0/2/0/3" : {
+            "HundredGigE0/2/0/3" : {
               "router ospf area interface" : [
                 44
               ]
@@ -94739,17 +94739,17 @@
                 33
               ]
             },
-            "TenGigabitEthernet0/0/0/2" : {
+            "TenGigE0/0/0/2" : {
               "router ospf area interface" : [
                 51
               ]
             },
-            "TenGigabitEthernet0/0/0/4" : {
+            "TenGigE0/0/0/4" : {
               "router ospf area interface" : [
                 36
               ]
             },
-            "TenGigabitEthernet0/0/0/5" : {
+            "TenGigE0/0/0/5" : {
               "router ospf area interface" : [
                 39
               ]
@@ -94935,7 +94935,7 @@
                 17
               ]
             },
-            "TenGigabitEthernet0/0/2/3" : {
+            "TenGigE0/0/2/3" : {
               "router static route" : [
                 8
               ]

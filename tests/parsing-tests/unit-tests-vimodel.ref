@@ -33559,8 +33559,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "HundredGigabitEthernet0/6/0/8" : {
-            "name" : "HundredGigabitEthernet0/6/0/8",
+          "HundredGigE0/6/0/8" : {
+            "name" : "HundredGigE0/6/0/8",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35078,8 +35078,8 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
-          "Bundle-Ethernet101" : {
-            "name" : "Bundle-Ethernet101",
+          "Bundle-Ether101" : {
+            "name" : "Bundle-Ether101",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35111,8 +35111,8 @@
             "type" : "AGGREGATED",
             "vrf" : "default"
           },
-          "Bundle-Ethernet103" : {
-            "name" : "Bundle-Ethernet103",
+          "Bundle-Ether103" : {
+            "name" : "Bundle-Ether103",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35144,8 +35144,8 @@
             "type" : "AGGREGATED",
             "vrf" : "default"
           },
-          "Bundle-Ethernet201" : {
-            "name" : "Bundle-Ethernet201",
+          "Bundle-Ether201" : {
+            "name" : "Bundle-Ether201",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35178,8 +35178,8 @@
             "type" : "AGGREGATED",
             "vrf" : "default"
           },
-          "HundredGigabitEthernet0/2/0/0.292" : {
-            "name" : "HundredGigabitEthernet0/2/0/0.292",
+          "HundredGigE0/2/0/0.292" : {
+            "name" : "HundredGigE0/2/0/0.292",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35212,8 +35212,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "HundredGigabitEthernet0/2/0/3" : {
-            "name" : "HundredGigabitEthernet0/2/0/3",
+          "HundredGigE0/2/0/3" : {
+            "name" : "HundredGigE0/2/0/3",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35498,11 +35498,11 @@
                   "0" : {
                     "injectDefaultRoute" : true,
                     "interfaces" : [
-                      "Bundle-Ethernet101",
-                      "Bundle-Ethernet103",
-                      "Bundle-Ethernet201",
-                      "HundredGigabitEthernet0/2/0/0.292",
-                      "HundredGigabitEthernet0/2/0/3",
+                      "Bundle-Ether101",
+                      "Bundle-Ether103",
+                      "Bundle-Ether201",
+                      "HundredGigE0/2/0/0.292",
+                      "HundredGigE0/2/0/3",
                       "Loopback0",
                       "TenGigabitEthernet0/0/0/4",
                       "TenGigabitEthernet0/0/0/5"
