@@ -868,7 +868,10 @@ public final class CumulusConversionsTest {
   @Test
   public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
     CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder().setHostname("c").setBgpProcess(new BgpProcess()).build();
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
+            .setBgpProcess(new BgpProcess())
+            .build();
 
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
     bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
