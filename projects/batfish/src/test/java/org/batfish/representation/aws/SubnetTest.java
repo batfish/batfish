@@ -22,7 +22,6 @@ import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
-import static org.batfish.representation.aws.Vpc.nodeName;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -162,7 +161,7 @@ public class SubnetTest {
             .build();
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
@@ -170,14 +169,14 @@ public class SubnetTest {
     // subnet should have interfaces to the instances and vpc
     assertThat(
         subnetCfg.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
+            .map(Interface::getName)
             .collect(ImmutableSet.toImmutableSet()),
         equalTo(ImmutableSet.of(instancesInterfaceName(subnet.getId()), vpc.getId())));
 
     // the vpc should have gotten an interface pointed to the subnet
     assertThat(
         vpcConfig.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
+            .map(Interface::getName)
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(subnet.getId())));
 
@@ -240,7 +239,7 @@ public class SubnetTest {
     Configuration vpcConfig =
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC));
@@ -264,8 +263,7 @@ public class SubnetTest {
     Subnet subnet =
         new Subnet(subnetPrefix, "subnet", vpcCfg.getHostname(), "az", ImmutableMap.of());
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Configuration subnetCfg =
         subnet.toConfigurationNode(awsConfiguration, new Region("r1"), new Warnings());
@@ -342,7 +340,7 @@ public class SubnetTest {
     RouteV4 route =
         new RouteV4(Prefix.parse("192.168.0.0/16"), State.ACTIVE, igw.getId(), TargetType.Gateway);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     vpcCfg
         .getVrfs()
@@ -386,7 +384,7 @@ public class SubnetTest {
     RouteV4 route =
         new RouteV4(remotePrefix, State.ACTIVE, connectionId, TargetType.VpcPeeringConnection);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     vpcCfg
         .getVrfs()
@@ -436,7 +434,7 @@ public class SubnetTest {
         new RouteV4(
             remotePrefix, State.ACTIVE, tgwVpcAttachment.getGatewayId(), TargetType.TransitGateway);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     vpcCfg
         .getVrfs()
@@ -491,7 +489,7 @@ public class SubnetTest {
         new RouteV4(
             remotePrefix, State.ACTIVE, tgwVpcAttachment.getGatewayId(), TargetType.TransitGateway);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
@@ -573,8 +571,7 @@ public class SubnetTest {
 
     Region region = Region.builder("r").setNetworkAcls(ImmutableMap.of(acl.getId(), acl)).build();
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(nodeName(vpc.getId()), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
@@ -694,7 +691,7 @@ public class SubnetTest {
             subnet.getId(), subnet.getVpcId(), lbDnsName, subnet.getAvailabilityZone(), instanceId);
     Configuration subnetCfg = configs.get(subnetHostname);
     Configuration vpcCfg = configs.get(vpcHostname);
-    ConvertedConfiguration awsConf = new ConvertedConfiguration(configs);
+    ConvertedConfiguration awsConf = new ConvertedConfiguration(configs.values());
     Region region = new Region("region");
     subnet.addNlbInstanceTargetInterfaces(awsConf, region, subnetCfg, vpcCfg, null, null);
 
@@ -767,7 +764,7 @@ public class SubnetTest {
     Configuration instanceCfg = configs.get(instanceHostname);
     ConvertedConfiguration awsConf =
         new ConvertedConfiguration(
-            configs,
+            configs.values(),
             new HashSet<>(), // layer 1 edges
             ImmutableMultimap.of(otherSubnetId, instanceInOtherSubnet), // subnets to targets
             ImmutableMultimap.of(subnet.getId(), loadBalancerInSubnet), // subnets to NLBs
@@ -896,7 +893,7 @@ public class SubnetTest {
     Configuration instanceCfg = configs.get(instanceHostname);
     ConvertedConfiguration awsConf =
         new ConvertedConfiguration(
-            configs,
+            configs.values(),
             new HashSet<>(), // layer 1 edges
             ImmutableMultimap.of(subnet.getId(), instanceInSubnet), // subnets to targets
             ImmutableMultimap.of(), // subnets to NLBs
@@ -1025,7 +1022,7 @@ public class SubnetTest {
     Configuration instanceCfg = configs.get(instanceHostname);
     ConvertedConfiguration awsConf =
         new ConvertedConfiguration(
-            configs,
+            configs.values(),
             new HashSet<>(), // layer 1 edges
             ImmutableMultimap.of(subnet.getId(), instanceInSubnet), // subnets to targets
             ImmutableMultimap.of(subnet.getId(), loadBalancerInSubnet), // subnets to NLBs
@@ -1175,7 +1172,7 @@ public class SubnetTest {
     Configuration instanceCfg = configs.get(instanceHostname);
     ConvertedConfiguration awsConf =
         new ConvertedConfiguration(
-            configs,
+            configs.values(),
             new HashSet<>(), // layer 1 edges
             ImmutableMultimap.of(subnet.getId(), instanceInSubnet), // subnets to targets
             ImmutableMultimap.of(), // subnets to NLBs

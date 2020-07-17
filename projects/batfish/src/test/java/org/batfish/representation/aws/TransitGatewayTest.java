@@ -148,8 +148,7 @@ public class TransitGatewayTest {
 
     AwsConfiguration vsConfig = new AwsConfiguration();
     vsConfig.addOrGetAccount("acc").addRegion(region);
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);
@@ -219,8 +218,7 @@ public class TransitGatewayTest {
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId)).setOwner(tgwCfg).build();
     Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwAttachment.getId())).build();
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
     connectVpc(tgwCfg, tgwAttachment, vsConfig, awsConfiguration, region, new Warnings());
 
     // check that interfaces are created in the right VRFs
@@ -295,8 +293,7 @@ public class TransitGatewayTest {
     Vrf.builder().setName(vrfNameForRouteTable(routeTableId2)).setOwner(tgwCfg).build();
     Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(tgwAttachment.getId())).build();
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
     connectVpc(tgwCfg, tgwAttachment, vsConfig, awsConfiguration, region, new Warnings());
 
     // check that interfaces are created and in the right VRFs
@@ -615,8 +612,7 @@ public class TransitGatewayTest {
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
     AwsConfiguration vsConfig = new AwsConfiguration();
     vsConfig.addOrGetAccount("acc").addRegion(region);
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Warnings warnings = new Warnings(true, true, true);
 
@@ -704,8 +700,7 @@ public class TransitGatewayTest {
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
     AwsConfiguration vsConfig = new AwsConfiguration();
     vsConfig.addOrGetAccount("acc").addRegion(region);
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Warnings warnings = new Warnings(true, true, true);
     Configuration tgwCfg = tgw.toConfigurationNode(vsConfig, awsConfiguration, region, warnings);

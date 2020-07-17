@@ -90,7 +90,7 @@ public class VpnGatewayTest {
             .build();
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     String vrfNameOnVpc = vrfNameForLink(vgw.getId());
     vpcConfig
@@ -143,7 +143,7 @@ public class VpnGatewayTest {
         .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));
