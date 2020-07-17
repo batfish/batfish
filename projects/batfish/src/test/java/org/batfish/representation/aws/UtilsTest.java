@@ -128,8 +128,7 @@ public class UtilsTest {
         .getVrfs()
         .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcCfg).build());
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableList.of(vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Interface gatewayIface =
         connectGatewayToVpc(
