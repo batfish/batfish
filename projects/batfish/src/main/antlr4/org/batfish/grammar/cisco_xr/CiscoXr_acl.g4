@@ -259,8 +259,14 @@ extended_access_list_additional_feature
    | TRACKED
    | TTL_EXCEEDED
    | TTL EQ DEC
+   | eacl_feature_udf
    | UNREACHABLE
    | URG
+;
+
+eacl_feature_udf
+:
+  UDF ~NEWLINE*
 ;
 
 extended_access_list_null_tail
