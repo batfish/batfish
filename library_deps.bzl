@@ -19,6 +19,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "commons-beanutils:commons-beanutils:1.9.4",
     "commons-cli:commons-cli:1.4",
     "commons-io:commons-io:2.6",
+    "dk.brics:automaton:1.12-1",
     "io.jaegertracing:jaeger-core:1.2.0",
     "io.jaegertracing:jaeger-thrift:1.2.0",
     "io.opentracing:opentracing-api:0.33.0",

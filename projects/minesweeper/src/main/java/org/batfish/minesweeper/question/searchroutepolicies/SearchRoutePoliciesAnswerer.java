@@ -3,6 +3,7 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.minesweeper.CommunityVar.Type.EXACT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
@@ -12,12 +13,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
+import dk.brics.automaton.Automaton;
+import dk.brics.automaton.RegExp;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -106,54 +110,144 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         routeConstraintsToBDD(_inputConstraints, new BDDRoute(_g.getAllCommunities()));
   }
 
+  private Automaton communityVarToAutomaton(CommunityVar cvar) {
+    String regex = cvar.getRegex();
+    if (cvar.getType() != EXACT) {
+      // strip the leading ^ and trailing $
+      regex = regex.substring(1, regex.length() - 1);
+    }
+    return new RegExp(regex).toAutomaton();
+  }
+
   /**
    * Convert a bdd representing a single assignment to the variables from a BDDRoute, produce the
    * corresponding route.
    *
-   * @param bdd the bdd
+   * @param allConstraints the set of constraints that came from the route policy and user
+   *     constraints
+   * @param satAssignment the satisfying assignment to the constraints
    * @return the corresponding route
    */
-  private Bgpv4Route bddToRoute(BDD bdd, BDDRoute r) {
+  private BDDToRouteResult bddToRoute(BDD allConstraints, BDD satAssignment, BDDRoute r) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP);
-    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(bdd));
-    long len = r.getPrefixLength().satAssignmentToLong(bdd);
+    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(satAssignment));
+    long len = r.getPrefixLength().satAssignmentToLong(satAssignment);
     builder.setNetwork(Prefix.create(ip, (int) len));
 
-    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(bdd));
-    builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(bdd));
-    // TODO: BDDRoute has a med and a metric -- what is the difference?
-    builder.setMetric(r.getMed().satAssignmentToLong(bdd));
+    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(satAssignment));
+    builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(satAssignment));
+    // BDDRoute has a med and a metric, which appear to be identical
+    // I'm ignoring the metric and using the med
+    builder.setMetric(r.getMed().satAssignmentToLong(satAssignment));
 
-    ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
-    for (Entry<CommunityVar, BDD> commEntry : r.getCommunities().entrySet()) {
+    // produce the set of communities for the given route constraints
+
+    // first figure out which communities must (not) exist
+    Map<CommunityVar, BDD> communities = r.getCommunities();
+    Set<CommunityVar> mustExistLiterals = new TreeSet<>();
+    Set<CommunityVar> mustExistRegexes = new TreeSet<>();
+    Set<CommunityVar> mustNotExist = new TreeSet<>();
+    for (Entry<CommunityVar, BDD> commEntry : communities.entrySet()) {
       CommunityVar commVar = commEntry.getKey();
       BDD commBDD = commEntry.getValue();
-      if (!commBDD.and(bdd).isZero()) {
-        // TODO: for now we only handle regexes that represent literal community values
-        Community lit = commVar.getLiteralValue();
-        if (lit != null) {
-          comms.add(commVar.getLiteralValue());
+      if (!commBDD.and(satAssignment).isZero()) {
+        // this community is in the given assignment
+        if (commVar.getLiteralValue() != null) {
+          mustExistLiterals.add(commVar);
         } else {
-          String regex = commVar.getRegex();
-          if (regex.startsWith("^") && regex.endsWith("$")) {
-            try {
-              comms.add(Community.fromString(regex.substring(1, regex.length() - 1)));
-            } catch (Exception e) {
-              throw new BatfishException("Unhandled community regex: " + regex, e);
-            }
-          } else {
-            throw new BatfishException("Unhandled community regex: " + regex);
-          }
+          mustExistRegexes.add(commVar);
         }
+      } else {
+        // try flipping this community from 0 to 1 in the given assignment and
+        // see if it's still a valid model of the constraints
+        BDD newAssignment = satAssignment.exist(commBDD).and(commBDD);
+        if (!newAssignment.imp(allConstraints).isOne()) {
+          mustNotExist.add(commVar);
+        }
+      }
+    }
+
+    ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
+    Set<String> commStrs = new TreeSet<>();
+    // add all must-exist literals to the route
+    for (CommunityVar cvar : mustExistLiterals) {
+      Community lit = cvar.getLiteralValue();
+      comms.add(lit);
+      commStrs.add(lit.toString());
+    }
+
+    // create an automaton representing all of the communities that are disallowed
+    Automaton disallowed = new Automaton();
+    for (CommunityVar mustNot : mustNotExist) {
+      disallowed = disallowed.union(communityVarToAutomaton(mustNot));
+    }
+
+    for (CommunityVar cvar : mustExistRegexes) {
+      final Automaton automaton = communityVarToAutomaton(cvar).minus(disallowed);
+      Community example;
+      if (automaton.isEmpty()) {
+        // the regex constraints are not satisfiable
+        // compute the BDD corresponding to these constraints
+        BDD disallowedConstraints = satAssignment.getFactory().zero();
+        for (CommunityVar mustNot : mustNotExist) {
+          disallowedConstraints = disallowedConstraints.or(communities.get(mustNot));
+        }
+        return new BDDToRouteResult(communities.get(cvar).diff(disallowedConstraints));
+      } else {
+        // check if any existing community in the route already satisfies this regex
+        if (commStrs.stream().anyMatch(automaton::run)) {
+          continue;
+        }
+        String str = automaton.getShortestExample(true);
+        example = Community.fromString(str);
+        comms.add(example);
+        commStrs.add(str);
       }
     }
     builder.setCommunities(comms.build());
 
-    return builder.build();
+    return new BDDToRouteResult(builder.build());
+  }
+
+  private Optional<Result> constraintsToResult(
+      BDD constraints, BDDRoute outputRoute, RoutingPolicy policy) {
+    if (constraints.isZero()) {
+      return Optional.empty();
+    } else {
+      BDD model = constraints.fullSatOne();
+      BDDToRouteResult inResult =
+          bddToRoute(constraints, model, new BDDRoute(_g.getAllCommunities()));
+      if (_action == Action.DENY) {
+        return Optional.of(
+            new Result(
+                new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
+                // the input route constraints are always satisfiable so will always
+                // produce a route.
+                // this could change later if we add more kinds of route constraints.
+                inResult.getRoute(),
+                _action,
+                null));
+      } else {
+        BDDToRouteResult outResult = bddToRoute(constraints, model, outputRoute);
+        if (outResult.getRoute() == null) {
+          // we couldn't solve the community regex constraints in the current model, so
+          // try to find another one.
+          return constraintsToResult(
+              constraints.diff(outResult.getUnsatConstraints()), outputRoute, policy);
+        } else {
+          return Optional.of(
+              new Result(
+                  new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
+                  inResult.getRoute(),
+                  _action,
+                  outResult.getRoute()));
+        }
+      }
+    }
   }
 
   private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
@@ -262,19 +356,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       intersection = acceptedAnnouncements.not().and(_inputConstraintsBDD);
     }
 
-    if (intersection.isZero()) {
-      return Optional.empty();
-    } else {
-      BDD model = intersection.fullSatOne();
-      Bgpv4Route inRoute = bddToRoute(model, new BDDRoute(_g.getAllCommunities()));
-      Bgpv4Route outRoute = _action == Action.PERMIT ? bddToRoute(model, outputRoute) : null;
-      return Optional.of(
-          new Result(
-              new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
-              inRoute,
-              _action,
-              outRoute));
-    }
+    return constraintsToResult(intersection, outputRoute, policy);
   }
 
   @Override
