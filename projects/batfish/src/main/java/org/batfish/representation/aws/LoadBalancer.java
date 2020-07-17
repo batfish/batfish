@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -254,7 +255,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
     // Add static routes to any instance targets
     getInstanceTargetStaticRoutes(
-            awsConfiguration.getNlbsToInstanceTargets().get(this), availabilityZone.getSubnetId())
+            awsConfiguration.getNlbsToInstanceTargets().get(_arn), availabilityZone.getSubnetId())
         .forEach(staticRoute -> Utils.addStaticRoute(cfgNode, staticRoute));
 
     Optional<NetworkInterface> networkInterface =
@@ -422,7 +423,10 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       return new LoadBalancerTransformation(
           new MatchHeaderSpace(matchHeaderSpace), transformationStep);
     } catch (Exception e) {
-      warnings.redFlag(e.getMessage());
+      warnings.redFlag(
+          String.format(
+              "Failed to compute listener transformation for listener %s of load balancer %s (%s): %s",
+              listener, _arn, _name, Throwables.getStackTraceAsString(e)));
       return null;
     }
   }

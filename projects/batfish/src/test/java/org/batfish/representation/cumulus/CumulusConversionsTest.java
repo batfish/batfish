@@ -814,6 +814,7 @@ public final class CumulusConversionsTest {
 
     CumulusConcatenatedConfiguration vsConfig =
         CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
             .addInterfaces(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
             .setFrrConfiguration(frrConfiguration)
             .build();
@@ -867,7 +868,10 @@ public final class CumulusConversionsTest {
   @Test
   public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
     CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder().setBgpProcess(new BgpProcess()).build();
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
+            .setBgpProcess(new BgpProcess())
+            .build();
 
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
     bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
@@ -1616,7 +1620,7 @@ public final class CumulusConversionsTest {
 
     addBgpNeighbor(
         c,
-        CumulusConcatenatedConfiguration.builder().build(),
+        CumulusConcatenatedConfiguration.builder().setHostname("c").build(),
         new BgpVrf(viVrf.getName()),
         neighbor,
         new Warnings());

@@ -81,7 +81,7 @@ public class VpcEndpointGatewayTest {
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration vpceGwConfig =
         vpceGateway.toConfigurationNode(awsConfiguration, region, new Warnings());
@@ -95,7 +95,7 @@ public class VpcEndpointGatewayTest {
     // gateway should have interfaces to the service and the vpc
     assertThat(
         vpceGwConfig.getAllInterfaces().values().stream()
-            .map(iface -> iface.getName())
+            .map(Interface::getName)
             .collect(ImmutableList.toImmutableList()),
         equalTo(
             ImmutableList.of(

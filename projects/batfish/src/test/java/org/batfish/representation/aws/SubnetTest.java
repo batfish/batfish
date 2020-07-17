@@ -22,7 +22,6 @@ import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
-import static org.batfish.representation.aws.Vpc.nodeName;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -64,6 +63,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.representation.aws.Instance.Status;
+import org.batfish.representation.aws.IpPermissions.IpRange;
 import org.batfish.representation.aws.LoadBalancer.AvailabilityZone;
 import org.batfish.representation.aws.LoadBalancer.Scheme;
 import org.batfish.representation.aws.LoadBalancer.Type;
@@ -161,7 +161,7 @@ public class SubnetTest {
             .build();
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
@@ -169,14 +169,14 @@ public class SubnetTest {
     // subnet should have interfaces to the instances and vpc
     assertThat(
         subnetCfg.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
+            .map(Interface::getName)
             .collect(ImmutableSet.toImmutableSet()),
         equalTo(ImmutableSet.of(instancesInterfaceName(subnet.getId()), vpc.getId())));
 
     // the vpc should have gotten an interface pointed to the subnet
     assertThat(
         vpcConfig.getAllInterfaces().values().stream()
-            .map(i -> i.getName())
+            .map(Interface::getName)
             .collect(ImmutableList.toImmutableList()),
         equalTo(ImmutableList.of(subnet.getId())));
 
@@ -239,7 +239,7 @@ public class SubnetTest {
     Configuration vpcConfig =
         vpc.toConfigurationNode(new ConvertedConfiguration(), region, new Warnings());
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PUBLIC));
@@ -263,8 +263,7 @@ public class SubnetTest {
     Subnet subnet =
         new Subnet(subnetPrefix, "subnet", vpcCfg.getHostname(), "az", ImmutableMap.of());
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcCfg.getHostname(), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Configuration subnetCfg =
         subnet.toConfigurationNode(awsConfiguration, new Region("r1"), new Warnings());
@@ -341,7 +340,7 @@ public class SubnetTest {
     RouteV4 route =
         new RouteV4(Prefix.parse("192.168.0.0/16"), State.ACTIVE, igw.getId(), TargetType.Gateway);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     vpcCfg
         .getVrfs()
@@ -385,7 +384,7 @@ public class SubnetTest {
     RouteV4 route =
         new RouteV4(remotePrefix, State.ACTIVE, connectionId, TargetType.VpcPeeringConnection);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     vpcCfg
         .getVrfs()
@@ -435,7 +434,7 @@ public class SubnetTest {
         new RouteV4(
             remotePrefix, State.ACTIVE, tgwVpcAttachment.getGatewayId(), TargetType.TransitGateway);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     vpcCfg
         .getVrfs()
@@ -490,7 +489,7 @@ public class SubnetTest {
         new RouteV4(
             remotePrefix, State.ACTIVE, tgwVpcAttachment.getGatewayId(), TargetType.TransitGateway);
 
-    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableMap.of());
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
 
     subnet.processRoute(
         subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
@@ -572,8 +571,7 @@ public class SubnetTest {
 
     Region region = Region.builder("r").setNetworkAcls(ImmutableMap.of(acl.getId(), acl)).build();
 
-    ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(nodeName(vpc.getId()), vpcCfg));
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
     Configuration subnetCfg = subnet.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(subnetCfg, hasDeviceModel(DeviceModel.AWS_SUBNET_PRIVATE));
@@ -693,8 +691,9 @@ public class SubnetTest {
             subnet.getId(), subnet.getVpcId(), lbDnsName, subnet.getAvailabilityZone(), instanceId);
     Configuration subnetCfg = configs.get(subnetHostname);
     Configuration vpcCfg = configs.get(vpcHostname);
-    ConvertedConfiguration awsConf = new ConvertedConfiguration(configs);
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, null, null);
+    ConvertedConfiguration awsConf = new ConvertedConfiguration(configs.values());
+    Region region = new Region("region");
+    subnet.addNlbInstanceTargetInterfaces(awsConf, region, subnetCfg, vpcCfg, null, null);
 
     // Nothing should have gotten a new VRF or any interfaces
     configs
@@ -708,15 +707,14 @@ public class SubnetTest {
 
   @Test
   public void testAddNlbInstanceTargetInterfaces_subnetWithLoadBalancer() {
-    // Get subnet and create its VPC
     Subnet subnet = _subnetList.get(0);
-    Vpc vpc = new Vpc(subnet.getVpcId(), ImmutableSet.of(subnet.getCidrBlock()), ImmutableMap.of());
 
     // Create instance target not in subnet
+    String otherSubnetId = "otherSubnetId";
     Subnet otherSubnet =
         new Subnet(
             Prefix.parse("1.1.1.0/24"),
-            "otherSubnetId",
+            otherSubnetId,
             subnet.getVpcId(),
             subnet.getAvailabilityZone(),
             ImmutableMap.of());
@@ -726,7 +724,7 @@ public class SubnetTest {
         new Instance(
             instanceId,
             subnet.getVpcId(),
-            otherSubnet.getId(),
+            otherSubnetId,
             ImmutableList.of(),
             ImmutableList.of(),
             instanceIp,
@@ -766,13 +764,17 @@ public class SubnetTest {
     Configuration instanceCfg = configs.get(instanceHostname);
     ConvertedConfiguration awsConf =
         new ConvertedConfiguration(
-            configs,
+            configs.values(),
             new HashSet<>(), // layer 1 edges
-            ImmutableMultimap.of(otherSubnet, instanceInOtherSubnet), // subnets to targets
-            ImmutableMultimap.of(subnet, loadBalancerInSubnet), // subnets to NLBs
-            ImmutableMultimap.of(loadBalancerInSubnet, instanceInOtherSubnet), // NLBs to targets
-            ImmutableSet.of(vpc)); // VPCs with instance targets
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, ingressAcl, egressAcl);
+            ImmutableMultimap.of(otherSubnetId, instanceInOtherSubnet), // subnets to targets
+            ImmutableMultimap.of(subnet.getId(), loadBalancerInSubnet), // subnets to NLBs
+            ImmutableMultimap.of(lbArn, instanceInOtherSubnet)); // NLBs to targets
+    Region region =
+        Region.builder("region")
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet, otherSubnetId, otherSubnet))
+            .build();
+    subnet.addNlbInstanceTargetInterfaces(
+        awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
     // New VRFs created in subnet and VPC configs
     assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
@@ -852,9 +854,7 @@ public class SubnetTest {
 
   @Test
   public void testAddNlbInstanceTargetInterfaces_subnetWithInstanceTarget() {
-    // Get subnet and create its VPC
     Subnet subnet = _subnetList.get(0);
-    Vpc vpc = new Vpc(subnet.getVpcId(), ImmutableSet.of(subnet.getCidrBlock()), ImmutableMap.of());
 
     // Create instance target in subnet
     String instanceId = "instanceId";
@@ -873,16 +873,6 @@ public class SubnetTest {
     // Create load balancer not in subnet
     String lbArn = "lbArn";
     String lbDnsName = "lbDnsName";
-    AvailabilityZone otherAz = new AvailabilityZone("otherSubnetId", subnet.getAvailabilityZone());
-    LoadBalancer loadBalancerNotInSubnet =
-        new LoadBalancer(
-            lbArn,
-            ImmutableList.of(otherAz),
-            lbDnsName,
-            "name",
-            Scheme.INTERNAL,
-            Type.NETWORK,
-            subnet.getVpcId());
 
     String subnetHostname = Subnet.nodeName(subnet.getId());
     String vpcHostname = Vpc.nodeName(subnet.getVpcId());
@@ -903,19 +893,21 @@ public class SubnetTest {
     Configuration instanceCfg = configs.get(instanceHostname);
     ConvertedConfiguration awsConf =
         new ConvertedConfiguration(
-            configs,
+            configs.values(),
             new HashSet<>(), // layer 1 edges
-            ImmutableMultimap.of(subnet, instanceInSubnet), // subnets to targets
+            ImmutableMultimap.of(subnet.getId(), instanceInSubnet), // subnets to targets
             ImmutableMultimap.of(), // subnets to NLBs
-            ImmutableMultimap.of(loadBalancerNotInSubnet, instanceInSubnet), // NLBs to targets
-            ImmutableSet.of(vpc)); // VPCs with instance targets
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, ingressAcl, egressAcl);
+            ImmutableMultimap.of(lbArn, instanceInSubnet)); // NLBs to targets
+    Region region =
+        Region.builder("region").setSubnets(ImmutableMap.of(subnet.getId(), subnet)).build();
+    subnet.addNlbInstanceTargetInterfaces(
+        awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
     // New VRFs created in subnet and VPC configs
     assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
     assertThat(vpcCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
 
-    // Subnet should be connected to VPC on their new VRFs; VPC iface should have session info
+    // Subnet should be connected to VPC on their new VRFs; both ifaces should have session info
     String vpcToSubnetIfaceName =
         interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
     assertThat(
@@ -926,7 +918,7 @@ public class SubnetTest {
             hasVrfName(NLB_INSTANCE_TARGETS_VRF_NAME),
             hasIncomingFilter(equalTo(ingressAcl)),
             hasOutgoingFilter(equalTo(egressAcl)),
-            hasFirewallSessionInterfaceInfo(nullValue())));
+            hasFirewallSessionInterfaceInfo(hasAcls(ingressAcl.getName(), egressAcl.getName()))));
     assertThat(
         vpcCfg.getAllInterfaces().get(vpcToSubnetIfaceName),
         allOf(
@@ -949,7 +941,7 @@ public class SubnetTest {
         instanceCfg
             .getAllInterfaces()
             .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
-        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
+        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(hasNoAcls())));
 
     // Subnet should have static route to instance IP out the interface to the instance target
     assertThat(
@@ -981,9 +973,7 @@ public class SubnetTest {
 
   @Test
   public void testAddNlbInstanceTargetInterfaces_subnetWithNlbAndInstanceTarget() {
-    // Get subnet and create its VPC
     Subnet subnet = _subnetList.get(0);
-    Vpc vpc = new Vpc(subnet.getVpcId(), ImmutableSet.of(subnet.getCidrBlock()), ImmutableMap.of());
 
     // Create instance target in subnet
     String instanceId = "instanceId";
@@ -1032,13 +1022,15 @@ public class SubnetTest {
     Configuration instanceCfg = configs.get(instanceHostname);
     ConvertedConfiguration awsConf =
         new ConvertedConfiguration(
-            configs,
+            configs.values(),
             new HashSet<>(), // layer 1 edges
-            ImmutableMultimap.of(subnet, instanceInSubnet), // subnets to targets
-            ImmutableMultimap.of(subnet, loadBalancerInSubnet), // subnets to NLBs
-            ImmutableMultimap.of(loadBalancerInSubnet, instanceInSubnet), // NLBs to targets
-            ImmutableSet.of(vpc)); // VPCs with instance targets
-    subnet.addNlbInstanceTargetInterfaces(awsConf, subnetCfg, vpcCfg, ingressAcl, egressAcl);
+            ImmutableMultimap.of(subnet.getId(), instanceInSubnet), // subnets to targets
+            ImmutableMultimap.of(subnet.getId(), loadBalancerInSubnet), // subnets to NLBs
+            ImmutableMultimap.of(lbArn, instanceInSubnet)); // NLBs to targets
+    Region region =
+        Region.builder("region").setSubnets(ImmutableMap.of(subnet.getId(), subnet)).build();
+    subnet.addNlbInstanceTargetInterfaces(
+        awsConf, region, subnetCfg, vpcCfg, ingressAcl, egressAcl);
 
     // New VRFs created in subnet and VPC configs
     assertThat(subnetCfg.getVrfs(), hasKey(NLB_INSTANCE_TARGETS_VRF_NAME));
@@ -1099,7 +1091,7 @@ public class SubnetTest {
         instanceCfg
             .getAllInterfaces()
             .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX)),
-        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(nullValue())));
+        allOf(hasVrfName(DEFAULT_VRF_NAME), hasFirewallSessionInterfaceInfo(hasNoAcls())));
 
     // Subnet should have static route to instance IP out the interface to the instance target
     assertThat(
@@ -1124,6 +1116,90 @@ public class SubnetTest {
                         instanceIp.toPrefix(),
                         vpcToSubnetIfaceName,
                         AwsConfiguration.LINK_LOCAL_IP)))));
+  }
+
+  @Test
+  public void testAddNlbInstanceTargetInterfaces_appliesInstanceSecurityGroups() {
+    // addNlbInstanceTargetInterfaces should apply security groups to instance's new interface
+    Subnet subnet = _subnetList.get(0);
+
+    String sgName = "sg";
+    IpPermissions ipPermissions =
+        new IpPermissions(
+            "tcp",
+            null,
+            null,
+            ImmutableList.of(new IpRange(Prefix.parse("1.1.1.0/24"))),
+            ImmutableList.of(),
+            ImmutableList.of());
+    SecurityGroup sg =
+        new SecurityGroup(
+            sgName,
+            sgName,
+            ImmutableList.of(ipPermissions),
+            ImmutableList.of(ipPermissions),
+            subnet.getVpcId());
+
+    // Create instance target in subnet
+    String instanceId = "instanceId";
+    Ip instanceIp = Ip.parse("1.1.1.1");
+    Instance instanceInSubnet =
+        new Instance(
+            instanceId,
+            subnet.getVpcId(),
+            subnet.getId(),
+            ImmutableList.of(sgName),
+            ImmutableList.of(),
+            instanceIp,
+            ImmutableMap.of(),
+            Status.RUNNING);
+
+    // Create load balancer not in subnet
+    String lbArn = "lbArn";
+    String lbDnsName = "lbDnsName";
+
+    String subnetHostname = Subnet.nodeName(subnet.getId());
+    String vpcHostname = Vpc.nodeName(subnet.getVpcId());
+    String instanceHostname = Instance.instanceHostname(instanceId);
+
+    // Subnet has an instance target, no NLBs: Should create VRFs on subnet and VPC, connect subnet
+    // to VPC and instance target
+    Map<String, Configuration> configs =
+        createConfigs(
+            subnet.getId(), subnet.getVpcId(), lbDnsName, subnet.getAvailabilityZone(), instanceId);
+    Configuration subnetCfg = configs.get(subnetHostname);
+    Configuration vpcCfg = configs.get(vpcHostname);
+    Configuration instanceCfg = configs.get(instanceHostname);
+    ConvertedConfiguration awsConf =
+        new ConvertedConfiguration(
+            configs.values(),
+            new HashSet<>(), // layer 1 edges
+            ImmutableMultimap.of(subnet.getId(), instanceInSubnet), // subnets to targets
+            ImmutableMultimap.of(), // subnets to NLBs
+            ImmutableMultimap.of(lbArn, instanceInSubnet)); // NLBs to targets
+    Region region =
+        Region.builder("region")
+            .setSecurityGroups(ImmutableMap.of(sgName, sg))
+            .setSubnets(ImmutableMap.of(subnet.getId(), subnet))
+            .build();
+    region.convertSecurityGroups(awsConf, new Warnings());
+    subnet.addNlbInstanceTargetInterfaces(awsConf, region, subnetCfg, vpcCfg, null, null);
+
+    // New interface on instance should filter with AclAclLines with ACL defined by security group
+    String secGroupIngressAclName = sg.toAcl(region, true, new Warnings()).getName();
+    String secGroupEgressAclName = sg.toAcl(region, false, new Warnings()).getName();
+    Interface newInstanceIface =
+        instanceCfg
+            .getAllInterfaces()
+            .get(interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX));
+    assertThat(
+        newInstanceIface.getIncomingFilter().getLines(),
+        contains(hasProperty("aclName", equalTo(secGroupIngressAclName))));
+    assertThat(
+        newInstanceIface.getOutgoingFilter().getLines(),
+        contains(
+            equalTo(Region.computeAntiSpoofingFilter(newInstanceIface)),
+            hasProperty("aclName", equalTo(secGroupEgressAclName))));
   }
 
   /**

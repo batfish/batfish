@@ -1,8 +1,8 @@
 package org.batfish.representation.aws;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
 import java.util.Collection;
@@ -20,66 +20,69 @@ import org.batfish.datamodel.Configuration;
 @ParametersAreNonnullByDefault
 class ConvertedConfiguration implements Serializable {
 
+  /** Map from hostname to Configuration. Hostname lookup is case-insensitive. */
   @Nonnull private final Map<String, Configuration> _configurationNodes;
+
   @Nonnull private final Set<Layer1Edge> _layer1Edges;
-  /** A multimap from Subnet -> Instance targets within subnet */
-  @Nonnull private final Multimap<Subnet, Instance> _subnetsToInstanceTargets;
+  /**
+   * Multimap of subnet IDs to {@link Instance} in that subnet used as targets by some {@link
+   * LoadBalancer}
+   */
+  @Nonnull private final Multimap<String, Instance> _subnetsToInstanceTargets;
 
-  /** A multimap from Subnet -> NLBs within subnet that have instance targets */
-  @Nonnull private final Multimap<Subnet, LoadBalancer> _subnetsToNlbs;
+  /**
+   * Multimap of subnet IDs to {@link LoadBalancer} connected to that subnet that have active
+   * instance targets
+   */
+  @Nonnull private final Multimap<String, LoadBalancer> _subnetsToNlbs;
 
-  /** A multimap of NLB -> instance targets */
-  @Nonnull private final Multimap<LoadBalancer, Instance> _nlbsToInstanceTargets;
-
-  /** A set of all VPCs that contain load balancers with active instance targets */
-  @Nonnull private final Set<Vpc> _vpcsWithInstanceTargets;
+  /** Multimap of load balancer ARNs to {@link Instance} used as targets for that load balancer */
+  @Nonnull private final Multimap<String, Instance> _nlbsToInstanceTargets;
 
   public ConvertedConfiguration(AwsConfiguration awsConfiguration) {
     this(
-        new HashMap<>(),
+        ImmutableList.of(),
         new HashSet<>(),
         awsConfiguration.getSubnetsToInstanceTargets(),
         awsConfiguration.getSubnetsToNlbs(),
-        awsConfiguration.getNlbsToInstanceTargets(),
-        awsConfiguration.getVpcsWithInstanceTargets());
+        awsConfiguration.getNlbsToInstanceTargets());
   }
 
   @VisibleForTesting
   public ConvertedConfiguration() {
     this(
-        new HashMap<>(),
+        ImmutableList.of(),
         new HashSet<>(),
         ImmutableMultimap.of(),
         ImmutableMultimap.of(),
-        ImmutableMultimap.of(),
-        ImmutableSet.of());
+        ImmutableMultimap.of());
   }
 
   @VisibleForTesting
-  ConvertedConfiguration(Map<String, Configuration> configurationNodes) {
+  ConvertedConfiguration(Iterable<Configuration> configurationNodes) {
     this(
         configurationNodes,
         new HashSet<>(),
         ImmutableMultimap.of(),
         ImmutableMultimap.of(),
-        ImmutableMultimap.of(),
-        ImmutableSet.of());
+        ImmutableMultimap.of());
   }
 
   @VisibleForTesting
   ConvertedConfiguration(
-      Map<String, Configuration> configurationNodes,
+      Iterable<Configuration> configurationNodes,
       Set<Layer1Edge> layer1Edges,
-      Multimap<Subnet, Instance> subnetsToInstanceTargets,
-      Multimap<Subnet, LoadBalancer> subnetsToNlbs,
-      Multimap<LoadBalancer, Instance> nlbsToInstanceTargets,
-      Set<Vpc> vpcsWithInstanceTargets) {
-    _configurationNodes = configurationNodes;
+      Multimap<String, Instance> subnetsToInstanceTargets,
+      Multimap<String, LoadBalancer> subnetsToNlbs,
+      Multimap<String, Instance> nlbsToInstanceTargets) {
+    _configurationNodes = new HashMap<>();
+    for (Configuration node : configurationNodes) {
+      _configurationNodes.put(node.getHostname(), node);
+    }
     _layer1Edges = layer1Edges;
     _subnetsToInstanceTargets = ImmutableMultimap.copyOf(subnetsToInstanceTargets);
     _subnetsToNlbs = ImmutableMultimap.copyOf(subnetsToNlbs);
     _nlbsToInstanceTargets = ImmutableMultimap.copyOf(nlbsToInstanceTargets);
-    _vpcsWithInstanceTargets = ImmutableSet.copyOf(vpcsWithInstanceTargets);
   }
 
   /** Return configuration nodes across all accounts */
@@ -89,7 +92,7 @@ class ConvertedConfiguration implements Serializable {
 
   @Nullable
   public Configuration getNode(String hostname) {
-    return _configurationNodes.get(hostname);
+    return _configurationNodes.get(hostname.toLowerCase());
   }
 
   @Nonnull
@@ -105,23 +108,26 @@ class ConvertedConfiguration implements Serializable {
     _layer1Edges.add(new Layer1Edge(nodeName1, ifaceName1, nodeName2, ifaceName2));
   }
 
+  /** Subnet IDs to {@link Instance} in that subnet used as targets by some {@link LoadBalancer} */
   @VisibleForTesting
-  Multimap<Subnet, Instance> getSubnetsToInstanceTargets() {
+  @Nonnull
+  Multimap<String, Instance> getSubnetsToInstanceTargets() {
     return _subnetsToInstanceTargets;
   }
 
+  /**
+   * Subnet IDs to {@link LoadBalancer} connected to that subnet that have active instance targets
+   */
   @VisibleForTesting
-  Multimap<Subnet, LoadBalancer> getSubnetsToNlbs() {
+  @Nonnull
+  Multimap<String, LoadBalancer> getSubnetsToNlbs() {
     return _subnetsToNlbs;
   }
 
+  /** Load balancer ARNs to {@link Instance} used as targets for that load balancer */
   @VisibleForTesting
-  Multimap<LoadBalancer, Instance> getNlbsToInstanceTargets() {
+  @Nonnull
+  Multimap<String, Instance> getNlbsToInstanceTargets() {
     return _nlbsToInstanceTargets;
-  }
-
-  @VisibleForTesting
-  Set<Vpc> getVpcsWithInstanceTargets() {
-    return _vpcsWithInstanceTargets;
   }
 }

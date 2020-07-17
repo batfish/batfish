@@ -312,7 +312,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
 
     addNlbInstanceTargetInterfaces(
-        awsConfiguration, cfgNode, vpcConfigNode, ingressNetworkAcl, egressNetworkAcl);
+        awsConfiguration, region, cfgNode, vpcConfigNode, ingressNetworkAcl, egressNetworkAcl);
 
     // create LocationInfo for each link location on the node.
     cfgNode.setLocationInfo(
@@ -336,13 +336,14 @@ public class Subnet implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   void addNlbInstanceTargetInterfaces(
       ConvertedConfiguration awsConfiguration,
+      Region region,
       Configuration subnetCfg,
       Configuration vpcCfg,
       // These ACLs should be applied to all subnet interfaces that don't face instances
       @Nullable IpAccessList ingressNetworkAcl,
       @Nullable IpAccessList egressNetworkAcl) {
-    Collection<LoadBalancer> nlbs = awsConfiguration.getSubnetsToNlbs().get(this);
-    if (!awsConfiguration.getSubnetsToInstanceTargets().containsKey(this) && nlbs.isEmpty()) {
+    Collection<LoadBalancer> nlbs = awsConfiguration.getSubnetsToNlbs().get(_subnetId);
+    if (!awsConfiguration.getSubnetsToInstanceTargets().containsKey(_subnetId) && nlbs.isEmpty()) {
       return;
     }
     //  New VRF in subnet and VPC nodes
@@ -371,13 +372,16 @@ public class Subnet implements AwsVpcEntity, Serializable {
     subnetToVpcIface.setOutgoingFilter(egressNetworkAcl);
     String incomingAclName = ingressNetworkAcl == null ? null : ingressNetworkAcl.getName();
     String outgoingAclName = egressNetworkAcl == null ? null : egressNetworkAcl.getName();
-    // If subnet has NLBs, use a session to direct return traffic from an instance target in another
-    // subnet back to the NLB
-    if (!nlbs.isEmpty()) {
-      subnetToVpcIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(
-              false, ImmutableList.of(subnetToVpcIfaceName), incomingAclName, outgoingAclName));
-    }
+    // We use sessions to bring traffic from a target instance back to a load balancer, but we still
+    // need to apply network ACLs when crossing from subnets to VPCs or VPCs to subnets. Therefore a
+    // subnet's interface to its VPC needs session info with:
+    //   - the outgoing network ACL if the subnet has instance targets
+    //   - the incoming network ACL if the subnet has NLBs
+    //   - both if the subnet has both
+    // To make life easier, just use both network ACLs in subnets' VPC ifaces session info.
+    subnetToVpcIface.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(
+            false, ImmutableList.of(subnetToVpcIfaceName), incomingAclName, outgoingAclName));
 
     // For each NLB in the subnet: new interface connecting to NLB, no filters
     for (LoadBalancer nlb : nlbs) {
@@ -399,9 +403,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
 
     // Add static routes in subnet's new VRF and connect subnet to its instance targets
-    for (Entry<Subnet, Instance> e : awsConfiguration.getSubnetsToInstanceTargets().entries()) {
-      Subnet subnet = e.getKey();
-      if (!subnet.getVpcId().equals(_vpcId)) {
+    for (Entry<String, Instance> e : awsConfiguration.getSubnetsToInstanceTargets().entries()) {
+      String subnetId = e.getKey();
+      Subnet subnet = region.getSubnets().get(subnetId);
+      if (subnet == null || !subnet.getVpcId().equals(_vpcId)) {
+        // Skip subnets not in this region or VPC
         continue;
       }
       Instance instanceTarget = e.getValue();
@@ -410,7 +416,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Prefix instancePrefix = instanceTarget.getPrimaryPrivateIpAddress().toPrefix();
 
       String staticRouteNextHopIface = subnetToVpcIfaceName;
-      if (subnet == this) {
+      if (subnetId.equals(_subnetId)) {
         // For each instance target in the subnet: New interface connecting to instance, no filters
         Configuration instanceConfig =
             awsConfiguration.getNode(Instance.instanceHostname(instanceTarget.getId()));
@@ -422,11 +428,20 @@ public class Subnet implements AwsVpcEntity, Serializable {
             instanceConfig.getDefaultVrf().getName(),
             NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
 
-        // Subnet needs to set up a session for return traffic from the instance
         String subnetToInstanceIfaceName =
             interfaceNameToRemote(instanceConfig, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
         Interface subnetToInstanceIface =
             subnetCfg.getAllInterfaces().get(subnetToInstanceIfaceName);
+        String instanceToSubnetIfaceName =
+            interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
+        Interface newInstanceIface =
+            instanceConfig.getAllInterfaces().get(instanceToSubnetIfaceName);
+
+        // New interface on instance target needs security groups
+        region.applyAclsToInterfaceBasedOnSecurityGroups(
+            instanceTarget.getSecurityGroups(), instanceConfig, newInstanceIface);
+
+        // Subnet needs to set up a session for return traffic from the instance
         subnetToInstanceIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 false, ImmutableList.of(subnetToInstanceIfaceName), null, null));

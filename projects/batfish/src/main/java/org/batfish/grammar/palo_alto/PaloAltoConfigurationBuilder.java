@@ -267,11 +267,13 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srnst_dynamic_ip_and_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
@@ -435,6 +437,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private String _currentExternalListName;
   private Interface _currentInterface;
   private NatRule _currentNatRule;
+  private DestinationTranslation _currentNatRuleDestinationTranslation;
   private boolean _currentNtpServerPrimary;
   private Interface _currentParentInterface;
   private PolicyRule _currentPolicyRule;
@@ -2246,9 +2249,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSrn_destination_translation(Srn_destination_translationContext ctx) {
+    _currentNatRuleDestinationTranslation =
+        Optional.ofNullable(_currentNatRule.getDestinationTranslation())
+            .orElseGet(DestinationTranslation::new);
+  }
+
+  @Override
+  public void exitSrn_destination_translation(Srn_destination_translationContext ctx) {
+    _currentNatRule.setDestinationTranslation(_currentNatRuleDestinationTranslation);
+    _currentNatRuleDestinationTranslation = null;
+  }
+
+  @Override
   public void exitSrndt_translated_address(Srndt_translated_addressContext ctx) {
     RuleEndpoint translatedAddress = toRuleEndpoint(ctx.translated_address_list_item());
-    _currentNatRule.setDestinationTranslation(new DestinationTranslation(translatedAddress));
+    _currentNatRuleDestinationTranslation.setTranslatedAddress(translatedAddress);
 
     // Add reference
     String uniqueName = computeObjectName(_currentVsys, translatedAddress.getValue());
@@ -2261,6 +2277,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       type = ADDRESS_LIKE;
     }
     referenceStructure(type, uniqueName, NAT_RULE_DESTINATION_TRANSLATION, getLine(ctx.start));
+  }
+
+  @Override
+  public void exitSrndt_translated_port(Srndt_translated_portContext ctx) {
+    _currentNatRuleDestinationTranslation.setTranslatedPort(toInteger(ctx.port));
   }
 
   @Override

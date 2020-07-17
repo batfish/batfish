@@ -28,14 +28,14 @@ public final class EigrpMetricValues implements Serializable {
   private EigrpMetricValues(
       long bandwidth, long delay, int effectiveBandwidth, int reliability, long mtu) {
     checkArgument(
-        bandwidth >= 0, "Invalid %s value for EIGRP metric: %d", PROP_BANDWIDTH, bandwidth);
-    checkArgument(delay >= 0, "Invalid %s value for EIGRP metric: %d", PROP_DELAY, delay);
+        bandwidth >= 0, "Invalid %s value for EIGRP metric: %s", PROP_BANDWIDTH, bandwidth);
+    checkArgument(delay >= 0, "Invalid %s value for EIGRP metric: %s", PROP_DELAY, delay);
     checkArgument(
         effectiveBandwidth >= 0 && effectiveBandwidth <= 255,
-        "Invalid %s value for EIGRP metric: %d",
+        "Invalid %s value for EIGRP metric: %s",
         PROP_EFFECTIVE_BANDWIDTH,
         effectiveBandwidth);
-    checkArgument(mtu >= 0, "Invalid %s value for EIGRP metric: %d", PROP_MTU, mtu);
+    checkArgument(mtu >= 0, "Invalid %s value for EIGRP metric: %s", PROP_MTU, mtu);
     _bandwidth = bandwidth;
     _delay = delay;
     _effectiveBandwidth = effectiveBandwidth;
