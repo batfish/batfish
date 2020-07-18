@@ -10570,6 +10570,11 @@ TXSPEED
    'txspeed'
 ;
 
+TWO_C
+:
+  '2c'
+;
+
 TYPE
 :
    'type'
@@ -11363,52 +11368,7 @@ HEX
 
 VARIABLE
 :
-   (
-      (
-         F_Variable_RequiredVarChar
-         (
-            (
-               {!_enableIpv6Address}?
-
-               F_Variable_VarChar*
-            )
-            |
-            (
-               {_enableIpv6Address}?
-
-               F_Variable_VarChar_Ipv6*
-            )
-         )
-      )
-      |
-      (
-         (
-            F_Variable_VarChar
-            {!_enableIpv6Address}?
-
-            F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_VarChar_Ipv6
-            {_enableIpv6Address}?
-
-            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar
-            F_Variable_VarChar_Ipv6*
-         )
-      )
-   )
-   {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-
+  F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
 ;
 
 AMPERSAND
