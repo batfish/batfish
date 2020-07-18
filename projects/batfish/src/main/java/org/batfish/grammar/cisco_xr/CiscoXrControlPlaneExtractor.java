@@ -359,6 +359,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_multipath_relax_rb_sta
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_ios_regexContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_advertise_inactive_rb_stanzaContext;
@@ -3437,8 +3438,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     asPathSet = new AsPathSet(name);
     _configuration.getAsPathSets().put(name, asPathSet);
     for (As_path_set_elemContext elemCtx : ctx.elems) {
-      AsPathSetElem elem = toAsPathSetElem(elemCtx);
-      asPathSet.getElements().add(elem);
+      toAsPathSetElem(elemCtx).ifPresent(asPathSet.getElements()::add);
     }
     _configuration.defineStructure(AS_PATH_SET, name, ctx);
   }
@@ -7572,20 +7572,29 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private AsPathSetElem toAsPathSetElem(As_path_set_elemContext ctx) {
-    if (ctx.IOS_REGEX() != null) {
-      String withQuotes = ctx.AS_PATH_SET_REGEX().getText();
-      String iosRegex = withQuotes.substring(1, withQuotes.length() - 1);
-      String regex = toJavaRegex(iosRegex);
-      return new RegexAsPathSetElem(regex);
+  private Optional<AsPathSetElem> toAsPathSetElem(As_path_set_elemContext ctx) {
+    if (ctx.ios_regex != null) {
+      return Optional.of(toAsPathSetElem(ctx.ios_regex));
     } else {
-      throw convError(AsPathSetElem.class, ctx);
+      warn(ctx, convErrorMessage(AsPathSetElem.class, ctx));
+      return Optional.empty();
     }
+  }
+
+  private AsPathSetElem toAsPathSetElem(Aspse_ios_regexContext ctx) {
+    String withQuotes = ctx.AS_PATH_SET_REGEX().getText();
+    String iosRegex = withQuotes.substring(1, withQuotes.length() - 1);
+    String regex = toJavaRegex(iosRegex);
+    return new RegexAsPathSetElem(regex);
   }
 
   private AsPathSetExpr toAsPathSetExpr(As_path_set_inlineContext ctx) {
     List<AsPathSetElem> elems =
-        ctx.elems.stream().map(this::toAsPathSetElem).collect(Collectors.toList());
+        ctx.elems.stream()
+            .map(this::toAsPathSetElem)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
     return new ExplicitAsPathSet(elems);
   }
 
