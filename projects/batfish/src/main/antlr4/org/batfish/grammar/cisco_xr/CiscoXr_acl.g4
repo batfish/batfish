@@ -113,7 +113,18 @@ appletalk_access_list_stanza
 
 as_path_set_elem
 :
-   IOS_REGEX AS_PATH_SET_REGEX
+   ios_regex = aspse_ios_regex
+   | passes_through = aspse_passes_through
+;
+
+aspse_ios_regex
+:
+  IOS_REGEX AS_PATH_SET_REGEX
+;
+
+aspse_passes_through
+:
+  PASSES_THROUGH as_range_expr
 ;
 
 as_path_set_stanza
