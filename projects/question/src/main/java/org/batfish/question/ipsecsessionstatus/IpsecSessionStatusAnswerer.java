@@ -16,7 +16,6 @@ import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
@@ -68,18 +67,14 @@ class IpsecSessionStatusAnswerer extends Answerer {
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         IpsecUtil.initIpsecTopology(configurations).getGraph();
 
-    List<String> initiatorNodes =
+    Set<String> initiatorNodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext(snapshot)).stream()
-            .sorted()
-            .collect(ImmutableList.toImmutableList());
-    List<String> responderNodes =
+            .resolve(_batfish.specifierContext(snapshot));
+    Set<String> responderNodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getRemoteNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext(snapshot)).stream()
-            .sorted()
-            .collect(ImmutableList.toImmutableList());
+            .resolve(_batfish.specifierContext(snapshot));
     Set<IpsecSessionStatus> statuses =
         SpecifierFactories.getEnumSetSpecifierOrDefault(
                 question.getStatus(),
@@ -96,7 +91,8 @@ class IpsecSessionStatusAnswerer extends Answerer {
         ipsecSessionInfos.stream()
             .filter(ipsecSessionInfo -> statuses.contains(ipsecSessionInfo.getIpsecSessionStatus()))
             .map(IpsecSessionStatusAnswerer::toRow)
-            .collect(Collectors.toCollection(HashMultiset::create)));
+            .sorted()
+            .collect(ImmutableList.toImmutableList()));
     return answerElement;
   }
 
@@ -104,8 +100,8 @@ class IpsecSessionStatusAnswerer extends Answerer {
   static Multiset<IpsecSessionInfo> rawAnswer(
       NetworkConfigurations networkConfigurations,
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
-      List<String> initiatorNodes,
-      List<String> responderNodes) {
+      Set<String> initiatorNodes,
+      Set<String> responderNodes) {
     Multiset<IpsecSessionInfo> ipsecSessionInfos = HashMultiset.create();
 
     for (IpsecPeerConfigId node : ipsecTopology.nodes()) {

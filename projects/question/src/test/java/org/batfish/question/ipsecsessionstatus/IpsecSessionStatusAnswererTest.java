@@ -25,7 +25,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import com.google.common.graph.MutableValueGraph;
@@ -118,8 +118,8 @@ public class IpsecSessionStatusAnswererTest {
         rawAnswer(
             _networkConfigurations,
             _graph,
-            ImmutableList.of(INITIATOR_HOST_NAME),
-            ImmutableList.of(RESPONDER_HOST_NAME));
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(sessions, hasSize(1));
@@ -139,8 +139,8 @@ public class IpsecSessionStatusAnswererTest {
         rawAnswer(
             _networkConfigurations,
             _graph,
-            ImmutableList.of(INITIATOR_HOST_NAME),
-            ImmutableList.of(RESPONDER_HOST_NAME));
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(ipsecSessionInfos, hasSize(1));
@@ -163,8 +163,8 @@ public class IpsecSessionStatusAnswererTest {
         rawAnswer(
             _networkConfigurations,
             _graph,
-            ImmutableList.of(INITIATOR_HOST_NAME),
-            ImmutableList.of(RESPONDER_HOST_NAME));
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(ipsecSessionInfos, hasSize(1));
@@ -181,8 +181,8 @@ public class IpsecSessionStatusAnswererTest {
         rawAnswer(
             _networkConfigurations,
             _graph,
-            ImmutableList.of(INITIATOR_HOST_NAME),
-            ImmutableList.of(RESPONDER_HOST_NAME));
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(ipsecSessionInfos, hasSize(1));
@@ -205,8 +205,8 @@ public class IpsecSessionStatusAnswererTest {
         rawAnswer(
             _networkConfigurations,
             _graph,
-            ImmutableList.of(INITIATOR_HOST_NAME),
-            ImmutableList.of(RESPONDER_HOST_NAME));
+            ImmutableSet.of(INITIATOR_HOST_NAME),
+            ImmutableSet.of(RESPONDER_HOST_NAME));
 
     // answer should have exactly one row
     assertThat(ipsecSessionInfos, hasSize(1));
