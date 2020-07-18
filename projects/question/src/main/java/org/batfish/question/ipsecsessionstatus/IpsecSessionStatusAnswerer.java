@@ -68,14 +68,18 @@ class IpsecSessionStatusAnswerer extends Answerer {
     ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
         IpsecUtil.initIpsecTopology(configurations).getGraph();
 
-    Set<String> initiatorNodes =
+    List<String> initiatorNodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext(snapshot));
-    Set<String> responderNodes =
+            .resolve(_batfish.specifierContext(snapshot)).stream()
+            .sorted()
+            .collect(ImmutableList.toImmutableList());
+    List<String> responderNodes =
         SpecifierFactories.getNodeSpecifierOrDefault(
                 question.getRemoteNodes(), AllNodesNodeSpecifier.INSTANCE)
-            .resolve(_batfish.specifierContext(snapshot));
+            .resolve(_batfish.specifierContext(snapshot)).stream()
+            .sorted()
+            .collect(ImmutableList.toImmutableList());
     Set<IpsecSessionStatus> statuses =
         SpecifierFactories.getEnumSetSpecifierOrDefault(
                 question.getStatus(),
@@ -100,8 +104,8 @@ class IpsecSessionStatusAnswerer extends Answerer {
   static Multiset<IpsecSessionInfo> rawAnswer(
       NetworkConfigurations networkConfigurations,
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
-      Set<String> initiatorNodes,
-      Set<String> responderNodes) {
+      List<String> initiatorNodes,
+      List<String> responderNodes) {
     Multiset<IpsecSessionInfo> ipsecSessionInfos = HashMultiset.create();
 
     for (IpsecPeerConfigId node : ipsecTopology.nodes()) {
