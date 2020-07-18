@@ -1,0 +1,7 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname gh6005
+as-path-set FOO
+  ios-regex '.* 0 .*',
+  passes-through '[12345..678901]',
+  passes-through '[1100000000..1234567890]'
+end-set
