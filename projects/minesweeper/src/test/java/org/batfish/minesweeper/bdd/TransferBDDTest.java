@@ -28,6 +28,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -294,7 +295,7 @@ public class TransferBDDTest {
   public void testSetCommunity() {
     RoutingPolicy policy =
         _policyBuilder
-            .addStatement(new SetCommunity(new LiteralCommunity(StandardCommunity.parse("4:44"))))
+            .addStatement(new SetCommunity(new LiteralCommunity(ExtendedCommunity.parse("4:44"))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     _g = new Graph(_batfish, _batfish.getSnapshot());
@@ -311,6 +312,30 @@ public class TransferBDDTest {
     Map<CommunityVar, BDD> expectedCommMap =
         ImmutableSortedMap.of(
             CommunityVar.from(Community.fromString("4:44")), _anyRoute.getFactory().one());
+    assertEquals(expectedCommMap, announcementUpdates.getCommunities());
+  }
+
+  @Test
+  public void testSetExtendedCommunity() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetCommunity(new LiteralCommunity(ExtendedCommunity.parse("0:4:44"))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute announcementUpdates = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // the community 20:30 is associated with the 0 BDD
+    Map<CommunityVar, BDD> expectedCommMap =
+        ImmutableSortedMap.of(
+            CommunityVar.from(Community.fromString("0:4:44")), _anyRoute.getFactory().one());
     assertEquals(expectedCommMap, announcementUpdates.getCommunities());
   }
 
