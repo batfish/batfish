@@ -295,7 +295,7 @@ public class TransferBDDTest {
   public void testSetCommunity() {
     RoutingPolicy policy =
         _policyBuilder
-            .addStatement(new SetCommunity(new LiteralCommunity(ExtendedCommunity.parse("4:44"))))
+            .addStatement(new SetCommunity(new LiteralCommunity(StandardCommunity.parse("4:44"))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     _g = new Graph(_batfish, _batfish.getSnapshot());
