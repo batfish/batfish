@@ -1,13 +1,18 @@
-package org.batfish.datamodel;
+package org.batfish.minesweeper.question.searchroutepolicies;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /** A set of constraints on a route announcement. */
+@ParametersAreNonnullByDefault
 public class RouteConstraints {
 
   private static final String PROP_PREFIX_SPACE = "prefixSpace";
@@ -17,11 +22,18 @@ public class RouteConstraints {
   private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_COMPLEMENT_COMMUNITIES = "complementCommunities";
 
-  PrefixSpace _prefixSpace;
-  boolean _complementPrefixSpace;
-  IntegerSpace _localPref;
-  IntegerSpace _med;
-  CommunitySet _communities;
+  // the announcement's prefix must be within this space
+  @Nonnull private PrefixSpace _prefixSpace;
+  // if this flag is set, then the prefix must be outside of the above space
+  private boolean _complementPrefixSpace;
+  // the announcement's local prefix must be within this range
+  @Nonnull private IntegerSpace _localPref;
+  // the announcement's MED must be within this range
+  @Nonnull private IntegerSpace _med;
+  // the announcement must be tagged with at least one of these communities
+  @Nonnull private CommunitySet _communities;
+  // if this flag is set, the announcement must not be tagged with any of
+  // the above communities
   boolean _complementCommunities;
 
   @JsonCreator
@@ -52,7 +64,7 @@ public class RouteConstraints {
     private CommunitySet _communities;
     private boolean _complementCommunities = false;
 
-    public Builder() {}
+    private Builder() {}
 
     public Builder setPrefixSpace(PrefixSpace prefixSpace) {
       _prefixSpace = prefixSpace;
@@ -95,6 +107,7 @@ public class RouteConstraints {
     }
   }
 
+  @Nonnull
   @JsonProperty(PROP_PREFIX_SPACE)
   public PrefixSpace getPrefixSpace() {
     return _prefixSpace;
@@ -105,16 +118,19 @@ public class RouteConstraints {
     return _complementPrefixSpace;
   }
 
+  @Nonnull
   @JsonProperty(PROP_LOCAL_PREFERENCE)
   public IntegerSpace getLocalPref() {
     return _localPref;
   }
 
+  @Nonnull
   @JsonProperty(PROP_MULTI_EXIT_DISCRIMINATOR)
   public IntegerSpace getMed() {
     return _med;
   }
 
+  @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
   public CommunitySet getCommunities() {
     return _communities;

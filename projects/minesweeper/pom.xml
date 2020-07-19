@@ -108,7 +108,6 @@
     <dependency>
       <groupId>dk.brics</groupId>
       <artifactId>automaton</artifactId>
-      <version>1.12-1</version>
     </dependency>
 
     <!-- Test dependencies. -->
