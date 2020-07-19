@@ -10,7 +10,9 @@
       "MapPublicIpOnLaunch": true,
       "State": "available",
       "SubnetId": "subnet-1",
-      "VpcId": "vpc-1"
+      "VpcId": "vpc-1",
+      "OwnerId": "028403472736",
+      "SubnetArn": "arn:aws:ec2:us-east-1:028403472736:subnet/subnet-1"
     }
   ]
 }

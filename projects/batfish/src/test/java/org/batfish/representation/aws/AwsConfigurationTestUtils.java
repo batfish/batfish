@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.main.BatfishTestUtils;
@@ -189,5 +191,15 @@ public final class AwsConfigurationTestUtils {
 
     Trace reverseTrace = getOnlyElement(reverseTraces.iterator()).getTrace();
     testTrace(reverseTrace, FlowDisposition.ACCEPTED, expectedReversePath);
+  }
+
+  static Subnet getTestSubnet(Prefix cidrblock, String subnetId, String vpcId) {
+    return getTestSubnet(cidrblock, subnetId, vpcId, "zone");
+  }
+
+  static Subnet getTestSubnet(
+      Prefix cidrblock, String subnetId, String vpcId, String availabilityZone) {
+    return new Subnet(
+        cidrblock, "ownerId", "subnetArn", subnetId, vpcId, availabilityZone, ImmutableMap.of());
   }
 }

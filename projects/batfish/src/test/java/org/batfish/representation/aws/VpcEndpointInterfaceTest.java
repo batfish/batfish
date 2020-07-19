@@ -4,6 +4,7 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTERFACE_LINK_LOCATION_INFO;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
@@ -115,8 +116,7 @@ public class VpcEndpointInterfaceTest {
 
   @Test
   public void testToConfigurationNode() {
-    Subnet subnet =
-        new Subnet(Prefix.parse("1.1.1.0/24"), "subnet", "vpc", "az", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("1.1.1.0/24"), "subnet", "vpc");
     NetworkInterface networkInterface =
         new NetworkInterface(
             "networkInterface",

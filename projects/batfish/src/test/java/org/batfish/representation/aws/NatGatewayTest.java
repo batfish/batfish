@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.NatGateway.ILLEGAL_PACKET_FILTER_NAME;
 import static org.batfish.representation.aws.NatGateway.INCOMING_NAT_FILTER_NAME;
@@ -87,13 +88,7 @@ public class NatGatewayTest {
         new NatGateway("ngw", "subnet", "vpc", ImmutableList.of(ngwAddress), ImmutableMap.of());
 
     Vpc vpc = new Vpc(ngw.getVpcId(), ImmutableSet.of(), ImmutableMap.of());
-    Subnet subnet =
-        new Subnet(
-            Prefix.parse("10.10.10.0/24"),
-            ngw.getSubnetId(),
-            ngw.getVpcId(),
-            "zone",
-            ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), ngw.getSubnetId(), ngw.getVpcId());
     NetworkAcl nacl =
         new NetworkAcl(
             "netAcl",

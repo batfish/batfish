@@ -71,7 +71,14 @@ public class InstanceWithMultipleInterfacesTest {
     region.getSecurityGroups().put(sgHTTP.getId(), sgHTTP);
 
     Subnet subnet =
-        new Subnet(Prefix.parse("10.0.0.0/28"), "subnet-id", vpc.getId(), "az", ImmutableMap.of());
+        new Subnet(
+            Prefix.parse("10.0.0.0/28"),
+            "ownerId",
+            "subnetArn",
+            "subnet-id",
+            vpc.getId(),
+            "az",
+            ImmutableMap.of());
     region.getSubnets().put(subnet.getId(), subnet);
 
     // Construct the network interfaces, both on the test instance but with different SGs.
