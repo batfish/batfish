@@ -74,14 +74,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
 
-  private final RouteConstraints _inputConstraints;
-  private final RouteConstraints _outputConstraints;
-  private final String _nodes;
-  private final String _policies;
-  private final Action _action;
+  @Nonnull private final RouteConstraints _inputConstraints;
+  @Nonnull private final RouteConstraints _outputConstraints;
+  @Nonnull private final String _nodes;
+  @Nonnull private final String _policies;
+  @Nonnull private final Action _action;
 
-  private Graph _g;
-  private PolicyQuotient _pq;
+  @Nonnull private final Graph _g;
+  @Nonnull private final PolicyQuotient _pq;
 
   private BDD _inputConstraintsBDD;
 

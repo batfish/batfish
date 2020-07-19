@@ -1,29 +1,34 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Bgpv4Route;
 
 /* The result of trying to convert a BDD to a route --
-  either we are able to produce a route satisfying the BDD or identify
+  we either produce a route satisfying the BDD or identify
   a set of unsatisfiable constraints.
 */
+@ParametersAreNonnullByDefault
 class BDDToRouteResult {
-  private Bgpv4Route _route;
-  private BDD _unsatConstraints;
+  // exactly one of these will be nonnull
+  @Nullable private Bgpv4Route _route;
+  @Nullable private BDD _unsatConstraints;
 
-  BDDToRouteResult(@Nonnull Bgpv4Route route) {
+  BDDToRouteResult(Bgpv4Route route) {
     _route = route;
   }
 
-  BDDToRouteResult(@Nonnull BDD unsatConstraints) {
+  BDDToRouteResult(BDD unsatConstraints) {
     _unsatConstraints = unsatConstraints;
   }
 
+  @Nullable
   Bgpv4Route getRoute() {
     return _route;
   }
 
+  @Nullable
   BDD getUnsatConstraints() {
     return _unsatConstraints;
   }

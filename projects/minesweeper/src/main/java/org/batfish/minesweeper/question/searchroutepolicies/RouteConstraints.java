@@ -23,18 +23,18 @@ public class RouteConstraints {
   private static final String PROP_COMPLEMENT_COMMUNITIES = "complementCommunities";
 
   // the announcement's prefix must be within this space
-  @Nonnull private PrefixSpace _prefixSpace;
+  @Nonnull private final PrefixSpace _prefixSpace;
   // if this flag is set, then the prefix must be outside of the above space
-  private boolean _complementPrefixSpace;
+  private final boolean _complementPrefixSpace;
   // the announcement's local prefix must be within this range
-  @Nonnull private IntegerSpace _localPref;
+  @Nonnull private final IntegerSpace _localPref;
   // the announcement's MED must be within this range
-  @Nonnull private IntegerSpace _med;
+  @Nonnull private final IntegerSpace _med;
   // the announcement must be tagged with at least one of these communities
-  @Nonnull private CommunitySet _communities;
+  @Nonnull private final CommunitySet _communities;
   // if this flag is set, the announcement must not be tagged with any of
   // the above communities
-  boolean _complementCommunities;
+  private final boolean _complementCommunities;
 
   @JsonCreator
   private RouteConstraints(
@@ -107,8 +107,8 @@ public class RouteConstraints {
     }
   }
 
-  @Nonnull
   @JsonProperty(PROP_PREFIX_SPACE)
+  @Nonnull
   public PrefixSpace getPrefixSpace() {
     return _prefixSpace;
   }
@@ -118,20 +118,20 @@ public class RouteConstraints {
     return _complementPrefixSpace;
   }
 
-  @Nonnull
   @JsonProperty(PROP_LOCAL_PREFERENCE)
+  @Nonnull
   public IntegerSpace getLocalPref() {
     return _localPref;
   }
 
-  @Nonnull
   @JsonProperty(PROP_MULTI_EXIT_DISCRIMINATOR)
+  @Nonnull
   public IntegerSpace getMed() {
     return _med;
   }
 
-  @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
+  @Nonnull
   public CommunitySet getCommunities() {
     return _communities;
   }

@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.Question;
@@ -24,11 +25,11 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private static final String DEFAULT_POLICIES = "";
   private static final Action DEFAULT_ACTION = Action.PERMIT;
 
-  private final String _nodes;
-  private final String _policies;
-  private final RouteConstraints _inputConstraints;
-  private final RouteConstraints _outputConstraints;
-  private final Action _action;
+  @Nonnull private final String _nodes;
+  @Nonnull private final String _policies;
+  @Nonnull private final RouteConstraints _inputConstraints;
+  @Nonnull private final RouteConstraints _outputConstraints;
+  @Nonnull private final Action _action;
 
   public enum Action {
     DENY,
@@ -79,32 +80,38 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_INPUT_CONSTRAINTS)
+  @Nonnull
   public RouteConstraints getInputConstraints() {
     return _inputConstraints;
   }
 
   @JsonProperty(PROP_OUTPUT_CONSTRAINTS)
+  @Nonnull
   public RouteConstraints getOutputConstraints() {
     return _outputConstraints;
   }
 
   @JsonIgnore
+  @Nonnull
   @Override
   public String getName() {
     return "searchroutepolicies";
   }
 
   @JsonProperty(PROP_NODES)
+  @Nonnull
   public String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_POLICIES)
+  @Nonnull
   public String getPolicies() {
     return _policies;
   }
 
   @JsonProperty(PROP_ACTION)
+  @Nonnull
   public Action getAction() {
     return _action;
   }

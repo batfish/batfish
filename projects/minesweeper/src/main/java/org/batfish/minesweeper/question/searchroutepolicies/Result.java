@@ -3,16 +3,19 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
 
 /** A {@link SearchRoutePoliciesQuestion} result for a single policy and input route. */
+@ParametersAreNonnullByDefault
 final class Result {
   /** A key to relate results by policy and input route. */
-  public final class Key {
-    private final RoutingPolicyId _policyId;
-    private final Bgpv4Route _inputRoute;
+  public static final class Key {
+    @Nonnull private final RoutingPolicyId _policyId;
+    @Nonnull private final Bgpv4Route _inputRoute;
 
     private Key(RoutingPolicyId policyId, Bgpv4Route inputRoute) {
       _policyId = policyId;
@@ -38,10 +41,10 @@ final class Result {
     }
   }
 
-  private final RoutingPolicyId _policyId;
-  private final Bgpv4Route _inputRoute;
-  private final Action _action;
-  private final Bgpv4Route _outputRoute;
+  @Nonnull private final RoutingPolicyId _policyId;
+  @Nonnull private final Bgpv4Route _inputRoute;
+  @Nonnull private final Action _action;
+  @Nullable private final Bgpv4Route _outputRoute;
 
   Result(
       RoutingPolicyId policyId,
@@ -71,22 +74,27 @@ final class Result {
         && Objects.equals(_inputRoute, result._inputRoute);
   }
 
+  @Nonnull
   public Action getAction() {
     return _action;
   }
 
+  @Nonnull
   public Bgpv4Route getInputRoute() {
     return _inputRoute;
   }
 
+  @Nullable
   public Bgpv4Route getOutputRoute() {
     return _outputRoute;
   }
 
+  @Nonnull
   public Key getKey() {
     return new Key(_policyId, _inputRoute);
   }
 
+  @Nonnull
   public RoutingPolicyId getPolicyId() {
     return _policyId;
   }
