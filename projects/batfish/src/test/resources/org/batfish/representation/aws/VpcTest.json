@@ -21,6 +21,7 @@
       "DhcpOptionsId": "dopt-5870b93d",
       "InstanceTenancy": "default",
       "IsDefault": false,
+      "OwnerId": "028403472736",
       "State": "available",
       "VpcId": "vpc-CCCCCC"
     }
