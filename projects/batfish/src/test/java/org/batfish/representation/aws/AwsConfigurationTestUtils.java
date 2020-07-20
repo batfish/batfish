@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -201,5 +202,13 @@ public final class AwsConfigurationTestUtils {
       Prefix cidrblock, String subnetId, String vpcId, String availabilityZone) {
     return new Subnet(
         cidrblock, "ownerId", "subnetArn", subnetId, vpcId, availabilityZone, ImmutableMap.of());
+  }
+
+  static Vpc getTestVpc(String vpcId) {
+    return getTestVpc(vpcId, ImmutableSet.of());
+  }
+
+  static Vpc getTestVpc(String vpcId, Set<Prefix> cidrBlockAssociations) {
+    return new Vpc("owner", vpcId, cidrBlockAssociations, ImmutableMap.of());
   }
 }

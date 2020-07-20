@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.DeviceModel.AWS_NAT_GATEWAY;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.NatGateway.ILLEGAL_PACKET_FILTER_NAME;
 import static org.batfish.representation.aws.NatGateway.INCOMING_NAT_FILTER_NAME;
@@ -22,7 +23,6 @@ import static org.hamcrest.Matchers.hasKey;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
@@ -87,8 +87,9 @@ public class NatGatewayTest {
     NatGateway ngw =
         new NatGateway("ngw", "subnet", "vpc", ImmutableList.of(ngwAddress), ImmutableMap.of());
 
-    Vpc vpc = new Vpc(ngw.getVpcId(), ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc(ngw.getVpcId());
     Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), ngw.getSubnetId(), ngw.getVpcId());
+
     NetworkAcl nacl =
         new NetworkAcl(
             "netAcl",
@@ -194,7 +195,7 @@ public class NatGatewayTest {
     Configuration ngwConfig = new Configuration("c", ConfigurationFormat.AWS);
     ngwConfig.getVrfs().put(DEFAULT_VRF_NAME, new Vrf(DEFAULT_VRF_NAME));
 
-    Vpc vpc = new Vpc(ngw.getVpcId(), ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc(ngw.getVpcId());
     Region region =
         Region.builder("r1")
             .setVpcs(ImmutableMap.of(vpc.getId(), vpc))

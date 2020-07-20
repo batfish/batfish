@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
 import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_IFACE_SUFFIX;
@@ -144,7 +145,7 @@ public class SubnetTest {
   /** Test the simplest case of subnet with only a private prefix and not even a vpn gateway */
   @Test
   public void testToConfigurationNodePrivateOnly() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Ip privateIp = Ip.parse("10.10.10.10");
@@ -242,7 +243,7 @@ public class SubnetTest {
   /** Test that public subnets are labeled as such */
   @Test
   public void testToConfigurationNodePublic() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId());
     InternetGateway igw =
         new InternetGateway("igw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
@@ -352,7 +353,7 @@ public class SubnetTest {
   /** Tests that we do the right thing when processing a route for a VPC-level gateway. */
   @Test
   public void testProcessRouteVpcGateway() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId());
@@ -395,7 +396,7 @@ public class SubnetTest {
   /** Tests that we do the right thing when processing a route for VPC peering connection. */
   @Test
   public void testProcessRouteVpcPeeringConnection() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
@@ -434,7 +435,7 @@ public class SubnetTest {
   /** Tests that we do the right thing when processing a route for transit gateway. */
   @Test
   public void testProcessRouteTransitGateway() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
@@ -486,7 +487,7 @@ public class SubnetTest {
    */
   @Test
   public void testProcessRouteTransitGatewayOutsideConnectedAzs() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
@@ -572,7 +573,7 @@ public class SubnetTest {
   /** Test that network ACls are properly attached */
   @Test
   public void testToConfigurationNodeNetworkAcl() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");

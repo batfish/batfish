@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertThat;
 
@@ -35,7 +36,7 @@ public class InstanceWithMultipleInterfacesTest {
     Account a = c.addOrGetAccount("account-id");
     Region region = a.addOrGetRegion("test");
 
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/24")), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/24")));
     region.getVpcs().put(vpc.getId(), vpc);
 
     // add two different security groups, one that accepts SSH from anywhere and one HTTP.
