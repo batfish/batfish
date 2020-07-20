@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.common.util.isp.IspModelingUtils.getAdvertiseStaticStatement;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.ACCEPT_ALL_BGP;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
@@ -64,7 +65,7 @@ public class VpnGatewayTest {
 
   @Test
   public void testToConfigurationNodeNoBgp() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(Prefix.parse("10.0.0.0/16")));
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     VpnGateway vgw =
@@ -90,7 +91,7 @@ public class VpnGatewayTest {
             .build();
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     String vrfNameOnVpc = vrfNameForLink(vgw.getId());
     vpcConfig
@@ -113,7 +114,7 @@ public class VpnGatewayTest {
   @Test
   public void testToConfigurationNodeBgp() {
     Prefix vpcPrefix = Prefix.parse("10.0.0.0/16");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     VpnGateway vgw = new VpnGateway("vgw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
@@ -143,7 +144,7 @@ public class VpnGatewayTest {
         .put(vrfNameOnVpc, Vrf.builder().setName(vrfNameOnVpc).setOwner(vpcConfig).build());
 
     ConvertedConfiguration awsConfiguration =
-        new ConvertedConfiguration(ImmutableMap.of(vpcConfig.getHostname(), vpcConfig));
+        new ConvertedConfiguration(ImmutableList.of(vpcConfig));
 
     Configuration vgwConfig = vgw.toConfigurationNode(awsConfiguration, region, new Warnings());
     assertThat(vgwConfig, hasDeviceModel(DeviceModel.AWS_VPN_GATEWAY));

@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPCS;
 import static org.batfish.representation.aws.Vpc.vrfNameForLink;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -45,16 +47,31 @@ public class VpcTest {
         equalTo(
             ImmutableList.of(
                 new Vpc(
+                    "028403472736",
                     "vpc-CCCCCC",
                     ImmutableSet.of(Prefix.parse("10.100.0.0/16"), Prefix.parse("10.200.0.0/16")),
                     ImmutableMap.of()))));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            new Vpc("owner", "vpc", ImmutableSet.of(), ImmutableMap.of()),
+            new Vpc("owner", "vpc", ImmutableSet.of(), ImmutableMap.of()))
+        .addEqualityGroup(new Vpc("other", "vpc", ImmutableSet.of(), ImmutableMap.of()))
+        .addEqualityGroup(new Vpc("owner", "other", ImmutableSet.of(), ImmutableMap.of()))
+        .addEqualityGroup(new Vpc("owner", "vpc", ImmutableSet.of(Prefix.ZERO), ImmutableMap.of()))
+        .addEqualityGroup(
+            new Vpc("owner", "vpc", ImmutableSet.of(), ImmutableMap.of("name", "value")))
+        .testEquals();
   }
 
   /** The default VRF is properly set up */
   @Test
   public void testToConfigurationNode_defaultVrf() {
     Set<Prefix> prefixes = ImmutableSet.of(Prefix.parse("1.1.1.1/32"), Prefix.parse("2.2.2.2/32"));
-    Vpc vpc = new Vpc("vpc", prefixes, ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", prefixes);
 
     Configuration vpcCfg =
         vpc.toConfigurationNode(new ConvertedConfiguration(), new Region("r"), new Warnings());
@@ -70,7 +87,7 @@ public class VpcTest {
   /** VRFs are in place for the right IGWs */
   @Test
   public void testToConfigurationNod_igwVrfs() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
     Region region =
@@ -95,7 +112,7 @@ public class VpcTest {
   /** VRFs are in place for the right VGWs */
   @Test
   public void testToConfigurationNod_vgwVrfs() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
     Region region =
@@ -119,7 +136,7 @@ public class VpcTest {
   /** VRFs are in place for VPC Endpoint gateways */
   @Test
   public void testToConfigurationNod_vpceGateways() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
     Region region =
@@ -143,7 +160,7 @@ public class VpcTest {
   /** VRFs are in place for the right NAT gateways */
   @Test
   public void testToConfigurationNod_ngwVrfs() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
 
     String gatewayId = "gateway";
     Region region =
@@ -169,7 +186,7 @@ public class VpcTest {
   /** VRFs are in place for the right TGW attachments */
   @Test
   public void testToConfigurationNod_tgwAttachmentVrfs() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
 
     String attachment = "attachment";
     Region region =
@@ -198,7 +215,7 @@ public class VpcTest {
   /** VRFs are in place for the right VPC peering connections */
   @Test
   public void testToConfigurationNod_vpcPeeringVrfs() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
 
     String connectionRequester = "requester";
     String connectionAccepter = "accepter";

@@ -21,6 +21,7 @@
      "Value": "Arista Demo"
     }
    ], 
+   "OwnerId": "111234",
    "VpcId": "vpc-b390fad5"
   }, 
   {
@@ -44,6 +45,7 @@
      "Value": "Demo-Test2"
     }
    ], 
+   "OwnerId": "111234",
    "VpcId": "vpc-925131f4"
   }, 
   {
@@ -61,6 +63,7 @@
    "InstanceTenancy": "default", 
    "IsDefault": true, 
    "State": "available", 
+   "OwnerId": "111234",
    "VpcId": "vpc-f8fad69d"
   }, 
   {
@@ -84,6 +87,7 @@
      "Value": "GNS3-BGP-Test"
     }
    ], 
+   "OwnerId": "111234",
    "VpcId": "vpc-815775e7"
   }
  ]

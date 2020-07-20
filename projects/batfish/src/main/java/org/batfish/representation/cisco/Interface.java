@@ -87,7 +87,6 @@ public class Interface implements Serializable {
         case CADANT:
         case CISCO_ASA:
         case CISCO_IOS:
-        case CISCO_IOS_XR:
         case FORCE10:
         case FOUNDRY:
           return DEFAULT_IOS_ETHERNET_SPEED;

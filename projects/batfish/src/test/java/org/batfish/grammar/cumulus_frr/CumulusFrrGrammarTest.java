@@ -118,6 +118,7 @@ public class CumulusFrrGrammarTest {
   @Before
   public void setup() {
     _config = new CumulusConcatenatedConfiguration();
+    _config.setHostname("c");
     _frr = _config.getFrrConfiguration();
     _ccae = new ConvertConfigurationAnswerElement();
     _warnings = new Warnings();
