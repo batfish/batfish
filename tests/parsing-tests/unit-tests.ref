@@ -82994,7 +82994,7 @@
               ],
               "numReferrers" : 1
             },
-            "HundredGigabitEthernet0/6/0/8" : {
+            "HundredGigE0/6/0/8" : {
               "definitionLines" : [
                 10,
                 11
@@ -90593,7 +90593,7 @@
                 3
               ]
             },
-            "HundredGigabitEthernet0/6/0/8" : {
+            "HundredGigE0/6/0/8" : {
               "interface" : [
                 10
               ]
