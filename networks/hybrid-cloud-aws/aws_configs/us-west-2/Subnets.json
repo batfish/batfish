@@ -8,7 +8,9 @@
    "DefaultForAz": false, 
    "Ipv6CidrBlockAssociationSet": [], 
    "MapPublicIpOnLaunch": false, 
-   "State": "available", 
+   "OwnerId": "028403472736",
+   "State": "available",
+   "SubnetArn": "arn:aws:ec2:us-west-2:028403472736:subnet/subnet-8d0cbdeb",
    "SubnetId": "subnet-8d0cbdeb", 
    "Tags": [
     {
