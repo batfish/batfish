@@ -18,6 +18,7 @@ import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INTERNET_GATEWAYS;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.InternetGateway.DENIED_UNASSOCIATED_PRIVATE_IP_TRACE;
@@ -37,7 +38,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -91,7 +91,7 @@ public class InternetGatewayTest {
 
   @Test
   public void testToConfiguration() {
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc");
     Configuration vpcConfig = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Ip privateIp = Ip.parse("10.10.10.10");

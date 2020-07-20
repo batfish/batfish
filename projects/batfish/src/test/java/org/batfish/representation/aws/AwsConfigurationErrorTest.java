@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -12,8 +13,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -29,10 +28,7 @@ public class AwsConfigurationErrorTest {
     awsConfiguration.setWarnings(w);
 
     Account account = awsConfiguration.addOrGetAccount("account1");
-    account
-        .addOrGetRegion("region1")
-        .getVpcs()
-        .put("vpc1", new Vpc("vpc1", ImmutableSet.of(), ImmutableMap.of()));
+    account.addOrGetRegion("region1").getVpcs().put("vpc1", getTestVpc("vpc1"));
 
     Region r2_mock = mock(Region.class);
     when(r2_mock.getName()).thenReturn("region2");

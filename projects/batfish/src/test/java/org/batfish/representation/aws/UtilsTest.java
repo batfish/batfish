@@ -4,6 +4,7 @@ import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
 import static org.batfish.representation.aws.Utils.createBackboneConnection;
 import static org.batfish.representation.aws.Utils.createPublicIpsRefBook;
@@ -116,7 +117,7 @@ public class UtilsTest {
   @Test
   public void testConnectGatewayToVpc() {
     Prefix vpcPrefix = Prefix.parse("10.10.0.0/16");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
     Configuration vpcCfg = new Configuration(vpc.getId(), ConfigurationFormat.AWS);
     Configuration gatewayCfg = Utils.newAwsConfiguration("gateway", "aws");
 

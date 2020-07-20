@@ -75,12 +75,15 @@ final class Vpc implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Set<Prefix> _cidrBlockAssociations;
 
+  @Nonnull private final String _ownerId;
+
   @Nonnull private final Map<String, String> _tags;
 
   @Nonnull private final String _vpcId;
 
   @JsonCreator
   private static Vpc create(
+      @Nullable @JsonProperty(JSON_KEY_OWNER_ID) String ownerId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
       @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
       @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET)
@@ -88,9 +91,11 @@ final class Vpc implements AwsVpcEntity, Serializable {
     /*
      We do not parse CidrBlock. The information there also shows up CidrBlockAssociationSet
     */
+    checkNonNull(ownerId, JSON_KEY_OWNER_ID, "VPC");
     checkNonNull(vpcId, JSON_KEY_VPC_ID, "VPC");
     checkNonNull(cidrBlockAssociations, JSON_KEY_CIDR_BLOCK_ASSOCIATION_SET, "VPC");
     return new Vpc(
+        ownerId,
         vpcId,
         cidrBlockAssociations.stream()
             .map(CidrBlockAssociation::getBlock)
@@ -99,7 +104,8 @@ final class Vpc implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  Vpc(String vpcId, Set<Prefix> cidrBlockAssociations, Map<String, String> tags) {
+  Vpc(String ownerId, String vpcId, Set<Prefix> cidrBlockAssociations, Map<String, String> tags) {
+    _ownerId = ownerId;
     _vpcId = vpcId;
     _cidrBlockAssociations = cidrBlockAssociations;
     _tags = tags;
@@ -108,6 +114,11 @@ final class Vpc implements AwsVpcEntity, Serializable {
   @Nonnull
   Set<Prefix> getCidrBlockAssociations() {
     return _cidrBlockAssociations;
+  }
+
+  @Nonnull
+  public String getOwnerId() {
+    return _ownerId;
   }
 
   @Override
@@ -213,12 +224,13 @@ final class Vpc implements AwsVpcEntity, Serializable {
     }
     Vpc vpc = (Vpc) o;
     return Objects.equals(_cidrBlockAssociations, vpc._cidrBlockAssociations)
+        && Objects.equals(_ownerId, vpc._ownerId)
         && Objects.equals(_tags, vpc._tags)
         && Objects.equals(_vpcId, vpc._vpcId);
   }
 
   @Override
   public int hashCode() {
-    return com.google.common.base.Objects.hashCode(_cidrBlockAssociations, _tags, _vpcId);
+    return com.google.common.base.Objects.hashCode(_cidrBlockAssociations, _ownerId, _tags, _vpcId);
   }
 }

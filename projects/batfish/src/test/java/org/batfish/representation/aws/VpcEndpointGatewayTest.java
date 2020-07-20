@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.representation.aws.VpcEndpointGateway.SERVICE_PREFIX_FILTER;
@@ -56,7 +57,7 @@ public class VpcEndpointGatewayTest {
   @Test
   public void testToConfiguration() {
     Prefix vpcPrefix = Prefix.parse("10.10.10.0/24");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
 
     VpcEndpointGateway vpceGateway =
         new VpcEndpointGateway(
