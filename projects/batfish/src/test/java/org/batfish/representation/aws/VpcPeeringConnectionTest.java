@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_VPC_PEERING_CONNECTIONS;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,7 +14,6 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -77,11 +77,11 @@ public class VpcPeeringConnectionTest {
 
   @Test
   public void testCreateConnection() {
-    Vpc vpc1 = new Vpc("vpc1", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc1 = getTestVpc("vpc1");
     Configuration vpc1Cfg = Utils.newAwsConfiguration(vpc1.getId(), "awstest");
     Prefix vpc1Prefix = Prefix.parse("10.10.10.0/24");
 
-    Vpc vpc2 = new Vpc("vpc2", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc2 = getTestVpc("vpc2");
     Configuration vpc2Cfg = Utils.newAwsConfiguration(vpc2.getId(), "awstest");
     Prefix vpc2Prefix = Prefix.parse("10.10.20.0/24");
 
@@ -126,7 +126,7 @@ public class VpcPeeringConnectionTest {
 
   @Test
   public void testCreateConnectionDifferentAccount() {
-    Vpc vpc1 = new Vpc("vpc1", ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc1 = getTestVpc("vpc1");
     Configuration vpc1Cfg = Utils.newAwsConfiguration(vpc1.getId(), "awstest");
     Prefix vpc1Prefix = Prefix.parse("10.10.10.0/24");
 

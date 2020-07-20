@@ -9,6 +9,7 @@ import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_IN
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsConfiguration.vpnExternalInterfaceName;
 import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.TAG_NAME;
 import static org.batfish.representation.aws.TransitGateway.connectVpc;
 import static org.batfish.representation.aws.TransitGateway.createBgpProcess;
@@ -115,7 +116,7 @@ public class TransitGatewayTest {
             ImmutableMap.of());
 
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment(
@@ -191,7 +192,7 @@ public class TransitGatewayTest {
     String routeTableId = "tgw-rtb";
 
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
     Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
     Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
 
@@ -254,7 +255,7 @@ public class TransitGatewayTest {
     String routeTableId2 = "tgw-rtb2";
 
     Prefix vpcPrefix = Prefix.parse("3.3.3.0/24");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of());
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix));
     Configuration vpcCfg = Utils.newAwsConfiguration(Vpc.nodeName(vpc.getId()), "aws");
     Configuration tgwCfg = Utils.newAwsConfiguration(tgwId, "aws");
 
@@ -572,7 +573,7 @@ public class TransitGatewayTest {
             ImmutableMap.of());
 
     Prefix vpcPrefix = Prefix.parse("2.2.2.2/32");
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(vpcPrefix), ImmutableMap.of()); // no prefix
+    Vpc vpc = getTestVpc("vpc", ImmutableSet.of(vpcPrefix)); // no prefix
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment(
@@ -650,7 +651,7 @@ public class TransitGatewayTest {
             "123456789012",
             ImmutableMap.of());
 
-    Vpc vpc = new Vpc("vpc", ImmutableSet.of(), ImmutableMap.of()); // no prefix
+    Vpc vpc = getTestVpc("vpc"); // no prefix
 
     TransitGatewayAttachment tgwAttachment =
         new TransitGatewayAttachment(
