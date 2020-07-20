@@ -4446,7 +4446,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_channel_group(If_channel_groupContext ctx) {
     int num = toInteger(ctx.num);
-    String name = String.format("Bundle-Ethernet%d", num);
+    String name = String.format("Bundle-Ether%d", num);
     _currentInterfaces.forEach(i -> i.setChannelGroup(name));
   }
 

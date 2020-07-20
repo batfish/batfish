@@ -33559,8 +33559,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "HundredGigabitEthernet0/6/0/8" : {
-            "name" : "HundredGigabitEthernet0/6/0/8",
+          "HundredGigE0/6/0/8" : {
+            "name" : "HundredGigE0/6/0/8",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35078,8 +35078,8 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "interfaces" : {
-          "Bundle-Ethernet101" : {
-            "name" : "Bundle-Ethernet101",
+          "Bundle-Ether101" : {
+            "name" : "Bundle-Ether101",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35111,8 +35111,8 @@
             "type" : "AGGREGATED",
             "vrf" : "default"
           },
-          "Bundle-Ethernet103" : {
-            "name" : "Bundle-Ethernet103",
+          "Bundle-Ether103" : {
+            "name" : "Bundle-Ether103",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35144,8 +35144,8 @@
             "type" : "AGGREGATED",
             "vrf" : "default"
           },
-          "Bundle-Ethernet201" : {
-            "name" : "Bundle-Ethernet201",
+          "Bundle-Ether201" : {
+            "name" : "Bundle-Ether201",
             "active" : false,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35178,8 +35178,8 @@
             "type" : "AGGREGATED",
             "vrf" : "default"
           },
-          "HundredGigabitEthernet0/2/0/0.292" : {
-            "name" : "HundredGigabitEthernet0/2/0/0.292",
+          "HundredGigE0/2/0/0.292" : {
+            "name" : "HundredGigE0/2/0/0.292",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35212,8 +35212,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "HundredGigabitEthernet0/2/0/3" : {
-            "name" : "HundredGigabitEthernet0/2/0/3",
+          "HundredGigE0/2/0/3" : {
+            "name" : "HundredGigE0/2/0/3",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35280,8 +35280,8 @@
             "type" : "LOOPBACK",
             "vrf" : "default"
           },
-          "TenGigabitEthernet0/0/0/2" : {
-            "name" : "TenGigabitEthernet0/0/0/2",
+          "TenGigE0/0/0/2" : {
+            "name" : "TenGigE0/0/0/2",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35315,8 +35315,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "TenGigabitEthernet0/0/0/4" : {
-            "name" : "TenGigabitEthernet0/0/0/4",
+          "TenGigE0/0/0/4" : {
+            "name" : "TenGigE0/0/0/4",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35350,8 +35350,8 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
-          "TenGigabitEthernet0/0/0/5" : {
-            "name" : "TenGigabitEthernet0/0/0/5",
+          "TenGigE0/0/0/5" : {
+            "name" : "TenGigE0/0/0/5",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -35498,14 +35498,14 @@
                   "0" : {
                     "injectDefaultRoute" : true,
                     "interfaces" : [
-                      "Bundle-Ethernet101",
-                      "Bundle-Ethernet103",
-                      "Bundle-Ethernet201",
-                      "HundredGigabitEthernet0/2/0/0.292",
-                      "HundredGigabitEthernet0/2/0/3",
+                      "Bundle-Ether101",
+                      "Bundle-Ether103",
+                      "Bundle-Ether201",
+                      "HundredGigE0/2/0/0.292",
+                      "HundredGigE0/2/0/3",
                       "Loopback0",
-                      "TenGigabitEthernet0/0/0/4",
-                      "TenGigabitEthernet0/0/0/5"
+                      "TenGigE0/0/0/4",
+                      "TenGigE0/0/0/5"
                     ],
                     "metricOfDefaultRoute" : 0,
                     "name" : 0,
@@ -35520,7 +35520,7 @@
                   "60" : {
                     "injectDefaultRoute" : true,
                     "interfaces" : [
-                      "TenGigabitEthernet0/0/0/2"
+                      "TenGigE0/0/0/2"
                     ],
                     "metricOfDefaultRoute" : 0,
                     "name" : 60,
@@ -35611,7 +35611,7 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "1.2.220.0/24",
-                "nextHopInterface" : "TenGigabitEthernet0/0/2/3",
+                "nextHopInterface" : "TenGigE0/0/2/3",
                 "nextHopIp" : "1.2.220.245",
                 "tag" : 64666
               },
