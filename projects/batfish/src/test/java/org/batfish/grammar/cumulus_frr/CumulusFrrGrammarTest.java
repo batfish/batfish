@@ -1867,26 +1867,26 @@ public class CumulusFrrGrammarTest {
                     .build())
         ));
 
-    // ios-listener should get a copy of 10.3.3.3/32 from frr-originator
-//    assertThat(
-//        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
-//        hasItems(
-//            equalTo(
-//                Bgpv4Route.builder()
-//                    .setNetwork(Prefix.parse("10.2.2.2/32"))
-//                    .setNextHopIp(Ip.parse("10.1.1.1"))
-//                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
-//                    .setNextHopInterface("dynamic")
-//                    .setOriginType(OriginType.IGP)
-//                    .setProtocol(RoutingProtocol.BGP)
-//                    .setSrcProtocol(RoutingProtocol.BGP)
-//                    .setCommunities(ImmutableSet.of(StandardCommunity.of(1234, 12)))
-//                    .setOriginatorIp(Ip.parse("1.1.1.1"))
-//                    .setAsPath(AsPath.ofSingletonAsSets(1L))
-//                    .setAdmin(20)
-//                    .setLocalPreference(100)
-//                    .build())
-//        ));
+     //ios-listener should get a copy of 10.2.2.2/32 from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItems(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.parse("10.2.2.2/32"))
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setNextHopInterface("dynamic")
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(1234, 12)))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())
+        ));
   }
 
   @Test

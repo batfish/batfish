@@ -1087,8 +1087,8 @@ static Set<GeneratedRoute> generateBGPPeerGeneratedRoutes(
     Sets.union(bgpVrf.getNetworks().keySet(), bgpIpv4UnicastAddressFamily.getNetworks().keySet())
         .forEach(
             prefix -> {
-              BooleanExpr weExpr = BooleanExprs.TRUE;
-              BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
+              //BooleanExpr weExpr = BooleanExprs.TRUE;
+              //BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
               Conjunction exportNetworkConditions = new Conjunction();
               exportNetworkConditions
                   .getConjuncts()
@@ -1096,7 +1096,7 @@ static Set<GeneratedRoute> generateBGPPeerGeneratedRoutes(
                       new MatchPrefixSet(
                           DestinationNetwork.instance(),
                           new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-              exportNetworkConditions.getConjuncts().add(we);
+              //exportNetworkConditions.getConjuncts().add(we);
               exportConditions.add(exportNetworkConditions);
             });
 
