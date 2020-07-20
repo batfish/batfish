@@ -101,8 +101,8 @@
     </dependency>
 
     <dependency>
-      	<groupId>dk.brics</groupId>
-		<artifactId>automaton</artifactId>
+      <groupId>dk.brics</groupId>
+      <artifactId>automaton</artifactId>
 	  </dependency>
 
     <dependency>
