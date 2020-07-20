@@ -101,14 +101,13 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-    </dependency>
+      	<groupId>dk.brics</groupId>
+		<artifactId>automaton</artifactId>
+	  </dependency>
 
     <dependency>
-      <groupId>dk.brics</groupId>
-      <artifactId>automaton</artifactId>
-      <version>1.12-1</version>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <!-- Test dependencies. -->

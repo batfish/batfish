@@ -207,6 +207,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         commStrs.add(str);
       }
     }
+
     builder.setCommunities(comms.build());
 
     return new BDDToRouteResult(builder.build());
