@@ -8,6 +8,7 @@ import static org.batfish.datamodel.NamedPort.EPHEMERAL_LOWEST;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.LoadBalancer.FINAL_TRANSFORMATION;
 import static org.batfish.representation.aws.LoadBalancer.LISTENER_FILTER_NAME;
@@ -212,12 +213,11 @@ public class LoadBalancerTest {
             .setSubnets(
                 ImmutableMap.of(
                     availabilityZone.getSubnetId(),
-                    new Subnet(
+                    getTestSubnet(
                         subnetPrefix,
                         availabilityZone.getSubnetId(),
                         _loadBalancer.getVpcId(),
-                        availabilityZone.getZoneName(),
-                        ImmutableMap.of())))
+                        availabilityZone.getZoneName())))
             .build();
     Configuration cfgNode =
         _loadBalancer.toConfigurationNode(
@@ -687,8 +687,7 @@ public class LoadBalancerTest {
 
   @Test
   public void testIsTargetInEnabledAvailabilityZone_instanceTarget() {
-    Subnet subnet =
-        new Subnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone");
     Instance instance =
         Instance.builder().setInstanceId("instance").setSubnetId(subnet.getId()).build();
     TargetHealthDescription targetHealthDescription =

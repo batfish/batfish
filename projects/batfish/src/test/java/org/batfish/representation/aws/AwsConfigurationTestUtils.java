@@ -194,6 +194,16 @@ public final class AwsConfigurationTestUtils {
     testTrace(reverseTrace, FlowDisposition.ACCEPTED, expectedReversePath);
   }
 
+  static Subnet getTestSubnet(Prefix cidrblock, String subnetId, String vpcId) {
+    return getTestSubnet(cidrblock, subnetId, vpcId, "zone");
+  }
+
+  static Subnet getTestSubnet(
+      Prefix cidrblock, String subnetId, String vpcId, String availabilityZone) {
+    return new Subnet(
+        cidrblock, "ownerId", "subnetArn", subnetId, vpcId, availabilityZone, ImmutableMap.of());
+  }
+
   static Vpc getTestVpc(String vpcId) {
     return getTestVpc(vpcId, ImmutableSet.of());
   }

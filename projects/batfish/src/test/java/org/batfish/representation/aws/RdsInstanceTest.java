@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DB_INSTANCES;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchPorts;
 import static org.batfish.representation.aws.ElasticsearchDomainTest.matchTcp;
@@ -290,7 +291,7 @@ public class RdsInstanceTest {
             ImmutableListMultimap.of("az", "subnet-1", "az", "subnet-2"),
             ImmutableList.of());
 
-    Subnet s2 = new Subnet(Prefix.parse("10.0.0.0/24"), "subnet-2", "vpc", "az", ImmutableMap.of());
+    Subnet s2 = getTestSubnet(Prefix.parse("10.0.0.0/24"), "subnet-2", "vpc");
 
     Configuration cfg =
         rds.toConfigurationNode(
