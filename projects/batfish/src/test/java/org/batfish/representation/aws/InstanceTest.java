@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceType;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INSTANCE_INTERFACE_LINK_LOCATION_INFO;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.instanceInterfaceLocationInfo;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_INSTANCES;
@@ -104,7 +105,14 @@ public class InstanceTest {
     String vpcId = "vpc";
 
     Subnet subnet =
-        new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId, "zone", ImmutableMap.of());
+        new Subnet(
+            Prefix.parse("10.10.10.10/24"),
+            "ownerId",
+            "subnetArn",
+            "subnet",
+            vpcId,
+            "zone",
+            ImmutableMap.of());
 
     NetworkInterface networkInterface =
         new NetworkInterface(
@@ -185,10 +193,8 @@ public class InstanceTest {
   public void testToConfigurationNode_multipleInterfaces() {
     String vpcId = "vpc";
 
-    Subnet subnet =
-        new Subnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId, "zone", ImmutableMap.of());
-    Subnet subnet2 =
-        new Subnet(Prefix.parse("10.10.20.10/24"), "subnet2", vpcId, "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.10/24"), "subnet", vpcId);
+    Subnet subnet2 = getTestSubnet(Prefix.parse("10.10.20.10/24"), "subnet2", vpcId);
 
     NetworkInterface networkInterface =
         new NetworkInterface(

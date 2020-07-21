@@ -133,6 +133,7 @@ public interface AwsVpcEntity {
   String JSON_KEY_STATIC_ROUTES_ONLY = "StaticRoutesOnly";
   String JSON_KEY_STATUS = "Status";
   String JSON_KEY_STATUS_MESSAGE = "StatusMessage";
+  String JSON_KEY_SUBNET_ARN = "SubnetArn";
   String JSON_KEY_SUBNET_AVAILABILITY_ZONE = "SubnetAvailabilityZone";
   String JSON_KEY_SUBNET_ID = "SubnetId";
   String JSON_KEY_SUBNET_IDS = "SubnetIds";

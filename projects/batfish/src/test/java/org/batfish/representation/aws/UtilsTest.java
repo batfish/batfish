@@ -4,6 +4,7 @@ import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.Utils.connectGatewayToVpc;
 import static org.batfish.representation.aws.Utils.createBackboneConnection;
@@ -194,8 +195,7 @@ public class UtilsTest {
             ImmutableMap.of());
 
     // invalid because subnet prefix is different from interface IP
-    Subnet subnet =
-        new Subnet(Prefix.parse("1.1.1.0/24"), "subnet", "vpc", "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("1.1.1.0/24"), "subnet", "vpc");
     Warnings warnings = new Warnings(true, true, true);
 
     Interface iface =

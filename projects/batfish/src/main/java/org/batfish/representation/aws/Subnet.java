@@ -1,13 +1,13 @@
 package org.batfish.representation.aws;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLinkLocationInfo;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.subnetInterfaceLocationInfo;
 import static org.batfish.representation.aws.Utils.addStaticRoute;
+import static org.batfish.representation.aws.Utils.checkNonNull;
 import static org.batfish.representation.aws.Utils.connect;
 import static org.batfish.representation.aws.Utils.getInterfaceLinkLocalIp;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
@@ -66,6 +66,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   @Nonnull private final Prefix _cidrBlock;
 
+  @Nonnull private final String _ownerId;
+
+  @Nonnull private final String _subnetArn;
+
   @Nonnull private final String _subnetId;
 
   @Nonnull private final Map<String, String> _tags;
@@ -79,16 +83,22 @@ public class Subnet implements AwsVpcEntity, Serializable {
   @JsonCreator
   private static Subnet create(
       @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock,
+      @Nullable @JsonProperty(JSON_KEY_OWNER_ID) String ownerId,
+      @Nullable @JsonProperty(JSON_KEY_SUBNET_ARN) String subnetArn,
       @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
       @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
       @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
       @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone) {
-    checkArgument(cidrBlock != null, "CIDR block cannot be null for subnet");
-    checkArgument(subnetId != null, "Subnet id cannot be null for subnet");
-    checkArgument(vpcId != null, "VPC id cannot be null for subnet");
-    checkArgument(availabilityZone != null, "Availability zone cannot be null for subnet");
+    checkNonNull(cidrBlock, JSON_KEY_CIDR_BLOCK, "Subnet");
+    checkNonNull(ownerId, JSON_KEY_OWNER_ID, "Subnet");
+    checkNonNull(subnetArn, JSON_KEY_SUBNET_ARN, "Subnet");
+    checkNonNull(subnetId, JSON_KEY_SUBNET_ID, "Subnet");
+    checkNonNull(vpcId, JSON_KEY_VPC_ID, "Subnet");
+    checkNonNull(availabilityZone, JSON_KEY_AVAILABILITY_ZONE, "Subnet");
     return new Subnet(
         cidrBlock,
+        ownerId,
+        subnetArn,
         subnetId,
         vpcId,
         availabilityZone,
@@ -98,11 +108,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   Subnet(
       Prefix cidrBlock,
+      String ownerId,
+      String subnetArn,
       String subnetId,
       String vpcId,
       String availabilityZone,
       Map<String, String> tags) {
     _cidrBlock = cidrBlock;
+    _ownerId = ownerId;
+    _subnetArn = subnetArn;
     _subnetId = subnetId;
     _vpcId = vpcId;
     _availabilityZone = availabilityZone;
@@ -178,6 +192,16 @@ public class Subnet implements AwsVpcEntity, Serializable {
   @Nonnull
   public Prefix getCidrBlock() {
     return _cidrBlock;
+  }
+
+  @Nonnull
+  public String getOwnerId() {
+    return _ownerId;
+  }
+
+  @Nonnull
+  public String getSubnetArn() {
+    return _subnetArn;
   }
 
   @Override
@@ -659,6 +683,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
     Subnet subnet = (Subnet) o;
     return _lastGeneratedIp == subnet._lastGeneratedIp
         && Objects.equals(_cidrBlock, subnet._cidrBlock)
+        && Objects.equals(_ownerId, subnet._ownerId)
+        && Objects.equals(_subnetArn, subnet._subnetArn)
         && Objects.equals(_subnetId, subnet._subnetId)
         && Objects.equals(_vpcId, subnet._vpcId)
         && Objects.equals(_availabilityZone, subnet._availabilityZone)
@@ -669,7 +695,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _cidrBlock, _subnetId, _vpcId, _availabilityZone, _allocatedIps, _lastGeneratedIp, _tags);
+        _cidrBlock,
+        _ownerId,
+        _subnetArn,
+        _subnetId,
+        _vpcId,
+        _availabilityZone,
+        _allocatedIps,
+        _lastGeneratedIp,
+        _tags);
   }
 
   public static String nodeName(String subnetId) {

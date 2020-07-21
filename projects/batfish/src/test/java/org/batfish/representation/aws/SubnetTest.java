@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasFirewallSessio
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrfName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SUBNETS;
 import static org.batfish.representation.aws.NetworkAcl.getAclName;
@@ -44,6 +45,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -99,10 +101,37 @@ public class SubnetTest {
             ImmutableList.of(
                 new Subnet(
                     Prefix.parse("172.31.0.0/20"),
+                    "028403472736",
+                    "arn:aws:ec2:us-east-1:028403472736:subnet/subnet-1",
                     "subnet-1",
                     "vpc-1",
                     "us-west-2c",
                     ImmutableMap.of()))));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            new Subnet(Prefix.ZERO, "owner", "arn", "id", "vpc", "zone", ImmutableMap.of()),
+            new Subnet(Prefix.ZERO, "owner", "arn", "id", "vpc", "zone", ImmutableMap.of()))
+        .addEqualityGroup(
+            new Subnet(
+                Prefix.parse("1.1.1.1/32"), "owner", "arn", "id", "vpc", "zone", ImmutableMap.of()))
+        .addEqualityGroup(
+            new Subnet(Prefix.ZERO, "other", "arn", "id", "vpc", "zone", ImmutableMap.of()))
+        .addEqualityGroup(
+            new Subnet(Prefix.ZERO, "owner", "other", "id", "vpc", "zone", ImmutableMap.of()))
+        .addEqualityGroup(
+            new Subnet(Prefix.ZERO, "owner", "arn", "other", "vpc", "zone", ImmutableMap.of()))
+        .addEqualityGroup(
+            new Subnet(Prefix.ZERO, "owner", "arn", "id", "other", "zone", ImmutableMap.of()))
+        .addEqualityGroup(
+            new Subnet(Prefix.ZERO, "owner", "arn", "id", "vpc", "other", ImmutableMap.of()))
+        .addEqualityGroup(
+            new Subnet(
+                Prefix.ZERO, "owner", "arn", "id", "vpc", "zone", ImmutableMap.of("tag", "value")))
+        .testEquals();
   }
 
   @Test
@@ -133,7 +162,7 @@ public class SubnetTest {
             null,
             ImmutableMap.of());
 
-    Subnet subnet = new Subnet(privatePrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(privatePrefix, "subnet", vpc.getId());
 
     Region region =
         Region.builder("region")
@@ -215,8 +244,7 @@ public class SubnetTest {
   @Test
   public void testToConfigurationNodePublic() {
     Vpc vpc = getTestVpc("vpc");
-    Subnet subnet =
-        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId());
     InternetGateway igw =
         new InternetGateway("igw", ImmutableList.of(vpc.getId()), ImmutableMap.of());
 
@@ -261,8 +289,7 @@ public class SubnetTest {
         .put(connectionVrf, Vrf.builder().setName(connectionVrf).setOwner(vpcCfg).build());
 
     Prefix subnetPrefix = Prefix.parse("1.1.1.1/32");
-    Subnet subnet =
-        new Subnet(subnetPrefix, "subnet", vpcCfg.getHostname(), "az", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(subnetPrefix, "subnet", vpcCfg.getHostname());
 
     ConvertedConfiguration awsConfiguration = new ConvertedConfiguration(ImmutableList.of(vpcCfg));
 
@@ -329,8 +356,7 @@ public class SubnetTest {
     Vpc vpc = getTestVpc("vpc");
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
-    Subnet subnet =
-        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId());
     Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
     InternetGateway igw =
@@ -377,7 +403,7 @@ public class SubnetTest {
     Prefix remotePrefix = Prefix.parse("192.168.0.0/16");
     String connectionId = "peering";
 
-    Subnet subnet = new Subnet(subnetPrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(subnetPrefix, "subnet", vpc.getId());
     Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
     Region region = Region.builder("region").setVpcs(ImmutableMap.of(vpc.getId(), vpc)).build();
@@ -415,7 +441,7 @@ public class SubnetTest {
     Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
     Prefix remotePrefix = Prefix.parse("192.168.0.0/16");
 
-    Subnet subnet = new Subnet(subnetPrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(subnetPrefix, "subnet", vpc.getId());
     Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
     TransitGatewayVpcAttachment tgwVpcAttachment =
@@ -467,12 +493,11 @@ public class SubnetTest {
     Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
     Prefix remotePrefix = Prefix.parse("192.168.0.0/16");
 
-    Subnet subnet = new Subnet(subnetPrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(subnetPrefix, "subnet", vpc.getId(), "zone");
     Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
     Subnet otherSubnet =
-        new Subnet(
-            Prefix.parse("0.0.0.0/0"), "otherSubnet", vpc.getId(), "otherZone", ImmutableMap.of());
+        getTestSubnet(Prefix.parse("0.0.0.0/0"), "otherSubnet", vpc.getId(), "otherZone");
 
     TransitGatewayVpcAttachment tgwVpcAttachment =
         new TransitGatewayVpcAttachment(
@@ -506,8 +531,7 @@ public class SubnetTest {
   public void testProcessRoutePrefixList() {
     Configuration vpcCfg = Utils.newAwsConfiguration("vpc", "awstest");
 
-    Subnet subnet =
-        new Subnet(Prefix.parse("10.10.10.0/24"), "subnet", "vpc", "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", "vpc");
     Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
 
     List<Prefix> prefixes =
@@ -553,7 +577,7 @@ public class SubnetTest {
     Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
 
     Prefix subnetPrefix = Prefix.parse("10.10.10.0/24");
-    Subnet subnet = new Subnet(subnetPrefix, "subnet", vpc.getId(), "zone", ImmutableMap.of());
+    Subnet subnet = getTestSubnet(subnetPrefix, "subnet", vpc.getId());
 
     Prefix outDeniedPfx = Prefix.parse("192.168.0.0/16");
     Prefix inDeniedPfx = Prefix.parse("192.169.0.0/16");
@@ -713,12 +737,11 @@ public class SubnetTest {
     // Create instance target not in subnet
     String otherSubnetId = "otherSubnetId";
     Subnet otherSubnet =
-        new Subnet(
+        getTestSubnet(
             Prefix.parse("1.1.1.0/24"),
             otherSubnetId,
             subnet.getVpcId(),
-            subnet.getAvailabilityZone(),
-            ImmutableMap.of());
+            subnet.getAvailabilityZone());
     String instanceId = "instanceId";
     Ip instanceIp = Ip.parse("1.1.1.1");
     Instance instanceInOtherSubnet =
