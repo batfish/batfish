@@ -6902,6 +6902,11 @@ MAXIMUM_ACCEPTED_ROUTES
    'maximum-accepted-routes'
 ;
 
+MAXIMUM_ACTIVE
+:
+   'maximum-active'
+;
+
 MAXIMUM_HOPS
 :
    'maximum-hops'
@@ -7185,6 +7190,11 @@ MINIMAL
 MINIMUM
 :
    'minimum'
+;
+
+MINIMUM_ACTIVE
+:
+   'minimum-active'
 ;
 
 MINIMUM_INTERVAL

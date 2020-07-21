@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname gh6018
+!
+interface TenGigE0/0/0/24/0
+  bundle id 5 mode active
+  load-interval 30
+!
+interface Bundle-Ether5
+  mtu 1514
+  lacp mode active
+  bundle minimum-active links 1
+  load-interval 30
+!

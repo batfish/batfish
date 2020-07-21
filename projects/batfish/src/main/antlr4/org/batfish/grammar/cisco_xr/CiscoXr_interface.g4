@@ -70,6 +70,29 @@ if_bfd_template
   TEMPLATE name = variable_permissive NEWLINE
 ;
 
+if_bundle
+:
+  BUNDLE
+  (
+    if_bundle_id
+    | if_bundle_null
+  )
+;
+
+if_bundle_id
+:
+  ID id = DEC MODE (ACTIVE | ON | PASSIVE) NEWLINE
+;
+
+if_bundle_null
+:
+  (
+    MAXIMUM_ACTIVE
+    | MINIMUM_ACTIVE
+    | PORT_PRIORITY
+  ) null_rest_of_line
+;
+
 if_channel_group
 :
    CHANNEL_GROUP num = DEC
@@ -617,7 +640,6 @@ if_null_block
       | BEACON
       | BGP_POLICY
       | BRIDGE_GROUP
-      | BUNDLE
       | CABLE
       | CABLELENGTH
       | CARRIER_DELAY
@@ -1621,6 +1643,7 @@ if_inner
    if_autostate
    | if_bandwidth
    | if_bfd
+   | if_bundle
    | if_channel_group
    | if_crypto_map
    | if_default_gw
