@@ -30,8 +30,6 @@ public final class MatchCommunities extends BooleanExpr {
   public @Nonnull Result evaluate(Environment environment) {
     CommunityContext ctx = CommunityContext.fromEnvironment(environment);
     CommunitySet communitySet = _communitySetExpr.accept(CommunitySetExprEvaluator.instance(), ctx);
-    System.out.println(ctx.getInputCommunitySet());
-    System.out.println(ctx.getCommunityMatchExprEvaluator());
 
     boolean ret =
         _communitySetMatchExpr.accept(ctx.getCommunitySetMatchExprEvaluator(), communitySet);

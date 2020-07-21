@@ -34,4 +34,7 @@ route-map SET_COMM permit 10
 route-map PEER_POLICY permit 20
  match community TEST_COMM
 !
+route-map PEER_POLICY permit 30
+ match ip address prefix-list TEST_PREFIX_LIST
+!
 end

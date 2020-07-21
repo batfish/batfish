@@ -60,10 +60,6 @@ class RouteMapConvertor {
 
     ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
     for (RouteMapEntry currentEntry : _routeMap.getEntries().values()) {
-//      if (currentRoutingPolicyName.equals("PEER_POLICY")) {
-//        System.out.println(currentEntry.getMatchCommunity() != null ? currentEntry.getMatchCommunity().getNames() : null);
-//      }
-
       int currentSequence = currentEntry.getNumber();
       if (_continueTargets.contains(currentSequence)) {
         // finalize the routing policy consisting of queued statements up to this point
@@ -88,8 +84,6 @@ class RouteMapConvertor {
         .setOwner(_c)
         .setStatements(currentRoutingPolicyStatements.build())
         .build();
-
-    //System.out.println(_c.getRoutingPolicies().get(routeMapName).getStatements());
     return _c.getRoutingPolicies().get(_routeMap.getName());
   }
 

@@ -1759,23 +1759,18 @@ public class CumulusFrrGrammarTest {
   public void testBgpNetworkStatement_behavior() throws IOException {
     /*
      There are two nodes in the topology arranged in a line.
-       - frr-originator -- ios-listener
+       - frr-originator -- frr-listener
 
      frr-originator has the network statements and a collection of route-maps
 
      frr-originator should:
-     1) Allow 10.2.2.2/32 and 10.3.3.3/32 in its bgp table with community 1234:12.
+     1) Allow 10.2.2.2/32 and 10.3.3.3/32 in its bgp table with community 12345:123.
      2) Allow 10.4.4.4/32 into its table with default attributes
-     3) Re-advertise 10.3.3.3/32 to ios-listener
-     4) Deny 10.4.4.4/32 and 10.3.3.3/32
+     3) Re-advertise 10.3.3.3/32 and 10.2.2.2/32 to frr-listener
+     4) Do not re-advertise 10.4.4.4/32
 
-     ios-listener should only have 10.2.2.2/32 in its BGP table
+     frr-listener should have 10.2.2.2/32 and 10.3.3.3/32 in its BGP table
 
-     NOTE: Technically, according to true FRR functionality, frr-originator should also advertise 10.2.2.2/32
-     However, Batfish isn't capable of doing a two-pass on route-maps.  Peer export happens prior to
-     the application of attribute maps to network statements, which is the key behavioral problem.
-     We need Batfish to apply attributes to network statements PRIOR to evaluation of the peer export policy.
-     Given the potential scope of such a change, we are punting on this for now.
     */
 
     String snapshotName = "network-statement";
@@ -1801,7 +1796,7 @@ public class CumulusFrrGrammarTest {
     String networkPolicyName3 =
         computeBgpNetworkGenerationPolicyName(true, "default", "10.4.4.4/32");
 
-    // frr-originator should have only 2.2.2.2/32 as a generated route
+    // frr-originator should have 10.2.2.2/32, 10.3.3.3/32, and 10.4.4.4/32 as a generated route
         assertThat(
             dp.getRibs().get("frr-originator").get(DEFAULT_VRF_NAME).getRoutes(),
             hasItem(
@@ -1810,9 +1805,10 @@ public class CumulusFrrGrammarTest {
                         .setNetwork(Prefix.parse("10.2.2.2/32"))
                         .setNextHopIp(null)
                         .setNextHopInterface(("dynamic"))
-                        .setAttributePolicy("TEST_PERMIT_RM")
+                        .setAttributePolicy("SET_COMM")
                         .setGenerationPolicy(networkPolicyName1)
                         .setDiscard(false)
+                        .setNonForwarding(true)
                         .build())
             )
             );
@@ -1824,9 +1820,10 @@ public class CumulusFrrGrammarTest {
                     .setNetwork(Prefix.parse("10.3.3.3/32"))
                     .setNextHopIp(null)
                     .setNextHopInterface(("dynamic"))
-                    .setAttributePolicy("TEST_PERMIT_RM")
+                    .setAttributePolicy("SET_COMM")
                     .setGenerationPolicy(networkPolicyName2)
                     .setDiscard(false)
+                    .setNonForwarding(true)
                     .build())
         )
     );
@@ -1842,24 +1839,51 @@ public class CumulusFrrGrammarTest {
                     .setAttributePolicy(null)
                     .setGenerationPolicy(networkPolicyName3)
                     .setDiscard(false)
+                    .setNonForwarding(true)
                     .build())
         )
     );
 
-    // ios-listener should get a copy of 10.3.3.3/32 from frr-originator
+    //FRR-Originator should have 3 BGP routes - the 3 network statements.
+    assertThat(
+        dp.getBgpRoutes().rowMap().get("frr-originator").get(DEFAULT_VRF_NAME).size(),
+        equalTo(3)
+    );
+
+    assertThat(
+        dp.getBgpRoutes().rowMap().get("frr-originator").get(DEFAULT_VRF_NAME),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.parse("10.2.2.2/32"))
+                    .setNextHopIp(Ip.parse("0.0.0.0"))
+                    .setReceivedFromIp(Ip.parse("0.0.0.0"))
+                    .setNextHopInterface("dynamic")
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.AGGREGATE)
+                    .setSrcProtocol(RoutingProtocol.AGGREGATE)
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(12345, 123)))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setAdmin(0)
+                    .setLocalPreference(100)
+                    .setNonRouting(true)
+                    .build())
+    ));
+
+    // frr-originator should have all 3 network statements in its BGP table.
     assertThat(
         dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
-        hasItems(
+        hasItem(
             equalTo(
                 Bgpv4Route.builder()
                     .setNetwork(Prefix.parse("10.3.3.3/32"))
                     .setNextHopIp(Ip.parse("10.1.1.1"))
                     .setReceivedFromIp(Ip.parse("10.1.1.1"))
                     .setNextHopInterface("dynamic")
-                    .setOriginType(OriginType.IGP)
+                    .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)
                     .setSrcProtocol(RoutingProtocol.BGP)
-                    .setCommunities(ImmutableSet.of(StandardCommunity.of(1234, 12)))
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(12345, 123)))
                     .setOriginatorIp(Ip.parse("1.1.1.1"))
                     .setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setAdmin(20)
@@ -1867,73 +1891,94 @@ public class CumulusFrrGrammarTest {
                     .build())
         ));
 
-     //ios-listener should get a copy of 10.2.2.2/32 from frr-originator
     assertThat(
         dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
-        hasItems(
+        hasItem(
             equalTo(
                 Bgpv4Route.builder()
                     .setNetwork(Prefix.parse("10.2.2.2/32"))
                     .setNextHopIp(Ip.parse("10.1.1.1"))
                     .setReceivedFromIp(Ip.parse("10.1.1.1"))
                     .setNextHopInterface("dynamic")
-                    .setOriginType(OriginType.IGP)
+                    .setOriginType(OriginType.INCOMPLETE)
                     .setProtocol(RoutingProtocol.BGP)
                     .setSrcProtocol(RoutingProtocol.BGP)
-                    .setCommunities(ImmutableSet.of(StandardCommunity.of(1234, 12)))
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(12345, 123)))
                     .setOriginatorIp(Ip.parse("1.1.1.1"))
                     .setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setAdmin(20)
                     .setLocalPreference(100)
                     .build())
         ));
+
+    assertThat(
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.parse("10.2.2.2/32"))
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setNextHopInterface("dynamic")
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(12345, 123)))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())
+        ));
+
+
+    // frr-listener should get a copy of 10.3.3.3/32 from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.parse("10.3.3.3/32"))
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setNextHopInterface("dynamic")
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(12345, 123)))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())
+        ));
+
+     //frr-listener should get a copy of 10.2.2.2/32 from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.parse("10.2.2.2/32"))
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setNextHopInterface("dynamic")
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(12345, 123)))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .build())
+        ));
+
+
+    //Only two routes in the BGP table, the two asserted above.
+    assertThat(
+        dp.getBgpRoutes().rowMap().get("frr-listener").get(DEFAULT_VRF_NAME).size(),
+        equalTo(2)
+        );
   }
-
-  @Test
-  public void testBgpCommunityMatch_behavior() throws IOException {
-    /*
-     There are two nodes in the topology arranged in a line.
-       - frr-originator -- ios-listener
-
-     frr-originator has the network statements and a collection of route-maps
-
-     frr-originator should:
-     1) Allow 10.2.2.2/32 and 10.3.3.3/32 in its bgp table with community 1234:12.
-     2) Allow 10.4.4.4/32 into its table with default attributes
-     3) Re-advertise 10.3.3.3/32 to ios-listener
-     4) Deny 10.4.4.4/32 and 10.3.3.3/32
-
-     ios-listener should only have 10.2.2.2/32 in its BGP table
-
-     NOTE: Technically, according to true FRR functionality, frr-originator should also advertise 10.2.2.2/32
-     However, Batfish isn't capable of doing a two-pass on route-maps.  Peer export happens prior to
-     the application of attribute maps to network statements, which is the key behavioral problem.
-     We need Batfish to apply attributes to network statements PRIOR to evaluation of the peer export policy.
-     Given the potential scope of such a change, we are punting on this for now.
-    */
-
-    String snapshotName = "community-match";
-    List<String> configurationNames =
-        ImmutableList.of("frr-originator", "frr-listener", "frr-re-advertise");
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
-                .build(),
-            _folder);
-
-    NetworkSnapshot snapshot = batfish.getSnapshot();
-    batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot);
-
-    String networkPolicyName1 =
-        computeBgpNetworkGenerationPolicyName(true, "default", "10.2.2.2/32");
-
-    String networkPolicyName2 =
-        computeBgpNetworkGenerationPolicyName(true, "default", "10.3.3.3/32");
-
-    String networkPolicyName3 =
-        computeBgpNetworkGenerationPolicyName(true, "default", "10.4.4.4/32");
-  }
-
 }

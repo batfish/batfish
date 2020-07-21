@@ -856,7 +856,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             exportCandidate,
             addressFamily.getType());
 
-    System.out.println(exportCandidate);
     if (transformedOutgoingRouteBuilder == null) {
       // This route could not be exported for core bgp protocol reasons
       return Optional.empty();
@@ -869,8 +868,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getTailIp();
-    //System.out.println(exportPolicy.getStatements());
-    System.out.println(shouldExport);
 
     if (!shouldExport) {
       // This route could not be exported due to export policy

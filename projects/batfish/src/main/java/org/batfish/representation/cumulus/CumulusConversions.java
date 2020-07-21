@@ -318,6 +318,7 @@ public final class CumulusConversions {
                   .setGenerationPolicy(
                       computeBgpNetworkGenerationPolicyName(
                           true, vrf.getName(), network.toString()))
+                  .setNonForwarding(true)
                   .setDiscard(false);
 
           // Set attribute policy if it exists
@@ -589,6 +590,7 @@ public final class CumulusConversions {
       Map<String, RouteMap> routeMaps) {
     Set<GeneratedRoute> generatedRoutes = new HashSet<>();
 
+    //return generatedRoutes;
     // Make sure we actually have ipv4 bgp
     if (bgpVrf.isIpv4UnicastActive()) {
       BgpIpv4UnicastAddressFamily ipv4Unicast = firstNonNull(bgpVrf.getIpv4Unicast(),
@@ -605,6 +607,8 @@ public final class CumulusConversions {
             .setGenerationPolicy(
                 computeBgpNetworkGenerationPolicyName(
                     true, bgpVrf.getVrfName(), bgpNetwork.getNetwork().toString()))
+            .setNonForwarding(true)
+            .setNonRouting(true)
             .setDiscard(false);
 
         if (networkRoutingPolicyName != null) {
@@ -776,7 +780,6 @@ static Set<GeneratedRoute> generateBGPPeerGeneratedRoutes(
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
     List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
 
-    //System.out.println(peerExportConditions);
     peerExportPolicy.addStatement(
         new If(
             "peer-export policy main conditional: exitAccept if true / exitReject if false",
