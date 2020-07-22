@@ -11,16 +11,14 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,7 +74,7 @@ public class CommunityList extends CommunitySetExpr {
 
   // Derived properties, computed lazily at runtime.
   @Nullable private Boolean _dynamic;
-  @Nullable private SortedSet<Community> _literalCommunities;
+  @Nullable private Set<Community> _literalCommunities;
   @Nullable private Boolean _reducible;
 
   /**
@@ -106,16 +104,16 @@ public class CommunityList extends CommunitySetExpr {
 
   @Override
   @Nonnull
-  public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment)
+  public Set<Community> asLiteralCommunities(@Nonnull Environment environment)
       throws UnsupportedOperationException {
-    SortedSet<Community> literal = _literalCommunities;
+    Set<Community> literal = _literalCommunities;
     if (literal == null) {
       literal =
           _lines.stream()
               .map(CommunityListLine::getMatchCondition)
               .map(lineMatchCondition -> lineMatchCondition.asLiteralCommunities(environment))
               .flatMap(Collection::stream)
-              .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+              .collect(ImmutableSet.toImmutableSet());
       _literalCommunities = literal;
     }
     return literal;

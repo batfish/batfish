@@ -1,11 +1,9 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.community.Community;
@@ -28,8 +26,7 @@ public abstract class CommunitySetExpr implements Serializable {
    * @throws UnsupportedOperationException if this {@link CommunitySetExpr} does not represent a set
    *     of literal communities.
    */
-  public abstract @Nonnull SortedSet<Community> asLiteralCommunities(
-      @Nonnull Environment environment);
+  public abstract @Nonnull Set<Community> asLiteralCommunities(@Nonnull Environment environment);
 
   /**
    * Whether membership of a single community in this {@link CommunitySetExpr} cannot be statically
@@ -73,11 +70,11 @@ public abstract class CommunitySetExpr implements Serializable {
    * Returns the subset of the given {@code communityCandidates} matched by this {@link
    * CommunitySetExpr} under the provided {@code environment}.
    */
-  public SortedSet<Community> matchedCommunities(
+  public Set<Community> matchedCommunities(
       @Nullable Environment environment, Set<Community> communityCandidates) {
     return communityCandidates.stream()
         .filter(communityCandidate -> matchCommunity(environment, communityCandidate))
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**

@@ -5,7 +5,6 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -38,7 +37,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
 
   @Nonnull
   @Override
-  public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
+  public Set<Community> asLiteralCommunities(@Nonnull Environment environment) {
     return resolve(environment).asLiteralCommunities(environment);
   }
 
@@ -84,7 +83,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
   }
 
   @Override
-  public SortedSet<Community> matchedCommunities(
+  public Set<Community> matchedCommunities(
       Environment environment, Set<Community> communityCandidates) {
     return resolve(environment).matchedCommunities(environment, communityCandidates);
   }
