@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -53,8 +52,7 @@ public final class DeleteCommunity extends Statement {
     BgpRoute.Builder<?, ?> outputRouteBuilder =
         (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
     Set<Community> currentCommunities = outputRouteBuilder.getCommunities();
-    SortedSet<Community> matchingCommunities =
-        _expr.matchedCommunities(environment, currentCommunities);
+    Set<Community> matchingCommunities = _expr.matchedCommunities(environment, currentCommunities);
     outputRouteBuilder.removeCommunities(matchingCommunities);
     Result result = new Result();
     return result;

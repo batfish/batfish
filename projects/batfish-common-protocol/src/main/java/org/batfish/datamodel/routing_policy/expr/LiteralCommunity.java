@@ -5,9 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -53,8 +52,8 @@ public class LiteralCommunity extends CommunitySetExpr {
    */
   @Nonnull
   @Override
-  public SortedSet<Community> asLiteralCommunities(Environment environment) {
-    return ImmutableSortedSet.of(_community);
+  public Set<Community> asLiteralCommunities(Environment environment) {
+    return ImmutableSet.of(_community);
   }
 
   @Override
