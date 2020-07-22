@@ -39,10 +39,7 @@ public abstract class Community implements Serializable, Comparable<Community> {
           String.format("Invalid value for BGP community: %s", node));
     }
     String str = node.textValue();
-    return fromString(str);
-  }
-
-  public static Community fromString(String str) {
+    // Try each possible type
     switch (str.split(":").length) {
       case 2:
         return StandardCommunity.parse(str);

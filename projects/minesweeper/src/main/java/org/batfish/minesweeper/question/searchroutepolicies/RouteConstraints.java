@@ -26,7 +26,7 @@ public class RouteConstraints {
   @Nonnull private final PrefixSpace _prefixSpace;
   // if this flag is set, then the prefix must be outside of the above space
   private final boolean _complementPrefixSpace;
-  // the announcement's local prefix must be within this range
+  // the announcement's local preference must be within this range
   @Nonnull private final IntegerSpace _localPref;
   // the announcement's MED must be within this range
   @Nonnull private final IntegerSpace _med;

@@ -370,6 +370,57 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testDeleteSetCommunityConstraint() {
+    _policyBuilder.setStatements(
+        ImmutableList.of(
+            new DeleteCommunity(new RegexCommunitySet("^[12]:40$")),
+            new SetCommunity(new LiteralCommunity(StandardCommunity.parse("2:40"))),
+            new StaticStatement(Statements.ExitAccept)));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            RouteConstraints.builder()
+                .setCommunities(CommunitySet.of(StandardCommunity.of(1, 40)))
+                .build(),
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setCommunities(ImmutableSet.of(StandardCommunity.of(1, 40)))
+            .build();
+
+    BgpRoute outputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setCommunities(ImmutableSet.of(StandardCommunity.of(2, 40)))
+            .build();
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE))));
+  }
+
+  @Test
   public void testSolvableConstraints() {
     _policyBuilder.addStatement(
         new If(

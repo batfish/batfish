@@ -45,6 +45,9 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
@@ -109,25 +112,47 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         routeConstraintsToBDD(_inputConstraints, new BDDRoute(_g.getAllCommunities()));
   }
 
+  private static Optional<Community> stringToCommunity(String str) {
+    Optional<StandardCommunity> scomm = StandardCommunity.tryParse(str);
+    if (scomm.isPresent()) {
+      return Optional.of(scomm.get());
+    }
+    Optional<ExtendedCommunity> ecomm = ExtendedCommunity.tryParse(str);
+    if (ecomm.isPresent()) {
+      return Optional.of(ecomm.get());
+    }
+    Optional<LargeCommunity> lcomm = LargeCommunity.tryParse(str);
+    if (lcomm.isPresent()) {
+      return Optional.of(lcomm.get());
+    }
+    return Optional.empty();
+  }
+
   private Automaton communityVarToAutomaton(CommunityVar cvar) {
     String regex = cvar.getRegex();
     if (cvar.getType() != EXACT) {
       // strip the leading ^ and trailing $
-      regex = regex.substring(1, regex.length() - 1);
+      if (regex.startsWith("^")) {
+        regex = regex.substring(1);
+      }
+      if (regex.endsWith("$")) {
+        regex = regex.substring(0, regex.length() - 1);
+      }
     }
     return new RegExp(regex).toAutomaton();
   }
 
   /**
-   * Convert a bdd representing a single assignment to the variables from a BDDRoute, produce the
-   * corresponding route.
+   * Given a bdd representing a single assignment to the variables from a BDDRoute, produce either a
+   * concrete route or a set of variable assignments that contradict one another. The latter can
+   * happen because the symbolic route analysis treats community regexes (mostly) as a black box, so
+   * a given assignment may represent positive and negative constraints on community regexes that
+   * are infeasible.
    *
-   * @param allConstraints the set of constraints that came from the route policy and user
-   *     constraints
    * @param satAssignment the satisfying assignment to the constraints
    * @return the corresponding route
    */
-  private BDDToRouteResult bddToRoute(BDD allConstraints, BDD satAssignment, BDDRoute r) {
+  private BDDToRouteResult satAssignmentToRoute(BDD satAssignment, BDDRoute r) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
@@ -145,67 +170,69 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     // produce the set of communities for the given route constraints
 
-    // first figure out which communities must (not) exist
+    // first figure out which communities are (not) in the assignment
     Map<CommunityVar, BDD> communities = r.getCommunities();
-    Set<CommunityVar> mustExistLiterals = new TreeSet<>();
-    Set<CommunityVar> mustExistRegexes = new TreeSet<>();
-    Set<CommunityVar> mustNotExist = new TreeSet<>();
+    Set<CommunityVar> positiveCommunities = new TreeSet<>();
+    Set<CommunityVar> negativeCommunities = new TreeSet<>();
     for (Entry<CommunityVar, BDD> commEntry : communities.entrySet()) {
       CommunityVar commVar = commEntry.getKey();
       BDD commBDD = commEntry.getValue();
-      if (!commBDD.and(satAssignment).isZero()) {
-        // this community is in the given assignment
-        if (commVar.getLiteralValue() != null) {
-          mustExistLiterals.add(commVar);
-        } else {
-          mustExistRegexes.add(commVar);
-        }
+      if (commBDD.andSat(satAssignment)) {
+        // this community should exist according to the given model
+        positiveCommunities.add(commVar);
       } else {
-        // try flipping this community from 0 to 1 in the given assignment and
-        // see if it's still a valid model of the constraints
-        BDD newAssignment = satAssignment.exist(commBDD).and(commBDD);
-        if (!newAssignment.imp(allConstraints).isOne()) {
-          mustNotExist.add(commVar);
-        }
+        // this community should not exist according to the given model
+        negativeCommunities.add(commVar);
       }
     }
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
     Set<String> commStrs = new TreeSet<>();
-    // add all must-exist literals to the route
-    for (CommunityVar cvar : mustExistLiterals) {
-      Community lit = cvar.getLiteralValue();
-      comms.add(lit);
-      commStrs.add(lit.toString());
-    }
 
-    // create an automaton representing all of the communities that are disallowed
+    // create an automaton representing all of the communities that are not in this model
     Automaton disallowed = new Automaton();
-    for (CommunityVar mustNot : mustNotExist) {
-      disallowed = disallowed.union(communityVarToAutomaton(mustNot));
+    for (CommunityVar negvar : negativeCommunities) {
+      disallowed = disallowed.union(communityVarToAutomaton(negvar));
     }
 
-    for (CommunityVar cvar : mustExistRegexes) {
-      final Automaton automaton = communityVarToAutomaton(cvar).minus(disallowed);
+    //
+    for (CommunityVar cvar : positiveCommunities) {
+      Automaton cvarAutomaton = communityVarToAutomaton(cvar);
       Community example;
-      if (automaton.isEmpty()) {
-        // the regex constraints are not satisfiable
-        // compute the BDD corresponding to these constraints
-        BDD disallowedConstraints = satAssignment.getFactory().zero();
-        for (CommunityVar mustNot : mustNotExist) {
-          disallowedConstraints = disallowedConstraints.or(communities.get(mustNot));
-        }
-        return new BDDToRouteResult(communities.get(cvar).diff(disallowedConstraints));
+      Community lit = cvar.getLiteralValue();
+      if (lit != null) {
+        // since literals are tracked precisely by the symbolic analysis, we know that this
+        // literal must exist in the route
+        example = lit;
       } else {
-        // check if any existing community in the route already satisfies this regex
-        if (commStrs.stream().anyMatch(automaton::run)) {
-          continue;
+        // this is a regex, so we need to take into account the other regexes that are not
+        // in the model, to see if there is a contradiction
+        Automaton automaton = cvarAutomaton.minus(disallowed);
+        if (automaton.isEmpty()) {
+          // the regex constraints are not satisfiable
+          // compute the BDD corresponding to these constraints
+          BDD disallowedConstraints = satAssignment.getFactory().zero();
+          for (CommunityVar mustNot : negativeCommunities) {
+            disallowedConstraints = disallowedConstraints.or(communities.get(mustNot));
+          }
+          return new BDDToRouteResult(communities.get(cvar).diff(disallowedConstraints));
+        } else {
+          // check if any existing community in the route already satisfies this regex
+          if (commStrs.stream().anyMatch(automaton::run)) {
+            continue;
+          }
+          String str = automaton.getShortestExample(true);
+          Optional<Community> exampleOpt = stringToCommunity(str);
+          if (exampleOpt.isPresent()) {
+            example = exampleOpt.get();
+          } else {
+            throw new BatfishException(
+                "Failed to produce a valid community matching regex " + cvar.getRegex());
+          }
         }
-        String str = automaton.getShortestExample(true);
-        example = Community.fromString(str);
-        comms.add(example);
-        commStrs.add(str);
       }
+      comms.add(example);
+      commStrs.add(example.toString());
     }
 
     builder.setCommunities(comms.build());
@@ -219,8 +246,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       return Optional.empty();
     } else {
       BDD model = constraints.fullSatOne();
-      BDDToRouteResult inResult =
-          bddToRoute(constraints, model, new BDDRoute(_g.getAllCommunities()));
+      BDDToRouteResult inResult = satAssignmentToRoute(model, new BDDRoute(_g.getAllCommunities()));
       if (_action == Action.DENY) {
         return Optional.of(
             new Result(
@@ -232,7 +258,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 _action,
                 null));
       } else {
-        BDDToRouteResult outResult = bddToRoute(constraints, model, outputRoute);
+        BDDToRouteResult outResult = satAssignmentToRoute(model, outputRoute);
         if (outResult.getRoute() == null) {
           // we couldn't solve the community regex constraints in the current model, so
           // try to find another one.
