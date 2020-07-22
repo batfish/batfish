@@ -371,12 +371,12 @@ public class CumulusConcatenatedGrammarTest {
     Bgpv4Route outputRoute3 = processRouteIn(rp3, inRoute);
     assertThat(
         outputRoute1.getCommunities(),
-        contains(
+        containsInAnyOrder(
             StandardCommunity.of(2, 2), StandardCommunity.of(3, 3), StandardCommunity.of(4, 4)));
     assertThat(outputRoute2.getCommunities(), contains(StandardCommunity.of(1, 1)));
     assertThat(
         outputRoute3.getCommunities(),
-        contains(
+        containsInAnyOrder(
             StandardCommunity.of(2, 2), StandardCommunity.of(3, 3), StandardCommunity.of(4, 4)));
   }
 
