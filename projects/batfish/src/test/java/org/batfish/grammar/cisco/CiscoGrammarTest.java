@@ -242,6 +242,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
@@ -4118,13 +4119,13 @@ public final class CiscoGrammarTest {
 
   private static Community communityListToCommunity(
       Map<String, CommunityList> communityLists, String communityName) {
-    return communityLists
-        .get(communityName)
-        .getLines()
-        .get(0)
-        .getMatchCondition()
-        .asLiteralCommunities(null)
-        .first();
+    return Iterables.getOnlyElement(
+        communityLists
+            .get(communityName)
+            .getLines()
+            .get(0)
+            .getMatchCondition()
+            .asLiteralCommunities(null));
   }
 
   private static @Nonnull String communityListToRegex(

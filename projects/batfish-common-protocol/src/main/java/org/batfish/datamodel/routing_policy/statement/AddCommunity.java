@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import java.util.SortedSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
@@ -58,7 +58,7 @@ public final class AddCommunity extends Statement {
   public Result execute(Environment environment) {
     if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
       BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
-      SortedSet<Community> communities = _expr.asLiteralCommunities(environment);
+      Set<Community> communities = _expr.asLiteralCommunities(environment);
       bgpRoute.addCommunities(communities);
       if (environment.getWriteToIntermediateBgpAttributes()) {
         environment.getIntermediateBgpAttributes().addCommunities(communities);
