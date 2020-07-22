@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -199,7 +198,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     /** Add communities */
     public B removeCommunities(Set<Community> communities) {
       if (_communities instanceof ImmutableSet) {
-        _communities = new TreeSet<>(_communities);
+        _communities = new HashSet<>(_communities);
       }
       _communities.removeAll(communities);
       return getThis();
