@@ -10,7 +10,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -25,7 +24,7 @@ public final class CommunitySet implements Serializable {
   }
 
   public static @Nonnull CommunitySet of(Community... communities) {
-    return of(Arrays.asList(communities));
+    return of(ImmutableSet.copyOf(communities));
   }
 
   public static @Nonnull CommunitySet of(Iterable<? extends Community> communities) {
