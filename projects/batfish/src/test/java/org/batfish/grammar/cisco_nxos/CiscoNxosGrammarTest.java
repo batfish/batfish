@@ -6154,7 +6154,7 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
           route.getCommunities(),
-          contains(
+          containsInAnyOrder(
               StandardCommunity.of(1, 1), StandardCommunity.of(1, 2), StandardCommunity.of(3, 3)));
     }
     {
