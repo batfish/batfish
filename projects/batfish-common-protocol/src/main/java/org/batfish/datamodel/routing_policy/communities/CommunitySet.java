@@ -35,8 +35,11 @@ public final class CommunitySet implements Serializable {
     if (communities.isEmpty()) {
       return empty();
     }
-    ImmutableSet<Community> immutableValue = ImmutableSet.copyOf(communities);
-    return CACHE.getUnchecked(immutableValue);
+    CommunitySet ret = CACHE.getIfPresent(communities);
+    if (ret != null) {
+      return ret;
+    }
+    return CACHE.getUnchecked(ImmutableSet.copyOf(communities));
   }
 
   public @Nonnull Set<Community> getCommunities() {
@@ -90,11 +93,16 @@ public final class CommunitySet implements Serializable {
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
-  private static final LoadingCache<ImmutableSet<Community>, CommunitySet> CACHE =
+  private static final LoadingCache<Set<Community>, CommunitySet> CACHE =
       CacheBuilder.newBuilder()
           .softValues()
           .maximumSize(1 << 16)
-          .build(CacheLoader.from(CommunitySet::new));
+          .build(
+              CacheLoader.from(
+                  set -> {
+                    assert set instanceof ImmutableSet;
+                    return new CommunitySet((ImmutableSet<Community>) set);
+                  }));
 
   /* Cache the hashcode */
   private transient int _hashCode = 0;
