@@ -4,9 +4,8 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -39,7 +38,11 @@ public final class CommunitySet implements Serializable {
     if (ret != null) {
       return ret;
     }
-    return CACHE.getUnchecked(ImmutableSet.copyOf(communities));
+    // The input communities might be mutable, so freeze them before caching.
+    ImmutableSet<Community> immutableKey = ImmutableSet.copyOf(communities);
+    ret = new CommunitySet(immutableKey);
+    CACHE.put(immutableKey, ret);
+    return ret;
   }
 
   public @Nonnull Set<Community> getCommunities() {
@@ -93,16 +96,8 @@ public final class CommunitySet implements Serializable {
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
-  private static final LoadingCache<Set<Community>, CommunitySet> CACHE =
-      CacheBuilder.newBuilder()
-          .softValues()
-          .maximumSize(1 << 16)
-          .build(
-              CacheLoader.from(
-                  set -> {
-                    assert set instanceof ImmutableSet;
-                    return new CommunitySet((ImmutableSet<Community>) set);
-                  }));
+  private static final Cache<Set<Community>, CommunitySet> CACHE =
+      CacheBuilder.newBuilder().softValues().maximumSize(1 << 16).build();
 
   /* Cache the hashcode */
   private transient int _hashCode = 0;
