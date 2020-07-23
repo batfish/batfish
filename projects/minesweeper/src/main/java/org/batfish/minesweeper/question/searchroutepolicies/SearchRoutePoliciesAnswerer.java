@@ -128,7 +128,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return Optional.empty();
   }
 
-  private Automaton communityVarToAutomaton(CommunityVar cvar) {
+  private static Automaton communityVarToAutomaton(CommunityVar cvar) {
     String regex = cvar.getRegex();
     if (cvar.getType() != EXACT) {
       // strip the leading ^ and trailing $
@@ -143,32 +143,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Given a bdd representing a single assignment to the variables from a BDDRoute, produce either a
-   * concrete route or a set of variable assignments that contradict one another. The latter can
-   * happen because the symbolic route analysis treats community regexes (mostly) as a black box, so
-   * a given assignment may represent positive and negative constraints on community regexes that
-   * are infeasible.
+   * Given a bdd representing a single satisfying assignment to the constraints from symbolic route
+   * analysis, and given a BDDRoute that represents the constraints on the input or output route,
+   * produce either a set of communities for the route that are consistent with this assignment, or
+   * a set of constraints (represented as a BDD) that are contradictory. The latter can happen
+   * because the symbolic route analysis treats community regexes (mostly) as a black box, so the
+   * constraints may be shown to be infeasible after properly interpreting the regexes.
    *
-   * @param satAssignment the satisfying assignment to the constraints
-   * @return the corresponding route
+   * @param satAssignment the satisfying assignment
+   * @param r the BDDRoute
+   * @return a set of communities or a BDD representing an infeasible constraint
    */
-  private BDDToRouteResult satAssignmentToRoute(BDD satAssignment, BDDRoute r) {
-    Bgpv4Route.Builder builder =
-        Bgpv4Route.builder()
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP);
-    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(satAssignment));
-    long len = r.getPrefixLength().satAssignmentToLong(satAssignment);
-    builder.setNetwork(Prefix.create(ip, (int) len));
-
-    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(satAssignment));
-    builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(satAssignment));
-    // BDDRoute has a med and a metric, which appear to be identical
-    // I'm ignoring the metric and using the med
-    builder.setMetric(r.getMed().satAssignmentToLong(satAssignment));
-
-    // produce the set of communities for the given route constraints
+  static ResultOrUnsat<Set<Community>> satAssignmentToCommunities(BDD satAssignment, BDDRoute r) {
 
     // first figure out which communities are (not) in the assignment
     Map<CommunityVar, BDD> communities = r.getCommunities();
@@ -195,7 +181,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       disallowed = disallowed.union(communityVarToAutomaton(negvar));
     }
 
-    //
+    // try to produce concrete communities for each positive community literal/regex
     for (CommunityVar cvar : positiveCommunities) {
       Automaton cvarAutomaton = communityVarToAutomaton(cvar);
       Community example;
@@ -205,22 +191,25 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         // literal must exist in the route
         example = lit;
       } else {
-        // this is a regex, so we need to take into account the other regexes that are not
-        // in the model, to see if there is a contradiction
+        // this is a regex, so we need to take into account the other community literals/regexes
+        // that are not in the model, to see if there is a contradiction
         Automaton automaton = cvarAutomaton.minus(disallowed);
         if (automaton.isEmpty()) {
-          // the regex constraints are not satisfiable
-          // compute the BDD corresponding to these constraints
-          BDD disallowedConstraints = satAssignment.getFactory().zero();
-          for (CommunityVar mustNot : negativeCommunities) {
-            disallowedConstraints = disallowedConstraints.or(communities.get(mustNot));
-          }
-          return new BDDToRouteResult(communities.get(cvar).diff(disallowedConstraints));
+          // the regex constraints are not satisfiable, so
+          // compute the BDD corresponding to these constraints and return it
+          BDD disallowedConstraints =
+              r.getFactory()
+                  .orAll(
+                      negativeCommunities.stream()
+                          .map(communities::get)
+                          .collect(ImmutableList.toImmutableList()));
+          return new ResultOrUnsat<>(communities.get(cvar).diff(disallowedConstraints));
         } else {
           // check if any existing community in the route already satisfies this regex
           if (commStrs.stream().anyMatch(automaton::run)) {
             continue;
           }
+          // the constraints are satisfiable so get an example string
           String str = automaton.getShortestExample(true);
           Optional<Community> exampleOpt = stringToCommunity(str);
           if (exampleOpt.isPresent()) {
@@ -234,19 +223,69 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       comms.add(example);
       commStrs.add(example.toString());
     }
-
-    builder.setCommunities(comms.build());
-
-    return new BDDToRouteResult(builder.build());
+    return new ResultOrUnsat<>(comms.build());
   }
 
+  /**
+   * Given a bdd representing a single satisfying assignment to the constraints from symbolic route
+   * analysis, and given a BDDRoute that represents the constraints on the input or output route,
+   * produce either a concrete route that is consistent with this assignment, or a set of
+   * constraints (represented as a BDD) that are contradictory. The latter can happen because the
+   * symbolic route analysis treats community regexes (mostly) as a black box, so the constraints
+   * may be shown to be infeasible after properly interpreting the regexes.
+   *
+   * @param satAssignment the satisfying assignment
+   * @param r the BDDRoute
+   * @return either a route or a BDD representing an infeasible constraint
+   */
+  private static ResultOrUnsat<Bgpv4Route> satAssignmentToRoute(BDD satAssignment, BDDRoute r) {
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP);
+
+    ResultOrUnsat<Set<Community>> commResult = satAssignmentToCommunities(satAssignment, r);
+    Set<Community> communities = commResult.getResult();
+    if (communities == null) {
+      // the community constraints were not satisfiable, so we need to get a new
+      // satisfying assignment to the symbolic route constraints
+      return new ResultOrUnsat<>(commResult.getUnsatConstraints());
+    } else {
+      // the community constraints were satisfiable so we can build a concrete route
+      builder.setCommunities(communities);
+      Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(satAssignment));
+      long len = r.getPrefixLength().satAssignmentToLong(satAssignment);
+      builder.setNetwork(Prefix.create(ip, (int) len));
+
+      builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(satAssignment));
+      builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(satAssignment));
+      // BDDRoute has a med and a metric, which appear to be treated identically
+      // I'm ignoring the metric and using the med
+      builder.setMetric(r.getMed().satAssignmentToLong(satAssignment));
+
+      return new ResultOrUnsat<>(builder.build());
+    }
+  }
+
+  /**
+   * Convert the results of symbolic route analysis into an answer to this question.
+   *
+   * @param constraints intersection of the input and output constraints provided as part of the
+   *     question and the constraints on a solution that come from the symbolic route analysis
+   * @param outputRoute the symbolic output route that results from the route analysis
+   * @param policy the route policy that was analyzed
+   * @return an optional answer, which includes a concrete input route and (if the desired action is
+   *     PERMIT) concrete output route
+   */
   private Optional<Result> constraintsToResult(
       BDD constraints, BDDRoute outputRoute, RoutingPolicy policy) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
       BDD model = constraints.fullSatOne();
-      BDDToRouteResult inResult = satAssignmentToRoute(model, new BDDRoute(_g.getAllCommunities()));
+      ResultOrUnsat<Bgpv4Route> inResult =
+          satAssignmentToRoute(model, new BDDRoute(_g.getAllCommunities()));
       if (_action == Action.DENY) {
         return Optional.of(
             new Result(
@@ -254,12 +293,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 // the input route constraints are always satisfiable so will always
                 // produce a route.
                 // this could change later if we add more kinds of route constraints.
-                inResult.getRoute(),
+                inResult.getResult(),
                 _action,
                 null));
       } else {
-        BDDToRouteResult outResult = satAssignmentToRoute(model, outputRoute);
-        if (outResult.getRoute() == null) {
+        ResultOrUnsat<Bgpv4Route> outResult = satAssignmentToRoute(model, outputRoute);
+        if (outResult.getResult() == null) {
           // we couldn't solve the community regex constraints in the current model, so
           // try to find another one.
           return constraintsToResult(
@@ -268,9 +307,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
           return Optional.of(
               new Result(
                   new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
-                  inResult.getRoute(),
+                  inResult.getResult(),
                   _action,
-                  outResult.getRoute()));
+                  outResult.getResult()));
         }
       }
     }
