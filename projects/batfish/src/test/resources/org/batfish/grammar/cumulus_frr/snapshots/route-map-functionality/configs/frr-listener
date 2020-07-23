@@ -1,0 +1,31 @@
+frr-listener
+# This file describes the network interfaces
+auto lo
+iface lo inet loopback
+
+auto swp1
+iface swp1
+
+# ports.conf --
+frr version
+frr defaults datacenter
+!
+interface lo
+ ip address 5.5.5.5/32
+!
+interface swp1
+ ip address 10.1.1.5/24
+!
+router bgp 5
+ bgp router-id 5.5.5.5
+ neighbor 10.1.1.1 remote-as 1
+ neighbor 10.1.1.1 route-map MATCH_COMM_TAG_IN in
+!
+ip community-list standard TEST_COMM permit 12345:123
+!
+route-map MATCH_COMM_TAG_IN permit 10
+ match community TEST_COMM
+ set weight 500
+ set tag 10000
+!
+end
