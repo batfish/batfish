@@ -137,7 +137,8 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
       return false;
     }
     BgpPeerConfigId other = (BgpPeerConfigId) o;
-    return _type == other._type
+    return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
+        && _type == other._type
         && _hostname.equals(other._hostname)
         && _vrfName.equals(other._vrfName)
         && Objects.equals(_peerInterface, other._peerInterface)
@@ -146,11 +147,15 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
 
   @Override
   public int hashCode() {
-    int hashCode = _hostname.hashCode();
-    hashCode = 31 * hashCode + _vrfName.hashCode();
-    hashCode = 31 * hashCode + Objects.hashCode(_peerInterface);
-    hashCode = 31 * hashCode + Objects.hashCode(_remotePeerPrefix);
-    hashCode = 31 * hashCode + _type.ordinal();
+    int hashCode = _hashCode;
+    if (hashCode == 0) {
+      hashCode = _hostname.hashCode();
+      hashCode = 31 * hashCode + _vrfName.hashCode();
+      hashCode = 31 * hashCode + Objects.hashCode(_peerInterface);
+      hashCode = 31 * hashCode + Objects.hashCode(_remotePeerPrefix);
+      hashCode = 31 * hashCode + _type.ordinal();
+      _hashCode = hashCode;
+    }
     return hashCode;
   }
 
@@ -172,4 +177,6 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
     /** Type for {@link BgpUnnumberedPeerConfig}s */
     UNNUMBERED
   }
+
+  private transient int _hashCode;
 }
