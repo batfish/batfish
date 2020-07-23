@@ -14,7 +14,7 @@ public final class WellKnownCommunity {
   public static final long ROUTE_FILTER_V4 = 0xFFFF_0003L;
   public static final long ROUTE_FILTER_TRANSLATED_V6 = 0xFFFF_0004L;
   public static final long ROUTE_FILTER_V6 = 0xFFFF_0005L;
-  public static final long LLGR_STALE = 0xFFFF_0006;
+  public static final long LLGR_STALE = 0xFFFF_0006L;
   public static final long NO_LLGR = 0xFFFF_0007L;
   public static final long ACCEPT_OWN_NEXTHOP = 0xFFFF_0008L;
   public static final long BLACKHOLE = 0xFFFF_029AL;

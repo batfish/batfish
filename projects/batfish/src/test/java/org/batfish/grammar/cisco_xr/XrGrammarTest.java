@@ -38,7 +38,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -423,23 +422,17 @@ public final class XrGrammarTest {
       Bgpv4Route inRoute =
           base.toBuilder()
               .setCommunities(
-                  ImmutableSet.of(
-                      StandardCommunity.of(1, 1),
-                      StandardCommunity.of(WellKnownCommunity.INTERNET)))
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.INTERNET))
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(
-          route.getCommunities(),
-          containsInAnyOrder(StandardCommunity.of(WellKnownCommunity.INTERNET)));
+      assertThat(route.getCommunities(), containsInAnyOrder(StandardCommunity.INTERNET));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("deletein");
       Bgpv4Route inRoute =
           base.toBuilder()
               .setCommunities(
-                  ImmutableSet.of(
-                      StandardCommunity.of(1, 1),
-                      StandardCommunity.of(WellKnownCommunity.INTERNET)))
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.INTERNET))
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(route.getCommunities(), empty());
@@ -449,9 +442,7 @@ public final class XrGrammarTest {
       Bgpv4Route inRoute =
           base.toBuilder()
               .setCommunities(
-                  ImmutableSet.of(
-                      StandardCommunity.of(1, 1),
-                      StandardCommunity.of(WellKnownCommunity.INTERNET)))
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.INTERNET))
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(route.getCommunities(), empty());
@@ -461,15 +452,12 @@ public final class XrGrammarTest {
       Bgpv4Route inRoute =
           base.toBuilder()
               .setCommunities(
-                  ImmutableSet.of(
-                      StandardCommunity.of(1, 1),
-                      StandardCommunity.of(WellKnownCommunity.INTERNET)))
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.INTERNET))
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
           route.getCommunities(),
-          containsInAnyOrder(
-              StandardCommunity.of(1, 1), StandardCommunity.of(WellKnownCommunity.INTERNET)));
+          containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.INTERNET));
     }
   }
 
