@@ -62,7 +62,7 @@ public class Interface implements Serializable {
     Double defaultSpeed = getDefaultSpeed(name);
     if (defaultSpeed != null) {
       return defaultSpeed;
-    } else if (name.startsWith("Bundle-Ethernet")) {
+    } else if (name.startsWith("Bundle-Ether")) {
       // Derived from member interfaces
       return null;
     } else if (name.startsWith("Loopback")) {
@@ -90,7 +90,7 @@ public class Interface implements Serializable {
       return DEFAULT_GIGABIT_ETHERNET_SPEED;
     } else if (name.startsWith("LongReachEthernet")) {
       return DEFAULT_LONG_REACH_ETHERNET_SPEED;
-    } else if (name.startsWith("TenGigabitEthernet")) {
+    } else if (name.startsWith("TenGigE")) {
       return DEFAULT_TEN_GIGABIT_ETHERNET_SPEED;
     } else if (name.startsWith("Wlan-GigabitEthernet")) {
       return DEFAULT_GIGABIT_ETHERNET_SPEED;
@@ -119,7 +119,7 @@ public class Interface implements Serializable {
 
   @Nullable private Double _bandwidth;
 
-  private String _channelGroup;
+  private @Nullable Integer _bundleId;
 
   private String _cryptoMap;
 
@@ -276,8 +276,8 @@ public class Interface implements Serializable {
     return _bandwidth;
   }
 
-  public String getChannelGroup() {
-    return _channelGroup;
+  public Integer getBundleId() {
+    return _bundleId;
   }
 
   public String getCryptoMap() {
@@ -459,8 +459,8 @@ public class Interface implements Serializable {
     _bandwidth = bandwidth;
   }
 
-  public void setChannelGroup(String channelGroup) {
-    _channelGroup = channelGroup;
+  public void setBundleId(@Nullable Integer bundleId) {
+    _bundleId = bundleId;
   }
 
   public void setCryptoMap(String cryptoMap) {

@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
@@ -45,7 +44,7 @@ public final class CommunityListTest {
 
     @Nonnull
     @Override
-    public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
+    public Set<Community> asLiteralCommunities(@Nonnull Environment environment) {
       throw new UnsupportedOperationException();
     }
 

@@ -7,6 +7,8 @@ import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEW
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.LINK_LOCAL_IP;
 import static org.batfish.representation.aws.AwsConfiguration.generateAwsServicesGateway;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestSubnet;
+import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
 import static org.batfish.representation.aws.Utils.toStaticRoute;
 import static org.batfish.specifier.Location.interfaceLinkLocation;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -71,15 +72,13 @@ public class AwsConfigurationTest {
     String instanceId = "instance";
     String lbArn = "lbArn";
     String tgArn = "tgArn";
-    Vpc vpc = new Vpc(vpcId, ImmutableSet.of(), ImmutableMap.of());
+    Vpc vpc = getTestVpc(vpcId);
     AvailabilityZone noInstanceZone = new AvailabilityZone(noInstanceSubnetId, noInstanceZoneName);
     AvailabilityZone instanceZone = new AvailabilityZone(instanceSubnetId, instanceZoneName);
     Prefix prefix1 = Prefix.parse("1.1.1.0/24");
     Prefix prefix2 = Prefix.parse("2.2.2.0/24");
-    Subnet noInstanceSubnet =
-        new Subnet(prefix1, noInstanceSubnetId, vpcId, noInstanceZoneName, ImmutableMap.of());
-    Subnet instanceSubnet =
-        new Subnet(prefix2, instanceSubnetId, vpcId, instanceZoneName, ImmutableMap.of());
+    Subnet noInstanceSubnet = getTestSubnet(prefix1, noInstanceSubnetId, vpcId, noInstanceZoneName);
+    Subnet instanceSubnet = getTestSubnet(prefix2, instanceSubnetId, vpcId, instanceZoneName);
     Instance instance =
         new Instance(
             instanceId,

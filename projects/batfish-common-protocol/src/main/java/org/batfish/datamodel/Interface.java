@@ -633,7 +633,7 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("ATM")) {
       return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Bundle-Ethernet")) {
+    } else if (name.startsWith("Bundle-Ether")) {
       return InterfaceType.AGGREGATED;
     } else if (name.startsWith("cmp-mgmt")) {
       return InterfaceType.PHYSICAL;
@@ -656,6 +656,18 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("GMPLS")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("HundredGigabitEthernet")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("HundredGigE")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("FortyGigE")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("FiftyGigE")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("FourHundredGigE")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("TwentyFiveGigE")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("TwoHundredGigE")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Group-Async")) {
       return InterfaceType.PHYSICAL;
@@ -687,6 +699,8 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("Serial")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("TenGigabitEthernet")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("TenGigE")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Tunnel")) {
       return InterfaceType.TUNNEL;

@@ -1,9 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -38,8 +37,8 @@ public class EmptyCommunitySetExpr extends CommunitySetExpr {
    */
   @Nonnull
   @Override
-  public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
-    return ImmutableSortedSet.of();
+  public Set<Community> asLiteralCommunities(@Nonnull Environment environment) {
+    return ImmutableSet.of();
   }
 
   @Override

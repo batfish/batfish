@@ -646,7 +646,7 @@ public final class XrGrammarTest {
   @Test
   public void testOspfInterface() {
     Configuration c = parseConfig("ospf-interface");
-    String ifaceName = "Bundle-Ethernet201";
+    String ifaceName = "Bundle-Ether201";
     Map<String, Interface> ifaces = c.getAllInterfaces();
     assertThat(ifaces.keySet(), contains(ifaceName));
 

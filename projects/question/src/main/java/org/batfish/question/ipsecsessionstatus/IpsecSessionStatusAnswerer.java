@@ -16,7 +16,6 @@ import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
@@ -92,7 +91,8 @@ class IpsecSessionStatusAnswerer extends Answerer {
         ipsecSessionInfos.stream()
             .filter(ipsecSessionInfo -> statuses.contains(ipsecSessionInfo.getIpsecSessionStatus()))
             .map(IpsecSessionStatusAnswerer::toRow)
-            .collect(Collectors.toCollection(HashMultiset::create)));
+            .sorted()
+            .collect(ImmutableList.toImmutableList()));
     return answerElement;
   }
 

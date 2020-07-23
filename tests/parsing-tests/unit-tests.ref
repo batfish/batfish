@@ -56954,8 +56954,9 @@
             "                                inline = (as_path_set_inline",
             "                                  PAREN_LEFT:'('",
             "                                  (as_path_set_elem",
-            "                                    IOS_REGEX:'ios-regex'",
-            "                                    AS_PATH_SET_REGEX:''_6360$''  <== mode:M_IosRegex)",
+            "                                    ios_regex = (aspse_ios_regex",
+            "                                      IOS_REGEX:'ios-regex'",
+            "                                      AS_PATH_SET_REGEX:''_6360$''  <== mode:M_IosRegex))",
             "                                  PAREN_RIGHT:')')))))))",
             "                    PAREN_RIGHT:')'))))",
             "            THEN:'then'",
@@ -57006,24 +57007,29 @@
             "                                inline = (as_path_set_inline",
             "                                  PAREN_LEFT:'('",
             "                                  (as_path_set_elem",
-            "                                    IOS_REGEX:'ios-regex'",
-            "                                    AS_PATH_SET_REGEX:''_14041$''  <== mode:M_IosRegex)",
+            "                                    ios_regex = (aspse_ios_regex",
+            "                                      IOS_REGEX:'ios-regex'",
+            "                                      AS_PATH_SET_REGEX:''_14041$''  <== mode:M_IosRegex))",
             "                                  COMMA:','",
             "                                  (as_path_set_elem",
-            "                                    IOS_REGEX:'ios-regex'",
-            "                                    AS_PATH_SET_REGEX:''_104$''  <== mode:M_IosRegex)",
+            "                                    ios_regex = (aspse_ios_regex",
+            "                                      IOS_REGEX:'ios-regex'",
+            "                                      AS_PATH_SET_REGEX:''_104$''  <== mode:M_IosRegex))",
             "                                  COMMA:','",
             "                                  (as_path_set_elem",
-            "                                    IOS_REGEX:'ios-regex'",
-            "                                    AS_PATH_SET_REGEX:''_2902$''  <== mode:M_IosRegex)",
+            "                                    ios_regex = (aspse_ios_regex",
+            "                                      IOS_REGEX:'ios-regex'",
+            "                                      AS_PATH_SET_REGEX:''_2902$''  <== mode:M_IosRegex))",
             "                                  COMMA:','",
             "                                  (as_path_set_elem",
-            "                                    IOS_REGEX:'ios-regex'",
-            "                                    AS_PATH_SET_REGEX:''_13555$''  <== mode:M_IosRegex)",
+            "                                    ios_regex = (aspse_ios_regex",
+            "                                      IOS_REGEX:'ios-regex'",
+            "                                      AS_PATH_SET_REGEX:''_13555$''  <== mode:M_IosRegex))",
             "                                  COMMA:','",
             "                                  (as_path_set_elem",
-            "                                    IOS_REGEX:'ios-regex'",
-            "                                    AS_PATH_SET_REGEX:''_14041_''  <== mode:M_IosRegex)",
+            "                                    ios_regex = (aspse_ios_regex",
+            "                                      IOS_REGEX:'ios-regex'",
+            "                                      AS_PATH_SET_REGEX:''_14041_''  <== mode:M_IosRegex))",
             "                                  PAREN_RIGHT:')')))))))",
             "                    PAREN_RIGHT:')'))))",
             "            THEN:'then'",
@@ -75065,8 +75071,9 @@
             "        VARIABLE:'ama-coe-as-path')",
             "      NEWLINE:'\\n'",
             "      (as_path_set_elem",
-            "        IOS_REGEX:'ios-regex'",
-            "        AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex)",
+            "        ios_regex = (aspse_ios_regex",
+            "          IOS_REGEX:'ios-regex'",
+            "          AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex))",
             "      NEWLINE:'\\n'",
             "      END_SET:'end-set'",
             "      NEWLINE:'\\n'))",
@@ -75077,8 +75084,9 @@
             "        VARIABLE:'ama-coe-as-path2')",
             "      NEWLINE:'\\n'",
             "      (as_path_set_elem",
-            "        IOS_REGEX:'ios-regex'",
-            "        AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex)",
+            "        ios_regex = (aspse_ios_regex",
+            "          IOS_REGEX:'ios-regex'",
+            "          AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex))",
             "      END_SET:'end-set'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
@@ -75088,22 +75096,26 @@
             "        VARIABLE:'ama-coe-as-path3')",
             "      NEWLINE:'\\n'",
             "      (as_path_set_elem",
-            "        IOS_REGEX:'ios-regex'",
-            "        AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex)",
+            "        ios_regex = (aspse_ios_regex",
+            "          IOS_REGEX:'ios-regex'",
+            "          AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex))",
             "      COMMA:','",
             "      NEWLINE:'\\n'",
             "      (as_path_set_elem",
-            "        IOS_REGEX:'ios-regex'",
-            "        AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex)",
+            "        ios_regex = (aspse_ios_regex",
+            "          IOS_REGEX:'ios-regex'",
+            "          AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex))",
             "      COMMA:','",
             "      (as_path_set_elem",
-            "        IOS_REGEX:'ios-regex'",
-            "        AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex)",
+            "        ios_regex = (aspse_ios_regex",
+            "          IOS_REGEX:'ios-regex'",
+            "          AS_PATH_SET_REGEX:''^64666(_64666)*$''  <== mode:M_IosRegex))",
             "      NEWLINE:'\\n'",
             "      COMMA:','",
             "      (as_path_set_elem",
-            "        IOS_REGEX:'ios-regex'",
-            "        AS_PATH_SET_REGEX:''^$''  <== mode:M_IosRegex)",
+            "        ios_regex = (aspse_ios_regex",
+            "          IOS_REGEX:'ios-regex'",
+            "          AS_PATH_SET_REGEX:''^$''  <== mode:M_IosRegex))",
             "      NEWLINE:'\\n'",
             "      END_SET:'end-set'",
             "      NEWLINE:'\\n'))",
@@ -77810,19 +77822,19 @@
               "Text" : "maximum paths 16"
             },
             {
-              "Comment" : "OSPF interface Bundle-Ethernet101 not declared before OSPF process",
+              "Comment" : "OSPF interface Bundle-Ether101 not declared before OSPF process",
               "Line" : 18,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether101"
             },
             {
-              "Comment" : "OSPF interface Bundle-Ethernet103 not declared before OSPF process",
+              "Comment" : "OSPF interface Bundle-Ether103 not declared before OSPF process",
               "Line" : 24,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether103"
             },
             {
-              "Comment" : "OSPF interface Bundle-Ethernet201 not declared before OSPF process",
+              "Comment" : "OSPF interface Bundle-Ether201 not declared before OSPF process",
               "Line" : 28,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "Bundle-Ether201"
@@ -77834,31 +77846,31 @@
               "Text" : "Loopback0"
             },
             {
-              "Comment" : "OSPF interface TenGigabitEthernet0/0/0/4 not declared before OSPF process",
+              "Comment" : "OSPF interface TenGigE0/0/0/4 not declared before OSPF process",
               "Line" : 36,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/4"
             },
             {
-              "Comment" : "OSPF interface TenGigabitEthernet0/0/0/5 not declared before OSPF process",
+              "Comment" : "OSPF interface TenGigE0/0/0/5 not declared before OSPF process",
               "Line" : 39,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/5"
             },
             {
-              "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/0.292 not declared before OSPF process",
+              "Comment" : "OSPF interface HundredGigE0/2/0/0.292 not declared before OSPF process",
               "Line" : 42,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "HundredGigE0/2/0/0.292"
             },
             {
-              "Comment" : "OSPF interface HundredGigabitEthernet0/2/0/3 not declared before OSPF process",
+              "Comment" : "OSPF interface HundredGigE0/2/0/3 not declared before OSPF process",
               "Line" : 44,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "HundredGigE0/2/0/3"
             },
             {
-              "Comment" : "OSPF interface TenGigabitEthernet0/0/0/2 not declared before OSPF process",
+              "Comment" : "OSPF interface TenGigE0/0/0/2 not declared before OSPF process",
               "Line" : 51,
               "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
               "Text" : "TenGigE0/0/0/2"
@@ -82994,7 +83006,7 @@
               ],
               "numReferrers" : 1
             },
-            "HundredGigabitEthernet0/6/0/8" : {
+            "HundredGigE0/6/0/8" : {
               "definitionLines" : [
                 10,
                 11
@@ -90593,7 +90605,7 @@
                 3
               ]
             },
-            "HundredGigabitEthernet0/6/0/8" : {
+            "HundredGigE0/6/0/8" : {
               "interface" : [
                 10
               ]
@@ -90850,27 +90862,27 @@
         },
         "configs/ios_xr_ospf" : {
           "interface" : {
-            "Bundle-Ethernet101" : {
+            "Bundle-Ether101" : {
               "router ospf area interface" : [
                 18
               ]
             },
-            "Bundle-Ethernet103" : {
+            "Bundle-Ether103" : {
               "router ospf area interface" : [
                 24
               ]
             },
-            "Bundle-Ethernet201" : {
+            "Bundle-Ether201" : {
               "router ospf area interface" : [
                 28
               ]
             },
-            "HundredGigabitEthernet0/2/0/0.292" : {
+            "HundredGigE0/2/0/0.292" : {
               "router ospf area interface" : [
                 42
               ]
             },
-            "HundredGigabitEthernet0/2/0/3" : {
+            "HundredGigE0/2/0/3" : {
               "router ospf area interface" : [
                 44
               ]
@@ -90880,17 +90892,17 @@
                 33
               ]
             },
-            "TenGigabitEthernet0/0/0/2" : {
+            "TenGigE0/0/0/2" : {
               "router ospf area interface" : [
                 51
               ]
             },
-            "TenGigabitEthernet0/0/0/4" : {
+            "TenGigE0/0/0/4" : {
               "router ospf area interface" : [
                 36
               ]
             },
-            "TenGigabitEthernet0/0/0/5" : {
+            "TenGigE0/0/0/5" : {
               "router ospf area interface" : [
                 39
               ]
@@ -91087,7 +91099,7 @@
                 16
               ]
             },
-            "TenGigabitEthernet0/0/2/3" : {
+            "TenGigE0/0/2/3" : {
               "router static route" : [
                 8
               ]
@@ -94709,27 +94721,27 @@
         },
         "configs/ios_xr_ospf" : {
           "interface" : {
-            "Bundle-Ethernet101" : {
+            "Bundle-Ether101" : {
               "router ospf area interface" : [
                 18
               ]
             },
-            "Bundle-Ethernet103" : {
+            "Bundle-Ether103" : {
               "router ospf area interface" : [
                 24
               ]
             },
-            "Bundle-Ethernet201" : {
+            "Bundle-Ether201" : {
               "router ospf area interface" : [
                 28
               ]
             },
-            "HundredGigabitEthernet0/2/0/0.292" : {
+            "HundredGigE0/2/0/0.292" : {
               "router ospf area interface" : [
                 42
               ]
             },
-            "HundredGigabitEthernet0/2/0/3" : {
+            "HundredGigE0/2/0/3" : {
               "router ospf area interface" : [
                 44
               ]
@@ -94739,17 +94751,17 @@
                 33
               ]
             },
-            "TenGigabitEthernet0/0/0/2" : {
+            "TenGigE0/0/0/2" : {
               "router ospf area interface" : [
                 51
               ]
             },
-            "TenGigabitEthernet0/0/0/4" : {
+            "TenGigE0/0/0/4" : {
               "router ospf area interface" : [
                 36
               ]
             },
-            "TenGigabitEthernet0/0/0/5" : {
+            "TenGigE0/0/0/5" : {
               "router ospf area interface" : [
                 39
               ]
@@ -94935,7 +94947,7 @@
                 17
               ]
             },
-            "TenGigabitEthernet0/0/2/3" : {
+            "TenGigE0/0/2/3" : {
               "router static route" : [
                 8
               ]

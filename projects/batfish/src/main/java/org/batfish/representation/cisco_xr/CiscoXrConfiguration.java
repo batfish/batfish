@@ -194,7 +194,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           .put("ATM", "ATM")
           .put("BDI", "BDI")
           .put("BRI", "BRI")
-          .put("Bundle-Ether", "Bundle-Ethernet")
+          .put("Bundle-Ether", "Bundle-Ether")
+          .put("BE", "Bundle-Ether")
+          .put("Bundle-POS", "Bundle-POS")
+          .put("BP", "Bundle-POS")
           .put("BVI", "BVI")
           .put("Cable", "Cable")
           .put("cable-downstream", "cable-downstream")
@@ -208,14 +211,25 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           .put("Ethernet", "Ethernet")
           .put("Embedded-Service-Engine", "Embedded-Service-Engine")
           .put("FastEthernet", "FastEthernet")
+          .put("Fa", "FastEthernet")
           .put("fc", "fc")
           .put("fe", "FastEthernet")
-          .put("fortyGigE", "FortyGigabitEthernet")
+          .put("FiftyGigE", "FiftyGigE")
+          .put("Fi", "FiftyGigE")
+          .put("FortyGigE", "FortyGigE")
+          .put("Fo", "FortyGigE")
           .put("FortyGigabitEthernet", "FortyGigabitEthernet")
+          .put("FourHundredGigE", "FourHundredGigE")
+          .put("F", "FourHundredGigE")
+          .put("GCC0", "GCC0")
+          .put("G0", "GCC0")
+          .put("GCC1", "GCC1")
+          .put("G1", "GCC1")
           .put("GigabitEthernet", "GigabitEthernet")
           .put("ge", "GigabitEthernet")
           .put("GMPLS", "GMPLS")
-          .put("HundredGigE", "HundredGigabitEthernet")
+          .put("HundredGigE", "HundredGigE")
+          .put("Hu", "HundredGigE")
           .put("ip", "ip")
           .put("Group-Async", "Group-Async")
           .put("LongReachEthernet", "LongReachEthernet")
@@ -225,7 +239,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           .put("ManagementEthernet", "ManagementEthernet")
           .put("mfr", "mfr")
           .put("mgmt", "mgmt")
-          .put("MgmtEth", "ManagementEthernet")
+          .put("MgmtEth", "MgmtEth")
+          .put("Mg", "MgmtEth")
           .put("Modular-Cable", "Modular-Cable")
           .put("Multilink", "Multilink")
           .put("Null", "Null")
@@ -234,14 +249,23 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           .put("POS", "POS")
           .put("PTP", "PTP")
           .put("Serial", "Serial")
+          .put("Se", "Serial")
           .put("Service-Engine", "Service-Engine")
+          .put("SRP", "SRP")
           .put("TenGigabitEthernet", "TenGigabitEthernet")
-          .put("TenGigE", "TenGigabitEthernet")
-          .put("te", "TenGigabitEthernet")
+          .put("TenGigE", "TenGigE")
+          .put("Te", "TenGigE")
           .put("trunk", "trunk")
           .put("Tunnel", "Tunnel")
           .put("tunnel-ip", "tunnel-ip")
+          .put("tunnel-ipsec", "tunnel-ipsec")
+          .put("tunnel-mte", "tunnel-mte")
           .put("tunnel-te", "tunnel-te")
+          .put("tunnel-tp", "tunnel-tp")
+          .put("TwentyFiveGigE", "TwentyFiveGigE")
+          .put("TF", "TwentyFiveGigE")
+          .put("TwoHundredGigE", "TwoHundredGigE")
+          .put("TH", "TwoHundredGigE")
           .put("ve", "VirtualEthernet")
           .put("Virtual-Template", "Virtual-Template")
           .put("Vlan", "Vlan")
@@ -559,7 +583,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _asPathSets;
   }
 
-  private Ip getBgpRouterId(final Configuration c, String vrfName, BgpProcess proc) {
+  private Ip getBgpRouterId(Configuration c, String vrfName, BgpProcess proc) {
     Ip processRouterId = proc.getRouterId();
     if (processRouterId == null) {
       processRouterId = _vrfs.get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getRouterId();
@@ -920,7 +944,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
-      final Configuration c, BgpProcess proc, String vrfName) {
+      Configuration c, BgpProcess proc, String vrfName) {
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
@@ -1358,7 +1382,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
-    newIface.setChannelGroup(iface.getChannelGroup());
+    if (iface.getBundleId() != null) {
+      newIface.setChannelGroup(String.format("Bundle-Ether%d", iface.getBundleId()));
+    }
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
@@ -2034,7 +2060,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
-    final Configuration c = new Configuration(_hostname, _vendor);
+    Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCiscoXr(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
@@ -2214,10 +2240,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
      */
     _interfaces.forEach(
         (ifaceName, iface) -> {
-          // Portchannels
-          String chGroup = iface.getChannelGroup();
-          if (chGroup != null) {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
+          // Bundle ID
+          Integer bundleId = iface.getBundleId();
+          if (bundleId != null) {
+            String bundleName = String.format("Bundle-Ether%d", bundleId);
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(bundleName);
             if (viIface != null) {
               viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
             }

@@ -8,7 +8,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import java.io.Serializable;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
@@ -60,7 +59,7 @@ public final class RegexCommunitySet extends CommunitySetExpr {
 
   @Nonnull
   @Override
-  public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
+  public Set<Community> asLiteralCommunities(@Nonnull Environment environment) {
     throw new UnsupportedOperationException(
         "Cannot be represented as a list of literal communities");
   }

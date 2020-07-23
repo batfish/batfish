@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname gh6004
+interface Bundle-ether1
+ ipv4 address 1.1.1.1 255.255.255.248
+ ipv4 access-group FOO ingress
+!
+ipv4 access-list FOO
+ 10 permit icmp any any echo-reply
+ 30 permit ipv4 any any udf vlanid 0xcb1 0xfff set ttl 100 nexthop1 ipv4 2.2.2.2
+ 50 permit icmp any any
+ 70 permit ipv4 any any udf vlanid 0xcb2 0xfff set ttl 100 nexthop1 ipv4 2.2.2.2
+!
+ipv4 access-list BAR
+ 20 permit icmp any any echo-reply
+ 40 permit ipv4 any any udf vlanid 0x111 0xfff set ttl 100 nexthop1 ipv4 2.2.2.2
+!
+ipv4 access-list BAZ
+ 15 permit icmp any any echo-reply
+ 25 permit ipv4 any any udf vlanid 0xaaa 0x222 set ttl 100 nexthop1 ipv4 2.2.2.2
