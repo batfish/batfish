@@ -14,7 +14,14 @@ public final class EvpnRib<R extends EvpnRoute<?, ?>> extends BgpRib<R> {
       @Nullable Rib mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
-      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode) {
-    super(mainRib, tieBreaker, maxPaths, multipathEquivalentAsPathMatchMode, true);
+      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
+      boolean clusterListAsIgpCost) {
+    super(
+        mainRib,
+        tieBreaker,
+        maxPaths,
+        multipathEquivalentAsPathMatchMode,
+        true,
+        clusterListAsIgpCost);
   }
 }

@@ -161,6 +161,7 @@ public class RibDeltaTest {
             BgpTieBreaker.CLUSTER_LIST_LENGTH,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false,
             false);
     Bgpv4Route.Builder routeBuilder = new Bgpv4Route.Builder();
     routeBuilder
@@ -198,6 +199,7 @@ public class RibDeltaTest {
             BgpTieBreaker.ROUTER_ID,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
+            false,
             false);
     Bgpv4Route r1 =
         new Bgpv4Route.Builder()
