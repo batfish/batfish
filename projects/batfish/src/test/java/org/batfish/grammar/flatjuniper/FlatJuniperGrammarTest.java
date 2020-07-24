@@ -193,7 +193,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
@@ -986,9 +985,9 @@ public final class FlatJuniperGrammarTest {
         br1.getCommunities(),
         equalTo(
             ImmutableSet.of(
-                StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE),
-                StandardCommunity.of(WellKnownCommunity.NO_EXPORT),
-                StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED))));
+                StandardCommunity.NO_ADVERTISE,
+                StandardCommunity.NO_EXPORT,
+                StandardCommunity.NO_EXPORT_SUBCONFED)));
 
     // p2
     RoutingPolicy p2 = c.getRoutingPolicies().get("p2");
@@ -1043,9 +1042,9 @@ public final class FlatJuniperGrammarTest {
         br4.getCommunities(),
         equalTo(
             ImmutableSet.of(
-                StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE),
-                StandardCommunity.of(WellKnownCommunity.NO_EXPORT),
-                StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED),
+                StandardCommunity.NO_ADVERTISE,
+                StandardCommunity.NO_EXPORT,
+                StandardCommunity.NO_EXPORT_SUBCONFED,
                 StandardCommunity.of(5L))));
 
     // p5
@@ -1099,9 +1098,7 @@ public final class FlatJuniperGrammarTest {
       Bgpv4Route.Builder builder =
           base.toBuilder()
               .setCommunities(
-                  ImmutableSet.of(
-                      StandardCommunity.of(5L),
-                      StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+                  ImmutableSet.of(StandardCommunity.of(5L), StandardCommunity.NO_ADVERTISE));
       rp.process(builder.build(), builder, Direction.OUT);
       Bgpv4Route outputRoute = builder.build();
 
