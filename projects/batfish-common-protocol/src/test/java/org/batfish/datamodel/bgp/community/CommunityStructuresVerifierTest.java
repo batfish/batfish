@@ -59,7 +59,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -129,8 +128,6 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new MatchColor(1).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(
         new MatchCommunitySet(new NamedCommunitySet("a")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(
-        new MatchEntireCommunitySet(new NamedCommunitySet("a")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(new MatchIp6AccessList("a").accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(MatchIpv4.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(MatchIpv6.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));

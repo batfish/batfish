@@ -66,7 +66,6 @@ import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -205,13 +204,6 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitMatchCommunitySet(
         MatchCommunitySet matchCommunitySet, CommunityStructuresVerifierContext arg) {
-      // old deprecated API not checked
-      return null;
-    }
-
-    @Override
-    public Void visitMatchEntireCommunitySet(
-        MatchEntireCommunitySet matchEntireCommunitySet, CommunityStructuresVerifierContext arg) {
       // old deprecated API not checked
       return null;
     }
