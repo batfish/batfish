@@ -24,11 +24,25 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
 
 /**
- * A collection of attributes describing an advertisement, represented using BDDs
+ * A collection of attributes describing a route advertisement, used for symbolic route analysis.
  *
  * @author Ryan Beckett
  */
 public class BDDRoute implements IDeepCopy<BDDRoute> {
+
+  /*
+   * For each bit i of a route announcement we have both a BDD variable vi, which
+   * represents the ith bit of the announcement, and a BDD fi (f stands for formula), representing
+   * the conditions under which bit i is set to 1/0. Initially each fi is simply vi. The {@link
+   * TransferBDD} class takes a BDDRoute and a route policy and produces a new BDDRoute whose fi
+   * BDDs represent all possible output announcements from that route policy and the conditions
+   * under which they occur, in terms of the vi variables (which still represent the bits of the
+   * original input announcement).
+   *
+   * Since most fields of the route announcement are integers, for example local preference,
+   * there is a {@link BDDInteger} helper class that uses this encoding specifically to represent a
+   * symbolic integer, along with integer-specific operations.
+   */
 
   static BDDFactory factory;
 
@@ -75,6 +89,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private Map<Integer, String> _bitNames;
 
+  /*
+   * Each community literal and regex in a given configuration is allocated both a BDD variable and
+   * a BDD, as in the general encoding described above. This field maintains the mapping from each
+   * community to its BDD.
+   */
   private SortedMap<CommunityVar, BDD> _communities;
 
   private BDDInteger _localPref;
@@ -243,6 +262,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public void setCommunities(SortedMap<CommunityVar, BDD> communities) {
     _communities = communities;
+  }
+
+  public BDDFactory getFactory() {
+    return factory;
   }
 
   public BDDInteger getLocalPref() {
