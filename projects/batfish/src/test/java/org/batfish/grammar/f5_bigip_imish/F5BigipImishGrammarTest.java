@@ -1137,7 +1137,7 @@ public final class F5BigipImishGrammarTest {
     assertTrue("rm1 accepts prefix 10.0.1.0/24 (via 20)", acceptedBy20.getBooleanValue());
     assertThat(
         "rm1 sets communities 1:2 and 33:44 on the output route",
-        outputRoute.build().getCommunities(),
+        outputRoute.build().getCommunities().getCommunities(),
         equalTo(ImmutableSet.of(StandardCommunity.of(1, 2), StandardCommunity.of(33, 44))));
 
     assertTrue(

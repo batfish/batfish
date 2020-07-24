@@ -22,20 +22,13 @@ import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
 public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>>
     extends AbstractRoute {
 
-  // Soft values: let it be garbage collected in times of pressure.
-  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
-  //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
-  private static final LoadingCache<Set<Community>, Set<Community>> COMMUNITY_CACHE =
-      CacheBuilder.newBuilder()
-          .softValues()
-          .maximumSize(1 << 16)
-          .build(CacheLoader.from(ImmutableSet::copyOf));
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
   //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).
@@ -172,8 +165,20 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     /** Overwrite communities */
-    public B setCommunities(Set<Community> communities) {
-      _communities = communities instanceof ImmutableSet ? communities : new HashSet<>(communities);
+    public B setCommunities(CommunitySet communities) {
+      _communities = communities.getCommunities();
+      return getThis();
+    }
+
+    /** Overwrite communities */
+    public B setCommunities(Collection<? extends Community> communities) {
+      if (communities instanceof ImmutableSet) {
+        @SuppressWarnings("unchecked") // cannot be mutated, cast to superclass is safe.
+        ImmutableSet<Community> immutableComm = (ImmutableSet<Community>) communities;
+        _communities = immutableComm;
+      } else {
+        _communities = new HashSet<>(communities);
+      }
       return getThis();
     }
 
@@ -273,7 +278,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
   @Nonnull protected final AsPath _asPath;
   @Nonnull protected final Set<Long> _clusterList;
-  @Nonnull protected final Set<Community> _communities;
+  @Nonnull protected final CommunitySet _communities;
   protected final boolean _discard;
   protected final long _localPreference;
   protected final long _med;
@@ -287,10 +292,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Nullable protected final RoutingProtocol _srcProtocol;
   /* NOTE: Cisco-only attribute */
   protected final int _weight;
-
-  // Cached values
-  @Nonnull private Set<StandardCommunity> _standardCommunities;
-  @Nonnull private Set<ExtendedCommunity> _extendedCommunities;
 
   protected BgpRoute(
       @Nullable Prefix network,
@@ -322,8 +323,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _asPath = firstNonNull(asPath, AsPath.empty());
     _clusterList =
         clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.getUnchecked(clusterList);
-    _communities =
-        communities == null ? ImmutableSet.of() : COMMUNITY_CACHE.getUnchecked(communities);
+    _communities = communities == null ? CommunitySet.empty() : CommunitySet.of(communities);
     _discard = discard;
     _localPreference = localPreference;
     _med = med;
@@ -336,18 +336,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _receivedFromRouteReflectorClient = receivedFromRouteReflectorClient;
     _srcProtocol = srcProtocol;
     _weight = weight;
-
-    // Cache community values
-    _standardCommunities =
-        _communities.stream()
-            .filter(StandardCommunity.class::isInstance)
-            .map(StandardCommunity.class::cast)
-            .collect(ImmutableSet.toImmutableSet());
-    _extendedCommunities =
-        _communities.stream()
-            .filter(ExtendedCommunity.class::isInstance)
-            .map(ExtendedCommunity.class::cast)
-            .collect(ImmutableSet.toImmutableSet());
   }
 
   @Nonnull
@@ -361,7 +349,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   /** Return the set of all community attributes */
-  public @Nonnull Set<Community> getCommunities() {
+  public @Nonnull CommunitySet getCommunities() {
     return _communities;
   }
 
@@ -369,14 +357,14 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Nonnull
   @JsonIgnore
   public Set<StandardCommunity> getStandardCommunities() {
-    return _standardCommunities;
+    return _communities.getStandardCommunities();
   }
 
   /** Return only extended community attributes */
   @Nonnull
   @JsonIgnore
   public Set<ExtendedCommunity> getExtendedCommunities() {
-    return _extendedCommunities;
+    return _communities.getExtendedCommunities();
   }
 
   @JsonProperty(PROP_DISCARD)
@@ -463,7 +451,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @JsonProperty(PROP_COMMUNITIES)
-  private @Nonnull SortedSet<Community> getJsonCommunities() {
-    return ImmutableSortedSet.copyOf(_communities);
+  private @Nonnull CommunitySet getJsonCommunities() {
+    return _communities;
   }
 }

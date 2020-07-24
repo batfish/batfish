@@ -101,7 +101,7 @@ public final class CommunityContext {
           CommunitySet.of(environment.getIntermediateBgpAttributes().getCommunities());
     } else if (environment.getOriginalRoute() instanceof BgpRoute) {
       BgpRoute<?, ?> bgpRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
-      inputCommunitySet = CommunitySet.of(bgpRoute.getCommunities());
+      inputCommunitySet = bgpRoute.getCommunities();
     } else {
       inputCommunitySet = CommunitySet.empty();
     }
