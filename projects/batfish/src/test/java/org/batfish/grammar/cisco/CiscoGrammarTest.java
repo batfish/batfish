@@ -264,7 +264,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.BDDMatchers;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -3759,18 +3758,16 @@ public final class CiscoGrammarTest {
     assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
-    assertThat(iosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
-    assertThat(iosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
-    assertThat(iosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
-    assertThat(iosStdGshut, equalTo(StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN)));
-    assertThat(
-        iosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
-    assertThat(eosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
-    assertThat(eosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
-    assertThat(eosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
-    assertThat(eosStdGshut, equalTo(StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN)));
-    assertThat(
-        eosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+    assertThat(iosStdInternet, equalTo(StandardCommunity.INTERNET));
+    assertThat(iosStdNoAdv, equalTo(StandardCommunity.NO_ADVERTISE));
+    assertThat(iosStdNoExport, equalTo(StandardCommunity.NO_EXPORT));
+    assertThat(iosStdGshut, equalTo(StandardCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(iosStdLocalAs, equalTo(StandardCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(eosStdInternet, equalTo(StandardCommunity.INTERNET));
+    assertThat(eosStdNoAdv, equalTo(StandardCommunity.NO_ADVERTISE));
+    assertThat(eosStdNoExport, equalTo(StandardCommunity.NO_EXPORT));
+    assertThat(eosStdGshut, equalTo(StandardCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(eosStdLocalAs, equalTo(StandardCommunity.NO_EXPORT_SUBCONFED));
 
     // make sure well known communities in expanded lists are not actually converted
     assertThat(iosRegexExpGshut, equalTo("gshut"));

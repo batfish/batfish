@@ -119,7 +119,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -1392,11 +1391,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private @Nullable StandardCommunity toStandardCommunity(Sc_namedContext ctx) {
     if (ctx.NO_ADVERTISE() != null) {
-      return StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE);
+      return StandardCommunity.NO_ADVERTISE;
     } else if (ctx.NO_EXPORT() != null) {
-      return StandardCommunity.of(WellKnownCommunity.NO_EXPORT);
+      return StandardCommunity.NO_EXPORT;
     } else if (ctx.NO_EXPORT_SUBCONFED() != null) {
-      return StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED);
+      return StandardCommunity.NO_EXPORT_SUBCONFED;
     } else {
       return convProblem(StandardCommunity.class, ctx, null);
     }

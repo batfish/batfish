@@ -207,7 +207,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
@@ -6648,13 +6647,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.literal != null) {
       return Optional.of(toStandardCommunity(ctx.literal));
     } else if (ctx.INTERNET() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.INTERNET));
+      return Optional.of(StandardCommunity.INTERNET);
     } else if (ctx.LOCAL_AS() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+      return Optional.of(StandardCommunity.NO_EXPORT_SUBCONFED);
     } else if (ctx.NO_ADVERTISE() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE));
+      return Optional.of(StandardCommunity.NO_ADVERTISE);
     } else if (ctx.NO_EXPORT() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+      return Optional.of(StandardCommunity.NO_EXPORT);
     } else {
       // assume valid but unsupported
       todo(ctx);

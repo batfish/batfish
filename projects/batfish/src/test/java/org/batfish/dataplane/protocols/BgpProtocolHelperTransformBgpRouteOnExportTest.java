@@ -14,7 +14,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
@@ -244,7 +243,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     for (boolean isIbgp : ImmutableList.of(false, true)) {
       setUpPeers(isIbgp);
       Set<Community> noAdvertiseCommunitySet =
-          ImmutableSortedSet.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE));
+          ImmutableSortedSet.of(StandardCommunity.NO_ADVERTISE);
 
       Bgpv4Route.Builder transformedAggregateRoute =
           runTransformBgpRoutePreExport(
@@ -265,8 +264,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    */
   @Test
   public void testRoutesWithNoExportSetNotExported() {
-    Set<Community> noExportCommunitySet =
-        ImmutableSortedSet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+    Set<Community> noExportCommunitySet = ImmutableSortedSet.of(StandardCommunity.NO_EXPORT);
 
     {
       // iBGP
