@@ -261,7 +261,8 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       return false;
     }
     EvpnType2Route other = (EvpnType2Route) o;
-    return Objects.equals(_network, other._network)
+    return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
+        && Objects.equals(_network, other._network)
         && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()

@@ -60,7 +60,9 @@ public final class FibEntry implements Serializable {
       return false;
     }
     FibEntry rhs = (FibEntry) o;
-    return _action.equals(rhs._action) && _resolutionSteps.equals(rhs._resolutionSteps);
+    return (_hashCode == rhs._hashCode || _hashCode == 0 || rhs._hashCode == 0)
+        && _action.equals(rhs._action)
+        && _resolutionSteps.equals(rhs._resolutionSteps);
   }
 
   @Override

@@ -207,9 +207,9 @@ public abstract class OspfExternalRoute extends OspfRoute {
       return false;
     }
     OspfExternalRoute that = (OspfExternalRoute) o;
-    return
-    // AbstractRoute properties
-    Objects.equals(_network, that._network)
+    return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
+        // AbstractRoute properties
+        && _network.equals(that._network)
         && _admin == that._admin
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
