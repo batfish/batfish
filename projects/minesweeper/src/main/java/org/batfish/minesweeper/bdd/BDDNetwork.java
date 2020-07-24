@@ -84,7 +84,7 @@ public class BDDNetwork {
       networks = Graph.getOriginatedNetworks(conf);
     }
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements(), _policyQuotient);
-    return t.compute(networks);
+    return t.compute(networks).getReturnValue().getFirst();
   }
 
   /*

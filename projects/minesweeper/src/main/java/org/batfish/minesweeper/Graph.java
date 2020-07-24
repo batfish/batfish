@@ -42,6 +42,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamily;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -816,10 +817,25 @@ public class Graph {
     return _domainMapInverse.get(idx);
   }
 
+  /*
+   * Identifies all of the community literals and regexes in the given configurations.
+   * For each literal, a CommunityVar instance of type EXACT is created.  For each regex,
+   * two CommunityVar instances are created: one of type REGEX to represent the regex itself,
+   * and one of type OTHER to represent unknown community literals that match this regex.
+   */
   private void initAllCommunities() {
     _allCommunities = findAllCommunities();
   }
 
+  /*
+   * Computes a map from each community variable r of type REGEX to a set of community
+   * variables that depend on it.  A community variable v is considered to depend on r if
+   * either v is the corresponding OTHER-typed variable for r (see initAllCommunities above)
+   * or if v has type EXACT and its associated community literal matches r's regex.
+   *
+   * These dependencies are used in order to precisely track community literals during symbolic
+   * route analysis.
+   */
   private void initCommDependencies() {
     // Map community regex matches to Java regex
     Map<CommunityVar, java.util.regex.Pattern> regexes = new HashMap<>();
@@ -884,6 +900,14 @@ public class Graph {
 
   public Map<String, String> getNamedCommunities() {
     return _namedCommunities;
+  }
+
+  public void addCommunities(Set<Community> communities) {
+    for (Community c : communities) {
+      _allCommunities.add(CommunityVar.from(c));
+    }
+    // this could be optimized to only compute dependencies for the new communities
+    initCommDependencies();
   }
 
   /*

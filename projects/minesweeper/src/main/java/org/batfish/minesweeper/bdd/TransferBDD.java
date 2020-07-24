@@ -3,6 +3,7 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
 import static org.batfish.minesweeper.bdd.CommunityVarConverter.toCommunityVar;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -85,7 +86,7 @@ import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
-class TransferBDD {
+public class TransferBDD {
 
   private static BDDFactory factory = BDDRoute.factory;
 
@@ -105,7 +106,7 @@ class TransferBDD {
 
   private List<Statement> _statements;
 
-  TransferBDD(Graph g, Configuration conf, List<Statement> statements, PolicyQuotient pq) {
+  public TransferBDD(Graph g, Configuration conf, List<Statement> statements, PolicyQuotient pq) {
     _graph = g;
     _conf = conf;
     _policyQuotient = pq;
@@ -671,7 +672,7 @@ class TransferBDD {
 
       // Set all the values to 0 if the return is not true;
       TransferReturn ret = result.getReturnValue();
-      BDDRoute retVal = ite(ret.getSecond(), ret.getFirst(), zeroedRecord());
+      BDDRoute retVal = iteZero(ret.getSecond(), ret.getFirst());
       result = result.setReturnValue(new TransferReturn(retVal, ret.getSecond()));
     }
     return result;
@@ -699,7 +700,7 @@ class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
+  public static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
     BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, p.getPrefixLength());
 
@@ -736,7 +737,13 @@ class TransferBDD {
     return result;
   }
 
-  private BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
+  @VisibleForTesting
+  BDDRoute iteZero(BDD guard, BDDRoute r) {
+    return ite(guard, r, zeroedRecord());
+  }
+
+  @VisibleForTesting
+  BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
     BDDRoute ret = new BDDRoute(_comms);
 
     BDDInteger x;
@@ -940,7 +947,8 @@ class TransferBDD {
    * A record of default values that represent the value of the
    * outputs if the route is filtered / dropped in the policy
    */
-  private BDDRoute zeroedRecord() {
+  @VisibleForTesting
+  BDDRoute zeroedRecord() {
     BDDRoute rec = new BDDRoute(_comms);
     rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
@@ -970,7 +978,7 @@ class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
+  public TransferResult<TransferReturn, BDD> compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.getAllCommunities();
@@ -980,7 +988,8 @@ class TransferBDD {
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
-    return result.getReturnValue().getFirst();
+    //    return result.getReturnValue().getFirst();
+    return result;
   }
 
   /*
