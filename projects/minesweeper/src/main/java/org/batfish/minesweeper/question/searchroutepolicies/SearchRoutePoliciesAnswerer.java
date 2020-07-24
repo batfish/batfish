@@ -147,28 +147,34 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Given a bdd representing a single satisfying assignment to the constraints from symbolic route
-   * analysis, and given a BDDRoute that represents the constraints on the input or output route,
-   * produce either a set of communities for the route that are consistent with this assignment, or
-   * a set of constraints (represented as a BDD) that are contradictory. The latter can happen
-   * because the symbolic route analysis treats community regexes (mostly) as a black box, so the
-   * constraints may be shown to be infeasible after properly interpreting the regexes.
+   * Given a single satisfying assignment to the constraints from symbolic route analysis, and given
+   * a BDDRoute that represents the constraints on the input or output route, produce either a set
+   * of communities for the route that are consistent with this assignment, or a set of constraints
+   * (represented as a BDD) that are contradictory. The latter can happen because the symbolic route
+   * analysis treats community regexes (mostly) as a black box, so the constraints may be shown to
+   * be infeasible after properly interpreting the regexes.
    *
-   * @param satAssignment the satisfying assignment
+   * <p>We represent the satisfying assignment in terms of a minimal model, which only includes
+   * valuations to variables that are necessary to satisfy the constraints. This allows us to deduce
+   * which communities are "don't cares" and so can be ignored.
+   *
+   * @param minimalModel a minimal model of the symbolic route constraints
    * @param r the BDDRoute
    * @return a set of communities or a BDD representing an infeasible constraint
    */
-  static ResultOrUnsat<Set<Community>> satAssignmentToCommunities(BDD satAssignment, BDDRoute r) {
+  static ResultOrUnsat<Set<Community>> satAssignmentToCommunities(BDD minimalModel, BDDRoute r) {
 
-    // first figure out which communities are (not) in the assignment
+    // first figure out which communities are (not) in the assignment.
+    // this code is still correct even if minimalModel is not minimal but will lead to concrete
+    // routes with more communities than necessary.
     Map<CommunityVar, BDD> communities = r.getCommunities();
     Set<CommunityVar> positiveCommunities = new TreeSet<>();
     Set<CommunityVar> negativeCommunities = new TreeSet<>();
     for (Entry<CommunityVar, BDD> commEntry : communities.entrySet()) {
       CommunityVar commVar = commEntry.getKey();
       BDD commBDD = commEntry.getValue();
-      boolean canInclude = commBDD.andSat(satAssignment);
-      boolean canExclude = commBDD.not().andSat(satAssignment);
+      boolean canInclude = commBDD.andSat(minimalModel);
+      boolean canExclude = commBDD.not().andSat(minimalModel);
       if (canInclude && canExclude) {
         // this community is a "don't care" so ignore it
         continue;
@@ -236,25 +242,32 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Given a bdd representing a single satisfying assignment to the constraints from symbolic route
-   * analysis, and given a BDDRoute that represents the constraints on the input or output route,
-   * produce either a concrete route that is consistent with this assignment, or a set of
-   * constraints (represented as a BDD) that are contradictory. The latter can happen because the
-   * symbolic route analysis treats community regexes (mostly) as a black box, so the constraints
-   * may be shown to be infeasible after properly interpreting the regexes.
+   * Given a satisfying assignment to the constraints from symbolic route analysis, and given a
+   * BDDRoute that represents the constraints on the input or output route, produce either a
+   * concrete route that is consistent with this assignment, or a set of constraints (represented as
+   * a BDD) that are contradictory. The latter can happen because the symbolic route analysis treats
+   * community regexes (mostly) as a black box, so the constraints may be shown to be infeasible
+   * after properly interpreting the regexes.
    *
-   * @param satAssignment the satisfying assignment
+   * <p>We represent the satisfying assignment both in terms of a minimal model, which only includes
+   * valuations to variables that are necessary to satisfy the constraints, and a full model, which
+   * has a valuation for each variable. The former is useful in order to understand which
+   * communities are "don't cares" and so can be ignored. See satAssignmentToCommunities.
+   *
+   * @param minimalModel a minimal model of the symbolic route constraints
+   * @param fullModel a full model that extends minimalModel
    * @param r the BDDRoute
    * @return either a route or a BDD representing an infeasible constraint
    */
-  private static ResultOrUnsat<Bgpv4Route> satAssignmentToRoute(BDD satAssignment, BDDRoute r) {
+  private static ResultOrUnsat<Bgpv4Route> satAssignmentToRoute(
+      BDD minimalModel, BDD fullModel, BDDRoute r) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP);
 
-    ResultOrUnsat<Set<Community>> commResult = satAssignmentToCommunities(satAssignment, r);
+    ResultOrUnsat<Set<Community>> commResult = satAssignmentToCommunities(minimalModel, r);
     Set<Community> communities = commResult.getResult();
     if (communities == null) {
       // the community constraints were not satisfiable, so we need to get a new
@@ -266,15 +279,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // we know that the satAssignment is not zero so all calls to getValueSatisfying below
       // will succeed in returning a value
       builder.setCommunities(communities);
-      Ip ip = Ip.create(r.getPrefix().getValueSatisfying(satAssignment).get());
-      long len = r.getPrefixLength().getValueSatisfying(satAssignment).get();
+      Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
+      long len = r.getPrefixLength().satAssignmentToLong(fullModel);
       builder.setNetwork(Prefix.create(ip, (int) len));
 
-      builder.setLocalPreference(r.getLocalPref().getValueSatisfying(satAssignment).get());
-      builder.setAdmin((int) (long) r.getAdminDist().getValueSatisfying(satAssignment).get());
+      builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
+      builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
       // BDDRoute has a med and a metric, which appear to be treated identically
       // I'm ignoring the metric and using the med
-      builder.setMetric(r.getMed().getValueSatisfying(satAssignment).get());
+      builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
 
       return new ResultOrUnsat<>(builder.build());
     }
@@ -295,9 +308,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD model = constraints.satOne();
+      BDD minimalModel = constraints.satOne();
+      BDD fullModel = minimalModel.fullSatOne();
       ResultOrUnsat<Bgpv4Route> inResult =
-          satAssignmentToRoute(model, new BDDRoute(_g.getAllCommunities()));
+          satAssignmentToRoute(minimalModel, fullModel, new BDDRoute(_g.getAllCommunities()));
       if (_action == Action.DENY) {
         return Optional.of(
             new Result(
@@ -309,7 +323,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 _action,
                 null));
       } else {
-        ResultOrUnsat<Bgpv4Route> outResult = satAssignmentToRoute(model, outputRoute);
+        ResultOrUnsat<Bgpv4Route> outResult =
+            satAssignmentToRoute(minimalModel, fullModel, outputRoute);
         if (outResult.getResult() == null) {
           // we couldn't solve the community regex constraints in the current model, so
           // try to find another one.
