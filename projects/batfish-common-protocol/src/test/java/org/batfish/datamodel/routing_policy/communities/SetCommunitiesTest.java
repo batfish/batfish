@@ -61,7 +61,7 @@ public final class SetCommunitiesTest {
     Environment envWriteToOutput = Environment.builder(c).setOutputRoute(routeBuilder()).build();
     set.execute(envWriteToOutput);
     Bgpv4Route routeWriteToOutput = (Bgpv4Route) envWriteToOutput.getOutputRoute().build();
-    assertThat(routeWriteToOutput.getCommunities(), equalTo(cs.getCommunities()));
+    assertThat(routeWriteToOutput.getCommunities().getCommunities(), equalTo(cs.getCommunities()));
 
     // test writing to intermediate bgp attributes
     Environment envWriteToIntermediate =
@@ -73,6 +73,7 @@ public final class SetCommunitiesTest {
     set.execute(envWriteToIntermediate);
     Bgpv4Route routeWriteToIntermediate =
         (Bgpv4Route) envWriteToIntermediate.getIntermediateBgpAttributes().build();
-    assertThat(routeWriteToIntermediate.getCommunities(), equalTo(cs.getCommunities()));
+    assertThat(
+        routeWriteToIntermediate.getCommunities().getCommunities(), equalTo(cs.getCommunities()));
   }
 }

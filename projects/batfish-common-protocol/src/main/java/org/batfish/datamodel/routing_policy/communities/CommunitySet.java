@@ -15,6 +15,8 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A set of {@link Community} objects. */
 public final class CommunitySet implements Serializable {
@@ -56,6 +58,32 @@ public final class CommunitySet implements Serializable {
 
   public @Nonnull Set<Community> getCommunities() {
     return _communities;
+  }
+
+  public @Nonnull Set<ExtendedCommunity> getExtendedCommunities() {
+    if (_communities.isEmpty()) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<ExtendedCommunity> ret = ImmutableSet.builder();
+    for (Community c : _communities) {
+      if (c instanceof ExtendedCommunity) {
+        ret.add((ExtendedCommunity) c);
+      }
+    }
+    return ret.build();
+  }
+
+  public @Nonnull Set<StandardCommunity> getStandardCommunities() {
+    if (_communities.isEmpty()) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<StandardCommunity> ret = ImmutableSet.builder();
+    for (Community c : _communities) {
+      if (c instanceof StandardCommunity) {
+        ret.add((StandardCommunity) c);
+      }
+    }
+    return ret.build();
   }
 
   @Override
