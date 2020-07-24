@@ -128,6 +128,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
@@ -726,6 +727,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSiipo_network_p2p(Siipo_network_p2pContext ctx) {
     _currentInterface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
+  }
+
+  @Override
+  public void exitSiipo_cost(Siipo_costContext ctx) {
+    final Integer ospf_cost = Integer.parseInt(ctx.cost.getText());
+    _currentInterface.getOrCreateOspf().setCost(ospf_cost);
   }
 
   @Override
