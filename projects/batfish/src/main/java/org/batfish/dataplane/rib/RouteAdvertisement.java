@@ -90,7 +90,9 @@ public final class RouteAdvertisement<T> {
       return false;
     }
     RouteAdvertisement<?> that = (RouteAdvertisement<?>) o;
-    return _route.equals(that._route) && _reason == that._reason;
+    return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
+        && _route.equals(that._route)
+        && _reason == that._reason;
   }
 
   @Override

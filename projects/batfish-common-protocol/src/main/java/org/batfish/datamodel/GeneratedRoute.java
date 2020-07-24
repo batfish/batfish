@@ -315,7 +315,8 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       return false;
     }
     GeneratedRoute that = (GeneratedRoute) o;
-    return Objects.equals(_network, that._network)
+    return (_hashCode == that._hashCode || _hashCode == 0 || that._hashCode == 0)
+        && _network.equals(that._network)
         && _admin == that._admin
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
