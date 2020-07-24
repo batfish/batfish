@@ -24,7 +24,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
   @JsonSubTypes.Type(value = DeleteCommunity.class),
   @JsonSubTypes.Type(value = If.class),
   @JsonSubTypes.Type(value = PrependAsPath.class),
-  @JsonSubTypes.Type(value = RetainCommunity.class),
   @JsonSubTypes.Type(value = SetCommunity.class),
   @JsonSubTypes.Type(value = SetIsisLevel.class),
   @JsonSubTypes.Type(value = SetIsisMetricType.class),

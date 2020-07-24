@@ -90,7 +90,6 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
-import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -170,7 +169,6 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new DeleteCommunity(new NamedCommunitySet("a")).accept(STATEMENT_VERIFIER, ctx));
     assertNull(
         new PrependAsPath(new LiteralAsList(ImmutableList.of())).accept(STATEMENT_VERIFIER, ctx));
-    assertNull(new RetainCommunity(new NamedCommunitySet("a")).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetAdministrativeCost(new LiteralInt(1)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetCommunity(new NamedCommunitySet("a")).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetDefaultPolicy("a").accept(STATEMENT_VERIFIER, ctx));
