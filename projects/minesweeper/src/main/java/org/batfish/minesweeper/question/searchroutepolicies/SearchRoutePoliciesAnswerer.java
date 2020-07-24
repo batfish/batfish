@@ -77,6 +77,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
 
+  // concrete community literals that we generate must satisfy this regex,
+  // to help ensure that they will be parse-able
+  private static final Automaton COMMUNITY_FSM = new RegExp("[0-9]+(:[0-9]+)+").toAutomaton();
+
   @Nonnull private final RouteConstraints _inputConstraints;
   @Nonnull private final RouteConstraints _outputConstraints;
   @Nonnull private final String _nodes;
@@ -164,10 +168,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       CommunityVar commVar = commEntry.getKey();
       BDD commBDD = commEntry.getValue();
       if (commBDD.andSat(satAssignment)) {
-        // this community should exist according to the given model
+        // this community exists in the given model
         positiveCommunities.add(commVar);
       } else {
-        // this community should not exist according to the given model
+        // this community does not exist in the given model
         negativeCommunities.add(commVar);
       }
     }
@@ -193,7 +197,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       } else {
         // this is a regex, so we need to take into account the other community literals/regexes
         // that are not in the model, to see if there is a contradiction
-        Automaton automaton = cvarAutomaton.minus(disallowed);
+        Automaton automaton = cvarAutomaton.intersection(COMMUNITY_FSM).minus(disallowed);
         if (automaton.isEmpty()) {
           // the regex constraints are not satisfiable, so
           // compute the BDD corresponding to these constraints and return it
@@ -216,7 +220,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             example = exampleOpt.get();
           } else {
             throw new BatfishException(
-                "Failed to produce a valid community matching regex " + cvar.getRegex());
+                "Failed to produce a valid community matching regex for " + cvar.getRegex());
           }
         }
       }
