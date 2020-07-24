@@ -76,6 +76,7 @@ public class SearchRoutePoliciesAnswererTest {
   private static final String POLICY_NAME = "policy";
   private static final String COMMUNITY_NAME = "community";
   private static final String REGEX_COMMUNITY_NAME = "regexCommunity";
+  private static final String GENERAL_REGEX_COMMUNITY_NAME = "generalRegexCommunity";
 
   private static final RouteConstraints EMPTY_CONSTRAINTS = RouteConstraints.builder().build();
   private RoutingPolicy.Builder _policyBuilder;
@@ -133,6 +134,11 @@ public class SearchRoutePoliciesAnswererTest {
             new CommunityList(
                 REGEX_COMMUNITY_NAME,
                 ImmutableList.of(CommunityListLine.accepting(new RegexCommunitySet("^2[0-9]:30$"))),
+                false),
+            GENERAL_REGEX_COMMUNITY_NAME,
+            new CommunityList(
+                GENERAL_REGEX_COMMUNITY_NAME,
+                ImmutableList.of(CommunityListLine.accepting(new RegexCommunitySet("^.*$"))),
                 false)));
     nf.vrfBuilder().setOwner(baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
     _policyBuilder = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_NAME);
@@ -294,6 +300,41 @@ public class SearchRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.parse("0.0.0.0/0"))
             .setCommunities(ImmutableSet.of(StandardCommunity.parse("21:30")))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+  }
+
+  @Test
+  public void testMatchGeneralRegexCommunity() {
+    _policyBuilder.addStatement(
+        new If(
+            matchNamedCommunity(GENERAL_REGEX_COMMUNITY_NAME),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            EMPTY_CONSTRAINTS, EMPTY_CONSTRAINTS, HOSTNAME, policy.getName(), Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setCommunities(ImmutableSet.of(StandardCommunity.parse("0:0")))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)

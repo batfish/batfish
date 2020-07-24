@@ -167,7 +167,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     for (Entry<CommunityVar, BDD> commEntry : communities.entrySet()) {
       CommunityVar commVar = commEntry.getKey();
       BDD commBDD = commEntry.getValue();
-      if (commBDD.andSat(satAssignment)) {
+      boolean canInclude = commBDD.andSat(satAssignment);
+      boolean canExclude = commBDD.not().andSat(satAssignment);
+      if (canInclude && canExclude) {
+        // this community is a "don't care" so ignore it
+        continue;
+      } else if (canInclude) {
         // this community exists in the given model
         positiveCommunities.add(commVar);
       } else {
@@ -257,16 +262,19 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       return new ResultOrUnsat<>(commResult.getUnsatConstraints());
     } else {
       // the community constraints were satisfiable so we can build a concrete route
+
+      // we know that the satAssignment is not zero so all calls to getValueSatisfying below
+      // will succeed in returning a value
       builder.setCommunities(communities);
-      Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(satAssignment));
-      long len = r.getPrefixLength().satAssignmentToLong(satAssignment);
+      Ip ip = Ip.create(r.getPrefix().getValueSatisfying(satAssignment).get());
+      long len = r.getPrefixLength().getValueSatisfying(satAssignment).get();
       builder.setNetwork(Prefix.create(ip, (int) len));
 
-      builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(satAssignment));
-      builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(satAssignment));
+      builder.setLocalPreference(r.getLocalPref().getValueSatisfying(satAssignment).get());
+      builder.setAdmin((int) (long) r.getAdminDist().getValueSatisfying(satAssignment).get());
       // BDDRoute has a med and a metric, which appear to be treated identically
       // I'm ignoring the metric and using the med
-      builder.setMetric(r.getMed().satAssignmentToLong(satAssignment));
+      builder.setMetric(r.getMed().getValueSatisfying(satAssignment).get());
 
       return new ResultOrUnsat<>(builder.build());
     }
@@ -287,7 +295,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD model = constraints.fullSatOne();
+      BDD model = constraints.satOne();
       ResultOrUnsat<Bgpv4Route> inResult =
           satAssignmentToRoute(model, new BDDRoute(_g.getAllCommunities()));
       if (_action == Action.DENY) {
