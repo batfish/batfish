@@ -642,7 +642,8 @@ public class VirtualRouter implements Serializable {
         transformedIncomingRouteBuilder.setAsPath(transformedOutgoingRoute.getAsPath());
 
         // Incoming communities
-        transformedIncomingRouteBuilder.addCommunities(transformedOutgoingRoute.getCommunities());
+        transformedIncomingRouteBuilder.addCommunities(
+            transformedOutgoingRoute.getCommunities().getCommunities());
 
         // Incoming protocol
         transformedIncomingRouteBuilder.setProtocol(targetProtocol);

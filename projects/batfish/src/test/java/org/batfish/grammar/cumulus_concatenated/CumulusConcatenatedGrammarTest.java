@@ -370,12 +370,13 @@ public class CumulusConcatenatedGrammarTest {
     Bgpv4Route outputRoute2 = processRouteIn(rp2, inRoute);
     Bgpv4Route outputRoute3 = processRouteIn(rp3, inRoute);
     assertThat(
-        outputRoute1.getCommunities(),
+        outputRoute1.getCommunities().getCommunities(),
         containsInAnyOrder(
             StandardCommunity.of(2, 2), StandardCommunity.of(3, 3), StandardCommunity.of(4, 4)));
-    assertThat(outputRoute2.getCommunities(), contains(StandardCommunity.of(1, 1)));
     assertThat(
-        outputRoute3.getCommunities(),
+        outputRoute2.getCommunities().getCommunities(), contains(StandardCommunity.of(1, 1)));
+    assertThat(
+        outputRoute3.getCommunities().getCommunities(),
         containsInAnyOrder(
             StandardCommunity.of(2, 2), StandardCommunity.of(3, 3), StandardCommunity.of(4, 4)));
   }
@@ -443,12 +444,12 @@ public class CumulusConcatenatedGrammarTest {
     // RMs using expanded comm-lists.
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_ALL_COMMUNITIES");
-      assertThat(processRouteIn(rp, inRoute).getCommunities(), empty());
+      assertThat(processRouteIn(rp, inRoute).getCommunities().getCommunities(), empty());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_1");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(2, 1),
               StandardCommunity.of(2, 2),
@@ -458,7 +459,7 @@ public class CumulusConcatenatedGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_2");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(1, 1),
               StandardCommunity.of(1, 2),
@@ -468,7 +469,7 @@ public class CumulusConcatenatedGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_BEGIN_WITH_3");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(1, 1),
               StandardCommunity.of(1, 2),
@@ -478,7 +479,7 @@ public class CumulusConcatenatedGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_EXPANDED_TEST_DELETE_COMM_DENY_PERMIT");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(1, 1),
               StandardCommunity.of(1, 2),
@@ -490,7 +491,7 @@ public class CumulusConcatenatedGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_1_1");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(1, 2),
               StandardCommunity.of(2, 1),
@@ -501,7 +502,7 @@ public class CumulusConcatenatedGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_2_1");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(1, 1),
               StandardCommunity.of(1, 2),
@@ -512,7 +513,7 @@ public class CumulusConcatenatedGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_3_1");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(1, 1),
               StandardCommunity.of(1, 2),
@@ -523,7 +524,7 @@ public class CumulusConcatenatedGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("RM_STANDARD_TEST_DELETE_COMM_DENY_PERMIT");
       assertThat(
-          processRouteIn(rp, inRoute).getCommunities(),
+          processRouteIn(rp, inRoute).getCommunities().getCommunities(),
           contains(
               StandardCommunity.of(1, 1),
               StandardCommunity.of(2, 1),
