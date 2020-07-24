@@ -66,7 +66,9 @@ public final class CommunitySet implements Serializable {
     if (!(obj instanceof CommunitySet)) {
       return false;
     }
-    return _communities.equals(((CommunitySet) obj)._communities);
+    CommunitySet other = (CommunitySet) obj;
+    return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
+        && _communities.equals(other._communities);
   }
 
   @Override
