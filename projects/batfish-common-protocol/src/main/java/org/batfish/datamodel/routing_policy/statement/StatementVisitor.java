@@ -20,8 +20,6 @@ public interface StatementVisitor<T, U> {
 
   T visitPrependAsPath(PrependAsPath prependAsPath, U arg);
 
-  T visitRetainCommunity(RetainCommunity retainCommunity, U arg);
-
   T visitSetAdministrativeCost(SetAdministrativeCost setAdministrativeCost, U arg);
 
   T visitSetCommunities(SetCommunities setCommunities, U arg);

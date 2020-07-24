@@ -65,7 +65,6 @@ import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
-import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -631,10 +630,6 @@ class TransferBDD {
             curP.getData().getCommunities().put(cvar, newValue);
           }
         }
-
-      } else if (stmt instanceof RetainCommunity) {
-        curP.debug("RetainCommunity");
-        // no op
 
       } else if (stmt instanceof PrependAsPath) {
         curP.debug("PrependAsPath");

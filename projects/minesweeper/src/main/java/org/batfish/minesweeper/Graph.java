@@ -57,7 +57,6 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
-import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.minesweeper.collections.Table2;
 
@@ -929,10 +928,6 @@ public class Graph {
             if (stmt instanceof DeleteCommunity) {
               DeleteCommunity dc = (DeleteCommunity) stmt;
               comms.addAll(collectCommunityVars(conf, dc.getExpr()));
-            }
-            if (stmt instanceof RetainCommunity) {
-              RetainCommunity rc = (RetainCommunity) stmt;
-              comms.addAll(collectCommunityVars(conf, rc.getExpr()));
             }
           },
           expr -> {
