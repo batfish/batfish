@@ -1737,6 +1737,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceShowRunAll1() throws IOException {
+    String hostname = "nxos_interface_show_all_1";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c, hasInterface("Ethernet1/21", hasDescription("Made it to the end of Ethernet1/21")));
+  }
+
+  @Test
   public void testInterfaceShutdownConversion() throws IOException {
     String hostname = "nxos_interface_shutdown";
     Configuration c = parseConfig(hostname);
