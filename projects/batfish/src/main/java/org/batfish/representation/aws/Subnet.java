@@ -494,6 +494,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
     }
   }
 
+  /** Get {@link NetworkAcl} for this subnet, if one is present. Does not file warnings. */
+  public Optional<NetworkAcl> getNetworkAcl(Region region) {
+    return getNetworkAcl(region, new Warnings());
+  }
+
   /** Get {@link NetworkAcl} for this subnet, if one is present, and file warnings if needed. */
   private Optional<NetworkAcl> getNetworkAcl(Region region, Warnings warnings) {
     List<NetworkAcl> myNetworkAcls =

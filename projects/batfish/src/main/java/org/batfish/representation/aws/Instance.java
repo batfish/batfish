@@ -334,7 +334,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
         cfgNode);
   }
 
-  static String instanceHostname(String instanceId) {
+  public static String instanceHostname(String instanceId) {
     return instanceId;
   }
 
