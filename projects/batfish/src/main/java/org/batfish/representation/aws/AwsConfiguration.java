@@ -212,9 +212,7 @@ public class AwsConfiguration extends VendorConfiguration {
                     .collect(ImmutableSet.toImmutableSet());
             AtomicBoolean hasInstanceTarget = new AtomicBoolean(false);
 
-            getActiveTargets(
-                    lbth, targetGroup, azNames, crossZoneLoadBalancing, region, false, null)
-                .stream()
+            getActiveTargets(lbth, targetGroup, azNames, region, false, null).stream()
                 .filter(desc -> getTargetIp(desc.getTarget(), Type.INSTANCE, region) != null)
                 .map(desc -> region.getInstances().get(desc.getTarget().getId()))
                 .forEach(
