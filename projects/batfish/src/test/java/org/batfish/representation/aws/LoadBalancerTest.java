@@ -725,7 +725,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testIsTargetInEnabledAvailabilityZone_ipTarget() {
+  public void testIsTargetInValidAvailabilityZone_ipTarget() {
     TargetGroup targetGroup =
         new TargetGroup(
             "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.IP);
