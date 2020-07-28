@@ -196,11 +196,6 @@ public class AwsConfiguration extends VendorConfiguration {
           }
 
           for (String lbArn : targetGroup.getLoadBalancerArns()) {
-            LoadBalancerAttributes loadBalancerAttributes =
-                region.getLoadBalancerAttributes().get(lbArn);
-            boolean crossZoneLoadBalancing =
-                loadBalancerAttributes != null
-                    && loadBalancerAttributes.getCrossZoneLoadBalancing();
             LoadBalancer lb = region.getLoadBalancersMap().get(lbArn);
             if (lb.getType() == LoadBalancer.Type.APPLICATION) {
               // Application load balancers not supported
