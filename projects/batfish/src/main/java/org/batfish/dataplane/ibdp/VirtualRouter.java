@@ -1145,6 +1145,9 @@ public class VirtualRouter implements Serializable {
       BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().head()));
       assert ourBgpConfig.getIpv4UnicastAddressFamily() != null;
       // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+      boolean useRibGroups =
+          ourBgpConfig.getAppliedRibGroup() != null
+              && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
       Ip remoteIp = sessionProperties.getTailIp();
 
       Bgpv4Rib targetRib =
@@ -1213,11 +1216,15 @@ public class VirtualRouter implements Serializable {
         if (remoteRouteAdvert.isWithdrawn()) {
           // Note this route was removed
           ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
-          perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
+          if (useRibGroups) {
+            perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
+          }
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-          perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
+          if (useRibGroups) {
+            perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
+          }
           _prefixTracer.installed(
               transformedIncomingRoute.getNetwork(),
               remoteConfigId.getHostname(),
@@ -1227,8 +1234,8 @@ public class VirtualRouter implements Serializable {
         }
       }
       // Apply rib groups if any
-      RibGroup rg = ourBgpConfig.getAppliedRibGroup();
-      if (rg != null) {
+      if (useRibGroups) {
+        RibGroup rg = ourBgpConfig.getAppliedRibGroup();
         rg.getImportRibs()
             .forEach(
                 rib ->
