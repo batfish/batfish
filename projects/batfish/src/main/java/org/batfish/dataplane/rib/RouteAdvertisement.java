@@ -143,4 +143,15 @@ public final class RouteAdvertisement<T> {
       return new RouteAdvertisement<>(_route, _reason);
     }
   }
+
+  /**
+   * Returns a version of this route advertisement with REPLACE changed to WITHDRAW. Replace is a
+   * local operation but always looks like withdraw to neighbors.
+   */
+  public RouteAdvertisement<T> sanitizeForExport() {
+    if (_reason != Reason.REPLACE) {
+      return this;
+    }
+    return new RouteAdvertisement<T>(_route, Reason.WITHDRAW);
+  }
 }
