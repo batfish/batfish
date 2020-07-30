@@ -86,6 +86,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.GeneratedRoute;
@@ -2846,6 +2847,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
+    if (_vendor == ConfigurationFormat.CISCO_ASA || _vendor == ConfigurationFormat.CISCO_IOS) {
+      c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
+    }
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
