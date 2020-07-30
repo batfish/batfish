@@ -184,6 +184,7 @@ public class Graph {
     _domainMap = new HashMap<>();
     _domainMapInverse = new HashMap<>();
     _configurations = configs;
+    _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
     _snapshot = snapshot;
     if (_configurations == null) {
@@ -840,12 +841,11 @@ public class Graph {
    * user-specified community constraints during symbolic analysis.
    */
   private void initAllCommunities(@Nullable Set<Community> communities) {
-    _allCommunities = new HashSet<>();
+    _allCommunities.addAll(findAllCommunities());
     if (communities != null) {
       _allCommunities.addAll(
           communities.stream().map(CommunityVar::from).collect(Collectors.toSet()));
     }
-    _allCommunities.addAll(findAllCommunities());
   }
 
   /*
