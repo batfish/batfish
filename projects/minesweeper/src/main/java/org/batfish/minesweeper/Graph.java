@@ -19,6 +19,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
@@ -131,7 +132,7 @@ public class Graph {
    * skip the cloning, assuming that the caller has made a defensive copy first.
    */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot) {
-    this(batfish, snapshot, null, null);
+    this(batfish, snapshot, null, null, null);
   }
 
   /**
@@ -143,7 +144,7 @@ public class Graph {
    */
   public Graph(
       IBatfish batfish, NetworkSnapshot snapshot, @Nullable Map<String, Configuration> configs) {
-    this(batfish, snapshot, configs, null);
+    this(batfish, snapshot, configs, null, null);
   }
 
   /*
@@ -154,6 +155,18 @@ public class Graph {
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers) {
+    this(batfish, snapshot, configs, routers, null);
+  }
+
+  /* Create a graph, specifying an additional set of community literals to be tracked
+   * by the analysis.
+   */
+  public Graph(
+      IBatfish batfish,
+      NetworkSnapshot snapshot,
+      @Nullable Map<String, Configuration> configs,
+      @Nullable Set<String> routers,
+      @Nullable Set<Community> communities) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
     _allEdges = new HashSet<>();
@@ -211,7 +224,7 @@ public class Graph {
     initIbgpNeighbors();
     initAreaIds();
     initDomains();
-    initAllCommunities();
+    initAllCommunities(communities);
     initCommDependencies();
     initNamedCommunities();
   }
@@ -822,9 +835,17 @@ public class Graph {
    * For each literal, a CommunityVar instance of type EXACT is created.  For each regex,
    * two CommunityVar instances are created: one of type REGEX to represent the regex itself,
    * and one of type OTHER to represent unknown community literals that match this regex.
+   *
+   * An optional set of additional community literals is also included, which is used to support
+   * user-specified community constraints during symbolic analysis.
    */
-  private void initAllCommunities() {
-    _allCommunities = findAllCommunities();
+  private void initAllCommunities(@Nullable Set<Community> communities) {
+    _allCommunities = new HashSet<>();
+    if (communities != null) {
+      _allCommunities.addAll(
+          communities.stream().map(CommunityVar::from).collect(Collectors.toSet()));
+    }
+    _allCommunities.addAll(findAllCommunities());
   }
 
   /*
@@ -900,14 +921,6 @@ public class Graph {
 
   public Map<String, String> getNamedCommunities() {
     return _namedCommunities;
-  }
-
-  public void addCommunities(Set<Community> communities) {
-    for (Community c : communities) {
-      _allCommunities.add(CommunityVar.from(c));
-    }
-    // this could be optimized to only compute dependencies for the new communities
-    initCommDependencies();
   }
 
   /*

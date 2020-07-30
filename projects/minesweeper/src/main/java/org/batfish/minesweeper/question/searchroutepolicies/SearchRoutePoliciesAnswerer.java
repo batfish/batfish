@@ -87,10 +87,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final String _policies;
   @Nonnull private final Action _action;
 
-  @Nonnull private final Graph _g;
+  @Nonnull private final Set<Community> _communities;
   @Nonnull private final PolicyQuotient _pq;
-
-  private BDD _inputConstraintsBDD;
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -100,20 +98,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     _policies = question.getPolicies();
     _action = question.getAction();
 
-    _g = new Graph(batfish, batfish.getSnapshot());
+    _communities =
+        ImmutableSet.<Community>builder()
+            .addAll(_inputConstraints.getCommunities().getCommunities())
+            .addAll(_outputConstraints.getCommunities().getCommunities())
+            .build();
     _pq = new PolicyQuotient();
-
-    initializeRouteConstraints();
-  }
-
-  private void initializeRouteConstraints() {
-    // add any communities from the input and output constraints to the Graph so that
-    // they will be represented symbolically in our BDD computation
-    _g.addCommunities(_inputConstraints.getCommunities().getCommunities());
-    _g.addCommunities(_outputConstraints.getCommunities().getCommunities());
-
-    _inputConstraintsBDD =
-        routeConstraintsToBDD(_inputConstraints, new BDDRoute(_g.getAllCommunities()));
   }
 
   private static Optional<Community> stringToCommunity(String str) {
@@ -304,14 +294,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    *     PERMIT) concrete output route
    */
   private Optional<Result> constraintsToResult(
-      BDD constraints, BDDRoute outputRoute, RoutingPolicy policy) {
+      BDD constraints, BDDRoute outputRoute, RoutingPolicy policy, Graph g) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
       BDD minimalModel = constraints.satOne();
       BDD fullModel = minimalModel.fullSatOne();
       ResultOrUnsat<Bgpv4Route> inResult =
-          satAssignmentToRoute(minimalModel, fullModel, new BDDRoute(_g.getAllCommunities()));
+          satAssignmentToRoute(minimalModel, fullModel, new BDDRoute(g.getAllCommunities()));
       if (_action == Action.DENY) {
         return Optional.of(
             new Result(
@@ -329,7 +319,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
           // we couldn't solve the community regex constraints in the current model, so
           // try to find another one.
           return constraintsToResult(
-              constraints.diff(outResult.getUnsatConstraints()), outputRoute, policy);
+              constraints.diff(outResult.getUnsatConstraints()), outputRoute, policy, g);
         } else {
           return Optional.of(
               new Result(
@@ -426,8 +416,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   private Optional<Result> searchPolicy(RoutingPolicy policy) {
     TransferReturn result;
+    Graph g =
+        new Graph(
+            _batfish,
+            _batfish.getSnapshot(),
+            null,
+            ImmutableSet.of(policy.getOwner().getHostname()),
+            _communities);
     try {
-      TransferBDD tbdd = new TransferBDD(_g, policy.getOwner(), policy.getStatements(), _pq);
+      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements(), _pq);
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
@@ -440,15 +437,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;
+    BDD inConstraints =
+        routeConstraintsToBDD(_inputConstraints, new BDDRoute(g.getAllCommunities()));
     if (_action == Action.PERMIT) {
       // incorporate the constraints on the output route as well
       BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute);
-      intersection = acceptedAnnouncements.and(_inputConstraintsBDD).and(outConstraints);
+      intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
     } else {
-      intersection = acceptedAnnouncements.not().and(_inputConstraintsBDD);
+      intersection = acceptedAnnouncements.not().and(inConstraints);
     }
 
-    return constraintsToResult(intersection, outputRoute, policy);
+    return constraintsToResult(intersection, outputRoute, policy, g);
   }
 
   @Override
