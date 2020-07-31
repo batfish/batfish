@@ -1719,7 +1719,7 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpRouteMapFunctionality_behavior() throws IOException {
+  public void testBgpcommunityMatchSetTagAndWeight_behavior() throws IOException {
     /*
      There are two nodes in the topology arranged in a line.
        - frr-originator -- frr-listener
@@ -1734,7 +1734,7 @@ public class CumulusFrrGrammarTest {
 
     */
 
-    String snapshotName = "route-map-functionality";
+    String snapshotName = "bgp-comm-match-set-tag-weight";
     List<String> configurationNames = ImmutableList.of("frr-originator", "frr-listener");
     Batfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
