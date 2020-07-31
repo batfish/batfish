@@ -200,7 +200,7 @@ public class RibDeltaTest {
         contains(
             equalTo(
                 RouteAdvertisement.<Bgpv4Route>builder()
-                    .setRoute(bestRoute)
+                    .setRoute(betterRoute)
                     .setReason(Reason.REPLACE)
                     .build()),
             equalTo(new RouteAdvertisement<>(bestRoute))));

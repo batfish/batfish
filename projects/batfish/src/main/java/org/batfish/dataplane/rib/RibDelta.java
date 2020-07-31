@@ -114,6 +114,7 @@ public final class RibDelta<R> {
       _actions = new LinkedHashMap<>();
     }
 
+    @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
     private LinkedHashMap<R, RouteAdvertisement<R>> getAdvertisements(Prefix network) {
       return _actions.computeIfAbsent(network, p -> new LinkedHashMap<>(8));
     }
