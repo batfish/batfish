@@ -52,6 +52,7 @@ junit_tests(
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
+    tags = ["z3"],
     runtime_deps = [
         "@maven//:org_slf4j_slf4j_jdk14",
     ],
