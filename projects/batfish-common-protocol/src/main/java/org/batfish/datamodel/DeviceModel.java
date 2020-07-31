@@ -7,6 +7,7 @@ package org.batfish.datamodel;
  * @see DeviceType for the generic classification of a device.
  */
 public enum DeviceModel {
+  ARISTA_UNSPECIFIED,
   AWS_EC2_INSTANCE,
   AWS_ELASTICSEARCH_DOMAIN,
   AWS_ELB_NETWORK,
@@ -23,6 +24,10 @@ public enum DeviceModel {
   AWS_VPN_GATEWAY,
   BATFISH_INTERNET,
   BATFISH_ISP,
+  CISCO_UNSPECIFIED,
+  CUMULUS_UNSPECIFIED,
+  F5_UNSPECIFIED,
+  JUNIPER_UNSPECIFIED,
   PALO_ALTO_FIREWALL,
   PALO_ALTO_PANORAMA,
 }

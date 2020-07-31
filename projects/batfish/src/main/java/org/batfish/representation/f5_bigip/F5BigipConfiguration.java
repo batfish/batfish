@@ -47,6 +47,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.GeneratedRoute;
@@ -1756,6 +1757,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _c = new Configuration(_hostname, _format);
 
     convertVendorFamily();
+    _c.setDeviceModel(DeviceModel.F5_UNSPECIFIED);
 
     // add a reference book for virtual addresses
     String virtualAddressesBookname =

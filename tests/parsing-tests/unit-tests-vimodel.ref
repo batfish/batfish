@@ -12812,6 +12812,7 @@
         "name" : "aaa_accounting",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12840,6 +12841,7 @@
         "name" : "aaa_authentication_login_default_tacacs_local",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12875,6 +12877,7 @@
         "name" : "aaa_group_server_source_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12898,6 +12901,7 @@
         "name" : "access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12918,6 +12922,7 @@
         "name" : "address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -13026,6 +13031,7 @@
         "name" : "aggaddress",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "ScienceDMZ-networks" : {
@@ -13384,6 +13390,7 @@
         "name" : "arista-event-handler",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13404,6 +13411,7 @@
         "name" : "arista_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "abcd" : {
@@ -13547,6 +13555,7 @@
         "name" : "arista_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "ROUTE_MAP" : {
@@ -13609,6 +13618,7 @@
         "name" : "arista_dhcp_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -13683,6 +13693,7 @@
         "name" : "arista_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan1" : {
@@ -13748,6 +13759,7 @@
         "name" : "arista_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13788,6 +13800,7 @@
         "name" : "arista_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13808,6 +13821,7 @@
         "name" : "arista_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "sshabc" : {
@@ -13881,6 +13895,7 @@
         "name" : "arista_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1" : {
@@ -13985,6 +14000,7 @@
         "name" : "arista_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1" : {
@@ -14028,6 +14044,7 @@
         "name" : "arista_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14048,6 +14065,7 @@
         "name" : "arista_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14080,6 +14098,7 @@
         "name" : "arista_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14104,6 +14123,7 @@
         "name" : "aruba_aaa",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14128,6 +14148,7 @@
         "name" : "aruba_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14148,6 +14169,7 @@
         "name" : "aruba_airgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14168,6 +14190,7 @@
         "name" : "aruba_crypto",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ikePhase1Proposals" : {
           "1" : {
@@ -14198,6 +14221,7 @@
         "name" : "aruba_dhcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14223,6 +14247,7 @@
         "name" : "aruba_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/0/0" : {
@@ -14278,6 +14303,7 @@
         "name" : "aruba_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -14306,6 +14332,7 @@
         "name" : "aruba_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14343,6 +14370,7 @@
         "name" : "aruba_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "snmpTrapServers" : [
           "1.2.3.4"
@@ -14386,6 +14414,7 @@
         "name" : "aruba_time_range",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14406,6 +14435,7 @@
         "name" : "aruba_user_role",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14426,6 +14456,7 @@
         "name" : "aruba_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14446,6 +14477,7 @@
         "name" : "aruba_voice",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14466,6 +14498,7 @@
         "name" : "aruba_vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14486,6 +14519,7 @@
         "name" : "as_path_prepend",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "rmap" : {
@@ -14529,6 +14563,7 @@
         "name" : "asa-interface-redundant",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/1" : {
@@ -14894,6 +14929,7 @@
         "name" : "asa_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "Local_LAN_Access" : {
@@ -15700,6 +15736,7 @@
         "name" : "asa_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -15728,6 +15765,7 @@
         "name" : "asa_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ifname" : {
@@ -15786,6 +15824,7 @@
         "name" : "asa_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -15811,6 +15850,7 @@
         "name" : "asa_object_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "ALLOW_SERVER02" : {
@@ -15953,6 +15993,7 @@
         "name" : "asa_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "blah" : {
@@ -16144,6 +16185,7 @@
         "name" : "asa_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -16172,6 +16214,7 @@
         "name" : "bgp-allow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -16434,6 +16477,7 @@
         "name" : "bgp-disable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -16479,6 +16523,7 @@
         "name" : "bgp-enforce-first-as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -16740,6 +16785,7 @@
         "name" : "bgp_address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17025,6 +17071,7 @@
         "name" : "bgp_default_originate_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17074,6 +17121,7 @@
         "name" : "bgp_foundry",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17195,6 +17243,7 @@
         "name" : "bgp_nsr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17251,6 +17300,7 @@
         "name" : "bgp_route_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -18796,6 +18846,7 @@
         "name" : "cisco-zone",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18824,6 +18875,7 @@
         "name" : "cisco_aaa",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18911,6 +18963,7 @@
         "name" : "cisco_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "BLAH-BLAH" : {
@@ -19866,6 +19919,7 @@
         "name" : "cisco_additional_paths",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -19922,6 +19976,7 @@
         "name" : "cisco_authentication",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -19975,6 +20030,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "ipAccessLists" : {
           "5" : {
@@ -20691,6 +20747,7 @@
         "name" : "cisco_bgp_confederation",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -20754,6 +20811,7 @@
         "name" : "cisco_cable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Cable1/2/3" : {
@@ -20841,6 +20899,7 @@
         "name" : "cisco_callhome",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20862,6 +20921,7 @@
         "name" : "cisco_control_plane",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20882,6 +20942,7 @@
         "name" : "cisco_controller",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20902,6 +20963,7 @@
         "name" : "cisco_crypto",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "VRF:ABC:DEF:GHI:1234" : {
@@ -21072,6 +21134,7 @@
         "name" : "cisco_dhcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21097,6 +21160,7 @@
         "name" : "cisco_domain",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "dnsServers" : [
           "1.2.3.4",
@@ -21123,6 +21187,7 @@
         "name" : "cisco_dot11",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21143,6 +21208,7 @@
         "name" : "cisco_dot1x",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21163,6 +21229,7 @@
         "name" : "cisco_dspfarm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21183,6 +21250,7 @@
         "name" : "cisco_dynamic_access_policy_record",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21203,6 +21271,7 @@
         "name" : "cisco_eigrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0" : {
@@ -21664,6 +21733,7 @@
         "name" : "cisco_enable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21685,6 +21755,7 @@
         "name" : "cisco_flow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/1" : {
@@ -21731,6 +21802,7 @@
         "name" : "cisco_hardware",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21751,6 +21823,7 @@
         "name" : "cisco_hsrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "TenGigabitEthernet0/0/2/2" : {
@@ -21797,6 +21870,7 @@
         "name" : "cisco_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Async1" : {
@@ -22548,6 +22622,7 @@
         "name" : "cisco_ios_neighbor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -22658,6 +22733,7 @@
         "name" : "cisco_ip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22681,6 +22757,7 @@
         "name" : "cisco_ip_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22701,6 +22778,7 @@
         "name" : "cisco_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22836,6 +22914,7 @@
         "name" : "cisco_ipsla",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22856,6 +22935,7 @@
         "name" : "cisco_ipv6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22876,6 +22956,7 @@
         "name" : "cisco_ipv6_access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ip6AccessLists" : {
           "RT404888-XO" : {
@@ -23132,6 +23213,7 @@
         "name" : "cisco_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "GigabitEthernet0/0" : {
@@ -23365,6 +23447,7 @@
         "name" : "cisco_l2tp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -23390,6 +23473,7 @@
         "name" : "cisco_line",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -23949,6 +24033,7 @@
         "name" : "cisco_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.1.1.1",
@@ -24011,6 +24096,7 @@
         "name" : "cisco_mac_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24031,6 +24117,7 @@
         "name" : "cisco_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~" : {
@@ -24088,6 +24175,7 @@
         "name" : "cisco_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24108,6 +24196,7 @@
         "name" : "cisco_mpls",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24128,6 +24217,7 @@
         "name" : "cisco_multicast",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24148,6 +24238,7 @@
         "name" : "cisco_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -24188,6 +24279,7 @@
         "name" : "cisco_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24549,6 +24641,7 @@
         "name" : "cisco_ospf_ipv6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24607,6 +24700,7 @@
         "name" : "cisco_ospf_multi_process",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24885,6 +24979,7 @@
         "name" : "cisco_ospfv3",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24943,6 +25038,7 @@
         "name" : "cisco_pim",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24963,6 +25059,7 @@
         "name" : "cisco_platform",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24983,6 +25080,7 @@
         "name" : "cisco_privilege",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25003,6 +25101,7 @@
         "name" : "cisco_qos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~INSPECT_POLICY_MAP_ACL~pminspect~" : {
@@ -25098,6 +25197,7 @@
         "name" : "cisco_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25118,6 +25218,7 @@
         "name" : "cisco_redundancy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25138,6 +25239,7 @@
         "name" : "cisco_rip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~RIP_EXPORT_POLICY:default~" : {
@@ -25166,6 +25268,7 @@
         "name" : "cisco_role",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25219,6 +25322,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "MAP_NAME1" : {
@@ -25434,6 +25538,7 @@
         "name" : "cisco_sccp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25454,6 +25559,7 @@
         "name" : "cisco_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "snmpSourceInterface" : "Loopback0",
         "snmpTrapServers" : [
@@ -25594,6 +25700,7 @@
         "name" : "cisco_spanning_tree",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25614,6 +25721,7 @@
         "name" : "cisco_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25637,6 +25745,7 @@
         "name" : "cisco_stcapp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25657,6 +25766,7 @@
         "name" : "cisco_style_acl1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
@@ -25712,6 +25822,7 @@
         "name" : "cisco_style_acl2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "1" : {
@@ -25767,6 +25878,7 @@
         "name" : "cisco_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25788,6 +25900,7 @@
         "name" : "cisco_track",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "trackingGroups" : {
           "1" : {
@@ -25818,6 +25931,7 @@
         "name" : "cisco_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25899,6 +26013,7 @@
         "name" : "cisco_username_without_password",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25930,6 +26045,7 @@
         "name" : "cisco_vdc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25950,6 +26066,7 @@
         "name" : "cisco_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25970,6 +26087,7 @@
         "name" : "cisco_voice",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25990,6 +26108,7 @@
         "name" : "cisco_vpdn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26010,6 +26129,7 @@
         "name" : "cisco_vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26030,6 +26150,7 @@
         "name" : "cisco_vrrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -26088,6 +26209,7 @@
         "name" : "cisco_webvpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26108,6 +26230,7 @@
         "name" : "cisco_wsma",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26128,6 +26251,7 @@
         "name" : "colon_in_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:VRF:MMS:RMT:PBI:145~" : {
@@ -27725,6 +27849,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -27754,6 +27879,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
@@ -27829,6 +27955,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
@@ -27904,6 +28031,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "PFX_LIST" : {
@@ -28309,6 +28437,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -28322,6 +28451,7 @@
         "name" : "cumulus_nclu",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "dnsServers" : [
           "192.0.2.3"
@@ -29336,6 +29466,7 @@
         "name" : "cumulus_nclu_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29575,6 +29706,7 @@
         "name" : "cumulus_nclu_bgp_no_address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29655,6 +29787,7 @@
         "name" : "cumulus_nclu_bgp_no_remote_as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29793,6 +29926,7 @@
         "name" : "cumulus_nclu_bgp_no_router_id",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29877,6 +30011,7 @@
         "name" : "cumulus_nclu_bgp_no_router_id_or_loopback_ip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29957,6 +30092,7 @@
         "name" : "cumulus_nclu_bond",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "AGG" : {
@@ -30285,6 +30421,7 @@
         "name" : "cumulus_nclu_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "lo" : {
@@ -30367,6 +30504,7 @@
         "name" : "cumulus_nclu_invalid_bonds",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "lo" : {
@@ -30431,6 +30569,7 @@
         "name" : "cumulus_nclu_invalid_interfaces",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30515,6 +30654,7 @@
         "name" : "cumulus_nclu_invalid_vrfs",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30601,6 +30741,7 @@
         "name" : "cumulus_nclu_invalid_vxlans",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30709,6 +30850,7 @@
         "name" : "cumulus_nclu_routing",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "lo" : {
@@ -30751,6 +30893,7 @@
         "name" : "cumulus_nclu_stp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30837,6 +30980,7 @@
         "name" : "eos_mlag",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Port-Channel1" : {
@@ -30917,6 +31061,7 @@
         "name" : "eos_trunk_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Port-Channel1" : {
@@ -30960,6 +31105,7 @@
         "name" : "f5_bigip_imish_malformed",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_imish_malformed" : {
@@ -31080,6 +31226,7 @@
         "name" : "f5_bigip_structured_cm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_cm" : {
@@ -31101,6 +31248,7 @@
         "name" : "f5_bigip_structured_ltm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_ltm" : {
@@ -31148,6 +31296,7 @@
         "name" : "f5_bigip_structured_malformed",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_malformed" : {
@@ -31180,6 +31329,7 @@
         "name" : "f5_bigip_structured_net",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net" : {
@@ -31350,6 +31500,7 @@
         "name" : "f5_bigip_structured_net_routing_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net_routing_bgp" : {
@@ -31508,6 +31659,7 @@
         "name" : "f5_bigip_structured_net_routing_prefix_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net_routing_prefix_list" : {
@@ -31563,6 +31715,7 @@
         "name" : "f5_bigip_structured_net_routing_route_map",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net_routing_route_map" : {
@@ -31599,6 +31752,7 @@
         "name" : "f5_bigip_structured_sys",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_sys" : {
@@ -31624,6 +31778,7 @@
         "name" : "f5_bigip_structured_sys_ha_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_sys_ha_group" : {
@@ -31645,6 +31800,7 @@
         "name" : "f5_bigip_structured_with_imish",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_with_imish" : {
@@ -32711,6 +32867,7 @@
         "name" : "host2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0" : {
@@ -32950,6 +33107,7 @@
         "name" : "if_tag_is",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "FOO" : {
@@ -33248,6 +33406,7 @@
         "name" : "interface-reth",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -33451,6 +33610,7 @@
         "name" : "interface_exit",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan303" : {
@@ -33533,6 +33693,7 @@
         "name" : "interface_name",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet12/13" : {
@@ -33642,6 +33803,7 @@
         "name" : "interface_sdr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Loopback0" : {
@@ -33692,6 +33854,7 @@
         "name" : "interfacemtu",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "xe-0/0/0" : {
@@ -34068,6 +34231,7 @@
         "name" : "ios_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34092,6 +34256,7 @@
         "name" : "ios_banner_dos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34116,6 +34281,7 @@
         "name" : "ios_bfd",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34136,6 +34302,7 @@
         "name" : "ios_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -34192,6 +34359,7 @@
         "name" : "ios_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet1/0/1" : {
@@ -34238,6 +34406,7 @@
         "name" : "ios_interface_ip_authentication",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -34284,6 +34453,7 @@
         "name" : "ios_interface_ip_eigrp_settings",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -34330,6 +34500,7 @@
         "name" : "ios_interface_ip_tcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -34376,6 +34547,7 @@
         "name" : "ios_standby",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan1000" : {
@@ -34440,6 +34612,7 @@
         "name" : "ios_template",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34460,6 +34633,7 @@
         "name" : "ios_xe_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -34516,6 +34690,7 @@
         "name" : "ios_xr_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -34529,6 +34704,7 @@
         "name" : "ios_xr_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
@@ -34753,6 +34929,7 @@
         "name" : "ios_xr_bgp_neighbor_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -34960,6 +35137,7 @@
         "name" : "ios_xr_class_map",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -34973,6 +35151,7 @@
         "name" : "ios_xr_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/2/1/6" : {
@@ -35021,6 +35200,7 @@
         "name" : "ios_xr_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35034,6 +35214,7 @@
         "name" : "ios_xr_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35047,6 +35228,7 @@
         "name" : "ios_xr_multipart",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35060,6 +35242,7 @@
         "name" : "ios_xr_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4"
@@ -35076,6 +35259,7 @@
         "name" : "ios_xr_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Bundle-Ether101" : {
@@ -35555,6 +35739,7 @@
         "name" : "ios_xr_router_static",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35660,6 +35845,7 @@
         "name" : "ios_xr_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35673,6 +35859,7 @@
         "name" : "ios_xr_taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35686,6 +35873,7 @@
         "name" : "iosxrmulticast",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35699,6 +35887,7 @@
         "name" : "ip_prefix_list_single_line",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "DENY-IPV4-ANY-IN" : {
@@ -53890,6 +54079,7 @@
         "name" : "isr_crypto_gdoi",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -53910,6 +54100,7 @@
         "name" : "isr_voip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -53930,6 +54121,7 @@
         "name" : "juniper-ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~OSPF_SUMMARY_FILTER:default:66051~" : {
@@ -54110,6 +54302,7 @@
         "name" : "juniper-tcpflags",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "foo" : {
@@ -54230,6 +54423,7 @@
         "name" : "juniper_application",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -54275,6 +54469,7 @@
         "name" : "juniper_apply_macro",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -54320,6 +54515,7 @@
         "name" : "juniper_as_path_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -54365,6 +54561,7 @@
         "name" : "juniper_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -54832,6 +55029,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -55218,6 +55416,7 @@
         "name" : "juniper_bgp_remove_private_as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -55440,6 +55639,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -55485,6 +55685,7 @@
         "name" : "juniper_firewall",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
@@ -56640,6 +56841,7 @@
         "name" : "juniper_forwarding_options",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -56685,6 +56887,7 @@
         "name" : "juniper_interfaces",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ae0" : {
@@ -57263,6 +57466,7 @@
         "name" : "juniper_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -57356,6 +57560,7 @@
         "name" : "juniper_l2_learning",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -57401,6 +57606,7 @@
         "name" : "juniper_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
         "vendorFamily" : {
@@ -57450,6 +57656,7 @@
         "name" : "juniper_nat",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "DENY",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -57728,6 +57935,7 @@
         "name" : "juniper_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -57780,6 +57988,7 @@
         "name" : "juniper_ospf_stub_areas",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~OSPF_SUMMARY_FILTER:default:46~" : {
@@ -57914,6 +58123,7 @@
         "name" : "juniper_passwords",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "tacacsServers" : [
           "1.2.3.4",
@@ -57976,6 +58186,7 @@
         "name" : "juniper_policy_statement",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "POLICY-NAME" : {
@@ -58078,6 +58289,7 @@
         "name" : "juniper_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -58123,6 +58335,7 @@
         "name" : "juniper_rib_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -58528,6 +58741,7 @@
         "name" : "juniper_rib_groups~logical_system~logicalsystem",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -58796,6 +59010,7 @@
         "name" : "juniper_route_filter",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "route6FilterLists" : {
           "route-filter-test-v6:t1" : {
@@ -59023,6 +59238,7 @@
         "name" : "juniper_routing_options",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "~CONTRIBUTOR_TO_10.0.0.0/8~" : {
@@ -59485,6 +59701,7 @@
         "name" : "juniper_routing_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -59652,6 +59869,7 @@
         "name" : "juniper_security",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "DENY",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "~IKE_PHASE1_KEY_1.2.3.4~" : {
@@ -60798,6 +61016,7 @@
         "name" : "juniper_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "snmpTrapServers" : [
           "1.2.3.4",
@@ -60867,6 +61086,7 @@
         "name" : "juniper_syslog",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -60915,6 +61135,7 @@
         "name" : "juniper_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -60960,6 +61181,7 @@
         "name" : "juniper_tacplus",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "tacacsServers" : [
           "1.2.3.4",
@@ -61021,6 +61243,7 @@
         "name" : "juniper_trailing_space",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -61066,6 +61289,7 @@
         "name" : "juniper_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "xe-0/0/0" : {
@@ -61160,6 +61384,7 @@
         "name" : "l2vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -61173,6 +61398,7 @@
         "name" : "local_v6_addr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -61229,6 +61455,7 @@
         "name" : "mac_access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61249,6 +61476,7 @@
         "name" : "mcastrouting",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -61262,6 +61490,7 @@
         "name" : "mos_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1" : {
@@ -61378,6 +61607,7 @@
         "name" : "mos_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -61419,6 +61649,7 @@
         "name" : "msdp_originator_id",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61439,6 +61670,7 @@
         "name" : "named_and_numbered_lists",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "foo" : {
@@ -61512,6 +61744,7 @@
         "name" : "neighbor_mix",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -61788,6 +62021,7 @@
         "name" : "network6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -61856,6 +62090,7 @@
         "name" : "nexus",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61876,6 +62111,7 @@
         "name" : "no_aaa_group_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61896,6 +62132,7 @@
         "name" : "no_ip_name_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61916,6 +62153,7 @@
         "name" : "no_mask_reply",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet1" : {
@@ -61966,6 +62204,7 @@
         "name" : "no_snmp_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61986,6 +62225,7 @@
         "name" : "non_nexus_neighbor_af",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -62159,6 +62399,7 @@
         "name" : "nxos_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
@@ -62225,6 +62466,7 @@
         "name" : "nxos_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -62551,6 +62793,7 @@
         "name" : "nxos_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -62643,6 +62886,7 @@
         "name" : "nxos_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -62664,6 +62908,7 @@
         "name" : "nxos_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "10.1.2.3"
@@ -62688,6 +62933,7 @@
         "name" : "nxos_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -62860,6 +63106,7 @@
         "name" : "nxos_route_map_continue",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "foobar" : {
@@ -64699,6 +64946,7 @@
         "name" : "nxos_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -64720,6 +64968,7 @@
         "name" : "nxos_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -64741,6 +64990,7 @@
         "name" : "nxos_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -64795,6 +65045,7 @@
         "name" : "openflow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -64815,6 +65066,7 @@
         "name" : "ospf-disable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -65774,6 +66026,7 @@
         "name" : "pim",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Loopback1" : {
@@ -65823,6 +66076,7 @@
         "name" : "pim_snooping",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -65843,6 +66097,7 @@
         "name" : "prefix_list_ipv4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default" : {
@@ -65918,6 +66173,7 @@
         "name" : "preset",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default_route" : {
@@ -66029,6 +66285,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "erick-test" : {
@@ -66866,6 +67123,7 @@
         "name" : "route_policy_igp_cost",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "EBGP_CUST_FULL_v4" : {
@@ -66939,6 +67197,7 @@
         "name" : "route_policy_metric_type",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "to_csuchico" : {
@@ -67093,6 +67352,7 @@
         "name" : "route_policy_param",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "cust_v4_in" : {
@@ -67312,6 +67572,7 @@
         "name" : "router_msdp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -67332,6 +67593,7 @@
         "name" : "rp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "EBGP-PEER-AS2828-LAX-PNI-OUT" : {
@@ -69542,6 +69804,7 @@
         "name" : "set_inline_community",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "FOOBAR" : {
@@ -69656,6 +69919,7 @@
         "name" : "statistics",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -69676,6 +69940,7 @@
         "name" : "switchport_range",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/1" : {
@@ -69723,6 +69988,7 @@
         "name" : "syslog_source_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -69743,6 +70009,7 @@
         "name" : "taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -69756,6 +70023,7 @@
         "name" : "tcpflags",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "100" : {
@@ -70205,6 +70473,7 @@
         "name" : "test",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -70225,6 +70494,7 @@
         "name" : "underscore_variable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "JKL_MNO_PQR" : {
@@ -70256,6 +70526,7 @@
         "name" : "variables",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/0" : {
@@ -70302,6 +70573,7 @@
         "name" : "variables_dos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/0" : {
@@ -70348,6 +70620,7 @@
         "name" : "vlan_access_map4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -70482,6 +70755,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "fxp0" : {

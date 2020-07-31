@@ -62,6 +62,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IkeKeyType;
@@ -3042,6 +3043,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.setNtpServers(_masterLogicalSystem.getNtpServers());
     _c.setTacacsServers(_masterLogicalSystem.getTacplusServers());
     _c.getVendorFamily().setJuniper(_masterLogicalSystem.getJf());
+    _c.setDeviceModel(DeviceModel.JUNIPER_UNSPECIFIED);
     for (String riName : _masterLogicalSystem.getRoutingInstances().keySet()) {
       _c.getVrfs().put(riName, new Vrf(riName));
     }
