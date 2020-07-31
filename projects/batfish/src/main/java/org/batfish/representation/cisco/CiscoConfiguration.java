@@ -2847,6 +2847,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
+    // Only set CISCO_UNSPECIFIED if the device is actually a cisco device
     if (_vendor == ConfigurationFormat.CISCO_ASA || _vendor == ConfigurationFormat.CISCO_IOS) {
       c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     }
