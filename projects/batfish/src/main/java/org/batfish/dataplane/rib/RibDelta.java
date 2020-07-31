@@ -114,15 +114,23 @@ public final class RibDelta<R> {
       _actions = new LinkedHashMap<>();
     }
 
+    private LinkedHashMap<R, RouteAdvertisement<R>> getAdvertisements(Prefix network) {
+      return _actions.computeIfAbsent(network, p -> new LinkedHashMap<>(8));
+    }
+
     /**
      * Indicate that a route was added to the RIB
      *
      * @param route Route that was added
      */
     public Builder<R> add(R route) {
-      LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
-      l.put(route, new RouteAdvertisement<>(route));
+      LinkedHashMap<R, RouteAdvertisement<R>> advertisedRoutes =
+          getAdvertisements(route.getNetwork());
+      RouteAdvertisement<R> old = advertisedRoutes.put(route, new RouteAdvertisement<>(route));
+      if (old != null && old.isWithdrawn()) {
+        // In this same delta, we withdrew the route and are now re-advertising. Should be no-op.
+        advertisedRoutes.remove(route);
+      }
       return this;
     }
 
@@ -142,9 +150,15 @@ public final class RibDelta<R> {
      * @param route that was removed
      */
     public Builder<R> remove(R route, Reason reason) {
-      LinkedHashMap<R, RouteAdvertisement<R>> l =
-          _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
-      l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
+      LinkedHashMap<R, RouteAdvertisement<R>> advertisedRoutes =
+          getAdvertisements(route.getNetwork());
+      RouteAdvertisement<R> old =
+          advertisedRoutes.put(
+              route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
+      if (old != null && old.getReason() == Reason.ADD) {
+        // In this same delta, we added the route and are now withdrawing. Instead, no-op.
+        advertisedRoutes.remove(route);
+      }
       return this;
     }
 
@@ -155,9 +169,7 @@ public final class RibDelta<R> {
      */
     public Builder<R> remove(Collection<R> routes, Reason reason) {
       for (R route : routes) {
-        LinkedHashMap<R, RouteAdvertisement<R>> l =
-            _actions.computeIfAbsent(route.getNetwork(), p -> new LinkedHashMap<>(10, 1, true));
-        l.put(route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
+        remove(route, reason);
       }
       return this;
     }
