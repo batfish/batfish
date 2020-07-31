@@ -1231,7 +1231,7 @@
     },
     {
       "id" : "node-lhr-border-02",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "lhr-border-02",
       "type" : "ROUTER",
       "properties" : null
