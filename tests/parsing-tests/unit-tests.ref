@@ -19687,11 +19687,12 @@
             "          VARIABLE:'asacryptomap')",
             "        seq_num = DEC:'10'",
             "        (crypto_map_tail",
-            "          (crypto_map_t_null",
+            "          (crypto_map_t_match",
             "            MATCH:'match'",
-            "            (null_rest_of_line",
+            "            (crypto_map_t_match_address",
             "              ADDRESS:'address'",
-            "              VARIABLE:'someacl'",
+            "              name = (variable",
+            "                VARIABLE:'someacl')",
             "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (s_crypto",
@@ -76692,6 +76693,16 @@
             }
           ]
         },
+        "configs/cisco_crypto" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 232,
+              "Parser_Context" : "[crypto_map_t_match_address crypto_map_t_match crypto_map_tail crypto_map s_crypto stanza cisco_configuration]",
+              "Text" : "address someacl"
+            }
+          ]
+        },
         "configs/cisco_eigrp" : {
           "Parse warnings" : [
             {
@@ -88435,6 +88446,9 @@
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
                 224
+              ],
+              "crypto map match address" : [
+                232
               ]
             }
           }
@@ -93678,6 +93692,9 @@
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
                 224
+              ],
+              "crypto map match address" : [
+                232
               ]
             }
           }
