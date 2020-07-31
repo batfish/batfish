@@ -293,20 +293,17 @@ public final class RibDelta<R> {
     delta
         .getActionMap()
         .forEach(
-            (prefix, actions) ->
-                actions.stream()
-                    .distinct()
-                    .forEach(
-                        uRouteAdvertisement -> {
-                          T tRoute = converter.apply(uRouteAdvertisement.getRoute());
-                          if (uRouteAdvertisement.isWithdrawn()) {
-                            builder.from(
-                                importingRib.removeRouteGetDelta(
-                                    tRoute, uRouteAdvertisement.getReason()));
-                          } else {
-                            builder.from(importingRib.mergeRouteGetDelta(tRoute));
-                          }
-                        }));
+            (prefix, actions) -> {
+              for (RouteAdvertisement<U> uRouteAdvertisement : actions) {
+                T tRoute = converter.apply(uRouteAdvertisement.getRoute());
+                if (uRouteAdvertisement.isWithdrawn()) {
+                  builder.from(
+                      importingRib.removeRouteGetDelta(tRoute, uRouteAdvertisement.getReason()));
+                } else {
+                  builder.from(importingRib.mergeRouteGetDelta(tRoute));
+                }
+              }
+            });
     return builder.build();
   }
 
