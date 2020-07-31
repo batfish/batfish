@@ -32322,6 +32322,7 @@
         "name" : "lhr-border-02",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "demo.com",
         "ikePhase1Keys" : {
