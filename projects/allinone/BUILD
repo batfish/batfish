@@ -231,6 +231,7 @@ junit_tests(
     srcs = glob([
         "src/test/java/org/batfish/minesweeper/smt/*.java",
     ]),
+    tags = ["z3"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
