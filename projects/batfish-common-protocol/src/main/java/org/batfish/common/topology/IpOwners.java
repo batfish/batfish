@@ -212,6 +212,7 @@ public final class IpOwners {
       Map<String, Set<Interface>> allInterfaces, boolean excludeInactive) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Table<ConcreteInterfaceAddress, Integer, Set<Interface>> vrrpGroups = HashBasedTable.create();
+    Table<Ip, Integer, Set<Interface>> hsrpGroups = HashBasedTable.create();
     allInterfaces.forEach(
         (hostname, interfaces) ->
             interfaces.forEach(
@@ -239,6 +240,20 @@ public final class IpOwners {
                             }
                             candidates.add(i);
                           });
+                  // collect hsrp info
+                  i.getHsrpGroups().values().forEach(g -> {
+                    Ip ip = g.getIp();
+                    int groupNum = g.getGroupNumber();
+                    if (ip == null) {
+                      return;
+                    }
+                    Set<Interface> candidates = hsrpGroups.get(ip, groupNum);
+                    if (candidates == null) {
+                      candidates = Collections.newSetFromMap(new IdentityHashMap<>());
+                      hsrpGroups.put(ip, groupNum, candidates);
+                    }
+                    candidates.add(i);
+                  });
                   // collect prefixes
                   i.getAllConcreteAddresses().stream()
                       .map(ConcreteInterfaceAddress::getIp)
@@ -273,6 +288,27 @@ public final class IpOwners {
                   .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
                   .add(vrrpMaster.getName());
             });
+    hsrpGroups.cellSet().forEach(cell -> {
+      Ip ip = cell.getRowKey();
+      assert ip != null;
+      Integer groupNum = cell.getColumnKey();
+      assert groupNum != null;
+      Set<Interface> candidates = cell.getValue();
+      assert candidates != null;
+      /*
+       * Compare priorities first. If tied, break tie based on highest interface IP.
+       */
+      Interface hsrpMaster =
+              Collections.max(
+                      candidates,
+                      Comparator.comparingInt(
+                              (Interface i) -> i.getHsrpGroups().get(groupNum).getPriority())
+                              .thenComparing(i -> i.getConcreteAddress().getIp()));
+      ipOwners
+              .computeIfAbsent(ip, k -> new HashMap<>())
+              .computeIfAbsent(hsrpMaster.getOwner().getHostname(), k -> new HashSet<>())
+              .add(hsrpMaster.getName());
+    });
 
     // freeze
     return toImmutableMap(
