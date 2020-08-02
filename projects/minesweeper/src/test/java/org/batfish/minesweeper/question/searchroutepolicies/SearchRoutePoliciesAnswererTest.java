@@ -44,7 +44,6 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
@@ -279,7 +278,7 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             RouteConstraints.builder()
-                .setCommunities(CommunitySet.of(StandardCommunity.of(20, 30)))
+                .setCommunityRegexes(ImmutableSet.of("20:30"))
                 .setComplementCommunities(true)
                 .build(),
             EMPTY_CONSTRAINTS,
@@ -352,12 +351,8 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder()
-                .setCommunities(CommunitySet.of(StandardCommunity.of(40, 33)))
-                .build(),
-            RouteConstraints.builder()
-                .setCommunities(CommunitySet.of(StandardCommunity.of(3, 44)))
-                .build(),
+            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("40:33")).build(),
+            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("3:44")).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -397,9 +392,7 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            RouteConstraints.builder()
-                .setCommunities(CommunitySet.of(StandardCommunity.of(20, 30)))
-                .build(),
+            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("20:30")).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -421,9 +414,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder()
-                .setCommunities(CommunitySet.of(StandardCommunity.of(1, 40)))
-                .build(),
+            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("1:40")).build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -459,6 +450,31 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE))));
+  }
+
+  @Test
+  public void testNoOutputCommunities() {
+    _policyBuilder.setStatements(
+        ImmutableList.of(
+            new SetCommunity(new LiteralCommunity(StandardCommunity.parse("2:40"))),
+            new StaticStatement(Statements.ExitAccept)));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            EMPTY_CONSTRAINTS,
+            RouteConstraints.builder()
+                .setCommunityRegexes(ImmutableSet.of(".*"))
+                .setComplementCommunities(true)
+                .build(),
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    assertEquals(answer.getRows().size(), 0);
   }
 
   @Test
@@ -735,7 +751,7 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
             RouteConstraints.builder()
-                .setCommunities(CommunitySet.of(StandardCommunity.of(4, 44)))
+                .setCommunityRegexes(ImmutableSet.of("4:44"))
                 .setComplementCommunities(true)
                 .build(),
             HOSTNAME,

@@ -38,6 +38,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -47,8 +48,6 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -85,7 +84,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final String _policies;
   @Nonnull private final Action _action;
 
-  @Nonnull private final Set<Community> _communities;
+  @Nonnull private final Set<String> _communityRegexes;
   @Nonnull private final PolicyQuotient _pq;
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
@@ -96,10 +95,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     _policies = question.getPolicies();
     _action = question.getAction();
 
-    _communities =
-        ImmutableSet.<Community>builder()
-            .addAll(_inputConstraints.getCommunities().getCommunities())
-            .addAll(_outputConstraints.getCommunities().getCommunities())
+    _communityRegexes =
+        ImmutableSet.<String>builder()
+            .addAll(_inputConstraints.getCommunityRegexes())
+            .addAll(_outputConstraints.getCommunityRegexes())
             .build();
     _pq = new PolicyQuotient();
   }
@@ -261,17 +260,16 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   private BDD communityConstraintsToBDD(
-      CommunitySet communitySet, boolean complementCommunities, BDDRoute r, Graph g) {
-    Set<Community> communities = communitySet.getCommunities();
-    if (communities.isEmpty()) {
+      Set<String> communityRegexes, boolean complementCommunities, BDDRoute r, Graph g) {
+    if (communityRegexes.isEmpty()) {
       return r.getFactory().one();
     } else {
-      // given set of community constraints are represented as the disjunction of all associated
+      // the set of community constraints are represented as the disjunction of all associated
       // atomic predicates
       BDD result =
           r.getFactory()
               .orAll(
-                  communities.stream()
+                  communityRegexes.stream()
                       .map(CommunityVar::from)
                       .flatMap(c -> g.getCommunityAtomicPredicates().get(c).stream())
                       .distinct()
@@ -292,7 +290,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result =
         result.and(
             communityConstraintsToBDD(
-                constraints.getCommunities(), constraints.getComplementCommunities(), r, g));
+                constraints.getCommunityRegexes(), constraints.getComplementCommunities(), r, g));
 
     return result;
   }
@@ -305,8 +303,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _batfish.getSnapshot(),
             null,
             ImmutableSet.of(policy.getOwner().getHostname()),
-            _communities.stream()
-                .map(LiteralCommunity::new)
+            _communityRegexes.stream()
+                .map(RegexCommunitySet::new)
                 .collect(ImmutableSet.toImmutableSet()));
     try {
       TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements(), _pq);
