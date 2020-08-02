@@ -12,7 +12,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -20,9 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
-import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -43,7 +40,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
@@ -61,8 +57,6 @@ import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -768,37 +762,5 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
-  }
-
-  @Test
-  public void testSatAssignToCommunitiesSat() {
-    CommunityVar regex = CommunityVar.other("[234]:50");
-    CommunityVar literal = CommunityVar.from(StandardCommunity.of(2, 50));
-    BDDRoute r = new BDDRoute(ImmutableSet.of(regex, literal));
-    Map<CommunityVar, BDD> commBDDs = r.getCommunities();
-    BDD sat = commBDDs.get(regex).and(commBDDs.get(literal).not());
-
-    ResultOrUnsat<Set<Community>> result =
-        SearchRoutePoliciesAnswerer.satAssignmentToCommunities(sat, r);
-
-    Community expected = StandardCommunity.of(3, 50);
-
-    assertEquals(ImmutableSet.of(expected), result.getResult());
-  }
-
-  @Test
-  public void testSatAssignToCommunitiesUnsat() {
-    CommunityVar regex = CommunityVar.other("[234]:50");
-    CommunityVar regex2 = CommunityVar.other("[12]:50");
-    CommunityVar regex3 = CommunityVar.other("[34]:50");
-    BDDRoute r = new BDDRoute(ImmutableSet.of(regex, regex2, regex3));
-    Map<CommunityVar, BDD> commBDDs = r.getCommunities();
-    BDD unsat = commBDDs.get(regex).and(commBDDs.get(regex2).not()).and(commBDDs.get(regex3).not());
-
-    ResultOrUnsat<Set<Community>> result =
-        SearchRoutePoliciesAnswerer.satAssignmentToCommunities(unsat, r);
-
-    assertNull(result.getResult());
-    assertEquals(unsat, result.getUnsatConstraints());
   }
 }

@@ -1,14 +1,13 @@
 package org.batfish.minesweeper.bdd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -17,8 +16,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
@@ -33,14 +30,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   /*
    * For each bit i of a route announcement we have both a BDD variable vi, which
    * represents the ith bit of the announcement, and a BDD fi (f stands for formula), representing
-   * the conditions under which bit i is set to 1/0. Initially each fi is simply vi. The {@link
+   * the conditions under which bit i is set to 1. Initially each fi is simply vi. The {@link
    * TransferBDD} class takes a BDDRoute and a route policy and produces a new BDDRoute whose fi
    * BDDs represent all possible output announcements from that route policy and the conditions
    * under which they occur, in terms of the vi variables (which still represent the bits of the
    * original input announcement).
    *
    * Since most fields of the route announcement are integers, for example local preference,
-   * there is a {@link BDDInteger} helper class that uses this encoding specifically to represent a
+   * there is a {@link BDDInteger} helper class that uses this encoding to represent a
    * symbolic integer, along with integer-specific operations.
    */
 
@@ -90,11 +87,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private Map<Integer, String> _bitNames;
 
   /*
-   * Each community literal and regex in a given configuration is allocated both a BDD variable and
-   * a BDD, as in the general encoding described above. This field maintains the mapping from each
-   * community to its BDD.
+   * Each community atomic predicate (see class Graph) is allocated both a BDD variable and
+   * a BDD, as in the general encoding described above. This array maps each atomic predicate
+   * number to its BDD.
    */
-  private SortedMap<CommunityVar, BDD> _communities;
+  private BDD[] _communityAtomicPredicateBDDs;
 
   private BDDInteger _localPref;
 
@@ -114,9 +111,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
    */
-  public BDDRoute(Set<CommunityVar> comms) {
+  public BDDRoute(int numCommAtomicPredicates) {
     int numVars = factory.varNum();
-    int numNeeded = 32 * 5 + 6 + comms.size() + 4;
+    int numNeeded = 32 * 5 + 6 + numCommAtomicPredicates + 4;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -147,14 +144,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;
-    // Initialize communities
-    _communities = new TreeMap<>();
-    for (CommunityVar comm : comms) {
-      if (comm.getType() != Type.REGEX) {
-        _communities.put(comm, factory.ithVar(idx));
-        _bitNames.put(idx, comm.getRegex());
-        idx++;
-      }
+    // Initialize community atomic predicates
+    _communityAtomicPredicateBDDs = new BDD[numCommAtomicPredicates];
+    for (int i = 0; i < numCommAtomicPredicates; i++) {
+      _communityAtomicPredicateBDDs[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "community atomic predicate " + i);
+      idx++;
     }
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
@@ -167,7 +162,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * there is no need for a deep copy.
    */
   public BDDRoute(BDDRoute other) {
-    _communities = new TreeMap<>(other._communities);
+    _communityAtomicPredicateBDDs = other._communityAtomicPredicateBDDs.clone();
     _prefixLength = new BDDInteger(other._prefixLength);
     _prefix = new BDDInteger(other._prefix);
     _metric = new BDDInteger(other._metric);
@@ -256,12 +251,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _adminDist = adminDist;
   }
 
-  public Map<CommunityVar, BDD> getCommunities() {
-    return _communities;
+  public BDD[] getCommunityAtomicPredicateBDDs() {
+    return _communityAtomicPredicateBDDs;
   }
 
-  public void setCommunities(SortedMap<CommunityVar, BDD> communities) {
-    _communities = communities;
+  public void setCommunityAtomicPredicates(BDD[] communityAtomicPredicates) {
+    _communityAtomicPredicateBDDs = communityAtomicPredicates;
   }
 
   public BDDFactory getFactory() {
@@ -320,7 +315,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-      result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
+      result =
+          31 * result
+              + (_communityAtomicPredicateBDDs != null
+                  ? Arrays.hashCode(_communityAtomicPredicateBDDs)
+                  : 0);
       _hcode = result;
     }
     return _hcode;
@@ -336,7 +335,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return Objects.equals(_metric, other._metric)
         && Objects.equals(_ospfMetric, other._ospfMetric)
         && Objects.equals(_localPref, other._localPref)
-        && Objects.equals(_communities, other._communities)
+        && Arrays.equals(_communityAtomicPredicateBDDs, other._communityAtomicPredicateBDDs)
         && Objects.equals(_med, other._med)
         && Objects.equals(_adminDist, other._adminDist);
   }
@@ -366,12 +365,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i].orWith(ospfMet2[i]);
     }
-    getCommunities()
-        .forEach(
-            (cvar, bdd1) -> {
-              BDD bdd2 = other.getCommunities().get(cvar);
-              bdd1.orWith(bdd2);
-            });
+    for (int i = 0; i < _communityAtomicPredicateBDDs.length; i++) {
+      _communityAtomicPredicateBDDs[i].orWith(other.getCommunityAtomicPredicateBDDs()[i]);
+    }
   }
 
   public BDDRoute restrict(Prefix pfx) {
@@ -405,7 +401,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i] = ospfMet[i].veccompose(pairing);
     }
-    rec.getCommunities().replaceAll((k, v) -> v.veccompose(pairing));
+    BDD[] commAPs = rec.getCommunityAtomicPredicateBDDs();
+    for (int i = 0; i < commAPs.length; i++) {
+      commAPs[i] = commAPs[i].veccompose(pairing);
+    }
     return rec;
   }
 

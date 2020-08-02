@@ -3,7 +3,6 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
-import static org.batfish.minesweeper.CommunityVar.Type.EXACT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
@@ -17,11 +16,9 @@ import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,6 +48,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -122,174 +120,80 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return Optional.empty();
   }
 
-  private static Automaton communityVarToAutomaton(CommunityVar cvar) {
-    String regex = cvar.getRegex();
-    if (cvar.getType() != EXACT) {
-      // strip the leading ^ and trailing $
-      if (regex.startsWith("^")) {
-        regex = regex.substring(1);
-      }
-      if (regex.endsWith("$")) {
-        regex = regex.substring(0, regex.length() - 1);
-      }
-    }
-    return new RegExp(regex).toAutomaton();
-  }
-
   /**
-   * Given a single satisfying assignment to the constraints from symbolic route analysis, and given
-   * a BDDRoute that represents the constraints on the input or output route, produce either a set
-   * of communities for the route that are consistent with this assignment, or a set of constraints
-   * (represented as a BDD) that are contradictory. The latter can happen because the symbolic route
-   * analysis treats community regexes (mostly) as a black box, so the constraints may be shown to
-   * be infeasible after properly interpreting the regexes.
+   * Given a single satisfying assignment to the constraints from symbolic route analysis, produce a
+   * set of communities for a given symbolic route that is consistent with the assignment.
    *
-   * <p>We represent the satisfying assignment in terms of a minimal model, which only includes
-   * valuations to variables that are necessary to satisfy the constraints. This allows us to deduce
-   * which communities are "don't cares" and so can be ignored.
-   *
-   * @param minimalModel a minimal model of the symbolic route constraints
-   * @param r the BDDRoute
-   * @return a set of communities or a BDD representing an infeasible constraint
+   * @param fullModel a full model of the symbolic route constraints
+   * @param r the symbolic route
+   * @param g the Graph, which provides information about the community atomic predicates
+   * @return a set of communities
    */
-  static ResultOrUnsat<Set<Community>> satAssignmentToCommunities(BDD minimalModel, BDDRoute r) {
+  static Set<Community> satAssignmentToCommunities(BDD fullModel, BDDRoute r, Graph g) {
 
-    // first figure out which communities are (not) in the assignment.
-    // this code is still correct even if minimalModel is not minimal but will lead to concrete
-    // routes with more communities than necessary.
-    Map<CommunityVar, BDD> communities = r.getCommunities();
-    Set<CommunityVar> positiveCommunities = new TreeSet<>();
-    Set<CommunityVar> negativeCommunities = new TreeSet<>();
-    for (Entry<CommunityVar, BDD> commEntry : communities.entrySet()) {
-      CommunityVar commVar = commEntry.getKey();
-      BDD commBDD = commEntry.getValue();
-      boolean canInclude = commBDD.andSat(minimalModel);
-      boolean canExclude = commBDD.not().andSat(minimalModel);
-      if (canInclude && canExclude) {
-        // this community is a "don't care" so ignore it
-        continue;
-      } else if (canInclude) {
-        // this community exists in the given model
-        positiveCommunities.add(commVar);
-      } else {
-        // this community does not exist in the given model
-        negativeCommunities.add(commVar);
-      }
-    }
+    BDD[] aps = r.getCommunityAtomicPredicateBDDs();
+    Map<Integer, Automaton> apAutomata = g.getAtomicPredicateAutomata();
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
-    Set<String> commStrs = new TreeSet<>();
-
-    // create an automaton representing all of the communities that are not in this model
-    Automaton disallowed = new Automaton();
-    for (CommunityVar negvar : negativeCommunities) {
-      disallowed = disallowed.union(communityVarToAutomaton(negvar));
-    }
-
-    // try to produce concrete communities for each positive community literal/regex
-    for (CommunityVar cvar : positiveCommunities) {
-      Automaton cvarAutomaton = communityVarToAutomaton(cvar);
-      Community example;
-      Community lit = cvar.getLiteralValue();
-      if (lit != null) {
-        // since literals are tracked precisely by the symbolic analysis, we know that this
-        // literal must exist in the route
-        example = lit;
-      } else {
-        // this is a regex, so we need to take into account the other community literals/regexes
-        // that are not in the model, to see if there is a contradiction
-        Automaton automaton = cvarAutomaton.intersection(COMMUNITY_FSM).minus(disallowed);
-        if (automaton.isEmpty()) {
-          // the regex constraints are not satisfiable, so
-          // compute the BDD corresponding to these constraints and return it
-          BDD disallowedConstraints =
-              r.getFactory()
-                  .orAll(
-                      negativeCommunities.stream()
-                          .map(communities::get)
-                          .collect(ImmutableList.toImmutableList()));
-          return new ResultOrUnsat<>(communities.get(cvar).diff(disallowedConstraints));
+    for (int i = 0; i < aps.length; i++) {
+      if (aps[i].andSat(fullModel)) {
+        // this atomic predicate is in the model, so create a concrete community for it.
+        // intersection with COMMUNITY_FSM helps ensure that the example we create will be
+        // a valid community.
+        Automaton a = apAutomata.get(i).intersection(COMMUNITY_FSM);
+        String str = a.getShortestExample(true);
+        Optional<Community> exampleOpt = stringToCommunity(str);
+        if (exampleOpt.isPresent()) {
+          comms.add(exampleOpt.get());
         } else {
-          // check if any existing community in the route already satisfies this regex
-          if (commStrs.stream().anyMatch(automaton::run)) {
-            continue;
-          }
-          // the constraints are satisfiable so get an example string
-          String str = automaton.getShortestExample(true);
-          Optional<Community> exampleOpt = stringToCommunity(str);
-          if (exampleOpt.isPresent()) {
-            example = exampleOpt.get();
-          } else {
-            throw new BatfishException(
-                "Failed to produce a valid community matching regex for " + cvar.getRegex());
-          }
+          throw new BatfishException("Failed to produce a valid community for answer");
         }
       }
-      comms.add(example);
-      commStrs.add(example.toString());
     }
-    return new ResultOrUnsat<>(comms.build());
+    return comms.build();
   }
 
   /**
-   * Given a satisfying assignment to the constraints from symbolic route analysis, and given a
-   * BDDRoute that represents the constraints on the input or output route, produce either a
-   * concrete route that is consistent with this assignment, or a set of constraints (represented as
-   * a BDD) that are contradictory. The latter can happen because the symbolic route analysis treats
-   * community regexes (mostly) as a black box, so the constraints may be shown to be infeasible
-   * after properly interpreting the regexes.
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete route for a given symbolic route that is consistent with the assignment.
    *
-   * <p>We represent the satisfying assignment both in terms of a minimal model, which only includes
-   * valuations to variables that are necessary to satisfy the constraints, and a full model, which
-   * has a valuation for each variable. The former is useful in order to understand which
-   * communities are "don't cares" and so can be ignored. See satAssignmentToCommunities.
-   *
-   * @param minimalModel a minimal model of the symbolic route constraints
    * @param fullModel a full model that extends minimalModel
-   * @param r the BDDRoute
+   * @param r the symbolic route
+   * @param g the Graph, which provides information about the community atomic predicates
    * @return either a route or a BDD representing an infeasible constraint
    */
-  private static ResultOrUnsat<Bgpv4Route> satAssignmentToRoute(
-      BDD minimalModel, BDD fullModel, BDDRoute r) {
+  private static Bgpv4Route satAssignmentToRoute(BDD fullModel, BDDRoute r, Graph g) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP);
 
-    ResultOrUnsat<Set<Community>> commResult = satAssignmentToCommunities(minimalModel, r);
-    Set<Community> communities = commResult.getResult();
-    if (communities == null) {
-      // the community constraints were not satisfiable, so we need to get a new
-      // satisfying assignment to the symbolic route constraints
-      return new ResultOrUnsat<>(commResult.getUnsatConstraints());
-    } else {
-      // the community constraints were satisfiable so we can build a concrete route
+    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
+    long len = r.getPrefixLength().satAssignmentToLong(fullModel);
+    builder.setNetwork(Prefix.create(ip, (int) len));
 
-      // we know that the satAssignment is not zero so all calls to getValueSatisfying below
-      // will succeed in returning a value
-      builder.setCommunities(communities);
-      Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
-      long len = r.getPrefixLength().satAssignmentToLong(fullModel);
-      builder.setNetwork(Prefix.create(ip, (int) len));
+    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
+    builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
+    // BDDRoute has a med and a metric, which appear to be treated identically
+    // I'm ignoring the metric and using the med
+    builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
 
-      builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
-      builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
-      // BDDRoute has a med and a metric, which appear to be treated identically
-      // I'm ignoring the metric and using the med
-      builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
+    Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
+    builder.setCommunities(communities);
 
-      return new ResultOrUnsat<>(builder.build());
-    }
+    return builder.build();
   }
 
   /**
-   * Convert the results of symbolic route analysis into an answer to this question.
+   * Convert the results of symbolic route analysis into an answer to this question, if the
+   * resulting constraints are satisfiable.
    *
    * @param constraints intersection of the input and output constraints provided as part of the
    *     question and the constraints on a solution that come from the symbolic route analysis
    * @param outputRoute the symbolic output route that results from the route analysis
    * @param policy the route policy that was analyzed
+   * @param g the Graph, which provides information about the community atomic predicates
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
@@ -298,37 +202,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD minimalModel = constraints.satOne();
-      BDD fullModel = minimalModel.fullSatOne();
-      ResultOrUnsat<Bgpv4Route> inResult =
-          satAssignmentToRoute(minimalModel, fullModel, new BDDRoute(g.getAllCommunities()));
-      if (_action == Action.DENY) {
-        return Optional.of(
-            new Result(
-                new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
-                // the input route constraints are always satisfiable so will always
-                // produce a route.
-                // this could change later if we add more kinds of route constraints.
-                inResult.getResult(),
-                _action,
-                null));
-      } else {
-        ResultOrUnsat<Bgpv4Route> outResult =
-            satAssignmentToRoute(minimalModel, fullModel, outputRoute);
-        if (outResult.getResult() == null) {
-          // we couldn't solve the community regex constraints in the current model, so
-          // try to find another one.
-          return constraintsToResult(
-              constraints.diff(outResult.getUnsatConstraints()), outputRoute, policy, g);
-        } else {
-          return Optional.of(
-              new Result(
-                  new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
-                  inResult.getResult(),
-                  _action,
-                  outResult.getResult()));
-        }
-      }
+      BDD fullModel = constraints.fullSatOne();
+      Bgpv4Route inRoute =
+          satAssignmentToRoute(fullModel, new BDDRoute(g.getNumAtomicPredicates()), g);
+      Bgpv4Route outRoute =
+          _action == Action.DENY ? null : satAssignmentToRoute(fullModel, outputRoute, g);
+      return Optional.of(
+          new Result(
+              new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
+              inRoute,
+              _action,
+              outRoute));
     }
   }
 
@@ -377,20 +261,22 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   private BDD communityConstraintsToBDD(
-      CommunitySet communitySet,
-      Map<CommunityVar, BDD> commMap,
-      boolean complementCommunities,
-      BDDFactory factory) {
+      CommunitySet communitySet, boolean complementCommunities, BDDRoute r, Graph g) {
     Set<Community> communities = communitySet.getCommunities();
     if (communities.isEmpty()) {
-      return factory.one();
+      return r.getFactory().one();
     } else {
-      BDD result = factory.zero();
-      for (Community c : communitySet.getCommunities()) {
-        CommunityVar cvar = CommunityVar.from(c);
-        BDD commBDD = commMap.get(cvar);
-        result = result.or(commBDD);
-      }
+      // given set of community constraints are represented as the disjunction of all associated
+      // atomic predicates
+      BDD result =
+          r.getFactory()
+              .orAll(
+                  communities.stream()
+                      .map(CommunityVar::from)
+                      .flatMap(c -> g.getCommunityAtomicPredicates().get(c).stream())
+                      .distinct()
+                      .map(i -> r.getCommunityAtomicPredicateBDDs()[i])
+                      .collect(ImmutableSet.toImmutableSet()));
       if (complementCommunities) {
         result = result.not();
       }
@@ -398,7 +284,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  private BDD routeConstraintsToBDD(RouteConstraints constraints, BDDRoute r) {
+  private BDD routeConstraintsToBDD(RouteConstraints constraints, BDDRoute r, Graph g) {
     BDD result =
         prefixSpaceToBDD(constraints.getPrefixSpace(), r, constraints.getComplementPrefixSpace());
     result = result.and(integerSpaceToBDD(constraints.getLocalPref(), r.getLocalPref()));
@@ -406,10 +292,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result =
         result.and(
             communityConstraintsToBDD(
-                constraints.getCommunities(),
-                r.getCommunities(),
-                constraints.getComplementCommunities(),
-                r.getFactory()));
+                constraints.getCommunities(), constraints.getComplementCommunities(), r, g));
 
     return result;
   }
@@ -422,7 +305,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _batfish.getSnapshot(),
             null,
             ImmutableSet.of(policy.getOwner().getHostname()),
-            _communities);
+            _communities.stream()
+                .map(LiteralCommunity::new)
+                .collect(ImmutableSet.toImmutableSet()));
     try {
       TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements(), _pq);
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
@@ -438,10 +323,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;
     BDD inConstraints =
-        routeConstraintsToBDD(_inputConstraints, new BDDRoute(g.getAllCommunities()));
+        routeConstraintsToBDD(_inputConstraints, new BDDRoute(g.getNumAtomicPredicates()), g);
     if (_action == Action.PERMIT) {
       // incorporate the constraints on the output route as well
-      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute);
+      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
       intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
     } else {
       intersection = acceptedAnnouncements.not().and(inConstraints);

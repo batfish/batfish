@@ -4,7 +4,11 @@ import static java.util.stream.Collectors.toMap;
 import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
+import dk.brics.automaton.Automaton;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +47,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamily;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -60,6 +63,8 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.minesweeper.CommunityVar.Type;
+import org.batfish.minesweeper.bdd.CommunityVarConverter;
 import org.batfish.minesweeper.collections.Table2;
 
 /**
@@ -122,6 +127,18 @@ public class Graph {
   private Map<String, String> _namedCommunities;
 
   /**
+   * In order to track community literals and regexes, we compute a set of "atomic predicates" for
+   * them. See initCommAtomicPredicates for details. These fields respectively record the number n
+   * of atomic predicates; a mapping from each community to its set of atomic predicates, each of
+   * which is an integer in the range 0...(n-1); and a mapping from each atomic predicate number to
+   * its semantic representation, which is an automaton representing a predicate on strings.
+   */
+  private int _numAtomicPredicates;
+
+  private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
+  private Map<Integer, Automaton> _atomicPredicateAutomata;
+
+  /**
    * Create a graph, loading configurations from the given {@link IBatfish}.
    *
    * <p>Note that, because configurations are not supplied, this {@link Graph} will clone the active
@@ -147,9 +164,7 @@ public class Graph {
     this(batfish, snapshot, configs, null, null);
   }
 
-  /*
-   * Create a graph, while selecting the subset of routers to use.
-   */
+  /** Create a graph, while selecting the subset of routers to use. */
   public Graph(
       IBatfish batfish,
       NetworkSnapshot snapshot,
@@ -158,15 +173,17 @@ public class Graph {
     this(batfish, snapshot, configs, routers, null);
   }
 
-  /* Create a graph, specifying an additional set of community literals to be tracked
-   * by the analysis.
+  /**
+   * Create a graph, specifying an additional set of community expressions (literals and regexes) to
+   * be tracked. This is useful for supporting user-defined constraints on symbolic route analysis
+   * (e.g., the user is interested only in routes tagged with a particular community).
    */
   public Graph(
       IBatfish batfish,
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers,
-      @Nullable Set<Community> communities) {
+      @Nullable Set<CommunitySetExpr> communities) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
     _allEdges = new HashSet<>();
@@ -186,6 +203,8 @@ public class Graph {
     _configurations = configs;
     _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
+    _atomicPredicateAutomata = new HashMap<>();
+    _communityAtomicPredicates = new HashMap<>();
     _snapshot = snapshot;
     if (_configurations == null) {
       // Since many functions that use the graph mutate the configurations, we must clone them
@@ -227,6 +246,7 @@ public class Graph {
     initDomains();
     initAllCommunities(communities);
     initCommDependencies();
+    initCommAtomicPredicates();
     initNamedCommunities();
   }
 
@@ -831,31 +851,98 @@ public class Graph {
     return _domainMapInverse.get(idx);
   }
 
-  /*
-   * Identifies all of the community literals and regexes in the given configurations.
-   * For each literal, a CommunityVar instance of type EXACT is created.  For each regex,
-   * two CommunityVar instances are created: one of type REGEX to represent the regex itself,
-   * and one of type OTHER to represent unknown community literals that match this regex.
+  /**
+   * Identifies all of the community literals and regexes in the given configurations. An optional
+   * set of additional community expressions (literals and regexes) is also included, which is used
+   * to support user-specified community constraints for symbolic analysis.
    *
-   * An optional set of additional community literals is also included, which is used to support
-   * user-specified community constraints during symbolic analysis.
+   * <p>For each literal, a CommunityVar instance of type EXACT is created. For each regex, two
+   * CommunityVar instances are created: one of type REGEX to represent the regex itself, and one of
+   * type OTHER to represent unknown community literals that match this regex. The latter type are
+   * used in the SMT-based analyses but are ignored by the BDD-based analyses.
    */
-  private void initAllCommunities(@Nullable Set<Community> communities) {
+  private void initAllCommunities(@Nullable Set<CommunitySetExpr> communities) {
     _allCommunities.addAll(findAllCommunities());
     if (communities != null) {
       _allCommunities.addAll(
-          communities.stream().map(CommunityVar::from).collect(Collectors.toSet()));
+          communities.stream()
+              .map(CommunityVarConverter::toCommunityVar)
+              .collect(Collectors.toSet()));
     }
   }
 
-  /*
-   * Computes a map from each community variable r of type REGEX to a set of community
-   * variables that depend on it.  A community variable v is considered to depend on r if
-   * either v is the corresponding OTHER-typed variable for r (see initAllCommunities above)
-   * or if v has type EXACT and its associated community literal matches r's regex.
-   *
-   * These dependencies are used in order to precisely track community literals during symbolic
-   * route analysis.
+  /**
+   * Create a set of atomic predicates for the given community literals and regexes (see
+   * initAllCommunities above). Specifically, we create the minimal set of atomic predicates such
+   * that: 1. no atomic predicate is logically false; 2. each atomic predicates is disjoint from all
+   * others; 3. each community expression is equivalent to a union of some subset of the atomic
+   * predicates. Atomic predicates are used for tracking communities in the BDD-based analyses.
+   */
+  private void initCommAtomicPredicates() {
+    SetMultimap<Automaton, CommunityVar> mmap = HashMultimap.create();
+    for (CommunityVar c : _allCommunities) {
+      if (c.getType() == Type.OTHER) {
+        // ignore the OTHER version of a community regex
+        continue;
+      }
+      Automaton cAuto = c.toAutomaton();
+      if (cAuto.isEmpty()) {
+        // community c doesn't match any communities; give up
+        throw new BatfishException(
+            "Community regex " + c.toString() + " does not match any communities");
+      }
+      SetMultimap<Automaton, CommunityVar> newMMap = HashMultimap.create(mmap);
+      for (Automaton a : mmap.keySet()) {
+        if (a.equals(cAuto)) {
+          newMMap.put(a, c);
+          // since all atomic predicates are disjoint from one another, if
+          // this community var is equal to an existing one, we can ignore all the rest
+          break;
+        }
+        Automaton inter = a.intersection(cAuto);
+        if (inter.isEmpty()) {
+          // this community var is disjoint from a, so move on to the next atomic predicate
+          continue;
+        }
+        // replace automaton a with two new atomic predicates, representing the intersection
+        // and difference with c's automaton
+        Set<CommunityVar> cvars = newMMap.removeAll(a);
+        Automaton diff = a.minus(cAuto);
+        newMMap.putAll(inter, cvars);
+        if (!diff.isEmpty()) {
+          newMMap.putAll(diff, cvars);
+        }
+        // add c to the intersection
+        newMMap.put(inter, c);
+        // update cAuto with the residual automaton that is left
+        cAuto = cAuto.minus(a);
+      }
+      if (!cAuto.isEmpty()) {
+        // if there's anything left of cAuto by the end, add it
+        newMMap.put(cAuto, c);
+      }
+      mmap = newMMap;
+    }
+    // assign a unique integer to each automaton.
+    // create a mapping from each integer to its corresponding automaton
+    // and a mapping from each community to its corresponding set of integers.
+    SetMultimap<Integer, CommunityVar> iToC = HashMultimap.create();
+    int i = 0;
+    for (Automaton a : mmap.keySet()) {
+      _atomicPredicateAutomata.put(i, a);
+      iToC.putAll(i, mmap.get(a));
+      i++;
+    }
+    _numAtomicPredicates = i;
+    _communityAtomicPredicates = Multimaps.asMap(Multimaps.invertFrom(iToC, HashMultimap.create()));
+  }
+
+  /**
+   * Computes a map from each community variable r of type REGEX to a set of community variables
+   * that depend on it. A community variable v is considered to depend on r if either v is the
+   * corresponding OTHER-typed variable for r (see initAllCommunities above) or if v has type EXACT
+   * and its associated community literal matches r's regex. These dependencies are used to track
+   * the relationships among communities in the SMT-based analyses.
    */
   private void initCommDependencies() {
     // Map community regex matches to Java regex
@@ -921,6 +1008,18 @@ public class Graph {
 
   public Map<String, String> getNamedCommunities() {
     return _namedCommunities;
+  }
+
+  public int getNumAtomicPredicates() {
+    return _numAtomicPredicates;
+  }
+
+  public Map<Integer, Automaton> getAtomicPredicateAutomata() {
+    return _atomicPredicateAutomata;
+  }
+
+  public Map<CommunityVar, Set<Integer>> getCommunityAtomicPredicates() {
+    return _communityAtomicPredicates;
   }
 
   /*
