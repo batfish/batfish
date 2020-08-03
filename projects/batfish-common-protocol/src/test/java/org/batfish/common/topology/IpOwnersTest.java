@@ -220,7 +220,6 @@ public class IpOwnersTest {
     Interface i1 = Interface.builder().setOwner(c1).setName("i1").build();
     Interface i2 = Interface.builder().setOwner(c2).setName("i2").build();
 
-
     Ip ip = Ip.parse("1.1.1.1");
     i1.setHsrpGroups(
         ImmutableMap.of(
