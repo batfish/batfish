@@ -610,9 +610,15 @@ public class TransferBDD {
             collectCommunityVars(_conf, sc.getExpr()).stream()
                 .filter(c -> !_policyQuotient.getCommsAssignedButNotMatched().contains(c))
                 .collect(Collectors.toSet());
-        // set all atomic predicates associated with these communities to 1 on this path
+        // set all atomic predicates associated with these communities to 1 on this path.
+        // set all other atomic predicates to zero, since the "set" command blows away all
+        // existing communities, except if the "additive" keyword is used, in which case it is
+        // parsed as an AddCommunity expression, which is handled above.
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        for (int i = 0; i < commAPBDDs.length; i++) {
+          commAPBDDs[i] = ite(result.getReturnAssignedValue(), commAPBDDs[i], factory.zero());
+        }
         for (int ap : commAPs) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
