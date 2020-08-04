@@ -39,6 +39,7 @@ import static org.junit.Assert.fail;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -138,6 +139,40 @@ public class BasicTest {
       randomSatOneTestAndFree(y, seed);
       randomSatOneTestAndFree(z, seed);
       randomSatOneTestAndFree(w, seed);
+    }
+  }
+
+  @Test
+  public void testMinAssignmentBits() {
+    _factory.setVarNum(17);
+    assertTrue(_factory.zero().minAssignmentBits().isEmpty());
+    assertTrue(_factory.one().minAssignmentBits().isEmpty());
+
+    BDD x = _factory.ithVar(0);
+    BDD y = _factory.ithVar(1);
+    BDD z = _factory.ithVar(2);
+    {
+      BitSet b = x.minAssignmentBits();
+      assertThat(b.cardinality(), equalTo(1));
+      assertTrue(b.get(0));
+    }
+    {
+      BitSet b = y.minAssignmentBits();
+      assertThat(b.cardinality(), equalTo(1));
+      assertTrue(b.get(1));
+    }
+    {
+      // Given x or y, the assignment should be 010 as we should pick lower value for x
+      BitSet b = x.or(y).minAssignmentBits();
+      assertThat(b.cardinality(), equalTo(1));
+      assertTrue(b.get(1));
+    }
+    {
+      // Given x and y or z, the assignment should be 101 as we should pick lower value for y
+      BitSet b = x.and(y.or(z)).minAssignmentBits();
+      assertThat(b.cardinality(), equalTo(2));
+      assertTrue(b.get(0));
+      assertTrue(b.get(2));
     }
   }
 

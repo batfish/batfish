@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.BitSet;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IcmpCode;
 
@@ -25,6 +26,15 @@ public final class BDDIcmpCode {
    * @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc)
    */
   public int satAssignmentToValue(BDD satAssignment) {
+    return _var.satAssignmentToLong(satAssignment).intValue();
+  }
+
+  /**
+   * Extract the value from the bits of a satisfying assignment.
+   *
+   * @param satAssignment see {@link BDD#minAssignmentBits()}.
+   */
+  public int satAssignmentToValue(BitSet satAssignment) {
     return _var.satAssignmentToLong(satAssignment).intValue();
   }
 

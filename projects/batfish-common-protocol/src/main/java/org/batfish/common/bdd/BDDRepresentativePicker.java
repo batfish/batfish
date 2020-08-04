@@ -12,7 +12,9 @@ import net.sf.javabdd.BDD;
 @ParametersAreNonnullByDefault
 public final class BDDRepresentativePicker {
 
-  /** Picks a representative flow, possibly from a combination of the given preference BDDs. */
+  /**
+   * Picks a representative assignment, possibly from a combination of the given preference BDDs.
+   */
   public static @Nonnull BDD pickRepresentative(BDD bdd, List<BDD> preference) {
     if (bdd.isZero()) {
       return bdd;
@@ -28,7 +30,7 @@ public final class BDDRepresentativePicker {
       curBDD = newBDD;
     }
 
-    return curBDD.fullSatOne();
+    return curBDD.satOne();
   }
 
   private BDDRepresentativePicker() {}
