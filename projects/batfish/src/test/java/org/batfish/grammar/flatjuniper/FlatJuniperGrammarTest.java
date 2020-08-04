@@ -2685,6 +2685,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceUndefined() {
+    // Should not crash.
+    parseConfig("interface-undefined");
+  }
+
+  @Test
   public void testInterfaceVlan() {
     Configuration c = parseConfig("interface-vlan");
 
