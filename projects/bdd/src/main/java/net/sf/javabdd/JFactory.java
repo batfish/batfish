@@ -31,6 +31,7 @@ package net.sf.javabdd;
 import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Random;
 import javax.annotation.Nonnull;
@@ -327,6 +328,11 @@ public final class JFactory extends BDDFactory {
     public BDD fullSatOne() {
       int x = _index;
       return makeBDD(bdd_fullsatone(x));
+    }
+
+    @Override
+    public BitSet minAssignmentBits() {
+      return bdd_minassignmentbits(_index);
     }
 
     @Override
@@ -3072,6 +3078,29 @@ public final class JFactory extends BDDFactory {
       child = bdd_makesatnode(v, child, true);
     }
     return bdd_makesatnode(LEVEL(r), child, useLo);
+  }
+
+  private BitSet bdd_minassignmentbits(int r) {
+    CHECK(r);
+    BitSet set = new BitSet(bddvarnum);
+    minassignmentbits_rec(set, r);
+    return set;
+  }
+
+  private void minassignmentbits_rec(BitSet set, int r) {
+    if (r < 2) {
+      return;
+    }
+
+    int lo = LOW(r);
+    int hi = HIGH(r);
+    boolean useHi = lo == BDDZERO;
+    if (useHi) {
+      set.set(LEVEL(r));
+      minassignmentbits_rec(set, hi);
+    } else {
+      minassignmentbits_rec(set, lo);
+    }
   }
 
   private int bdd_randomfullsatone(int r, int seed) {
