@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.BitSet;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpProtocol;
@@ -27,6 +28,15 @@ public final class BDDIpProtocol {
    * @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc)
    */
   public IpProtocol satAssignmentToValue(BDD satAssignment) {
+    return IpProtocol.fromNumber(_var.satAssignmentToLong(satAssignment).intValue());
+  }
+
+  /**
+   * Extract the value from the bits of a satisfying assignment.
+   *
+   * @param satAssignment Produced by {@link BDD#minAssignmentBits()}.
+   */
+  public IpProtocol satAssignmentToValue(BitSet satAssignment) {
     return IpProtocol.fromNumber(_var.satAssignmentToLong(satAssignment).intValue());
   }
 
