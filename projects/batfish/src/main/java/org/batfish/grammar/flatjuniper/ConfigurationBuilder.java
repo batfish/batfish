@@ -1026,6 +1026,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_GPRS_GTP_U;
     } else if (ctx.JUNOS_GPRS_GTP_V0() != null) {
       return JunosApplication.JUNOS_GPRS_GTP_V0;
+    } else if (ctx.JUNOS_GPRS_SCTP() != null) {
+      return JunosApplication.JUNOS_GPRS_SCTP;
     } else if (ctx.JUNOS_GRE() != null) {
       return JunosApplication.JUNOS_GRE;
     } else if (ctx.JUNOS_GTP() != null) {
@@ -1216,6 +1218,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_SMB_SESSION;
     } else if (ctx.JUNOS_SMTP() != null) {
       return JunosApplication.JUNOS_SMTP;
+    } else if (ctx.JUNOS_SMTPS() != null) {
+      return JunosApplication.JUNOS_SMTPS;
     } else if (ctx.JUNOS_SNMP_AGENTX() != null) {
       return JunosApplication.JUNOS_SNMP_AGENTX;
     } else if (ctx.JUNOS_SNPP() != null) {
