@@ -36534,8 +36534,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To-__aws-services-gateway__" : {
-            "name" : "To-__aws-services-gateway__",
+          "To-__aws-services-gateway__-backbone" : {
+            "name" : "To-__aws-services-gateway__-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -38845,7 +38845,7 @@
                   "peerInterface" : "To-Internet",
                   "remoteAsns" : "65537"
                 },
-                "To-__aws-services-gateway__" : {
+                "To-__aws-services-gateway__-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -38867,7 +38867,7 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To-__aws-services-gateway__",
+                  "peerInterface" : "To-__aws-services-gateway__-backbone",
                   "remoteAsns" : "65534"
                 }
               },
