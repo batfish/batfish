@@ -51142,8 +51142,7 @@
             "                    FROM:'from'",
             "                    (popsf_protocol",
             "                      PROTOCOL:'protocol'",
-            "                      protocol = (routing_protocol",
-            "                        BGP:'bgp'))))))))))",
+            "                      BGP:'bgp')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -65200,8 +65199,51 @@
             "                    FROM:'from'",
             "                    (popsf_protocol",
             "                      PROTOCOL:'protocol'",
-            "                      protocol = (routing_protocol",
-            "                        STATIC:'static'))))))))))",
+            "                      ACCESS_INTERNAL:'access-internal')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'",
+            "                      ACCESS_INTERNAL:'access-internal')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'",
+            "                      STATIC:'static')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -65624,8 +65666,7 @@
             "                  FROM:'from'",
             "                  (popsf_protocol",
             "                    PROTOCOL:'protocol'",
-            "                    protocol = (routing_protocol",
-            "                      EVPN:'evpn')))))))))",
+            "                    EVPN:'evpn'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -78028,6 +78069,12 @@
               "Line" : 4,
               "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "as-path-group AS_PATH_GROUP"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 18,
+              "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "protocol access-internal"
             }
           ],
           "Red flags" : [
@@ -82369,7 +82416,8 @@
                 33,
                 34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             }
@@ -84453,13 +84501,13 @@
           "as-path" : {
             "ORIGINATED_IN_65535" : {
               "definitionLines" : [
-                38
+                39
               ],
               "numReferrers" : 1
             },
             "UNUSED_ORIGINATED_IN_65535" : {
               "definitionLines" : [
-                39
+                40
               ],
               "numReferrers" : 0
             }
@@ -84499,7 +84547,8 @@
                 33,
                 34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             }
@@ -91628,7 +91677,7 @@
           "as-path" : {
             "ORIGINATED_IN_65535" : {
               "policy-statement from as-path" : [
-                34
+                35
               ]
             }
           },
