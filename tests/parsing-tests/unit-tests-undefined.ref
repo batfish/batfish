@@ -3456,9 +3456,9 @@
           "filename" : "configs/juniper_bgp",
           "lines" : [
             10,
-            20,
-            27,
-            36
+            21,
+            28,
+            37
           ]
         }
       },
@@ -3471,9 +3471,9 @@
           "filename" : "configs/juniper_bgp",
           "lines" : [
             13,
-            22,
-            29,
-            38
+            23,
+            30,
+            39
           ]
         }
       },
