@@ -201,6 +201,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
@@ -3791,6 +3792,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.MULTIPLE_AS() != null) {
       _currentBgpGroup.setMultipathMultipleAs(true);
     }
+  }
+
+  @Override
+  public void exitB_preference(B_preferenceContext ctx) {
+    int preference = toInt(ctx.pref);
+    _currentBgpGroup.setPreference(preference);
   }
 
   @Override
