@@ -4477,9 +4477,8 @@ public final class FlatJuniperGrammarTest {
    */
   @Test
   public void testPredefinedJunosApplicationsConverted() throws IOException {
-    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications-converted");
     // conversion failure will cause an exception
-    batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    parseConfig("pre-defined-junos-applications-converted");
   }
 
   @Test

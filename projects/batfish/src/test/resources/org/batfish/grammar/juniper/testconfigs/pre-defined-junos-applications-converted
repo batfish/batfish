@@ -1,9 +1,6 @@
 #
 set system host-name pre-defined-junos-applications-converted
 #
-#
-set system host-name pre-defined-junos-applications
-#
 set security policies global policy policy-name match application junos-aol
 set security policies global policy policy-name match application junos-bgp
 set security policies global policy policy-name match application junos-biff
