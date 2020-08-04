@@ -1,0 +1,32 @@
+frr-originator
+# This file describes the network interfaces
+auto lo
+iface lo inet loopback
+
+auto swp1
+iface swp1
+
+# ports.conf --
+frr version
+frr defaults datacenter
+!
+interface lo
+ ip address 1.1.1.1/32
+!
+interface swp1
+ ip address 10.1.1.1/24
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ neighbor 10.1.1.5 remote-as 5
+ neighbor 10.1.1.5 route-map SET_COMM out
+ network 10.2.2.2/32
+!
+ip route 10.2.2.2/32 Null0
+!
+ip community-list standard TEST_COMM permit 12345:123
+!
+route-map SET_COMM permit 20
+ set community 12345:123
+!
+end

@@ -779,6 +779,11 @@ VTY
   'vty'
 ;
 
+WEIGHT
+:
+  'weight'
+;
+
 WS
 :
   F_Whitespace+ -> channel ( HIDDEN ) // parser never sees tokens on hidden channel
