@@ -617,13 +617,11 @@ public class TransferBDD {
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
         BDD retassign = result.getReturnAssignedValue();
-        for (int i = 0; i < commAPBDDs.length; i++) {
-          commAPBDDs[i] = ite(retassign, commAPBDDs[i], factory.zero());
-        }
-        for (int ap : commAPs) {
+        for (int ap = 0; ap < commAPBDDs.length; ap++) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
-          BDD newValue = ite(retassign, comm, factory.one());
+          BDD newValue =
+              ite(retassign, comm, commAPs.contains(ap) ? factory.one() : factory.zero());
           curP.indent().debug("New Value: " + newValue);
           commAPBDDs[ap] = newValue;
         }
