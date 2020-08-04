@@ -14597,8 +14597,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To-__aws-services-gateway__" : {
-            "name" : "To-__aws-services-gateway__",
+          "To-__aws-services-gateway__-backbone" : {
+            "name" : "To-__aws-services-gateway__-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -14617,8 +14617,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To-igw-068fee63" : {
-            "name" : "To-igw-068fee63",
+          "To-igw-068fee63-backbone" : {
+            "name" : "To-igw-068fee63-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -14637,8 +14637,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To-igw-9b93ddfc" : {
-            "name" : "To-igw-9b93ddfc",
+          "To-igw-9b93ddfc-backbone" : {
+            "name" : "To-igw-9b93ddfc-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -14657,8 +14657,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To-igw-fac5839d" : {
-            "name" : "To-igw-fac5839d",
+          "To-igw-fac5839d-backbone" : {
+            "name" : "To-igw-fac5839d-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -14677,8 +14677,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To-vgw-81fd279f" : {
-            "name" : "To-vgw-81fd279f",
+          "To-vgw-81fd279f-backbone" : {
+            "name" : "To-vgw-81fd279f-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -16988,7 +16988,7 @@
                   "peerInterface" : "To-Internet",
                   "remoteAsns" : "65537"
                 },
-                "To-__aws-services-gateway__" : {
+                "To-__aws-services-gateway__-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -17010,10 +17010,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To-__aws-services-gateway__",
+                  "peerInterface" : "To-__aws-services-gateway__-backbone",
                   "remoteAsns" : "65534"
                 },
-                "To-igw-068fee63" : {
+                "To-igw-068fee63-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -17035,10 +17035,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To-igw-068fee63",
+                  "peerInterface" : "To-igw-068fee63-backbone",
                   "remoteAsns" : "65534"
                 },
-                "To-igw-9b93ddfc" : {
+                "To-igw-9b93ddfc-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -17060,10 +17060,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To-igw-9b93ddfc",
+                  "peerInterface" : "To-igw-9b93ddfc-backbone",
                   "remoteAsns" : "65534"
                 },
-                "To-igw-fac5839d" : {
+                "To-igw-fac5839d-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -17085,10 +17085,10 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To-igw-fac5839d",
+                  "peerInterface" : "To-igw-fac5839d-backbone",
                   "remoteAsns" : "65534"
                 },
-                "To-vgw-81fd279f" : {
+                "To-vgw-81fd279f-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -17110,7 +17110,7 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To-vgw-81fd279f",
+                  "peerInterface" : "To-vgw-81fd279f-backbone",
                   "remoteAsns" : "65534"
                 }
               },
