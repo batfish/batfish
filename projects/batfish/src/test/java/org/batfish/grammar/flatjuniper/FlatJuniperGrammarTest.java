@@ -4471,6 +4471,17 @@ public final class FlatJuniperGrammarTest {
         not(Matchers.containsString("unimplemented pre-defined junos application")));
   }
 
+  /**
+   * Tests that all parsed applications are converted to JunosApplication (in {@link
+   * ConfigurationBuilder})
+   */
+  @Test
+  public void testPredefinedJunosApplicationsConverted() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications-converted");
+    // conversion failure will cause an exception
+    batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+  }
+
   @Test
   public void testPredefinedJunosApplicationSets() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");

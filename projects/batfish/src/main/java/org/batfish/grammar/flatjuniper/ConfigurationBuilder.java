@@ -1026,6 +1026,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_GPRS_GTP_U;
     } else if (ctx.JUNOS_GPRS_GTP_V0() != null) {
       return JunosApplication.JUNOS_GPRS_GTP_V0;
+    } else if (ctx.JUNOS_GPRS_SCTP() != null) {
+      return JunosApplication.JUNOS_GPRS_SCTP;
     } else if (ctx.JUNOS_GRE() != null) {
       return JunosApplication.JUNOS_GRE;
     } else if (ctx.JUNOS_GTP() != null) {
