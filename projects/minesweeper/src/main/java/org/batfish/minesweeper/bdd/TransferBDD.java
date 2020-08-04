@@ -616,13 +616,14 @@ public class TransferBDD {
         // parsed as an AddCommunity expression, which is handled above.
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        BDD retassign = result.getReturnAssignedValue();
         for (int i = 0; i < commAPBDDs.length; i++) {
-          commAPBDDs[i] = ite(result.getReturnAssignedValue(), commAPBDDs[i], factory.zero());
+          commAPBDDs[i] = ite(retassign, commAPBDDs[i], factory.zero());
         }
         for (int ap : commAPs) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
-          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+          BDD newValue = ite(retassign, comm, factory.one());
           curP.indent().debug("New Value: " + newValue);
           commAPBDDs[ap] = newValue;
         }
@@ -637,10 +638,11 @@ public class TransferBDD {
         // set all atomic predicates associated with these communities to 0 on this path
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        BDD retassign = result.getReturnAssignedValue();
         for (int ap : commAPs) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
-          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
+          BDD newValue = ite(retassign, comm, factory.zero());
           curP.indent().debug("New Value: " + newValue);
           commAPBDDs[ap] = newValue;
         }
