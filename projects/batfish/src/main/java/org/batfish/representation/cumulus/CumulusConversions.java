@@ -82,6 +82,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -113,6 +114,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
@@ -120,6 +122,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -189,6 +192,14 @@ public final class CumulusConversions {
 
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
+  }
+
+  public static String computeOspfMetricAndTypePolicyName(String vrfName) {
+    return String.format("~OSPF_METRIC_AND_TYPE_POLICY:%s~", vrfName);
+  }
+
+  public static String computeOspfExportPolicyName(String vrfName) {
+    return String.format("~OSPF_EXPORT_POLICY:%s~", vrfName);
   }
 
   /**
@@ -1246,7 +1257,81 @@ public final class CumulusConversions {
 
     addOspfInterfaces(vsConfig, vrfInterfaces, proc.getProcessId(), w);
     proc.setAreas(computeOspfAreas(vsConfig, vrfInterfaces.keySet()));
+
+    // Handle Redistribution
+    String ospfExportPolicyName = computeOspfExportPolicyName(ospfVrf.getVrfName());
+    RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
+    c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
+    List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
+    proc.setExportPolicy(ospfExportPolicyName);
+
+    ospfExportStatements.addAll(
+        vsConfig.getOspfProcess().getRedistributionPolicies().values().stream()
+            .map(policy -> convertOspfRedistributionPolicy(c, ospfVrf, policy, vsConfig.getOspfProcess(), vsConfig.getRouteMaps()))
+            .collect(Collectors.toList()));
+
     return proc;
+  }
+
+  @VisibleForTesting
+  static void generateOspfMetricAndTypePolicy(Configuration c, OspfRedistributionPolicy policy, OspfProcess proc, OspfVrf ospfVrf) {
+    // Set the metric type and value if specified in redist command.
+    // In FRR, default metric-type is E2 and metric value is 20.
+    // NOTE: Neither of these are supported by the parser yet.
+    RoutingPolicy.Builder ospfMetricAndTypePolicy =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(computeOspfMetricAndTypePolicyName(ospfVrf.getVrfName()));
+
+    OspfMetricType metricType = policy.getMetricType() != null ? policy.getMetricType() : proc.getDefaultRedistributeMetricType();
+    ospfMetricAndTypePolicy.addStatement(new SetOspfMetricType(metricType));
+    long metric =
+        policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric();
+    ospfMetricAndTypePolicy.addStatement(new SetMetric(new LiteralLong(metric)));
+    ospfMetricAndTypePolicy.addStatement(Statements.ReturnTrue.toStaticStatement());
+    ospfMetricAndTypePolicy.build();
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  static If convertOspfRedistributionPolicy(
+      Configuration c, OspfVrf ospfVrf, OspfRedistributionPolicy policy, OspfProcess proc, Map<String, RouteMap> routeMaps) {
+    RoutingProtocol protocol = policy.getSourceProtocol();
+
+    //Spawn export policy defaults/configurations
+    generateOspfMetricAndTypePolicy(c, policy, proc, ospfVrf);
+
+    // All redistribution must match the specified protocol.
+    Conjunction ospfExportConditions = new Conjunction();
+    ospfExportConditions.getConjuncts().add(new MatchProtocol(protocol));
+
+    ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();
+
+    // If only classful routes should be redistributed, filter to classful routes.
+    // NOTE: Parser doesn't yet support this functionality.
+    if (policy.getOnlyClassfulRoutes()) {
+      ospfExportConditions.getConjuncts().add(RouteIsClassful.instance());
+    }
+
+    ospfExportConditions.getConjuncts().add(new CallExpr(computeOspfMetricAndTypePolicyName(ospfVrf.getVrfName())));
+
+    // If a route-map filter is present, honor it.
+    String exportRouteMapName = policy.getRouteMap();
+    if (exportRouteMapName != null) {
+      RouteMap exportRouteMap = routeMaps.get(exportRouteMapName);
+      if (exportRouteMap != null) {
+        ospfExportConditions.getConjuncts().add(new CallExpr(exportRouteMapName));
+      }
+    }
+
+    ospfExportStatements.add(Statements.ExitAccept.toStaticStatement());
+
+    // Construct the policy and add it before returning.
+    return new If(
+        "OSPF export routes for " + protocol.protocolName(),
+        ospfExportConditions,
+        ospfExportStatements.build(),
+        ImmutableList.of());
   }
 
   /**

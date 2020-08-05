@@ -16,6 +16,7 @@ import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
@@ -46,6 +47,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
@@ -84,6 +86,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_defaultContext;
@@ -140,6 +143,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
+import org.batfish.representation.cumulus.CumulusStructureType;
+import org.batfish.representation.cumulus.OspfRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
@@ -192,6 +197,7 @@ import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
+import org.glassfish.jersey.server.internal.routing.Routing;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private final CumulusConcatenatedConfiguration _c;
@@ -657,6 +663,36 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
 
     _frr.getOspfProcess().getDefaultVrf().setRouterId(Ip.parse(ctx.ip.getText()));
+  }
+
+  @Override
+  public void exitRo_redistribute(Ro_redistributeContext ctx) {
+    OspfProcess proc = _frr.getOspfProcess();
+    RoutingProtocol protocol;
+    CumulusStructureUsage usage;
+
+    if (ctx.STATIC() != null) {
+      protocol = RoutingProtocol.STATIC;
+      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+    } else if (ctx.CONNECTED() != null) {
+      protocol = RoutingProtocol.CONNECTED;
+      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+    } else if (ctx.BGP() != null) {
+      protocol = RoutingProtocol.BGP;
+      usage = OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+    } else {
+      throw new BatfishException("Unexpected redistribution protocol");
+    }
+
+    OspfRedistributionPolicy r = new OspfRedistributionPolicy(protocol);
+    proc.getRedistributionPolicies().put(protocol, r);
+    if (ctx.route_map_name() != null) {
+      String map = ctx.route_map_name().getText();
+      r.setRouteMap(map);
+      _c.referenceStructure(ROUTE_MAP, map, usage, ctx.getStart().getLine());
+    }
+    r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+    r.setOnlyClassfulRoutes(false);
   }
 
   @Override
