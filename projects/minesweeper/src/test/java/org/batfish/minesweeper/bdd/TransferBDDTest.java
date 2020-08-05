@@ -130,13 +130,13 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
 
     // the policy does not perform any updates
-    assertEquals(_anyRoute, announcementUpdates);
+    assertEquals(_anyRoute, outAnnouncements);
   }
 
   @Test
@@ -148,13 +148,13 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to no announcements
     assertTrue(acceptedAnnouncements.isZero());
 
     // no routes are produced
-    assertEquals(tbdd.zeroedRecord(), announcementUpdates);
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
   }
 
   @Test
@@ -164,12 +164,12 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     assertTrue(acceptedAnnouncements.isZero());
 
     // no routes are produced
-    assertEquals(tbdd.zeroedRecord(), announcementUpdates);
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
   }
 
   @Test
@@ -185,13 +185,135 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     BDD expectedBDD =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), announcementUpdates);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testAcceptBeforeIf() {
+    _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
+
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(
+                    new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(32, 32)))),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(4)),
+                Statements.ExitAccept.toStaticStatement())));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    assertEquals(_anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testRejectBeforeIf() {
+    _policyBuilder.addStatement(Statements.ExitReject.toStaticStatement());
+
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(
+                    new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(32, 32)))),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(4)),
+                Statements.ExitAccept.toStaticStatement())));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+  }
+
+  @Test
+  public void testPartialAccept() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(3)),
+                Statements.ExitAccept.toStaticStatement())));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDD expectedBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
+            .or(
+                isRelevantFor(
+                    _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32))));
+
+    BDD reachesSecondIf =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
+    BDDRoute expected = tbdd.iteZero(expectedBDD, _anyRoute);
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(
+        BDDInteger.makeFromValue(localPref.getFactory(), 32, 3).ite(reachesSecondIf, localPref));
+
+    assertEquals(expectedBDD, acceptedAnnouncements);
+
+    assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
+  public void testNestedIf() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(
+                new If(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement())))));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDD expectedBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(32, 32)));
+    assertEquals(acceptedAnnouncements, expectedBDD);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
   }
 
   @Test
@@ -209,7 +331,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     BDD expectedBDD1 =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
@@ -217,7 +339,7 @@ public class TransferBDDTest {
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(25, 32)));
     assertEquals(acceptedAnnouncements, expectedBDD1.or(expectedBDD2));
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), announcementUpdates);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
   }
 
   @Test
@@ -239,13 +361,13 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     BDD expectedBDD =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 24)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), announcementUpdates);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
   }
 
   @Test
@@ -260,7 +382,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -269,7 +391,7 @@ public class TransferBDDTest {
     BDDRoute expected = new BDDRoute(_anyRoute);
     BDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
-    assertEquals(expected, announcementUpdates);
+    assertEquals(expected, outAnnouncements);
   }
 
   @Test
@@ -295,7 +417,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     BDDRoute anyRoute2APs = new BDDRoute(2);
     BDD[] aps = anyRoute2APs.getCommunityAtomicPredicateBDDs();
@@ -303,7 +425,7 @@ public class TransferBDDTest {
     BDD expectedBDD = aps[0].or(aps[1]);
     assertEquals(expectedBDD, acceptedAnnouncements);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute2APs), announcementUpdates);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute2APs), outAnnouncements);
   }
 
   @Test
@@ -319,7 +441,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -329,8 +451,8 @@ public class TransferBDDTest {
         _g.getCommunityAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("20:30")))) {
       assertEquals(
-          announcementUpdates.getFactory().zero(),
-          announcementUpdates.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().zero(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
   }
 
@@ -346,7 +468,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -355,8 +477,8 @@ public class TransferBDDTest {
     for (int ap :
         _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
-          announcementUpdates.getFactory().one(),
-          announcementUpdates.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
   }
 
@@ -373,7 +495,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -382,15 +504,15 @@ public class TransferBDDTest {
     for (int ap :
         _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
-          announcementUpdates.getFactory().one(),
-          announcementUpdates.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
     // each atomic predicate for community 3:33 has the 0 BDD
     for (int ap :
         _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
-          announcementUpdates.getFactory().zero(),
-          announcementUpdates.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().zero(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
   }
 
@@ -407,7 +529,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -416,15 +538,15 @@ public class TransferBDDTest {
     for (int ap :
         _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
-          announcementUpdates.getFactory().one(),
-          announcementUpdates.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
     // each atomic predicate for community 3:33 has the 1 BDD
     for (int ap :
         _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
-          announcementUpdates.getFactory().one(),
-          announcementUpdates.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
   }
 
@@ -440,7 +562,7 @@ public class TransferBDDTest {
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute announcementUpdates = result.getFirst();
+    BDDRoute outAnnouncements = result.getFirst();
 
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
@@ -450,8 +572,8 @@ public class TransferBDDTest {
         _g.getCommunityAtomicPredicates()
             .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
       assertEquals(
-          announcementUpdates.getFactory().one(),
-          announcementUpdates.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
   }
 

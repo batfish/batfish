@@ -396,7 +396,7 @@ public class TransferBDD {
   }
 
   /*
-   * Convert a list of statements into a Z3 boolean expression for the transfer function.
+   * Convert a list of statements into a boolean expression for the transfer function.
    */
   private TransferResult<TransferReturn, BDD> compute(
       List<Statement> statements, TransferParam<BDDRoute> p) {
@@ -511,26 +511,42 @@ public class TransferBDD {
         TransferResult<TransferReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
         curP.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
 
+        // update return values
+
+        // this bdd is used below to account for the fact that we may have already hit a
+        // return/exit statement earlier on this path
+        BDD alreadyReturned = result.getReturnAssignedValue();
+
         BDDRoute r1 = trueBranch.getReturnValue().getFirst();
         BDDRoute r2 = falseBranch.getReturnValue().getFirst();
-        BDDRoute recordVal = ite(guard, r1, r2);
+        BDDRoute recordVal =
+            ite(alreadyReturned, result.getReturnValue().getFirst(), ite(guard, r1, r2));
 
-        // update return values
         BDD returnVal =
             ite(
-                guard,
-                trueBranch.getReturnValue().getSecond(),
-                falseBranch.getReturnValue().getSecond());
+                alreadyReturned,
+                result.getReturnValue().getSecond(),
+                ite(
+                    guard,
+                    trueBranch.getReturnValue().getSecond(),
+                    falseBranch.getReturnValue().getSecond()));
 
         // p.debug("New Return Value (neg): " + returnVal.not());
 
         BDD returnAss =
-            ite(guard, trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
+            alreadyReturned.or(
+                ite(
+                    guard,
+                    trueBranch.getReturnAssignedValue(),
+                    falseBranch.getReturnAssignedValue()));
 
         // p.debug("New Return Assigned: " + returnAss);
 
         BDD fallThrough =
-            ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
+            ite(
+                alreadyReturned,
+                result.getFallthroughValue(),
+                ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue()));
 
         // p.debug("New fallthrough: " + fallThrough);
 

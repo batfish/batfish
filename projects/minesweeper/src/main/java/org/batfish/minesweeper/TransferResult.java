@@ -7,14 +7,27 @@ import javax.annotation.Nullable;
 import org.batfish.minesweeper.collections.PList;
 import org.batfish.minesweeper.utils.MsPair;
 
+/**
+ * This class is used to keep track of the state of a symbolic control-plane analysis.
+ *
+ * @param <U> the type of the data that the analysis produces
+ * @param <T> the type of the predicate used to track the internal state of the analysis
+ */
 public class TransferResult<U, T> {
 
   private PList<MsPair<String, Expr>> _changedVariables; // should be a map
 
+  // holds the current data that the analysis has produced so far
   private U _returnValue;
 
+  // a predicate indicating whether the analysis has hit a fall-through condition in the
+  // configuration structure being analyzed, which is used to ensure that the analysis accurately
+  // identifies all and only feasible execution paths through the structure
   private T _fallthroughValue;
 
+  // a predicate indicating whether the analysis has hit a return or exit condition in the
+  // configuration structure being analyzed, which is used to ensure that the analysis accurately
+  // identifies all and only feasible execution paths through the structure
   private T _returnAssignedValue;
 
   public TransferResult() {
