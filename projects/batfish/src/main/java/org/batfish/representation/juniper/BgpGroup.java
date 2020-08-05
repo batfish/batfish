@@ -38,6 +38,7 @@ public class BgpGroup implements Serializable {
   private Boolean _multipathMultipleAs;
   private BgpGroup _parent;
   private Long _peerAs;
+  private @Nullable Integer _preference;
   private Boolean _removePrivate;
   @Nullable private String _ribGroup;
   private BgpGroupType _type;
@@ -113,6 +114,9 @@ public class BgpGroup implements Serializable {
       }
       if (_peerAs == null) {
         _peerAs = _parent._peerAs;
+      }
+      if (_preference == null) {
+        _preference = _parent._preference;
       }
       if (_ribGroup == null) {
         _ribGroup = _parent._ribGroup;
@@ -214,6 +218,14 @@ public class BgpGroup implements Serializable {
 
   public Long getPeerAs() {
     return _peerAs;
+  }
+
+  public @Nullable Integer getPreference() {
+    return _preference;
+  }
+
+  public void setPreference(@Nullable Integer preference) {
+    _preference = preference;
   }
 
   public Boolean getRemovePrivate() {

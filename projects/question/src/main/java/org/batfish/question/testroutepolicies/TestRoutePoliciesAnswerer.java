@@ -172,7 +172,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
         .setWeight(dataplaneBgpRoute.getWeight())
         .setNetwork(dataplaneBgpRoute.getNetwork())
-        .setCommunities(dataplaneBgpRoute.getCommunities())
+        .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
         .setAsPath(dataplaneBgpRoute.getAsPath())
         .build();
   }

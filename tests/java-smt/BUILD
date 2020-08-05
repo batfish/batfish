@@ -8,4 +8,5 @@ ref_tests(
         "*.ref",
         "networks/**",
     ]),
+    tags = ["z3"],
 )

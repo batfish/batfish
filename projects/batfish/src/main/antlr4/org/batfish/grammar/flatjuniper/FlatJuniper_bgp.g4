@@ -89,6 +89,7 @@ b_common
    | b_passive
    | b_path_selection
    | b_peer_as
+   | b_preference
    | b_remove_private
    | b_tcp_mss
    | b_type
@@ -241,6 +242,11 @@ b_peer_as
       apply
       | bpa_as
    )
+;
+
+b_preference
+:
+  PREFERENCE pref = DEC
 ;
 
 b_remove_private

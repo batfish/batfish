@@ -91,8 +91,7 @@
                       "prefixSet" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
                         "prefixSpace" : [
-                          "3.5.0.0/20",
-                          "3.5.16.0/21",
+                          "3.5.0.0/18",
                           "3.5.128.0/22",
                           "3.5.132.0/23",
                           "3.5.208.0/22",
@@ -119,6 +118,10 @@
                           "13.34.23.128/27",
                           "13.34.23.160/27",
                           "13.34.23.192/27",
+                          "13.34.24.96/27",
+                          "13.34.24.128/27",
+                          "13.34.24.160/27",
+                          "13.34.24.192/27",
                           "13.35.0.0/16",
                           "13.52.118.0/23",
                           "13.52.146.192/26",
@@ -163,6 +166,7 @@
                           "13.248.122.0/24",
                           "13.248.123.0/24",
                           "13.248.124.0/24",
+                          "13.248.125.0/24",
                           "13.248.126.0/24",
                           "13.248.127.0/24",
                           "13.248.128.0/17",
@@ -207,6 +211,9 @@
                           "15.221.16.0/22",
                           "15.221.20.0/22",
                           "15.221.24.0/21",
+                          "15.221.33.0/24",
+                          "15.221.34.0/24",
+                          "15.221.35.0/24",
                           "15.230.0.0/24",
                           "15.230.5.0/24",
                           "15.230.6.0/24",
@@ -221,6 +228,7 @@
                           "15.230.31.0/24",
                           "15.230.32.0/24",
                           "15.230.35.0/24",
+                          "15.230.36.0/23",
                           "15.230.38.0/24",
                           "15.230.39.0/31",
                           "15.230.39.2/31",
@@ -353,13 +361,18 @@
                           "15.230.40.0/24",
                           "15.230.41.0/24",
                           "15.230.42.0/24",
+                          "15.230.43.0/24",
                           "15.230.64.0/26",
                           "15.230.64.64/26",
                           "15.230.64.128/26",
                           "15.230.64.192/26",
                           "15.230.65.0/26",
                           "15.230.65.64/26",
+                          "15.230.65.128/26",
+                          "15.230.65.192/26",
+                          "15.230.66.0/26",
                           "15.230.129.0/24",
+                          "15.230.130.0/24",
                           "18.228.246.0/23",
                           "27.0.0.0/22",
                           "34.223.24.0/22",
@@ -404,6 +417,7 @@
                           "52.92.60.0/22",
                           "52.92.72.0/22",
                           "52.92.88.0/22",
+                          "52.92.128.0/17",
                           "52.93.0.0/24",
                           "52.93.1.0/24",
                           "52.93.2.0/24",
@@ -442,6 +456,8 @@
                           "52.93.62.0/24",
                           "52.93.63.0/24",
                           "52.93.64.0/24",
+                          "52.93.66.154/32",
+                          "52.93.66.155/32",
                           "52.93.67.0/24",
                           "52.93.69.0/24",
                           "52.93.73.0/26",
@@ -476,6 +492,8 @@
                           "52.93.126.213/32",
                           "52.93.126.214/32",
                           "52.93.126.215/32",
+                          "52.93.126.244/32",
+                          "52.93.126.245/32",
                           "52.93.129.95/32",
                           "52.93.131.217/32",
                           "52.93.133.127/32",
@@ -623,10 +641,10 @@
                           "52.93.193.203/32",
                           "52.93.236.0/24",
                           "52.93.237.0/24",
-                          "52.93.240.130/31",
-                          "52.93.240.132/31",
-                          "52.93.240.134/31",
-                          "52.93.240.136/31",
+                          "52.93.240.146/31",
+                          "52.93.240.148/31",
+                          "52.93.240.150/31",
+                          "52.93.240.152/31",
                           "52.93.245.0/24",
                           "52.93.247.0/25",
                           "52.93.248.0/24",
@@ -746,6 +764,8 @@
                           "52.95.174.0/24",
                           "52.95.175.0/24",
                           "52.95.176.0/24",
+                          "52.95.177.0/24",
+                          "52.95.178.0/23",
                           "52.95.192.0/20",
                           "52.95.208.0/22",
                           "52.95.212.0/22",
@@ -793,6 +813,7 @@
                           "52.144.200.128/26",
                           "52.144.201.64/26",
                           "52.144.201.128/26",
+                          "52.144.205.0/26",
                           "52.144.208.0/31",
                           "52.144.208.2/31",
                           "52.144.208.64/26",
@@ -843,6 +864,8 @@
                           "52.144.225.128/26",
                           "52.144.227.64/26",
                           "52.144.227.192/26",
+                          "52.144.228.0/31",
+                          "52.144.228.2/31",
                           "52.144.228.64/26",
                           "52.144.228.128/26",
                           "52.144.228.192/26",
@@ -924,6 +947,7 @@
                           "54.239.1.96/28",
                           "54.239.1.112/28",
                           "54.239.1.128/28",
+                          "54.239.1.144/28",
                           "54.239.2.0/23",
                           "54.239.4.0/22",
                           "54.239.8.0/21",
@@ -1094,6 +1118,7 @@
                           "99.83.128.0/17",
                           "99.84.0.0/16",
                           "99.86.0.0/16",
+                          "99.87.0.0/22",
                           "103.8.172.0/22",
                           "103.246.148.0/23",
                           "103.246.150.0/23",
@@ -1125,6 +1150,10 @@
                           "143.204.0.0/16",
                           "144.220.0.0/16",
                           "150.222.2.0/24",
+                          "150.222.3.176/32",
+                          "150.222.3.177/32",
+                          "150.222.3.178/32",
+                          "150.222.3.179/32",
                           "150.222.5.0/24",
                           "150.222.6.0/24",
                           "150.222.7.0/24",
@@ -1177,7 +1206,36 @@
                           "150.222.117.0/24",
                           "150.222.118.0/24",
                           "150.222.119.0/24",
+                          "150.222.120.20/31",
+                          "150.222.120.62/31",
+                          "150.222.120.224/31",
+                          "150.222.120.226/31",
+                          "150.222.120.228/31",
+                          "150.222.120.230/31",
+                          "150.222.120.232/31",
+                          "150.222.120.234/31",
+                          "150.222.120.240/31",
+                          "150.222.120.242/31",
+                          "150.222.120.244/31",
+                          "150.222.120.246/31",
+                          "150.222.120.248/31",
+                          "150.222.120.250/31",
+                          "150.222.120.252/32",
+                          "150.222.120.255/32",
                           "150.222.121.0/24",
+                          "150.222.122.92/31",
+                          "150.222.122.94/31",
+                          "150.222.122.96/31",
+                          "150.222.122.98/31",
+                          "150.222.122.100/31",
+                          "150.222.122.102/31",
+                          "150.222.122.104/31",
+                          "150.222.122.106/31",
+                          "150.222.122.108/31",
+                          "150.222.122.110/31",
+                          "150.222.122.112/31",
+                          "150.222.122.114/31",
+                          "150.222.122.116/31",
                           "150.222.129.112/31",
                           "150.222.129.114/31",
                           "150.222.129.116/31",
@@ -1242,6 +1300,7 @@
                           "150.222.222.0/24",
                           "150.222.223.0/24",
                           "150.222.224.0/24",
+                          "150.222.226.0/24",
                           "150.222.227.0/24",
                           "150.222.228.0/24",
                           "150.222.229.0/24",
@@ -1422,16 +1481,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "3.5.0.0/20",
-                "nextHopInterface" : "aws-services",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 1,
-                "metric" : 0,
-                "network" : "3.5.16.0/21",
+                "network" : "3.5.0.0/18",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -1666,6 +1716,42 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "13.34.23.192/27",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "13.34.24.96/27",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "13.34.24.128/27",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "13.34.24.160/27",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "13.34.24.192/27",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -2070,6 +2156,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "13.248.125.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "13.248.126.0/24",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -2466,6 +2561,33 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "15.221.33.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "15.221.34.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "15.221.35.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "15.230.0.0/24",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -2584,6 +2706,15 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "15.230.35.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "15.230.36.0/23",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -3780,6 +3911,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "15.230.43.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "15.230.64.0/26",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -3834,7 +3974,43 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "15.230.65.128/26",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "15.230.65.192/26",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "15.230.66.0/26",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "15.230.129.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "15.230.130.0/24",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -4239,6 +4415,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "52.92.128.0/17",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "52.93.0.0/24",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -4581,6 +4766,24 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "52.93.66.154/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "52.93.66.155/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "52.93.67.0/24",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -4879,6 +5082,24 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "52.93.126.215/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "52.93.126.244/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "52.93.126.245/32",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -6210,7 +6431,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "52.93.240.130/31",
+                "network" : "52.93.240.146/31",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -6219,7 +6440,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "52.93.240.132/31",
+                "network" : "52.93.240.148/31",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -6228,7 +6449,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "52.93.240.134/31",
+                "network" : "52.93.240.150/31",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -6237,7 +6458,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
-                "network" : "52.93.240.136/31",
+                "network" : "52.93.240.152/31",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -7317,6 +7538,24 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "52.95.177.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "52.95.178.0/23",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "52.95.192.0/20",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -7732,6 +7971,15 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "52.144.201.128/26",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "52.144.205.0/26",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -8182,6 +8430,24 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "52.144.227.192/26",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "52.144.228.0/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "52.144.228.2/31",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -8911,6 +9177,15 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "54.239.1.128/28",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "54.239.1.144/28",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -10449,6 +10724,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "99.87.0.0/22",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "103.8.172.0/22",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -10720,6 +11004,42 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "150.222.2.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.3.176/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.3.177/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.3.178/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.3.179/32",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -11196,7 +11516,268 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
                 "metric" : 0,
+                "network" : "150.222.120.20/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.62/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.224/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.226/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.228/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.230/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.232/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.234/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.240/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.242/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.244/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.246/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.248/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.250/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.252/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.120.255/32",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "150.222.121.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.92/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.94/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.96/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.98/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.100/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.102/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.104/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.106/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.108/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.110/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.112/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.114/31",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.122.116/31",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -11773,6 +12354,15 @@
                 "administrativeCost" : 1,
                 "metric" : 0,
                 "network" : "150.222.224.0/24",
+                "nextHopInterface" : "aws-services",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 1,
+                "metric" : 0,
+                "network" : "150.222.226.0/24",
                 "nextHopInterface" : "aws-services",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -12812,6 +13402,7 @@
         "name" : "aaa_accounting",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12840,6 +13431,7 @@
         "name" : "aaa_authentication_login_default_tacacs_local",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12875,6 +13467,7 @@
         "name" : "aaa_group_server_source_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12898,6 +13491,7 @@
         "name" : "access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -12918,6 +13512,7 @@
         "name" : "address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -13026,6 +13621,7 @@
         "name" : "aggaddress",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "ScienceDMZ-networks" : {
@@ -13384,6 +13980,7 @@
         "name" : "arista-event-handler",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13404,6 +14001,7 @@
         "name" : "arista_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "abcd" : {
@@ -13547,6 +14145,7 @@
         "name" : "arista_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "ROUTE_MAP" : {
@@ -13609,6 +14208,7 @@
         "name" : "arista_dhcp_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -13683,6 +14283,7 @@
         "name" : "arista_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan1" : {
@@ -13748,6 +14349,7 @@
         "name" : "arista_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13788,6 +14390,7 @@
         "name" : "arista_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -13808,6 +14411,7 @@
         "name" : "arista_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "sshabc" : {
@@ -13881,6 +14485,7 @@
         "name" : "arista_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1" : {
@@ -13985,6 +14590,7 @@
         "name" : "arista_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1" : {
@@ -14028,6 +14634,7 @@
         "name" : "arista_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14048,6 +14655,7 @@
         "name" : "arista_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14080,6 +14688,7 @@
         "name" : "arista_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14104,6 +14713,7 @@
         "name" : "aruba_aaa",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14128,6 +14738,7 @@
         "name" : "aruba_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14148,6 +14759,7 @@
         "name" : "aruba_airgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14168,6 +14780,7 @@
         "name" : "aruba_crypto",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ikePhase1Proposals" : {
           "1" : {
@@ -14198,6 +14811,7 @@
         "name" : "aruba_dhcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14223,6 +14837,7 @@
         "name" : "aruba_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/0/0" : {
@@ -14278,6 +14893,7 @@
         "name" : "aruba_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -14306,6 +14922,7 @@
         "name" : "aruba_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14343,6 +14960,7 @@
         "name" : "aruba_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "snmpTrapServers" : [
           "1.2.3.4"
@@ -14386,6 +15004,7 @@
         "name" : "aruba_time_range",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14406,6 +15025,7 @@
         "name" : "aruba_user_role",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14426,6 +15046,7 @@
         "name" : "aruba_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14446,6 +15067,7 @@
         "name" : "aruba_voice",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14466,6 +15088,7 @@
         "name" : "aruba_vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -14486,6 +15109,7 @@
         "name" : "as_path_prepend",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "rmap" : {
@@ -14529,6 +15153,7 @@
         "name" : "asa-interface-redundant",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/1" : {
@@ -14894,6 +15519,7 @@
         "name" : "asa_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "Local_LAN_Access" : {
@@ -15700,6 +16326,7 @@
         "name" : "asa_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -15728,6 +16355,7 @@
         "name" : "asa_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ifname" : {
@@ -15786,6 +16414,7 @@
         "name" : "asa_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -15811,6 +16440,7 @@
         "name" : "asa_object_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "ALLOW_SERVER02" : {
@@ -15953,6 +16583,7 @@
         "name" : "asa_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "blah" : {
@@ -16144,6 +16775,7 @@
         "name" : "asa_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -16172,6 +16804,7 @@
         "name" : "bgp-allow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -16434,6 +17067,7 @@
         "name" : "bgp-disable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -16479,6 +17113,7 @@
         "name" : "bgp-enforce-first-as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -16740,6 +17375,7 @@
         "name" : "bgp_address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17025,6 +17661,7 @@
         "name" : "bgp_default_originate_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17074,6 +17711,7 @@
         "name" : "bgp_foundry",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17195,6 +17833,7 @@
         "name" : "bgp_nsr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -17251,6 +17890,7 @@
         "name" : "bgp_route_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -18796,6 +19436,7 @@
         "name" : "cisco-zone",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18824,6 +19465,7 @@
         "name" : "cisco_aaa",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -18911,6 +19553,7 @@
         "name" : "cisco_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "BLAH-BLAH" : {
@@ -19866,6 +20509,7 @@
         "name" : "cisco_additional_paths",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -19922,6 +20566,7 @@
         "name" : "cisco_authentication",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -19975,6 +20620,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "ipAccessLists" : {
           "5" : {
@@ -20691,6 +21337,7 @@
         "name" : "cisco_bgp_confederation",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -20754,6 +21401,7 @@
         "name" : "cisco_cable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Cable1/2/3" : {
@@ -20841,6 +21489,7 @@
         "name" : "cisco_callhome",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20862,6 +21511,7 @@
         "name" : "cisco_control_plane",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20882,6 +21532,7 @@
         "name" : "cisco_controller",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -20902,6 +21553,7 @@
         "name" : "cisco_crypto",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "VRF:ABC:DEF:GHI:1234" : {
@@ -21072,6 +21724,7 @@
         "name" : "cisco_dhcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21097,6 +21750,7 @@
         "name" : "cisco_domain",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "dnsServers" : [
           "1.2.3.4",
@@ -21123,6 +21777,7 @@
         "name" : "cisco_dot11",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21143,6 +21798,7 @@
         "name" : "cisco_dot1x",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21163,6 +21819,7 @@
         "name" : "cisco_dspfarm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21183,6 +21840,7 @@
         "name" : "cisco_dynamic_access_policy_record",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21203,6 +21861,7 @@
         "name" : "cisco_eigrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0" : {
@@ -21664,6 +22323,7 @@
         "name" : "cisco_enable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21685,6 +22345,7 @@
         "name" : "cisco_flow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/1" : {
@@ -21731,6 +22392,7 @@
         "name" : "cisco_hardware",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -21751,6 +22413,7 @@
         "name" : "cisco_hsrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "TenGigabitEthernet0/0/2/2" : {
@@ -21797,6 +22460,7 @@
         "name" : "cisco_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Async1" : {
@@ -22548,6 +23212,7 @@
         "name" : "cisco_ios_neighbor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -22658,6 +23323,7 @@
         "name" : "cisco_ip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22681,6 +23347,7 @@
         "name" : "cisco_ip_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22701,6 +23368,7 @@
         "name" : "cisco_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22836,6 +23504,7 @@
         "name" : "cisco_ipsla",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22856,6 +23525,7 @@
         "name" : "cisco_ipv6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -22876,6 +23546,7 @@
         "name" : "cisco_ipv6_access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ip6AccessLists" : {
           "RT404888-XO" : {
@@ -23132,6 +23803,7 @@
         "name" : "cisco_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "GigabitEthernet0/0" : {
@@ -23365,6 +24037,7 @@
         "name" : "cisco_l2tp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -23390,6 +24063,7 @@
         "name" : "cisco_line",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -23949,6 +24623,7 @@
         "name" : "cisco_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.1.1.1",
@@ -24011,6 +24686,7 @@
         "name" : "cisco_mac_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24031,6 +24707,7 @@
         "name" : "cisco_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~" : {
@@ -24088,6 +24765,7 @@
         "name" : "cisco_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24108,6 +24786,7 @@
         "name" : "cisco_mpls",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24128,6 +24807,7 @@
         "name" : "cisco_multicast",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24148,6 +24828,7 @@
         "name" : "cisco_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -24188,6 +24869,7 @@
         "name" : "cisco_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24549,6 +25231,7 @@
         "name" : "cisco_ospf_ipv6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24607,6 +25290,7 @@
         "name" : "cisco_ospf_multi_process",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24885,6 +25569,7 @@
         "name" : "cisco_ospfv3",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -24943,6 +25628,7 @@
         "name" : "cisco_pim",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24963,6 +25649,7 @@
         "name" : "cisco_platform",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -24983,6 +25670,7 @@
         "name" : "cisco_privilege",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25003,6 +25691,7 @@
         "name" : "cisco_qos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~INSPECT_POLICY_MAP_ACL~pminspect~" : {
@@ -25098,6 +25787,7 @@
         "name" : "cisco_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25118,6 +25808,7 @@
         "name" : "cisco_redundancy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25138,6 +25829,7 @@
         "name" : "cisco_rip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~RIP_EXPORT_POLICY:default~" : {
@@ -25166,6 +25858,7 @@
         "name" : "cisco_role",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25219,6 +25912,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "MAP_NAME1" : {
@@ -25434,6 +26128,7 @@
         "name" : "cisco_sccp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25454,6 +26149,7 @@
         "name" : "cisco_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "snmpSourceInterface" : "Loopback0",
         "snmpTrapServers" : [
@@ -25594,6 +26290,7 @@
         "name" : "cisco_spanning_tree",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25614,6 +26311,7 @@
         "name" : "cisco_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25637,6 +26335,7 @@
         "name" : "cisco_stcapp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25657,6 +26356,7 @@
         "name" : "cisco_style_acl1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
@@ -25712,6 +26412,7 @@
         "name" : "cisco_style_acl2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "1" : {
@@ -25767,6 +26468,7 @@
         "name" : "cisco_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25788,6 +26490,7 @@
         "name" : "cisco_track",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "trackingGroups" : {
           "1" : {
@@ -25818,6 +26521,7 @@
         "name" : "cisco_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25899,6 +26603,7 @@
         "name" : "cisco_username_without_password",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25930,6 +26635,7 @@
         "name" : "cisco_vdc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25950,6 +26656,7 @@
         "name" : "cisco_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25970,6 +26677,7 @@
         "name" : "cisco_voice",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -25990,6 +26698,7 @@
         "name" : "cisco_vpdn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26010,6 +26719,7 @@
         "name" : "cisco_vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26030,6 +26740,7 @@
         "name" : "cisco_vrrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -26088,6 +26799,7 @@
         "name" : "cisco_webvpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26108,6 +26820,7 @@
         "name" : "cisco_wsma",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -26128,6 +26841,7 @@
         "name" : "colon_in_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:VRF:MMS:RMT:PBI:145~" : {
@@ -27725,6 +28439,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -27754,6 +28469,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
@@ -27829,6 +28545,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
@@ -27904,6 +28621,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "PFX_LIST" : {
@@ -28309,6 +29027,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -28322,6 +29041,7 @@
         "name" : "cumulus_nclu",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "dnsServers" : [
           "192.0.2.3"
@@ -29336,6 +30056,7 @@
         "name" : "cumulus_nclu_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29575,6 +30296,7 @@
         "name" : "cumulus_nclu_bgp_no_address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29655,6 +30377,7 @@
         "name" : "cumulus_nclu_bgp_no_remote_as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29793,6 +30516,7 @@
         "name" : "cumulus_nclu_bgp_no_router_id",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29877,6 +30601,7 @@
         "name" : "cumulus_nclu_bgp_no_router_id_or_loopback_ip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "lo" : {
@@ -29957,6 +30682,7 @@
         "name" : "cumulus_nclu_bond",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "AGG" : {
@@ -30285,6 +31011,7 @@
         "name" : "cumulus_nclu_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "lo" : {
@@ -30367,6 +31094,7 @@
         "name" : "cumulus_nclu_invalid_bonds",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "lo" : {
@@ -30431,6 +31159,7 @@
         "name" : "cumulus_nclu_invalid_interfaces",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30515,6 +31244,7 @@
         "name" : "cumulus_nclu_invalid_vrfs",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30601,6 +31331,7 @@
         "name" : "cumulus_nclu_invalid_vxlans",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30709,6 +31440,7 @@
         "name" : "cumulus_nclu_routing",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "lo" : {
@@ -30751,6 +31483,7 @@
         "name" : "cumulus_nclu_stp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CUMULUS_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "bond1" : {
@@ -30837,6 +31570,7 @@
         "name" : "eos_mlag",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Port-Channel1" : {
@@ -30917,6 +31651,7 @@
         "name" : "eos_trunk_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Port-Channel1" : {
@@ -30960,6 +31695,7 @@
         "name" : "f5_bigip_imish_malformed",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_imish_malformed" : {
@@ -31080,6 +31816,7 @@
         "name" : "f5_bigip_structured_cm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_cm" : {
@@ -31101,6 +31838,7 @@
         "name" : "f5_bigip_structured_ltm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_ltm" : {
@@ -31148,6 +31886,7 @@
         "name" : "f5_bigip_structured_malformed",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_malformed" : {
@@ -31180,6 +31919,7 @@
         "name" : "f5_bigip_structured_net",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net" : {
@@ -31350,6 +32090,7 @@
         "name" : "f5_bigip_structured_net_routing_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net_routing_bgp" : {
@@ -31508,6 +32249,7 @@
         "name" : "f5_bigip_structured_net_routing_prefix_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net_routing_prefix_list" : {
@@ -31563,6 +32305,7 @@
         "name" : "f5_bigip_structured_net_routing_route_map",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_net_routing_route_map" : {
@@ -31599,6 +32342,7 @@
         "name" : "f5_bigip_structured_sys",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_sys" : {
@@ -31624,6 +32368,7 @@
         "name" : "f5_bigip_structured_sys_ha_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_sys_ha_group" : {
@@ -31645,6 +32390,7 @@
         "name" : "f5_bigip_structured_with_imish",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "F5_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "generatedReferenceBooks" : {
           "PoolAddresses~on~f5_bigip_structured_with_imish" : {
@@ -32711,6 +33457,7 @@
         "name" : "host2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0" : {
@@ -32950,6 +33697,7 @@
         "name" : "if_tag_is",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "FOO" : {
@@ -33248,6 +33996,7 @@
         "name" : "interface-reth",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -33451,6 +34200,7 @@
         "name" : "interface_exit",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan303" : {
@@ -33533,6 +34283,7 @@
         "name" : "interface_name",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet12/13" : {
@@ -33642,6 +34393,7 @@
         "name" : "interface_sdr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Loopback0" : {
@@ -33692,6 +34444,7 @@
         "name" : "interfacemtu",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "xe-0/0/0" : {
@@ -34068,6 +34821,7 @@
         "name" : "ios_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34092,6 +34846,7 @@
         "name" : "ios_banner_dos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34116,6 +34871,7 @@
         "name" : "ios_bfd",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34136,6 +34892,7 @@
         "name" : "ios_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -34192,6 +34949,7 @@
         "name" : "ios_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet1/0/1" : {
@@ -34238,6 +34996,7 @@
         "name" : "ios_interface_ip_authentication",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -34284,6 +35043,7 @@
         "name" : "ios_interface_ip_eigrp_settings",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -34330,6 +35090,7 @@
         "name" : "ios_interface_ip_tcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -34376,6 +35137,7 @@
         "name" : "ios_standby",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan1000" : {
@@ -34440,6 +35202,7 @@
         "name" : "ios_template",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -34460,6 +35223,7 @@
         "name" : "ios_xe_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -34516,6 +35280,7 @@
         "name" : "ios_xr_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -34529,6 +35294,7 @@
         "name" : "ios_xr_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
@@ -34753,6 +35519,7 @@
         "name" : "ios_xr_bgp_neighbor_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -34960,6 +35727,7 @@
         "name" : "ios_xr_class_map",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -34973,6 +35741,7 @@
         "name" : "ios_xr_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet0/2/1/6" : {
@@ -35021,6 +35790,7 @@
         "name" : "ios_xr_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35034,6 +35804,7 @@
         "name" : "ios_xr_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35047,6 +35818,7 @@
         "name" : "ios_xr_multipart",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35060,6 +35832,7 @@
         "name" : "ios_xr_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4"
@@ -35076,6 +35849,7 @@
         "name" : "ios_xr_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Bundle-Ether101" : {
@@ -35555,6 +36329,7 @@
         "name" : "ios_xr_router_static",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35660,6 +36435,7 @@
         "name" : "ios_xr_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35673,6 +36449,7 @@
         "name" : "ios_xr_taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35686,6 +36463,7 @@
         "name" : "iosxrmulticast",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -35699,6 +36477,7 @@
         "name" : "ip_prefix_list_single_line",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "DENY-IPV4-ANY-IN" : {
@@ -35755,8 +36534,8 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "To-__aws-services-gateway__" : {
-            "name" : "To-__aws-services-gateway__",
+          "To-__aws-services-gateway__-backbone" : {
+            "name" : "To-__aws-services-gateway__-backbone",
             "active" : true,
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
@@ -36185,8 +36964,7 @@
                         "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
                         "prefixSpace" : [
                           "3.0.0.0/15",
-                          "3.5.0.0/20",
-                          "3.5.16.0/21",
+                          "3.5.0.0/18",
                           "3.5.128.0/22",
                           "3.5.132.0/23",
                           "3.5.208.0/22",
@@ -36238,6 +37016,10 @@
                           "13.34.23.128/27",
                           "13.34.23.160/27",
                           "13.34.23.192/27",
+                          "13.34.24.96/27",
+                          "13.34.24.128/27",
+                          "13.34.24.160/27",
+                          "13.34.24.192/27",
                           "13.35.0.0/16",
                           "13.48.0.0/15",
                           "13.52.0.0/16",
@@ -36302,6 +37084,7 @@
                           "13.248.122.0/24",
                           "13.248.123.0/24",
                           "13.248.124.0/24",
+                          "13.248.125.0/24",
                           "13.248.126.0/24",
                           "13.248.127.0/24",
                           "13.248.128.0/17",
@@ -36309,6 +37092,7 @@
                           "13.250.0.0/15",
                           "13.251.113.64/26",
                           "13.251.116.0/23",
+                          "15.152.0.0/16",
                           "15.161.0.0/16",
                           "15.164.0.0/15",
                           "15.177.0.0/18",
@@ -36362,6 +37146,9 @@
                           "15.221.16.0/22",
                           "15.221.20.0/22",
                           "15.221.24.0/21",
+                          "15.221.33.0/24",
+                          "15.221.34.0/24",
+                          "15.221.35.0/24",
                           "15.222.0.0/15",
                           "15.228.0.0/15",
                           "15.230.0.0/24",
@@ -36378,6 +37165,7 @@
                           "15.230.31.0/24",
                           "15.230.32.0/24",
                           "15.230.35.0/24",
+                          "15.230.36.0/23",
                           "15.230.38.0/24",
                           "15.230.39.0/31",
                           "15.230.39.2/31",
@@ -36510,13 +37298,18 @@
                           "15.230.40.0/24",
                           "15.230.41.0/24",
                           "15.230.42.0/24",
+                          "15.230.43.0/24",
                           "15.230.64.0/26",
                           "15.230.64.64/26",
                           "15.230.64.128/26",
                           "15.230.64.192/26",
                           "15.230.65.0/26",
                           "15.230.65.64/26",
+                          "15.230.65.128/26",
+                          "15.230.65.192/26",
+                          "15.230.66.0/26",
                           "15.230.129.0/24",
+                          "15.230.130.0/24",
                           "15.236.0.0/15",
                           "15.254.0.0/16",
                           "18.130.0.0/16",
@@ -36700,6 +37493,7 @@
                           "52.92.60.0/22",
                           "52.92.72.0/22",
                           "52.92.88.0/22",
+                          "52.92.128.0/17",
                           "52.93.0.0/24",
                           "52.93.1.0/24",
                           "52.93.2.0/24",
@@ -36738,6 +37532,8 @@
                           "52.93.62.0/24",
                           "52.93.63.0/24",
                           "52.93.64.0/24",
+                          "52.93.66.154/32",
+                          "52.93.66.155/32",
                           "52.93.67.0/24",
                           "52.93.69.0/24",
                           "52.93.73.0/26",
@@ -36772,6 +37568,8 @@
                           "52.93.126.213/32",
                           "52.93.126.214/32",
                           "52.93.126.215/32",
+                          "52.93.126.244/32",
+                          "52.93.126.245/32",
                           "52.93.129.95/32",
                           "52.93.131.217/32",
                           "52.93.133.127/32",
@@ -36919,10 +37717,10 @@
                           "52.93.193.203/32",
                           "52.93.236.0/24",
                           "52.93.237.0/24",
-                          "52.93.240.130/31",
-                          "52.93.240.132/31",
-                          "52.93.240.134/31",
-                          "52.93.240.136/31",
+                          "52.93.240.146/31",
+                          "52.93.240.148/31",
+                          "52.93.240.150/31",
+                          "52.93.240.152/31",
                           "52.93.245.0/24",
                           "52.93.247.0/25",
                           "52.93.248.0/24",
@@ -37014,6 +37812,7 @@
                           "52.94.249.144/28",
                           "52.94.249.160/28",
                           "52.94.249.176/28",
+                          "52.94.249.192/28",
                           "52.94.252.0/23",
                           "52.94.254.0/23",
                           "52.95.0.0/20",
@@ -37069,6 +37868,8 @@
                           "52.95.174.0/24",
                           "52.95.175.0/24",
                           "52.95.176.0/24",
+                          "52.95.177.0/24",
+                          "52.95.178.0/23",
                           "52.95.192.0/20",
                           "52.95.208.0/22",
                           "52.95.212.0/22",
@@ -37080,6 +37881,7 @@
                           "52.95.228.0/24",
                           "52.95.229.0/24",
                           "52.95.230.0/24",
+                          "52.95.235.0/24",
                           "52.95.239.0/24",
                           "52.95.240.0/24",
                           "52.95.241.0/24",
@@ -37150,6 +37952,7 @@
                           "52.144.200.128/26",
                           "52.144.201.64/26",
                           "52.144.201.128/26",
+                          "52.144.205.0/26",
                           "52.144.208.0/31",
                           "52.144.208.2/31",
                           "52.144.208.64/26",
@@ -37200,6 +38003,8 @@
                           "52.144.225.128/26",
                           "52.144.227.64/26",
                           "52.144.227.192/26",
+                          "52.144.228.0/31",
+                          "52.144.228.2/31",
                           "52.144.228.64/26",
                           "52.144.228.128/26",
                           "52.144.228.192/26",
@@ -37365,6 +38170,7 @@
                           "54.239.1.96/28",
                           "54.239.1.112/28",
                           "54.239.1.128/28",
+                          "54.239.1.144/28",
                           "54.239.2.0/23",
                           "54.239.4.0/22",
                           "54.239.8.0/21",
@@ -37535,6 +38341,9 @@
                           "68.79.0.0/18",
                           "69.107.6.112/29",
                           "69.107.6.120/29",
+                          "69.230.192.0/18",
+                          "69.231.128.0/18",
+                          "69.234.192.0/18",
                           "70.132.0.0/18",
                           "70.224.192.0/18",
                           "71.152.0.0/17",
@@ -37642,6 +38451,7 @@
                           "99.83.128.0/17",
                           "99.84.0.0/16",
                           "99.86.0.0/16",
+                          "99.87.0.0/22",
                           "100.20.0.0/14",
                           "100.24.0.0/13",
                           "103.4.8.0/21",
@@ -37682,6 +38492,10 @@
                           "143.204.0.0/16",
                           "144.220.0.0/16",
                           "150.222.2.0/24",
+                          "150.222.3.176/32",
+                          "150.222.3.177/32",
+                          "150.222.3.178/32",
+                          "150.222.3.179/32",
                           "150.222.5.0/24",
                           "150.222.6.0/24",
                           "150.222.7.0/24",
@@ -37734,7 +38548,36 @@
                           "150.222.117.0/24",
                           "150.222.118.0/24",
                           "150.222.119.0/24",
+                          "150.222.120.20/31",
+                          "150.222.120.62/31",
+                          "150.222.120.224/31",
+                          "150.222.120.226/31",
+                          "150.222.120.228/31",
+                          "150.222.120.230/31",
+                          "150.222.120.232/31",
+                          "150.222.120.234/31",
+                          "150.222.120.240/31",
+                          "150.222.120.242/31",
+                          "150.222.120.244/31",
+                          "150.222.120.246/31",
+                          "150.222.120.248/31",
+                          "150.222.120.250/31",
+                          "150.222.120.252/32",
+                          "150.222.120.255/32",
                           "150.222.121.0/24",
+                          "150.222.122.92/31",
+                          "150.222.122.94/31",
+                          "150.222.122.96/31",
+                          "150.222.122.98/31",
+                          "150.222.122.100/31",
+                          "150.222.122.102/31",
+                          "150.222.122.104/31",
+                          "150.222.122.106/31",
+                          "150.222.122.108/31",
+                          "150.222.122.110/31",
+                          "150.222.122.112/31",
+                          "150.222.122.114/31",
+                          "150.222.122.116/31",
                           "150.222.129.112/31",
                           "150.222.129.114/31",
                           "150.222.129.116/31",
@@ -37799,6 +38642,7 @@
                           "150.222.222.0/24",
                           "150.222.223.0/24",
                           "150.222.224.0/24",
+                          "150.222.226.0/24",
                           "150.222.227.0/24",
                           "150.222.228.0/24",
                           "150.222.229.0/24",
@@ -38001,7 +38845,7 @@
                   "peerInterface" : "To-Internet",
                   "remoteAsns" : "65537"
                 },
-                "To-__aws-services-gateway__" : {
+                "To-__aws-services-gateway__-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -38023,7 +38867,7 @@
                   },
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
-                  "peerInterface" : "To-__aws-services-gateway__",
+                  "peerInterface" : "To-__aws-services-gateway__-backbone",
                   "remoteAsns" : "65534"
                 }
               },
@@ -38045,16 +38889,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
-                "network" : "3.5.0.0/20",
-                "nextHopInterface" : "null_interface",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
-              },
-              {
-                "class" : "org.batfish.datamodel.StaticRoute",
-                "administrativeCost" : 32767,
-                "metric" : 0,
-                "network" : "3.5.16.0/21",
+                "network" : "3.5.0.0/18",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -38514,6 +39349,42 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "13.34.23.192/27",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "13.34.24.96/27",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "13.34.24.128/27",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "13.34.24.160/27",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "13.34.24.192/27",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -39098,6 +39969,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "13.248.125.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "13.248.126.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -39153,6 +40033,15 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "13.251.116.0/23",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "15.152.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -39638,6 +40527,33 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "15.221.33.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "15.221.34.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "15.221.35.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "15.222.0.0/15",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -39774,6 +40690,15 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "15.230.35.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "15.230.36.0/23",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -40970,6 +41895,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "15.230.43.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "15.230.64.0/26",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -41024,7 +41958,43 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "15.230.65.128/26",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "15.230.65.192/26",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "15.230.66.0/26",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "15.230.129.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "15.230.130.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -42680,6 +43650,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "52.92.128.0/17",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "52.93.0.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -43022,6 +44001,24 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "52.93.66.154/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "52.93.66.155/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "52.93.67.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -43320,6 +44317,24 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "52.93.126.215/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "52.93.126.244/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "52.93.126.245/32",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -44651,7 +45666,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
-                "network" : "52.93.240.130/31",
+                "network" : "52.93.240.146/31",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -44660,7 +45675,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
-                "network" : "52.93.240.132/31",
+                "network" : "52.93.240.148/31",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -44669,7 +45684,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
-                "network" : "52.93.240.134/31",
+                "network" : "52.93.240.150/31",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -44678,7 +45693,7 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
-                "network" : "52.93.240.136/31",
+                "network" : "52.93.240.152/31",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -45506,6 +46521,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "52.94.249.192/28",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "52.94.252.0/23",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -46001,6 +47025,24 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "52.95.177.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "52.95.178.0/23",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "52.95.192.0/20",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -46092,6 +47134,15 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "52.95.230.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "52.95.235.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -46730,6 +47781,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "52.144.205.0/26",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "52.144.208.0/31",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -47172,6 +48232,24 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "52.144.227.192/26",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "52.144.228.0/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "52.144.228.2/31",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -48657,6 +49735,15 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "54.239.1.128/28",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "54.239.1.144/28",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -50195,6 +51282,33 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "69.230.192.0/18",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "69.231.128.0/18",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "69.234.192.0/18",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "70.132.0.0/18",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -51158,6 +52272,15 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "99.87.0.0/22",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "100.20.0.0/14",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -51510,6 +52633,42 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "150.222.2.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.3.176/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.3.177/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.3.178/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.3.179/32",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -51986,7 +53145,268 @@
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 32767,
                 "metric" : 0,
+                "network" : "150.222.120.20/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.62/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.224/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.226/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.228/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.230/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.232/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.234/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.240/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.242/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.244/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.246/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.248/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.250/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.252/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.120.255/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
                 "network" : "150.222.121.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.92/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.94/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.96/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.98/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.100/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.102/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.104/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.106/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.108/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.110/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.112/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.114/31",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.122.116/31",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -52563,6 +53983,15 @@
                 "administrativeCost" : 32767,
                 "metric" : 0,
                 "network" : "150.222.224.0/24",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "tag" : -1
+              },
+              {
+                "class" : "org.batfish.datamodel.StaticRoute",
+                "administrativeCost" : 32767,
+                "metric" : 0,
+                "network" : "150.222.226.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
@@ -53890,6 +55319,7 @@
         "name" : "isr_crypto_gdoi",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -53910,6 +55340,7 @@
         "name" : "isr_voip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -53930,6 +55361,7 @@
         "name" : "juniper-ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~OSPF_SUMMARY_FILTER:default:66051~" : {
@@ -54110,6 +55542,7 @@
         "name" : "juniper-tcpflags",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "foo" : {
@@ -54230,6 +55663,7 @@
         "name" : "juniper_application",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -54275,6 +55709,7 @@
         "name" : "juniper_apply_macro",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -54320,6 +55755,7 @@
         "name" : "juniper_as_path_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -54365,6 +55801,7 @@
         "name" : "juniper_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -54832,6 +56269,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -55218,6 +56656,7 @@
         "name" : "juniper_bgp_remove_private_as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -55440,6 +56879,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -55485,6 +56925,7 @@
         "name" : "juniper_firewall",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
@@ -56640,6 +58081,7 @@
         "name" : "juniper_forwarding_options",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -56685,6 +58127,7 @@
         "name" : "juniper_interfaces",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ae0" : {
@@ -57263,6 +58706,7 @@
         "name" : "juniper_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -57356,6 +58800,7 @@
         "name" : "juniper_l2_learning",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -57401,6 +58846,7 @@
         "name" : "juniper_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "domainName" : "my.domain.name",
         "vendorFamily" : {
@@ -57450,6 +58896,7 @@
         "name" : "juniper_nat",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "DENY",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -57728,6 +59175,7 @@
         "name" : "juniper_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "1.2.3.4",
@@ -57780,6 +59228,7 @@
         "name" : "juniper_ospf_stub_areas",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routeFilterLists" : {
           "~OSPF_SUMMARY_FILTER:default:46~" : {
@@ -57914,6 +59363,7 @@
         "name" : "juniper_passwords",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "tacacsServers" : [
           "1.2.3.4",
@@ -57976,6 +59426,7 @@
         "name" : "juniper_policy_statement",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "POLICY-NAME" : {
@@ -58078,6 +59529,7 @@
         "name" : "juniper_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -58123,6 +59575,7 @@
         "name" : "juniper_rib_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -58528,6 +59981,7 @@
         "name" : "juniper_rib_groups~logical_system~logicalsystem",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~DEFAULT_BGP_EXPORT_POLICY~" : {
@@ -58796,6 +60250,7 @@
         "name" : "juniper_route_filter",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "route6FilterLists" : {
           "route-filter-test-v6:t1" : {
@@ -59023,6 +60478,7 @@
         "name" : "juniper_routing_options",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "~CONTRIBUTOR_TO_10.0.0.0/8~" : {
@@ -59485,6 +60941,7 @@
         "name" : "juniper_routing_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -59652,6 +61109,7 @@
         "name" : "juniper_security",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "DENY",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ikePhase1Keys" : {
           "~IKE_PHASE1_KEY_1.2.3.4~" : {
@@ -60798,6 +62256,7 @@
         "name" : "juniper_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "snmpTrapServers" : [
           "1.2.3.4",
@@ -60867,6 +62326,7 @@
         "name" : "juniper_syslog",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -60915,6 +62375,7 @@
         "name" : "juniper_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -60960,6 +62421,7 @@
         "name" : "juniper_tacplus",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "tacacsServers" : [
           "1.2.3.4",
@@ -61021,6 +62483,7 @@
         "name" : "juniper_trailing_space",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "juniper" : {
@@ -61066,6 +62529,7 @@
         "name" : "juniper_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "xe-0/0/0" : {
@@ -61160,6 +62624,7 @@
         "name" : "l2vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -61173,6 +62638,7 @@
         "name" : "local_v6_addr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -61229,6 +62695,7 @@
         "name" : "mac_access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61249,6 +62716,7 @@
         "name" : "mcastrouting",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -61262,6 +62730,7 @@
         "name" : "mos_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet1" : {
@@ -61378,6 +62847,7 @@
         "name" : "mos_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "loggingServers" : [
           "1.2.3.4"
@@ -61419,6 +62889,7 @@
         "name" : "msdp_originator_id",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61439,6 +62910,7 @@
         "name" : "named_and_numbered_lists",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "foo" : {
@@ -61512,6 +62984,7 @@
         "name" : "neighbor_mix",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -61788,6 +63261,7 @@
         "name" : "network6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -61856,6 +63330,7 @@
         "name" : "nexus",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61876,6 +63351,7 @@
         "name" : "no_aaa_group_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61896,6 +63372,7 @@
         "name" : "no_ip_name_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61916,6 +63393,7 @@
         "name" : "no_mask_reply",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "GigabitEthernet1" : {
@@ -61966,6 +63444,7 @@
         "name" : "no_snmp_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -61986,6 +63465,7 @@
         "name" : "non_nexus_neighbor_af",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -62159,6 +63639,7 @@
         "name" : "nxos_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "blah" : {
@@ -62225,6 +63706,7 @@
         "name" : "nxos_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -62551,6 +64033,7 @@
         "name" : "nxos_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -62643,6 +64126,7 @@
         "name" : "nxos_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -62664,6 +64148,7 @@
         "name" : "nxos_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ntpServers" : [
           "10.1.2.3"
@@ -62688,6 +64173,7 @@
         "name" : "nxos_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "Ethernet0/0" : {
@@ -62860,6 +64346,7 @@
         "name" : "nxos_route_map_continue",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "foobar" : {
@@ -64699,6 +66186,7 @@
         "name" : "nxos_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -64720,6 +66208,7 @@
         "name" : "nxos_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -64741,6 +66230,7 @@
         "name" : "nxos_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "vendorFamily" : {
           "cisco_nxos" : {
@@ -64795,6 +66285,7 @@
         "name" : "openflow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -64815,6 +66306,7 @@
         "name" : "ospf-disable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "ge-0/0/0" : {
@@ -65774,6 +67266,7 @@
         "name" : "pim",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Loopback1" : {
@@ -65823,6 +67316,7 @@
         "name" : "pim_snooping",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -65843,6 +67337,7 @@
         "name" : "prefix_list_ipv4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default" : {
@@ -65918,6 +67413,7 @@
         "name" : "preset",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routeFilterLists" : {
           "default_route" : {
@@ -66029,6 +67525,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "erick-test" : {
@@ -66866,6 +68363,7 @@
         "name" : "route_policy_igp_cost",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "EBGP_CUST_FULL_v4" : {
@@ -66939,6 +68437,7 @@
         "name" : "route_policy_metric_type",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "to_csuchico" : {
@@ -67093,6 +68592,7 @@
         "name" : "route_policy_param",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "cust_v4_in" : {
@@ -67312,6 +68812,7 @@
         "name" : "router_msdp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -67332,6 +68833,7 @@
         "name" : "rp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "EBGP-PEER-AS2828-LAX-PNI-OUT" : {
@@ -69542,6 +71044,7 @@
         "name" : "set_inline_community",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "FOOBAR" : {
@@ -69656,6 +71159,7 @@
         "name" : "statistics",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -69676,6 +71180,7 @@
         "name" : "switchport_range",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/1" : {
@@ -69723,6 +71228,7 @@
         "name" : "syslog_source_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -69743,6 +71249,7 @@
         "name" : "taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : { },
         "vrfs" : {
@@ -69756,6 +71263,7 @@
         "name" : "tcpflags",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "100" : {
@@ -70205,6 +71713,7 @@
         "name" : "test",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
@@ -70225,6 +71734,7 @@
         "name" : "underscore_variable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
           "JKL_MNO_PQR" : {
@@ -70256,6 +71766,7 @@
         "name" : "variables",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/0" : {
@@ -70302,6 +71813,7 @@
         "name" : "variables_dos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "FastEthernet0/0" : {
@@ -70348,6 +71860,7 @@
         "name" : "vlan_access_map4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
@@ -70482,6 +71995,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "JUNIPER_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "interfaces" : {
           "fxp0" : {

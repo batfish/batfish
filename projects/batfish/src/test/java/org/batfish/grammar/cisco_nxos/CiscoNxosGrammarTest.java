@@ -1737,6 +1737,14 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testInterfaceShowRunAll1() throws IOException {
+    String hostname = "nxos_interface_show_all_1";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c, hasInterface("Ethernet1/21", hasDescription("Made it to the end of Ethernet1/21")));
+  }
+
+  @Test
   public void testInterfaceShutdownConversion() throws IOException {
     String hostname = "nxos_interface_shutdown";
     Configuration c = parseConfig(hostname);
@@ -6106,7 +6114,7 @@ public final class CiscoNxosGrammarTest {
               .build();
 
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), contains(StandardCommunity.of(1, 1)));
+      assertThat(route.getCommunities().getCommunities(), contains(StandardCommunity.of(1, 1)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list_standard");
@@ -6118,7 +6126,8 @@ public final class CiscoNxosGrammarTest {
 
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+          route.getCommunities().getCommunities(),
+          contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list_standard_single");
@@ -6129,7 +6138,7 @@ public final class CiscoNxosGrammarTest {
               .build();
 
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), contains(StandardCommunity.of(2, 2)));
+      assertThat(route.getCommunities().getCommunities(), contains(StandardCommunity.of(2, 2)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
@@ -6137,7 +6146,8 @@ public final class CiscoNxosGrammarTest {
           base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+          route.getCommunities().getCommunities(),
+          contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community_additive");
@@ -6145,7 +6155,7 @@ public final class CiscoNxosGrammarTest {
           base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
+          route.getCommunities().getCommunities(),
           containsInAnyOrder(
               StandardCommunity.of(1, 1), StandardCommunity.of(1, 2), StandardCommunity.of(3, 3)));
     }

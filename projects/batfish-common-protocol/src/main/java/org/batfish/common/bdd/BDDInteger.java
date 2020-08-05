@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -57,10 +58,9 @@ public class BDDInteger {
 
   /** Find a representative value of the represented integer that satisfies a given constraint. */
   public Optional<Long> getValueSatisfying(BDD bdd) {
-    BDD satAssignment = bdd.fullSatOne();
-    return satAssignment.isZero()
+    return bdd.isZero()
         ? Optional.empty()
-        : Optional.of(satAssignmentToLong(satAssignment));
+        : Optional.of(satAssignmentToLong(bdd.minAssignmentBits()));
   }
 
   /** @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc) */
@@ -68,6 +68,10 @@ public class BDDInteger {
     // TODO this check could be better (should be exactly 1 path from root to the one node).
     checkArgument(!satAssignment.isZero(), "not a satisfying assignment");
 
+    return satAssignmentToLong(satAssignment.minAssignmentBits());
+  }
+
+  public Long satAssignmentToLong(BitSet bits) {
     if (_bitvec.length > Long.SIZE) {
       throw new IllegalArgumentException(
           "Can't get a representative of a BDDInteger with more than Long.SIZE bits");
@@ -76,8 +80,8 @@ public class BDDInteger {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
-      if (satAssignment.andSat(bitBDD)) {
-        value |= ((long) 1) << i;
+      if (bits.get(bitBDD.level())) {
+        value |= 1L << i;
       }
     }
     return value;
@@ -103,7 +107,7 @@ public class BDDInteger {
         break;
       }
 
-      Long val = satAssignmentToLong(satAssignment);
+      long val = satAssignmentToLong(satAssignment);
       values.add(val);
       pred = pred.diff(value(val));
       num++;

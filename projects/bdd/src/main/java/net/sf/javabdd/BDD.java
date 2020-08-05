@@ -31,6 +31,7 @@ package net.sf.javabdd;
 import java.io.PrintStream;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -675,6 +676,15 @@ public abstract class BDD {
   public abstract BDD fullSatOne();
 
   /**
+   * Returns a {@link BitSet} containing the smallest possible assignment to this BDD, using
+   * variable order.
+   *
+   * <p>Note that the returned {@link BitSet} is in little-Endian order. That is, the least
+   * significant value in the BitSet is the first BDD variable.
+   */
+  public abstract BitSet minAssignmentBits();
+
+  /**
    * Finds one satisfying variable assignment, deterministically produced as a function of the seed.
    * Finds a BDD with exactly one variable at all levels. The new BDD implies this BDD and is not
    * false unless this BDD is false.
@@ -1023,7 +1033,7 @@ public abstract class BDD {
    * @return an iteration of minterms
    * @see net.sf.javabdd.BDDDomain#set()
    */
-  public BDDIterator iterator(final BDD var) {
+  public BDDIterator iterator(BDD var) {
     return new BDDIterator(this, var);
   }
 

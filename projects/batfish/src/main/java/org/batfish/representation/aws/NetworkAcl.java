@@ -29,7 +29,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 /** Represents an AWS network ACL */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class NetworkAcl implements AwsVpcEntity, Serializable {
+public final class NetworkAcl implements AwsVpcEntity, Serializable {
 
   private static final String SOURCE_TYPE_NAME = "Network ACL";
 
@@ -189,7 +189,7 @@ final class NetworkAcl implements AwsVpcEntity, Serializable {
         .build();
   }
 
-  static String getAclName(String networkAclId, boolean isEgress) {
+  public static String getAclName(String networkAclId, boolean isEgress) {
     return networkAclId + (isEgress ? "_egress" : "_ingress");
   }
 

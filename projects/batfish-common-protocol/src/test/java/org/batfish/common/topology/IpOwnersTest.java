@@ -3,6 +3,8 @@ package org.batfish.common.topology;
 import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
 import static org.batfish.common.topology.IpOwners.computeIpIfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
+import static org.batfish.common.topology.IpOwners.extractHsrp;
+import static org.batfish.common.topology.IpOwners.processHsrpGroups;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -10,9 +12,13 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Table;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -24,6 +30,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -180,5 +187,51 @@ public class IpOwnersTest {
     assertThat(
         ipVrfOwners,
         equalTo(ImmutableMap.of(ip, ImmutableMap.of(node, ImmutableSet.of(vrf1, vrf2)))));
+  }
+
+  @Test
+  public void testExtractHsrp() {
+    Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+    Interface i = Interface.builder().setName("name").build();
+    extractHsrp(groups, i);
+    assertTrue(groups.isEmpty());
+
+    Ip ip = Ip.parse("1.1.1.1");
+    i.setHsrpGroups(ImmutableMap.of(1, HsrpGroup.builder().setIp(ip).setGroupNumber(1).build()));
+    extractHsrp(groups, i);
+    assertThat(groups.get(ip, 1), equalTo(ImmutableSet.of(i)));
+  }
+
+  @Test
+  public void testProcessHsrpGroups() {
+    Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+    Interface i1 = Interface.builder().setOwner(c1).setName("i1").build();
+    Interface i2 = Interface.builder().setOwner(c2).setName("i2").build();
+
+    Ip ip = Ip.parse("1.1.1.1");
+    i1.setHsrpGroups(
+        ImmutableMap.of(
+            1, HsrpGroup.builder().setPriority(100).setGroupNumber(1).setIp(ip).build()));
+    i2.setHsrpGroups(
+        ImmutableMap.of(
+            1, HsrpGroup.builder().setPriority(200).setGroupNumber(1).setIp(ip).build()));
+    extractHsrp(groups, i1);
+    extractHsrp(groups, i2);
+
+    // Test: expect c2/i2 to win
+    processHsrpGroups(ipOwners, groups);
+    assertThat(ipOwners.get(ip).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
   }
 }

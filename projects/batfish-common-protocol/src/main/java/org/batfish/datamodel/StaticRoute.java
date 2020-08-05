@@ -209,7 +209,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       return false;
     }
     StaticRoute rhs = (StaticRoute) o;
-    return _network.equals(rhs._network)
+    return (_hashCode == rhs._hashCode || _hashCode == 0 || rhs._hashCode == 0)
+        && _network.equals(rhs._network)
         && _admin == rhs._admin
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()

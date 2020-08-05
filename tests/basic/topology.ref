@@ -555,91 +555,91 @@
     },
     {
       "id" : "node-as1border2",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as1border2",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as1border1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as1border1",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as2border1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as2border1",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as2border2",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as2border2",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as3border2",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as3border2",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as3core1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as3core1",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as1core1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as1core1",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as3border1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as3border1",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as2dist1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as2dist1",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as2dist2",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as2dist2",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as2dept1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as2dept1",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as2core2",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as2core2",
       "type" : "ROUTER",
       "properties" : null
     },
     {
       "id" : "node-as2core1",
-      "model" : null,
+      "model" : "CISCO_UNSPECIFIED",
       "name" : "as2core1",
       "type" : "ROUTER",
       "properties" : null

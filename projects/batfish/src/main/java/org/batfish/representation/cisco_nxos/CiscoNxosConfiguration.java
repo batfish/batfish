@@ -79,6 +79,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
@@ -3212,6 +3213,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, ConfigurationFormat.CISCO_NX);
     _c.getVendorFamily().setCiscoNxos(createCiscoNxosFamily());
+    _c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
 

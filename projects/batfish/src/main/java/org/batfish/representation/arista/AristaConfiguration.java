@@ -79,6 +79,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IkePhase1Key;
@@ -1923,6 +1924,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
+    c.setDeviceModel(DeviceModel.ARISTA_UNSPECIFIED);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDnsServers(_dnsServers);

@@ -201,6 +201,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
@@ -1026,6 +1027,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_GPRS_GTP_U;
     } else if (ctx.JUNOS_GPRS_GTP_V0() != null) {
       return JunosApplication.JUNOS_GPRS_GTP_V0;
+    } else if (ctx.JUNOS_GPRS_SCTP() != null) {
+      return JunosApplication.JUNOS_GPRS_SCTP;
     } else if (ctx.JUNOS_GRE() != null) {
       return JunosApplication.JUNOS_GRE;
     } else if (ctx.JUNOS_GTP() != null) {
@@ -1216,6 +1219,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_SMB_SESSION;
     } else if (ctx.JUNOS_SMTP() != null) {
       return JunosApplication.JUNOS_SMTP;
+    } else if (ctx.JUNOS_SMTPS() != null) {
+      return JunosApplication.JUNOS_SMTPS;
     } else if (ctx.JUNOS_SNMP_AGENTX() != null) {
       return JunosApplication.JUNOS_SNMP_AGENTX;
     } else if (ctx.JUNOS_SNPP() != null) {
@@ -3787,6 +3792,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     if (ctx.MULTIPLE_AS() != null) {
       _currentBgpGroup.setMultipathMultipleAs(true);
     }
+  }
+
+  @Override
+  public void exitB_preference(B_preferenceContext ctx) {
+    int preference = toInt(ctx.pref);
+    _currentBgpGroup.setPreference(preference);
   }
 
   @Override

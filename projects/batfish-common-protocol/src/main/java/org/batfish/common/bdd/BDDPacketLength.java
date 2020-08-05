@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.BitSet;
 import net.sf.javabdd.BDD;
 
 /** Symbolic packet length variable represented by a 16-bit {@link BDD}. */
@@ -41,13 +42,22 @@ public final class BDDPacketLength {
    *
    * @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc)
    */
-  public Long satAssignmentToValue(BDD satAssignment) {
+  public int satAssignmentToValue(BDD satAssignment) {
+    return satAssignmentToValue(satAssignment.minAssignmentBits());
+  }
+
+  /**
+   * Extract the value from the bits of a satisfying assignment.
+   *
+   * @param satAssignment see {@link BDD#minAssignmentBits()}.
+   */
+  public int satAssignmentToValue(BitSet satAssignment) {
     // the sat assignment will be the minimum value of the original BDD. If the BDD did not
     // constrain packet length, the sat assignment will have value 0, which is below the minimum
     // value of 20. Rather than maintaining this minimum in every BDD (expensive), we do it here.
     // Note that we can get weird behavior is clients constrain the underlying BDDs bits directly
     // (i.e. without going through this class).
-    return Long.max(_var.satAssignmentToLong(satAssignment).intValue(), 20);
+    return Integer.max(_var.satAssignmentToLong(satAssignment).intValue(), 20);
   }
 
   /** @return the {@link BDDInteger} backing this. */
