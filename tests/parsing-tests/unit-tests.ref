@@ -81469,7 +81469,7 @@
                 10,
                 11
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "Port-Channel2" : {
               "definitionLines" : [
@@ -94375,6 +94375,15 @@
             "RMT_PBI" : {
               "bgp redistribute connected route-map" : [
                 6
+              ]
+            }
+          }
+        },
+        "configs/eos_mlag" : {
+          "interface" : {
+            "Vlan4094" : {
+              "mlag configuration local-interface" : [
+                19
               ]
             }
           }
