@@ -465,7 +465,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_tagContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
@@ -1847,34 +1846,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       range.add(sr);
     }
     return range;
-  }
-
-  private static RoutingProtocol toRoutingProtocol(Routing_protocolContext ctx) {
-    if (ctx.AGGREGATE() != null) {
-      return RoutingProtocol.AGGREGATE;
-    } else if (ctx.BGP() != null) {
-      return RoutingProtocol.BGP;
-    } else if (ctx.DIRECT() != null) {
-      return RoutingProtocol.CONNECTED;
-    } else if (ctx.ISIS() != null) {
-      return RoutingProtocol.ISIS_ANY;
-    } else if (ctx.EVPN() != null) {
-      return RoutingProtocol.EVPN;
-    } else if (ctx.LDP() != null) {
-      return RoutingProtocol.LDP;
-    } else if (ctx.LOCAL() != null) {
-      return RoutingProtocol.LOCAL;
-    } else if (ctx.OSPF() != null) {
-      return RoutingProtocol.OSPF;
-    } else if (ctx.OSPF3() != null) {
-      return RoutingProtocol.OSPF3;
-    } else if (ctx.RSVP() != null) {
-      return RoutingProtocol.RSVP;
-    } else if (ctx.STATIC() != null) {
-      return RoutingProtocol.STATIC;
-    } else {
-      throw new BatfishException("missing routing protocol-enum mapping");
-    }
   }
 
   private static SubRange toSubRange(SubrangeContext ctx) {
@@ -4917,7 +4888,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_protocol(Popsf_protocolContext ctx) {
-    RoutingProtocol protocol = toRoutingProtocol(ctx.protocol);
+    RoutingProtocol protocol;
+    if (ctx.AGGREGATE() != null) {
+      protocol = RoutingProtocol.AGGREGATE;
+    } else if (ctx.BGP() != null) {
+      protocol = RoutingProtocol.BGP;
+    } else if (ctx.DIRECT() != null) {
+      protocol = RoutingProtocol.CONNECTED;
+    } else if (ctx.ISIS() != null) {
+      protocol = RoutingProtocol.ISIS_ANY;
+    } else if (ctx.EVPN() != null) {
+      protocol = RoutingProtocol.EVPN;
+    } else if (ctx.LDP() != null) {
+      protocol = RoutingProtocol.LDP;
+    } else if (ctx.LOCAL() != null) {
+      protocol = RoutingProtocol.LOCAL;
+    } else if (ctx.OSPF() != null) {
+      protocol = RoutingProtocol.OSPF;
+    } else if (ctx.OSPF3() != null) {
+      protocol = RoutingProtocol.OSPF3;
+    } else if (ctx.RSVP() != null) {
+      protocol = RoutingProtocol.RSVP;
+    } else if (ctx.STATIC() != null) {
+      protocol = RoutingProtocol.STATIC;
+    } else {
+      todo(ctx);
+      _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+      return;
+    }
     _currentPsTerm.getFroms().addFromProtocol(new PsFromProtocol(protocol));
   }
 
