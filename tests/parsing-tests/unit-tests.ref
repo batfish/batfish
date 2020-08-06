@@ -58620,6 +58620,24 @@
             "                name = (variable",
             "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
             "                (b_common",
+            "                  (b_preference",
+            "                    PREFERENCE:'preference'",
+            "                    pref = DEC:'130'))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
             "                  (b_type",
             "                    TYPE:'type'",
             "                    EXTERNAL:'external'))))))))",
@@ -81498,7 +81516,7 @@
                 10,
                 11
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "Port-Channel2" : {
               "definitionLines" : [
@@ -83876,7 +83894,6 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "definitionLines" : [
-                27,
                 28,
                 29,
                 30,
@@ -83884,20 +83901,21 @@
                 32,
                 33,
                 34,
-                35
+                35,
+                36
               ],
               "numReferrers" : 2
             },
             "someinternalipv6group" : {
               "definitionLines" : [
-                36,
                 37,
                 38,
                 39,
                 40,
                 41,
                 42,
-                43
+                43,
+                44
               ],
               "numReferrers" : 1
             },
@@ -83913,19 +83931,20 @@
                 16,
                 17,
                 18,
-                19
+                19,
+                20
               ],
               "numReferrers" : 3
             },
             "someipv6bgpgroup" : {
               "definitionLines" : [
-                20,
                 21,
                 22,
                 23,
                 24,
                 25,
-                26
+                26,
+                27
               ],
               "numReferrers" : 1
             }
@@ -91238,13 +91257,13 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "bgp group neighbor" : [
-                32,
-                33
+                33,
+                34
               ]
             },
             "someinternalipv6group" : {
               "bgp group neighbor" : [
-                41
+                42
               ]
             },
             "someipv4bgpgroup" : {
@@ -91256,7 +91275,7 @@
             },
             "someipv6bgpgroup" : {
               "bgp group neighbor" : [
-                24
+                25
               ]
             }
           },
@@ -91264,17 +91283,17 @@
             "someexportpolicy" : {
               "bgp export policy-statement" : [
                 10,
-                20,
-                27,
-                36
+                21,
+                28,
+                37
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
                 13,
-                22,
-                29,
-                38
+                23,
+                30,
+                39
               ]
             }
           }
@@ -94409,6 +94428,15 @@
             }
           }
         },
+        "configs/eos_mlag" : {
+          "interface" : {
+            "Vlan4094" : {
+              "mlag configuration local-interface" : [
+                19
+              ]
+            }
+          }
+        },
         "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "route-map" : {
             "rm1" : {
@@ -95042,17 +95070,17 @@
             "someexportpolicy" : {
               "bgp export policy-statement" : [
                 10,
-                20,
-                27,
-                36
+                21,
+                28,
+                37
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
                 13,
-                22,
-                29,
-                38
+                23,
+                30,
+                39
               ]
             }
           }
@@ -95803,7 +95831,15 @@
             },
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Currently do not support per-neighbor BGP preference"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 3.4.5.6/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Currently do not support per-neighbor BGP preference"
             },
             {
               "tag" : "MISCELLANEOUS",

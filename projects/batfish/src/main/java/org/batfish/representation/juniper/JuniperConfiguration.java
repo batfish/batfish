@@ -372,8 +372,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
     String vrfName = routingInstance.getName();
-    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
-    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+    int ebgpAdmin =
+        firstNonNull(
+            mg.getPreference(),
+            RoutingProtocol.BGP.getDefaultAdministrativeCost(_c.getConfigurationFormat()));
+    int ibgpAdmin =
+        firstNonNull(
+            mg.getPreference(),
+            RoutingProtocol.IBGP.getDefaultAdministrativeCost(_c.getConfigurationFormat()));
     BgpProcess proc = new BgpProcess(getRouterId(routingInstance), ebgpAdmin, ibgpAdmin);
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
@@ -468,6 +474,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
           multipathMultipleAs = currentGroupMultipathMultipleAs;
           multipathMultipleAsSet = true;
         }
+      }
+
+      if (firstNonNull(ig.getPreference(), ebgpAdmin) != ebgpAdmin) {
+        _w.redFlag("Currently do not support per-neighbor BGP preference");
       }
 
       String authenticationKeyChainName = ig.getAuthenticationKeyChainName();
@@ -3781,27 +3791,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
             _masterLogicalSystem.getInterfaces().values().stream(),
             _nodeDevices.values().stream()
                 .flatMap(nodeDevice -> nodeDevice.getInterfaces().values().stream()))
+        .flatMap(i -> i.getUnits().values().stream())
         .forEach(
-            iface ->
-                iface
-                    .getUnits()
-                    .values()
-                    .forEach(
-                        unit -> {
-                          org.batfish.datamodel.Interface newUnitInterface =
-                              _c.getAllInterfaces().get(unit.getName());
-                          Transformation srcTransformation =
-                              buildOutgoingTransformation(
-                                  unit, snat, sourceNatRuleSetList, matchFromLocationExprs, null);
-                          Transformation staticTransformation =
-                              buildOutgoingTransformation(
-                                  unit,
-                                  reversedStaticNat,
-                                  reversedStaticNatRuleSetList,
-                                  matchFromLocationExprs,
-                                  srcTransformation);
-                          newUnitInterface.setOutgoingTransformation(staticTransformation);
-                        }));
+            unit -> {
+              org.batfish.datamodel.Interface newUnitInterface =
+                  _c.getAllInterfaces().get(unit.getName());
+              if (newUnitInterface == null) {
+                // This can happen if the interface is used but not defined
+                return;
+              }
+              Transformation srcTransformation =
+                  buildOutgoingTransformation(
+                      unit, snat, sourceNatRuleSetList, matchFromLocationExprs, null);
+              Transformation staticTransformation =
+                  buildOutgoingTransformation(
+                      unit,
+                      reversedStaticNat,
+                      reversedStaticNatRuleSetList,
+                      matchFromLocationExprs,
+                      srcTransformation);
+              newUnitInterface.setOutgoingTransformation(staticTransformation);
+            });
   }
 
   /** Ensure that the interface is placed in VI {@link Configuration} and {@link Vrf} */

@@ -905,6 +905,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpPreferenceExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-preference");
+    RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
+    assertThat(ri.getMasterBgpGroup().getPreference(), equalTo(140));
+    assertThat(ri.getNamedBgpGroups().get("MYGROUP").getPreference(), nullValue());
+    assertThat(ri.getNamedBgpGroups().get("MYGROUP").getPreference(), nullValue());
+    assertThat(ri.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32")).getPreference(), equalTo(150));
+  }
+
+  @Test
+  public void testBgpPreferenceConversion() {
+    Configuration c = parseConfig("bgp-preference");
+    Vrf def = c.getDefaultVrf();
+    assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.BGP), equalTo(140));
+    assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.IBGP), equalTo(140));
+  }
+
+  @Test
   public void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
     List<String> configurationNames =
@@ -2664,6 +2682,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c.getAllInterfaces().keySet(),
         equalTo(ImmutableSet.of("xe-0/0/0", "xe-0/0/1", "xe-8/1/2")));
+  }
+
+  @Test
+  public void testInterfaceUndefined() {
+    // Should not crash.
+    parseConfig("interface-undefined");
   }
 
   @Test
