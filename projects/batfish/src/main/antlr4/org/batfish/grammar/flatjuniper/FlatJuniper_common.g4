@@ -560,21 +560,6 @@ bandwidth
   )?
 ;
 
-routing_protocol
-:
-  AGGREGATE
-  | BGP
-  | DIRECT
-  | EVPN
-  | ISIS
-  | LDP
-  | LOCAL
-  | OSPF
-  | OSPF3
-  | RSVP
-  | STATIC
-;
-
 sc_literal
 :
   STANDARD_COMMUNITY
