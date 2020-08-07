@@ -12,7 +12,7 @@ public final class BDDIpProtocol {
   private final BDDInteger _var;
 
   public BDDIpProtocol(BDDInteger var) {
-    checkArgument(var.getBitvec().length == 8, "IpProtocol field requires 8 bits");
+    checkArgument(var.size() == 8, "IpProtocol field requires 8 bits");
     _var = var;
   }
 

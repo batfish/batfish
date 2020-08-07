@@ -11,7 +11,7 @@ public final class BDDIcmpType {
   private final BDDInteger _var;
 
   public BDDIcmpType(BDDInteger var) {
-    checkArgument(var.getBitvec().length == 8, "IcmpType field requires 8 bits");
+    checkArgument(var.size() == 8, "IcmpType field requires 8 bits");
     _var = var;
   }
 
