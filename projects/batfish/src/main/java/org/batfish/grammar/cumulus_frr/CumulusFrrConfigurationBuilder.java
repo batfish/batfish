@@ -732,9 +732,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitInterface_ospf_cost(Interface_ospf_costContext ctx) {
-    final Integer ospf_cost = toInt(ctx.getText());
-    _currentInterface.getOrCreateOspf().setCost(ospf_cost);
+  public void exitSiipo_cost(Siipo_costContext ctx) {
+    _currentInterface.getOrCreateOspf().setCost(toInteger(ctx.interface_ospf_cost()));
+  }
+
+  private Integer toInteger(Interface_ospf_costContext ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   @Override
