@@ -1,0 +1,8 @@
+!
+hostname arista_bgp_asn
+!
+boot system flash fake.swi
+!
+router bgp 65200.50000
+  router-id 1.2.3.4
+!
