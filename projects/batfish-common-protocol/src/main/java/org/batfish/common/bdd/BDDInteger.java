@@ -34,6 +34,11 @@ public class BDDInteger {
     }
   }
 
+  /** Returns the number of bits in this {@link BDDInteger}. */
+  public int size() {
+    return _bitvec.length;
+  }
+
   /*
    * Create an integer, and initialize its values as "don't care"
    * This requires knowing the start index variables the bitvector
