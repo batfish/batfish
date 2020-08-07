@@ -1319,6 +1319,24 @@ public final class CumulusConversionsTest {
   }
 
   @Test
+  public void testAddOspfInterfaces_NoNetworkType() {
+    CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
+    ncluConfiguration.setOspfProcess(new OspfProcess());
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    ncluConfiguration.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+
+    addOspfInterfaces(ncluConfiguration, ifaceMap, "1", new Warnings());
+    assertNull(viIface.getOspfNetworkType());
+  }
+
+  @Test
   public void testAddOspfInterfaces_NoPassiveInterface() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     ncluConfiguration.setOspfProcess(new OspfProcess());
