@@ -2,6 +2,7 @@ package org.batfish.grammar.cumulus_frr;
 
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
+import static org.apache.commons.lang3.math.NumberUtils.toInt;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -129,6 +130,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_costContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Interface_ospf_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
@@ -730,8 +732,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSiipo_cost(Siipo_costContext ctx) {
-    final Integer ospf_cost = Integer.parseInt(ctx.cost.getText());
+  public void exitInterface_ospf_cost(Interface_ospf_costContext ctx) {
+    final Integer ospf_cost = toInt(ctx.getText());
     _currentInterface.getOrCreateOspf().setCost(ospf_cost);
   }
 

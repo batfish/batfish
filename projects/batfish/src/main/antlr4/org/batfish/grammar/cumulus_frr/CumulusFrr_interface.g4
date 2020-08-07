@@ -93,7 +93,7 @@ siipo_network_p2p
 
 siipo_cost
 :
-  COST cost = interface_ospf_cost
+  COST interface_ospf_cost
 ;
 
 interface_ospf_cost
