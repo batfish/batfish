@@ -83,13 +83,12 @@ public class BDDInteger {
     if (_hasVariablesOnly) {
       return Optional.of(satAssignmentToLong(bdd.minAssignmentBits()));
     }
-    return Optional.of(satAssignmentToLong(bdd.fullSatOne()));
+    return Optional.of(satAssignmentToLong(bdd.satOne()));
   }
 
   /** @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc) */
   public Long satAssignmentToLong(BDD satAssignment) {
-    // TODO this check could be better (should be exactly 1 path from root to the one node).
-    checkArgument(!satAssignment.isZero(), "not a satisfying assignment");
+    checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
 
     if (_hasVariablesOnly) {
       // Shortcut for performance.
@@ -104,7 +103,7 @@ public class BDDInteger {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
-      if (satAssignment.andSat(bitBDD)) {
+      if (!satAssignment.diffSat(bitBDD)) {
         value |= 1L << i;
       }
     }
@@ -146,12 +145,10 @@ public class BDDInteger {
     int num = 0;
     BDD pred = bdd;
     while (num < max) {
-      BDD satAssignment = pred.fullSatOne();
-      if (satAssignment.isZero()) {
+      if (pred.isZero()) {
         break;
       }
-
-      long val = satAssignmentToLong(satAssignment);
+      long val = satAssignmentToLong(pred.satOne());
       values.add(val);
       pred = pred.diff(value(val));
       num++;
