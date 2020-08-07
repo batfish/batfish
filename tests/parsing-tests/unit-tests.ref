@@ -30,6 +30,9 @@
         "arista_bgp" : [
           "configs/arista_bgp"
         ],
+        "arista_bgp_asn" : [
+          "configs/arista_bgp_asn"
+        ],
         "arista_dhcp_relay" : [
           "configs/arista_dhcp_relay"
         ],
@@ -927,6 +930,7 @@
         "configs/arista-logging" : "PASSED",
         "configs/arista_acl" : "PASSED",
         "configs/arista_bgp" : "PASSED",
+        "configs/arista_bgp_asn" : "PASSED",
         "configs/arista_dhcp_relay" : "PASSED",
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
@@ -1641,6 +1645,38 @@
             "        DENY:'deny')",
             "      num = DEC:'10'",
             "      NEWLINE:'\\n'))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/arista_bgp_asn" : {
+          "sentences" : [
+            "(arista_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'arista_bgp_asn'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_boot",
+            "      BOOT:'boot'",
+            "      (null_rest_of_line",
+            "        SYSTEM:'system'",
+            "        FLASH:'flash'",
+            "        VARIABLE:'fake.swi'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'",
+            "      BGP:'bgp'",
+            "      procnum = (bgp_asn",
+            "        asn4b = FLOAT:'65200.50000')",
+            "      NEWLINE:'\\n'",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_inner",
+            "          (eos_rbi_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = IP_ADDRESS:'1.2.3.4'",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -78212,6 +78248,7 @@
         "arista-event-handler" : "PASSED",
         "arista_acl" : "PASSED",
         "arista_bgp" : "WARNINGS",
+        "arista_bgp_asn" : "PASSED",
         "arista_dhcp_relay" : "PASSED",
         "arista_interface" : "PASSED",
         "arista_ip_route" : "PASSED",
@@ -78538,6 +78575,7 @@
             }
           }
         },
+        "configs/arista_bgp_asn" : { },
         "configs/arista_dhcp_relay" : {
           "interface" : {
             "Ethernet0" : {
@@ -86639,6 +86677,9 @@
         ],
         "configs/arista_bgp" : [
           "arista_bgp"
+        ],
+        "configs/arista_bgp_asn" : [
+          "arista_bgp_asn"
         ],
         "configs/arista_dhcp_relay" : [
           "arista_dhcp_relay"
@@ -96054,6 +96095,7 @@
         "configs/arista-logging" : "PASSED",
         "configs/arista_acl" : "PASSED",
         "configs/arista_bgp" : "PASSED",
+        "configs/arista_bgp_asn" : "PASSED",
         "configs/arista_dhcp_relay" : "PASSED",
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
