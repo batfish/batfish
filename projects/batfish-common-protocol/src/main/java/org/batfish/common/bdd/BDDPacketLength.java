@@ -10,7 +10,7 @@ public final class BDDPacketLength {
   private final BDDInteger _var;
 
   public BDDPacketLength(BDDInteger var) {
-    checkArgument(var.getBitvec().length == 16, "Packet length field requires 16 bits");
+    checkArgument(var.size() == 16, "Packet length field requires 16 bits");
     _var = var;
   }
 
