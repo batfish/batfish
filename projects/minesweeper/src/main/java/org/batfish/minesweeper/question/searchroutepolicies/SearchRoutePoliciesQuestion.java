@@ -95,7 +95,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
   @Nonnull
   @Override
   public String getName() {
-    return "searchroutepolicies";
+    return "searchRoutePolicies";
   }
 
   @JsonProperty(PROP_NODES)

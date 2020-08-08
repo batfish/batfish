@@ -45,6 +45,7 @@ import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.minesweeper.CommunityVar;
@@ -391,6 +392,30 @@ public class TransferBDDTest {
     BDDRoute expected = new BDDRoute(_anyRoute);
     BDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
+    assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
+  public void testSetMetric() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetMetric(new LiteralLong(50)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // the metric is now 50
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger metric = expected.getMetric();
+    expected.setMetric(BDDInteger.makeFromValue(metric.getFactory(), 32, 50));
     assertEquals(expected, outAnnouncements);
   }
 

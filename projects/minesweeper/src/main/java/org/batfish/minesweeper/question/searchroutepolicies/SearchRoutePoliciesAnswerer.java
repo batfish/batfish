@@ -174,9 +174,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
     builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
-    // BDDRoute has a med and a metric, which appear to be treated identically
-    // I'm ignoring the metric and using the med
-    builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
+    builder.setMetric(r.getMetric().satAssignmentToLong(fullModel));
+    // TODO: Support setting the MED
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
     builder.setCommunities(communities);
