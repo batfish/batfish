@@ -86,7 +86,10 @@ public class BDDInteger {
     return Optional.of(satAssignmentToLong(bdd.satOne()));
   }
 
-  /** @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc) */
+  /**
+   * @param satAssignment a satisfying assignment (i.e. produced by satOne, fullSatOne, iterating
+   *     over allSat, etc)
+   */
   public Long satAssignmentToLong(BDD satAssignment) {
     checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
 
@@ -103,6 +106,8 @@ public class BDDInteger {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
+      // a.diffSat(b) is a.and(b.not()). When the input is only a partial assignment (like satOne),
+      // this biases towards lexicographically smaller solutions: set a 1 only if you can't set 0.
       if (!satAssignment.diffSat(bitBDD)) {
         value |= 1L << i;
       }
