@@ -14203,6 +14203,60 @@
           }
         }
       },
+      "arista_bgp_asn" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "arista_bgp_asn",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "arista_bgp_asn"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 200,
+              "ibgpAdminCost" : 200,
+              "routerId" : "1.2.3.4",
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ROUTER_ID"
+            }
+          }
+        }
+      },
       "arista_dhcp_relay" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "arista_dhcp_relay",

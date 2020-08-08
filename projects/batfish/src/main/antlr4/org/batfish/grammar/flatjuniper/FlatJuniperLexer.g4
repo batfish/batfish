@@ -48,6 +48,11 @@ ACCESS
    'access'
 ;
 
+ACCESS_INTERNAL
+:
+   'access-internal'
+;
+
 ACCESS_PROFILE
 :
    'access-profile'

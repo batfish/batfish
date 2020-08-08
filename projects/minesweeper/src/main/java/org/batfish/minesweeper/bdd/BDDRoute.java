@@ -121,7 +121,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     int idx = 0;
     _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
-    int len = _protocolHistory.getInteger().getBitvec().length;
+    int len = _protocolHistory.getInteger().size();
     addBitNames("proto", len, idx, false);
     idx += len;
     // Initialize integer values
@@ -153,7 +153,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
-    len = _ospfMetric.getInteger().getBitvec().length;
+    len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
   }
 

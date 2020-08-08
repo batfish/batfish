@@ -240,7 +240,7 @@ public final class Transitions {
   }
 
   public static Transition eraseAndSet(BDDInteger var, BDD value) {
-    if (var.getBitvec().length == 0) {
+    if (var.size() == 0) {
       return constraint(value);
     } else {
       return new EraseAndSet(

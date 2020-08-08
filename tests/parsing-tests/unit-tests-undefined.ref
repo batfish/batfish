@@ -2258,6 +2258,18 @@
         }
       },
       {
+        "File_Name" : "configs/eos_mlag",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Vlan4094",
+        "Context" : "mlag configuration local-interface",
+        "Lines" : {
+          "filename" : "configs/eos_mlag",
+          "lines" : [
+            19
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/f5_bigip/f5_bigip_imish_malformed",
         "Struct_Type" : "route-map",
         "Ref_Name" : "rm1",
@@ -4204,10 +4216,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 341 results",
+      "notes" : "Found 342 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 341
+      "numResults" : 342
     }
   }
 ]

@@ -15,6 +15,7 @@ set policy-options policy-statement POLICY-NAME term TERM from family iso-vpn
 set policy-options policy-statement POLICY-NAME term TERM from family route-target
 set policy-options policy-statement POLICY-NAME term TERM from family traffic-engineering
 set policy-options policy-statement POLICY-NAME term TERM from instance FORWARDING
+set policy-options policy-statement POLICY-NAME term TERM from protocol access-internal
 set policy-options policy-statement POLICY-NAME term TERM from protocol static
 set policy-options policy-statement POLICY-NAME term TERM from rib inet6.0
 set policy-options policy-statement POLICY-NAME term TERM from tag 11
