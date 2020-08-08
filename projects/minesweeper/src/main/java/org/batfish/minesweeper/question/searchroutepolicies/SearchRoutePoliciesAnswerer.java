@@ -54,6 +54,7 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.PolicyQuotient;
 import org.batfish.minesweeper.bdd.TransferBDD;
@@ -174,8 +175,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
     builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
-    builder.setMetric(r.getMetric().satAssignmentToLong(fullModel));
-    // TODO: Support setting the MED
+    // the BDDRoute also tracks a metric but I believe for BGP we should use the MED
+    builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
     builder.setCommunities(communities);
@@ -282,8 +283,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   private BDD routeConstraintsToBDD(RouteConstraints constraints, BDDRoute r, Graph g) {
-    BDD result =
-        prefixSpaceToBDD(constraints.getPrefixSpace(), r, constraints.getComplementPrefixSpace());
+    // require the protocol to be BGP
+    BDD result = r.getProtocolHistory().value(Protocol.BGP);
+    result =
+        result.and(
+            prefixSpaceToBDD(
+                constraints.getPrefixSpace(), r, constraints.getComplementPrefixSpace()));
     result = result.and(integerSpaceToBDD(constraints.getLocalPref(), r.getLocalPref()));
     result = result.and(integerSpaceToBDD(constraints.getMed(), r.getMed()));
     result =

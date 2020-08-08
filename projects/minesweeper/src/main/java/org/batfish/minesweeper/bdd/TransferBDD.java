@@ -567,14 +567,22 @@ public class TransferBDD {
         SetMetric sm = (SetMetric) stmt;
         LongExpr ie = sm.getMetric();
         BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
-        BDD updateMed = isBGP.and(result.getReturnAssignedValue());
-        BDD updateMet = isBGP.less(result.getReturnAssignedValue());
-        BDDInteger newValue =
-            applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie);
-        BDDInteger med = ite(updateMed, curP.getData().getMed(), newValue);
-        BDDInteger met = ite(updateMet, curP.getData().getMetric(), newValue);
+        // update the MED if the protocol is BGP, and otherwise update the metric
+        // TODO: is this the right thing to do?
+        BDD ignoreMed = isBGP.not().or(result.getReturnAssignedValue());
+        BDD ignoreMet = isBGP.or(result.getReturnAssignedValue());
+        BDDInteger med =
+            ite(
+                ignoreMed,
+                curP.getData().getMed(),
+                applyLongExprModification(curP.indent(), curP.getData().getMed(), ie));
+        BDDInteger met =
+            ite(
+                ignoreMet,
+                curP.getData().getMetric(),
+                applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie));
+        curP.getData().setMed(med);
         curP.getData().setMetric(met);
-        curP.getData().setMetric(med);
 
       } else if (stmt instanceof SetOspfMetricType) {
         curP.debug("SetOspfMetricType");

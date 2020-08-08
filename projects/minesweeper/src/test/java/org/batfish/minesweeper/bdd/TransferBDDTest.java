@@ -50,6 +50,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.Protocol;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
@@ -412,11 +413,11 @@ public class TransferBDDTest {
     // the policy is applicable to all announcements
     assertTrue(acceptedAnnouncements.isOne());
 
-    // the metric is now 50
-    BDDRoute expected = new BDDRoute(_anyRoute);
-    BDDInteger metric = expected.getMetric();
-    expected.setMetric(BDDInteger.makeFromValue(metric.getFactory(), 32, 50));
-    assertEquals(expected, outAnnouncements);
+    // the metric is now 50, if the protocol is BGP
+    BDDInteger expectedMed =
+        BDDInteger.makeFromValue(_anyRoute.getFactory(), 32, 50)
+            .ite(_anyRoute.getProtocolHistory().value(Protocol.BGP), _anyRoute.getMed());
+    assertEquals(expectedMed, outAnnouncements.getMed());
   }
 
   @Test
