@@ -19,16 +19,16 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private static final String PROP_POLICIES = "policies";
   private static final String PROP_ACTION = "action";
 
-  private static final RouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
-      RouteConstraints.builder().build();
+  private static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
+      BgpRouteConstraints.builder().build();
   private static final String DEFAULT_NODES = "";
   private static final String DEFAULT_POLICIES = "";
   private static final Action DEFAULT_ACTION = Action.PERMIT;
 
   @Nonnull private final String _nodes;
   @Nonnull private final String _policies;
-  @Nonnull private final RouteConstraints _inputConstraints;
-  @Nonnull private final RouteConstraints _outputConstraints;
+  @Nonnull private final BgpRouteConstraints _inputConstraints;
+  @Nonnull private final BgpRouteConstraints _outputConstraints;
   @Nonnull private final Action _action;
 
   public enum Action {
@@ -46,8 +46,8 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   public SearchRoutePoliciesQuestion(
-      @JsonProperty(PROP_INPUT_CONSTRAINTS) RouteConstraints inputConstraints,
-      @JsonProperty(PROP_OUTPUT_CONSTRAINTS) RouteConstraints outputConstraints,
+      @JsonProperty(PROP_INPUT_CONSTRAINTS) BgpRouteConstraints inputConstraints,
+      @JsonProperty(PROP_OUTPUT_CONSTRAINTS) BgpRouteConstraints outputConstraints,
       @JsonProperty(PROP_NODES) String nodes,
       @JsonProperty(PROP_POLICIES) String policies,
       @JsonProperty(PROP_ACTION) Action action) {
@@ -60,8 +60,8 @@ public final class SearchRoutePoliciesQuestion extends Question {
 
   @JsonCreator
   private static SearchRoutePoliciesQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_INPUT_CONSTRAINTS) RouteConstraints inputConstraints,
-      @Nullable @JsonProperty(PROP_OUTPUT_CONSTRAINTS) RouteConstraints outputConstraints,
+      @Nullable @JsonProperty(PROP_INPUT_CONSTRAINTS) BgpRouteConstraints inputConstraints,
+      @Nullable @JsonProperty(PROP_OUTPUT_CONSTRAINTS) BgpRouteConstraints outputConstraints,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_POLICIES) String policies,
       @Nullable @JsonProperty(PROP_ACTION) Action action) {
@@ -81,13 +81,13 @@ public final class SearchRoutePoliciesQuestion extends Question {
 
   @JsonProperty(PROP_INPUT_CONSTRAINTS)
   @Nonnull
-  public RouteConstraints getInputConstraints() {
+  public BgpRouteConstraints getInputConstraints() {
     return _inputConstraints;
   }
 
   @JsonProperty(PROP_OUTPUT_CONSTRAINTS)
   @Nonnull
-  public RouteConstraints getOutputConstraints() {
+  public BgpRouteConstraints getOutputConstraints() {
     return _outputConstraints;
   }
 

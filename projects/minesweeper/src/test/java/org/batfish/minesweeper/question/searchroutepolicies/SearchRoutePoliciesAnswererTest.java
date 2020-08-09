@@ -73,7 +73,8 @@ public class SearchRoutePoliciesAnswererTest {
   private static final String REGEX_COMMUNITY_NAME = "regexCommunity";
   private static final String GENERAL_REGEX_COMMUNITY_NAME = "generalRegexCommunity";
 
-  private static final RouteConstraints EMPTY_CONSTRAINTS = RouteConstraints.builder().build();
+  private static final BgpRouteConstraints EMPTY_CONSTRAINTS =
+      BgpRouteConstraints.builder().build();
   private RoutingPolicy.Builder _policyBuilder;
   private IBatfish _batfish;
 
@@ -189,7 +190,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder().setPrefixSpace(new PrefixSpace(prefixRange)).build(),
+            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -227,7 +228,7 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            RouteConstraints.builder().setPrefixSpace(new PrefixSpace(prefixRange)).build(),
+            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -279,8 +280,8 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder()
-                .setCommunityRegexes(ImmutableSet.of("20:30"))
+            BgpRouteConstraints.builder()
+                .setCommunities(ImmutableSet.of("20:30"))
                 .setComplementCommunities(true)
                 .build(),
             EMPTY_CONSTRAINTS,
@@ -353,8 +354,8 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("40:33")).build(),
-            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("3:44")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("40:33")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("3:44")).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -394,7 +395,7 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("20:30")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("20:30")).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -416,7 +417,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder().setCommunityRegexes(ImmutableSet.of("1:40")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("1:40")).build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -465,8 +466,8 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            RouteConstraints.builder()
-                .setCommunityRegexes(ImmutableSet.of(".*"))
+            BgpRouteConstraints.builder()
+                .setCommunities(ImmutableSet.of(".*"))
                 .setComplementCommunities(true)
                 .build(),
             HOSTNAME,
@@ -493,7 +494,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder().setPrefixSpace(new PrefixSpace(prefixRange)).build(),
+            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -536,8 +537,8 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder()
-                .setPrefixSpace(new PrefixSpace(prefixRange1, prefixRange2))
+            BgpRouteConstraints.builder()
+                .setPrefix(new PrefixSpace(prefixRange1, prefixRange2))
                 .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
@@ -580,9 +581,9 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder()
-                .setPrefixSpace(new PrefixSpace(prefixRange))
-                .setComplementPrefixSpace(true)
+            BgpRouteConstraints.builder()
+                .setPrefix(new PrefixSpace(prefixRange))
+                .setComplementPrefix(true)
                 .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
@@ -624,7 +625,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder().setPrefixSpace(new PrefixSpace(prefixRange)).build(),
+            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -655,7 +656,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder().setPrefixSpace(new PrefixSpace(prefixRange)).build(),
+            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -681,7 +682,7 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            RouteConstraints.builder().setPrefixSpace(new PrefixSpace(prefixRange)).build(),
+            BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -703,8 +704,8 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            RouteConstraints.builder()
-                .setPrefixSpace(new PrefixSpace(prefixRange))
+            BgpRouteConstraints.builder()
+                .setPrefix(new PrefixSpace(prefixRange))
                 .setLocalPref(localPref)
                 .setMed(med)
                 .build(),
@@ -795,8 +796,8 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            RouteConstraints.builder()
-                .setCommunityRegexes(ImmutableSet.of("4:44"))
+            BgpRouteConstraints.builder()
+                .setCommunities(ImmutableSet.of("4:44"))
                 .setComplementCommunities(true)
                 .build(),
             HOSTNAME,

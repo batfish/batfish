@@ -79,8 +79,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // to help ensure that they will be parse-able
   private static final Automaton COMMUNITY_FSM = new RegExp("[0-9]+(:[0-9]+)+").toAutomaton();
 
-  @Nonnull private final RouteConstraints _inputConstraints;
-  @Nonnull private final RouteConstraints _outputConstraints;
+  @Nonnull private final BgpRouteConstraints _inputConstraints;
+  @Nonnull private final BgpRouteConstraints _outputConstraints;
   @Nonnull private final String _nodes;
   @Nonnull private final String _policies;
   @Nonnull private final Action _action;
@@ -98,8 +98,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     _communityRegexes =
         ImmutableSet.<String>builder()
-            .addAll(_inputConstraints.getCommunityRegexes())
-            .addAll(_outputConstraints.getCommunityRegexes())
+            .addAll(_inputConstraints.getCommunities())
+            .addAll(_outputConstraints.getCommunities())
             .build();
     _pq = new PolicyQuotient();
   }
@@ -285,19 +285,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  private BDD routeConstraintsToBDD(RouteConstraints constraints, BDDRoute r, Graph g) {
+  private BDD routeConstraintsToBDD(BgpRouteConstraints constraints, BDDRoute r, Graph g) {
     // require the protocol to be BGP
     BDD result = r.getProtocolHistory().value(Protocol.BGP);
     result =
-        result.and(
-            prefixSpaceToBDD(
-                constraints.getPrefixSpace(), r, constraints.getComplementPrefixSpace()));
+        result.and(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result = result.and(integerSpaceToBDD(constraints.getLocalPref(), r.getLocalPref()));
     result = result.and(integerSpaceToBDD(constraints.getMed(), r.getMed()));
     result =
         result.and(
             communityConstraintsToBDD(
-                constraints.getCommunityRegexes(), constraints.getComplementCommunities(), r, g));
+                constraints.getCommunities(), constraints.getComplementCommunities(), r, g));
 
     return result;
   }
