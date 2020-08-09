@@ -141,6 +141,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         // intersection with COMMUNITY_FSM helps ensure that the example we create will be
         // a valid community.
         Automaton a = apAutomata.get(i).intersection(COMMUNITY_FSM);
+        if (a.isEmpty()) {
+          throw new BatfishException("Failed to produce a valid community for answer");
+        }
         String str = a.getShortestExample(true);
         Optional<Community> exampleOpt = stringToCommunity(str);
         if (exampleOpt.isPresent()) {

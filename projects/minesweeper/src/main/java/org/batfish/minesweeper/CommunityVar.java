@@ -87,19 +87,22 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   /**
    * Convert this community variable into an equivalent finite-state automaton.
    *
+   * <p>Note: Currently this code assumes that any community regex represents a complete pattern for
+   * the communities of interest. For example, the regex "_65:" is not supported; instead use
+   * "_65:.*" or similar.
+   *
    * @return the automaton
    */
   public Automaton toAutomaton() {
     String regex = _regex;
     if (_type != EXACT) {
-      // strip the leading ^ and trailing $
-      if (regex.startsWith("^")) {
-        regex = regex.substring(1);
-      }
-      if (regex.endsWith("$")) {
-        regex = regex.substring(0, regex.length() - 1);
-      }
+      // the Automaton library does not understand ^ and $, which respectively mark the beginning
+      // and end of the string,
+      // so replace them with the empty string
+      regex = regex.replaceAll("\\^", "()");
+      regex = regex.replaceAll("\\$", "()");
     }
+    // TODO: Handle the case when the regex only matches a prefix of the communities of interest
     return new RegExp(regex).toAutomaton();
   }
 
