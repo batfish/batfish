@@ -63,7 +63,6 @@ public class Schema {
           .put("TraceTree", getClassString(TraceTree.class))
           .build();
 
-  public static final Schema ACL_TRACE = new Schema("AclTrace");
   public static final Schema BGP_ROUTE = new Schema("BgpRoute");
   public static final Schema BGP_ROUTE_DIFFS = new Schema("BgpRouteDiffs");
   public static final Schema BOOLEAN = new Schema("Boolean");
