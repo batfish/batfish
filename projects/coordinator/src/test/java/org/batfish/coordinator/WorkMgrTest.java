@@ -87,8 +87,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
-import org.batfish.datamodel.acl.AclTrace;
-import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
@@ -2540,17 +2538,6 @@ public final class WorkMgrTest {
     assertThat(comInteger.compare(r1, r2), lessThan(0));
     assertThat(comIssue.compare(r1, r2), lessThan(0));
     assertThat(comString.compare(r1, r2), lessThan(0));
-  }
-
-  @Test
-  public void testColumnComparatorAclTrace() {
-    String col = "col1";
-    ColumnMetadata columnMetadata = new ColumnMetadata(col, Schema.ACL_TRACE, "colDesc");
-    Comparator<Row> comparator = _manager.columnComparator(columnMetadata);
-    Row r1 = Row.of(col, new AclTrace(ImmutableList.of(new TraceEvent("a"))));
-    Row r2 = Row.of(col, new AclTrace(ImmutableList.of(new TraceEvent("b"))));
-
-    assertThat(comparator.compare(r1, r2), lessThan(0));
   }
 
   @Test

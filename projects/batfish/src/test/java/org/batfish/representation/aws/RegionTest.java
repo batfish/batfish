@@ -47,11 +47,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineEvaluator;
-import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.AclTracer;
-import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.matchers.DataModelMatchers;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
@@ -280,18 +277,6 @@ public class RegionTest {
                                     hasTraceElement(
                                         traceElementForAddress(
                                             "source", "2.2.2.0/24", AddressType.CIDR_IP))))))))));
-    AclTrace trace = new AclTrace(root);
-    assertThat(
-        trace,
-        DataModelMatchers.hasEvents(
-            contains(
-                TraceEvent.of(getTraceElementForSecurityGroup("sg-1")),
-                TraceEvent.of(getTraceElementForRule(null)),
-                TraceEvent.of(traceElementForProtocol(TCP)),
-                TraceEvent.of(traceElementForDstPorts(22, 22)),
-                TraceEvent.of(
-                    traceElementForAddress("source", "2.2.2.0/24", AddressType.CIDR_IP)))));
-
     root =
         AclTracer.trace(
             ingressAcl,
