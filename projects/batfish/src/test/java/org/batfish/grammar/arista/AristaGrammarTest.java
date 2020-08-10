@@ -1434,6 +1434,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testMulticastParsing() {
+    // doesn't crash.
+    parseVendorConfig("arista_multicast");
+  }
+
+  @Test
   public void testVrrpConversion() {
     Configuration c = parseConfig("arista_vrrp");
     assertThat(c.getAllInterfaces(), hasKey("Vlan20"));

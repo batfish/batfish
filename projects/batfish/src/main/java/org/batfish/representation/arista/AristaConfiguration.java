@@ -958,13 +958,15 @@ public final class AristaConfiguration extends VendorConfiguration {
     Map<AristaRedistributeType, MatchProtocol> protocolConversions =
         ImmutableMap.of(
             OSPF,
-                new MatchProtocol(
-                    RoutingProtocol.OSPF,
-                    RoutingProtocol.OSPF_IA,
-                    RoutingProtocol.OSPF_E1,
-                    RoutingProtocol.OSPF_E2),
-            OSPF_INTERNAL, new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA),
-            OSPF_EXTERNAL, new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2));
+            new MatchProtocol(
+                RoutingProtocol.OSPF,
+                RoutingProtocol.OSPF_IA,
+                RoutingProtocol.OSPF_E1,
+                RoutingProtocol.OSPF_E2),
+            OSPF_INTERNAL,
+            new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA),
+            OSPF_EXTERNAL,
+            new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2));
 
     for (AristaRedistributeType type :
         new AristaRedistributeType[] {
@@ -2404,6 +2406,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     markConcreteStructure(AristaStructureType.BFD_TEMPLATE);
     markConcreteStructure(AristaStructureType.INTERFACE);
+    markConcreteStructure(AristaStructureType.IPV4_ACCESS_LIST_STANDARD);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(

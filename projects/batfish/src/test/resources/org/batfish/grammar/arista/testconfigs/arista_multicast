@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_multicast
+!
+ip access-list standard some_acl_2
+    10 permit host 239.0.0.1
+!
+interface Ethernet10
+   ip multicast boundary 1.2.3.4/32
+   ip multicast boundary 1.2.3.4/32 out
+   ip multicast boundary 1.2.3.4 255.255.255.255
+   ip multicast boundary 1.2.3.4 255.255.255.255 out
+   ip multicast boundary some_acl_2
+   ip multicast boundary some_acl_2 out
+!

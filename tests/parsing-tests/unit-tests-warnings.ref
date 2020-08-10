@@ -58,9 +58,9 @@
       },
       {
         "Filename" : "configs/arista_interface",
-        "Line" : 12,
+        "Line" : 14,
         "Text" : "ip 2.3.4.5 secondary",
-        "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza cisco_configuration]",
+        "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
