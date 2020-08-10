@@ -1557,8 +1557,12 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public void initSnapshot(
-      String networkName, String snapshotName, Path srcDir, boolean autoAnalyze) {
-    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, null);
+      String networkName,
+      String snapshotName,
+      Path srcDir,
+      boolean autoAnalyze,
+      Instant creationTime) {
+    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, creationTime, null);
   }
 
   public void initSnapshot(
@@ -1566,6 +1570,7 @@ public class WorkMgr extends AbstractCoordinator {
       String snapshotName,
       Path srcDir,
       boolean autoAnalyze,
+      Instant creationTime,
       @Nullable SnapshotId parentSnapshotId) {
     Path subDir = getSnapshotSubdir(srcDir);
     validateSnapshotDir(subDir);
@@ -1587,7 +1592,7 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       _snapshotMetadataManager.writeMetadata(
-          new SnapshotMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
+          new SnapshotMetadata(creationTime, parentSnapshotId), networkId, snapshotId);
     } catch (Exception e) {
       throw new BatfishException("Could not write testrigMetadata", e);
     }
@@ -1754,6 +1759,7 @@ public class WorkMgr extends AbstractCoordinator {
     SnapshotId baseSnapshotId = baseSnapshotIdOpt.get();
 
     // Save user input for troubleshooting
+    Instant creationTime = Instant.now();
     String forkSnapshotKey = generateFileDateString(snapshotName);
     _storage.storeForkSnapshotRequest(
         BatfishObjectMapper.writeString(forkSnapshotBean), forkSnapshotKey, networkId);
@@ -1824,7 +1830,12 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Use initSnapshot to handle creating metadata, etc.
     initSnapshot(
-        networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotId);
+        networkName,
+        snapshotName,
+        newSnapshotInputsDir.getParent(),
+        false,
+        creationTime,
+        baseSnapshotId);
   }
 
   /**
@@ -2283,6 +2294,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     // Save uploaded zip for troubleshooting
+    Instant creationTime = Instant.now();
     String uploadZipKey = generateFileDateString(snapshotName);
     try {
       _storage.storeUploadSnapshotZip(fileStream, uploadZipKey, networkId);
@@ -2298,7 +2310,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     try {
-      initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze);
+      initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze, creationTime);
     } catch (Exception e) {
       throw new BatfishException(
           String.format("Error initializing snapshot: %s", e.getMessage()), e);

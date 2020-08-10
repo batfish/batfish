@@ -1,6 +1,7 @@
 package org.batfish.storage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.storage.FileBasedStorage.GC_SKEW_ALLOWANCE_MINUTES;
 import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
@@ -26,9 +27,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +41,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.CompletionMetadata;
@@ -52,6 +59,7 @@ import org.batfish.common.util.UnzipUtility;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.MinorIssueConfig;
@@ -60,6 +68,7 @@ import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.AnalysisId;
+import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
@@ -572,5 +581,226 @@ public final class FileBasedStorageTest {
     assertThat(
         _storage.listResolvableNames(SnapshotId.class, new NetworkId("net1_id")),
         containsInAnyOrder("snapshot1", "snapshot2"));
+  }
+
+  private interface IOExceptionThrower {
+    void run() throws IOException;
+  }
+
+  private static void expectFileNotFoundException(IOExceptionThrower r) {
+    boolean thrown = false;
+    try {
+      r.run();
+    } catch (FileNotFoundException e) {
+      thrown = true;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    assertTrue("Expected FileNotFoundException", thrown);
+  }
+
+  @Test
+  public void testComputeExpungeBeforeTime() throws IOException {
+    String network = "network1";
+    String snapshotNew = "snapshotNew";
+    String snapshotOld = "snapshotOld";
+
+    NetworkId networkId = new NetworkId("network1-id");
+    SnapshotId snapshotNewId = new SnapshotId("snapshotNew-id");
+    SnapshotId snapshotOldId = new SnapshotId("snapshotOld-id");
+
+    Instant oldTime = Instant.now();
+    Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE_MINUTES + 1, ChronoUnit.MINUTES);
+
+    // mock modified times for test
+    FileBasedStorage storage =
+        new FileBasedStorage(_containerDir.getParent(), _logger, (m, n) -> new AtomicInteger()) {
+          @Nonnull
+          @Override
+          Instant getLastModifiedTime(Path path) throws IOException {
+            if (path.startsWith(getSnapshotDir(networkId, snapshotOldId))) {
+              return oldTime;
+            } else if (path.startsWith(getSnapshotDir(networkId, snapshotNewId))) {
+              return newTime;
+            } else {
+              throw new IllegalArgumentException(String.format("Unhandled path: %s", path));
+            }
+          }
+        };
+
+    // In absence of snapshots, computeExpungeBeforeTime should return empty result.
+    assertThat(storage.computeExpungeBeforeDate(), equalTo(Optional.empty()));
+    storage.writeId(networkId, network);
+    assertThat(storage.computeExpungeBeforeDate(), equalTo(Optional.empty()));
+
+    // write old snapshot
+    storage.storeSnapshotMetadata(new SnapshotMetadata(oldTime, null), networkId, snapshotOldId);
+    storage.writeId(snapshotOldId, snapshotOld, networkId);
+
+    // Now computeExpungeBeforeTime should return the creation time of the old snapshot minus skew
+    // allowance
+    assertThat(
+        storage.computeExpungeBeforeDate(),
+        equalTo(Optional.of(oldTime.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES))));
+
+    // write new snapshot
+    storage.storeSnapshotMetadata(new SnapshotMetadata(newTime, null), networkId, snapshotNewId);
+    storage.writeId(snapshotNewId, snapshotNew, networkId);
+
+    // computeExpungeBeforeTime should still return the creation time of the old snapshot minuys
+    // skew allowance
+    assertThat(
+        storage.computeExpungeBeforeDate(),
+        equalTo(Optional.of(oldTime.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES))));
+
+    // unlink old snapshot
+    storage.deleteNameIdMapping(SnapshotId.class, snapshotOld, networkId);
+
+    // With the old snapshot deleted, computeExpungeBeforeTime should return the creation time of
+    // the new snapshot minus skew allowance
+    assertThat(
+        storage.computeExpungeBeforeDate(),
+        equalTo(Optional.of(newTime.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES))));
+  }
+
+  @Test
+  public void testExpungeOldEntriesDirectories() throws IOException {
+    Instant newTime = Instant.now();
+    Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
+
+    Path newDir = _storage.getStorageBase().resolve("newDir");
+    Path newFile = _storage.getStorageBase().resolve("newFile");
+    Path oldDir = _storage.getStorageBase().resolve("oldDir");
+    Path oldFile = _storage.getStorageBase().resolve("oldFile");
+
+    _storage.mkdirs(_storage.getStorageBase());
+    Files.createDirectory(_storage.getStorageBase().resolve("newDir"));
+    Files.createFile(_storage.getStorageBase().resolve("newFile"));
+    Files.createDirectory(_storage.getStorageBase().resolve("oldDir"));
+    Files.createFile(oldFile);
+    Files.setLastModifiedTime(newDir, FileTime.from(newTime));
+    Files.setLastModifiedTime(newFile, FileTime.from(newTime));
+    Files.setLastModifiedTime(oldDir, FileTime.from(oldTime));
+    Files.setLastModifiedTime(oldFile, FileTime.from(oldTime));
+
+    _storage.expungeOldEntries(newTime, _storage.getStorageBase(), true);
+
+    assertTrue(Files.exists(newDir));
+    assertTrue(Files.exists(newFile));
+    assertFalse(Files.exists(oldDir));
+    assertTrue(Files.exists(oldFile));
+  }
+
+  @Test
+  public void testExpungeOldEntriesFiles() throws IOException {
+    Instant newTime = Instant.now();
+    Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
+
+    Path newDir = _storage.getStorageBase().resolve("newDir");
+    Path newFile = _storage.getStorageBase().resolve("newFile");
+    Path oldDir = _storage.getStorageBase().resolve("oldDir");
+    Path oldFile = _storage.getStorageBase().resolve("oldFile");
+
+    _storage.mkdirs(_storage.getStorageBase());
+    Files.createDirectory(_storage.getStorageBase().resolve("newDir"));
+    Files.createFile(_storage.getStorageBase().resolve("newFile"));
+    Files.createDirectory(_storage.getStorageBase().resolve("oldDir"));
+    Files.createFile(oldFile);
+    Files.setLastModifiedTime(newDir, FileTime.from(newTime));
+    Files.setLastModifiedTime(newFile, FileTime.from(newTime));
+    Files.setLastModifiedTime(oldDir, FileTime.from(oldTime));
+    Files.setLastModifiedTime(oldFile, FileTime.from(oldTime));
+
+    _storage.expungeOldEntries(newTime, _storage.getStorageBase(), false);
+
+    assertTrue(Files.exists(newDir));
+    assertTrue(Files.exists(newFile));
+    assertTrue(Files.exists(oldDir));
+    assertFalse(Files.exists(oldFile));
+  }
+
+  // doesn't realize close is explicitly called
+  @SuppressWarnings({"MustBeClosedChecker", "PMD.CloseResource"})
+  @Test
+  public void testRunGarbageCollection() throws IOException {
+    String network = "network1";
+    String snapshotNew = "snapshotNew";
+    String snapshotOld = "snapshotOld";
+    String oldUploadKey = "oldUpload";
+    String newUploadKey = "newUpload";
+
+    NetworkId networkId = new NetworkId("network1-id");
+    SnapshotId snapshotNewId = new SnapshotId("snapshotNew-id");
+    SnapshotId snapshotOldId = new SnapshotId("snapshotOld-id");
+    AnswerId oldAnswerId = new AnswerId("answerOld-id");
+    AnswerId newAnswerId = new AnswerId("answerNew-id");
+
+    Instant oldTime = Instant.now();
+    Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE_MINUTES + 1, ChronoUnit.MINUTES);
+
+    // mock modified times for test
+    FileBasedStorage storage =
+        new FileBasedStorage(_containerDir.getParent(), _logger, (m, n) -> new AtomicInteger()) {
+          @Nonnull
+          @Override
+          Instant getLastModifiedTime(Path path) throws IOException {
+            if (path.equals(getAnswerDir(oldAnswerId))
+                || path.equals(getOriginalDir(oldUploadKey, networkId))
+                || path.startsWith(getSnapshotDir(networkId, snapshotOldId))) {
+              return oldTime;
+            } else if (path.equals(getAnswerDir(newAnswerId))
+                || path.equals(getOriginalDir(newUploadKey, networkId))
+                || path.startsWith(getSnapshotDir(networkId, snapshotNewId))) {
+              return newTime;
+            } else {
+              throw new IllegalArgumentException(String.format("Unhandled path: %s", path));
+            }
+          }
+        };
+
+    storage.writeId(networkId, network);
+
+    // write old answer
+    storage.storeAnswer("", oldAnswerId);
+
+    // write new answer
+    storage.storeAnswer("", newAnswerId);
+
+    // write old original upload
+    storage.storeUploadSnapshotZip(new NullInputStream(0), oldUploadKey, networkId);
+
+    // write new original upload
+    storage.storeUploadSnapshotZip(new NullInputStream(0), newUploadKey, networkId);
+
+    // write old snapshot
+    storage.storeSnapshotMetadata(new SnapshotMetadata(oldTime, null), networkId, snapshotOldId);
+    storage.writeId(snapshotOldId, snapshotOld, networkId);
+
+    // write new snapshot
+    storage.storeSnapshotMetadata(new SnapshotMetadata(newTime, null), networkId, snapshotNewId);
+    storage.writeId(snapshotNewId, snapshotNew, networkId);
+
+    // unlink old snapshot
+    storage.deleteNameIdMapping(SnapshotId.class, snapshotOld, networkId);
+
+    // should exist before garbage collection
+    storage.loadAnswer(oldAnswerId);
+    storage.loadAnswer(newAnswerId);
+    storage.loadUploadSnapshotZip(oldUploadKey, networkId).close();
+    storage.loadUploadSnapshotZip(newUploadKey, networkId).close();
+    storage.loadSnapshotMetadata(networkId, snapshotNewId);
+    storage.loadSnapshotMetadata(networkId, snapshotOldId);
+
+    storage.runGarbageCollection();
+
+    // should have survived garbage collection, so should not throw
+    storage.loadAnswer(newAnswerId);
+    storage.loadUploadSnapshotZip(newUploadKey, networkId).close();
+    storage.loadSnapshotMetadata(networkId, snapshotNewId);
+
+    // should throw because data should have been garbage collected
+    expectFileNotFoundException(() -> storage.loadAnswer(oldAnswerId));
+    expectFileNotFoundException(() -> storage.loadUploadSnapshotZip(oldUploadKey, networkId));
+    expectFileNotFoundException(() -> storage.loadSnapshotMetadata(networkId, snapshotOldId));
   }
 }

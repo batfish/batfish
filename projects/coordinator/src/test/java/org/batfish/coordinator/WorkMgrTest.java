@@ -959,7 +959,7 @@ public final class WorkMgrTest {
         snapshotDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
         BatfishObjectMapper.writePrettyString(runtimeData));
     _manager.initNetwork(networkName, null);
-    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false, Instant.now());
 
     // Create fork
     String forkName = "fork";
@@ -1039,7 +1039,7 @@ public final class WorkMgrTest {
         snapshotDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
         BatfishObjectMapper.writePrettyString(baseBlacklist));
     _manager.initNetwork(networkName, null);
-    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false, Instant.now());
 
     // Create fork
     String forkName = "fork";
@@ -1908,7 +1908,7 @@ public final class WorkMgrTest {
     // Create snapshot dir to pass into init
     Path srcDir = createSnapshot(snapshotName, fileName, fileContents, _folder);
 
-    _manager.initSnapshot(networkName, snapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false, Instant.now());
 
     // Confirm the new snapshot exists
     assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotName)));
@@ -1963,7 +1963,7 @@ public final class WorkMgrTest {
         snapshotDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
         BatfishObjectMapper.writePrettyString(blacklist));
     _manager.initNetwork(networkName, null);
-    _manager.initSnapshot(networkName, snapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false, Instant.now());
 
     // Interface blacklist should not exist in new snapshot
     NetworkId networkId = _idManager.getNetworkId(networkName).get();
@@ -1996,7 +1996,8 @@ public final class WorkMgrTest {
 
     // Pass in path to subdir so init sees improperly formatted dir
     // i.e. sees dir containing 'configs/' instead of 'snapshotName/configs/'
-    _manager.initSnapshot(networkName, snapshotName, srcDir.resolve(snapshotName), false);
+    _manager.initSnapshot(
+        networkName, snapshotName, srcDir.resolve(snapshotName), false, Instant.now());
   }
 
   @Test

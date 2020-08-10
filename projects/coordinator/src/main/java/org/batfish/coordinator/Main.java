@@ -350,6 +350,25 @@ public class Main {
         bindPortFutures.getWorkV2Port());
   }
 
+  private static void initGarbageCollector(int period) {
+    new Thread(
+            () -> {
+              while (true) {
+                try {
+                  Thread.sleep(period * 1000); // s -> ms
+                  _logger.debugf("Coordinator running garbage collection...\n");
+                  Main.getWorkMgr().getStorage().runGarbageCollection();
+                  _logger.debugf("Coordinator completed garbage collection.\n");
+                } catch (InterruptedException | IOException e) {
+                  _logger.errorf(
+                      "Coordinator garbage collector encountered an error:\n%s",
+                      Throwables.getStackTraceAsString(e));
+                }
+              }
+            })
+        .start();
+  }
+
   public static void main(String[] args) {
     mainInit(args);
     _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile());
@@ -398,6 +417,7 @@ public class Main {
         initTracer();
       }
       initWorkManager(portFutures);
+      _settings.getGarbageCollectionPeriod().ifPresent(Main::initGarbageCollector);
     } catch (Exception e) {
       System.err.println(
           "org.batfish.coordinator: Initialization of a helper failed: "

@@ -733,7 +733,8 @@ public interface StorageProvider {
   /**
    * Loads the original zip for a snapshot upload request associated with the given key.
    *
-   * @throws IOException if there is an error
+   * @throws FileNotFoundException if the zip is not found.
+   * @throws IOException if there is any other error
    */
   @MustBeClosed
   @Nonnull
@@ -959,4 +960,11 @@ public interface StorageProvider {
   @MustBeClosed
   @Nonnull
   Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Run implementation-specific garbage collection.
+   *
+   * @throws IOException if there is an error
+   */
+  void runGarbageCollection() throws IOException;
 }

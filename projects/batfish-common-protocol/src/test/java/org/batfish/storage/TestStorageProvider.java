@@ -629,4 +629,7 @@ public class TestStorageProvider implements StorageProvider {
   public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public void runGarbageCollection() {}
 }
