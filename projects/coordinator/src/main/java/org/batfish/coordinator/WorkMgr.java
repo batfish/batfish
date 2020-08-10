@@ -104,8 +104,6 @@ import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.SnapshotMetadataEntry;
-import org.batfish.datamodel.acl.AclTrace;
-import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadata;
@@ -163,11 +161,6 @@ public class WorkMgr extends AbstractCoordinator {
           .add(".git")
           .add(".svn")
           .build();
-
-  private static final Comparator<AclTrace> COMPARATOR_ACL_TRACE =
-      Comparator.comparing(
-          AclTrace::getEvents,
-          Comparators.lexicographical(Comparator.comparing(TraceEvent::getDescription)));
 
   private static final Comparator<Node> COMPARATOR_NODE = Comparator.comparing(Node::getName);
 
@@ -2529,9 +2522,7 @@ public class WorkMgr extends AbstractCoordinator {
 
   @SuppressWarnings({"rawtypes", "unchecked"})
   private @Nonnull Comparator<?> schemaComparator(Schema schema) {
-    if (schema.equals(Schema.ACL_TRACE)) {
-      return COMPARATOR_ACL_TRACE;
-    } else if (schema.equals(Schema.BOOLEAN)) {
+    if (schema.equals(Schema.BOOLEAN)) {
       return naturalOrder();
     } else if (schema.equals(Schema.DOUBLE)) {
       return naturalOrder();
