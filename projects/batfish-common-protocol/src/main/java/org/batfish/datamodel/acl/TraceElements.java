@@ -10,7 +10,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.TraceElement;
 
-/** Utility methods for creating {@link TraceElement TraceElements}. */
+/** Utility methods for creating {@link TraceEvent TraceEvents}. */
 @ParametersAreNonnullByDefault
 public final class TraceElements {
   private TraceElements() {}

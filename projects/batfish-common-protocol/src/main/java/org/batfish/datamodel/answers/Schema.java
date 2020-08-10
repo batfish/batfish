@@ -15,6 +15,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Trace;
@@ -42,6 +43,7 @@ public class Schema {
 
   private static final Map<String, String> schemaAliases =
       ImmutableMap.<String, String>builder()
+          .put("AclTrace", getClassString(AclTrace.class))
           .put("BgpRoute", getClassString(BgpRoute.class))
           .put("BgpRouteDiffs", getClassString(BgpRouteDiffs.class))
           .put("Boolean", getClassString(Boolean.class))

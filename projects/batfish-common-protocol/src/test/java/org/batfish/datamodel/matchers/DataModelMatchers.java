@@ -2,6 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -22,10 +23,13 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
+import org.batfish.datamodel.matchers.AclTraceMatchers.HasEvents;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterList;
@@ -212,6 +216,15 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<PermittedByAcl> hasAclName(@Nonnull String name) {
     return hasAclName(equalTo(name));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * AclTrace}'s events.
+   */
+  public static @Nonnull Matcher<AclTrace> hasEvents(
+      @Nonnull Matcher<? super List<TraceEvent>> subMatcher) {
+    return new HasEvents(subMatcher);
   }
 
   /**

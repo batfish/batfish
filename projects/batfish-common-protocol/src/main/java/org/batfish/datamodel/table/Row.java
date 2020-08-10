@@ -33,6 +33,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SchemaUtils;
@@ -258,6 +259,10 @@ public class Row implements Comparable<Row>, Serializable {
               "Cannot cast row element in column '%s' given the provided TypeReference: %s",
               columnName, Throwables.getStackTraceAsString(e)));
     }
+  }
+
+  public @Nullable AclTrace getAclTrace(String column) {
+    return (AclTrace) get(column, Schema.ACL_TRACE);
   }
 
   public Boolean getBoolean(String column) {

@@ -11,6 +11,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclTracer.DEST_IP_DESCRIPTION;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.acl.TraceElements.permittedByNamedIpSpace;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasEvents;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
@@ -307,6 +308,15 @@ public class AclTracerTest {
             isTraceTree(
                 permittedByNamedIpSpace(
                     FLOW.getDstIp(), DEST_IP_DESCRIPTION, ipSpaceMetadata, ipSpaceName))));
+
+    AclTrace trace = new AclTrace(root);
+    assertThat(
+        trace,
+        hasEvents(
+            contains(
+                TraceEvent.of(
+                    permittedByNamedIpSpace(
+                        FLOW.getDstIp(), DEST_IP_DESCRIPTION, ipSpaceMetadata, ipSpaceName)))));
   }
 
   @Test
