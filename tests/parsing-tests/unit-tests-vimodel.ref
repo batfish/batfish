@@ -14333,11 +14333,11 @@
         }
       },
       "arista_interface" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Vlan1" : {
@@ -14361,7 +14361,7 @@
             ],
             "mtu" : 1500,
             "prefix" : "1.2.3.4/23",
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
@@ -14383,10 +14383,7 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_interface",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_interface"
           }
         },
         "vrfs" : {
