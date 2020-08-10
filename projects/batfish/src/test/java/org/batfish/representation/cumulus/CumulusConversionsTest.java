@@ -22,6 +22,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateBgpC
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
+import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
@@ -97,10 +98,12 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -1834,5 +1837,18 @@ public final class CumulusConversionsTest {
       ipv4af.setNextHopSelfAll(true);
       assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
     }
+  }
+
+  @Test
+  public void testGetSetMaxMedMetric() {
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+
+    // Test Default Value
+    assertThat(getSetMaxMedMetric(bgpVrf), equalTo(null));
+
+    // Set the value and test again
+    bgpVrf.setMaxMedAdministrative(1234L);
+    assertThat(getSetMaxMedMetric(bgpVrf), equalTo(new SetMetric(new LiteralLong(1234L))));
+
   }
 }

@@ -113,6 +113,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrativeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
@@ -750,6 +751,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitSbb_confederation(Sbb_confederationContext ctx) {
     Long id = toLong(ctx.id);
     _currentBgpVrf.setConfederationId(id);
+  }
+
+  @Override
+  public void exitSbb_max_med_administrative(Sbb_max_med_administrativeContext ctx) {
+    if (ctx.med != null) _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
+    else _currentBgpVrf.setMaxMedAdministrative(4294967294L);
   }
 
   @Override

@@ -27,6 +27,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -107,6 +108,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -116,6 +118,7 @@ import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -750,10 +753,15 @@ public final class CumulusConversions {
   }
 
   private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    ArrayList<Statement> acceptStatements = new ArrayList<>();
     SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
-    return setNextHop == null
-        ? ImmutableList.of(Statements.ExitAccept.toStaticStatement())
-        : ImmutableList.of(setNextHop, Statements.ExitAccept.toStaticStatement());
+    SetMetric setMaxMedMetric = getSetMaxMedMetric(bgpVrf);
+
+    if (setNextHop != null) acceptStatements.add(setNextHop);
+    if (setMaxMedMetric != null) acceptStatements.add(setMaxMedMetric);
+    acceptStatements.add(Statements.ExitAccept.toStaticStatement());
+
+    return Collections.unmodifiableList(acceptStatements);
   }
 
   private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(BgpNeighbor neighbor) {
@@ -796,6 +804,11 @@ public final class CumulusConversions {
     }
 
     return nextHopSelf ? new SetNextHop(SelfNextHop.getInstance()) : null;
+  }
+
+  @VisibleForTesting
+  static @Nullable SetMetric getSetMaxMedMetric(BgpVrf bgpVrf) {
+    return bgpVrf.getMaxMedAdministrative() != null ? new SetMetric(new LiteralLong(bgpVrf.getMaxMedAdministrative())) : null;
   }
 
   @Nullable

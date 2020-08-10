@@ -29,6 +29,7 @@ sb_bgp
     | sbb_log_neighbor_changes
     | sbb_router_id
     | sbb_cluster_id
+    | sbb_max_med_administrative
   )
 ;
 
@@ -74,6 +75,11 @@ sbb_bestpath
 sbb_log_neighbor_changes
 :
   LOG_NEIGHBOR_CHANGES NEWLINE
+;
+
+sbb_max_med_administrative
+:
+   MAX_MED ADMINISTRATIVE (med = uint32)? NEWLINE
 ;
 
 sbbb_aspath_multipath_relax
@@ -345,4 +351,9 @@ sbn_password
 sbnobd_ipv4_unicast
 :
     IPV4_UNICAST
+;
+
+max_med_administrative_value
+:
+  UINT32
 ;
