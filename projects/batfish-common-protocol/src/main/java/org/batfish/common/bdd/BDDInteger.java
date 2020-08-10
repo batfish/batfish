@@ -87,8 +87,12 @@ public class BDDInteger {
   }
 
   /**
-   * @param satAssignment a satisfying assignment (i.e. produced by satOne, fullSatOne, iterating
-   *     over allSat, etc)
+   * Returns the smallest long produced when evaluating the given assignment {@link BDD} over the
+   * representative bits in {@link #getBitvec()}.
+   *
+   * <p>When this {@link BDDInteger#hasVariablesOnly()} is {@code false}, this function will perform
+   * better if the assignment {@link BDD} is smaller, i.e., is produced by {@link BDD#satOne()}
+   * instead of {@link BDD#fullSatOne()}.
    */
   public Long satAssignmentToLong(BDD satAssignment) {
     checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
@@ -106,7 +110,7 @@ public class BDDInteger {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
-      // a.diffSat(b) is a.and(b.not()). When the input is only a partial assignment (like satOne),
+      // a.diff(b) is a.and(b.not()). When the input is only a partial assignment (like satOne),
       // this biases towards lexicographically smaller solutions: set a 1 only if you can't set 0.
       if (!satAssignment.diffSat(bitBDD)) {
         value |= 1L << i;
