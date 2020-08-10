@@ -273,6 +273,7 @@ if_ip
     | if_ip_helper_address
     | if_ip_igmp
     | if_ip_inband_access_group
+    | if_ip_multicast_eos
     | if_ip_nat_destination
     | if_ip_nat_source
     | if_ip_nbar
@@ -365,6 +366,25 @@ if_ip_igmp
       | ifigmp_null
       | ifigmp_static_group
    )
+;
+
+if_ip_multicast_eos
+:
+  MULTICAST
+  (
+    ifipm_boundary_eos
+    | ifipm_static_eos
+  )
+;
+
+ifipm_boundary_eos
+:
+  BOUNDARY (ip_prefix | name = word) OUT? NEWLINE
+;
+
+ifipm_static_eos
+:
+  STATIC NEWLINE
 ;
 
 if_ip_nat_destination

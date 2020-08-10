@@ -10,6 +10,12 @@ interface_address
   | prefix = IP_PREFIX
 ;
 
+ip_prefix
+:
+  address = IP_ADDRESS mask = IP_ADDRESS
+  | prefix = IP_PREFIX
+;
+
 ospf_area
 :
   id_ip = IP_ADDRESS

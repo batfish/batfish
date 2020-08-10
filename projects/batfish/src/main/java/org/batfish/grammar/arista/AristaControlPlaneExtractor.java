@@ -99,6 +99,7 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_I
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_MULTICAST_BOUNDARY;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
@@ -659,6 +660,7 @@ import org.batfish.grammar.arista.AristaParser.Ifip_access_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipm_boundary_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_cost_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_dead_interval_eosContext;
@@ -694,6 +696,7 @@ import org.batfish.grammar.arista.AristaParser.Ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_hostnameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_poolContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_pool_rangeContext;
+import org.batfish.grammar.arista.AristaParser.Ip_prefixContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_route_stanzaContext;
@@ -1147,6 +1150,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private static long toLong(Token t) {
     return Long.parseLong(t.getText());
+  }
+
+  private Prefix toPrefix(Ip_prefixContext ctx) {
+    if (ctx.address != null) {
+      return Prefix.create(toIp(ctx.address), toInteger(ctx.mask));
+    } else {
+      return toPrefix(ctx.prefix);
+    }
   }
 
   private static Prefix toPrefix(Token t) {
@@ -5241,6 +5252,18 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IP_INBAND_ACCESS_GROUP, line);
+  }
+
+  @Override
+  public void exitIfipm_boundary_eos(Ifipm_boundary_eosContext ctx) {
+    if (ctx.name != null) {
+      String name = ctx.name.getText();
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST_STANDARD,
+          name,
+          INTERFACE_IP_MULTICAST_BOUNDARY,
+          ctx.getStart().getLine());
+    }
   }
 
   @Override
