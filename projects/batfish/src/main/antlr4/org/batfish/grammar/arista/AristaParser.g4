@@ -1031,15 +1031,9 @@ ip_probe_null
    ) null_rest_of_line
 ;
 
-ip_route_stanza
+s_ip_route
 :
-   (
-      IP
-      | MANAGEMENT
-   ) ROUTE
-   (
-      VRF vrf = variable
-   )? ip_route_tail
+  ROUTE (VRF vrf = variable)? ip_route_tail
 ;
 
 ip_route_tail
@@ -2440,6 +2434,7 @@ s_ip
     | s_ip_name_server
     | s_ip_nbar
     | s_ip_probe
+    | s_ip_route
     | s_ip_routing
     | s_ip_tacacs_source_interface
     | s_ip_virtual_router
@@ -3429,7 +3424,6 @@ stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza
    | ip_prefix_list_stanza
-   | ip_route_stanza
    | ipv6_prefix_list_stanza
    | ipx_sap_access_list_stanza
    | multicast_routing_stanza
@@ -4372,11 +4366,6 @@ vrfc_address_family
    (
       vrfc_route_target
    )*
-;
-
-vrfc_ip_route
-:
-   IP ROUTE ip_route_tail
 ;
 
 vrfc_rd
