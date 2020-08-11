@@ -19,7 +19,7 @@ public class BgpRouteConstraints {
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_COMPLEMENT_PREFIX = "complementPrefix";
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
-  private static final String PROP_MULTI_EXIT_DISCRIMINATOR = "multiExitDiscriminator";
+  private static final String PROP_MED = "med";
   private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_COMPLEMENT_COMMUNITIES = "complementCommunities";
 
@@ -28,7 +28,7 @@ public class BgpRouteConstraints {
   // if this flag is set, then the prefix must be outside of the above space
   private final boolean _complementPrefix;
   // the announcement's local preference must be within this range
-  @Nonnull private final IntegerSpace _localPref;
+  @Nonnull private final IntegerSpace _localPreference;
   // the announcement's MED must be within this range
   @Nonnull private final IntegerSpace _med;
   // the announcement must be tagged with at least one community matching a regex in this set
@@ -41,13 +41,13 @@ public class BgpRouteConstraints {
   private BgpRouteConstraints(
       @Nullable @JsonProperty(PROP_PREFIX) PrefixSpace prefix,
       @JsonProperty(PROP_COMPLEMENT_PREFIX) boolean complementPrefix,
-      @Nullable @JsonProperty(PROP_LOCAL_PREFERENCE) IntegerSpace localPref,
-      @Nullable @JsonProperty(PROP_MULTI_EXIT_DISCRIMINATOR) IntegerSpace med,
+      @Nullable @JsonProperty(PROP_LOCAL_PREFERENCE) IntegerSpace localPreference,
+      @Nullable @JsonProperty(PROP_MED) IntegerSpace med,
       @Nullable @JsonProperty(PROP_COMMUNITIES) Set<String> communities,
       @JsonProperty(PROP_COMPLEMENT_COMMUNITIES) boolean complementCommunities) {
     _prefix = firstNonNull(prefix, new PrefixSpace());
     _complementPrefix = complementPrefix;
-    _localPref = firstNonNull(localPref, IntegerSpace.EMPTY);
+    _localPreference = firstNonNull(localPreference, IntegerSpace.EMPTY);
     _med = firstNonNull(med, IntegerSpace.EMPTY);
     _communities = firstNonNull(communities, ImmutableSet.of());
     _complementCommunities = complementCommunities;
@@ -60,7 +60,7 @@ public class BgpRouteConstraints {
   public static final class Builder {
     private PrefixSpace _prefix;
     private boolean _complementPrefix = false;
-    private IntegerSpace _localPref;
+    private IntegerSpace _localPreference;
     private IntegerSpace _med;
     private Set<String> _communities;
     private boolean _complementCommunities = false;
@@ -77,8 +77,8 @@ public class BgpRouteConstraints {
       return this;
     }
 
-    public Builder setLocalPref(IntegerSpace localPref) {
-      _localPref = localPref;
+    public Builder setLocalPreference(IntegerSpace localPreference) {
+      _localPreference = localPreference;
       return this;
     }
 
@@ -99,7 +99,7 @@ public class BgpRouteConstraints {
 
     public BgpRouteConstraints build() {
       return new BgpRouteConstraints(
-          _prefix, _complementPrefix, _localPref, _med, _communities, _complementCommunities);
+          _prefix, _complementPrefix, _localPreference, _med, _communities, _complementCommunities);
     }
   }
 
@@ -116,11 +116,11 @@ public class BgpRouteConstraints {
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
   @Nonnull
-  public IntegerSpace getLocalPref() {
-    return _localPref;
+  public IntegerSpace getLocalPreference() {
+    return _localPreference;
   }
 
-  @JsonProperty(PROP_MULTI_EXIT_DISCRIMINATOR)
+  @JsonProperty(PROP_MED)
   @Nonnull
   public IntegerSpace getMed() {
     return _med;

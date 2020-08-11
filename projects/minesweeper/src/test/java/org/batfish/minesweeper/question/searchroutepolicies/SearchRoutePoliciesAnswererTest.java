@@ -706,7 +706,7 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             BgpRouteConstraints.builder()
                 .setPrefix(new PrefixSpace(prefixRange))
-                .setLocalPref(localPref)
+                .setLocalPreference(localPref)
                 .setMed(med)
                 .build(),
             EMPTY_CONSTRAINTS,

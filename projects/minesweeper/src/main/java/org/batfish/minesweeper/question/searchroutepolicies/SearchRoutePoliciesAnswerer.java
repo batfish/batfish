@@ -290,7 +290,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD result = r.getProtocolHistory().value(Protocol.BGP);
     result =
         result.and(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
-    result = result.and(integerSpaceToBDD(constraints.getLocalPref(), r.getLocalPref()));
+    result = result.and(integerSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
     result = result.and(integerSpaceToBDD(constraints.getMed(), r.getMed()));
     result =
         result.and(
