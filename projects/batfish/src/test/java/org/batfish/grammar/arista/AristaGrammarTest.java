@@ -2288,6 +2288,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testIpv6RouteParsing() {
+    // Don't crash
+    parseConfig("ipv6_route");
+  }
+
+  @Test
   public void testSnmpExtraction() {
     Configuration config = parseConfig("arista_snmp");
     assertThat(config.getSnmpTrapServers(), containsInAnyOrder("10.1.2.3"));
