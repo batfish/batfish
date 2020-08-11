@@ -191,6 +191,11 @@ CONNECTED
   'connected'
 ;
 
+COST
+:
+  'cost'
+;
+
 CRITICAL
 :
   'critical'

@@ -55,6 +55,7 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Interface_ospf_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
@@ -129,6 +130,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
@@ -728,6 +730,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSiipo_network_p2p(Siipo_network_p2pContext ctx) {
     _currentInterface.getOrCreateOspf().setNetwork(OspfNetworkType.POINT_TO_POINT);
+  }
+
+  @Override
+  public void exitSiipo_cost(Siipo_costContext ctx) {
+    _currentInterface.getOrCreateOspf().setCost(toInteger(ctx.interface_ospf_cost()));
+  }
+
+  private Integer toInteger(Interface_ospf_costContext ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   @Override
