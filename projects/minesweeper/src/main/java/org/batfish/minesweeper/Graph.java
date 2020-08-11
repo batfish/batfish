@@ -874,15 +874,25 @@ public class Graph {
   /**
    * Create a set of atomic predicates for the given community literals and regexes (see
    * initAllCommunities above). Specifically, we create the minimal set of atomic predicates such
-   * that: 1. no atomic predicate is logically false; 2. each atomic predicates is disjoint from all
+   * that: 1. no atomic predicate is logically false; 2. each atomic predicate is disjoint from all
    * others; 3. each community expression is equivalent to a union of some subset of the atomic
    * predicates. Atomic predicates are used for tracking communities in the BDD-based analyses.
+   *
+   * <p>The idea of atomic predicates comes from the paper "Real-time Verification of Network
+   * Properties using Atomic Predicates" by Yang and Lam, IEEE/ACM Transactions on Networking, April
+   * 2016, Volume 24, No. 2, pages 887-900.
+   * http://www.cs.utexas.edu/users/lam/Vita/Jpapers/Yang_Lam_TON_2015.pdf
+   *
+   * <p>In that paper, they create atomic predicates in order to precisely and scalably analyze
+   * packet forwarding symbolically; we use the same idea to track communities of interest in
+   * symbolic routing analysis.
    */
   private void initCommAtomicPredicates() {
     SetMultimap<Automaton, CommunityVar> mmap = HashMultimap.create();
     for (CommunityVar c : _allCommunities) {
       if (c.getType() == Type.OTHER) {
-        // ignore the OTHER version of a community regex
+        // ignore the OTHER-typed version of a community regex, since there always exists a
+        // REGEX-typed version of the same regex (see initAllCommunities above)
         continue;
       }
       Automaton cAuto = c.toAutomaton();

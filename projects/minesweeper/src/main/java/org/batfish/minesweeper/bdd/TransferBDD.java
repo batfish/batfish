@@ -622,6 +622,9 @@ public class TransferBDD {
         for (int ap : commAPs) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
+          // on paths where the route policy has already hit a Return or Exit statement earlier,
+          // this AddCommunity statement will not be reached so the atomic predicate's value should
+          // be unchanged; otherwise it should be set to 1.
           BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
           curP.indent().debug("New Value: " + newValue);
           commAPBDDs[ap] = newValue;
@@ -634,10 +637,7 @@ public class TransferBDD {
             collectCommunityVars(_conf, sc.getExpr()).stream()
                 .filter(c -> !_policyQuotient.getCommsAssignedButNotMatched().contains(c))
                 .collect(Collectors.toSet());
-        // set all atomic predicates associated with these communities to 1 on this path.
-        // set all other atomic predicates to zero, since the "set" command blows away all
-        // existing communities, except if the "additive" keyword is used, in which case it is
-        // parsed as an AddCommunity expression, which is handled above.
+        //
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
         BDD retassign = result.getReturnAssignedValue();
@@ -848,7 +848,7 @@ public class TransferBDD {
           factory.orAll(
               aps.stream()
                   .map(ap -> other.getCommunityAtomicPredicateBDDs()[ap])
-                  .collect(Collectors.toSet()));
+                  .collect(Collectors.toList()));
       acc = ite(c, mkBDD(action), acc);
     }
     return acc;
