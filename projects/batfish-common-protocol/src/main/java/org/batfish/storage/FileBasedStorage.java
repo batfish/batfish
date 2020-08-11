@@ -1864,64 +1864,13 @@ public class FileBasedStorage implements StorageProvider {
         .resolve(RELPATH_PARSE_ANSWER_PATH);
   }
 
-  /**
-   * Returns earliest modification date a file must have to survive garbage collection, or {@link
-   * Optional#empty} if none can be identified.
-   *
-   * @throws IOException if there is an error
-   */
-  @VisibleForTesting
-  @Nonnull
-  Optional<Instant> computeExpungeBeforeDate() throws IOException {
-    Stream.Builder<Instant> builder = Stream.builder();
-    for (String networkName : listResolvableNames(NetworkId.class)) {
-      try {
-        Optional<String> networkIdStrOpt;
-        networkIdStrOpt = readId(NetworkId.class, networkName);
-        if (!networkIdStrOpt.isPresent()) {
-          continue;
-        }
-        NetworkId networkId = new NetworkId(networkIdStrOpt.get());
-        for (String snapshot : listResolvableNames(SnapshotId.class, networkId)) {
-          try {
-            Optional<String> snapshotIdStrOpt = this.readId(SnapshotId.class, snapshot, networkId);
-            if (!snapshotIdStrOpt.isPresent()) {
-              continue;
-            }
-            SnapshotId snapshotId = new SnapshotId(snapshotIdStrOpt.get());
-            SnapshotMetadata metadata =
-                BatfishObjectMapper.mapper()
-                    .readValue(loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class);
-            builder.add(metadata.getCreationTimestamp());
-          } catch (IOException e) {
-            continue;
-          }
-        }
-      } catch (IOException e) {
-        continue;
-      }
-    }
-    // take the minimum snapshot creation time, and go back GC_SKEW_ALLOWANCE_MINUTES minutes to
-    // account for skew
-    return builder
-        .build()
-        .min(Instant::compareTo)
-        .map(i -> i.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES));
-  }
-
-  /**
-   * TODO: document
-   *
-   * @throws IOException if there is an error
-   */
   @Override
-  public void runGarbageCollection() throws IOException {
-    Optional<Instant> expungeBeforeDateOpt = computeExpungeBeforeDate();
-    if (!expungeBeforeDateOpt.isPresent()) {
-      return;
-    }
-    Instant expungeBeforeDate = expungeBeforeDateOpt.get();
-    _logger.debugf("Expunge before: %s\n", expungeBeforeDate);
+  public void runGarbageCollection(Instant expungeBeforeDate) throws IOException {
+    // Go back GC_SKEW_ALLOWANCE_MINUTES minutes to account for skew. This should safely
+    // underapproximate data to delete.
+    Instant safeExpungeBeforeDate =
+        expungeBeforeDate.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES);
+    _logger.debugf("Expunge before: %s\n", safeExpungeBeforeDate);
     for (String networkName : listResolvableNames(NetworkId.class)) {
       Optional<String> networkIdStrOpt;
       try {
@@ -1935,13 +1884,13 @@ public class FileBasedStorage implements StorageProvider {
       NetworkId networkId = new NetworkId(networkIdStrOpt.get());
 
       // expunge snapshots
-      expungeOldEntries(expungeBeforeDate, getSnapshotsDir(networkId), true);
+      expungeOldEntries(safeExpungeBeforeDate, getSnapshotsDir(networkId), true);
 
       // expunge original uploads
-      expungeOldEntries(expungeBeforeDate, getOriginalsDir(networkId), true);
+      expungeOldEntries(safeExpungeBeforeDate, getOriginalsDir(networkId), true);
 
       // expunge answers
-      expungeOldEntries(expungeBeforeDate, getAnswersDir(), true);
+      expungeOldEntries(safeExpungeBeforeDate, getAnswersDir(), true);
 
       // TODO: expunge question IDs, questions, analysis IDs, analyses, node roles IDs, node roles
     }

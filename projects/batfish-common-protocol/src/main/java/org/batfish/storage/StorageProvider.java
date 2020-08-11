@@ -4,6 +4,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -962,9 +963,10 @@ public interface StorageProvider {
   Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
-   * Run implementation-specific garbage collection.
+   * Run implementation-specific garbage collection. Data last modified after {@code
+   * expungeBeforeDate} shall not be expunged.
    *
    * @throws IOException if there is an error
    */
-  void runGarbageCollection() throws IOException;
+  void runGarbageCollection(Instant expungeBeforeDate) throws IOException;
 }

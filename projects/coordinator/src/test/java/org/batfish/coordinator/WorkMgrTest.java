@@ -50,11 +50,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -156,11 +156,16 @@ public final class WorkMgrTest {
   }
 
   private void createSnapshotWithMetadata(String network, String snapshot) throws IOException {
+    createSnapshotWithMetadata(network, snapshot, Instant.now());
+  }
+
+  private void createSnapshotWithMetadata(String network, String snapshot, Instant creationTime)
+      throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshot, networkId, snapshotId);
     _snapshotMetadataManager.writeMetadata(
-        new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
+        new SnapshotMetadata(creationTime, null), networkId, snapshotId);
   }
 
   @Test
@@ -3439,5 +3444,39 @@ public final class WorkMgrTest {
 
     // Confirm filter options were applied correctly
     assertThat(processedRows, equalTo(table.getRowsList()));
+  }
+
+  @Test
+  public void testComputeExpungeBeforeTime() throws IOException {
+    String network = "network1";
+    String snapshotNew = "snapshotNew";
+    String snapshotOld = "snapshotOld";
+
+    Instant oldTime = Instant.now();
+    Instant newTime = oldTime.plus(1, ChronoUnit.MINUTES);
+
+    // In absence of snapshots, computeExpungeBeforeTime should return empty result.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.empty()));
+    _manager.initNetwork(network, null);
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.empty()));
+
+    // Write old snapshot.
+    createSnapshotWithMetadata(network, snapshotOld, oldTime);
+
+    // Now computeExpungeBeforeTime should return the creation time of the old snapshot.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.of(oldTime)));
+
+    // write new snapshot
+    createSnapshotWithMetadata(network, snapshotNew, newTime);
+
+    // computeExpungeBeforeTime should still return the creation time of the old snapshot.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.of(oldTime)));
+
+    // delete old snapshot
+    _manager.delSnapshot(network, snapshotOld);
+
+    // With the old snapshot deleted, computeExpungeBeforeTime should return the creation time of
+    // the new snapshot.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.of(newTime)));
   }
 }

@@ -357,7 +357,7 @@ public class Main {
                 try {
                   Thread.sleep(period * 1000); // s -> ms
                   _logger.debugf("Coordinator running garbage collection...\n");
-                  Main.getWorkMgr().getStorage().runGarbageCollection();
+                  Main.getWorkMgr().runGarbageCollection();
                   _logger.debugf("Coordinator completed garbage collection.\n");
                 } catch (InterruptedException | IOException e) {
                   _logger.errorf(

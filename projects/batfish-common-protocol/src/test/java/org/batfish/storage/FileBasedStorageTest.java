@@ -600,70 +600,6 @@ public final class FileBasedStorageTest {
   }
 
   @Test
-  public void testComputeExpungeBeforeTime() throws IOException {
-    String network = "network1";
-    String snapshotNew = "snapshotNew";
-    String snapshotOld = "snapshotOld";
-
-    NetworkId networkId = new NetworkId("network1-id");
-    SnapshotId snapshotNewId = new SnapshotId("snapshotNew-id");
-    SnapshotId snapshotOldId = new SnapshotId("snapshotOld-id");
-
-    Instant oldTime = Instant.now();
-    Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE_MINUTES + 1, ChronoUnit.MINUTES);
-
-    // mock modified times for test
-    FileBasedStorage storage =
-        new FileBasedStorage(_containerDir.getParent(), _logger, (m, n) -> new AtomicInteger()) {
-          @Nonnull
-          @Override
-          Instant getLastModifiedTime(Path path) throws IOException {
-            if (path.startsWith(getSnapshotDir(networkId, snapshotOldId))) {
-              return oldTime;
-            } else if (path.startsWith(getSnapshotDir(networkId, snapshotNewId))) {
-              return newTime;
-            } else {
-              throw new IllegalArgumentException(String.format("Unhandled path: %s", path));
-            }
-          }
-        };
-
-    // In absence of snapshots, computeExpungeBeforeTime should return empty result.
-    assertThat(storage.computeExpungeBeforeDate(), equalTo(Optional.empty()));
-    storage.writeId(networkId, network);
-    assertThat(storage.computeExpungeBeforeDate(), equalTo(Optional.empty()));
-
-    // write old snapshot
-    storage.storeSnapshotMetadata(new SnapshotMetadata(oldTime, null), networkId, snapshotOldId);
-    storage.writeId(snapshotOldId, snapshotOld, networkId);
-
-    // Now computeExpungeBeforeTime should return the creation time of the old snapshot minus skew
-    // allowance
-    assertThat(
-        storage.computeExpungeBeforeDate(),
-        equalTo(Optional.of(oldTime.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES))));
-
-    // write new snapshot
-    storage.storeSnapshotMetadata(new SnapshotMetadata(newTime, null), networkId, snapshotNewId);
-    storage.writeId(snapshotNewId, snapshotNew, networkId);
-
-    // computeExpungeBeforeTime should still return the creation time of the old snapshot minuys
-    // skew allowance
-    assertThat(
-        storage.computeExpungeBeforeDate(),
-        equalTo(Optional.of(oldTime.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES))));
-
-    // unlink old snapshot
-    storage.deleteNameIdMapping(SnapshotId.class, snapshotOld, networkId);
-
-    // With the old snapshot deleted, computeExpungeBeforeTime should return the creation time of
-    // the new snapshot minus skew allowance
-    assertThat(
-        storage.computeExpungeBeforeDate(),
-        equalTo(Optional.of(newTime.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES))));
-  }
-
-  @Test
   public void testExpungeOldEntriesDirectories() throws IOException {
     Instant newTime = Instant.now();
     Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
@@ -791,7 +727,7 @@ public final class FileBasedStorageTest {
     storage.loadSnapshotMetadata(networkId, snapshotNewId);
     storage.loadSnapshotMetadata(networkId, snapshotOldId);
 
-    storage.runGarbageCollection();
+    storage.runGarbageCollection(newTime);
 
     // should have survived garbage collection, so should not throw
     storage.loadAnswer(newAnswerId);
