@@ -227,7 +227,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
@@ -699,7 +698,6 @@ import org.batfish.grammar.arista.AristaParser.Ip_nat_pool_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefixContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
-import org.batfish.grammar.arista.AristaParser.Ip_route_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_route_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_ssh_versionContext;
 import org.batfish.grammar.arista.AristaParser.Ipsec_authenticationContext;
@@ -827,6 +825,7 @@ import org.batfish.grammar.arista.AristaParser.S_ip_domainContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_name_serverContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_pimContext;
+import org.batfish.grammar.arista.AristaParser.S_ip_routeContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_source_routeContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_sshContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_tacacs_source_interfaceContext;
@@ -1374,7 +1373,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void enterArista_configuration(Arista_configurationContext ctx) {
     _configuration = new AristaConfiguration();
     _configuration.setVendor(_format);
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -3638,16 +3637,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIp_route_stanza(Ip_route_stanzaContext ctx) {
-    if (ctx.vrf != null) {
-      _currentVrf = ctx.vrf.getText();
-    }
-    if (ctx.MANAGEMENT() != null) {
-      _currentVrf = AristaConfiguration.MANAGEMENT_VRF_NAME;
-    }
-  }
-
-  @Override
   public void enterIpv6_prefix_list_stanza(Ipv6_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
     _currentPrefix6List = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
@@ -3895,6 +3884,18 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void enterS_ip_pim(S_ip_pimContext ctx) {
     _no = ctx.NO() != null;
+  }
+
+  @Override
+  public void enterS_ip_route(S_ip_routeContext ctx) {
+    if (ctx.vrf != null) {
+      _currentVrf = ctx.vrf.getText();
+    }
+  }
+
+  @Override
+  public void exitS_ip_route(S_ip_routeContext ctx) {
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -4151,7 +4152,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void enterS_snmp_server(S_snmp_serverContext ctx) {
     if (_configuration.getSnmpServer() == null) {
       SnmpServer snmpServer = new SnmpServer();
-      snmpServer.setVrf(Configuration.DEFAULT_VRF_NAME);
+      snmpServer.setVrf(AristaConfiguration.DEFAULT_VRF_NAME);
       _configuration.setSnmpServer(snmpServer);
     }
   }
@@ -5932,13 +5933,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIp_route_stanza(Ip_route_stanzaContext ctx) {
-    if (ctx.vrf != null || ctx.MANAGEMENT() != null) {
-      _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    }
-  }
-
-  @Override
   public void exitIp_route_tail(Ip_route_tailContext ctx) {
     Prefix prefix;
     if (ctx.prefix != null) {
@@ -7049,7 +7043,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRo_vrf(Ro_vrfContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
     _currentOspfProcess = currentVrf().getOspfProcesses().get(_lastKnownOspfProcess);
     _lastKnownOspfProcess = null;
   }
@@ -7226,7 +7220,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRs_vrf(Rs_vrfContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -7331,7 +7325,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitS_router_ospf(S_router_ospfContext ctx) {
     _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -7405,7 +7399,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitS_vrf_definition(S_vrf_definitionContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -7928,7 +7922,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String vrf =
         canonicalNamePrefix.equals(AristaConfiguration.MANAGEMENT_INTERFACE_PREFIX)
             ? AristaConfiguration.MANAGEMENT_VRF_NAME
-            : Configuration.DEFAULT_VRF_NAME;
+            : AristaConfiguration.DEFAULT_VRF_NAME;
     int mtu = Interface.getDefaultMtu();
     iface.setVrf(vrf);
     initVrf(vrf);

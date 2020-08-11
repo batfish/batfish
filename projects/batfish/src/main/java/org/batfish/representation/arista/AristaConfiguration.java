@@ -249,6 +249,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   static final int DEFAULT_VRRP_PRIORITY = 100;
 
+  public static final String DEFAULT_VRF_NAME = "default";
   public static final String MANAGEMENT_VRF_NAME = "management";
 
   static final int MAX_ADMINISTRATIVE_COST = 32767;
