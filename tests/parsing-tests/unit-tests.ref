@@ -1769,7 +1769,7 @@
         },
         "configs/arista_interface" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1785,24 +1785,41 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_ip_address",
+            "        (if_ip",
             "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'1.2.3.4/23'",
-            "          NEWLINE:'\\n'))",
+            "          (ifip_address_eos",
+            "            ADDRESS:'address'",
+            "            (ifip_address_address_eos",
+            "              addr = (interface_address",
+            "                prefix = IP_PREFIX:'1.2.3.4/23')",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
-            "        (if_ip_address_secondary",
+            "        (if_ip",
             "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'2.3.4.5/24'",
-            "          SECONDARY:'secondary'",
-            "          NEWLINE:'\\n'))",
+            "          (ifip_address_eos",
+            "            ADDRESS:'address'",
+            "            (ifip_address_address_eos",
+            "              addr = (interface_address",
+            "                prefix = IP_PREFIX:'2.3.4.5/24')",
+            "              SECONDARY:'secondary'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
-            "        (if_ip_helper_address",
+            "        (if_ip",
             "          IP:'ip'",
-            "          HELPER_ADDRESS:'helper-address'",
-            "          address = IP_ADDRESS:'5.5.5.5'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ip_helper_address",
+            "            HELPER_ADDRESS:'helper-address'",
+            "            address = IP_ADDRESS:'5.5.5.5'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_ip",
+            "          IP:'ip'",
+            "          (if_ip_multicast_eos",
+            "            MULTICAST:'multicast'",
+            "            (ifipm_boundary_eos",
+            "              BOUNDARY:'boundary'",
+            "              name = (word",
+            "                WORD:'some_acl'  <== mode:M_Prefix_Or_Standard_Acl)",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_service_policy",
             "          SERVICE_POLICY:'service-policy'",
@@ -1822,12 +1839,14 @@
             "            VARIABLE:'qos-pmap')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_ip_vrf_forwarding",
+            "        (if_vrf",
             "          VRF:'vrf'",
-            "          FORWARDING:'forwarding'",
-            "          vrf = (variable",
-            "            MGMT:'mgmt')",
-            "          NEWLINE:'\\n'))",
+            "          (if_vrf_forwarding",
+            "            FORWARDING:'forwarding'",
+            "            (if_vrf_name",
+            "              name = (variable",
+            "                MGMT:'mgmt')",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_vrrp",
             "          VRRP:'vrrp'",
@@ -76454,8 +76473,8 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza cisco_configuration]",
+              "Line" : 14,
+              "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza arista_configuration]",
               "Text" : "ip 2.3.4.5 secondary"
             }
           ]
@@ -78599,7 +78618,6 @@
           "interface" : {
             "Vlan1" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
                 7,
@@ -78610,7 +78628,9 @@
                 12,
                 13,
                 14,
-                15
+                15,
+                16,
+                17
               ],
               "numReferrers" : 1
             }
@@ -87599,18 +87619,25 @@
           "interface" : {
             "Vlan1" : {
               "interface" : [
-                4
+                5
               ]
             }
           },
           "policy-map" : {
             "pbr-pmap" : {
               "interface service-policy" : [
-                8
+                10
               ]
             },
             "qos-pmap" : {
               "interface service-policy" : [
+                11
+              ]
+            }
+          },
+          "standard ipv4 access-list" : {
+            "some_acl" : {
+              "interface ip multicast boundary" : [
                 9
               ]
             }
@@ -93299,11 +93326,18 @@
           "policy-map" : {
             "pbr-pmap" : {
               "interface service-policy" : [
-                8
+                10
               ]
             },
             "qos-pmap" : {
               "interface service-policy" : [
+                11
+              ]
+            }
+          },
+          "standard ipv4 access-list" : {
+            "some_acl" : {
+              "interface ip multicast boundary" : [
                 9
               ]
             }
