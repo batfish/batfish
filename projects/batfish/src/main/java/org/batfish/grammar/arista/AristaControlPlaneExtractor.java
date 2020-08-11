@@ -1064,8 +1064,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private static Ip6 getIp(Access_list_ip6_rangeContext ctx) {
     if (ctx.ip != null) {
       return toIp6(ctx.ip);
-    } else if (ctx.ipv6_prefix != null) {
-      return Prefix6.parse(ctx.ipv6_prefix.getText()).getAddress();
+    } else if (ctx.prefix6 != null) {
+      return Prefix6.parse(ctx.prefix6.getText()).getAddress();
     } else {
       return Ip6.ZERO;
     }
@@ -7918,8 +7918,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       return Ip6.MAX;
     } else if (ctx.HOST() != null) {
       return Ip6.ZERO;
-    } else if (ctx.ipv6_prefix != null) {
-      return Prefix6.parse(ctx.ipv6_prefix.getText()).getPrefixWildcard();
+    } else if (ctx.prefix6 != null) {
+      return Prefix6.parse(ctx.prefix6.getText()).getPrefixWildcard();
     } else if (ctx.ip != null) {
       // basically same as host
       return Ip6.ZERO;
