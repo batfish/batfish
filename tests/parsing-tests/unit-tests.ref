@@ -1488,7 +1488,7 @@
         },
         "configs/arista_acl" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1682,7 +1682,7 @@
         },
         "configs/arista_dhcp_relay" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1737,19 +1737,21 @@
             "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_ip_dhcp",
+            "        (if_ip",
             "          IP:'ip'",
-            "          DHCP:'dhcp'",
-            "          (ifdhcp_relay",
-            "            RELAY:'relay'",
-            "            (ifdhcpr_client",
-            "              CLIENT:'client'",
-            "              NEWLINE:'\\n'))))",
+            "          (ifip_dhcp_eos",
+            "            DHCP:'dhcp'",
+            "            (ifipdhcp_relay_eos",
+            "              RELAY:'relay'",
+            "              (ifipdhcpr_client_eos",
+            "                CLIENT:'client'",
+            "                NEWLINE:'\\n')))))",
             "      (if_inner",
-            "        (if_shutdown",
+            "        (if_no",
             "          NO:'no'",
-            "          SHUTDOWN:'shutdown'",
-            "          NEWLINE:'\\n'))))",
+            "          (if_no_shutdown_eos",
+            "            SHUTDOWN:'shutdown'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
@@ -1760,10 +1762,11 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_shutdown",
+            "        (if_no",
             "          NO:'no'",
-            "          SHUTDOWN:'shutdown'",
-            "          NEWLINE:'\\n'))))",
+            "          (if_no_shutdown_eos",
+            "            SHUTDOWN:'shutdown'",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -1897,7 +1900,7 @@
         },
         "configs/arista_ip_route" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -2302,7 +2305,7 @@
         },
         "configs/arista_queue_monitor" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -2329,7 +2332,7 @@
         },
         "configs/arista_username" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -2345,17 +2348,18 @@
             "          MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'",
+            "    (s_no",
+            "      NO:'no'",
+            "      (no_aaa",
             "        AAA:'aaa'",
-            "        ROOT:'root'",
-            "        NEWLINE:'\\n')))",
+            "        (no_aaa_root",
+            "          ROOT:'root'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_username",
             "      USERNAME:'username'",
             "      user = (variable",
-            "        ADMIN:'admin')",
+            "        VARIABLE:'admin')",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -2364,11 +2368,9 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_cisco",
+            "          (up_arista_md5",
             "            DEC:'5'",
-            "            (up_cisco_tail",
-            "              pass = (variable_secret",
-            "                MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')))))",
+            "            pass = MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')))",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_username",
@@ -2378,18 +2380,16 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_cisco",
-            "            (up_cisco_tail",
-            "              pass = (variable_secret",
-            "                SHA512:'sha512'",
-            "                SHA512_ARISTA:'$6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0')))))",
+            "          (up_arista_sha512",
+            "            SHA512:'sha512'",
+            "            pass = SHA512_ARISTA:'$6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0')))",
             "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
         },
         "configs/arista_vrf" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -76457,13 +76457,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 12,
+              "Line" : 13,
               "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match internal route-map ROUTE_MAP"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 13,
+              "Line" : 14,
               "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match external route-map UNDEFINED_MAP"
             }
@@ -76483,13 +76483,13 @@
           "Parse warnings" : [
             {
               "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP",
-              "Line" : 9,
+              "Line" : 11,
               "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255"
             },
             {
               "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP",
-              "Line" : 10,
+              "Line" : 12,
               "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32"
             }
@@ -78575,10 +78575,10 @@
           "extended ipv4 access-list" : {
             "abcd" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
-                7
+                7,
+                8
               ],
               "numReferrers" : 0
             }
@@ -78588,7 +78588,7 @@
           "route-map" : {
             "ROUTE_MAP" : {
               "definitionLines" : [
-                15
+                16
               ],
               "numReferrers" : 1
             }
@@ -78599,16 +78599,16 @@
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
-                9,
                 10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 1
             },
             "Ethernet1" : {
               "definitionLines" : [
-                13,
-                14
+                14,
+                15
               ],
               "numReferrers" : 1
             }
@@ -78640,7 +78640,7 @@
           "interface" : {
             "Null0" : {
               "definitionLines" : [
-                4
+                5
               ],
               "numReferrers" : 1
             }
@@ -78661,8 +78661,8 @@
           "extended ipv4 access-list" : {
             "acl1" : {
               "definitionLines" : [
-                5,
-                6
+                7,
+                8
               ],
               "numReferrers" : 1
             }
@@ -78670,9 +78670,9 @@
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
-                12,
-                13,
-                14
+                14,
+                15,
+                16
               ],
               "numReferrers" : 1
             }
@@ -78680,19 +78680,19 @@
           "nat pool" : {
             "pool1" : {
               "definitionLines" : [
-                8
+                10
               ],
               "numReferrers" : 1
             },
             "pool2" : {
               "definitionLines" : [
-                9
+                11
               ],
               "numReferrers" : 0
             },
             "pool3" : {
               "definitionLines" : [
-                10
+                12
               ],
               "numReferrers" : 0
             }
@@ -87584,19 +87584,19 @@
           "bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp neighbor peer-group" : [
-                11
+                12
               ]
             }
           },
           "route-map" : {
             "ROUTE_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
-                12
+                13
               ]
             },
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
-                13
+                14
               ]
             }
           }
@@ -87605,12 +87605,12 @@
           "interface" : {
             "Ethernet0" : {
               "interface" : [
-                9
+                10
               ]
             },
             "Ethernet1" : {
               "interface" : [
-                13
+                14
               ]
             }
           }
@@ -87647,7 +87647,7 @@
           "interface" : {
             "Null0" : {
               "ip route next-hop interface" : [
-                4
+                5
               ]
             }
           }
@@ -87670,21 +87670,21 @@
           "interface" : {
             "Ethernet1" : {
               "interface" : [
-                12
+                14
               ]
             }
           },
           "ipv4 acl" : {
             "acl1" : {
               "ip nat source dynamic access-list" : [
-                14
+                16
               ]
             }
           },
           "nat pool" : {
             "pool1" : {
               "ip nat source pool" : [
-                14
+                16
               ]
             }
           }
@@ -93310,14 +93310,14 @@
           "bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp neighbor peer-group" : [
-                11
+                12
               ]
             }
           },
           "route-map" : {
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
-                13
+                14
               ]
             }
           }
