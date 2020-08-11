@@ -2697,6 +2697,12 @@ s_name
    NAME variable variable null_rest_of_line
 ;
 
+s_no
+:
+  NO
+  no_aaa
+;
+
 s_no_access_list_extended
 :
    NO ACCESS_LIST ACL_NUM_EXTENDED NEWLINE
@@ -3540,6 +3546,7 @@ stanza
    | s_netdestination
    | s_netdestination6
    | s_netservice
+   | s_no
    | s_no_access_list_extended
    | s_no_access_list_standard
    | s_no_bfd

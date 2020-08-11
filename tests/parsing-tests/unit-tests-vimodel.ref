@@ -13997,11 +13997,11 @@
         }
       },
       "arista_acl" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "abcd" : {
@@ -14128,10 +14128,7 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_acl",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_acl"
           }
         },
         "vrfs" : {
@@ -14258,11 +14255,11 @@
         }
       },
       "arista_dhcp_relay" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_dhcp_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "interfaces" : {
           "Ethernet0" : {
@@ -14273,22 +14270,18 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E7,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Ethernet0"
             ],
-            "dhcpRelayAddresses" : [
-              "1.2.3.4",
-              "2.3.4.5"
-            ],
             "mtu" : 1500,
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "speed" : 1.0E7,
-            "switchport" : false,
-            "switchportMode" : "NONE",
+            "speed" : 1.0E9,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
@@ -14301,18 +14294,18 @@
             },
             "allowedVlans" : "",
             "autostate" : true,
-            "bandwidth" : 1.0E7,
+            "bandwidth" : 1.0E9,
             "declaredNames" : [
               "Ethernet1"
             ],
             "mtu" : 1500,
-            "proxyArp" : true,
+            "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "speed" : 1.0E7,
-            "switchport" : false,
-            "switchportMode" : "NONE",
+            "speed" : 1.0E9,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
@@ -14320,10 +14313,7 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_dhcp_relay",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_dhcp_relay"
           }
         },
         "vrfs" : {
@@ -14396,18 +14386,15 @@
         }
       },
       "arista_ip_route" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_ip_route",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_ip_route"
           }
         },
         "vrfs" : {
@@ -14681,18 +14668,15 @@
         }
       },
       "arista_queue_monitor" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_queue_monitor",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_queue_monitor"
           }
         },
         "vrfs" : {
@@ -14702,19 +14686,16 @@
         }
       },
       "arista_username" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
             "enableSecret" : "6a04b2b4f67a9c3a69b681b1782b6cbcddf018f7dd810a274e71e012c83f5efe",
             "hostname" : "arista_username",
-            "logging" : {
-              "on" : true
-            },
             "users" : {
               "admin" : {
                 "name" : "admin",
@@ -14723,7 +14704,7 @@
               },
               "noc" : {
                 "name" : "noc",
-                "password" : "57eaabe63a5726f36e16ec9ba5aba7bd944d511a2c2226c131fb3aade3671252"
+                "password" : "bee05f48f9aed7d383bf9b82553b31b06fc417df4ac06a02120c51271d396453"
               }
             }
           }
@@ -14735,18 +14716,15 @@
         }
       },
       "arista_vrf" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARISTA",
         "name" : "arista_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "arista_vrf",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "arista_vrf"
           }
         },
         "vrfs" : {

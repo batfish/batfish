@@ -332,6 +332,7 @@ ifipdhcp_relay_eos
   RELAY
   (
     ifipdhcpr_all_subnets_eos
+    | ifipdhcpr_client_eos
     | ifipdhcpr_information_eos
   )
 ;
@@ -339,6 +340,11 @@ ifipdhcp_relay_eos
 ifipdhcpr_all_subnets_eos
 :
   ALL_SUBNETS NEWLINE
+;
+
+ifipdhcpr_client_eos
+:
+  CLIENT NEWLINE
 ;
 
 ifipdhcpr_information_eos

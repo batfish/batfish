@@ -1,3 +1,5 @@
+!RANCID-CONTENT-TYPE: arista
+!
 boot system flash this-is-an-arista-device.swi
 !
 hostname arista_nat
