@@ -1457,6 +1457,18 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testInterface_ospf_cost() {
+    parse("interface swp1\n ip ospf cost 100\n");
+    assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(100));
+  }
+
+  @Test
+  public void testInterface_ospf_cost_null() {
+    parse("interface swp1\n ip ospf area 0\n");
+    assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(null));
+  }
+
+  @Test
   public void testRouterOspfPassiveInterface_NoInterface() {
     parse("router ospf\n passive-interface lo\n");
     assertThat(_warnings.getParseWarnings(), hasSize(1));

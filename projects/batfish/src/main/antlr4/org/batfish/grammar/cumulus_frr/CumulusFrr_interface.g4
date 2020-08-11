@@ -62,6 +62,7 @@ siip_ospf
     | siipo_authentication
     | siipo_message_digest_key
     | siipo_network_p2p
+    | siipo_cost
   )
   NEWLINE
 ;
@@ -88,4 +89,14 @@ siipo_message_digest_key
 siipo_network_p2p
 :
   NETWORK POINT_TO_POINT
+;
+
+siipo_cost
+:
+  COST interface_ospf_cost
+;
+
+interface_ospf_cost
+:
+  uint16
 ;
