@@ -8656,6 +8656,11 @@ ROLE
    'role'
 ;
 
+ROOT
+:
+  'root'
+;
+
 ROTARY
 :
    'rotary'
