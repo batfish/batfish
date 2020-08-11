@@ -16,6 +16,11 @@ ip_prefix
   | prefix = IP_PREFIX
 ;
 
+ipv6_prefix
+:
+  prefix = IPV6_PREFIX
+;
+
 ospf_area
 :
   id_ip = IP_ADDRESS

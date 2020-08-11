@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname ipv6_route
+!
+ipv6 route ::ffff:10.52.0.0/122 Null0 tag 12345 name foo
+!

@@ -2582,6 +2582,17 @@ s_ipc
    )*
 ;
 
+s_ipv6
+:
+  IPV6
+  ipv6_route
+;
+
+ipv6_route
+:
+  ROUTE prefix = ipv6_prefix null_rest_of_line
+;
+
 s_ipsla
 :
    NO? IPSLA null_rest_of_line
@@ -3504,6 +3515,7 @@ stanza
    | s_ip_ssh
    | s_ip_wccp
    | s_ipc
+   | s_ipv6
    | s_ipv6_router_ospf
    | s_ipsla
    | s_key
