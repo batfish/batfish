@@ -1,6 +1,10 @@
 package org.batfish.minesweeper;
 
+import static org.batfish.minesweeper.CommunityVar.Type.EXACT;
+
 import com.google.common.base.MoreObjects;
+import dk.brics.automaton.Automaton;
+import dk.brics.automaton.RegExp;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -78,6 +82,28 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   @Nullable
   public Community getLiteralValue() {
     return _literalValue;
+  }
+
+  /**
+   * Convert this community variable into an equivalent finite-state automaton.
+   *
+   * <p>Note: Currently this code assumes that any community regex represents a complete pattern for
+   * the communities of interest. For example, the regex "_65:" is not supported; instead use
+   * "_65:.*" or similar.
+   *
+   * @return the automaton
+   */
+  public Automaton toAutomaton() {
+    String regex = _regex;
+    if (_type != EXACT) {
+      // the Automaton library does not understand ^ and $, which respectively mark the beginning
+      // and end of the string,
+      // so replace them with the empty string
+      regex = regex.replaceAll("\\^", "()");
+      regex = regex.replaceAll("\\$", "()");
+    }
+    // TODO: Handle the case when the regex only matches a prefix of the communities of interest
+    return new RegExp(regex).toAutomaton();
   }
 
   @Override
