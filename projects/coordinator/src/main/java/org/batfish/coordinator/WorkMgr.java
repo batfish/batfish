@@ -203,7 +203,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Instruct storage provider to expunge old data */
-  public void runGarbageCollection() throws IOException {
+  private void runGarbageCollection() throws IOException {
     _logger.debugf("WorkMgr running garbage collection...\n");
     Optional<Instant> expungeBeforeDateOpt = computeExpungeBeforeDate();
     if (expungeBeforeDateOpt.isPresent()) {
@@ -809,7 +809,8 @@ public class WorkMgr extends AbstractCoordinator {
     return result;
   }
 
-  private void triggerGarbageCollection() {
+  /** Queues garbage collection */
+  void triggerGarbageCollection() {
     try {
       _gcExecutor.submit(
           () -> {
