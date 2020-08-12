@@ -65,6 +65,7 @@ junit_tests(
         "//projects/lib/z3",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
+        "@maven//:dk_brics_automaton",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],
