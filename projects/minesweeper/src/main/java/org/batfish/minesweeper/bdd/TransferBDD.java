@@ -616,7 +616,8 @@ public class TransferBDD {
             collectCommunityVars(_conf, ac.getExpr()).stream()
                 .filter(c -> !_policyQuotient.getCommsAssignedButNotMatched().contains(c))
                 .collect(Collectors.toSet());
-        // set all atomic predicates associated with these communities to 1 on this path
+        // set all atomic predicates associated with these communities to 1 if this statement
+        // is reached
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
         for (int ap : commAPs) {
@@ -637,7 +638,8 @@ public class TransferBDD {
             collectCommunityVars(_conf, sc.getExpr()).stream()
                 .filter(c -> !_policyQuotient.getCommsAssignedButNotMatched().contains(c))
                 .collect(Collectors.toSet());
-        //
+        // set all atomic predicates associated with these communities to 1, and all other
+        // atomic predicates to zero, if this statement is reached
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
         BDD retassign = result.getReturnAssignedValue();

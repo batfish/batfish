@@ -96,6 +96,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     _policies = question.getPolicies();
     _action = question.getAction();
 
+    // in the future, it may improve performance to combine all input community regexes
+    // into a single regex representing their disjunction, and similarly for all output
+    // community regexes, in order to minimize the number of atomic predicates that are
+    // created and tracked by the analysis
     _communityRegexes =
         ImmutableSet.<String>builder()
             .addAll(_inputConstraints.getCommunities())
