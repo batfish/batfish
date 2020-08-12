@@ -963,8 +963,13 @@ public interface StorageProvider {
   Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
-   * Run implementation-specific garbage collection. Data last modified after {@code
-   * expungeBeforeDate} shall not be expunged.
+   * Run implementation-specific garbage collection.
+   *
+   * <p>The caller guarantees that data last modified before the {@code expungeBeforeDate} is not
+   * live/user-visible, and is therefore safe to expunge. An implementation should only expunge
+   * later data if it can guarantee the effects will not be visible to {@link StorageProvider}
+   * clients. For instance, snapshot data for a deleted snapshot may be expunged even if last
+   * modified after the {@code expungeBeforeDate}.
    *
    * @throws IOException if there is an error
    */

@@ -4,8 +4,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import javax.annotation.Nonnull;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -27,7 +25,6 @@ public class Settings extends BaseSettings {
 
   private static final String ARG_FILE_AUTHORIZER_ROOT_DIR = "fileauthrootdir";
   private static final String ARG_FILE_AUTHORIZER_USERS_FILE = "fileauthusersfile";
-  private static final String ARG_GARBAGE_COLLECTION_PERIOD = "garbagecollectionperiod";
   private static final String ARG_HELP = "help";
   private static final String ARG_LOG_FILE = "logfile";
   private static final String ARG_LOG_LEVEL = "loglevel";
@@ -77,7 +74,6 @@ public class Settings extends BaseSettings {
   private Path _fileAuthorizerPermsFile;
   private Path _fileAuthorizerRootDir;
   private Path _fileAuthorizerUsersFile;
-  private int _garbageCollectionPeriod;
   private String _logFile;
   private String _logLevel;
   private long _periodAssignWorkMs;
@@ -154,17 +150,6 @@ public class Settings extends BaseSettings {
 
   public Path getFileAuthorizerUsersFile() {
     return _fileAuthorizerUsersFile;
-  }
-
-  /**
-   * Period with which to run garbage collection of batfish data, or {@link Optional#empty} if
-   * garbage collection is disabled.
-   */
-  public @Nonnull Optional<Integer> getGarbageCollectionPeriod() {
-    if (_garbageCollectionPeriod <= 0) {
-      return Optional.empty();
-    }
-    return Optional.of(_garbageCollectionPeriod);
   }
 
   public String getLogFile() {
@@ -312,7 +297,6 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_FILE_AUTHORIZER_PERMS_FILE, "perms.json");
     setDefaultProperty(ARG_FILE_AUTHORIZER_ROOT_DIR, "fileauthorizer");
     setDefaultProperty(ARG_FILE_AUTHORIZER_USERS_FILE, "users.json");
-    setDefaultProperty(ARG_GARBAGE_COLLECTION_PERIOD, 600);
     setDefaultProperty(ARG_HELP, false);
     setDefaultProperty(ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
@@ -360,11 +344,6 @@ public class Settings extends BaseSettings {
         "expiration time (ms)");
 
     addBooleanOption(ARG_DRIVER_CLASS, "jdbc driver class to load explicitly");
-
-    addOption(
-        ARG_GARBAGE_COLLECTION_PERIOD,
-        "period with which to run garbage collection of batfish data (s). 0 indicates that garbage collection should be disabled.",
-        "period_s");
 
     addBooleanOption(ARG_HELP, "print this message");
 
@@ -447,7 +426,6 @@ public class Settings extends BaseSettings {
     _fileAuthorizerRootDir = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_ROOT_DIR));
     _fileAuthorizerPermsFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_PERMS_FILE));
     _fileAuthorizerUsersFile = Paths.get(getStringOptionValue(ARG_FILE_AUTHORIZER_USERS_FILE));
-    _garbageCollectionPeriod = getIntegerOptionValue(ARG_GARBAGE_COLLECTION_PERIOD);
     _questionTemplateDirs = getPathListOptionValue(ARG_QUESTION_TEMPLATE_DIRS);
     _queuIncompleteWork = getStringOptionValue(ARG_QUEUE_INCOMPLETE_WORK);
     _queueCompletedWork = getStringOptionValue(ARG_QUEUE_COMPLETED_WORK);

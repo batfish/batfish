@@ -1178,6 +1178,13 @@ public class FileBasedStorage implements StorageProvider {
     return Files.isDirectory(sanitizedPath);
   }
 
+  @MustBeClosed
+  @Nonnull
+  private Stream<Path> list(Path path) throws IOException {
+    Path sanitizedPath = validatePath(path);
+    return Files.list(sanitizedPath);
+  }
+
   @VisibleForTesting
   @Nonnull
   Instant getLastModifiedTime(Path path) throws IOException {
@@ -1386,7 +1393,7 @@ public class FileBasedStorage implements StorageProvider {
     if (!Files.exists(idsDir)) {
       return ImmutableSet.of();
     }
-    try (Stream<Path> files = Files.list(idsDir)) {
+    try (Stream<Path> files = list(idsDir)) {
       return files
           .filter(
               path -> {
@@ -1672,10 +1679,14 @@ public class FileBasedStorage implements StorageProvider {
     return getNetworkDir(network).resolve(RELPATH_ANALYSES_DIR).resolve(analysis.getId());
   }
 
+  private @Nonnull Path getNetworksDir() {
+    return _baseDir.resolve("networks");
+  }
+
   @VisibleForTesting
   @Nonnull
   Path getNetworkDir(NetworkId network) {
-    return _baseDir.resolve(network.getId());
+    return getNetworksDir().resolve(network.getId());
   }
 
   /** Directory where original initialization or fork requests are stored */
@@ -1870,27 +1881,36 @@ public class FileBasedStorage implements StorageProvider {
     // underapproximate data to delete.
     Instant safeExpungeBeforeDate = expungeBeforeDate.minus(GC_SKEW_ALLOWANCE);
     _logger.debugf("FBS GC: Expunge before: %s\n", safeExpungeBeforeDate);
-    for (String networkName : listResolvableNames(NetworkId.class)) {
-      Optional<String> networkIdStrOpt;
-      networkIdStrOpt = readId(NetworkId.class, networkName);
-      if (!networkIdStrOpt.isPresent()) {
-        _logger.debugf(
-            "FBS GC: Ignoring network '%s' that was deleted while fetching its ID", networkName);
-        continue;
-      }
-      NetworkId networkId = new NetworkId(networkIdStrOpt.get());
 
-      // expunge snapshots
-      expungeOldEntries(safeExpungeBeforeDate, getSnapshotsDir(networkId), true);
-
-      // expunge original uploads
-      expungeOldEntries(safeExpungeBeforeDate, getOriginalsDir(networkId), true);
-
-      // expunge answers
-      expungeOldEntries(safeExpungeBeforeDate, getAnswersDir(), true);
-
-      // TODO: expunge question IDs, questions, analysis IDs, analyses, node roles IDs, node roles
+    // Iterate over network dirs directly so we can expunge data from both extant and deleted
+    // networks.
+    try (Stream<Path> networkDirStream = list(getNetworksDir())) {
+      networkDirStream
+          .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
+          .forEach(
+              networkId -> {
+                try {
+                  expungeOldNetworkData(safeExpungeBeforeDate, networkId);
+                } catch (IOException e) {
+                  _logger.errorf(
+                      "Failed to expunge old data for network with ID '%s': %s",
+                      networkId, Throwables.getStackTraceAsString(e));
+                }
+              });
     }
+    // expunge answers
+    expungeOldEntries(safeExpungeBeforeDate, getAnswersDir(), true);
+  }
+
+  private void expungeOldNetworkData(Instant expungeBeforeDate, NetworkId networkId)
+      throws IOException {
+    // expunge snapshots
+    expungeOldEntries(expungeBeforeDate, getSnapshotsDir(networkId), true);
+
+    // expunge original uploads
+    expungeOldEntries(expungeBeforeDate, getOriginalsDir(networkId), true);
+
+    // TODO: expunge question IDs, questions, analysis IDs, analyses, node roles IDs, node roles
   }
 
   /**
@@ -1904,7 +1924,7 @@ public class FileBasedStorage implements StorageProvider {
   void expungeOldEntries(Instant expungeBeforeDate, Path dir, boolean directories)
       throws IOException {
     List<Path> toDelete;
-    try (Stream<Path> fsEntryStream = Files.list(dir)) {
+    try (Stream<Path> fsEntryStream = list(dir)) {
       toDelete =
           fsEntryStream
               .filter(

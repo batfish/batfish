@@ -62,7 +62,11 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -199,11 +203,12 @@ public class WorkMgr extends AbstractCoordinator {
 
   /** Instruct storage provider to expunge old data */
   public void runGarbageCollection() throws IOException {
+    _logger.debugf("WorkMgr running garbage collection...\n");
     Optional<Instant> expungeBeforeDateOpt = computeExpungeBeforeDate();
-    if (!expungeBeforeDateOpt.isPresent()) {
-      return;
+    if (expungeBeforeDateOpt.isPresent()) {
+      _storage.runGarbageCollection(expungeBeforeDateOpt.get());
     }
-    _storage.runGarbageCollection(expungeBeforeDateOpt.get());
+    _logger.debugf("WorkMgr completed garbage collection.\n");
   }
 
   /**
@@ -257,6 +262,7 @@ public class WorkMgr extends AbstractCoordinator {
   private final SnapshotMetadataMgr _snapshotMetadataManager;
   private WorkQueueMgr _workQueueMgr;
   private final StorageProvider _storage;
+  private final ExecutorService _gcExecutor;
 
   public WorkMgr(
       Settings settings,
@@ -269,6 +275,11 @@ public class WorkMgr extends AbstractCoordinator {
     _snapshotMetadataManager = new SnapshotMetadataMgr(_storage);
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr(logger, _snapshotMetadataManager);
+    // Can only run one GC task at a time, and only have one queued. If one is queued and another is
+    // submitted, the older one in the queue is discarded.
+    _gcExecutor =
+        new ThreadPoolExecutor(
+            0, 1, 0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1), new DiscardOldestPolicy());
   }
 
   @VisibleForTesting
@@ -773,7 +784,11 @@ public class WorkMgr extends AbstractCoordinator {
    * false} if network does not exist.
    */
   public boolean delNetwork(@Nonnull String network) {
-    return _idManager.deleteNetwork(network);
+    boolean result = _idManager.deleteNetwork(network);
+    if (result) {
+      triggerGarbageCollection();
+    }
+    return result;
   }
 
   /**
@@ -786,7 +801,22 @@ public class WorkMgr extends AbstractCoordinator {
       return false;
     }
     NetworkId networkId = networkIdOpt.get();
-    return _idManager.deleteSnapshot(snapshot, networkId);
+    boolean result = _idManager.deleteSnapshot(snapshot, networkId);
+    if (result) {
+      triggerGarbageCollection();
+    }
+    return result;
+  }
+
+  private void triggerGarbageCollection() {
+    _gcExecutor.submit(
+        () -> {
+          try {
+            runGarbageCollection();
+          } catch (Exception e) {
+            _logger.errorf("ERROR WorkMgr GC: %s", Throwables.getStackTraceAsString(e));
+          }
+        });
   }
 
   /**
