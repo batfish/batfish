@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -672,7 +673,7 @@ public final class FileBasedStorageTest {
     AnswerId newAnswerId = new AnswerId("answerNew-id");
 
     Instant oldTime = Instant.now();
-    Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE);
+    Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE).plus(Duration.ofMinutes(1L));
 
     // mock modified times for test
     FileBasedStorage storage =
