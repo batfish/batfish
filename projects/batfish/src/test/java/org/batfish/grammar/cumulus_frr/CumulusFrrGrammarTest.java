@@ -1582,78 +1582,54 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testOspfRedistributeConnected() {
-    parseLines(
-        "router ospf",
-        "redistribute connected");
+    parseLines("router ospf", "redistribute connected");
     OspfRedistributionPolicy policy =
-        _frr.getOspfProcess()
-            .getRedistributionPolicies()
-            .get(RoutingProtocol.CONNECTED);
+        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
-    }
+  }
 
   @Test
   public void testOspfRedistributeConnectedRouteMap() {
-    parseLines(
-        "router ospf",
-        "redistribute connected route-map foo");
+    parseLines("router ospf", "redistribute connected route-map foo");
     OspfRedistributionPolicy policy =
-        _frr.getOspfProcess()
-            .getRedistributionPolicies()
-            .get(RoutingProtocol.CONNECTED);
+        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }
 
   @Test
   public void testOspfRedistributeStatic() {
-    parseLines(
-        "router ospf",
-        "redistribute static");
+    parseLines("router ospf", "redistribute static");
     OspfRedistributionPolicy policy =
-        _frr.getOspfProcess()
-            .getRedistributionPolicies()
-            .get(RoutingProtocol.STATIC);
+        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.STATIC);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
 
   @Test
   public void testOspfRedistributeStaticRouteMap() {
-    parseLines(
-        "router ospf",
-        "redistribute static route-map foo");
+    parseLines("router ospf", "redistribute static route-map foo");
     OspfRedistributionPolicy policy =
-        _frr.getOspfProcess()
-            .getRedistributionPolicies()
-            .get(RoutingProtocol.STATIC);
+        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.STATIC);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }
 
   @Test
   public void testOspfRedistributeBgp() {
-    parseLines(
-        "router ospf",
-        "redistribute bgp");
+    parseLines("router ospf", "redistribute bgp");
     OspfRedistributionPolicy policy =
-        _frr.getOspfProcess()
-            .getRedistributionPolicies()
-            .get(RoutingProtocol.BGP);
+        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.BGP);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
 
   @Test
   public void testOspfRedistributeBgpRouteMap() {
-    parseLines(
-        "router ospf",
-        "redistribute bgp route-map foo");
+    parseLines("router ospf", "redistribute bgp route-map foo");
     OspfRedistributionPolicy policy =
-        _frr.getOspfProcess()
-            .getRedistributionPolicies()
-            .get(RoutingProtocol.BGP);
+        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.BGP);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }

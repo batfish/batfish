@@ -85,8 +85,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_redistributeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_defaultContext;
@@ -143,8 +143,6 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.OspfRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
@@ -178,6 +176,7 @@ import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
+import org.batfish.representation.cumulus.OspfRedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
 import org.batfish.representation.cumulus.RouteMapContinue;
@@ -197,7 +196,6 @@ import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
-import org.glassfish.jersey.server.internal.routing.Routing;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private final CumulusConcatenatedConfiguration _c;
