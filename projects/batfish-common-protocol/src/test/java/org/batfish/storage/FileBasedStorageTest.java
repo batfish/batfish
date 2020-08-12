@@ -661,12 +661,14 @@ public final class FileBasedStorageTest {
   @Test
   public void testRunGarbageCollection() throws IOException {
     String network = "network1";
+    String networkToDelete = "networkToDelete";
     String snapshotNew = "snapshotNew";
     String snapshotOld = "snapshotOld";
     String oldUploadKey = "oldUpload";
     String newUploadKey = "newUpload";
 
     NetworkId networkId = new NetworkId("network1-id");
+    NetworkId networkToDeleteId = new NetworkId("networkToDelete-id");
     SnapshotId snapshotNewId = new SnapshotId("snapshotNew-id");
     SnapshotId snapshotOldId = new SnapshotId("snapshotOld-id");
     AnswerId oldAnswerId = new AnswerId("answerOld-id");
@@ -683,7 +685,9 @@ public final class FileBasedStorageTest {
           Instant getLastModifiedTime(Path path) throws IOException {
             if (path.equals(getAnswerDir(oldAnswerId))
                 || path.equals(getOriginalDir(oldUploadKey, networkId))
-                || path.startsWith(getSnapshotDir(networkId, snapshotOldId))) {
+                || path.equals(getOriginalDir(oldUploadKey, networkToDeleteId))
+                || path.startsWith(getSnapshotDir(networkId, snapshotOldId))
+                || path.startsWith(getSnapshotDir(networkToDeleteId, snapshotOldId))) {
               return oldTime;
             } else if (path.equals(getAnswerDir(newAnswerId))
                 || path.equals(getOriginalDir(newUploadKey, networkId))
@@ -696,6 +700,7 @@ public final class FileBasedStorageTest {
         };
 
     storage.writeId(networkId, network);
+    storage.writeId(networkToDeleteId, networkToDelete);
 
     // write old answer
     storage.storeAnswer("", oldAnswerId);
@@ -706,12 +711,20 @@ public final class FileBasedStorageTest {
     // write old original upload
     storage.storeUploadSnapshotZip(new NullInputStream(0), oldUploadKey, networkId);
 
+    // write old original upload in network to be deleted
+    storage.storeUploadSnapshotZip(new NullInputStream(0), oldUploadKey, networkToDeleteId);
+
     // write new original upload
     storage.storeUploadSnapshotZip(new NullInputStream(0), newUploadKey, networkId);
 
     // write old snapshot
     storage.storeSnapshotMetadata(new SnapshotMetadata(oldTime, null), networkId, snapshotOldId);
     storage.writeId(snapshotOldId, snapshotOld, networkId);
+
+    // write old snapshot in network to be deleted
+    storage.storeSnapshotMetadata(
+        new SnapshotMetadata(oldTime, null), networkToDeleteId, snapshotOldId);
+    storage.writeId(snapshotOldId, snapshotOld, networkToDeleteId);
 
     // write new snapshot
     storage.storeSnapshotMetadata(new SnapshotMetadata(newTime, null), networkId, snapshotNewId);
@@ -720,10 +733,14 @@ public final class FileBasedStorageTest {
     // unlink old snapshot
     storage.deleteNameIdMapping(SnapshotId.class, snapshotOld, networkId);
 
+    // unlink network to be deleted
+    storage.deleteNameIdMapping(NetworkId.class, networkToDelete);
+
     // should exist before garbage collection
     storage.loadAnswer(oldAnswerId);
     storage.loadAnswer(newAnswerId);
     storage.loadUploadSnapshotZip(oldUploadKey, networkId).close();
+    storage.loadUploadSnapshotZip(oldUploadKey, networkToDeleteId).close();
     storage.loadUploadSnapshotZip(newUploadKey, networkId).close();
     storage.loadSnapshotMetadata(networkId, snapshotNewId);
     storage.loadSnapshotMetadata(networkId, snapshotOldId);
@@ -738,6 +755,10 @@ public final class FileBasedStorageTest {
     // should throw because data should have been garbage collected
     expectFileNotFoundException(() -> storage.loadAnswer(oldAnswerId));
     expectFileNotFoundException(() -> storage.loadUploadSnapshotZip(oldUploadKey, networkId));
+    expectFileNotFoundException(
+        () -> storage.loadUploadSnapshotZip(oldUploadKey, networkToDeleteId));
     expectFileNotFoundException(() -> storage.loadSnapshotMetadata(networkId, snapshotOldId));
+    expectFileNotFoundException(
+        () -> storage.loadSnapshotMetadata(networkToDeleteId, snapshotOldId));
   }
 }
