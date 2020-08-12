@@ -140,6 +140,8 @@ public final class CumulusConversions {
 
   public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
+  public static final long DEFAULT_MAX_MED = 4294967294L;
+
   @VisibleForTesting
   static GeneratedRoute GENERATED_DEFAULT_ROUTE =
       GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST).build();
@@ -753,7 +755,7 @@ public final class CumulusConversions {
   }
 
   private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    ArrayList<Statement> acceptStatements = new ArrayList<>();
+    ImmutableList.Builder<Statement> acceptStatements = ImmutableList.builder();
     SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
     SetMetric setMaxMedMetric = getSetMaxMedMetric(bgpVrf);
 
@@ -761,7 +763,7 @@ public final class CumulusConversions {
     if (setMaxMedMetric != null) acceptStatements.add(setMaxMedMetric);
     acceptStatements.add(Statements.ExitAccept.toStaticStatement());
 
-    return Collections.unmodifiableList(acceptStatements);
+    return acceptStatements.build();
   }
 
   private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(BgpNeighbor neighbor) {

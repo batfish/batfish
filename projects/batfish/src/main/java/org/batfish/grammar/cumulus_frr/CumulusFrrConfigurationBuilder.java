@@ -22,6 +22,7 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP
 import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
 import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
 import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -756,7 +757,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbb_max_med_administrative(Sbb_max_med_administrativeContext ctx) {
     if (ctx.med != null) _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
-    else _currentBgpVrf.setMaxMedAdministrative(4294967294L);
+    else _currentBgpVrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
   }
 
   @Override

@@ -352,8 +352,3 @@ sbnobd_ipv4_unicast
 :
     IPV4_UNICAST
 ;
-
-max_med_administrative_value
-:
-  UINT32
-;

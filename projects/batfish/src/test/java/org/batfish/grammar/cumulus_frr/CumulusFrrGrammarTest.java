@@ -689,16 +689,23 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
-  public void testBgpMaxMedAdministrative_set() {
+  public void testBgpMaxMedAdministrative_value() {
     parse("router bgp 1\n bgp max-med administrative 12345\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(12345L));
   }
 
   @Test
-  public void testBgpMaxMedAdministrative_unset() {
+  public void testBgpMaxMedAdministrative_default() {
     parse("router bgp 1\n bgp max-med administrative\n");
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(4294967294L));
+  }
+
+  @Test
+  public void testBgpMaxMedAdministrative_unset() {
+    parse("router bgp 1\n");
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(null));
   }
 
   @Test
