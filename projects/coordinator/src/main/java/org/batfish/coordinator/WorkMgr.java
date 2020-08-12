@@ -65,6 +65,7 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.TimeUnit;
@@ -809,14 +810,18 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private void triggerGarbageCollection() {
-    _gcExecutor.submit(
-        () -> {
-          try {
-            runGarbageCollection();
-          } catch (Exception e) {
-            _logger.errorf("ERROR WorkMgr GC: %s", Throwables.getStackTraceAsString(e));
-          }
-        });
+    try {
+      _gcExecutor.submit(
+          () -> {
+            try {
+              runGarbageCollection();
+            } catch (Exception e) {
+              _logger.errorf("ERROR WorkMgr GC: %s", Throwables.getStackTraceAsString(e));
+            }
+          });
+    } catch (RejectedExecutionException e) {
+      // can ignore, since handled by rejection policy
+    }
   }
 
   /**
