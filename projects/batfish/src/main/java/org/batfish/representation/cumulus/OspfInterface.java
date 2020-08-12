@@ -11,6 +11,7 @@ public class OspfInterface implements Serializable {
   private @Nullable Boolean _passive;
   private @Nullable Integer _deadInterval;
   private @Nullable Integer _helloInterval;
+  private @Nullable Integer _cost;
 
   // http://docs.frrouting.org/en/latest/ospfd.html
   public static int DEFAULT_OSPF_HELLO_INTERVAL = 10;
@@ -22,6 +23,14 @@ public class OspfInterface implements Serializable {
 
   public void setNetwork(@Nullable OspfNetworkType network) {
     _network = network;
+  }
+
+  public @Nullable Integer getCost() {
+    return _cost;
+  }
+
+  public void setCost(@Nullable Integer cost) {
+    _cost = cost;
   }
 
   @Nullable

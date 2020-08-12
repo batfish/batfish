@@ -79,6 +79,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IkePhase1Key;
@@ -248,6 +249,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   static final int DEFAULT_VRRP_PRIORITY = 100;
 
+  public static final String DEFAULT_VRF_NAME = "default";
   public static final String MANAGEMENT_VRF_NAME = "management";
 
   static final int MAX_ADMINISTRATIVE_COST = 32767;
@@ -957,13 +959,15 @@ public final class AristaConfiguration extends VendorConfiguration {
     Map<AristaRedistributeType, MatchProtocol> protocolConversions =
         ImmutableMap.of(
             OSPF,
-                new MatchProtocol(
-                    RoutingProtocol.OSPF,
-                    RoutingProtocol.OSPF_IA,
-                    RoutingProtocol.OSPF_E1,
-                    RoutingProtocol.OSPF_E2),
-            OSPF_INTERNAL, new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA),
-            OSPF_EXTERNAL, new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2));
+            new MatchProtocol(
+                RoutingProtocol.OSPF,
+                RoutingProtocol.OSPF_IA,
+                RoutingProtocol.OSPF_E1,
+                RoutingProtocol.OSPF_E2),
+            OSPF_INTERNAL,
+            new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA),
+            OSPF_EXTERNAL,
+            new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2));
 
     for (AristaRedistributeType type :
         new AristaRedistributeType[] {
@@ -1923,6 +1927,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
+    c.setDeviceModel(DeviceModel.ARISTA_UNSPECIFIED);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDnsServers(_dnsServers);
@@ -2400,39 +2405,9 @@ public final class AristaConfiguration extends VendorConfiguration {
       defineSingleLineStructure(AristaStructureType.INTERFACE, "Null0", firstRefToNull0.get());
     }
 
-    markConcreteStructure(
-        AristaStructureType.BFD_TEMPLATE, AristaStructureUsage.INTERFACE_BFD_TEMPLATE);
-
-    markConcreteStructure(
-        AristaStructureType.INTERFACE,
-        AristaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
-        AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
-        AristaStructureUsage.INTERFACE_SELF_REF,
-        AristaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
-        AristaStructureUsage.IP_ROUTE_NHINT,
-        AristaStructureUsage.IP_TACACS_SOURCE_INTERFACE,
-        AristaStructureUsage.NTP_SOURCE_INTERFACE,
-        AristaStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
-        AristaStructureUsage.OBJECT_NAT_REAL_INTERFACE,
-        AristaStructureUsage.OSPF_AREA_INTERFACE,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        AristaStructureUsage.ROUTER_STATIC_ROUTE,
-        AristaStructureUsage.ROUTER_VRRP_INTERFACE,
-        AristaStructureUsage.SERVICE_POLICY_INTERFACE,
-        AristaStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
-        AristaStructureUsage.SNMP_SERVER_TRAP_SOURCE,
-        AristaStructureUsage.TACACS_SOURCE_INTERFACE,
-        AristaStructureUsage.TRACK_INTERFACE,
-        AristaStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
-        AristaStructureUsage.TWICE_NAT_REAL_INTERFACE,
-        AristaStructureUsage.VXLAN_SOURCE_INTERFACE);
+    markConcreteStructure(AristaStructureType.BFD_TEMPLATE);
+    markConcreteStructure(AristaStructureType.INTERFACE);
+    markConcreteStructure(AristaStructureType.IPV4_ACCESS_LIST_STANDARD);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -2500,136 +2475,47 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
         AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY);
 
-    markConcreteStructure(
-        AristaStructureType.PREFIX_LIST,
-        AristaStructureUsage.BGP_INBOUND_PREFIX_LIST,
-        AristaStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
-    markConcreteStructure(
-        AristaStructureType.PREFIX6_LIST,
-        AristaStructureUsage.BGP_INBOUND_PREFIX6_LIST,
-        AristaStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
-        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
+    markConcreteStructure(AristaStructureType.PREFIX_LIST);
+    markConcreteStructure(AristaStructureType.PREFIX6_LIST);
 
     // mark references to route-maps
-    markConcreteStructure(
-        AristaStructureType.ROUTE_MAP,
-        AristaStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP,
-        AristaStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-        AristaStructureUsage.BGP_AGGREGATE_MATCH_MAP,
-        AristaStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        AristaStructureUsage.BGP_INBOUND_ROUTE_MAP,
-        AristaStructureUsage.BGP_INBOUND_ROUTE6_MAP,
-        AristaStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
-        AristaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP,
-        AristaStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
-        AristaStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
-        AristaStructureUsage.BGP_OUTBOUND_ROUTE6_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_RIP_MAP,
-        AristaStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP,
-        AristaStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
-        AristaStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
-        AristaStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
-        AristaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP,
-        AristaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP,
-        AristaStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        AristaStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
-        AristaStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
-        AristaStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
-        AristaStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
-        AristaStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        AristaStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
-        AristaStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
-        AristaStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
+    markConcreteStructure(AristaStructureType.ROUTE_MAP);
 
     // Cable
-    markConcreteStructure(
-        AristaStructureType.DEPI_CLASS, AristaStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
-    markConcreteStructure(
-        AristaStructureType.DEPI_TUNNEL,
-        AristaStructureUsage.CONTROLLER_DEPI_TUNNEL,
-        AristaStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
-    markConcreteStructure(
-        AristaStructureType.DOCSIS_POLICY, AristaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
-    markConcreteStructure(
-        AristaStructureType.DOCSIS_POLICY_RULE,
-        AristaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
-    markConcreteStructure(
-        AristaStructureType.SERVICE_CLASS, AristaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
+    markConcreteStructure(AristaStructureType.DEPI_CLASS);
+    markConcreteStructure(AristaStructureType.DEPI_TUNNEL);
+    markConcreteStructure(AristaStructureType.DOCSIS_POLICY);
+    markConcreteStructure(AristaStructureType.DOCSIS_POLICY_RULE);
+    markConcreteStructure(AristaStructureType.SERVICE_CLASS);
 
     // L2tp
-    markConcreteStructure(
-        AristaStructureType.L2TP_CLASS, AristaStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
+    markConcreteStructure(AristaStructureType.L2TP_CLASS);
 
     // Crypto, Isakmp, and IPSec
-    markConcreteStructure(
-        AristaStructureType.CRYPTO_DYNAMIC_MAP_SET,
-        AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET);
-    markConcreteStructure(
-        AristaStructureType.ISAKMP_PROFILE,
-        AristaStructureUsage.ISAKMP_PROFILE_SELF_REF,
-        AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE,
-        AristaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
-    markConcreteStructure(
-        AristaStructureType.ISAKMP_POLICY, AristaStructureUsage.ISAKMP_POLICY_SELF_REF);
-    markConcreteStructure(
-        AristaStructureType.IPSEC_PROFILE, AristaStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
-    markConcreteStructure(
-        AristaStructureType.IPSEC_TRANSFORM_SET,
-        AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
-        AristaStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
-    markConcreteStructure(AristaStructureType.KEYRING, AristaStructureUsage.ISAKMP_PROFILE_KEYRING);
-    markConcreteStructure(
-        AristaStructureType.NAMED_RSA_PUB_KEY, AristaStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
+    markConcreteStructure(AristaStructureType.CRYPTO_DYNAMIC_MAP_SET);
+    markConcreteStructure(AristaStructureType.ISAKMP_PROFILE);
+    markConcreteStructure(AristaStructureType.ISAKMP_POLICY);
+    markConcreteStructure(AristaStructureType.IPSEC_PROFILE);
+    markConcreteStructure(AristaStructureType.IPSEC_TRANSFORM_SET);
+    markConcreteStructure(AristaStructureType.KEYRING);
+    markConcreteStructure(AristaStructureType.NAMED_RSA_PUB_KEY);
 
     // class-map
-    markConcreteStructure(
-        AristaStructureType.INSPECT_CLASS_MAP,
-        AristaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
-    markConcreteStructure(
-        AristaStructureType.CLASS_MAP,
-        AristaStructureUsage.POLICY_MAP_CLASS,
-        AristaStructureUsage.POLICY_MAP_EVENT_CLASS);
+    markConcreteStructure(AristaStructureType.INSPECT_CLASS_MAP);
+    markConcreteStructure(AristaStructureType.CLASS_MAP);
 
     // policy-map
     markConcreteStructure(AristaStructureType.INSPECT_POLICY_MAP);
-    markConcreteStructure(
-        AristaStructureType.POLICY_MAP,
-        AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT,
-        AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT,
-        AristaStructureUsage.INTERFACE_SERVICE_POLICY,
-        AristaStructureUsage.INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER,
-        AristaStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
-        AristaStructureUsage.SERVICE_POLICY_GLOBAL,
-        AristaStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);
+    markConcreteStructure(AristaStructureType.POLICY_MAP);
 
     // service template
-    markConcreteStructure(
-        AristaStructureType.SERVICE_TEMPLATE,
-        AristaStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
-        AristaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
-        AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+    markConcreteStructure(AristaStructureType.SERVICE_TEMPLATE);
 
     // VXLAN
-    markConcreteStructure(AristaStructureType.VXLAN, AristaStructureUsage.VXLAN_SELF_REF);
+    markConcreteStructure(AristaStructureType.VXLAN);
 
-    markConcreteStructure(AristaStructureType.NAT_POOL, AristaStructureUsage.IP_NAT_SOURCE_POOL);
-    markConcreteStructure(
-        AristaStructureType.AS_PATH_ACCESS_LIST,
-        AristaStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
-        AristaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
+    markConcreteStructure(AristaStructureType.NAT_POOL);
+    markConcreteStructure(AristaStructureType.AS_PATH_ACCESS_LIST);
 
     markConcreteStructure(AristaStructureType.BGP_PEER_GROUP);
 

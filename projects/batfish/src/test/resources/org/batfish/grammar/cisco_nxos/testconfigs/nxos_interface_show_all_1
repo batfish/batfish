@@ -1,0 +1,64 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_show_all_1
+!
+boot kickstart bootflash:/n3000-uk9-kickstart.6.0.2.U5.1.bin
+boot system bootflash:/n3000-uk9.6.0.2.U5.1.bin
+!
+interface Ethernet1/21
+  speed auto
+  lacp port-priority 32768
+  lacp rate normal
+  priority-flow-control mode auto
+  lldp transmit
+  lldp receive
+  no lldp tlv-set management-address 0.0.0.0
+  no lldp tlv-set management-address ::
+  no lldp tlv-set vlan
+  no switchport block unicast
+  no switchport block multicast
+  no hardware multicast hw-hash
+  no hardware vethernet mac filtering per-vlan
+  no description
+  switchport
+  switchport mode access
+  no switchport monitor
+  no switchport dot1q ethertype
+  no switchport priority extend
+  no ip dhcp snooping trust
+  no ip arp inspection trust
+  no ip verify source dhcp-snooping-vlan
+  cdp enable
+  spanning-tree port-priority 128
+  spanning-tree cost auto
+  spanning-tree link-type auto
+  spanning-tree port type edge
+  spanning-tree bpduguard enable
+  no spanning-tree bpdufilter
+  duplex full
+  flowcontrol receive off
+  flowcontrol send off
+  negotiate auto
+  link debounce time 100
+  no beacon
+  mtu 1500
+  delay 1
+  snmp trap link-status
+  logging event port link-status default
+  logging event port trunk-status default
+  bandwidth 10000
+  no bandwidth inherit
+  mdix auto
+  storm-control broadcast level 100.00
+  storm-control multicast level 100.00
+  storm-control unicast level 100.00
+  no storm-control action
+  no shutdown lan
+  load-interval counter 1 30
+  load-interval counter 2 300
+  no load-interval counter 3
+  medium broadcast
+  no udld disable
+  no shutdown
+  ! KEEP THIS LAST IN Ethernet1/21 - it is a sentinel to ensure we stay in the interface context forever.
+  description Made it to the end of Ethernet1/21

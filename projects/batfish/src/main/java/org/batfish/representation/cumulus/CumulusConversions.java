@@ -1297,6 +1297,7 @@ public final class CumulusConversions {
                       Optional.ofNullable(ospfInterface.getHelloInterval())
                           .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
                   .setProcess(processId)
+                  .setCost(ospfInterface.getCost())
                   .build());
         });
   }

@@ -50,7 +50,7 @@
         "Lines" : {
           "filename" : "configs/arista_bgp",
           "lines" : [
-            11
+            12
           ]
         }
       },
@@ -62,7 +62,7 @@
         "Lines" : {
           "filename" : "configs/arista_bgp",
           "lines" : [
-            13
+            14
           ]
         }
       },
@@ -74,7 +74,7 @@
         "Lines" : {
           "filename" : "configs/arista_interface",
           "lines" : [
-            8
+            10
           ]
         }
       },
@@ -83,6 +83,18 @@
         "Struct_Type" : "policy-map",
         "Ref_Name" : "qos-pmap",
         "Context" : "interface service-policy",
+        "Lines" : {
+          "filename" : "configs/arista_interface",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_interface",
+        "Struct_Type" : "standard ipv4 access-list",
+        "Ref_Name" : "some_acl",
+        "Context" : "interface ip multicast boundary",
         "Lines" : {
           "filename" : "configs/arista_interface",
           "lines" : [
@@ -939,6 +951,18 @@
           "filename" : "configs/cisco_crypto",
           "lines" : [
             224
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "someacl",
+        "Context" : "crypto map match address",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            232
           ]
         }
       },
@@ -2246,6 +2270,18 @@
         }
       },
       {
+        "File_Name" : "configs/eos_mlag",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Vlan4094",
+        "Context" : "mlag configuration local-interface",
+        "Lines" : {
+          "filename" : "configs/eos_mlag",
+          "lines" : [
+            19
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/f5_bigip/f5_bigip_imish_malformed",
         "Struct_Type" : "route-map",
         "Ref_Name" : "rm1",
@@ -3444,9 +3480,9 @@
           "filename" : "configs/juniper_bgp",
           "lines" : [
             10,
-            20,
-            27,
-            36
+            21,
+            28,
+            37
           ]
         }
       },
@@ -3459,9 +3495,9 @@
           "filename" : "configs/juniper_bgp",
           "lines" : [
             13,
-            22,
-            29,
-            38
+            23,
+            30,
+            39
           ]
         }
       },
@@ -4192,10 +4228,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 340 results",
+      "notes" : "Found 343 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 340
+      "numResults" : 343
     }
   }
 ]

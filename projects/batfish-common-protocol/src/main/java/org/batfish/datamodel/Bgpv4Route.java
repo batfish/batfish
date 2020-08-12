@@ -201,7 +201,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       return false;
     }
     Bgpv4Route other = (Bgpv4Route) o;
-    return _network.equals(other._network)
+    return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
+        && _network.equals(other._network)
         && _nextHopIp.equals(other._nextHopIp)
         && _originatorIp.equals(other._originatorIp)
         && _nextHopInterface.equals(other._nextHopInterface)

@@ -45,6 +45,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
@@ -614,6 +615,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_NCLU);
+    _c.setDeviceModel(DeviceModel.CUMULUS_UNSPECIFIED);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
 

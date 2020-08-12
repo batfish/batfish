@@ -5,9 +5,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.BitSet;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -86,12 +88,19 @@ public class BDDIntegerTest {
   public void testAdd() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     BDDInteger x = BDDInteger.makeFromIndex(factory, 5, 0, false);
+    assertTrue(x.hasVariablesOnly());
     BDDInteger constant1 = BDDInteger.makeFromValue(factory, 5, 1);
+    assertFalse(constant1.hasVariablesOnly());
     BDDInteger xPlus1 = x.add(constant1);
+    assertFalse(xPlus1.hasVariablesOnly());
 
     assertTrue(x.value(0).equals(xPlus1.value(1))); // x == 0 <==> x+1 == 1
     assertTrue(x.value(1).equals(xPlus1.value(2))); // x == 1 <==> x+1 == 2
     assertTrue(x.value(31).equals(xPlus1.value(0))); // x == 31 <==> x+1 == 0
+
+    // Check that each variable's bitvec is properly used with satisfying assignment.
+    assertThat(x.getValuesSatisfying(x.value(3L), 100), contains(3L));
+    assertThat(xPlus1.getValuesSatisfying(xPlus1.value(3L), 100), contains(3L));
 
     // convert to a relation representation (i.e. a constraint over two integer variables)
     BDDInteger y = BDDInteger.makeFromIndex(factory, 5, 5, false);
@@ -139,5 +148,50 @@ public class BDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(10);
     BDDInteger x = BDDInteger.makeFromIndex(factory, 0, 0, false);
     assertEquals(factory.one(), x.getVars());
+  }
+
+  @Test
+  public void testHasVariablesOnly() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    // makeFromIndex
+    BDDInteger x = BDDInteger.makeFromIndex(factory, 5, 0, false);
+    assertTrue(x.hasVariablesOnly());
+    // copy constructor of variables only
+    BDDInteger y = new BDDInteger(x);
+    assertTrue(y.hasVariablesOnly());
+
+    // after setValue
+    x.setValue(5);
+    assertFalse(x.hasVariablesOnly());
+    // copy setValue
+    y = new BDDInteger(x);
+    assertFalse(y.hasVariablesOnly());
+
+    x = BDDInteger.makeFromIndex(factory, 5, 0, false);
+    assertTrue(x.hasVariablesOnly());
+    y = x.add(x);
+    assertFalse(y.hasVariablesOnly());
+    assertTrue(x.hasVariablesOnly());
+
+    y = x.sub(x);
+    assertFalse(y.hasVariablesOnly());
+    assertTrue(x.hasVariablesOnly());
+  }
+
+  @Test
+  public void testThrowsOnGetVars() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    BDDInteger x = BDDInteger.makeFromValue(factory, 5, 3);
+    _exception.expect(IllegalStateException.class);
+    x.getVars();
+  }
+
+  @Test
+  public void testThrowsOnBitSet() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    BDDInteger x = BDDInteger.makeFromValue(factory, 5, 3);
+    BitSet anything = factory.one().minAssignmentBits();
+    _exception.expect(IllegalStateException.class);
+    x.satAssignmentToLong(anything);
   }
 }

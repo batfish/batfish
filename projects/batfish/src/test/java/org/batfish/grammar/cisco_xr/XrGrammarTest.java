@@ -405,7 +405,7 @@ public final class XrGrammarTest {
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
+          route.getCommunities().getCommunities(),
           containsInAnyOrder(StandardCommunity.of(1, 2), ExtendedCommunity.target(1L, 1L)));
     }
     {
@@ -414,7 +414,7 @@ public final class XrGrammarTest {
           base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(9, 9))).build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
+          route.getCommunities().getCommunities(),
           containsInAnyOrder(StandardCommunity.of(1, 2), StandardCommunity.of(9, 9)));
     }
     {
@@ -425,7 +425,8 @@ public final class XrGrammarTest {
                   ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.INTERNET))
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), containsInAnyOrder(StandardCommunity.INTERNET));
+      assertThat(
+          route.getCommunities().getCommunities(), containsInAnyOrder(StandardCommunity.INTERNET));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("deletein");
@@ -435,7 +436,7 @@ public final class XrGrammarTest {
                   ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.INTERNET))
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), empty());
+      assertThat(route.getCommunities().getCommunities(), empty());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("deleteininline");
@@ -445,7 +446,7 @@ public final class XrGrammarTest {
                   ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.INTERNET))
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), empty());
+      assertThat(route.getCommunities().getCommunities(), empty());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("deletenotin");
@@ -456,7 +457,7 @@ public final class XrGrammarTest {
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
+          route.getCommunities().getCommunities(),
           containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.INTERNET));
     }
   }
@@ -585,7 +586,7 @@ public final class XrGrammarTest {
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
+          route.getCommunities().getCommunities(),
           containsInAnyOrder(
               StandardCommunity.of(9, 9),
               ExtendedCommunity.target(1234L, 56L),
@@ -597,7 +598,7 @@ public final class XrGrammarTest {
       Bgpv4Route inRoute = base.toBuilder().build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
+          route.getCommunities().getCommunities(),
           containsInAnyOrder(
               ExtendedCommunity.target(1L, 1L), ExtendedCommunity.target((1L << 16) | 2, 3L)));
     }
@@ -609,7 +610,7 @@ public final class XrGrammarTest {
               .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
+          route.getCommunities().getCommunities(),
           containsInAnyOrder(ExtendedCommunity.target(1L, 1L), ExtendedCommunity.target(2L, 2L)));
     }
   }

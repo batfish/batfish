@@ -191,6 +191,11 @@ CONNECTED
   'connected'
 ;
 
+COST
+:
+  'cost'
+;
+
 CRITICAL
 :
   'critical'
@@ -777,6 +782,11 @@ VRF
 VTY
 :
   'vty'
+;
+
+WEIGHT
+:
+  'weight'
 ;
 
 WS

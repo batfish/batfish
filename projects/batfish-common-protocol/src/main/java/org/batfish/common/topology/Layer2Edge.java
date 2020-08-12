@@ -81,7 +81,8 @@ public final class Layer2Edge implements Comparable<Layer2Edge> {
       return false;
     }
     Layer2Edge rhs = (Layer2Edge) obj;
-    return _node1.equals(rhs._node1)
+    return (_hashCode == rhs._hashCode || _hashCode == 0 || rhs._hashCode == 0)
+        && _node1.equals(rhs._node1)
         && _node2.equals(rhs._node2)
         && Objects.equals(_encapsulatedVlanId, rhs._encapsulatedVlanId);
   }

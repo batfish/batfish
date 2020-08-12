@@ -101,7 +101,9 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   @Override
   protected boolean exprEquals(Object o) {
     IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
-    return _blacklist.equals(rhs._blacklist) && _whitelist.equals(rhs._whitelist);
+    return (_hashCode == rhs._hashCode || _hashCode == 0 || rhs._hashCode == 0)
+        && _blacklist.equals(rhs._blacklist)
+        && _whitelist.equals(rhs._whitelist);
   }
 
   @Nonnull

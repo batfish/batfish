@@ -120,7 +120,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -3338,7 +3337,7 @@ public final class PaloAltoGrammarTest {
     Configuration firewall1 =
         viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
 
-    NavigableMap<String, IpSpace> ipSpaces = firewall1.getIpSpaces();
+    Map<String, IpSpace> ipSpaces = firewall1.getIpSpaces();
     assertThat(ipSpaces.keySet(), containsInAnyOrder(addrVsys1, addrVsys2));
     // Each vsys should inherit a different definition for the same address object
     assertIpSpacesEqual(ipSpaces.get(addrVsys1), Ip.parse("1.1.1.1").toIpSpace());

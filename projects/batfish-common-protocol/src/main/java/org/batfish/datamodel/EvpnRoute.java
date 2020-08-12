@@ -99,9 +99,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
   /** Return extended communities that are route targets for this route */
   @JsonIgnore
   public Set<ExtendedCommunity> getRouteTargets() {
-    return _communities.stream()
-        .filter(c -> c instanceof ExtendedCommunity)
-        .map(ExtendedCommunity.class::cast)
+    return _communities.getExtendedCommunities().stream()
         .filter(ExtendedCommunity::isRouteTarget)
         .collect(ImmutableSet.toImmutableSet());
   }

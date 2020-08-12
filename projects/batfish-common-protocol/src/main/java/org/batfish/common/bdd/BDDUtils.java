@@ -38,7 +38,7 @@ public class BDDUtils {
 
     for (int i = 0; i < vars.length; i += 2) {
       checkArgument(
-          vars[i].getBitvec().length == vars[i + 1].getBitvec().length,
+          vars[i].size() == vars[i + 1].size(),
           "Cannot swap variables with unequal number of bits");
       left.add(vars[i]);
       right.add(vars[i + 1]);

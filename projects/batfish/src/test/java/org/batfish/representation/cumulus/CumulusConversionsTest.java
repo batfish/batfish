@@ -1282,6 +1282,43 @@ public final class CumulusConversionsTest {
   }
 
   @Test
+  public void testAddOspfInterfaces_HasCost() {
+    CumulusNcluConfiguration config = new CumulusNcluConfiguration();
+    config.setOspfProcess(new OspfProcess());
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    config.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+    vsIface.getOrCreateOspf().setCost(100);
+
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+
+    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    assertThat(viIface.getOspfCost(), equalTo(100));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NoCost() {
+    CumulusNcluConfiguration config = new CumulusNcluConfiguration();
+    config.setOspfProcess(new OspfProcess());
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    config.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+
+    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    assertNull(viIface.getOspfCost());
+  }
+
+  @Test
   public void testAddOspfInterfaces_NoNetworkType() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     ncluConfiguration.setOspfProcess(new OspfProcess());

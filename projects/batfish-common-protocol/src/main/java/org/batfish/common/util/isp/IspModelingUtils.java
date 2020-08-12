@@ -121,8 +121,8 @@ public final class IspModelingUtils {
     return "To-" + ispHostname;
   }
 
-  public static String ispToRemoteInterfaceName(String remoteHostname) {
-    return "To-" + remoteHostname;
+  public static String ispToRemoteInterfaceName(String remoteHostname, String remoteInterfaceName) {
+    return "To-" + remoteHostname + '-' + remoteInterfaceName;
   }
 
   public static class ModeledNodes {
@@ -610,7 +610,9 @@ public final class IspModelingUtils {
               Interface ispInterface =
                   nf.interfaceBuilder()
                       .setOwner(ispConfiguration)
-                      .setName(ispToRemoteInterfaceName(remote.getRemoteHostname()))
+                      .setName(
+                          ispToRemoteInterfaceName(
+                              remote.getRemoteHostname(), remote.getRemoteIfaceName()))
                       .setVrf(defaultVrf)
                       .setAddress(remote.getIspIfaceAddress())
                       .setIncomingFilter(fromNetwork)

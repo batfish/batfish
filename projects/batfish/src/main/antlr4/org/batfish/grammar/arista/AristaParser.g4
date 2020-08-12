@@ -1031,15 +1031,9 @@ ip_probe_null
    ) null_rest_of_line
 ;
 
-ip_route_stanza
+s_ip_route
 :
-   (
-      IP
-      | MANAGEMENT
-   ) ROUTE
-   (
-      VRF vrf = variable
-   )? ip_route_tail
+  ROUTE (VRF vrf = variable)? ip_route_tail
 ;
 
 ip_route_tail
@@ -2440,6 +2434,7 @@ s_ip
     | s_ip_name_server
     | s_ip_nbar
     | s_ip_probe
+    | s_ip_route
     | s_ip_routing
     | s_ip_tacacs_source_interface
     | s_ip_virtual_router
@@ -2582,6 +2577,17 @@ s_ipc
    )*
 ;
 
+s_ipv6
+:
+  IPV6
+  ipv6_route
+;
+
+ipv6_route
+:
+  ROUTE prefix = ipv6_prefix null_rest_of_line
+;
+
 s_ipsla
 :
    NO? IPSLA null_rest_of_line
@@ -2684,6 +2690,12 @@ s_monitor_session
 s_name
 :
    NAME variable variable null_rest_of_line
+;
+
+s_no
+:
+  NO
+  no_aaa
 ;
 
 s_no_access_list_extended
@@ -3412,7 +3424,6 @@ stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza
    | ip_prefix_list_stanza
-   | ip_route_stanza
    | ipv6_prefix_list_stanza
    | ipx_sap_access_list_stanza
    | multicast_routing_stanza
@@ -3504,6 +3515,7 @@ stanza
    | s_ip_ssh
    | s_ip_wccp
    | s_ipc
+   | s_ipv6
    | s_ipv6_router_ospf
    | s_ipsla
    | s_key
@@ -3528,6 +3540,7 @@ stanza
    | s_netdestination
    | s_netdestination6
    | s_netservice
+   | s_no
    | s_no_access_list_extended
    | s_no_access_list_standard
    | s_no_bfd
@@ -4353,11 +4366,6 @@ vrfc_address_family
    (
       vrfc_route_target
    )*
-;
-
-vrfc_ip_route
-:
-   IP ROUTE ip_route_tail
 ;
 
 vrfc_rd

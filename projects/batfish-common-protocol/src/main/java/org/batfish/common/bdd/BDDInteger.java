@@ -1,9 +1,11 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -13,9 +15,11 @@ import net.sf.javabdd.BDDFactory;
 
 public class BDDInteger {
 
-  private BDDFactory _factory;
+  private final BDDFactory _factory;
+  private final BDD[] _bitvec;
 
-  private BDD[] _bitvec;
+  /** Certain API calls are only valid when this BDD has only variables in it. */
+  private boolean _hasVariablesOnly;
 
   /*
    * Create an integer, but don't initialize its bit values
@@ -23,14 +27,29 @@ public class BDDInteger {
   private BDDInteger(BDDFactory factory, int length) {
     _factory = factory;
     _bitvec = new BDD[length];
+    _hasVariablesOnly = false;
   }
 
   public BDDInteger(BDDInteger other) {
     _factory = other._factory;
     _bitvec = new BDD[other._bitvec.length];
-    for (int i = 0; i < _bitvec.length; i++) {
-      _bitvec[i] = other._bitvec[i].id();
-    }
+    setValue(other);
+  }
+
+  /**
+   * Returns true if this {@link BDDInteger} has only variables in its bitvec, as opposed to
+   * zero/one and more complex BDDs.
+   *
+   * <p>This is typically true only for {@link BDDInteger} values constructed from {@link
+   * BDDInteger#makeFromIndex(BDDFactory, int, int, boolean)} or copied from them.
+   */
+  public boolean hasVariablesOnly() {
+    return _hasVariablesOnly;
+  }
+
+  /** Returns the number of bits in this {@link BDDInteger}. */
+  public int size() {
+    return _bitvec.length;
   }
 
   /*
@@ -52,21 +71,36 @@ public class BDDInteger {
       }
       bdd._bitvec[i] = bdd._factory.ithVar(idx);
     }
+    bdd._hasVariablesOnly = true;
     return bdd;
   }
 
   /** Find a representative value of the represented integer that satisfies a given constraint. */
   public Optional<Long> getValueSatisfying(BDD bdd) {
-    BDD satAssignment = bdd.fullSatOne();
-    return satAssignment.isZero()
-        ? Optional.empty()
-        : Optional.of(satAssignmentToLong(satAssignment));
+    if (bdd.isZero()) {
+      return Optional.empty();
+    }
+    if (_hasVariablesOnly) {
+      return Optional.of(satAssignmentToLong(bdd.minAssignmentBits()));
+    }
+    return Optional.of(satAssignmentToLong(bdd.satOne()));
   }
 
-  /** @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc) */
+  /**
+   * Returns the smallest long produced when evaluating the given assignment {@link BDD} over the
+   * representative bits in {@link #getBitvec()}.
+   *
+   * <p>When this {@link BDDInteger#hasVariablesOnly()} is {@code false}, this function will perform
+   * better if the assignment {@link BDD} is smaller, i.e., is produced by {@link BDD#satOne()}
+   * instead of {@link BDD#fullSatOne()}.
+   */
   public Long satAssignmentToLong(BDD satAssignment) {
-    // TODO this check could be better (should be exactly 1 path from root to the one node).
-    checkArgument(!satAssignment.isZero(), "not a satisfying assignment");
+    checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
+
+    if (_hasVariablesOnly) {
+      // Shortcut for performance.
+      return satAssignmentToLong(satAssignment.minAssignmentBits());
+    }
 
     if (_bitvec.length > Long.SIZE) {
       throw new IllegalArgumentException(
@@ -76,8 +110,30 @@ public class BDDInteger {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
-      if (satAssignment.andSat(bitBDD)) {
-        value |= ((long) 1) << i;
+      // a.diff(b) is a.and(b.not()). When the input is only a partial assignment (like satOne),
+      // this biases towards lexicographically smaller solutions: set a 1 only if you can't set 0.
+      if (!satAssignment.diffSat(bitBDD)) {
+        value |= 1L << i;
+      }
+    }
+    return value;
+  }
+
+  public Long satAssignmentToLong(BitSet bits) {
+    checkState(
+        _hasVariablesOnly,
+        "satAssignmentToLong can only be called on a BDDInteger with hasVariablesOnly() true");
+
+    if (_bitvec.length > Long.SIZE) {
+      throw new IllegalArgumentException(
+          "Can't get a representative of a BDDInteger with more than Long.SIZE bits");
+    }
+
+    long value = 0;
+    for (int i = 0; i < _bitvec.length; i++) {
+      BDD bitBDD = _bitvec[_bitvec.length - i - 1];
+      if (bits.get(bitBDD.level())) {
+        value |= 1L << i;
       }
     }
     return value;
@@ -98,12 +154,10 @@ public class BDDInteger {
     int num = 0;
     BDD pred = bdd;
     while (num < max) {
-      BDD satAssignment = pred.fullSatOne();
-      if (satAssignment.isZero()) {
+      if (pred.isZero()) {
         break;
       }
-
-      Long val = satAssignmentToLong(satAssignment);
+      long val = satAssignmentToLong(pred.satOne());
       values.add(val);
       pred = pred.diff(value(val));
       num++;
@@ -117,6 +171,7 @@ public class BDDInteger {
   public static BDDInteger makeFromValue(BDDFactory factory, int length, long value) {
     BDDInteger bdd = new BDDInteger(factory, length);
     bdd.setValue(value);
+    bdd._hasVariablesOnly = false;
     return bdd;
   }
 
@@ -128,6 +183,7 @@ public class BDDInteger {
     for (int i = 0; i < _bitvec.length; i++) {
       val._bitvec[i] = b.ite(_bitvec[i], other._bitvec[i]);
     }
+    val._hasVariablesOnly = false;
     return val;
   }
 
@@ -245,6 +301,10 @@ public class BDDInteger {
    * Set this BDD to have an exact value
    */
   public void setValue(long val) {
+    checkArgument(val >= 0, "Cannot set a negative value");
+    checkArgument(
+        val >> _bitvec.length == 0,
+        "Cannot represent value " + val + " in BDDInteger of length " + _bitvec.length);
     long currentVal = val;
     for (int i = _bitvec.length - 1; i >= 0; i--) {
       if ((currentVal & 1) != 0) {
@@ -254,6 +314,7 @@ public class BDDInteger {
       }
       currentVal >>= 1;
     }
+    _hasVariablesOnly = false;
   }
 
   /*
@@ -263,6 +324,7 @@ public class BDDInteger {
     for (int i = 0; i < _bitvec.length; ++i) {
       _bitvec[i] = other._bitvec[i].id();
     }
+    _hasVariablesOnly = other._hasVariablesOnly;
   }
 
   /*
@@ -283,6 +345,7 @@ public class BDDInteger {
       carry = as[i].and(bs[i]).or(carry.and(as[i].or(bs[i])));
     }
     cs[0] = as[0].xor(bs[0]).xor(carry);
+    sum._hasVariablesOnly = false;
     return sum;
   }
 
@@ -307,6 +370,7 @@ public class BDDInteger {
         var3 = var6;
       }
       var3.free();
+      var4._hasVariablesOnly = false;
       return var4;
     }
   }
@@ -317,6 +381,9 @@ public class BDDInteger {
 
   /** Returns a {@link BDD} containing all the variables of this {@link BDDInteger}. */
   public @Nonnull BDD getVars() {
+    checkState(
+        _hasVariablesOnly,
+        "getVars can only be called on a BDDInteger with hasVariablesOnly() true");
     if (_bitvec.length == 0) {
       return _factory.one(); // empty set
     }
@@ -335,6 +402,7 @@ public class BDDInteger {
       return false;
     }
     BDDInteger other = (BDDInteger) o;
+    // No need to check _factory, and _hasVariablesOnly is 1-1 with _bitvec.
     return Arrays.equals(_bitvec, other._bitvec);
   }
 

@@ -1096,7 +1096,7 @@ null_aaa_substanza
 
 s_aaa
 :
-   NO? AAA
+   AAA
    (
       aaa_accounting
       | aaa_authentication
@@ -1117,3 +1117,13 @@ s_aaa
    )
 ;
 
+no_aaa
+:
+  AAA
+  no_aaa_root
+;
+
+no_aaa_root
+:
+  ROOT NEWLINE
+;

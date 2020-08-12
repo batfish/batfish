@@ -279,7 +279,21 @@ popsf_prefix_list_filter
 
 popsf_protocol
 :
-   PROTOCOL protocol = routing_protocol
+   PROTOCOL
+   (
+     ACCESS_INTERNAL
+     | AGGREGATE
+     | BGP
+     | DIRECT
+     | EVPN
+     | ISIS
+     | LDP
+     | LOCAL
+     | OSPF
+     | OSPF3
+     | RSVP
+     | STATIC
+   )
 ;
 
 popsf_rib

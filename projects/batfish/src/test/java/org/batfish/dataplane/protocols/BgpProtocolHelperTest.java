@@ -319,6 +319,6 @@ public class BgpProtocolHelperTest {
             Ip.ZERO,
             true);
 
-    assertThat(result.getCommunities(), equalTo(ImmutableSet.of(community)));
+    assertThat(result.getCommunities().getCommunities(), equalTo(ImmutableSet.of(community)));
   }
 }

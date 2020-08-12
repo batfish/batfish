@@ -905,6 +905,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpPreferenceExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-preference");
+    RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
+    assertThat(ri.getMasterBgpGroup().getPreference(), equalTo(140));
+    assertThat(ri.getNamedBgpGroups().get("MYGROUP").getPreference(), nullValue());
+    assertThat(ri.getNamedBgpGroups().get("MYGROUP").getPreference(), nullValue());
+    assertThat(ri.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32")).getPreference(), equalTo(150));
+  }
+
+  @Test
+  public void testBgpPreferenceConversion() {
+    Configuration c = parseConfig("bgp-preference");
+    Vrf def = c.getDefaultVrf();
+    assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.BGP), equalTo(140));
+    assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.IBGP), equalTo(140));
+  }
+
+  @Test
   public void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
     List<String> configurationNames =
@@ -982,7 +1000,7 @@ public final class FlatJuniperGrammarTest {
     Bgpv4Route br1 = b1.build();
 
     assertThat(
-        br1.getCommunities(),
+        br1.getCommunities().getCommunities(),
         equalTo(
             ImmutableSet.of(
                 StandardCommunity.NO_ADVERTISE,
@@ -1002,7 +1020,7 @@ public final class FlatJuniperGrammarTest {
     Bgpv4Route br2 = b2.build();
 
     assertThat(
-        br2.getCommunities(),
+        br2.getCommunities().getCommunities(),
         equalTo(ImmutableSet.of(StandardCommunity.of(2L), StandardCommunity.of(3L))));
 
     // p3
@@ -1017,7 +1035,8 @@ public final class FlatJuniperGrammarTest {
     p3.process(cr, b3, Direction.OUT);
     Bgpv4Route br3 = b3.build();
 
-    assertThat(br3.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
+    assertThat(
+        br3.getCommunities().getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
   }
 
   @Test
@@ -1039,7 +1058,7 @@ public final class FlatJuniperGrammarTest {
     Bgpv4Route br4 = b4.build();
 
     assertThat(
-        br4.getCommunities(),
+        br4.getCommunities().getCommunities(),
         equalTo(
             ImmutableSet.of(
                 StandardCommunity.NO_ADVERTISE,
@@ -1060,7 +1079,7 @@ public final class FlatJuniperGrammarTest {
     Bgpv4Route br5 = b5.build();
 
     assertThat(
-        br5.getCommunities(),
+        br5.getCommunities().getCommunities(),
         equalTo(
             ImmutableSet.of(
                 StandardCommunity.of(2L), StandardCommunity.of(3L), StandardCommunity.of(5L))));
@@ -1077,7 +1096,8 @@ public final class FlatJuniperGrammarTest {
     p6.process(cr, b6, Direction.OUT);
     Bgpv4Route br6 = b6.build();
 
-    assertThat(br6.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
+    assertThat(
+        br6.getCommunities().getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
   }
 
   @Test
@@ -1102,7 +1122,9 @@ public final class FlatJuniperGrammarTest {
       rp.process(builder.build(), builder, Direction.OUT);
       Bgpv4Route outputRoute = builder.build();
 
-      assertThat(outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
+      assertThat(
+          outputRoute.getCommunities().getCommunities(),
+          equalTo(ImmutableSet.of(StandardCommunity.of(5L))));
     }
     {
       // p8 - delete mixed
@@ -1120,7 +1142,8 @@ public final class FlatJuniperGrammarTest {
       Bgpv4Route outputRoute = builder.build();
 
       assertThat(
-          outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(0, 11))));
+          outputRoute.getCommunities().getCommunities(),
+          equalTo(ImmutableSet.of(StandardCommunity.of(0, 11))));
     }
     {
       // p9 - delete regex
@@ -1133,7 +1156,8 @@ public final class FlatJuniperGrammarTest {
       Bgpv4Route outputRoute = builder.build();
 
       assertThat(
-          outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(0, 2))));
+          outputRoute.getCommunities().getCommunities(),
+          equalTo(ImmutableSet.of(StandardCommunity.of(0, 2))));
     }
     {
       // p10 - delete inverted
@@ -1146,7 +1170,8 @@ public final class FlatJuniperGrammarTest {
       Bgpv4Route outputRoute = builder.build();
 
       assertThat(
-          outputRoute.getCommunities(), equalTo(ImmutableSet.of(StandardCommunity.of(0, 12345))));
+          outputRoute.getCommunities().getCommunities(),
+          equalTo(ImmutableSet.of(StandardCommunity.of(0, 12345))));
     }
   }
 
@@ -2657,6 +2682,12 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c.getAllInterfaces().keySet(),
         equalTo(ImmutableSet.of("xe-0/0/0", "xe-0/0/1", "xe-8/1/2")));
+  }
+
+  @Test
+  public void testInterfaceUndefined() {
+    // Should not crash.
+    parseConfig("interface-undefined");
   }
 
   @Test
@@ -4462,6 +4493,16 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         answer.toString(),
         not(Matchers.containsString("unimplemented pre-defined junos application")));
+  }
+
+  /**
+   * Tests that all parsed applications are converted to JunosApplication (in {@link
+   * ConfigurationBuilder})
+   */
+  @Test
+  public void testPredefinedJunosApplicationsConverted() throws IOException {
+    // conversion failure will cause an exception
+    parseConfig("pre-defined-junos-applications-converted");
   }
 
   @Test

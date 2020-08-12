@@ -99,6 +99,7 @@ import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_I
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
+import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IP_MULTICAST_BOUNDARY;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_SERVICE_POLICY;
@@ -226,7 +227,6 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
@@ -659,6 +659,7 @@ import org.batfish.grammar.arista.AristaParser.Ifip_access_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipm_boundary_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_cost_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_dead_interval_eosContext;
@@ -694,9 +695,9 @@ import org.batfish.grammar.arista.AristaParser.Ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_hostnameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_poolContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_pool_rangeContext;
+import org.batfish.grammar.arista.AristaParser.Ip_prefixContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
-import org.batfish.grammar.arista.AristaParser.Ip_route_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_route_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_ssh_versionContext;
 import org.batfish.grammar.arista.AristaParser.Ipsec_authenticationContext;
@@ -824,6 +825,7 @@ import org.batfish.grammar.arista.AristaParser.S_ip_domainContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_name_serverContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_pimContext;
+import org.batfish.grammar.arista.AristaParser.S_ip_routeContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_source_routeContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_sshContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_tacacs_source_interfaceContext;
@@ -1061,8 +1063,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private static Ip6 getIp(Access_list_ip6_rangeContext ctx) {
     if (ctx.ip != null) {
       return toIp6(ctx.ip);
-    } else if (ctx.ipv6_prefix != null) {
-      return Prefix6.parse(ctx.ipv6_prefix.getText()).getAddress();
+    } else if (ctx.prefix6 != null) {
+      return Prefix6.parse(ctx.prefix6.getText()).getAddress();
     } else {
       return Ip6.ZERO;
     }
@@ -1147,6 +1149,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private static long toLong(Token t) {
     return Long.parseLong(t.getText());
+  }
+
+  private Prefix toPrefix(Ip_prefixContext ctx) {
+    if (ctx.address != null) {
+      return Prefix.create(toIp(ctx.address), toInteger(ctx.mask));
+    } else {
+      return toPrefix(ctx.prefix);
+    }
   }
 
   private static Prefix toPrefix(Token t) {
@@ -1363,7 +1373,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void enterArista_configuration(Arista_configurationContext ctx) {
     _configuration = new AristaConfiguration();
     _configuration.setVendor(_format);
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -3627,16 +3637,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIp_route_stanza(Ip_route_stanzaContext ctx) {
-    if (ctx.vrf != null) {
-      _currentVrf = ctx.vrf.getText();
-    }
-    if (ctx.MANAGEMENT() != null) {
-      _currentVrf = AristaConfiguration.MANAGEMENT_VRF_NAME;
-    }
-  }
-
-  @Override
   public void enterIpv6_prefix_list_stanza(Ipv6_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
     _currentPrefix6List = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
@@ -3785,7 +3785,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterS_aaa(S_aaaContext ctx) {
-    _no = ctx.NO() != null;
     if (_configuration.getCf().getAaa() == null) {
       _configuration.getCf().setAaa(new Aaa());
     }
@@ -3885,6 +3884,18 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void enterS_ip_pim(S_ip_pimContext ctx) {
     _no = ctx.NO() != null;
+  }
+
+  @Override
+  public void enterS_ip_route(S_ip_routeContext ctx) {
+    if (ctx.vrf != null) {
+      _currentVrf = ctx.vrf.getText();
+    }
+  }
+
+  @Override
+  public void exitS_ip_route(S_ip_routeContext ctx) {
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -4141,7 +4152,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void enterS_snmp_server(S_snmp_serverContext ctx) {
     if (_configuration.getSnmpServer() == null) {
       SnmpServer snmpServer = new SnmpServer();
-      snmpServer.setVrf(Configuration.DEFAULT_VRF_NAME);
+      snmpServer.setVrf(AristaConfiguration.DEFAULT_VRF_NAME);
       _configuration.setSnmpServer(snmpServer);
     }
   }
@@ -5244,6 +5255,18 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIfipm_boundary_eos(Ifipm_boundary_eosContext ctx) {
+    if (ctx.name != null) {
+      String name = ctx.name.getText();
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST_STANDARD,
+          name,
+          INTERFACE_IP_MULTICAST_BOUNDARY,
+          ctx.getStart().getLine());
+    }
+  }
+
+  @Override
   public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
     // Arista syntax
     String acl = ctx.acl.getText();
@@ -5907,13 +5930,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     SubRange lengthRange = new SubRange(minLen, maxLen);
     PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
     _currentPrefixList.addLine(line);
-  }
-
-  @Override
-  public void exitIp_route_stanza(Ip_route_stanzaContext ctx) {
-    if (ctx.vrf != null || ctx.MANAGEMENT() != null) {
-      _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    }
   }
 
   @Override
@@ -7027,7 +7043,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRo_vrf(Ro_vrfContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
     _currentOspfProcess = currentVrf().getOspfProcesses().get(_lastKnownOspfProcess);
     _lastKnownOspfProcess = null;
   }
@@ -7204,12 +7220,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRs_vrf(Rs_vrfContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
-  }
-
-  @Override
-  public void exitS_aaa(S_aaaContext ctx) {
-    _no = false;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -7314,7 +7325,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitS_router_ospf(S_router_ospfContext ctx) {
     _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -7388,7 +7399,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitS_vrf_definition(S_vrf_definitionContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
+    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -7895,8 +7906,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       return Ip6.MAX;
     } else if (ctx.HOST() != null) {
       return Ip6.ZERO;
-    } else if (ctx.ipv6_prefix != null) {
-      return Prefix6.parse(ctx.ipv6_prefix.getText()).getPrefixWildcard();
+    } else if (ctx.prefix6 != null) {
+      return Prefix6.parse(ctx.prefix6.getText()).getPrefixWildcard();
     } else if (ctx.ip != null) {
       // basically same as host
       return Ip6.ZERO;
@@ -7911,7 +7922,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String vrf =
         canonicalNamePrefix.equals(AristaConfiguration.MANAGEMENT_INTERFACE_PREFIX)
             ? AristaConfiguration.MANAGEMENT_VRF_NAME
-            : Configuration.DEFAULT_VRF_NAME;
+            : AristaConfiguration.DEFAULT_VRF_NAME;
     int mtu = Interface.getDefaultMtu();
     iface.setVrf(vrf);
     initVrf(vrf);

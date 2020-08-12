@@ -40,8 +40,6 @@ java_library(
     ],
     deps = [
         ":minesweeper",
-        "//projects/batfish-common-protocol:common",
-        "@maven//:com_google_guava_guava",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )
@@ -52,6 +50,7 @@ junit_tests(
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
+    tags = ["z3"],
     runtime_deps = [
         "@maven//:org_slf4j_slf4j_jdk14",
     ],
@@ -66,6 +65,7 @@ junit_tests(
         "//projects/lib/z3",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
+        "@maven//:dk_brics_automaton",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
     ],

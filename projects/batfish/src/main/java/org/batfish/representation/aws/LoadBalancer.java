@@ -296,8 +296,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
     installTransformations(
         viIface,
-        availabilityZone.getZoneName(),
-        crossZoneLoadBalancing,
+        getEnabledTargetZones(availabilityZone, crossZoneLoadBalancing, _availabilityZones),
         listeners,
         region,
         warnings);
@@ -348,8 +347,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   void installTransformations(
       Interface viIface,
-      String lbAvailabilityZoneName,
-      boolean crossZoneLoadBalancing,
+      Set<String> enabledTargetZones,
       List<Listener> listeners,
       Region region,
       Warnings warnings) {
@@ -360,9 +358,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
                   listener ->
                       computeListenerTransformation(
                           listener,
-                          lbAvailabilityZoneName,
                           viIface.getConcreteAddress().getIp(),
-                          crossZoneLoadBalancing,
+                          enabledTargetZones,
                           region,
                           warnings))
               .filter(Objects::nonNull)
@@ -386,9 +383,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   LoadBalancerTransformation computeListenerTransformation(
       LoadBalancerListener.Listener listener,
-      String lbAvailabilityZoneName,
       Ip loadBalancerIp,
-      boolean crossZoneLoadBalancing,
+      Set<String> enabledTargetZones,
       Region region,
       Warnings warnings) {
     try {
@@ -409,9 +405,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       TransformationStep transformationStep =
           computeTargetGroupTransformationStep(
               forwardingAction.get().getTargetGroupArn(),
-              lbAvailabilityZoneName,
               loadBalancerIp,
-              crossZoneLoadBalancing,
+              enabledTargetZones,
               region,
               warnings);
 
@@ -442,8 +437,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   static Set<TargetHealthDescription> getActiveTargets(
       LoadBalancerTargetHealth targetHealth,
       TargetGroup targetGroup,
-      Set<String> lbAvailabilityZones,
-      boolean crossZoneLoadBalancing,
+      Set<String> enabledTargetZones,
       Region region,
       boolean fileWarnings,
       @Nullable Warnings warnings) {
@@ -454,12 +448,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
         targetHealth.getTargetHealthDescriptions().stream()
             .filter(
                 desc ->
-                    isTargetInAnyEnabledAvailabilityZone(
-                        desc,
-                        targetGroup.getTargetType(),
-                        lbAvailabilityZones,
-                        crossZoneLoadBalancing,
-                        region))
+                    isTargetInValidAvailabilityZone(
+                        desc, targetGroup.getTargetType(), enabledTargetZones, region))
             .collect(ImmutableSet.toImmutableSet());
     if (enabledTargets.isEmpty()) {
       if (fileWarnings) {
@@ -492,9 +482,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   @VisibleForTesting
   static TransformationStep computeTargetGroupTransformationStep(
       String targetGroupArn,
-      String lbAvailabilityZoneName,
       Ip loadBalancerIp,
-      boolean crossZoneLoadBalancing,
+      Set<String> enabledTargetZones,
       Region region,
       Warnings warnings) {
     TargetGroup targetGroup = region.getTargetGroups().get(targetGroupArn);
@@ -513,14 +502,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     }
 
     Set<TargetHealthDescription> activeTargets =
-        getActiveTargets(
-            targetHealths,
-            targetGroup,
-            ImmutableSet.of(lbAvailabilityZoneName),
-            crossZoneLoadBalancing,
-            region,
-            true,
-            warnings);
+        getActiveTargets(targetHealths, targetGroup, enabledTargetZones, region, true, warnings);
 
     Set<TransformationStep> transformationSteps =
         activeTargets.stream()
@@ -545,8 +527,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   /**
    * Gets the target IP for the given {@link LoadBalancerTarget}. Assumes that target validity has
-   * already been checked with {@link #isTargetInAnyEnabledAvailabilityZone(TargetHealthDescription,
-   * TargetGroup.Type, Set, boolean, Region) isTargetInAnyEnabledAvailabilityZone}.
+   * already been checked with {@link #isTargetInValidAvailabilityZone(TargetHealthDescription,
+   * TargetGroup.Type, Set, Region)}.
    */
   @Nullable
   static Ip getTargetIp(
@@ -597,22 +579,19 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /**
-   * A target is in some enabled zone for this load balancer if the load balancer does cross zone
-   * load balancing; or if the target is either in zone "all" or in any of the {@code
-   * lbAvailabilityZones}.
+   * A target is in a valid zone for this load balancer if it is either in zone "all" or one of the
+   * enabled zones.
    */
   @VisibleForTesting
-  static boolean isTargetInAnyEnabledAvailabilityZone(
+  static boolean isTargetInValidAvailabilityZone(
       TargetHealthDescription targetHealthDescription,
       TargetGroup.Type targetType,
-      Set<String> lbAvailabilityZones,
-      boolean crossZoneLoadBalancing,
+      Set<String> enabledTargetZones,
       Region region) {
     switch (targetType) {
       case IP:
-        return crossZoneLoadBalancing
-            || "all".equals(targetHealthDescription.getTarget().getAvailabilityZone())
-            || lbAvailabilityZones.contains(
+        return "all".equals(targetHealthDescription.getTarget().getAvailabilityZone())
+            || enabledTargetZones.contains(
                 targetHealthDescription.getTarget().getAvailabilityZone());
       case INSTANCE:
         Instance instance = region.getInstances().get(targetHealthDescription.getTarget().getId());
@@ -620,9 +599,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
           return false;
         }
         Subnet subnet = region.getSubnets().get(instance.getSubnetId());
-        return subnet != null
-            && (crossZoneLoadBalancing
-                || lbAvailabilityZones.contains(subnet.getAvailabilityZone()));
+        return subnet != null && enabledTargetZones.contains(subnet.getAvailabilityZone());
       default:
         throw new IllegalArgumentException("Unknown target group type " + targetType);
     }
@@ -763,6 +740,22 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   static String getNodeId(String dnsName, String availabilityZoneName) {
     return String.format("%s-%s", availabilityZoneName, dnsName);
+  }
+
+  /**
+   * Returns all the zones to which the LB instance in {@code instanceZone} will send packets. The
+   * result depends on whether cross zone load balancing is enabled for the LB.
+   */
+  @VisibleForTesting
+  static Set<String> getEnabledTargetZones(
+      AvailabilityZone instanceZone,
+      boolean crossZoneLoadBalancing,
+      List<AvailabilityZone> allEnabledZones) {
+    return crossZoneLoadBalancing
+        ? allEnabledZones.stream()
+            .map(zone -> zone.getZoneName())
+            .collect(ImmutableSet.toImmutableSet())
+        : ImmutableSet.of(instanceZone.getZoneName());
   }
 
   @Override

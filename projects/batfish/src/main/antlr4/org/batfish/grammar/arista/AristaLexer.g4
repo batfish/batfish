@@ -1283,7 +1283,12 @@ BOTH
 
 BOUNDARY
 :
-   'boundary'
+  'boundary'
+  {
+    if (lastTokenType() == MULTICAST) {
+      pushMode(M_Prefix_Or_Standard_Acl);
+    }
+  }
 ;
 
 BPDUFILTER
@@ -1735,7 +1740,6 @@ COMMUNITY
 :
    'community'
    { _enableIpv6Address = false; }
-
 ;
 
 COMMUNITY_LIST
@@ -1746,7 +1750,6 @@ COMMUNITY_LIST
       _enableCommunityListNum = true;
       _enableDec = false;
    }
-
 ;
 
 COMMUNITY_MAP
@@ -8653,6 +8656,11 @@ ROLE
    'role'
 ;
 
+ROOT
+:
+  'root'
+;
+
 ROTARY
 :
    'rotary'
@@ -11560,7 +11568,7 @@ EQUALS
 FLOAT
 :
    (
-      F_PositiveDigit* F_Digit '.' F_Digit+
+      F_PositiveDigit F_Digit* '.' F_Digit+
    )
 ;
 
@@ -12874,6 +12882,33 @@ M_NEIGHBOR_VARIABLE
 ;
 
 M_NEIGHBOR_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Prefix_Or_Standard_Acl;
+
+M_Prefix_Or_Standard_Acl_IP_ADDRESS
+:
+  F_IpAddress -> type ( IP_ADDRESS ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_IP_PREFIX
+:
+  F_IpPrefix -> type ( IP_PREFIX ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_WORD
+:
+   F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;

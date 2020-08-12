@@ -1321,6 +1321,11 @@ ETHERNET
   [Ee] [Tt] [Hh] [Ee] [Rr] [Nn] [Ee] [Tt]
 ;
 
+ETHERTYPE
+:
+  'ethertype'
+;
+
 EVENT
 :
   'event'
@@ -1394,6 +1399,11 @@ EXPORT
 EXPORTER
 :
   'exporter' -> pushMode(M_Word)
+;
+
+EXTEND
+:
+  'extend'
 ;
 
 EXTENDED
@@ -2112,6 +2122,11 @@ LABEL
 LACP
 :
   'lacp'
+;
+
+LAN
+:
+  'lan'
 ;
 
 LARGE
@@ -3524,6 +3539,11 @@ RANDOM_DETECT
 RANGE
 :
   'range'
+;
+
+RATE
+:
+  'rate'
 ;
 
 RD

@@ -322,7 +322,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_dhcpContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_descriptionContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_private_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_speed_numberContext;
@@ -378,6 +377,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoip_forwardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoipo_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inos_switchportContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.InoshutContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
@@ -5192,7 +5192,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitI_no_shutdown(I_no_shutdownContext ctx) {
+  public void exitInoshut(InoshutContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setShutdown(false));
   }
 

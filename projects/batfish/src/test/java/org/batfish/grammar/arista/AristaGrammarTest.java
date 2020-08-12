@@ -1434,6 +1434,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testMulticastParsing() {
+    // doesn't crash.
+    parseVendorConfig("arista_multicast");
+  }
+
+  @Test
   public void testVrrpConversion() {
     Configuration c = parseConfig("arista_vrrp");
     assertThat(c.getAllInterfaces(), hasKey("Vlan20"));
@@ -2279,6 +2285,12 @@ public class AristaGrammarTest {
     Bgpv4Route denyRoute = builder.setNetwork(Prefix.parse("240.1.1.0/24")).build();
     assertTrue(policy.processBgpRoute(acceptRoute, Bgpv4Route.builder(), null, Direction.IN));
     assertFalse(policy.processBgpRoute(denyRoute, Bgpv4Route.builder(), null, Direction.IN));
+  }
+
+  @Test
+  public void testIpv6RouteParsing() {
+    // Don't crash
+    parseConfig("ipv6_route");
   }
 
   @Test

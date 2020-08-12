@@ -46,7 +46,7 @@ public final class BDDFiniteDomain<V> {
       _isValidValue = one;
     } else {
       int bitsRequired = computeBitsRequired(size);
-      checkArgument(bitsRequired <= var.getBitvec().length);
+      checkArgument(bitsRequired <= var.size());
       _valueToBdd = computeValueBdds(var, values);
       _isValidValue = var.leq(size - 1);
     }

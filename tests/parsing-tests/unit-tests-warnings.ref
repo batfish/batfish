@@ -44,35 +44,35 @@
     "rows" : [
       {
         "Filename" : "configs/arista_bgp",
-        "Line" : 12,
+        "Line" : 13,
         "Text" : "ospf3 match internal route-map ROUTE_MAP",
         "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/arista_bgp",
-        "Line" : 13,
+        "Line" : 14,
         "Text" : "ospf3 match external route-map UNDEFINED_MAP",
         "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/arista_interface",
-        "Line" : 12,
+        "Line" : 14,
         "Text" : "ip 2.3.4.5 secondary",
-        "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza cisco_configuration]",
+        "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza arista_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/arista_nat",
-        "Line" : 9,
+        "Line" : 11,
         "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255",
         "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
         "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP"
       },
       {
         "Filename" : "configs/arista_nat",
-        "Line" : 10,
+        "Line" : 12,
         "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32",
         "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
         "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP"
@@ -300,6 +300,13 @@
         "Text" : "unsuppress-map UNSUPP-MAP",
         "Parser_Context" : "[unsuppress_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
         "Comment" : "BGP unusuppress-map is not currently supported"
+      },
+      {
+        "Filename" : "configs/cisco_crypto",
+        "Line" : 232,
+        "Text" : "address someacl",
+        "Parser_Context" : "[crypto_map_t_match_address crypto_map_t_match crypto_map_tail crypto_map s_crypto stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
@@ -1401,6 +1408,13 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 18,
+        "Text" : "protocol access-internal",
+        "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/juniper_rib_groups",
         "Line" : 4,
         "Text" : "rib-group inet6 interface-routes-rib",
@@ -1465,10 +1479,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 203 results",
+      "notes" : "Found 205 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 203
+      "numResults" : 205
     }
   }
 ]

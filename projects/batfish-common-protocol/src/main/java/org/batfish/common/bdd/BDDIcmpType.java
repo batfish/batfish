@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.BitSet;
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IcmpType;
 
@@ -10,7 +11,7 @@ public final class BDDIcmpType {
   private final BDDInteger _var;
 
   public BDDIcmpType(BDDInteger var) {
-    checkArgument(var.getBitvec().length == 8, "IcmpType field requires 8 bits");
+    checkArgument(var.size() == 8, "IcmpType field requires 8 bits");
     _var = var;
   }
 
@@ -25,6 +26,15 @@ public final class BDDIcmpType {
    * @param satAssignment a satisfying assignment (i.e. produced by fullSat, allSat, etc)
    */
   public int satAssignmentToValue(BDD satAssignment) {
+    return _var.satAssignmentToLong(satAssignment).intValue();
+  }
+
+  /**
+   * Extract the value from the bits of a satisfying assignment.
+   *
+   * @param satAssignment see {@link BDD#minAssignmentBits()}.
+   */
+  public int satAssignmentToValue(BitSet satAssignment) {
     return _var.satAssignmentToLong(satAssignment).intValue();
   }
 

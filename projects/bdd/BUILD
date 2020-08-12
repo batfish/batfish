@@ -24,7 +24,6 @@ java_library(
     deps = [
         ":bdd",
         "@maven//:junit_junit",
-        "@maven//:org_hamcrest_hamcrest",
     ],
 )
 

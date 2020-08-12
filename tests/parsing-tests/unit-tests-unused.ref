@@ -34,10 +34,10 @@
         "Source_Lines" : {
           "filename" : "configs/arista_acl",
           "lines" : [
-            4,
             5,
             6,
-            7
+            7,
+            8
           ]
         }
       },
@@ -47,7 +47,7 @@
         "Source_Lines" : {
           "filename" : "configs/arista_nat",
           "lines" : [
-            9
+            11
           ]
         }
       },
@@ -57,7 +57,7 @@
         "Source_Lines" : {
           "filename" : "configs/arista_nat",
           "lines" : [
-            10
+            12
           ]
         }
       },
@@ -3004,7 +3004,7 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_policy_statement",
           "lines" : [
-            39
+            40
           ]
         }
       },
@@ -3046,7 +3046,8 @@
             33,
             34,
             35,
-            36
+            36,
+            37
           ]
         }
       },
