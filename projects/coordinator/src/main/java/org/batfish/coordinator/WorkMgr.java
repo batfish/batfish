@@ -2393,6 +2393,8 @@ public class WorkMgr extends AbstractCoordinator {
     } finally {
       CommonUtil.deleteDirectory(unzipDir);
     }
+    // Trigger GC since uploading initial snapshot can change expungeBeforeDate
+    triggerGarbageCollection();
   }
 
   public boolean checkNetworkExists(String networkName) {
