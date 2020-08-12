@@ -808,7 +808,9 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static @Nullable SetMetric getSetMaxMedMetric(BgpVrf bgpVrf) {
-    return bgpVrf.getMaxMedAdministrative() != null ? new SetMetric(new LiteralLong(bgpVrf.getMaxMedAdministrative())) : null;
+    return bgpVrf.getMaxMedAdministrative() != null
+        ? new SetMetric(new LiteralLong(bgpVrf.getMaxMedAdministrative()))
+        : null;
   }
 
   @Nullable

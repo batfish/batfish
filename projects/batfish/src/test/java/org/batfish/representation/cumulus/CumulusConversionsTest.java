@@ -1849,6 +1849,5 @@ public final class CumulusConversionsTest {
     // Set the value and test again
     bgpVrf.setMaxMedAdministrative(1234L);
     assertThat(getSetMaxMedMetric(bgpVrf), equalTo(new SetMetric(new LiteralLong(1234L))));
-
   }
 }

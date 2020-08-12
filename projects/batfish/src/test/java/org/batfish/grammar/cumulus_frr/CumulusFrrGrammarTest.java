@@ -697,7 +697,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testBgpMaxMedAdministrative_unset() {
     parse("router bgp 1\n bgp max-med administrative\n");
-    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(4294967294L));
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(4294967294L));
   }
 
   @Test
