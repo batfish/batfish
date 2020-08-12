@@ -1,7 +1,7 @@
 package org.batfish.storage;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.batfish.storage.FileBasedStorage.GC_SKEW_ALLOWANCE_MINUTES;
+import static org.batfish.storage.FileBasedStorage.GC_SKEW_ALLOWANCE;
 import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
@@ -672,7 +672,7 @@ public final class FileBasedStorageTest {
     AnswerId newAnswerId = new AnswerId("answerNew-id");
 
     Instant oldTime = Instant.now();
-    Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE_MINUTES + 1, ChronoUnit.MINUTES);
+    Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE);
 
     // mock modified times for test
     FileBasedStorage storage =

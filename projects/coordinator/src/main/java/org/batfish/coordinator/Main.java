@@ -359,7 +359,7 @@ public class Main {
                   _logger.debugf("Coordinator running garbage collection...\n");
                   Main.getWorkMgr().runGarbageCollection();
                   _logger.debugf("Coordinator completed garbage collection.\n");
-                } catch (InterruptedException | IOException e) {
+                } catch (Exception e) {
                   _logger.errorf(
                       "Coordinator garbage collector encountered an error:\n%s",
                       Throwables.getStackTraceAsString(e));

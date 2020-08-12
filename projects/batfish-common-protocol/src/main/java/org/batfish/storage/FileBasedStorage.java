@@ -33,8 +33,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -103,7 +103,7 @@ import org.batfish.vendor.VendorConfiguration;
 @ParametersAreNonnullByDefault
 public class FileBasedStorage implements StorageProvider {
 
-  @VisibleForTesting static final long GC_SKEW_ALLOWANCE_MINUTES = 10L;
+  @VisibleForTesting static final Duration GC_SKEW_ALLOWANCE = Duration.ofMinutes(10L);
   private static final String ID_EXTENSION = ".id";
   private static final String SUFFIX_LOG_FILE = ".log";
   private static final String SUFFIX_ANSWER_JSON_FILE = ".json";
@@ -1868,18 +1868,15 @@ public class FileBasedStorage implements StorageProvider {
   public void runGarbageCollection(Instant expungeBeforeDate) throws IOException {
     // Go back GC_SKEW_ALLOWANCE_MINUTES minutes to account for skew. This should safely
     // underapproximate data to delete.
-    Instant safeExpungeBeforeDate =
-        expungeBeforeDate.minus(GC_SKEW_ALLOWANCE_MINUTES, ChronoUnit.MINUTES);
-    _logger.debugf("Expunge before: %s\n", safeExpungeBeforeDate);
+    Instant safeExpungeBeforeDate = expungeBeforeDate.minus(GC_SKEW_ALLOWANCE);
+    _logger.debugf("FBS GC: Expunge before: %s\n", safeExpungeBeforeDate);
     for (String networkName : listResolvableNames(NetworkId.class)) {
       Optional<String> networkIdStrOpt;
-      try {
-        networkIdStrOpt = readId(NetworkId.class, networkName);
-      } catch (IOException e) {
-        return;
-      }
+      networkIdStrOpt = readId(NetworkId.class, networkName);
       if (!networkIdStrOpt.isPresent()) {
-        return;
+        _logger.debugf(
+            "FBS GC: Ignoring network '%s' that was deleted while fetching its ID", networkName);
+        continue;
       }
       NetworkId networkId = new NetworkId(networkIdStrOpt.get());
 
@@ -1896,6 +1893,13 @@ public class FileBasedStorage implements StorageProvider {
     }
   }
 
+  /**
+   * Deletes filesystem entries in {@code dir} whose last modified time precedes {@code
+   * expungeBeforeDate}. When deleting regular files, {@code directories} should be {@code false}.
+   * When deleting directories, {@code directories} should be {@code true}.
+   *
+   * @throws IOException if there is an error
+   */
   @VisibleForTesting
   void expungeOldEntries(Instant expungeBeforeDate, Path dir, boolean directories)
       throws IOException {
@@ -1906,15 +1910,17 @@ public class FileBasedStorage implements StorageProvider {
               .filter(
                   path -> {
                     if (directories ? !isDirectory(path) : !isRegularFile(path)) {
+                      // If this is not the type of filesystem entry we want to delete, ignore this
+                      // path.
                       return false;
                     }
-                    Instant lastModifiedTime;
                     try {
-                      lastModifiedTime = getLastModifiedTime(path);
+                      return getLastModifiedTime(path).compareTo(expungeBeforeDate) < 0;
                     } catch (IOException e) {
+                      // If for some reason the last modified time of the entry cannot be fetched
+                      // (e.g. it was just deleted), ignore this path.
                       return false;
                     }
-                    return lastModifiedTime.compareTo(expungeBeforeDate) < 0;
                   })
               .collect(ImmutableList.toImmutableList());
     }
@@ -1924,7 +1930,7 @@ public class FileBasedStorage implements StorageProvider {
       } else {
         deleteIfExists(path);
       }
-      _logger.debugf("Garbage collector deleted: %s\n", path);
+      _logger.debugf("FBS GC: deleted: %s\n", path);
     }
   }
 }
