@@ -2294,6 +2294,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testRouteMapParsing() {
+    // Don't crash
+    parseConfig("route_map");
+  }
+
+  @Test
   public void testSnmpExtraction() {
     Configuration config = parseConfig("arista_snmp");
     assertThat(config.getSnmpTrapServers(), containsInAnyOrder("10.1.2.3"));

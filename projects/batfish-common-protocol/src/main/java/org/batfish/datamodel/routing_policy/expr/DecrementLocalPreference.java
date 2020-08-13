@@ -11,7 +11,7 @@ public final class DecrementLocalPreference extends LongExpr {
   @JsonCreator
   private DecrementLocalPreference() {}
 
-  public DecrementLocalPreference(int subtrahend) {
+  public DecrementLocalPreference(long subtrahend) {
     _subtrahend = subtrahend;
   }
 

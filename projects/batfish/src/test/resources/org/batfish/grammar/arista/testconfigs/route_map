@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname route_map
+!
+route-map map1 permit 1
+ set local-preference 4294967295
