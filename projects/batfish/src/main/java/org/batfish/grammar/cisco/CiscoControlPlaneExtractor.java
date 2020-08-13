@@ -368,13 +368,10 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.IgpCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.routing_policy.expr.VarAs;
-import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -9277,8 +9274,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarAs(ctx.RP_VARIABLE().getText());
     } else {
       throw convError(AsExpr.class, ctx);
     }
@@ -9672,7 +9667,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private LongExpr toLocalPreferenceLongExpr(Int_exprContext ctx) {
     if (ctx.DEC() != null) {
-      int val = toInteger(ctx.DEC());
+      long val = toLong(ctx.DEC());
       if (ctx.PLUS() != null) {
         return new IncrementLocalPreference(val);
       } else if (ctx.DASH() != null) {
@@ -9680,14 +9675,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else {
         return new LiteralLong(val);
       }
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarLong(ctx.RP_VARIABLE().getText());
     } else {
       /*
        * Unsupported local-preference integer expression - do not add cases
        * unless you know what you are doing
        */
-      throw convError(IntExpr.class, ctx);
+      throw convError(LongExpr.class, ctx);
     }
   }
 
@@ -9792,8 +9785,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
     } else if (ctx.IGP_COST() != null) {
       return new IgpCost();
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarLong(ctx.RP_VARIABLE().getText());
     } else {
       /*
        * Unsupported metric long expression - do not add cases unless you
