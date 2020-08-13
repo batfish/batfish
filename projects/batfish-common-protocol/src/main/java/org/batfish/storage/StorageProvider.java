@@ -4,6 +4,7 @@ import com.google.errorprone.annotations.MustBeClosed;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -733,7 +734,8 @@ public interface StorageProvider {
   /**
    * Loads the original zip for a snapshot upload request associated with the given key.
    *
-   * @throws IOException if there is an error
+   * @throws FileNotFoundException if the zip is not found.
+   * @throws IOException if there is any other error
    */
   @MustBeClosed
   @Nonnull
@@ -959,4 +961,17 @@ public interface StorageProvider {
   @MustBeClosed
   @Nonnull
   Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
+   * Run implementation-specific garbage collection.
+   *
+   * <p>The caller guarantees that data last modified before the {@code expungeBeforeDate} is not
+   * live/user-visible, and is therefore safe to expunge. An implementation should only expunge
+   * later data if it can guarantee the effects will not be visible to {@link StorageProvider}
+   * clients. For instance, snapshot data for a deleted snapshot may be expunged even if last
+   * modified after the {@code expungeBeforeDate}.
+   *
+   * @throws IOException if there is an error
+   */
+  void runGarbageCollection(Instant expungeBeforeDate) throws IOException;
 }

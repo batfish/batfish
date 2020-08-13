@@ -50,11 +50,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -156,11 +156,16 @@ public final class WorkMgrTest {
   }
 
   private void createSnapshotWithMetadata(String network, String snapshot) throws IOException {
+    createSnapshotWithMetadata(network, snapshot, Instant.now());
+  }
+
+  private void createSnapshotWithMetadata(String network, String snapshot, Instant creationTime)
+      throws IOException {
     NetworkId networkId = _idManager.getNetworkId(network).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshot, networkId, snapshotId);
     _snapshotMetadataManager.writeMetadata(
-        new SnapshotMetadata(new Date().toInstant(), null), networkId, snapshotId);
+        new SnapshotMetadata(creationTime, null), networkId, snapshotId);
   }
 
   @Test
@@ -959,7 +964,7 @@ public final class WorkMgrTest {
         snapshotDir.resolve(BfConsts.RELPATH_RUNTIME_DATA_FILE),
         BatfishObjectMapper.writePrettyString(runtimeData));
     _manager.initNetwork(networkName, null);
-    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false, Instant.now());
 
     // Create fork
     String forkName = "fork";
@@ -1039,7 +1044,7 @@ public final class WorkMgrTest {
         snapshotDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
         BatfishObjectMapper.writePrettyString(baseBlacklist));
     _manager.initNetwork(networkName, null);
-    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, baseSnapshotName, srcDir, false, Instant.now());
 
     // Create fork
     String forkName = "fork";
@@ -1908,7 +1913,7 @@ public final class WorkMgrTest {
     // Create snapshot dir to pass into init
     Path srcDir = createSnapshot(snapshotName, fileName, fileContents, _folder);
 
-    _manager.initSnapshot(networkName, snapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false, Instant.now());
 
     // Confirm the new snapshot exists
     assertThat(_manager.getLatestSnapshot(networkName), equalTo(Optional.of(snapshotName)));
@@ -1963,7 +1968,7 @@ public final class WorkMgrTest {
         snapshotDir.resolve(BfConsts.RELPATH_INTERFACE_BLACKLIST_FILE),
         BatfishObjectMapper.writePrettyString(blacklist));
     _manager.initNetwork(networkName, null);
-    _manager.initSnapshot(networkName, snapshotName, srcDir, false);
+    _manager.initSnapshot(networkName, snapshotName, srcDir, false, Instant.now());
 
     // Interface blacklist should not exist in new snapshot
     NetworkId networkId = _idManager.getNetworkId(networkName).get();
@@ -1996,7 +2001,8 @@ public final class WorkMgrTest {
 
     // Pass in path to subdir so init sees improperly formatted dir
     // i.e. sees dir containing 'configs/' instead of 'snapshotName/configs/'
-    _manager.initSnapshot(networkName, snapshotName, srcDir.resolve(snapshotName), false);
+    _manager.initSnapshot(
+        networkName, snapshotName, srcDir.resolve(snapshotName), false, Instant.now());
   }
 
   @Test
@@ -3438,5 +3444,39 @@ public final class WorkMgrTest {
 
     // Confirm filter options were applied correctly
     assertThat(processedRows, equalTo(table.getRowsList()));
+  }
+
+  @Test
+  public void testComputeExpungeBeforeTime() throws IOException {
+    String network = "network1";
+    String snapshotNew = "snapshotNew";
+    String snapshotOld = "snapshotOld";
+
+    Instant oldTime = Instant.now();
+    Instant newTime = oldTime.plus(1, ChronoUnit.MINUTES);
+
+    // In absence of snapshots, computeExpungeBeforeTime should return empty result.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.empty()));
+    _manager.initNetwork(network, null);
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.empty()));
+
+    // Write old snapshot.
+    createSnapshotWithMetadata(network, snapshotOld, oldTime);
+
+    // Now computeExpungeBeforeTime should return the creation time of the old snapshot.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.of(oldTime)));
+
+    // write new snapshot
+    createSnapshotWithMetadata(network, snapshotNew, newTime);
+
+    // computeExpungeBeforeTime should still return the creation time of the old snapshot.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.of(oldTime)));
+
+    // delete old snapshot
+    _manager.delSnapshot(network, snapshotOld);
+
+    // With the old snapshot deleted, computeExpungeBeforeTime should return the creation time of
+    // the new snapshot.
+    assertThat(_manager.computeExpungeBeforeDate(), equalTo(Optional.of(newTime)));
   }
 }

@@ -62,7 +62,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -197,6 +202,47 @@ public class WorkMgr extends AbstractCoordinator {
     return entries;
   }
 
+  /** Instruct storage provider to expunge old data */
+  private void runGarbageCollection() throws IOException {
+    _logger.debugf("WorkMgr running garbage collection...\n");
+    Optional<Instant> expungeBeforeDateOpt = computeExpungeBeforeDate();
+    if (expungeBeforeDateOpt.isPresent()) {
+      _storage.runGarbageCollection(expungeBeforeDateOpt.get());
+    }
+    _logger.debugf("WorkMgr completed garbage collection.\n");
+  }
+
+  /**
+   * Returns earliest modification date a file must have to survive garbage collection, or {@link
+   * Optional#empty} if none can be identified.
+   *
+   * @throws IOException if there is an error
+   */
+  @VisibleForTesting
+  @Nonnull
+  Optional<Instant> computeExpungeBeforeDate() throws IOException {
+    Stream.Builder<Instant> builder = Stream.builder();
+    for (String network : _idManager.listNetworks()) {
+      Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
+      if (!networkIdOpt.isPresent()) {
+        continue;
+      }
+      for (String snapshot : _idManager.listSnapshots(networkIdOpt.get())) {
+        SnapshotMetadata metadata;
+        try {
+          metadata = getSnapshotMetadata(network, snapshot);
+        } catch (IOException e) {
+          _logger.debugf(
+              "computeExpungeBeforeDate: Failed to read snapshot metadata for network '%s', snapshot '%s': %s",
+              network, snapshot, Throwables.getStackTraceAsString(e));
+          continue;
+        }
+        builder.add(metadata.getCreationTimestamp());
+      }
+    }
+    return builder.build().min(Instant::compareTo);
+  }
+
   static final class AssignWorkTask implements Runnable {
     @Override
     public void run() {
@@ -217,6 +263,7 @@ public class WorkMgr extends AbstractCoordinator {
   private final SnapshotMetadataMgr _snapshotMetadataManager;
   private WorkQueueMgr _workQueueMgr;
   private final StorageProvider _storage;
+  private final ExecutorService _gcExecutor;
 
   public WorkMgr(
       Settings settings,
@@ -229,6 +276,11 @@ public class WorkMgr extends AbstractCoordinator {
     _snapshotMetadataManager = new SnapshotMetadataMgr(_storage);
     _logger = logger;
     _workQueueMgr = new WorkQueueMgr(logger, _snapshotMetadataManager);
+    // Can only run one GC task at a time, and only have one queued. If one is queued and another is
+    // submitted, the older one in the queue is discarded.
+    _gcExecutor =
+        new ThreadPoolExecutor(
+            0, 1, 0L, TimeUnit.SECONDS, new ArrayBlockingQueue<>(1), new DiscardOldestPolicy());
   }
 
   @VisibleForTesting
@@ -733,7 +785,11 @@ public class WorkMgr extends AbstractCoordinator {
    * false} if network does not exist.
    */
   public boolean delNetwork(@Nonnull String network) {
-    return _idManager.deleteNetwork(network);
+    boolean result = _idManager.deleteNetwork(network);
+    if (result) {
+      triggerGarbageCollection();
+    }
+    return result;
   }
 
   /**
@@ -746,7 +802,27 @@ public class WorkMgr extends AbstractCoordinator {
       return false;
     }
     NetworkId networkId = networkIdOpt.get();
-    return _idManager.deleteSnapshot(snapshot, networkId);
+    boolean result = _idManager.deleteSnapshot(snapshot, networkId);
+    if (result) {
+      triggerGarbageCollection();
+    }
+    return result;
+  }
+
+  /** Queues garbage collection */
+  void triggerGarbageCollection() {
+    try {
+      _gcExecutor.submit(
+          () -> {
+            try {
+              runGarbageCollection();
+            } catch (Exception e) {
+              _logger.errorf("ERROR WorkMgr GC: %s", Throwables.getStackTraceAsString(e));
+            }
+          });
+    } catch (RejectedExecutionException e) {
+      // can ignore, since handled by rejection policy
+    }
   }
 
   /**
@@ -1557,8 +1633,12 @@ public class WorkMgr extends AbstractCoordinator {
 
   @Override
   public void initSnapshot(
-      String networkName, String snapshotName, Path srcDir, boolean autoAnalyze) {
-    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, null);
+      String networkName,
+      String snapshotName,
+      Path srcDir,
+      boolean autoAnalyze,
+      Instant creationTime) {
+    initSnapshot(networkName, snapshotName, srcDir, autoAnalyze, creationTime, null);
   }
 
   public void initSnapshot(
@@ -1566,6 +1646,7 @@ public class WorkMgr extends AbstractCoordinator {
       String snapshotName,
       Path srcDir,
       boolean autoAnalyze,
+      Instant creationTime,
       @Nullable SnapshotId parentSnapshotId) {
     Path subDir = getSnapshotSubdir(srcDir);
     validateSnapshotDir(subDir);
@@ -1587,7 +1668,7 @@ public class WorkMgr extends AbstractCoordinator {
     // Now that the directory exists, we must also create the metadata.
     try {
       _snapshotMetadataManager.writeMetadata(
-          new SnapshotMetadata(Instant.now(), parentSnapshotId), networkId, snapshotId);
+          new SnapshotMetadata(creationTime, parentSnapshotId), networkId, snapshotId);
     } catch (Exception e) {
       throw new BatfishException("Could not write testrigMetadata", e);
     }
@@ -1754,6 +1835,7 @@ public class WorkMgr extends AbstractCoordinator {
     SnapshotId baseSnapshotId = baseSnapshotIdOpt.get();
 
     // Save user input for troubleshooting
+    Instant creationTime = Instant.now();
     String forkSnapshotKey = generateFileDateString(snapshotName);
     _storage.storeForkSnapshotRequest(
         BatfishObjectMapper.writeString(forkSnapshotBean), forkSnapshotKey, networkId);
@@ -1824,7 +1906,12 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Use initSnapshot to handle creating metadata, etc.
     initSnapshot(
-        networkName, snapshotName, newSnapshotInputsDir.getParent(), false, baseSnapshotId);
+        networkName,
+        snapshotName,
+        newSnapshotInputsDir.getParent(),
+        false,
+        creationTime,
+        baseSnapshotId);
   }
 
   /**
@@ -2283,6 +2370,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     // Save uploaded zip for troubleshooting
+    Instant creationTime = Instant.now();
     String uploadZipKey = generateFileDateString(snapshotName);
     try {
       _storage.storeUploadSnapshotZip(fileStream, uploadZipKey, networkId);
@@ -2298,13 +2386,15 @@ public class WorkMgr extends AbstractCoordinator {
     }
 
     try {
-      initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze);
+      initSnapshot(networkName, snapshotName, unzipDir, autoAnalyze, creationTime);
     } catch (Exception e) {
       throw new BatfishException(
           String.format("Error initializing snapshot: %s", e.getMessage()), e);
     } finally {
       CommonUtil.deleteDirectory(unzipDir);
     }
+    // Trigger GC since uploading initial snapshot can change expungeBeforeDate
+    triggerGarbageCollection();
   }
 
   public boolean checkNetworkExists(String networkName) {
