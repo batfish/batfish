@@ -22,6 +22,8 @@ public enum CumulusStructureUsage implements StructureUsage {
   LOOPBACK_SELF_REFERENCE("loopback self-reference"),
   NET_ADD_INTERFACE("net add interface"),
   OSPF_REDISTRIBUTE_BGP_ROUTE_MAP("ospf redistribute bgp route-map"),
+  OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP("ospf redistribute connected route-map"),
+  OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP("ospf redistribute connected route-map"),
   PORT_BREAKOUT("port breakout"),
   PORT_DISABLED("port disabled"),
   PORT_SPEED("port speed"),

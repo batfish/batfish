@@ -42,7 +42,7 @@ rono_passive_interface
 
 ro_redistribute
 :
-  REDISTRIBUTE (STATIC | CONNECTED | BGP) (ROUTE_MAP route_map_name)? NEWLINE
+  REDISTRIBUTE ospf_redist_type (ROUTE_MAP route_map_name)? NEWLINE
 ;
 
 ronopi_default

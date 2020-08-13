@@ -5,6 +5,9 @@ import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
@@ -17,6 +20,8 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
@@ -47,7 +52,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
@@ -665,32 +669,51 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRo_redistribute(Ro_redistributeContext ctx) {
+    String routeMap = ctx.route_map_name() == null ? null : ctx.route_map_name().getText();
+    handleOspfRedistribution(
+        ctx, getCumulusRoutingProtocol(ctx.ospf_redist_type().getText()), routeMap);
+  }
+
+  private CumulusRoutingProtocol getCumulusRoutingProtocol(String redist_type) {
+    return CumulusRoutingProtocol.valueOf(redist_type.toUpperCase());
+  }
+
+  private CumulusStructureUsage getRedistributionCumulusStructureUsage(
+      CumulusRoutingProtocol srcProtocol, CumulusRoutingProtocol dstProtocol) {
+    if (dstProtocol == CumulusRoutingProtocol.OSPF) {
+      switch (srcProtocol) {
+        case STATIC:
+          return OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
+        case CONNECTED:
+          return OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+        case BGP:
+          return OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+        default:
+          throw new BatfishException("Unexpected Redistribution Protocol");
+      }
+    }
+    throw new BatfishException("Unhandled Redistribution Protocol");
+  }
+
+  public void handleOspfRedistribution(
+      ParserRuleContext ctx, CumulusRoutingProtocol srcProtocol, @Nullable String routeMap) {
     OspfProcess proc = _frr.getOspfProcess();
-    RoutingProtocol protocol;
-    CumulusStructureUsage usage;
+    CumulusStructureUsage usage =
+        getRedistributionCumulusStructureUsage(srcProtocol, CumulusRoutingProtocol.OSPF);
 
-    if (ctx.STATIC() != null) {
-      protocol = RoutingProtocol.STATIC;
-      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
-    } else if (ctx.CONNECTED() != null) {
-      protocol = RoutingProtocol.CONNECTED;
-      usage = BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
-    } else if (ctx.BGP() != null) {
-      protocol = RoutingProtocol.BGP;
-      usage = OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
-    } else {
-      throw new BatfishException("Unexpected redistribution protocol");
-    }
-
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(protocol);
-    proc.getRedistributionPolicies().put(protocol, r);
-    if (ctx.route_map_name() != null) {
-      String map = ctx.route_map_name().getText();
-      r.setRouteMap(map);
-      _c.referenceStructure(ROUTE_MAP, map, usage, ctx.getStart().getLine());
-    }
-    r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    r.setOnlyClassfulRoutes(false);
+    VI_PROTOCOLS_MAP
+        .get(srcProtocol)
+        .forEach(
+            protocol -> {
+              OspfRedistributionPolicy r = new OspfRedistributionPolicy(protocol);
+              proc.getRedistributionPolicies().put(protocol, r);
+              if (routeMap != null) {
+                r.setRouteMap(routeMap);
+                _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+              }
+              r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+              r.setOnlyClassfulRoutes(false);
+            });
   }
 
   @Override
