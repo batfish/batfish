@@ -3232,6 +3232,25 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosRouteMapLocalPreference() throws IOException {
+    String hostname = "ios-route-map-set-local-preference";
+    Configuration c = parseConfig(hostname);
+    RoutingPolicy setWeightPolicy = c.getRoutingPolicies().get("SET_LOCAL_PREFERENCE");
+    Bgpv4Route r =
+        Bgpv4Route.builder()
+            .setWeight(1)
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route.Builder transformedRoute = r.toBuilder();
+
+    assertThat(setWeightPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
+    assertThat(transformedRoute.build().getLocalPreference(), equalTo((1L << 32) - 1));
+  }
+
+  @Test
   public void testIosRouteMapSetWeight() throws IOException {
     // Config contains a route-map SET_WEIGHT with one line, "set weight 20"
     String hostname = "ios-route-map-set-weight";

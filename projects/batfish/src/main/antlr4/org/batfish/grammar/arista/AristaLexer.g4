@@ -11645,11 +11645,6 @@ REGEX
    )* '/'
 ;
 
-RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
-;
-
 SEMICOLON
 :
    ';'
@@ -12030,12 +12025,6 @@ M_AsPath_CONFED
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
-;
-
-M_AsPath_RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type (
-   RP_VARIABLE ) , popMode
 ;
 
 M_AsPath_IGNORE
