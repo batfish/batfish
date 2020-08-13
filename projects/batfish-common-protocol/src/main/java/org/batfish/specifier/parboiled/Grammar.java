@@ -53,8 +53,7 @@ public enum Grammar {
   SINGLE_APPLICATION_SPECIFIER("singleApplicationSpecifier", "single-application-specifier"),
   VXLAN_VNI_PROPERTY_SPECIFIER("vxlanVniPropertySpecifier", "vxlan-vni-property-specifier");
 
-  static final String BASE_URL =
-      "https://github.com/batfish/batfish/blob/master/questions/Parameters.md#";
+  static final String BASE_URL = "https://pybatfish.readthedocs.io/en/latest/specifiers.html#";
 
   /** What we call the grammar in user-facing documentation */
   private final String _friendlyName;

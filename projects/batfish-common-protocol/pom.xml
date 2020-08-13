@@ -38,6 +38,7 @@
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils
                   </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.glassfish.jersey.inject:jersey-hk2</ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
@@ -285,6 +286,12 @@
     </dependency>
 
     <!-- Test dependencies. -->
+    <dependency>
+      <groupId>org.glassfish.jersey.inject</groupId>
+      <artifactId>jersey-hk2</artifactId>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava-testlib</artifactId>
