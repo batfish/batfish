@@ -70,6 +70,7 @@ java_library(
     ],
     runtime_deps = [
         "@maven//:commons_beanutils_commons_beanutils",
+        "@maven//:org_glassfish_jersey_inject_jersey_hk2",
     ],
     deps = [
         "//projects/bdd",
