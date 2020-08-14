@@ -189,13 +189,11 @@ public class AristaGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    AristaCombinedParser ciscoParser = new AristaCombinedParser(src, settings);
+    AristaCombinedParser parser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(
-            src, ciscoParser, ConfigurationFormat.ARISTA, new Warnings());
+        new AristaControlPlaneExtractor(src, parser, ConfigurationFormat.ARISTA, new Warnings());
     ParserRuleContext tree =
-        Batfish.parse(
-            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     AristaConfiguration vendorConfiguration =
         (AristaConfiguration) extractor.getVendorConfiguration();
@@ -1986,6 +1984,15 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseLoggingShowRunAll() {
+    Configuration c = parseConfig("arista_logging_show_run_all");
+    assertThat(
+        c.getLoggingServers(),
+        containsInAnyOrder("1.2.3.4", "1.2.3.5", "1.2.3.6", "some_host.company.com"));
+    assertThat(c.getLoggingSourceInterface(), equalTo("Loopback0"));
+  }
+
+  @Test
   public void testEnforceFirstAsExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_enforce_first_as");
     assertThat(config.getAristaBgp().getDefaultVrf().getEnforceFirstAs(), equalTo(Boolean.TRUE));
@@ -2291,6 +2298,12 @@ public class AristaGrammarTest {
   public void testIpv6RouteParsing() {
     // Don't crash
     parseConfig("ipv6_route");
+  }
+
+  @Test
+  public void testRouteMapParsing() {
+    // Don't crash
+    parseConfig("route_map");
   }
 
   @Test

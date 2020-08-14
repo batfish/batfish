@@ -10,7 +10,6 @@ as_expr
 :
    DEC
    | AUTO
-   | RP_VARIABLE
 ;
 
 continue_rm_stanza

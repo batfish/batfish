@@ -114,7 +114,6 @@ int_expr
       )? DEC
    )
    | IGP_COST
-   | RP_VARIABLE
 ;
 
 interface_name
@@ -506,7 +505,6 @@ route_target
 community_set_elem_half
 :
    value = DEC
-   | var = RP_VARIABLE
    |
    (
       BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT

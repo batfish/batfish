@@ -11,7 +11,7 @@ public class IncrementLocalPreference extends LongExpr {
   @JsonCreator
   private IncrementLocalPreference() {}
 
-  public IncrementLocalPreference(int addend) {
+  public IncrementLocalPreference(long addend) {
     _addend = addend;
   }
 

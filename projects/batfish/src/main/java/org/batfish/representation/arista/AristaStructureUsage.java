@@ -100,6 +100,7 @@ public enum AristaStructureUsage implements StructureUsage {
   ISIS_REDISTRIBUTE_STATIC_MAP("isis redistribute static route-map"),
   LINE_ACCESS_CLASS_LIST("line access-class list"),
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),
+  LOGGING_SOURCE_INTERFACE("logging source-interface"),
   MANAGEMENT_SSH_ACCESS_GROUP("management ssh ip access-group"),
   MANAGEMENT_TELNET_ACCESS_GROUP("management telnet ip access-group"),
   MLAG_CONFIGURATION_LOCAL_INTERFACE("mlag configuration local-interface"),

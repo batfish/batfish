@@ -405,6 +405,9 @@ public class Main {
       System.exit(1);
     }
 
+    // run GC on startup
+    _workManager.triggerGarbageCollection();
+
     // sleep indefinitely, in 10 minute chunks
     try {
       while (true) {

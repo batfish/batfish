@@ -3616,7 +3616,7 @@ FABRICPATH
 
 FACILITY
 :
-   'facility'
+   'facility' -> pushMode ( M_Word )
 ;
 
 FAIL_MESSAGE
@@ -4296,7 +4296,12 @@ HOPS_OF_STATISTICS_KEPT
 
 HOST
 :
-   'host'
+  'host'
+  {
+    if (lastTokenType() == LOGGING || secondToLastTokenType() == VRF) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 HOST_ASSOCIATION
@@ -5262,7 +5267,12 @@ LEASE
 
 LEVEL
 :
-   'level'
+  'level'
+  {
+    if (lastTokenType() == LOGGING) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 LEVEL_1
@@ -8336,6 +8346,16 @@ RELOAD_DELAY
    'reload-delay'
 ;
 
+RELOGGING_INTERVAL
+:
+   'relogging-interval'
+;
+
+REPEAT_MESSAGES
+:
+   'repeat-messages'
+;
+
 REMARK
 :
    'remark' -> pushMode ( M_REMARK )
@@ -11025,9 +11045,14 @@ VPN_IPV6
 
 VRF
 :
-   'vrf'
-   {_enableIpv6Address = false;}
-
+  'vrf'
+  {
+    if (lastTokenType() == LOGGING) {
+      pushMode( M_Word );
+    } else {
+      _enableIpv6Address = false;
+    }
+  }
 ;
 
 VRF_ALSO
@@ -11645,11 +11670,6 @@ REGEX
    )* '/'
 ;
 
-RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
-;
-
 SEMICOLON
 :
    ';'
@@ -12030,12 +12050,6 @@ M_AsPath_CONFED
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
-;
-
-M_AsPath_RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type (
-   RP_VARIABLE ) , popMode
 ;
 
 M_AsPath_IGNORE
