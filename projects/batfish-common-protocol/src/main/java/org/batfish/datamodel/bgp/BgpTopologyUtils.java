@@ -7,12 +7,15 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraphBuilder;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -152,6 +155,15 @@ public final class BgpTopologyUtils {
       }
 
       // Second pass: add edges to the graph. Note, these are directed edges.
+      Map<String, Multimap<String, BgpPeerConfigId>> receivers = new HashMap<>();
+      for (BgpPeerConfigId peer : graph.nodes()) {
+        if (peer.getType() == BgpPeerConfigType.UNNUMBERED) {
+          continue;
+        }
+        Multimap<String, BgpPeerConfigId> vrf =
+            receivers.computeIfAbsent(peer.getHostname(), name -> LinkedListMultimap.create());
+        vrf.put(peer.getVrfName(), peer);
+      }
       for (BgpPeerConfigId neighborId : graph.nodes()) {
         switch (neighborId.getType()) {
           case DYNAMIC:
@@ -163,6 +175,7 @@ public final class BgpTopologyUtils {
                 graph,
                 networkConfigurations,
                 ipVrfOwners,
+                receivers,
                 checkReachability,
                 tracerouteEngine);
             break;
@@ -188,6 +201,7 @@ public final class BgpTopologyUtils {
       MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
       NetworkConfigurations nc,
       Map<Ip, Map<String, Set<String>>> ipOwners,
+      Map<String, Multimap<String, BgpPeerConfigId>> receivers,
       boolean checkReachability,
       TracerouteEngine tracerouteEngine) {
     BgpActivePeerConfig neighbor = nc.getBgpPointToPointPeerConfig(neighborId);
@@ -205,19 +219,29 @@ public final class BgpTopologyUtils {
     }
 
     Set<BgpPeerConfigId> alreadyEstablished = graph.adjacentNodes(neighborId);
-    graph.nodes().stream()
-        .filter(
-            candidateId ->
-                // If edge is already established (i.e., we already found that candidate can
-                // initiate the session), don't bother checking in this direction
-                !alreadyEstablished.contains(candidateId)
-                    // Ensure candidate has compatible local/remote IP, AS, & hostname
-                    && bgpCandidatePassesSanityChecks(neighbor, candidateId, possibleVrfs, nc)
-                    // If checking reachability, ensure candidate is reachable
-                    && (!checkReachability
-                        || isReachableBgpNeighbor(
-                            neighborId, candidateId, neighbor, tracerouteEngine)))
-        .forEach(remoteId -> addEdges(neighbor, neighborId, remoteId, graph, nc));
+    for (Entry<String, Set<String>> entry : possibleVrfs.entrySet()) {
+      String node = entry.getKey();
+      Set<String> vrfs = entry.getValue();
+      Multimap<String, BgpPeerConfigId> receiversByVrf = receivers.get(node);
+      if (receiversByVrf == null) {
+        continue;
+      }
+      for (String vrf : vrfs) {
+        receiversByVrf.get(vrf).stream()
+            .filter(
+                candidateId ->
+                    // If edge is already established (i.e., we already found that candidate can
+                    // initiate the session), don't bother checking in this direction
+                    !alreadyEstablished.contains(candidateId)
+                        // Ensure candidate has compatible local/remote IP, AS, & hostname
+                        && bgpCandidatePassesSanityChecks(neighbor, candidateId, nc)
+                        // If checking reachability, ensure candidate is reachable
+                        && (!checkReachability
+                            || isReachableBgpNeighbor(
+                                neighborId, candidateId, neighbor, tracerouteEngine)))
+            .forEach(remoteId -> addEdges(neighbor, neighborId, remoteId, graph, nc));
+      }
+    }
   }
 
   private static void addUnnumberedPeerEdges(
@@ -320,15 +344,7 @@ public final class BgpTopologyUtils {
   private static boolean bgpCandidatePassesSanityChecks(
       @Nonnull BgpActivePeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
-      @Nonnull Map<String, Set<String>> possibleVrfs,
       @Nonnull NetworkConfigurations nc) {
-    if (!possibleVrfs
-            .getOrDefault(candidateId.getHostname(), ImmutableSet.of())
-            .contains(candidateId.getVrfName())
-        // Unnumbered configs only form sessions with each other
-        || candidateId.getType() == BgpPeerConfigType.UNNUMBERED) {
-      return false;
-    }
     // Ensure candidate exists and has compatible local and remote AS
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     if (candidate == null) {
