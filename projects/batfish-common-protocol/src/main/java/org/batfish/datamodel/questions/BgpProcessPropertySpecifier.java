@@ -47,7 +47,6 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
   public static final String NEIGHBORS = "Neighbors";
   public static final String ROUTE_REFLECTOR = "Route_Reflector";
   public static final String TIE_BREAKER = "Tie_Breaker";
-  public static final String CLUSTER_LIST_AS_IGP_COST = "Cluster_List_As_IGP_Cost";
 
   private static final Map<String, PropertyDescriptor<BgpProcess>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpProcess>>()
@@ -118,12 +117,6 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
                           : null,
                   Schema.set(Schema.LONG),
                   "Set of autonomous system numbers visible only within this BGP confederation"))
-          .put(
-              CLUSTER_LIST_AS_IGP_COST,
-              new PropertyDescriptor<>(
-                  BgpProcess::getClusterListAsIgpCost,
-                  Schema.BOOLEAN,
-                  "Whether BGP considers Cluster List as IGP for best path selection.  FRR Only"))
           .build();
 
   /** Returns the property descriptor for {@code property} */

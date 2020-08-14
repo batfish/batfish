@@ -458,7 +458,6 @@ public class Bgpv4RibTest {
             .setClusterList(ImmutableSet.of(3L))
             .setOriginatorIp(Ip.ZERO)
             .build();
-    // ibgp should not care about arrival order
     _bestPathRib.mergeRoute(earliestPath);
     _bestPathRib.mergeRoute(bestPath);
 
@@ -478,7 +477,6 @@ public class Bgpv4RibTest {
             .setClusterList(ImmutableSet.of(3L))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .build();
-    // ibgp should not care about arrival order
     _bestPathRib.mergeRoute(earliestPath);
     _bestPathRib.mergeRoute(bestPath);
 
