@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1940,10 +1941,15 @@ public final class AristaConfiguration extends VendorConfiguration {
     if (_cf.getNtp() != null) {
       c.setNtpServers(new TreeSet<>(_cf.getNtp().getServers().keySet()));
     }
-    if (_cf.getLogging() != null) {
-      c.setLoggingSourceInterface(_cf.getLogging().getSourceInterface());
-      c.setLoggingServers(new TreeSet<>(_cf.getLogging().getHosts().keySet()));
-    }
+    // TODO: logging configuration is per-vrf, but VI only has one.
+    // Pick the default vrf source interface, and then union hosts across all.
+    c.setLoggingSourceInterface(_vrfs.get(DEFAULT_VRF_NAME).getLoggingSourceInterface());
+    c.setLoggingServers(
+        _vrfs.values().stream()
+            .map(Vrf::getLoggingHosts)
+            .flatMap(map -> map.values().stream())
+            .map(LoggingHost::getHost)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
     c.setSnmpSourceInterface(_snmpSourceInterface);
 
     // remove line login authentication lists if they don't exist
