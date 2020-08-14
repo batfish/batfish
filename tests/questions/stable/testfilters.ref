@@ -98,7 +98,7 @@
         "displayName" : "Start Location",
         "minLength" : 1,
         "optional" : true,
-        "type" : "string",
+        "type" : "locationSpec",
         "value" : "node1"
       }
     }
