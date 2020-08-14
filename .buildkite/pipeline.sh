@@ -89,14 +89,11 @@ EOF
 
 ###### Ensure the code compiles with Bazel
 cat <<EOF
-  - label: ":bazel: Build"
-    depends_on:
-      - format
-      - template
+  - label: ":bazel: Build and test"
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
-      - "bazel build -- //..."
+      - "bazel test --test_tag_filters=-pmd_test -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
