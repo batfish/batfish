@@ -1,7 +1,30 @@
 parser grammar AristaParser;
 
 import
-Arista_common, Legacy_common, Arista_bgp, Arista_cvx, Arista_mlag, Arista_vlan, Legacy_aaa, Legacy_acl, Legacy_cable, Legacy_crypto, Legacy_callhome, Legacy_interface, Legacy_isis, Legacy_line, Legacy_logging, Legacy_mpls, Legacy_ntp, Legacy_ospf, Legacy_pim, Legacy_qos, Legacy_rip, Legacy_routemap, Legacy_snmp, Legacy_static;
+Arista_common,
+Legacy_common,
+Arista_bgp,
+Arista_cvx,
+Arista_logging,
+Arista_mlag,
+Arista_vlan,
+Legacy_aaa,
+Legacy_acl,
+Legacy_cable,
+Legacy_crypto,
+Legacy_callhome,
+Legacy_interface,
+Legacy_isis,
+Legacy_line,
+Legacy_mpls,
+Legacy_ntp,
+Legacy_ospf,
+Legacy_pim,
+Legacy_qos,
+Legacy_rip,
+Legacy_routemap,
+Legacy_snmp,
+Legacy_static;
 
 
 options {
@@ -2695,7 +2718,10 @@ s_name
 s_no
 :
   NO
-  no_aaa
+  (
+    no_aaa
+    | no_logging
+  )
 ;
 
 s_no_access_list_extended

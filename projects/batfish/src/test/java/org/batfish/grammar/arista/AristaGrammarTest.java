@@ -189,13 +189,11 @@ public class AristaGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    AristaCombinedParser ciscoParser = new AristaCombinedParser(src, settings);
+    AristaCombinedParser parser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(
-            src, ciscoParser, ConfigurationFormat.ARISTA, new Warnings());
+        new AristaControlPlaneExtractor(src, parser, ConfigurationFormat.ARISTA, new Warnings());
     ParserRuleContext tree =
-        Batfish.parse(
-            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     AristaConfiguration vendorConfiguration =
         (AristaConfiguration) extractor.getVendorConfiguration();
@@ -1983,6 +1981,15 @@ public class AristaGrammarTest {
     assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
     assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
     assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
+  }
+
+  @Test
+  public void testParseLoggingShowRunAll() {
+    Configuration c = parseConfig("arista_logging_show_run_all");
+    assertThat(
+        c.getLoggingServers(),
+        containsInAnyOrder("1.2.3.4", "1.2.3.5", "1.2.3.6", "some_host.company.com"));
+    assertThat(c.getLoggingSourceInterface(), equalTo("Loopback0"));
   }
 
   @Test
