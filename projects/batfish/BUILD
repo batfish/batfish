@@ -9,6 +9,7 @@ java_binary(
     main_class = "org.batfish.main.Driver",
     runtime_deps = [
         ":batfish",
+        "@maven//:org_apache_logging_log4j_log4j_core",
     ],
 )
 
