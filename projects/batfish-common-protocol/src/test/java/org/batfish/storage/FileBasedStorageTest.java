@@ -761,4 +761,10 @@ public final class FileBasedStorageTest {
     expectFileNotFoundException(
         () -> storage.loadSnapshotMetadata(networkToDeleteId, snapshotOldId));
   }
+
+  @Test
+  public void testRunGarbageCollectionFreshStartup() throws IOException {
+    // Should not throw
+    _storage.runGarbageCollection(Instant.MAX);
+  }
 }
