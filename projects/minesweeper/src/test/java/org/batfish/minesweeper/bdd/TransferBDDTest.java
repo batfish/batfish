@@ -30,6 +30,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -597,6 +598,32 @@ public class TransferBDDTest {
     for (int ap :
         _g.getCommunityAtomicPredicates()
             .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(),
+          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+    }
+  }
+
+  @Test
+  public void testSetLargeCommunity() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetCommunity(new LiteralCommunity(LargeCommunity.of(10, 20, 30))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // each atomic predicate for community 0:4:44 has the 1 BDD
+    for (int ap :
+        _g.getCommunityAtomicPredicates().get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
       assertEquals(
           outAnnouncements.getFactory().one(),
           outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);

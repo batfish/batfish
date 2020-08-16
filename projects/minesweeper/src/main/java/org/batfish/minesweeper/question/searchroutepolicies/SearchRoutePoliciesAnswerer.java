@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.RegExp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,10 +73,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   public static final String COL_INPUT_ROUTE = "Input_Route";
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
-
-  // concrete community literals that we generate must satisfy this regex,
-  // to help ensure that they will be parse-able
-  private static final Automaton COMMUNITY_FSM = new RegExp("[0-9]+(:[0-9]+)+").toAutomaton();
 
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
@@ -141,10 +136,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
     for (int i = 0; i < aps.length; i++) {
       if (aps[i].andSat(fullModel)) {
-        // this atomic predicate is in the model, so create a concrete community for it.
-        // intersection with COMMUNITY_FSM helps ensure that the example we create will be
-        // a valid community.
-        Automaton a = apAutomata.get(i).intersection(COMMUNITY_FSM);
+        Automaton a = apAutomata.get(i);
         if (a.isEmpty()) {
           throw new BatfishException("Failed to produce a valid community for answer");
         }
