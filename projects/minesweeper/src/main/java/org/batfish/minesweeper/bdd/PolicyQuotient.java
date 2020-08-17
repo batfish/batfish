@@ -34,13 +34,6 @@ public class PolicyQuotient {
 
   private Set<CommunityVar> _commsUsedOnlyLocally;
 
-  // create an empty policy quotient
-  public PolicyQuotient() {
-    _commsAssignedButNotMatched = new HashSet<>();
-    _commsMatchedButNotAssigned = new HashSet<>();
-    _commsUsedOnlyLocally = new HashSet<>();
-  }
-
   public PolicyQuotient(Graph graph) {
     _commsAssignedButNotMatched = new HashSet<>();
 

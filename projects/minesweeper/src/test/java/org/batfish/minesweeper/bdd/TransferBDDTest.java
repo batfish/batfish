@@ -66,7 +66,6 @@ public class TransferBDDTest {
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private Graph _g;
-  private PolicyQuotient _pq;
   private BDDRoute _anyRoute;
 
   private static final String COMMUNITY_NAME = "community";
@@ -115,8 +114,6 @@ public class TransferBDDTest {
 
     _batfish = new MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
     _anyRoute = new BDDRoute(0);
-
-    _pq = new PolicyQuotient();
   }
 
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {
@@ -128,9 +125,9 @@ public class TransferBDDTest {
   public void testCaptureAll() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -146,9 +143,9 @@ public class TransferBDDTest {
   public void testCaptureNone() {
     RoutingPolicy policy =
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -163,8 +160,8 @@ public class TransferBDDTest {
   @Test
   public void testEmptyPolicy() {
 
-    _g = new Graph(_batfish, _batfish.getSnapshot());
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of(), _pq);
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -183,9 +180,9 @@ public class TransferBDDTest {
                 ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -211,9 +208,9 @@ public class TransferBDDTest {
                 Statements.ExitAccept.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -237,9 +234,9 @@ public class TransferBDDTest {
                 Statements.ExitAccept.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -266,9 +263,9 @@ public class TransferBDDTest {
                 Statements.ExitAccept.toStaticStatement())));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -305,9 +302,9 @@ public class TransferBDDTest {
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement())))));
 
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -329,9 +326,9 @@ public class TransferBDDTest {
                     new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -359,9 +356,9 @@ public class TransferBDDTest {
                             new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -380,9 +377,9 @@ public class TransferBDDTest {
             .addStatement(new SetLocalPreference(new LiteralLong(42)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -404,9 +401,9 @@ public class TransferBDDTest {
             .addStatement(new SetMetric(new LiteralLong(50)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -439,9 +436,9 @@ public class TransferBDDTest {
             new MatchCommunitySet(new NamedCommunitySet(COMMUNITY_NAME)),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -463,9 +460,9 @@ public class TransferBDDTest {
                 new DeleteCommunity(new LiteralCommunity(StandardCommunity.parse("20:30"))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -490,9 +487,9 @@ public class TransferBDDTest {
             .addStatement(new SetCommunity(new LiteralCommunity(StandardCommunity.parse("4:44"))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -517,9 +514,9 @@ public class TransferBDDTest {
             .addStatement(new SetCommunity(new LiteralCommunity(StandardCommunity.parse("4:44"))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -551,9 +548,9 @@ public class TransferBDDTest {
             .addStatement(new AddCommunity(new LiteralCommunity(StandardCommunity.parse("4:44"))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -584,9 +581,9 @@ public class TransferBDDTest {
             .addStatement(new SetCommunity(new LiteralCommunity(ExtendedCommunity.parse("0:4:44"))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
@@ -611,9 +608,9 @@ public class TransferBDDTest {
             .addStatement(new SetCommunity(new LiteralCommunity(LargeCommunity.of(10, 20, 30))))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), _pq);
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();

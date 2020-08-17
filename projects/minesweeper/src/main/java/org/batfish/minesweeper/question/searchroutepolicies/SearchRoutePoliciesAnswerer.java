@@ -55,7 +55,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.bdd.BDDRoute;
-import org.batfish.minesweeper.bdd.PolicyQuotient;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
@@ -81,7 +80,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Action _action;
 
   @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final PolicyQuotient _pq;
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -100,7 +98,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .addAll(_inputConstraints.getCommunities())
             .addAll(_outputConstraints.getCommunities())
             .build();
-    _pq = new PolicyQuotient();
   }
 
   private static Optional<Community> stringToCommunity(String str) {
@@ -308,7 +305,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .map(RegexCommunitySet::new)
                 .collect(ImmutableSet.toImmutableSet()));
     try {
-      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements(), _pq);
+      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
