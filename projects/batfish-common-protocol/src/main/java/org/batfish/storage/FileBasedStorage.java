@@ -1178,6 +1178,11 @@ public class FileBasedStorage implements StorageProvider {
     return Files.isDirectory(sanitizedPath);
   }
 
+  private boolean exists(Path path) {
+    Path sanitizedPath = validatePath(path);
+    return Files.exists(sanitizedPath);
+  }
+
   @MustBeClosed
   @Nonnull
   private Stream<Path> list(Path path) throws IOException {
@@ -1884,19 +1889,21 @@ public class FileBasedStorage implements StorageProvider {
 
     // Iterate over network dirs directly so we can expunge data from both extant and deleted
     // networks.
-    try (Stream<Path> networkDirStream = list(getNetworksDir())) {
-      networkDirStream
-          .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
-          .forEach(
-              networkId -> {
-                try {
-                  expungeOldNetworkData(safeExpungeBeforeDate, networkId);
-                } catch (IOException e) {
-                  _logger.errorf(
-                      "Failed to expunge old data for network with ID '%s': %s",
-                      networkId, Throwables.getStackTraceAsString(e));
-                }
-              });
+    if (exists(getNetworksDir())) {
+      try (Stream<Path> networkDirStream = list(getNetworksDir())) {
+        networkDirStream
+            .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
+            .forEach(
+                networkId -> {
+                  try {
+                    expungeOldNetworkData(safeExpungeBeforeDate, networkId);
+                  } catch (IOException e) {
+                    _logger.errorf(
+                        "Failed to expunge old data for network with ID '%s': %s",
+                        networkId, Throwables.getStackTraceAsString(e));
+                  }
+                });
+      }
     }
     // expunge answers
     expungeOldEntries(safeExpungeBeforeDate, getAnswersDir(), true);
@@ -1916,13 +1923,17 @@ public class FileBasedStorage implements StorageProvider {
   /**
    * Deletes filesystem entries in {@code dir} whose last modified time precedes {@code
    * expungeBeforeDate}. When deleting regular files, {@code directories} should be {@code false}.
-   * When deleting directories, {@code directories} should be {@code true}.
+   * When deleting directories, {@code directories} should be {@code true}. Has no effect if {@code
+   * dir} does not exist.
    *
    * @throws IOException if there is an error
    */
   @VisibleForTesting
   void expungeOldEntries(Instant expungeBeforeDate, Path dir, boolean directories)
       throws IOException {
+    if (!exists(dir)) {
+      return;
+    }
     List<Path> toDelete;
     try (Stream<Path> fsEntryStream = list(dir)) {
       toDelete =
