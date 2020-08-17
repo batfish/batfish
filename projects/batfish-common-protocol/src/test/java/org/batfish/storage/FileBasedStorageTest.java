@@ -603,7 +603,6 @@ public final class FileBasedStorageTest {
   @Test
   public void testExpungeOldEntriesDirectories() throws IOException {
     Instant newTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-    ;
     Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
 
     Path newDir = _storage.getStorageBase().resolve("newDir");
@@ -632,7 +631,6 @@ public final class FileBasedStorageTest {
   @Test
   public void testExpungeOldEntriesFiles() throws IOException {
     Instant newTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-    ;
     Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
 
     Path newDir = _storage.getStorageBase().resolve("newDir");
