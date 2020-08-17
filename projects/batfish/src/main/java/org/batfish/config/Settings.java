@@ -369,31 +369,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_SNAPSHOT_NAME);
   }
 
-  public boolean getSslDisable() {
-    return _config.getBoolean(BfConsts.ARG_SSL_DISABLE);
-  }
-
-  @Nullable
-  public Path getSslKeystoreFile() {
-    return nullablePath(_config.getString(BfConsts.ARG_SSL_KEYSTORE_FILE));
-  }
-
-  public String getSslKeystorePassword() {
-    return _config.getString(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
-  }
-
-  public boolean getSslTrustAllCerts() {
-    return _config.getBoolean(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
-  }
-
-  public Path getSslTruststoreFile() {
-    return _config.get(Path.class, BfConsts.ARG_SSL_TRUSTSTORE_FILE);
-  }
-
-  public String getSslTruststorePassword() {
-    return _config.getString(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
-  }
-
   public @Nullable Path getStorageBase() {
     String storageBase = _config.getString(BfConsts.ARG_STORAGE_BASE);
     if (storageBase == null) {
@@ -521,12 +496,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
     setDefaultProperty(BfConsts.ARG_SNAPSHOT_NAME, null);
-    setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_POOL_SSL_DISABLE);
-    setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
-    setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
-    setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
-    setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
-    setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
     setDefaultProperty(BfConsts.ARG_STORAGE_BASE, null);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
@@ -711,13 +680,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addOption(BfConsts.ARG_SNAPSHOT_NAME, "name of snapshot", ARGNAME_NAME);
 
-    addBooleanOption(
-        BfConsts.ARG_SSL_DISABLE, "whether to disable SSL during communication with coordinator");
-
-    addBooleanOption(
-        BfConsts.ARG_SSL_TRUST_ALL_CERTS,
-        "whether to trust all SSL certificates during communication with coordinator");
-
     addOption(BfConsts.ARG_STORAGE_BASE, "path to the storage base", ARGNAME_PATH);
 
     addBooleanOption(
@@ -781,6 +743,12 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "pedanticsuppress",
           "ppa",
           "redflagsuppress",
+          "ssldisable",
+          "sslkeystorefile",
+          "sslkeystorepassword",
+          "ssltrustallcerts",
+          "ssltruststorefile",
+          "ssltruststorepassword",
           "stext",
           "unimplementedsuppress",
           "venv"
@@ -862,12 +830,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_NO_SHUFFLE);
     getBooleanOptionValue(ARG_PARSE_REUSE);
     getStringOptionValue(BfConsts.ARG_SNAPSHOT_NAME);
-    getBooleanOptionValue(BfConsts.ARG_SSL_DISABLE);
-    getPathOptionValue(BfConsts.ARG_SSL_KEYSTORE_FILE);
-    getStringOptionValue(BfConsts.ARG_SSL_KEYSTORE_PASSWORD);
-    getBooleanOptionValue(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
-    getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
-    getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
     getPathOptionValue(BfConsts.ARG_STORAGE_BASE);
     getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
     getStringOptionValue(BfConsts.ARG_TESTRIG);
@@ -959,30 +921,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setSequential(boolean sequential) {
     _config.setProperty(ARG_SEQUENTIAL, sequential);
-  }
-
-  public void setSslDisable(boolean sslDisable) {
-    _config.setProperty(BfConsts.ARG_SSL_DISABLE, sslDisable);
-  }
-
-  public void setSslKeystoreFile(Path sslKeystoreFile) {
-    _config.setProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, sslKeystoreFile.toString());
-  }
-
-  public void setSslKeystorePassword(String sslKeystorePassword) {
-    _config.setProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, sslKeystorePassword);
-  }
-
-  public void setSslTrustAllCerts(boolean sslTrustAllCerts) {
-    _config.setProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, sslTrustAllCerts);
-  }
-
-  public void setSslTruststoreFile(Path sslTruststoreFile) {
-    _config.setProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, sslTruststoreFile.toString());
-  }
-
-  public void setSslTruststorePassword(String sslTruststorePassword) {
-    _config.setProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, sslTruststorePassword);
   }
 
   public void setStorageBase(Path storageBase) {
