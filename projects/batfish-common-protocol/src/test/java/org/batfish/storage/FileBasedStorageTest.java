@@ -602,8 +602,9 @@ public final class FileBasedStorageTest {
 
   @Test
   public void testExpungeOldEntriesDirectories() throws IOException {
-    Instant newTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-    Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
+    Instant newTime = Instant.now();
+    Instant expungBeforeTime = newTime.minus(GC_SKEW_ALLOWANCE)
+    Instant oldTime = expungBeforeTime.minus(1, ChronoUnit.MINUTES);
 
     Path newDir = _storage.getStorageBase().resolve("newDir");
     Path newFile = _storage.getStorageBase().resolve("newFile");
@@ -620,7 +621,7 @@ public final class FileBasedStorageTest {
     Files.setLastModifiedTime(oldDir, FileTime.from(oldTime));
     Files.setLastModifiedTime(oldFile, FileTime.from(oldTime));
 
-    _storage.expungeOldEntries(newTime, _storage.getStorageBase(), true);
+    _storage.expungeOldEntries(expungBeforeTime, _storage.getStorageBase(), true);
 
     assertTrue(Files.exists(newDir));
     assertTrue(Files.exists(newFile));
@@ -630,8 +631,9 @@ public final class FileBasedStorageTest {
 
   @Test
   public void testExpungeOldEntriesFiles() throws IOException {
-    Instant newTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-    Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
+    Instant newTime = Instant.now();
+    Instant expungBeforeTime = newTime.minus(GC_SKEW_ALLOWANCE)
+    Instant oldTime = expungBeforeTime.minus(1, ChronoUnit.MINUTES);
 
     Path newDir = _storage.getStorageBase().resolve("newDir");
     Path newFile = _storage.getStorageBase().resolve("newFile");
@@ -648,7 +650,7 @@ public final class FileBasedStorageTest {
     Files.setLastModifiedTime(oldDir, FileTime.from(oldTime));
     Files.setLastModifiedTime(oldFile, FileTime.from(oldTime));
 
-    _storage.expungeOldEntries(newTime, _storage.getStorageBase(), false);
+    _storage.expungeOldEntries(expungBeforeTime, _storage.getStorageBase(), false);
 
     assertTrue(Files.exists(newDir));
     assertTrue(Files.exists(newFile));
@@ -674,7 +676,7 @@ public final class FileBasedStorageTest {
     AnswerId oldAnswerId = new AnswerId("answerOld-id");
     AnswerId newAnswerId = new AnswerId("answerNew-id");
 
-    Instant oldTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+    Instant oldTime = Instant.now();
     Instant newTime = oldTime.plus(GC_SKEW_ALLOWANCE).plus(Duration.ofMinutes(1L));
 
     // mock modified times for test
