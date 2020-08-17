@@ -158,6 +158,7 @@ public final class BgpTopologyUtils {
       Map<String, Multimap<String, BgpPeerConfigId>> receivers = new HashMap<>();
       for (BgpPeerConfigId peer : graph.nodes()) {
         if (peer.getType() == BgpPeerConfigType.UNNUMBERED) {
+          // Unnumbered configs only form sessions with each other
           continue;
         }
         Multimap<String, BgpPeerConfigId> vrf =
