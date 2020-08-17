@@ -337,16 +337,7 @@ public class WorkMgr extends AbstractCoordinator {
           BfConsts.ARG_STORAGE_BASE,
           Main.getSettings().getContainersLocation().toAbsolutePath().toString());
 
-      client =
-          CommonUtil.createHttpClientBuilder(
-                  _settings.getSslPoolDisable(),
-                  _settings.getSslPoolTrustAllCerts(),
-                  _settings.getSslPoolKeystoreFile(),
-                  _settings.getSslPoolKeystorePassword(),
-                  _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword(),
-                  true)
-              .build();
+      client = CommonUtil.createHttpClientBuilder(true).build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -503,16 +494,7 @@ public class WorkMgr extends AbstractCoordinator {
             .start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      client =
-          CommonUtil.createHttpClientBuilder(
-                  _settings.getSslPoolDisable(),
-                  _settings.getSslPoolTrustAllCerts(),
-                  _settings.getSslPoolKeystoreFile(),
-                  _settings.getSslPoolKeystorePassword(),
-                  _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword(),
-                  true)
-              .build();
+      client = CommonUtil.createHttpClientBuilder(true).build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
@@ -1796,7 +1778,7 @@ public class WorkMgr extends AbstractCoordinator {
     createParentDirectories(outputFile);
     try (OutputStream fileOutputStream = Files.newOutputStream(outputFile)) {
       int read = 0;
-      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
       while ((read = inputStream.read(bytes)) != -1) {
         fileOutputStream.write(bytes, 0, read);
       }

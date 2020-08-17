@@ -43,7 +43,7 @@ public class PoolMgr {
     _workerPool = new HashMap<>();
   }
 
-  public synchronized void addToPool(final String worker) {
+  public synchronized void addToPool(String worker) {
     // start out as unknown and trigger refresh in the background
     _workerPool.put(worker, new WorkerStatus(WorkerStatus.StatusCode.UNKNOWN));
 
@@ -113,16 +113,7 @@ public class PoolMgr {
     Client client = null;
     try {
       // Client client = ClientBuilder.newClient();
-      client =
-          CommonUtil.createHttpClientBuilder(
-                  _settings.getSslPoolDisable(),
-                  _settings.getSslPoolTrustAllCerts(),
-                  _settings.getSslPoolKeystoreFile(),
-                  _settings.getSslPoolKeystorePassword(),
-                  _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword(),
-                  false)
-              .build();
+      client = CommonUtil.createHttpClientBuilder(false).build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
           client.target(
