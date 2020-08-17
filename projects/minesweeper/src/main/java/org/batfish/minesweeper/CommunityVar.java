@@ -64,7 +64,7 @@ public final class CommunityVar implements Comparable<CommunityVar> {
    * so serves two purposes. First, it is necessary for correctness of the symbolic analysis. For
    * example, a regex like ".*" does not actually match any possible string since communities cannot
    * be arbitrary strings. Second, it ensures that when we solve for community literals that match
-   * regexes, we will get examples that are sensible and also parseable by Batfish.
+   * regexes, we will get examples that are sensible and also able to be parsed by Batfish.
    */
   @Nonnull static final Automaton COMMUNITY_FSM = new RegExp(COMMUNITY_REGEX).toAutomaton();
 
