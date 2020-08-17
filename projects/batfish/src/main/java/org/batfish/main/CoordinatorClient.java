@@ -22,16 +22,7 @@ public final class CoordinatorClient {
       String url, Map<String, String> params, Settings settings, BatfishLogger logger) {
     Client client = null;
     try {
-      client =
-          CommonUtil.createHttpClientBuilder(
-                  settings.getSslDisable(),
-                  settings.getSslTrustAllCerts(),
-                  settings.getSslKeystoreFile(),
-                  settings.getSslKeystorePassword(),
-                  settings.getSslTruststoreFile(),
-                  settings.getSslTruststorePassword(),
-                  true)
-              .build();
+      client = CommonUtil.createHttpClientBuilder(true).build();
       WebTarget webTarget = client.target(url);
       for (Map.Entry<String, String> entry : params.entrySet()) {
         webTarget = webTarget.queryParam(entry.getKey(), entry.getValue());

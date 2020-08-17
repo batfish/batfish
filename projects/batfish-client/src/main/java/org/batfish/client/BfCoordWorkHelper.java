@@ -90,15 +90,7 @@ public class BfCoordWorkHelper {
   }
 
   private ClientBuilder getClientBuilder() {
-    return CommonUtil.createHttpClientBuilder(
-            _settings.getSslDisable(),
-            _settings.getSslTrustAllCerts(),
-            _settings.getSslKeystoreFile(),
-            _settings.getSslKeystorePassword(),
-            _settings.getSslTruststoreFile(),
-            _settings.getSslTruststorePassword(),
-            true)
-        .register(MultiPartFeature.class);
+    return CommonUtil.createHttpClientBuilder(true).register(MultiPartFeature.class);
   }
 
   /**
@@ -172,10 +164,8 @@ public class BfCoordWorkHelper {
   }
 
   private WebTarget getTarget(String resource) {
-    String protocol = (_settings.getSslDisable()) ? "http" : "https";
     String urlString =
-        String.format(
-            "%s://%s%s/%s", protocol, _coordWorkMgr, CoordConsts.SVC_CFG_WORK_MGR, resource);
+        String.format("http://%s%s/%s", _coordWorkMgr, CoordConsts.SVC_CFG_WORK_MGR, resource);
     return _client.target(urlString);
   }
 
@@ -184,9 +174,7 @@ public class BfCoordWorkHelper {
    * {@code resources} to base url of service V2.
    */
   public WebTarget getTargetV2(List<String> resources) {
-    String protocol = (_settings.getSslDisable()) ? "http" : "https";
-    String urlString =
-        String.format("%s://%s%s", protocol, _coordWorkMgrV2, CoordConsts.SVC_CFG_WORK_MGR2);
+    String urlString = String.format("http://%s%s", _coordWorkMgrV2, CoordConsts.SVC_CFG_WORK_MGR2);
     WebTarget target = _client.target(urlString);
     for (String resource : resources) {
       target = target.path(resource);

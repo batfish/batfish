@@ -36,8 +36,6 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
 import org.batfish.common.Task;
-import org.batfish.common.util.CommonUtil;
-import org.batfish.config.ConfigurationLocator;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -208,8 +206,7 @@ public class Driver {
       initTracer();
     }
 
-    String protocol = _mainSettings.getSslDisable() ? "http" : "https";
-    String baseUrl = String.format("%s://%s", protocol, _mainSettings.getServiceBindHost());
+    String baseUrl = String.format("http://%s", _mainSettings.getServiceBindHost());
     URI baseUri = UriBuilder.fromUri(baseUrl).port(_mainSettings.getServicePort()).build();
     _mainLogger.debug(String.format("Starting server at %s\n", baseUri));
     ResourceConfig rc = new ResourceConfig(Service.class).register(new JettisonFeature());
@@ -218,21 +215,7 @@ public class Driver {
     }
     try {
       HttpServer server;
-      if (_mainSettings.getSslDisable()) {
-        server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
-      } else {
-        server =
-            CommonUtil.startSslServer(
-                rc,
-                baseUri,
-                _mainSettings.getSslKeystoreFile(),
-                _mainSettings.getSslKeystorePassword(),
-                _mainSettings.getSslTrustAllCerts(),
-                _mainSettings.getSslTruststoreFile(),
-                _mainSettings.getSslTruststorePassword(),
-                ConfigurationLocator.class,
-                Driver.class);
-      }
+      server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
       int selectedListenPort = server.getListeners().iterator().next().getPort();
       if (_mainSettings.getCoordinatorRegister()) {
         // this function does not return until registration succeeds
@@ -282,11 +265,9 @@ public class Driver {
       throws InterruptedException {
     boolean registrationSuccess;
 
-    String protocol = _mainSettings.getSslDisable() ? "http" : "https";
     String poolRegUrl =
         String.format(
-            "%s://%s:%s%s/%s",
-            protocol,
+            "http://%s:%s%s/%s",
             _mainSettings.getCoordinatorHost(),
             +_mainSettings.getCoordinatorPoolPort(),
             CoordConsts.SVC_CFG_POOL_MGR,
@@ -301,12 +282,12 @@ public class Driver {
   }
 
   @SuppressWarnings("deprecation")
-  private static String runBatfish(final Settings settings) {
+  private static String runBatfish(Settings settings) {
 
-    final BatfishLogger logger = settings.getLogger();
+    BatfishLogger logger = settings.getLogger();
 
     try {
-      final Batfish batfish =
+      Batfish batfish =
           new Batfish(
               settings,
               CACHED_TESTRIGS,
@@ -425,8 +406,8 @@ public class Driver {
     }
   }
 
-  public static List<String> runBatfishThroughService(final String taskId, String[] args) {
-    final Settings settings;
+  public static List<String> runBatfishThroughService(String taskId, String[] args) {
+    Settings settings;
     try {
       settings = new Settings(_mainSettings);
       settings.setRunMode(RunMode.WORKER);
@@ -449,11 +430,11 @@ public class Driver {
     // try/catch so that the worker becomes idle again in case of problem submitting thread.
     try {
 
-      final BatfishLogger jobLogger =
+      BatfishLogger jobLogger =
           new BatfishLogger(settings.getLogLevel(), settings.getTimestamp(), settings.getLogFile());
       settings.setLogger(jobLogger);
 
-      final Task task = new Task(args);
+      Task task = new Task(args);
 
       BatchManager.get().logTask(taskId, task);
 
