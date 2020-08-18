@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -114,6 +115,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrativeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
@@ -761,6 +763,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitSbb_confederation(Sbb_confederationContext ctx) {
     Long id = toLong(ctx.id);
     _currentBgpVrf.setConfederationId(id);
+  }
+
+  @Override
+  public void exitSbb_max_med_administrative(Sbb_max_med_administrativeContext ctx) {
+    if (ctx.med != null) {
+      _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
+    } else {
+      _currentBgpVrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
+    }
   }
 
   @Override
