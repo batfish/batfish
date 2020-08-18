@@ -8,7 +8,6 @@ export BATFISH_VERSION="$(grep -1 batfish-parent "${PROJECTS_PATH}/pom.xml" | gr
 
 export BATFISH_PATH="$PROJECTS_PATH/batfish"
 export BATFISH_TEST_RIG_PATH="$BATFISH_ROOT/networks"
-export BATFISH="$BATFISH_PATH/batfish"
 export FLATTEN="$BATFISH_PATH/flatten"
 export PREPROCESS_JUNIPER="$BATFISH_PATH/preprocess_juniper"
 
@@ -27,26 +26,6 @@ export QUESTIONS_PATH="${BATFISH_ROOT}/questions"
 export BATFISH_QUESTION_PLUGIN_DIR="$PROJECTS_PATH/question/target/"
 
 export ALLINONE_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-allinone.tmp"
-export BATFISH_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-batfish.tmp"
-
-batfish() {
-  # if cygwin, shift and replace each parameter
-  if batfish_cygwin; then
-    local NUMARGS=$#
-    local IGNORE_CURRENT_ARG=no
-    for i in $(seq 1 ${NUMARGS}); do
-      local CURRENT_ARG=$1
-      local NEW_ARG="$(cygpath -w -- ${CURRENT_ARG})"
-      set -- "$@" "$NEW_ARG"
-      shift
-    done
-  fi
-  if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
-    echo "$BATFISH $BATFISH_COMMON_ARGS $@" >&2
-  fi
-  "$BATFISH" ${BATFISH_COMMON_ARGS} "$@"
-}
-export -f batfish
 
 batfish_build() {
   bash -c '_batfish_build "$@"' _batfish_build "$@" || return 1
@@ -56,12 +35,6 @@ export -f batfish_build
 _batfish_build() {
   _pre_build || return 1
   mvn install -pl batfish -am || return 1
-  if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
-    echo -n "Generating bash completion file (after batfish_build) ..."
-    BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' >"$BATFISH_COMPLETION_FILE"
-    . "${BATFISH_TOOLS_PATH}/completion-batfish.sh"
-    echo "OK"
-  fi
 }
 export -f _batfish_build
 
@@ -71,11 +44,6 @@ batfish_build_all() {
     echo -n "Generating bash completion file for allinone (via batfish_build_all) ..."
     BATFISH_PRINT_CMDLINE=no allinone -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' >"$ALLINONE_COMPLETION_FILE"
     . "${BATFISH_TOOLS_PATH}/completion-allinone.sh"
-    echo "OK"
-  fi
-  if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
-    echo -n "Generating bash completion file for batfish (via batfish_build_all) ..."
-    BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' >"$BATFISH_COMPLETION_FILE"
     echo "OK"
   fi
 }
@@ -311,7 +279,7 @@ flatten() {
     done
   fi
   if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
-    echo "$BATFISH $BATFISH_COMMON_ARGS $@" >&2
+    echo "$FLATTEN $BATFISH_COMMON_ARGS $@" >&2
   fi
   "$FLATTEN" "$@"
 }
@@ -330,7 +298,7 @@ preprocess_juniper() {
     done
   fi
   if [ "$BATFISH_PRINT_CMDLINE" = "yes" ]; then
-    echo "$BATFISH $BATFISH_COMMON_ARGS $@" >&2
+    echo "${PREPROCESS_JUNIPER} $BATFISH_COMMON_ARGS $@" >&2
   fi
   "${PREPROCESS_JUNIPER}" "$@"
 }
