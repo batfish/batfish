@@ -683,7 +683,7 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.NULL;
     } else if (name.startsWith("nve")) {
       return InterfaceType.VLAN;
-    } else if (name.startsWith("Port-Channel")) {
+    } else if (name.toLowerCase().startsWith("port-channel")) {
       if (name.contains(".")) {
         // Subinterface of a port channel
         return InterfaceType.AGGREGATE_CHILD;
