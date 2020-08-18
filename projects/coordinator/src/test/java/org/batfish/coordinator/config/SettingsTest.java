@@ -16,7 +16,7 @@ public class SettingsTest {
   @Test
   public void testDefaultValue() {
     Settings settings = new Settings(new String[] {});
-    assertThat(settings.getPoolBindHost(), equalTo("0.0.0.0"));
+    assertThat(settings.getPoolBindHost(), equalTo("localhost"));
     assertThat(settings.getWorkBindHost(), equalTo("0.0.0.0"));
   }
 

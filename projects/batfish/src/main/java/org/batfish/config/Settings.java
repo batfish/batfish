@@ -14,7 +14,6 @@ import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
-import org.batfish.datamodel.Ip;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
@@ -478,7 +477,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
     setDefaultProperty(ARG_RUN_MODE, RunMode.WORKER.toString());
     setDefaultProperty(ARG_SEQUENTIAL, false);
-    setDefaultProperty(ARG_SERVICE_BIND_HOST, Ip.ZERO.toString());
+    setDefaultProperty(ARG_SERVICE_BIND_HOST, "localhost");
     setDefaultProperty(ARG_SERVICE_HOST, "localhost");
     setDefaultProperty(ARG_SERVICE_NAME, "worker-service");
     setDefaultProperty(ARG_SERVICE_PORT, BfConsts.SVC_PORT);
