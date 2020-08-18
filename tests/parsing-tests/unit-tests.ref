@@ -88605,12 +88605,12 @@
                 28
               ]
             },
-            "Port-Channel34" : {
+            "Port-channel34" : {
               "eigrp passive-interface" : [
                 29
               ]
             },
-            "Port-Channel35" : {
+            "Port-channel35" : {
               "eigrp passive-interface" : [
                 30
               ]
@@ -93850,12 +93850,12 @@
                 28
               ]
             },
-            "Port-Channel34" : {
+            "Port-channel34" : {
               "eigrp passive-interface" : [
                 29
               ]
             },
-            "Port-Channel35" : {
+            "Port-channel35" : {
               "eigrp passive-interface" : [
                 30
               ]

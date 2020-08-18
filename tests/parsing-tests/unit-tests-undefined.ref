@@ -1017,7 +1017,7 @@
       {
         "File_Name" : "configs/cisco_eigrp",
         "Struct_Type" : "interface",
-        "Ref_Name" : "Port-Channel34",
+        "Ref_Name" : "Port-channel34",
         "Context" : "eigrp passive-interface",
         "Lines" : {
           "filename" : "configs/cisco_eigrp",
@@ -1029,7 +1029,7 @@
       {
         "File_Name" : "configs/cisco_eigrp",
         "Struct_Type" : "interface",
-        "Ref_Name" : "Port-Channel35",
+        "Ref_Name" : "Port-channel35",
         "Context" : "eigrp passive-interface",
         "Lines" : {
           "filename" : "configs/cisco_eigrp",

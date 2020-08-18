@@ -5939,11 +5939,11 @@ public final class CiscoGrammarTest {
     Configuration config = parseConfig("ios-portchannel-subinterface");
     double eth1Bandwidth = 1E7;
     assertThat(config, hasInterface("Ethernet1", hasBandwidth(eth1Bandwidth)));
-    assertThat(config, hasInterface("Port-Channel1", hasBandwidth(eth1Bandwidth)));
+    assertThat(config, hasInterface("Port-channel1", hasBandwidth(eth1Bandwidth)));
     assertThat(
         config,
         hasInterface(
-            "Port-Channel1.1",
+            "Port-channel1.1",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATE_CHILD),
                 isActive(true),
