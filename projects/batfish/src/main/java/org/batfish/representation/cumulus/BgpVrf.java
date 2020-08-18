@@ -80,7 +80,9 @@ public class BgpVrf implements Serializable {
   }
 
   public BgpIpv4UnicastAddressFamily getOrCreateIpv4Unicast() {
-    if (_ipv4Unicast != null) return _ipv4Unicast;
+    if (_ipv4Unicast != null) {
+      return _ipv4Unicast;
+    }
     _ipv4Unicast = new BgpIpv4UnicastAddressFamily();
     return _ipv4Unicast;
   }
