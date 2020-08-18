@@ -96,6 +96,7 @@ java_library(
         "@maven//:org_apache_commons_commons_configuration2",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_apache_commons_commons_text",
+        "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_glassfish_grizzly_grizzly_framework",
         "@maven//:org_glassfish_grizzly_grizzly_http_server",
