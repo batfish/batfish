@@ -257,6 +257,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     Document document;
     try {
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      // safe parser configuration -- disallows doctypes
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
       DocumentBuilder builder = factory.newDocumentBuilder();
       InputSource is = new InputSource(new StringReader(cgwConfiguration));
       document = builder.parse(is);

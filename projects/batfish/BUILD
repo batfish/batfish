@@ -4,15 +4,6 @@ load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
 
-java_binary(
-    name = "batfish_main",
-    main_class = "org.batfish.main.Driver",
-    runtime_deps = [
-        ":batfish",
-        "@maven//:org_apache_logging_log4j_log4j_core",
-    ],
-)
-
 java_library(
     name = "batfish",
     srcs = glob([
