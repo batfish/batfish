@@ -62,6 +62,7 @@ junit_tests(
     ]),
     runtime_deps = [
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+        "@maven//:org_apache_logging_log4j_log4j_core",
     ],
     deps = [
         ":question",

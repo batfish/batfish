@@ -36,6 +36,9 @@
                     javax.xml.bind:jaxb-api
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>
+                    org.apache.logging.log4j:log4j-core
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>
                     org.apache.logging.log4j:log4j-slf4j-impl
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>

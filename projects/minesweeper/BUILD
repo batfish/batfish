@@ -35,9 +35,6 @@ java_library(
         ],
         exclude = ["src/test/java/**/*Test.java"],
     ),
-    runtime_deps = [
-        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
-    ],
     deps = [
         ":minesweeper",
         "@maven//:org_hamcrest_hamcrest",
