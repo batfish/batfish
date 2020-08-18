@@ -148,14 +148,6 @@ public class Driver {
     GlobalTracer.registerIfAbsent(config.getTracer());
   }
 
-  public static void main(String[] args) {
-    mainInit(args);
-    _mainLogger =
-        new BatfishLogger(
-            _mainSettings.getLogLevel(), _mainSettings.getTimestamp(), _mainSettings.getLogFile());
-    mainRun();
-  }
-
   public static void main(String[] args, BatfishLogger logger) {
     mainInit(args);
     _mainLogger = logger;
