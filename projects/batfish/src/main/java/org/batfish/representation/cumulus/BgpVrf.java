@@ -23,6 +23,7 @@ public class BgpVrf implements Serializable {
   private @Nullable Ip _clusterId;
   private final @Nonnull String _vrfName;
   private @Nullable Long _confederationId;
+  private @Nullable Long _maxMedAdministrative;
 
   public BgpVrf(String vrfName) {
     // the default is true unless explicitly disabled (via "no bgp default ipv4-unicast")
@@ -51,6 +52,15 @@ public class BgpVrf implements Serializable {
 
   public void setAsPathMultipathRelax(@Nullable Boolean asPathMultipathRelax) {
     _asPathMultipathRelax = asPathMultipathRelax;
+  }
+
+  @Nullable
+  public Long getMaxMedAdministrative() {
+    return _maxMedAdministrative;
+  }
+
+  public void setMaxMedAdministrative(@Nullable Long maxMedAdministrative) {
+    _maxMedAdministrative = maxMedAdministrative;
   }
 
   public @Nullable Long getAutonomousSystem() {

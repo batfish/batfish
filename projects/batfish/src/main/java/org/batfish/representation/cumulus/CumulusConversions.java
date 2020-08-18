@@ -107,6 +107,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -116,6 +117,7 @@ import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -136,6 +138,8 @@ public final class CumulusConversions {
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
   public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
+
+  public static final long DEFAULT_MAX_MED = 4294967294L;
 
   @VisibleForTesting
   static GeneratedRoute GENERATED_DEFAULT_ROUTE =
@@ -750,10 +754,19 @@ public final class CumulusConversions {
   }
 
   private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+    ImmutableList.Builder<Statement> acceptStatements = ImmutableList.builder();
     SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
-    return setNextHop == null
-        ? ImmutableList.of(Statements.ExitAccept.toStaticStatement())
-        : ImmutableList.of(setNextHop, Statements.ExitAccept.toStaticStatement());
+    SetMetric setMaxMedMetric = getSetMaxMedMetric(bgpVrf);
+
+    if (setNextHop != null) {
+      acceptStatements.add(setNextHop);
+    }
+    if (setMaxMedMetric != null) {
+      acceptStatements.add(setMaxMedMetric);
+    }
+    acceptStatements.add(Statements.ExitAccept.toStaticStatement());
+
+    return acceptStatements.build();
   }
 
   private static @Nullable CallExpr getBgpNeighborExportPolicyCallExpr(BgpNeighbor neighbor) {
@@ -796,6 +809,13 @@ public final class CumulusConversions {
     }
 
     return nextHopSelf ? new SetNextHop(SelfNextHop.getInstance()) : null;
+  }
+
+  @VisibleForTesting
+  static @Nullable SetMetric getSetMaxMedMetric(BgpVrf bgpVrf) {
+    return bgpVrf.getMaxMedAdministrative() != null
+        ? new SetMetric(new LiteralLong(bgpVrf.getMaxMedAdministrative()))
+        : null;
   }
 
   @Nullable

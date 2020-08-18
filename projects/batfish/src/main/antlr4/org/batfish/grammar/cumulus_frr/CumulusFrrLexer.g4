@@ -35,6 +35,11 @@ ADDITIVE
    'additive'
 ;
 
+ADMINISTRATIVE
+:
+   'administrative'
+;
+
 ADVERTISE
 :
   'advertise'
@@ -462,6 +467,11 @@ LINE
 MAXIMUM_PATHS
 :
   'maximum-paths'
+;
+
+MAX_MED
+:
+  'max-med'
 ;
 
 MESSAGE_DIGEST
