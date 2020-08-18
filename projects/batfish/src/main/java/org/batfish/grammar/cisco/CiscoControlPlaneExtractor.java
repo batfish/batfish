@@ -5090,10 +5090,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       case CISCO_ASA:
       case FORCE10:
       case CISCO_IOS:
-        return String.format("Port-Channel%d", num);
-
-      case CISCO_IOS_XR:
-        return String.format("Bundle-Ether%d", num);
+        return String.format("Port-channel%d", num);
 
       default:
         _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
