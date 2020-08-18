@@ -4,15 +4,6 @@ load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
 package(default_visibility = ["//visibility:public"])
 
-java_binary(
-    name = "coordinator_main",
-    main_class = "org.batfish.coordinator.Main",
-    runtime_deps = [
-        ":coordinator",
-        "@maven//:org_slf4j_slf4j_jdk14",
-    ],
-)
-
 java_library(
     name = "coordinator",
     srcs = glob([

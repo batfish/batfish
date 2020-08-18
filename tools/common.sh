@@ -17,9 +17,6 @@ export BATFISH_CLIENT="$BATFISH_CLIENT_PATH/batfish-client"
 
 export BATFISH_DOCS_ROOT="$BATFISH_ROOT/docs"
 
-export COORDINATOR_PATH="$PROJECTS_PATH/coordinator"
-export COORDINATOR="$COORDINATOR_PATH/coordinator"
-
 export ALLINONE_PATH="$PROJECTS_PATH/allinone"
 export ALLINONE="$ALLINONE_PATH/allinone"
 
@@ -31,7 +28,6 @@ export BATFISH_QUESTION_PLUGIN_DIR="$PROJECTS_PATH/question/target/"
 
 export ALLINONE_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-allinone.tmp"
 export BATFISH_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-batfish.tmp"
-export COORDINATOR_COMPLETION_FILE="$BATFISH_TOOLS_PATH/completion-coordinator.tmp"
 
 batfish() {
   # if cygwin, shift and replace each parameter
@@ -80,11 +76,6 @@ batfish_build_all() {
   if [ "$BATFISH_COMPLETION_FILE" -ot "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" -a -e "$BATFISH_PATH/target/batfish-${BATFISH_VERSION}.jar" ]; then
     echo -n "Generating bash completion file for batfish (via batfish_build_all) ..."
     BATFISH_PRINT_CMDLINE=no batfish -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' >"$BATFISH_COMPLETION_FILE"
-    echo "OK"
-  fi
-  if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" ]; then
-    echo -n "Generating bash completion file for coordinator (via batfish_build_all) ..."
-    BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' >"$COORDINATOR_COMPLETION_FILE"
     echo "OK"
   fi
 }
@@ -235,24 +226,6 @@ else
 fi
 export -f batfish_time
 
-coordinator() {
-  # if cygwin, shift and replace each parameter
-  if batfish_cygwin; then
-    local NUMARGS=$#
-    for i in $(seq 1 ${NUMARGS}); do
-      local CURRENT_ARG=$1
-      local NEW_ARG="$(cygpath -w -- ${CURRENT_ARG})"
-      set -- "$@" "$NEW_ARG"
-      shift
-    done
-  fi
-  if [ "$COORDINATOR_PRINT_CMDLINE" = "yes" ]; then
-    echo "$COORDINATOR $COORDINATOR_COMMON_ARGS $@"
-  fi
-  ${COORDINATOR} ${COORDINATOR_COMMON_ARGS} "$@"
-}
-export -f coordinator
-
 _pre_build() {
   cd ${PROJECTS_PATH} || return 1
 }
@@ -311,11 +284,6 @@ export -f coordinator_build
 _coordinator_build() {
   _pre_build || return 1
   mvn install -pl coordinator -am || return 1
-  if [ "$COORDINATOR_COMPLETION_FILE" -ot "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" -a -e "$COORDINATOR_PATH/target/coordinator-${BATFISH_VERSION}.jar" ]; then
-    echo -n "Generating bash completion file for coordinator (via coordinator_build) ..."
-    BATFISH_PRINT_CMDLINE=no coordinator -help | grep -o '^ *-[a-zA-Z0-9]*' | tr -d ' ' | tr '\n' ' ' >"$COORDINATOR_COMPLETION_FILE"
-    echo "OK"
-  fi
 }
 export -f _coordinator_build
 
