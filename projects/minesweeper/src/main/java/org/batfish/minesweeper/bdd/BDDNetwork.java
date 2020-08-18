@@ -29,8 +29,6 @@ public class BDDNetwork {
   private Graph _graph;
   private NodesSpecifier _nodeSpecifier;
 
-  private PolicyQuotient _policyQuotient;
-
   private Map<GraphEdge, BDDRoute> _exportBgpPolicies;
 
   private Map<GraphEdge, BDDRoute> _importBgpPolicies;
@@ -49,23 +47,17 @@ public class BDDNetwork {
 
   public static BDDNetwork create(
       NetworkSnapshot snapshot, BDDPacket pkt, Graph g, NodesSpecifier nodesSpecifier) {
-    PolicyQuotient pq = new PolicyQuotient(g);
-    BDDNetwork network = new BDDNetwork(snapshot, pkt, g, nodesSpecifier, pq);
+    BDDNetwork network = new BDDNetwork(snapshot, pkt, g, nodesSpecifier);
     network.computeInterfacePolicies();
     return network;
   }
 
   private BDDNetwork(
-      NetworkSnapshot snapshot,
-      BDDPacket pkt,
-      Graph graph,
-      NodesSpecifier nodesSpecifier,
-      PolicyQuotient pq) {
+      NetworkSnapshot snapshot, BDDPacket pkt, Graph graph, NodesSpecifier nodesSpecifier) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
     _snapshot = snapshot;
     _pkt = pkt;
-    _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
     _importBgpPolicies = new HashMap<>();
@@ -83,7 +75,7 @@ public class BDDNetwork {
     if (ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);
     }
-    TransferBDD t = new TransferBDD(g, conf, pol.getStatements(), _policyQuotient);
+    TransferBDD t = new TransferBDD(g, conf, pol.getStatements());
     return t.compute(networks).getReturnValue().getFirst();
   }
 

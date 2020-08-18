@@ -114,6 +114,14 @@ public class Graph {
   private Map<Integer, Set<String>> _domainMapInverse;
 
   /**
+   * The SMT- and BDD-based analyses (see the corresponding smt and bdd packages) handle communities
+   * differently and make different assumptions about these communities, and in the future might
+   * diverge further. Hence we use this flag to build the appropriate Graph object for the given
+   * analysis.
+   */
+  private boolean _bddBasedAnalysis;
+
+  /**
    * A graph with a static route with a dynamic next hop cannot be encoded to SMT, so some of the
    * Minesweeper analyses will fail. Compression is still possible though.
    */
@@ -121,7 +129,10 @@ public class Graph {
 
   private Set<CommunityVar> _allCommunities;
 
-  /** Keys are all REGEX vars, and values are lists of EXACT or OTHER vars. */
+  /**
+   * Keys are all REGEX vars, and values are lists of EXACT or OTHER vars. This field is only used
+   * by the SMT-based analyses.
+   */
   private SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
 
   private Map<String, String> _namedCommunities;
@@ -131,7 +142,8 @@ public class Graph {
    * them. See initCommAtomicPredicates for details. These fields respectively record the number n
    * of atomic predicates; a mapping from each community to its set of atomic predicates, each of
    * which is an integer in the range 0...(n-1); and a mapping from each atomic predicate number to
-   * its semantic representation, which is an automaton representing a predicate on strings.
+   * its semantic representation, which is an automaton representing a predicate on strings. These
+   * fields are only used by the BDD-based analyses.
    */
   private int _numAtomicPredicates;
 
@@ -149,7 +161,12 @@ public class Graph {
    * skip the cloning, assuming that the caller has made a defensive copy first.
    */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot) {
-    this(batfish, snapshot, null, null, null);
+    this(batfish, snapshot, null, null, null, false);
+  }
+
+  /** Create a graph and specify whether it will be used for a BDD-based analysis or not. */
+  public Graph(IBatfish batfish, NetworkSnapshot snapshot, boolean bddBasedAnalysis) {
+    this(batfish, snapshot, null, null, null, bddBasedAnalysis);
   }
 
   /**
@@ -161,7 +178,7 @@ public class Graph {
    */
   public Graph(
       IBatfish batfish, NetworkSnapshot snapshot, @Nullable Map<String, Configuration> configs) {
-    this(batfish, snapshot, configs, null, null);
+    this(batfish, snapshot, configs, null, null, false);
   }
 
   /** Create a graph, while selecting the subset of routers to use. */
@@ -170,13 +187,14 @@ public class Graph {
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers) {
-    this(batfish, snapshot, configs, routers, null);
+    this(batfish, snapshot, configs, routers, null, false);
   }
 
   /**
    * Create a graph, specifying an additional set of community expressions (literals and regexes) to
-   * be tracked. This is useful for supporting user-defined constraints on symbolic route analysis
-   * (e.g., the user is interested only in routes tagged with a particular community).
+   * be tracked. This is used by the BDD-based analyses to support user-defined constraints on
+   * symbolic route analysis (e.g., the user is interested only in routes tagged with a particular
+   * community).
    */
   public Graph(
       IBatfish batfish,
@@ -184,6 +202,17 @@ public class Graph {
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers,
       @Nullable Set<CommunitySetExpr> communities) {
+    this(batfish, snapshot, configs, routers, communities, true);
+  }
+
+  /** Create a graph, specifying all parameters directly. */
+  public Graph(
+      IBatfish batfish,
+      NetworkSnapshot snapshot,
+      @Nullable Map<String, Configuration> configs,
+      @Nullable Set<String> routers,
+      @Nullable Set<CommunitySetExpr> communities,
+      boolean bddBasedAnalysis) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
     _allEdges = new HashSet<>();
@@ -206,6 +235,8 @@ public class Graph {
     _atomicPredicateAutomata = new HashMap<>();
     _communityAtomicPredicates = new HashMap<>();
     _snapshot = snapshot;
+    _bddBasedAnalysis = bddBasedAnalysis;
+
     if (_configurations == null) {
       // Since many functions that use the graph mutate the configurations, we must clone them
       // before that happens.
@@ -245,8 +276,11 @@ public class Graph {
     initAreaIds();
     initDomains();
     initAllCommunities(communities);
-    initCommDependencies();
-    initCommAtomicPredicates();
+    if (_bddBasedAnalysis) {
+      initCommAtomicPredicates();
+    } else {
+      initCommDependencies();
+    }
     initNamedCommunities();
   }
 
@@ -1010,6 +1044,10 @@ public class Graph {
 
   public Set<CommunityVar> getAllCommunities() {
     return _allCommunities;
+  }
+
+  public boolean getBddBasedAnalysis() {
+    return _bddBasedAnalysis;
   }
 
   public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
