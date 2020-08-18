@@ -307,7 +307,7 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_QUEUE_COMPLETED_WORK, "batfishcompletedwork");
     setDefaultProperty(ARG_QUEUE_INCOMPLETE_WORK, "batfishincompletework");
     setDefaultProperty(ARG_QUEUE_TYPE, WorkQueue.Type.memory.toString());
-    setDefaultProperty(ARG_POOL_BIND_HOST, Ip.ZERO.toString());
+    setDefaultProperty(ARG_POOL_BIND_HOST, "localhost");
     setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_WORK_BIND_HOST, Ip.ZERO.toString());
     setDefaultProperty(ARG_SERVICE_NAME, "coordinator-service");
