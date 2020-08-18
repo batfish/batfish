@@ -306,7 +306,9 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    * @return integer representing cluster list length. 0 by default.
    */
   private int getClusterListLength(R route) {
-    if (!_clusterListAsIgpCost) { return 0; }
+    if (!_clusterListAsIgpCost) {
+      return 0;
+    }
     return route.getClusterList().size();
   }
 }
