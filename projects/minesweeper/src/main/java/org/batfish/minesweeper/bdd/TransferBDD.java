@@ -97,16 +97,13 @@ public class TransferBDD {
 
   private Graph _graph;
 
-  private PolicyQuotient _policyQuotient;
-
   private Set<Prefix> _ignoredNetworks;
 
   private List<Statement> _statements;
 
-  public TransferBDD(Graph g, Configuration conf, List<Statement> statements, PolicyQuotient pq) {
+  public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
     _graph = g;
     _conf = conf;
-    _policyQuotient = pq;
     _statements = statements;
   }
 
@@ -612,10 +609,7 @@ public class TransferBDD {
       } else if (stmt instanceof AddCommunity) {
         curP.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
-        Set<CommunityVar> comms =
-            collectCommunityVars(_conf, ac.getExpr()).stream()
-                .filter(c -> !_policyQuotient.getCommsAssignedButNotMatched().contains(c))
-                .collect(Collectors.toSet());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         // set all atomic predicates associated with these communities to 1 if this statement
         // is reached
         Set<Integer> commAPs = atomicPredicatesFor(comms);
@@ -634,10 +628,7 @@ public class TransferBDD {
       } else if (stmt instanceof SetCommunity) {
         curP.debug("SetCommunity");
         SetCommunity sc = (SetCommunity) stmt;
-        Set<CommunityVar> comms =
-            collectCommunityVars(_conf, sc.getExpr()).stream()
-                .filter(c -> !_policyQuotient.getCommsAssignedButNotMatched().contains(c))
-                .collect(Collectors.toSet());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
         // set all atomic predicates associated with these communities to 1, and all other
         // atomic predicates to zero, if this statement is reached
         Set<Integer> commAPs = atomicPredicatesFor(comms);
@@ -655,10 +646,7 @@ public class TransferBDD {
       } else if (stmt instanceof DeleteCommunity) {
         curP.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
-        Set<CommunityVar> comms =
-            collectCommunityVars(_conf, ac.getExpr()).stream()
-                .filter(c -> !_policyQuotient.getCommsAssignedButNotMatched().contains(c))
-                .collect(Collectors.toSet());
+        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         // set all atomic predicates associated with these communities to 0 on this path
         Set<Integer> commAPs = atomicPredicatesFor(comms);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
@@ -839,10 +827,6 @@ public class TransferBDD {
       CommunityVar cvar = toRegexCommunityVar(toCommunityVar(line.getMatchCondition()));
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
-      // Skip this match if it is irrelevant
-      if (_policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
-        continue;
-      }
       // the community cvar is logically represented as the disjunction of its corresponding
       // atomic predicates
       Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(cvar));

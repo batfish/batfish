@@ -825,4 +825,29 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
   }
+
+  @Test
+  public void testTwoVersionsOfACommunity() {
+    _policyBuilder.addStatement(
+        new If(
+            matchNamedCommunity(REGEX_COMMUNITY_NAME),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            EMPTY_CONSTRAINTS,
+            BgpRouteConstraints.builder()
+                .setCommunities(ImmutableSet.of("2[0-9]:30"))
+                .setComplementCommunities(true)
+                .build(),
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    assertEquals(0, answer.getRows().size());
+  }
 }

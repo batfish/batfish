@@ -46,6 +46,28 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   @Nonnull private final String _regex;
   @Nullable private final Community _literalValue;
 
+  @Nonnull private static final String NUM_REGEX = "[0-9]+";
+
+  // a regex that represents the language of community literals supported by Batfish
+  // see Community::matchString() and its implementations
+  @Nonnull
+  private static final String COMMUNITY_REGEX =
+      // standard and extended communities
+      String.join(":", NUM_REGEX, NUM_REGEX)
+          + "|"
+          // large communities
+          + String.join(":", "large", NUM_REGEX, NUM_REGEX, NUM_REGEX);
+
+  /**
+   * When converting a community variable to an automaton (see toAutomaton()), we intersect with
+   * this automaton, which represents the language of community literals supported by Batfish. Doing
+   * so serves two purposes. First, it is necessary for correctness of the symbolic analysis. For
+   * example, a regex like ".*" does not actually match any possible string since communities cannot
+   * be arbitrary strings. Second, it ensures that when we solve for community literals that match
+   * regexes, we will get examples that are sensible and also able to be parsed by Batfish.
+   */
+  @Nonnull static final Automaton COMMUNITY_FSM = new RegExp(COMMUNITY_REGEX).toAutomaton();
+
   private CommunityVar(Type type, String regex, @Nullable Community literalValue) {
     _type = type;
     _regex = regex;
@@ -103,7 +125,7 @@ public final class CommunityVar implements Comparable<CommunityVar> {
       regex = regex.replaceAll("\\$", "()");
     }
     // TODO: Handle the case when the regex only matches a prefix of the communities of interest
-    return new RegExp(regex).toAutomaton();
+    return new RegExp(regex).toAutomaton().intersection(COMMUNITY_FSM);
   }
 
   @Override

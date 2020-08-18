@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.RegExp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,7 +55,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.bdd.BDDRoute;
-import org.batfish.minesweeper.bdd.PolicyQuotient;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
@@ -75,10 +73,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
 
-  // concrete community literals that we generate must satisfy this regex,
-  // to help ensure that they will be parse-able
-  private static final Automaton COMMUNITY_FSM = new RegExp("[0-9]+(:[0-9]+)+").toAutomaton();
-
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
   @Nonnull private final String _nodes;
@@ -86,7 +80,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Action _action;
 
   @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final PolicyQuotient _pq;
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -105,7 +98,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .addAll(_inputConstraints.getCommunities())
             .addAll(_outputConstraints.getCommunities())
             .build();
-    _pq = new PolicyQuotient();
   }
 
   private static Optional<Community> stringToCommunity(String str) {
@@ -141,10 +133,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
     for (int i = 0; i < aps.length; i++) {
       if (aps[i].andSat(fullModel)) {
-        // this atomic predicate is in the model, so create a concrete community for it.
-        // intersection with COMMUNITY_FSM helps ensure that the example we create will be
-        // a valid community.
-        Automaton a = apAutomata.get(i).intersection(COMMUNITY_FSM);
+        Automaton a = apAutomata.get(i);
         if (a.isEmpty()) {
           throw new BatfishException("Failed to produce a valid community for answer");
         }
@@ -316,7 +305,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .map(RegexCommunitySet::new)
                 .collect(ImmutableSet.toImmutableSet()));
     try {
-      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements(), _pq);
+      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
