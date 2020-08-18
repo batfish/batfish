@@ -39,8 +39,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_PARSE_REUSE = "parsereuse";
 
-  private static final String ARG_DISABLE_Z3_SIMPLIFICATION = "nosimplify";
-
   private static final String ARG_EXIT_ON_FIRST_ERROR = "ee";
 
   private static final String ARG_FLATTEN = "flatten";
@@ -96,8 +94,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private static final String ARG_TIMESTAMP = "timestamp";
 
   private static final String ARG_VERSION = "version";
-
-  private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
   private static final String ARGNAME_HOSTNAME = "hostname";
 
@@ -361,10 +357,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return !_config.getBoolean(ARG_NO_SHUFFLE);
   }
 
-  public boolean getSimplify() {
-    return !_config.getBoolean(ARG_DISABLE_Z3_SIMPLIFICATION);
-  }
-
   public String getSnapshotName() {
     return _config.getString(BfConsts.ARG_SNAPSHOT_NAME);
   }
@@ -438,10 +430,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_IGNORE_UNSUPPORTED);
   }
 
-  public int getZ3timeout() {
-    return _config.getInt(ARG_Z3_TIMEOUT);
-  }
-
   public String getDataPlaneEngineName() {
     return _config.getString(ARG_DATAPLANE_ENGINE_NAME);
   }
@@ -465,7 +453,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_DEBUG_FLAGS, ImmutableList.of());
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
-    setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
     setDefaultProperty(ARG_FLATTEN, false);
     setDefaultProperty(ARG_FLATTEN_DESTINATION, null);
@@ -512,7 +499,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.COMMAND_INIT_INFO, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_INDEPENDENT, false);
     setDefaultProperty(BfConsts.COMMAND_PARSE_VENDOR_SPECIFIC, false);
-    setDefaultProperty(ARG_Z3_TIMEOUT, 0);
     setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
   }
 
@@ -581,8 +567,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(
         BfConsts.ARG_DISABLE_UNRECOGNIZED, "disable parser recognition of unrecognized stanzas");
-
-    addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION, "disable z3 simplification");
 
     addBooleanOption(
         ARG_EXIT_ON_FIRST_ERROR,
@@ -719,8 +703,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
 
-    addOption(ARG_Z3_TIMEOUT, "set a timeout (in milliseconds) for Z3 queries", "z3timeout");
-
     addOption(
         ARG_DATAPLANE_ENGINE_NAME,
         "name of the dataplane generation engine to use.",
@@ -738,6 +720,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "gsinputrole",
           "gsremoteas",
           "logtee",
+          "nosimplify",
           "outputenv",
           "parentpid",
           "pedanticsuppress",
@@ -751,7 +734,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
           "ssltruststorepassword",
           "stext",
           "unimplementedsuppress",
-          "venv"
+          "venv",
+          "z3timeout",
         }) {
       addOption(deprecatedStringArg, DEPRECATED_ARG_DESC, "ignored");
     }
@@ -799,7 +783,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getStringOptionValue(BfConsts.ARG_DELTA_TESTRIG);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
-    getBooleanOptionValue(ARG_DISABLE_Z3_SIMPLIFICATION);
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
     getPathOptionValue(ARG_FLATTEN_DESTINATION);
@@ -840,7 +823,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getIntegerOptionValue(ARG_TRACING_AGENT_PORT);
     getBooleanOptionValue(ARG_TRACING_ENABLE);
     getBooleanOptionValue(BfConsts.ARG_VERBOSE_PARSE);
-    getIntegerOptionValue(ARG_Z3_TIMEOUT);
     getStringOptionValue(ARG_DATAPLANE_ENGINE_NAME);
   }
 
@@ -947,10 +929,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setVerboseParse(boolean verboseParse) {
     _config.setProperty(BfConsts.ARG_VERBOSE_PARSE, verboseParse);
-  }
-
-  public void setZ3Timeout(int z3Timeout) {
-    _config.setProperty(ARG_Z3_TIMEOUT, z3Timeout);
   }
 
   public void setDataplaneEngineName(String name) {
