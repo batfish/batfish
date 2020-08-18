@@ -756,8 +756,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbb_max_med_administrative(Sbb_max_med_administrativeContext ctx) {
-    if (ctx.med != null) _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
-    else _currentBgpVrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
+    if (ctx.med != null) {
+      _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
+    } else {
+      _currentBgpVrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
+    }
   }
 
   @Override

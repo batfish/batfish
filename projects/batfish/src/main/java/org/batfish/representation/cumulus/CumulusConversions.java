@@ -758,8 +758,12 @@ public final class CumulusConversions {
     SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
     SetMetric setMaxMedMetric = getSetMaxMedMetric(bgpVrf);
 
-    if (setNextHop != null) acceptStatements.add(setNextHop);
-    if (setMaxMedMetric != null) acceptStatements.add(setMaxMedMetric);
+    if (setNextHop != null) {
+      acceptStatements.add(setNextHop);
+    }
+    if (setMaxMedMetric != null) {
+      acceptStatements.add(setMaxMedMetric);
+    }
     acceptStatements.add(Statements.ExitAccept.toStaticStatement());
 
     return acceptStatements.build();
