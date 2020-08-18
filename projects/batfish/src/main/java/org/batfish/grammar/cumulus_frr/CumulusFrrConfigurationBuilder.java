@@ -46,7 +46,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
@@ -418,9 +417,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         _currentBgpVrf
             .getIpv4Unicast()
             .getRedistributionPolicies()
-            .put(
-                srcProtocol,
-                new BgpRedistributionPolicy(srcProtocol, routeMap));
+            .put(srcProtocol, new BgpRedistributionPolicy(srcProtocol, routeMap));
 
     if (oldRedistributionPolicy != null) {
       _w.addWarning(
