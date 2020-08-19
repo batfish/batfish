@@ -1,9 +1,12 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
+import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.collect.ImmutableList;
@@ -13,7 +16,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import dk.brics.automaton.Automaton;
-import dk.brics.automaton.RegExp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,6 +49,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -56,7 +59,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.bdd.BDDRoute;
-import org.batfish.minesweeper.bdd.PolicyQuotient;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
@@ -74,10 +76,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   public static final String COL_INPUT_ROUTE = "Input_Route";
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
-
-  // concrete community literals that we generate must satisfy this regex,
-  // to help ensure that they will be parse-able
-  private static final Automaton COMMUNITY_FSM = new RegExp("[0-9]+(:[0-9]+)+").toAutomaton();
+  public static final String COL_DIFF = "Difference";
 
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
@@ -86,7 +85,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Action _action;
 
   @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final PolicyQuotient _pq;
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -105,7 +103,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .addAll(_inputConstraints.getCommunities())
             .addAll(_outputConstraints.getCommunities())
             .build();
-    _pq = new PolicyQuotient();
   }
 
   private static Optional<Community> stringToCommunity(String str) {
@@ -141,10 +138,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
     for (int i = 0; i < aps.length; i++) {
       if (aps[i].andSat(fullModel)) {
-        // this atomic predicate is in the model, so create a concrete community for it.
-        // intersection with COMMUNITY_FSM helps ensure that the example we create will be
-        // a valid community.
-        Automaton a = apAutomata.get(i).intersection(COMMUNITY_FSM);
+        Automaton a = apAutomata.get(i);
         if (a.isEmpty()) {
           throw new BatfishException("Failed to produce a valid community for answer");
         }
@@ -316,7 +310,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .map(RegexCommunitySet::new)
                 .collect(ImmutableSet.toImmutableSet()));
     try {
-      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements(), _pq);
+      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     } catch (Exception e) {
       throw new BatfishException(
@@ -331,7 +325,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD intersection;
     BDD inConstraints =
         routeConstraintsToBDD(_inputConstraints, new BDDRoute(g.getNumAtomicPredicates()), g);
-    if (_action == Action.PERMIT) {
+    if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
       BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
       intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
@@ -399,7 +393,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
             new ColumnMetadata(
                 COL_ACTION, STRING, "The action of the policy on the input route", false, true),
-            new ColumnMetadata(COL_OUTPUT_ROUTE, BGP_ROUTE, "The input route", false, false));
+            new ColumnMetadata(COL_OUTPUT_ROUTE, BGP_ROUTE, "The output route", false, false),
+            new ColumnMetadata(
+                COL_DIFF,
+                BGP_ROUTE_DIFFS,
+                "The difference between the input and output routes",
+                false,
+                true));
     return new TableMetadata(
         columnMetadata, String.format("Results for policy ${%s}", COL_POLICY_NAME));
   }
@@ -409,6 +409,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         toQuestionsBgpRoute(result.getInputRoute());
     org.batfish.datamodel.questions.BgpRoute outputRoute =
         toQuestionsBgpRoute(result.getOutputRoute());
+
     Action action = result.getAction();
     RoutingPolicyId policyId = result.getPolicyId();
     return Row.builder()
@@ -417,6 +418,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
         .put(COL_OUTPUT_ROUTE, outputRoute)
+        .put(
+            COL_DIFF,
+            action == PERMIT ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
         .build();
   }
 }

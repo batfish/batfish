@@ -603,7 +603,8 @@ public final class FileBasedStorageTest {
   @Test
   public void testExpungeOldEntriesDirectories() throws IOException {
     Instant newTime = Instant.now();
-    Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
+    Instant expungBeforeTime = newTime.minus(GC_SKEW_ALLOWANCE);
+    Instant oldTime = expungBeforeTime.minus(1, ChronoUnit.MINUTES);
 
     Path newDir = _storage.getStorageBase().resolve("newDir");
     Path newFile = _storage.getStorageBase().resolve("newFile");
@@ -620,7 +621,7 @@ public final class FileBasedStorageTest {
     Files.setLastModifiedTime(oldDir, FileTime.from(oldTime));
     Files.setLastModifiedTime(oldFile, FileTime.from(oldTime));
 
-    _storage.expungeOldEntries(newTime, _storage.getStorageBase(), true);
+    _storage.expungeOldEntries(expungBeforeTime, _storage.getStorageBase(), true);
 
     assertTrue(Files.exists(newDir));
     assertTrue(Files.exists(newFile));
@@ -631,7 +632,8 @@ public final class FileBasedStorageTest {
   @Test
   public void testExpungeOldEntriesFiles() throws IOException {
     Instant newTime = Instant.now();
-    Instant oldTime = newTime.minus(1, ChronoUnit.SECONDS);
+    Instant expungBeforeTime = newTime.minus(GC_SKEW_ALLOWANCE);
+    Instant oldTime = expungBeforeTime.minus(1, ChronoUnit.MINUTES);
 
     Path newDir = _storage.getStorageBase().resolve("newDir");
     Path newFile = _storage.getStorageBase().resolve("newFile");
@@ -648,7 +650,7 @@ public final class FileBasedStorageTest {
     Files.setLastModifiedTime(oldDir, FileTime.from(oldTime));
     Files.setLastModifiedTime(oldFile, FileTime.from(oldTime));
 
-    _storage.expungeOldEntries(newTime, _storage.getStorageBase(), false);
+    _storage.expungeOldEntries(expungBeforeTime, _storage.getStorageBase(), false);
 
     assertTrue(Files.exists(newDir));
     assertTrue(Files.exists(newFile));
@@ -760,5 +762,11 @@ public final class FileBasedStorageTest {
     expectFileNotFoundException(() -> storage.loadSnapshotMetadata(networkId, snapshotOldId));
     expectFileNotFoundException(
         () -> storage.loadSnapshotMetadata(networkToDeleteId, snapshotOldId));
+  }
+
+  @Test
+  public void testRunGarbageCollectionFreshStartup() throws IOException {
+    // Should not throw
+    _storage.runGarbageCollection(Instant.MAX);
   }
 }

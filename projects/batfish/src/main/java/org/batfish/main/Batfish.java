@@ -993,11 +993,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (_settings.getCoordinatorHost() == null) {
       throw new BatfishException("Cannot get question templates: coordinator host is not set");
     }
-    String protocol = _settings.getSslDisable() ? "http" : "https";
     String url =
         String.format(
-            "%s://%s:%s%s/%s",
-            protocol,
+            "http://%s:%s%s/%s",
             _settings.getCoordinatorHost(),
             _settings.getCoordinatorPoolPort(),
             CoordConsts.SVC_CFG_POOL_MGR,

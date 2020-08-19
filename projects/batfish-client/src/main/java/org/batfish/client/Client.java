@@ -1901,9 +1901,7 @@ public class Client extends AbstractClient implements IClient {
     }
     loadPlugins();
     initHelpers();
-    _logger.debugf(
-        "Will use coordinator at %s://%s\n",
-        (_settings.getSslDisable()) ? "http" : "https", _settings.getCoordinatorHost());
+    _logger.debugf("Will use coordinator at http://%s\n", _settings.getCoordinatorHost());
 
     if (!processCommands(initialCommands)) {
       return;

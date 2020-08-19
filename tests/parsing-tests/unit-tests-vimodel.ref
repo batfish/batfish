@@ -22596,7 +22596,7 @@
             "allowedVlans" : "1-4094",
             "autostate" : true,
             "bandwidth" : 2.0E10,
-            "channelGroup" : "Port-Channel1",
+            "channelGroup" : "Port-channel1",
             "declaredNames" : [
               "Ethernet0"
             ],

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkState;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -243,8 +242,7 @@ public final class Transitions {
     if (var.size() == 0) {
       return constraint(value);
     } else {
-      return new EraseAndSet(
-          Arrays.stream(var.getBitvec()).reduce(var.getFactory().one(), BDD::and), value);
+      return new EraseAndSet(var.getVars(), value);
     }
   }
 
