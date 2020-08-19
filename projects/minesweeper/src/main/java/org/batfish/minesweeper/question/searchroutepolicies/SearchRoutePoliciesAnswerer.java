@@ -9,12 +9,15 @@ import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import java.util.List;
 import java.util.Map;
@@ -34,15 +37,14 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -248,13 +250,29 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  private BDD integerSpaceToBDD(IntegerSpace space, BDDInteger bddInt) {
+  // convert a possibly open range of longs to a closed one
+  @VisibleForTesting
+  static Range<Long> toClosedRange(Range<Long> r) {
+    BoundType lowerType = r.lowerBoundType();
+    Long lowerBound = r.lowerEndpoint();
+    BoundType upperType = r.upperBoundType();
+    Long upperBound = r.upperEndpoint();
+
+    return Range.range(
+        lowerType == BoundType.CLOSED ? lowerBound : lowerBound + 1,
+        BoundType.CLOSED,
+        upperType == BoundType.CLOSED ? upperBound : upperBound - 1,
+        BoundType.CLOSED);
+  }
+
+  private BDD longSpaceToBDD(LongSpace space, BDDInteger bddInt) {
     if (space.isEmpty()) {
       return bddInt.getFactory().one();
     } else {
       BDD result = bddInt.getFactory().zero();
-      for (SubRange range : space.getSubRanges()) {
-        result = result.or(bddInt.range(range.getStart(), range.getEnd()));
+      for (Range<Long> range : space.getRanges()) {
+        Range<Long> closedRange = toClosedRange(range);
+        result = result.or(bddInt.range(closedRange.lowerEndpoint(), closedRange.upperEndpoint()));
       }
       return result;
     }
@@ -288,8 +306,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD result = r.getProtocolHistory().value(Protocol.BGP);
     result =
         result.and(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
-    result = result.and(integerSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
-    result = result.and(integerSpaceToBDD(constraints.getMed(), r.getMed()));
+    result = result.and(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
+    result = result.and(longSpaceToBDD(constraints.getMed(), r.getMed()));
     result =
         result.and(
             communityConstraintsToBDD(

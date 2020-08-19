@@ -8,6 +8,7 @@ import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePo
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_NODE;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_OUTPUT_ROUTE;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_POLICY_NAME;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.toClosedRange;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.DENY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -15,10 +16,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -30,8 +33,8 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -746,8 +749,8 @@ public class SearchRoutePoliciesAnswererTest {
         _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
 
     PrefixRange prefixRange = PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32"));
-    IntegerSpace localPref = IntegerSpace.builder().including(45).build();
-    IntegerSpace med = IntegerSpace.builder().including(56).build();
+    LongSpace localPref = LongSpace.builder().including(45L).build();
+    LongSpace med = LongSpace.builder().including(56L).build();
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -907,5 +910,33 @@ public class SearchRoutePoliciesAnswererTest {
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     assertEquals(0, answer.getRows().size());
+  }
+
+  @Test
+  public void testToClosedRange() {
+    Range<Long> r1 = toClosedRange(Range.closed(5L, 10L));
+    Range<Long> r2 = toClosedRange(Range.closedOpen(5L, 11L));
+    Range<Long> r3 = toClosedRange(Range.openClosed(4L, 10L));
+    Range<Long> r4 = toClosedRange(Range.open(4L, 11L));
+
+    assertEquals(BoundType.CLOSED, r1.lowerBoundType());
+    assertEquals(new Long(5L), r1.lowerEndpoint());
+    assertEquals(BoundType.CLOSED, r1.upperBoundType());
+    assertEquals(new Long(10L), r1.upperEndpoint());
+
+    assertEquals(BoundType.CLOSED, r2.lowerBoundType());
+    assertEquals(new Long(5L), r2.lowerEndpoint());
+    assertEquals(BoundType.CLOSED, r2.upperBoundType());
+    assertEquals(new Long(10L), r2.upperEndpoint());
+
+    assertEquals(BoundType.CLOSED, r3.lowerBoundType());
+    assertEquals(new Long(5L), r3.lowerEndpoint());
+    assertEquals(BoundType.CLOSED, r3.upperBoundType());
+    assertEquals(new Long(10L), r3.upperEndpoint());
+
+    assertEquals(BoundType.CLOSED, r4.lowerBoundType());
+    assertEquals(new Long(5L), r4.lowerEndpoint());
+    assertEquals(BoundType.CLOSED, r4.upperBoundType());
+    assertEquals(new Long(10L), r4.upperEndpoint());
   }
 }
