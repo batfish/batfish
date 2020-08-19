@@ -3,6 +3,7 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_ACTION;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_DIFF;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_INPUT_ROUTE;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_NODE;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_OUTPUT_ROUTE;
@@ -11,6 +12,7 @@ import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePo
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
@@ -43,6 +45,8 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
+import org.batfish.datamodel.questions.BgpRouteDiff;
+import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
@@ -170,6 +174,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -178,7 +184,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -207,6 +214,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -215,7 +224,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -244,6 +254,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -252,7 +264,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -301,6 +314,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -309,7 +324,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -336,6 +352,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -344,7 +362,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -373,6 +392,8 @@ public class SearchRoutePoliciesAnswererTest {
                 ImmutableSet.of(StandardCommunity.of(40, 33), StandardCommunity.of(3, 44)))
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -381,7 +402,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -444,6 +466,10 @@ public class SearchRoutePoliciesAnswererTest {
             .setCommunities(ImmutableSet.of(StandardCommunity.of(2, 40)))
             .build();
 
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_COMMUNITIES, "[1:40]", "[2:40]")));
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -452,7 +478,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -511,6 +538,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -519,7 +548,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -556,6 +586,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -564,7 +596,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -601,6 +634,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -609,7 +644,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -634,13 +670,24 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/16"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
             allOf(
                 hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
-                hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING))));
+                hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, nullValue(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, nullValue(), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -727,6 +774,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -735,7 +784,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -770,6 +820,10 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_LOCAL_PREFERENCE, "0", "3")));
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -778,7 +832,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -815,6 +870,8 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
 
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -823,7 +880,8 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
-                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE))));
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test

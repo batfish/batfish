@@ -1,9 +1,12 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
+import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.collect.ImmutableList;
@@ -46,6 +49,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -72,6 +76,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   public static final String COL_INPUT_ROUTE = "Input_Route";
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
+  public static final String COL_DIFF = "Difference";
 
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
@@ -320,7 +325,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD intersection;
     BDD inConstraints =
         routeConstraintsToBDD(_inputConstraints, new BDDRoute(g.getNumAtomicPredicates()), g);
-    if (_action == Action.PERMIT) {
+    if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
       BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
       intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
@@ -388,7 +393,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
             new ColumnMetadata(
                 COL_ACTION, STRING, "The action of the policy on the input route", false, true),
-            new ColumnMetadata(COL_OUTPUT_ROUTE, BGP_ROUTE, "The input route", false, false));
+            new ColumnMetadata(COL_OUTPUT_ROUTE, BGP_ROUTE, "The output route", false, false),
+            new ColumnMetadata(
+                COL_DIFF,
+                BGP_ROUTE_DIFFS,
+                "The difference between the input and output routes",
+                false,
+                true));
     return new TableMetadata(
         columnMetadata, String.format("Results for policy ${%s}", COL_POLICY_NAME));
   }
@@ -398,6 +409,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         toQuestionsBgpRoute(result.getInputRoute());
     org.batfish.datamodel.questions.BgpRoute outputRoute =
         toQuestionsBgpRoute(result.getOutputRoute());
+
     Action action = result.getAction();
     RoutingPolicyId policyId = result.getPolicyId();
     return Row.builder()
@@ -406,6 +418,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
         .put(COL_OUTPUT_ROUTE, outputRoute)
+        .put(
+            COL_DIFF,
+            action == PERMIT ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
         .build();
   }
 }
