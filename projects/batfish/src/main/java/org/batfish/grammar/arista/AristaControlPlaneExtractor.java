@@ -5868,16 +5868,21 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       warn(ctx, String.format("Subnet of NAT pool %s does not contain last pool IP", name));
     }
 
-    Ip firstHostIp = subnet.getFirstHostIp();
-    Ip lastHostIp = subnet.getLastHostIp();
+    NatPool pool;
+    if (first.equals(last)) {
+      // Arista ignores the prefix-length when the pool is a single IP.
+      pool = new NatPool(first, last);
+    } else {
+      // Enforce prefix-length by removing the network and broadcast addresses, if present.
+      Ip firstHostIp = subnet.getFirstHostIp();
+      Ip lastHostIp = subnet.getLastHostIp();
+      pool =
+          new NatPool(
+              first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
+              last.asLong() > lastHostIp.asLong() ? lastHostIp : last);
+    }
 
-    _configuration
-        .getNatPools()
-        .put(
-            name,
-            new NatPool(
-                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
-                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
+    _configuration.getNatPools().put(name, pool);
   }
 
   @Override
