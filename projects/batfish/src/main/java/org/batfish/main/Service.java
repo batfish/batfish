@@ -50,7 +50,7 @@ public class Service {
   @Path(BfConsts.SVC_GET_TASKSTATUS_RSC)
   @Produces(MediaType.APPLICATION_JSON)
   public JSONArray getTaskStatus(@QueryParam(BfConsts.SVC_TASKID_KEY) String taskId) {
-    _logger.infof("BFS:getTaskStatus %s\n", taskId);
+    _logger.debugf("BFS:getTaskStatus %s\n", taskId);
     try {
 
       if (taskId == null || taskId.equals("")) {
