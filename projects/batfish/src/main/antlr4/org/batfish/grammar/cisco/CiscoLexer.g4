@@ -6257,6 +6257,11 @@ INTER_INTERFACE
    'inter-interface'
 ;
 
+INTER_AREA
+:
+   'inter-area'
+;
+
 INTERAREA
 :
    'interarea'
@@ -6292,6 +6297,11 @@ INTERVAL
 INTERWORKING
 :
    'interworking'
+;
+
+INTRA_AREA
+:
+   'intra-area'
 ;
 
 INTRA_INTERFACE

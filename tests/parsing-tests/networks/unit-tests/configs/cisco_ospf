@@ -49,6 +49,7 @@ router ospf 1
   discard-route external
   discard-route internal
   distance 110
+  distance ospf external 77 inter-area 78 intra-area 79
   distribute-list aclin in
   distribute-list aclin in ethernet0/0
   distribute-list aclout out

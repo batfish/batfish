@@ -798,6 +798,8 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_distance_distanceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_distance_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_maximum_pathsContext;
@@ -7659,6 +7661,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess
         .getOutboundInterfaceDistributeLists()
         .put(ifaceName, new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST));
+  }
+
+  @Override
+  public void exitRo_distance_distance(Ro_distance_distanceContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRo_distance_ospf(Ro_distance_ospfContext ctx) {
+    todo(ctx);
   }
 
   @Override
