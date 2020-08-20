@@ -323,6 +323,8 @@ public final class VendorConfigurationFormatDetector {
         return ConfigurationFormat.FORCE10;
       case "foundry":
         return ConfigurationFormat.FOUNDRY;
+      case "ibmbnt":
+        return ConfigurationFormat.IBM_BNT;
       case "juniper":
       case "juniper-srx":
         return checkJuniper(true);
