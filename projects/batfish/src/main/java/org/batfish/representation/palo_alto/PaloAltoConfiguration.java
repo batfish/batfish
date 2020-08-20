@@ -262,6 +262,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
+  public @Nullable DeviceGroup getDeviceGroup(String name) {
+    return _deviceGroups.get(name);
+  }
+
   public DeviceGroup getOrCreateDeviceGroup(String name) {
     return _deviceGroups.computeIfAbsent(name, DeviceGroup::new);
   }
