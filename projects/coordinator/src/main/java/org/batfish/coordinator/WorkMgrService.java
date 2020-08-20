@@ -1328,7 +1328,7 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_WORKID) String workId) {
     try {
-      _logger.infof("WMS:getWorkStatus %s\n", workId);
+      _logger.debugf("WMS:getWorkStatus %s\n", workId);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");

@@ -1,4 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@rules_java//java:defs.bzl", "java_library")
 load("@batfish//skylark:junit.bzl", "junit_tests")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 
@@ -61,6 +61,7 @@ java_library(
         "@maven//:org_apache_commons_commons_collections4",
         "@maven//:org_apache_commons_commons_configuration2",
         "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_glassfish_grizzly_grizzly_http_server",
         "@maven//:org_glassfish_jersey_containers_jersey_container_grizzly2_http",
