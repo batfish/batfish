@@ -920,23 +920,23 @@ public class SearchRoutePoliciesAnswererTest {
     Range<Long> r4 = toClosedRange(Range.open(4L, 11L));
 
     assertEquals(BoundType.CLOSED, r1.lowerBoundType());
-    assertEquals(new Long(5L), r1.lowerEndpoint());
+    assertThat(r1.lowerEndpoint(), equalTo(5L));
     assertEquals(BoundType.CLOSED, r1.upperBoundType());
-    assertEquals(new Long(10L), r1.upperEndpoint());
+    assertThat(r1.upperEndpoint(), equalTo(10L));
 
     assertEquals(BoundType.CLOSED, r2.lowerBoundType());
-    assertEquals(new Long(5L), r2.lowerEndpoint());
+    assertThat(r2.lowerEndpoint(), equalTo(5L));
     assertEquals(BoundType.CLOSED, r2.upperBoundType());
-    assertEquals(new Long(10L), r2.upperEndpoint());
+    assertThat(r2.upperEndpoint(), equalTo(10L));
 
     assertEquals(BoundType.CLOSED, r3.lowerBoundType());
-    assertEquals(new Long(5L), r3.lowerEndpoint());
+    assertThat(r3.lowerEndpoint(), equalTo(5L));
     assertEquals(BoundType.CLOSED, r3.upperBoundType());
-    assertEquals(new Long(10L), r3.upperEndpoint());
+    assertThat(r3.upperEndpoint(), equalTo(10L));
 
     assertEquals(BoundType.CLOSED, r4.lowerBoundType());
-    assertEquals(new Long(5L), r4.lowerEndpoint());
+    assertThat(r4.lowerEndpoint(), equalTo(5L));
     assertEquals(BoundType.CLOSED, r4.upperBoundType());
-    assertEquals(new Long(10L), r4.upperEndpoint());
+    assertThat(r4.upperEndpoint(), equalTo(10L));
   }
 }
