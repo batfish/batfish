@@ -177,8 +177,11 @@ public class VendorConfigurationFormatDetectorTest {
   @Test
   public void testUnknown() {
     String unknownConfig = "unknown config line\n";
+    String unknownRancid = "!RANCID-CONTENT-TYPE: madeup\nThis is an ASA device";
 
-    /* Make sure bogus config is not misidentified */
-    assertThat(identifyConfigurationFormat(unknownConfig), equalTo(UNKNOWN));
+    for (String config : ImmutableList.of(unknownConfig, unknownRancid)) {
+      /* Make sure bogus config is not misidentified */
+      assertThat(identifyConfigurationFormat(config), equalTo(UNKNOWN));
+    }
   }
 }
