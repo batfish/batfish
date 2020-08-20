@@ -2983,20 +2983,24 @@ public final class PaloAltoGrammarTest {
     String firewallId3 = "00000003";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
 
-    DeviceGroup deviceGroup1 = c.getOrCreateDeviceGroup("DG1");
-    DeviceGroup deviceGroup2 = c.getOrCreateDeviceGroup("DG2");
+    DeviceGroup deviceGroup1 = c.getDeviceGroup("DG1");
+    assertThat(deviceGroup1, notNullValue());
     Vsys panoramaDg1 = deviceGroup1.getPanorama();
+    DeviceGroup deviceGroup2 = c.getDeviceGroup("DG2");
+    assertThat(deviceGroup2, notNullValue());
     Vsys panoramaDg2 = deviceGroup2.getPanorama();
 
     // Check first device-group
     assertThat(deviceGroup1.getDevices(), containsInAnyOrder(firewallId1, firewallId2));
     assertThat(deviceGroup1.getDescription(), equalTo("long description"));
+    assertThat(deviceGroup1.getParentDg(), nullValue());
     assertThat(panoramaDg1, notNullValue());
     assertThat(panoramaDg1.getPostRulebase().getSecurityRules().keySet(), contains("RULE1"));
     assertThat(panoramaDg1.getAddressObjects().keySet(), contains("ADDR1"));
 
     // Check second device-group
     assertThat(deviceGroup2.getDevices(), contains(firewallId3));
+    assertThat(deviceGroup2.getParentDg(), equalTo("DG1"));
     assertThat(panoramaDg2, notNullValue());
     assertThat(panoramaDg2.getAddressObjects().keySet(), contains("ADDR2"));
 
