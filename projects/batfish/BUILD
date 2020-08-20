@@ -43,6 +43,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/representation/aws",
         "//projects/bdd",
         "//projects/symbolic",
+        "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
