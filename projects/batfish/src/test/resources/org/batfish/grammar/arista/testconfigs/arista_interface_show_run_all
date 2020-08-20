@@ -31,6 +31,7 @@ interface Ethernet1/1
    no switchport
    no encapsulation dot1q vlan
    default switchport source-interface tx
+   l2-protocol encapsulation dot1q vlan 0
    no l2-protocol encapsulation dot1q vlan 0
    snmp trap link-status
    no ip proxy-arp
@@ -181,6 +182,7 @@ interface Ethernet1/1
       no random-detect drop
    no ip rip v2-broadcast
    sflow enable
+   no sflow enable
    ! KEEP THIS LAST IN ETH1/1 - it is a sentinel to ensure we stay in the interface context forever.
    description Made it to the end of Ethernet1/1
 !

@@ -689,6 +689,12 @@ if_isis_tag
    TAG tag = DEC NEWLINE
 ;
 
+if_l2_protocol
+:
+  L2_PROTOCOL
+  null_rest_of_line
+;
+
 if_lacp
 :
   LACP
@@ -969,6 +975,7 @@ if_no_null_eos
     | QOS
     | QUEUE_MONITOR
     | RIP
+    | SFLOW
     | SHAPE
     | SNMP
     | STORM_CONTROL
@@ -1949,6 +1956,7 @@ if_inner
    | if_ip
    | if_ipv6
    | if_isis
+   | if_l2_protocol
    | if_lacp
    | if_lldp
    | if_load_interval
