@@ -22,6 +22,7 @@ public enum ConfigurationFormat {
   FORCE10("force10"),
   FOUNDRY("foundry"),
   HOST("host"),
+  IBM_BNT("ibmbnt"),
   IGNORED("ignored"),
   IPTABLES("iptables"),
   JUNIPER("juniper"),
