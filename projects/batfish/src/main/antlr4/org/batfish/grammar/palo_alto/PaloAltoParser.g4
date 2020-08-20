@@ -173,6 +173,7 @@ statement_device_group
     | s_pre_rulebase
     | sdg_description
     | sdg_devices
+    | sdg_parent_dg
     | sdg_profiles
     | sdg_profile_group
 ;

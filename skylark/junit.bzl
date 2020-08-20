@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Skylark rule to generate a Junit4 TestSuite
+# Starlark rule to generate a Junit4 TestSuite
 # Assumes srcs are all .java Test files
 # Assumes junit4 is already added to deps by the user.
 

@@ -482,7 +482,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   private void checkTask(QueuedWork work, String worker) {
-    _logger.infof("WM:CheckWork: Trying to check %s on %s\n", work, worker);
+    _logger.debugf("WM:CheckWork: Trying to check %s on %s\n", work, worker);
 
     Task task = new Task(TaskStatus.UnreachableOrBadResponse);
 
@@ -517,7 +517,7 @@ public class WorkMgr extends AbstractCoordinator {
         String sobj = response.readEntity(String.class);
         array = new JSONArray(sobj);
       }
-      _logger.info(String.format("response: %s [%s] [%s]\n", array, array.get(0), array.get(1)));
+      _logger.debugf("WM:CheckTask: response: %s [%s] [%s]\n", array, array.get(0), array.get(1));
 
       if (!array.get(0).equals(BfConsts.SVC_SUCCESS_KEY)) {
         _logger.error(

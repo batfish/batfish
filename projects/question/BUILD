@@ -61,8 +61,8 @@ junit_tests(
         "src/test/resources/**",
     ]),
     runtime_deps = [
-        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
         "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
         ":question",

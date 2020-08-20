@@ -323,6 +323,8 @@ public final class VendorConfigurationFormatDetector {
         return ConfigurationFormat.FORCE10;
       case "foundry":
         return ConfigurationFormat.FOUNDRY;
+      case "ibmbnt":
+        return ConfigurationFormat.IBM_BNT;
       case "juniper":
       case "juniper-srx":
         return checkJuniper(true);
@@ -331,8 +333,8 @@ public final class VendorConfigurationFormatDetector {
       case "paloalto":
         return checkPaloAlto(true);
       default:
-        // Fall back to another check.
-        return null;
+        // We don't recognize the RANCID string, assert this config is unknown.
+        return ConfigurationFormat.UNKNOWN;
     }
   }
 
