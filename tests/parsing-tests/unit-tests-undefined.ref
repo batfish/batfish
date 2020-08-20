@@ -1515,7 +1515,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            55
+            56
           ]
         }
       },
@@ -1527,7 +1527,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            56
+            57
           ]
         }
       },
@@ -1539,8 +1539,8 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            52,
-            53
+            53,
+            54
           ]
         }
       },
@@ -1552,7 +1552,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            54
+            55
           ]
         }
       },
@@ -1576,7 +1576,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            67
+            68
           ]
         }
       },
@@ -1588,7 +1588,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            68
+            69
           ]
         }
       },
@@ -1600,7 +1600,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            57
+            58
           ]
         }
       },
@@ -1612,7 +1612,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            58
+            59
           ]
         }
       },

@@ -157,7 +157,27 @@ ro_default_metric
 
 ro_distance
 :
-   DISTANCE value = DEC NEWLINE
+   DISTANCE
+   (
+     ro_distance_distance
+     | ro_distance_ospf
+   )
+;
+
+// Overrides the distance for all protocols
+ro_distance_distance
+:
+  value = DEC NEWLINE
+;
+
+// Overrides the distance for specific protocols
+ro_distance_ospf
+:
+  OSPF
+  (EXTERNAL ext = DEC)?
+  (INTER_AREA inter = DEC)?
+  (INTRA_AREA intra = DEC)?
+  NEWLINE
 ;
 
 ro_distribute_list
