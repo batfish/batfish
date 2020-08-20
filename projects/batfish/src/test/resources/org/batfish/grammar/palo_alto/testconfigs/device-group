@@ -13,5 +13,6 @@ set device-group DG1 description "long description"
 set device-group DG1 devices 00000001
 set device-group DG1 devices 00000002
 set device-group DG2 devices 00000003
+set device-group DG2 parent-dg DG1
 # Regular, non-device-group config - intentionally after device-group config to confirm we pop out as expected
 set deviceconfig system hostname device-group

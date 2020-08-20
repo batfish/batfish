@@ -224,6 +224,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_parent_dgContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdgd_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
@@ -1712,6 +1713,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentDeviceGroup.addVsys(getText(ctx.device), _currentDeviceGroupVsys);
     }
     _currentDeviceGroupVsys = null;
+  }
+
+  @Override
+  public void exitSdg_parent_dg(Sdg_parent_dgContext ctx) {
+    _currentDeviceGroup.setParentDg(getText(ctx.name));
   }
 
   @Override
