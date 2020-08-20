@@ -1446,9 +1446,25 @@ if_speed_eos
 :
    SPEED
    (
-      AUTO
-      | FORCED
-   )? eos_bandwidth_specifier NEWLINE
+     if_speed_auto_eos
+     | if_speed_bw_eos
+     | if_speed_forced_eos
+   )
+;
+
+if_speed_auto_eos
+:
+  AUTO eos_bandwidth_specifier? NEWLINE
+;
+
+if_speed_bw_eos
+:
+  eos_bandwidth_specifier NEWLINE
+;
+
+if_speed_forced_eos
+:
+  FORCED eos_bandwidth_specifier NEWLINE
 ;
 
 if_st_null
