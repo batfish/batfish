@@ -8,6 +8,7 @@ import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
 import static org.batfish.datamodel.ConfigurationFormat.CUMULUS_CONCATENATED;
 import static org.batfish.datamodel.ConfigurationFormat.F5_BIGIP_STRUCTURED;
 import static org.batfish.datamodel.ConfigurationFormat.FLAT_JUNIPER;
+import static org.batfish.datamodel.ConfigurationFormat.IBM_BNT;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER;
 import static org.batfish.datamodel.ConfigurationFormat.JUNIPER_SWITCH;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO;
@@ -63,6 +64,12 @@ public class VendorConfigurationFormatDetectorTest {
 
     assertThat(identifyConfigurationFormat(withRancid), equalTo(F5_BIGIP_STRUCTURED));
     assertThat(identifyConfigurationFormat(withoutRancid), equalTo(F5_BIGIP_STRUCTURED));
+  }
+
+  @Test
+  public void testIbmBnt() {
+    String ibmBnt = "!RANCID-CONTENT-TYPE: ibmbnt\n!";
+    assertThat(identifyConfigurationFormat(ibmBnt), equalTo(IBM_BNT));
   }
 
   @Test

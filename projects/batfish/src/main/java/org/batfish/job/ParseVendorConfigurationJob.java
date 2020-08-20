@@ -65,6 +65,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           ConfigurationFormat.ALCATEL_AOS,
           ConfigurationFormat.BLADENETWORK,
           ConfigurationFormat.F5,
+          ConfigurationFormat.IBM_BNT,
           ConfigurationFormat.JUNIPER_SWITCH,
           ConfigurationFormat.METAMAKO,
           ConfigurationFormat.MRV_COMMANDS,
