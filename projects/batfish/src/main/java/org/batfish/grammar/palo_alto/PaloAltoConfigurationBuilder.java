@@ -1447,7 +1447,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_application_definition(S_application_definitionContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentApplication =
         _currentVsys
             .getApplications()
@@ -1464,7 +1464,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSappg_definition(Sappg_definitionContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentApplicationGroup =
         _currentVsys.getApplicationGroups().computeIfAbsent(name, ApplicationGroup::new);
     // Use constructed name so same-named defs across vsys are unique
