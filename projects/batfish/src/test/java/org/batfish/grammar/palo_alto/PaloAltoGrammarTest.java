@@ -388,8 +388,14 @@ public final class PaloAltoGrammarTest {
     Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are three address groups defined in the file, including the empty one
-    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
+    // there are four address groups defined in the file, including empty ones
+    assertThat(
+        addressGroups.keySet(),
+        equalTo(ImmutableSet.of("group0", "group1", "group2", "group w spaces")));
+
+    assertThat(
+        addressGroups.get("group w spaces").getMembers(),
+        equalTo(ImmutableSet.of("addr w spaces")));
 
     // the ip space of the empty group is empty
     assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of()));
@@ -568,10 +574,12 @@ public final class PaloAltoGrammarTest {
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are four address objects defined in the file, including the empty one
+    // check that we parse normal object names, names with spaces, and that look like IP addresses
     assertThat(
         vsys.getAddressObjects().keySet(),
-        equalTo(ImmutableSet.of("4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4")));
+        equalTo(
+            ImmutableSet.of(
+                "4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4", "addr w spaces")));
 
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
@@ -614,6 +622,7 @@ public final class PaloAltoGrammarTest {
     String name_1 = computeObjectName(DEFAULT_VSYS_NAME, "addr1");
     String name_3 = computeObjectName(DEFAULT_VSYS_NAME, "addr3");
     String name_4 = computeObjectName(DEFAULT_VSYS_NAME, "addr4");
+    String name_5 = computeObjectName(DEFAULT_VSYS_NAME, "addr w spaces");
     String name_ambiguous = computeObjectName(DEFAULT_VSYS_NAME, "4.3.2.1");
 
     // Confirm reference count is correct for used structures
@@ -640,6 +649,7 @@ public final class PaloAltoGrammarTest {
         batfish2.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
     // Confirm reference count is correct for used structure
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 2));
+    assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_5, 1));
     // Confirm undefined reference is detected
     assertThat(
         ccae2, hasUndefinedReference(filename2, PaloAltoStructureType.ADDRESS_LIKE, "addr3"));
@@ -659,12 +669,14 @@ public final class PaloAltoGrammarTest {
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, Application> applications = vsys.getApplications();
 
-    // Should have two applications, including an empty one
-    assertThat(applications.keySet(), equalTo(ImmutableSet.of("app1", "app2")));
+    // Should have three applications, including an empty one
+    assertThat(applications.keySet(), equalTo(ImmutableSet.of("app1", "app2", "app w spaces")));
 
     // Check that descriptions are extracted
     assertThat(applications.get("app1").getDescription(), nullValue());
     assertThat(applications.get("app2").getDescription(), equalTo("this is a description"));
+    assertThat(
+        applications.get("app w spaces").getDescription(), equalTo("this is another description"));
   }
 
   @Test
@@ -2955,6 +2967,14 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplicationGroups().get("foo").getMembers(),
         containsInAnyOrder("dns", "app1"));
+
+    assertThat(
+        c.getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getApplicationGroups()
+            .get("foo w spaces")
+            .getMembers(),
+        containsInAnyOrder("dns", "app w spaces"));
   }
 
   @Test
