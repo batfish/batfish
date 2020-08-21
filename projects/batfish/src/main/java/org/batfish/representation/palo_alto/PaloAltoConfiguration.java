@@ -2041,20 +2041,42 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Apply shared config first, since it is overwritten by device-groups applied after it
     applyVsys(shared, target);
 
-    applyDeviceGroupHelper(template, target, panoramaDeviceGroups);
+    List<DeviceGroup> inheritedDeviceGroups = new ArrayList<>();
+    inheritedDeviceGroups.add(template);
+    collectParents(template, panoramaDeviceGroups, inheritedDeviceGroups);
+
+    // Apply higher level parents first
+    // since their config should be overwritten by lower level parents
+    for (DeviceGroup parent : ImmutableList.copyOf(inheritedDeviceGroups).reverse()) {
+      applyVsys(parent.getPanorama(), target);
+    }
   }
 
-  private void applyDeviceGroupHelper(
-      DeviceGroup template, Vsys target, Map<String, DeviceGroup> panoramaDeviceGroups) {
-    String parentDgName = template.getParentDg();
-    if (parentDgName != null) {
-      // Apply parent config first
-      DeviceGroup parentDg = panoramaDeviceGroups.get(parentDgName);
-      assert parentDg != null;
-      applyDeviceGroupHelper(parentDg, target, panoramaDeviceGroups);
+  /** Collect all parents of the specified device-group (recursively) into the specified list. */
+  private void collectParents(
+      DeviceGroup deviceGroup,
+      Map<String, DeviceGroup> panoramaDeviceGroups,
+      List<DeviceGroup> parents) {
+    String parentName = deviceGroup.getParentDg();
+    if (parentName == null) {
+      return;
     }
-    // Apply the actual device-group after its parent(s), to overwrite conflicting config
-    applyVsys(template.getPanorama(), target);
+    DeviceGroup parent = panoramaDeviceGroups.get(parentName);
+    if (parents.contains(parent)) {
+      _w.redFlag(String.format("Device-group %s cannot be inherited more than once.", parentName));
+      return;
+    }
+    if (parent == null) {
+      _w.redFlag(
+          String.format(
+              "Device-group %s cannot inherit from unknown device-group %s.",
+              deviceGroup.getName(), parentName));
+      return;
+    }
+
+    parents.add(parent);
+    // If this parent has its own parent(s), collect those too
+    collectParents(parent, panoramaDeviceGroups, parents);
   }
 
   /**

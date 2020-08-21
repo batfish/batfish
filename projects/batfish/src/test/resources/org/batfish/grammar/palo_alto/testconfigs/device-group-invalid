@@ -1,0 +1,12 @@
+set device-group DG1 address ADDR1 ip-netmask 10.10.10.10
+set device-group DG2 address ADDR1 ip-netmask 10.10.10.10
+set device-group DG3 address ADDR1 ip-netmask 10.10.10.10
+
+set device-group DG1 devices 00000001
+set readonly devices localhost.localdomain device-group DG1 parent-dg DG3
+set readonly devices localhost.localdomain device-group DG3 parent-dg DG1
+
+set device-group DG2 devices 00000002
+set readonly devices localhost.localdomain device-group DG2 parent-dg DG_INVALID
+
+set deviceconfig system hostname device-group-invalid

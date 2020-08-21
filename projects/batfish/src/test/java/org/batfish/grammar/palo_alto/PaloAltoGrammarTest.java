@@ -3287,6 +3287,25 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testDeviceGroupParentWarning() throws IOException {
+    String panoramaHostname = "device-group-invalid";
+    String firewallId1 = "00000001";
+
+    Batfish batfish = getBatfishForConfigurationNames(panoramaHostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Detect cyclical device-group inheritance and unknown device-group inheritance
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(firewallId1)));
+    Warnings warn1 = ccae.getWarnings().get(firewallId1);
+    assertThat(
+        warn1.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        containsInAnyOrder(
+            "Device-group DG1 cannot be inherited more than once.",
+            "Device-group DG2 cannot inherit from unknown device-group DG_INVALID."));
+  }
+
+  @Test
   public void testPanoramaConfigurationFormat() {
     String panoramaHostname = "device-group";
     String firewallId1 = "00000001";
