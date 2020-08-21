@@ -3243,7 +3243,7 @@ public final class PaloAltoGrammarTest {
     Warnings warn = ccae.getWarnings().get(firewallId);
     assertThat(
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
-        contains("Unable to identify application undefined_app in vsys RULE1 rule panorama"));
+        contains("Unable to identify application undefined_app in vsys panorama rule RULE1"));
   }
 
   @Test
