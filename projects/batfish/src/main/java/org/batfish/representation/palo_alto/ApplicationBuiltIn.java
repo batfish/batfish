@@ -57,9 +57,9 @@ public final class ApplicationBuiltIn {
       Application.builder("dhcp")
           .setDescription("built-in application dhcp")
           .addService(
-              Service.builder("dhcp-tcp").setIpProtocol(IpProtocol.UDP).addPorts(67, 68).build())
+              Service.builder("dhcp-tcp").setIpProtocol(IpProtocol.TCP).addPorts(67, 68).build())
           .addService(
-              Service.builder("dhcp-udp").setIpProtocol(IpProtocol.TCP).addPorts(67, 68).build())
+              Service.builder("dhcp-udp").setIpProtocol(IpProtocol.UDP).addPorts(67, 68).build())
           .build();
   public static final Application DNS =
       Application.builder("dns")
@@ -72,9 +72,9 @@ public final class ApplicationBuiltIn {
       Application.builder("finger")
           .setDescription("built-in application finger")
           .addService(
-              Service.builder("finger-tcp").setIpProtocol(IpProtocol.UDP).addPort(79).build())
+              Service.builder("finger-tcp").setIpProtocol(IpProtocol.TCP).addPort(79).build())
           .addService(
-              Service.builder("finger-udp").setIpProtocol(IpProtocol.TCP).addPorts(79).build())
+              Service.builder("finger-udp").setIpProtocol(IpProtocol.UDP).addPorts(79).build())
           .build();
 
   public static final Application FTP =
