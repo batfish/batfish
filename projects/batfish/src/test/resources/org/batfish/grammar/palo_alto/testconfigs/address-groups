@@ -6,6 +6,7 @@ set address-group group0
 #define address objects
 set address addr1 ip-netmask 1.1.1.1
 set address addr2 ip-netmask 2.2.2.2
+set address "addr w spaces" ip-netmask 3.3.3.3
 
 set address-group group1 description group1-desc
 set address-group group1 static addr1
@@ -16,3 +17,5 @@ set address-group group1 tag tag1
 # defined on the same line
 set address-group group2 static [ addr1 addr2 ]
 set address-group group2 tag [ tag2 "tag with spaces"]
+
+set address-group "group w spaces" static "addr w spaces"
