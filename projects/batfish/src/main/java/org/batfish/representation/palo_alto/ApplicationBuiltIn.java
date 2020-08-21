@@ -53,6 +53,12 @@ public final class ApplicationBuiltIn {
                   .addPorts(80, 5192, 5190)
                   .build())
           .build();
+  public static final Application BGP =
+      Application.builder("bgp")
+          .setDescription("built-in application bgp")
+          .addService(Service.builder("bgp-tcp").setIpProtocol(IpProtocol.TCP).addPort(179).build())
+          .addService(Service.builder("bgp-udp").setIpProtocol(IpProtocol.UDP).addPort(179).build())
+          .build();
   public static final Application DHCP =
       Application.builder("dhcp")
           .setDescription("built-in application dhcp")
@@ -199,6 +205,11 @@ public final class ApplicationBuiltIn {
                   .setIpProtocol(IpProtocol.TCP)
                   .addPorts(80, 443)
                   .build())
+          .build();
+  public static final Application OSPF =
+      Application.builder("ospf")
+          .setDescription("built-in application ospf")
+          .addService(Service.builder("ospf").setIpProtocol(IpProtocol.OSPF).build())
           .build();
   public static final Application PAN_DB_CLOUD =
       Application.builder("pan-db-cloud")
