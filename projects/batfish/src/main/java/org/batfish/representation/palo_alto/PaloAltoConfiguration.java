@@ -2028,7 +2028,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Apply the specified device-group "pseudo-config" and shared config to this
    * PaloAltoConfiguration. Any previously made changes will be overwritten in this process.
    */
-  private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
+  private void applyDeviceGroup(
+      DeviceGroup template, @Nullable Vsys shared, Map<String, DeviceGroup> panoramaDeviceGroups) {
     // TODO support applying device-group to specific vsys
     // https://github.com/batfish/batfish/issues/5910
 
@@ -2037,11 +2038,45 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert _panorama == null;
     _panorama = target;
 
-    // Apply shared config first
+    // Apply shared config first, since it is overwritten by device-groups applied after it
     applyVsys(shared, target);
 
-    // Apply the actual device-group after shared, to overwrite conflicting shared config
-    applyVsys(template.getPanorama(), target);
+    List<DeviceGroup> inheritedDeviceGroups = new ArrayList<>();
+    inheritedDeviceGroups.add(template);
+    collectParents(template, panoramaDeviceGroups, inheritedDeviceGroups);
+
+    // Apply higher level parents first
+    // since their config should be overwritten by lower level parents
+    for (DeviceGroup parent : ImmutableList.copyOf(inheritedDeviceGroups).reverse()) {
+      applyVsys(parent.getPanorama(), target);
+    }
+  }
+
+  /** Collect all parents of the specified device-group (recursively) into the specified list. */
+  private void collectParents(
+      DeviceGroup deviceGroup,
+      Map<String, DeviceGroup> panoramaDeviceGroups,
+      List<DeviceGroup> parents) {
+    String parentName = deviceGroup.getParentDg();
+    if (parentName == null) {
+      return;
+    }
+    DeviceGroup parent = panoramaDeviceGroups.get(parentName);
+    if (parents.contains(parent)) {
+      _w.redFlag(String.format("Device-group %s cannot be inherited more than once.", parentName));
+      return;
+    }
+    if (parent == null) {
+      _w.redFlag(
+          String.format(
+              "Device-group %s cannot inherit from unknown device-group %s.",
+              deviceGroup.getName(), parentName));
+      return;
+    }
+
+    parents.add(parent);
+    // If this parent has its own parent(s), collect those too
+    collectParents(parent, panoramaDeviceGroups, parents);
   }
 
   /**
@@ -2158,7 +2193,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
-                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                             managedConfigurations.put(name, c);
                           }
                         }));
@@ -2187,7 +2222,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           // This may not actually be the device's hostname
                           // but this is all we know at this point
                           c.setHostname(deviceName);
-                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                           managedConfigurations.put(deviceName, c);
                         }));
     // Apply template-stacks
