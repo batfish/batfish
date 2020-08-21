@@ -276,6 +276,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srnst_dynamic_ip_and_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sro_device_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_definitionContext;
@@ -1713,6 +1714,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentDeviceGroup.addVsys(getText(ctx.device), _currentDeviceGroupVsys);
     }
     _currentDeviceGroupVsys = null;
+  }
+
+  @Override
+  public void enterSro_device_group(Sro_device_groupContext ctx) {
+    String deviceGroupName = getText(ctx.name);
+    _currentDeviceGroup = _mainConfiguration.getOrCreateDeviceGroup(deviceGroupName);
+    _currentConfiguration = _currentDeviceGroup;
+    _currentVsys = getOrCreatePanoramaVsys();
+  }
+
+  @Override
+  public void exitSro_device_group(Sro_device_groupContext ctx) {
+    _currentDeviceGroup = null;
+    _currentConfiguration = _mainConfiguration;
+    _currentVsys = _defaultVsys;
   }
 
   @Override
