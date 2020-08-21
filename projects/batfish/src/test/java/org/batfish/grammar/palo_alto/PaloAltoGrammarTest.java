@@ -3230,6 +3230,46 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testDeviceGroupInerhitance() {
+    String panoramaHostname = "device-group-inheritance";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String commonAddrObjName = "COMMON_ADDR";
+    String parentAddrObjName = "PARENT_ADDR_1";
+    String childAddrObjName = "CHILD_ADDR_1";
+
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get three nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+
+    // firewall1 based on parent DG should have the non-overridden common addr value
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(commonAddrObjName), Ip.parse("10.10.2.20").toIpSpace());
+    // firewall2 based on child DG should have the overridden common addr value
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(commonAddrObjName), Ip.parse("10.10.3.30").toIpSpace());
+
+    // both firewalls should have the parent address object
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(parentAddrObjName), Ip.parse("10.10.2.21").toIpSpace());
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(parentAddrObjName), Ip.parse("10.10.2.21").toIpSpace());
+
+    // only firewall2 should have the child address object
+    assertThat(firewall1.getIpSpaces().keySet(), not(contains(childAddrObjName)));
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(childAddrObjName), Ip.parse("10.10.3.31").toIpSpace());
+  }
+
+  @Test
   public void testPanoramaWarning() throws IOException {
     String panoramaHostname = "panorama-warning";
     String firewallId = "00000001";

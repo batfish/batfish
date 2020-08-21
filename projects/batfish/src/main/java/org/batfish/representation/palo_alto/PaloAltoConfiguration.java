@@ -2028,7 +2028,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Apply the specified device-group "pseudo-config" and shared config to this
    * PaloAltoConfiguration. Any previously made changes will be overwritten in this process.
    */
-  private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
+  private void applyDeviceGroup(
+      DeviceGroup template, @Nullable Vsys shared, Map<String, DeviceGroup> panoramaDeviceGroups) {
     // TODO support applying device-group to specific vsys
     // https://github.com/batfish/batfish/issues/5910
 
@@ -2037,10 +2038,22 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert _panorama == null;
     _panorama = target;
 
-    // Apply shared config first
+    // Apply shared config first, since it is overwritten by device-groups applied after it
     applyVsys(shared, target);
 
-    // Apply the actual device-group after shared, to overwrite conflicting shared config
+    applyDeviceGroupHelper(template, target, panoramaDeviceGroups);
+  }
+
+  private void applyDeviceGroupHelper(
+      DeviceGroup template, Vsys target, Map<String, DeviceGroup> panoramaDeviceGroups) {
+    String parentDgName = template.getParentDg();
+    if (parentDgName != null) {
+      // Apply parent config first
+      DeviceGroup parentDg = panoramaDeviceGroups.get(parentDgName);
+      assert parentDg != null;
+      applyDeviceGroupHelper(parentDg, target, panoramaDeviceGroups);
+    }
+    // Apply the actual device-group after its parent(s), to overwrite conflicting config
     applyVsys(template.getPanorama(), target);
   }
 
@@ -2158,7 +2171,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
-                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                             managedConfigurations.put(name, c);
                           }
                         }));
@@ -2187,7 +2200,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           // This may not actually be the device's hostname
                           // but this is all we know at this point
                           c.setHostname(deviceName);
-                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                           managedConfigurations.put(deviceName, c);
                         }));
     // Apply template-stacks
