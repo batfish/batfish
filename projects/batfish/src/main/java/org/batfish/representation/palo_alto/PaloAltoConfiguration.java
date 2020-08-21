@@ -1085,7 +1085,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       _w.redFlag(
           String.format(
               "Unable to identify application %s in vsys %s rule %s",
-              name, rule.getName(), vsys.getName()));
+              name, vsys.getName(), rule.getName()));
     }
     return ret.build();
   }
