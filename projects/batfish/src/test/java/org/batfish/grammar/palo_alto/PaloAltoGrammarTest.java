@@ -388,7 +388,7 @@ public final class PaloAltoGrammarTest {
     Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are three address groups defined in the file, including the empty one
+    // there are four address groups defined in the file, including empty ones
     assertThat(
         addressGroups.keySet(),
         equalTo(ImmutableSet.of("group0", "group1", "group2", "group w spaces")));
@@ -574,7 +574,7 @@ public final class PaloAltoGrammarTest {
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are four address objects defined in the file, including the empty one
+    // check that we parse normal object names, names with spaces, and that look like IP addresses
     assertThat(
         vsys.getAddressObjects().keySet(),
         equalTo(
@@ -669,7 +669,7 @@ public final class PaloAltoGrammarTest {
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, Application> applications = vsys.getApplications();
 
-    // Should have two applications, including an empty one
+    // Should have three applications, including an empty one
     assertThat(applications.keySet(), equalTo(ImmutableSet.of("app1", "app2", "app w spaces")));
 
     // Check that descriptions are extracted
