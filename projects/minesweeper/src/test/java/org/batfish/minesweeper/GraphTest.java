@@ -162,11 +162,11 @@ public class GraphTest {
 
     assertEquals(g.getNumAtomicPredicates(), 5);
 
-    Automaton a1 = new RegExp("20:40").toAutomaton();
-    Automaton a2 = new RegExp("21:40").toAutomaton();
-    Automaton a3 = new RegExp("2[2-3]:40").toAutomaton();
-    Automaton a4 = new RegExp("21:4[1-3]").toAutomaton();
-    Automaton a5 = new RegExp("22:22").toAutomaton();
+    Automaton a1 = new RegExp("^20:40$").toAutomaton();
+    Automaton a2 = new RegExp("^21:40$").toAutomaton();
+    Automaton a3 = new RegExp("^2[2-3]:40$").toAutomaton();
+    Automaton a4 = new RegExp("^21:4[1-3]$").toAutomaton();
+    Automaton a5 = new RegExp("^22:22$").toAutomaton();
 
     assertEquals(g.getAtomicPredicateAutomata().size(), 5);
     assertThat(g.getAtomicPredicateAutomata().values(), hasItem(a1));

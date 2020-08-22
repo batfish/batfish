@@ -52,11 +52,18 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   // see Community::matchString() and its implementations
   @Nonnull
   private static final String COMMUNITY_REGEX =
-      // standard and extended communities
-      String.join(":", NUM_REGEX, NUM_REGEX)
+      // start-of-string character
+      "^"
+          +
+          // standard and extended communities
+          "("
+          + String.join(":", NUM_REGEX, NUM_REGEX)
           + "|"
           // large communities
-          + String.join(":", "large", NUM_REGEX, NUM_REGEX, NUM_REGEX);
+          + String.join(":", "large", NUM_REGEX, NUM_REGEX, NUM_REGEX)
+          + ")"
+          // end-of-string character
+          + "$";
 
   /**
    * When converting a community variable to an automaton (see toAutomaton()), we intersect with
@@ -109,22 +116,30 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   /**
    * Convert this community variable into an equivalent finite-state automaton.
    *
-   * <p>Note: Currently this code assumes that any community regex represents a complete pattern for
-   * the communities of interest. For example, the regex "_65:" is not supported; instead use
-   * "_65:.*" or similar.
-   *
    * @return the automaton
    */
   public Automaton toAutomaton() {
     String regex = _regex;
-    if (_type != EXACT) {
-      // the Automaton library does not understand ^ and $, which respectively mark the beginning
-      // and end of the string,
-      // so replace them with the empty string
-      regex = regex.replaceAll("\\^", "()");
-      regex = regex.replaceAll("\\$", "()");
+    if (_type == EXACT) {
+      // to turn a literal into a regex, add the start-of-string and end-of-string characters
+      regex = "^" + "(" + regex + ")" + "$";
+    } else {
+      /**
+       * A regex need only match a portion of a given community string. For example, the regex
+       * "^40:" matches the community 40:11. But to properly relate community regexes to one
+       * another, for example to find their intersection (see Graph::initCommAtomicPredicates), we
+       * need regexes that match completely.
+       *
+       * <p>The simple approach below converts a possibly-partial regex into a complete one. It
+       * works because below we intersect the resulting automaton with COMMUNITY_FSM, which notably
+       * includes the start-of-string and end-of-string characters. Note that the automaton library
+       * treats these as ordinary characters.
+       *
+       * <p>For example, the regex "^40:" becomes ".*(^40:).*", and the final automaton after
+       * intersecting with COMMUNITY_FSM accepts the language of the regex "^40:[0-9]+$" as desired.
+       */
+      regex = ".*" + "(" + regex + ")" + ".*";
     }
-    // TODO: Handle the case when the regex only matches a prefix of the communities of interest
     return new RegExp(regex).toAutomaton().intersection(COMMUNITY_FSM);
   }
 

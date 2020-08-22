@@ -297,7 +297,7 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             BgpRouteConstraints.builder()
-                .setCommunities(ImmutableSet.of("20:30"))
+                .setCommunities(ImmutableSet.of("^20:30$"))
                 .setComplementCommunities(true)
                 .build(),
             EMPTY_CONSTRAINTS,
@@ -376,8 +376,8 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("40:33")).build(),
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("3:44")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^40:33$")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^3:44$")).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -420,7 +420,7 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("20:30")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^20:30$")).build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -442,7 +442,7 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("1:40")).build(),
+            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^1:40$")).build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -855,7 +855,7 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder()
-                .setCommunities(ImmutableSet.of("4:44"))
+                .setCommunities(ImmutableSet.of("^4:44$"))
                 .setComplementCommunities(true)
                 .build(),
             HOSTNAME,
@@ -899,7 +899,7 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder()
-                .setCommunities(ImmutableSet.of("2[0-9]:30"))
+                .setCommunities(ImmutableSet.of("^2[0-9]:30$"))
                 .setComplementCommunities(true)
                 .build(),
             HOSTNAME,

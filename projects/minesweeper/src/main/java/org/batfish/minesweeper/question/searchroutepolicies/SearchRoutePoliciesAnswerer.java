@@ -141,10 +141,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     for (int i = 0; i < aps.length; i++) {
       if (aps[i].andSat(fullModel)) {
         Automaton a = apAutomata.get(i);
-        if (a.isEmpty()) {
-          throw new BatfishException("Failed to produce a valid community for answer");
-        }
         String str = a.getShortestExample(true);
+        if (!(str.startsWith("^") && str.endsWith("$"))) {
+          throw new BatfishException("Failed to produce a valid community for answer");
+        } else {
+          // strip off the leading ^ and trailing $
+          str = str.substring(1, str.length() - 1);
+        }
         Optional<Community> exampleOpt = stringToCommunity(str);
         if (exampleOpt.isPresent()) {
           comms.add(exampleOpt.get());
