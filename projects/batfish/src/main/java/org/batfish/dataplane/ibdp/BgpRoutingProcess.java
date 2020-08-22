@@ -817,7 +817,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param exportCandidate a route to try and export
    * @param ourConfig {@link BgpPeerConfig} that sends the route
    * @param remoteConfig {@link BgpPeerConfig} that will be receiving the route
-   * @param remoteBgpRoutingProcess {@link BgpRoutingProcess} that will be reciving the route
+   * @param remoteBgpRoutingProcess {@link BgpRoutingProcess} that will be recieving the route
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
    * @param afType {@link AddressFamily.Type} for which the transformation should occur
