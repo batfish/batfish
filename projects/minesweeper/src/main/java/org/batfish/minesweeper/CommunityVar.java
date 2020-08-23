@@ -46,7 +46,7 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   @Nonnull private final String _regex;
   @Nullable private final Community _literalValue;
 
-  @Nonnull private static final String NUM_REGEX = "[0-9]+";
+  @Nonnull private static final String NUM_REGEX = "(0|[1-9][0-9]*)";
 
   // a regex that represents the language of community literals supported by Batfish
   // see Community::matchString() and its implementations

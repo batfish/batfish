@@ -28,13 +28,18 @@ public class CommunityVarTest {
     // the Java regex translation of _40:50_
     CommunityVar cv5 = CommunityVar.from("(,|{|}|^|$| )" + "40:50" + "(,|{|}|^|$| )");
 
+    // ensure we get well-formed numbers
+    CommunityVar cv6 = CommunityVar.from("^0:.0$");
+
     assertThat(cv0.toAutomaton(), equalTo(new RegExp("^20:30$").toAutomaton()));
     assertThat(cv1.toAutomaton(), equalTo(new RegExp("^20:30$").toAutomaton()));
     assertThat(cv2.toAutomaton(), equalTo(new RegExp("^large:10:20:30$").toAutomaton()));
 
     assertThat(cv3.toAutomaton(), equalTo(CommunityVar.COMMUNITY_FSM));
-    assertThat(cv4.toAutomaton(), equalTo(new RegExp("^40:[0-9]+$").toAutomaton()));
+    assertThat(cv4.toAutomaton(), equalTo(new RegExp("^40:(0|[1-9][0-9]*)$").toAutomaton()));
     assertThat(cv5.toAutomaton(), equalTo(new RegExp("^40:50$").toAutomaton()));
+
+    assertThat(cv6.toAutomaton(), equalTo(new RegExp("^0:[1-9]0$").toAutomaton()));
   }
 
   @Test
