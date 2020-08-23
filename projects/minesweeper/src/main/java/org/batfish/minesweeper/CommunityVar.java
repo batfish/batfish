@@ -28,7 +28,7 @@ import org.batfish.datamodel.bgp.community.Community;
  * @author Ryan Beckett
  */
 @ParametersAreNonnullByDefault
-public final class CommunityVar implements Comparable<CommunityVar> {
+public final class CommunityVar extends Regex implements Comparable<CommunityVar> {
 
   private static final Comparator<CommunityVar> COMPARATOR =
       Comparator.comparing(CommunityVar::getType)
@@ -43,7 +43,6 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   }
 
   @Nonnull private final Type _type;
-  @Nonnull private final String _regex;
   @Nullable private final Community _literalValue;
 
   @Nonnull private static final String NUM_REGEX = "(0|[1-9][0-9]*)";
@@ -76,8 +75,8 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   @Nonnull static final Automaton COMMUNITY_FSM = new RegExp(COMMUNITY_REGEX).toAutomaton();
 
   private CommunityVar(Type type, String regex, @Nullable Community literalValue) {
+    super(regex);
     _type = type;
-    _regex = regex;
     _literalValue = literalValue;
   }
 
@@ -103,11 +102,6 @@ public final class CommunityVar implements Comparable<CommunityVar> {
     return _type;
   }
 
-  @Nonnull
-  public String getRegex() {
-    return _regex;
-  }
-
   @Nullable
   public Community getLiteralValue() {
     return _literalValue;
@@ -118,6 +112,7 @@ public final class CommunityVar implements Comparable<CommunityVar> {
    *
    * @return the automaton
    */
+  @Override
   public Automaton toAutomaton() {
     String regex = _regex;
     if (_type == EXACT) {
