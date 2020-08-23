@@ -771,7 +771,7 @@ public class TransferBDD {
 
   @VisibleForTesting
   BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
-    BDDRoute ret = new BDDRoute(_graph.getNumAtomicPredicates());
+    BDDRoute ret = new BDDRoute(_graph.getCommunityAtomicPredicates().getNumAtomicPredicates());
 
     BDDInteger x;
     BDDInteger y;
@@ -804,7 +804,7 @@ public class TransferBDD {
     BDD[] retCommAPs = ret.getCommunityAtomicPredicateBDDs();
     BDD[] r1CommAPs = r1.getCommunityAtomicPredicateBDDs();
     BDD[] r2CommAPs = r2.getCommunityAtomicPredicateBDDs();
-    for (int i = 0; i < _graph.getNumAtomicPredicates(); i++) {
+    for (int i = 0; i < _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
       retCommAPs[i] = ite(guard, r1CommAPs[i], r2CommAPs[i]);
     }
 
@@ -979,7 +979,7 @@ public class TransferBDD {
    */
   @VisibleForTesting
   BDDRoute zeroedRecord() {
-    BDDRoute rec = new BDDRoute(_graph.getNumAtomicPredicates());
+    BDDRoute rec = new BDDRoute(_graph.getCommunityAtomicPredicates().getNumAtomicPredicates());
     rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);
@@ -999,8 +999,8 @@ public class TransferBDD {
    */
   public TransferResult<TransferReturn, BDD> compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
-    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates();
-    BDDRoute o = new BDDRoute(_graph.getNumAtomicPredicates());
+    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    BDDRoute o = new BDDRoute(_graph.getCommunityAtomicPredicates().getNumAtomicPredicates());
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();
