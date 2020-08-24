@@ -216,6 +216,7 @@ class IncrementalBdpEngine {
                   ipVrfOwners);
           if (isOscillating) {
             // If we are oscillating here, network has no stable solution.
+            LOGGER.error("Network has no stable solution");
             throw new BdpOscillationException("Network has no stable solution");
           }
 
@@ -227,6 +228,8 @@ class IncrementalBdpEngine {
       }
 
       if (!converged) {
+        LOGGER.error(
+            "Could not reach a fixed point topology in {} iterations", MAX_TOPOLOGY_ITERATIONS);
         throw new BdpOscillationException(
             String.format(
                 "Could not reach a fixed point topology in %d iterations",
@@ -235,6 +238,7 @@ class IncrementalBdpEngine {
 
       // Generate the answers from the computation, compute final FIBs
       // TODO: Properly finalize topologies, IpOwners, etc.
+      LOGGER.info("Finalizing dataplane");
       computeFibs(nodes);
       answerElement.setVersion(BatfishVersion.getVersionStatic());
       IncrementalDataPlane finalDataplane =
