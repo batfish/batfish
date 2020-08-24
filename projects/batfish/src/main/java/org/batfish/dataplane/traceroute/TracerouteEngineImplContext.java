@@ -22,7 +22,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
@@ -48,6 +51,7 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
  * the context is shared among each of the concurrent {@link FlowTracer FlowTracers}.
  */
 public class TracerouteEngineImplContext {
+  private static final Logger LOGGER = LogManager.getLogger(TracerouteEngineImplContext.class);
   private final Map<String, Configuration> _configurations;
   private final DataPlane _dataPlane;
   private final Multimap<NodeInterfacePair, FirewallSessionTraceInfo> _sessionsByIngressInterface;
@@ -100,6 +104,7 @@ public class TracerouteEngineImplContext {
     validateInputs(_configurations, flow);
     String ingressNodeName = flow.getIngressNode();
     String ingressInterfaceName = flow.getIngressInterface();
+    AtomicInteger originalNumTraces = new AtomicInteger();
     initialFlowTracer(
             this,
             ingressNodeName,
@@ -107,8 +112,13 @@ public class TracerouteEngineImplContext {
             flow,
             tarf -> {
               currentTraces.add(tarf);
+              int curTrace = originalNumTraces.incrementAndGet();
               // If there are now double the number of traces to track, prune down to the max.
               if (currentTraces.size() >= 2 * MAXIMUM_NUMBER_OF_TRACES_PER_FLOW) {
+                LOGGER.info(
+                    "Downsizing to {} after {} total traces",
+                    MAXIMUM_NUMBER_OF_TRACES_PER_FLOW,
+                    curTrace);
                 List<TraceAndReverseFlow> newTraces =
                     prune(currentTraces, MAXIMUM_NUMBER_OF_TRACES_PER_FLOW);
                 currentTraces.clear();
