@@ -1524,7 +1524,8 @@ public class VirtualRouter implements Serializable {
                                       .build())
                           .orElse(null);
                     })
-                .filter(Objects::nonNull),
+                .filter(Objects::nonNull)
+                .distinct(),
             mainRibExports);
 
     // Call this on the REMOTE VR and REVERSE the edge!
