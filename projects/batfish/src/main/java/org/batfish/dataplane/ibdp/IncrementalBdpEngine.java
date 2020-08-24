@@ -146,23 +146,28 @@ class IncrementalBdpEngine {
                   partialDataplane, currentTopologyContext.getLayer3Topology());
 
           // Update topologies
+          LOGGER.info("Updating dynamic topologies");
           // IPsec
+          LOGGER.info("Updating IPsec topology");
           IpsecTopology newIpsecTopology =
               retainReachableIpsecEdges(
                   initialTopologyContext.getIpsecTopology(), configurations, trEngCurrentL3Topogy);
           // VXLAN
+          LOGGER.info("Updating VxLAN topology");
           VxlanTopology newVxlanTopology =
               prunedVxlanTopology(
                   computeVxlanTopology(partialDataplane.getLayer2Vnis()),
                   configurations,
                   trEngCurrentL3Topogy);
           // Layer-2
+          LOGGER.info("Updating Layer 2 topology");
           Optional<Layer2Topology> newLayer2Topology =
               currentTopologyContext
                   .getLayer1LogicalTopology()
                   .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations));
 
           // Tunnel topology
+          LOGGER.info("Updating Tunnel topology");
           TunnelTopology newTunnelTopology =
               pruneUnreachableTunnelEdges(
                   initialTopologyContext.getTunnelTopology(),
@@ -170,6 +175,7 @@ class IncrementalBdpEngine {
                   trEngCurrentL3Topogy);
 
           // Layer-3
+          LOGGER.info("Updating Layer 3 topology");
           Topology newLayer3Topology =
               computeLayer3Topology(
                   computeRawLayer3Topology(
@@ -182,10 +188,12 @@ class IncrementalBdpEngine {
                       toEdgeSet(newIpsecTopology, configurations), newTunnelTopology.asEdgeSet()));
 
           // EIGRP topology
+          LOGGER.info("Updating EIGRP topology");
           EigrpTopology newEigrpTopology =
               EigrpTopologyUtils.initEigrpTopology(configurations, newLayer3Topology);
 
           // Initialize BGP topology
+          LOGGER.info("Updating BGP topology");
           BgpTopology newBgpTopology =
               initBgpTopology(
                   configurations,
@@ -685,6 +693,7 @@ class IncrementalBdpEngine {
       TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    LOGGER.info("Compute EGP");
     Span span = GlobalTracer.get().buildSpan("Compute EGP").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
