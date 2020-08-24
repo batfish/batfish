@@ -701,9 +701,9 @@ class IncrementalBdpEngine {
       /*
        * Initialize all routers and their message queues (can be done as parallel as possible)
        */
-      Span innerSpan =
+      Span InitializationSpan =
           GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(innerSpan)) {
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(InitializationSpan)) {
         assert innerScope != null; // avoid unused warning
         nodes
             .values()
@@ -711,11 +711,12 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(vr -> vr.initForEgpComputation(topologyContext));
       } finally {
-        innerSpan.finish();
+        InitializationSpan.finish();
       }
 
-      Span innerSpan1 = GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(innerSpan1)) {
+      Span crossVrfLeakingSpan =
+          GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(crossVrfLeakingSpan)) {
         assert innerScope != null; // avoid unused warning
         nodes
             .values()
@@ -723,11 +724,11 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(VirtualRouter::initCrossVrfImports);
       } finally {
-        innerSpan1.finish();
+        crossVrfLeakingSpan.finish();
       }
 
-      Span innerSpan2 = GlobalTracer.get().buildSpan("Queue initial bgp messages").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(innerSpan1)) {
+      Span bgpInitialSpan = GlobalTracer.get().buildSpan("Queue initial bgp messages").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(bgpInitialSpan)) {
         assert innerScope != null; // avoid unused warning
         // Queue initial outgoing messages
         BgpTopology bgpTopology = topologyContext.getBgpTopology();
@@ -742,7 +743,7 @@ class IncrementalBdpEngine {
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });
       } finally {
-        innerSpan2.finish();
+        bgpInitialSpan.finish();
       }
 
       /*
