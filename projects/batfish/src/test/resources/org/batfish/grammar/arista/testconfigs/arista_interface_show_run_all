@@ -19,7 +19,13 @@ interface Ethernet1/1
    no flowcontrol send
    no flowcontrol receive
    no mac timestamp
+   speed auto
+   speed auto 100full
+   speed forced 40gfull
    speed forced 100gfull
+   speed forced 1000full
+   speed forced 10000full
+   speed 100full
    no l2 mtu
    default logging event congestion-drops
    default unidirectional
