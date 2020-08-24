@@ -877,7 +877,7 @@ class IncrementalBdpEngine {
   private static void computeIterationStatistics(
       Map<String, Node> nodes, IncrementalBdpAnswerElement ae, int dependentRoutesIterations) {
     Span span = GlobalTracer.get().buildSpan("Compute iteration statistics").start();
-    LOGGER.info("Compute iteration statistics");
+    LOGGER.info("Iteration {}: Compute statistics", dependentRoutesIterations);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       int numBgpBestPathRibRoutes =
