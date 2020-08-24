@@ -634,7 +634,9 @@ import org.batfish.grammar.arista.AristaParser.If_no_switchport_switchportContex
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
-import org.batfish.grammar.arista.AristaParser.If_speed_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_speed_auto_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_speed_bw_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_speed_forced_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_st_portfastContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_accessContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_modeContext;
@@ -5400,7 +5402,21 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_speed_eos(If_speed_eosContext ctx) {
+  public void exitIf_speed_auto_eos(If_speed_auto_eosContext ctx) {
+    if (ctx.eos_bandwidth_specifier() != null) {
+      double speed = toBandwidth(ctx.eos_bandwidth_specifier());
+      _currentInterfaces.forEach(i -> i.setSpeed(speed));
+    }
+  }
+
+  @Override
+  public void exitIf_speed_bw_eos(If_speed_bw_eosContext ctx) {
+    double speed = toBandwidth(ctx.eos_bandwidth_specifier());
+    _currentInterfaces.forEach(i -> i.setSpeed(speed));
+  }
+
+  @Override
+  public void exitIf_speed_forced_eos(If_speed_forced_eosContext ctx) {
     double speed = toBandwidth(ctx.eos_bandwidth_specifier());
     _currentInterfaces.forEach(i -> i.setSpeed(speed));
   }
