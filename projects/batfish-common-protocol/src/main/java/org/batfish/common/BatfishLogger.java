@@ -309,6 +309,7 @@ public final class BatfishLogger {
   }
 
   public void unimplemented(String msg) {
+    LOGGER.debug(msg);
     write(LEVEL_UNIMPLEMENTED, msg);
   }
 
