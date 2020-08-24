@@ -758,6 +758,7 @@ import org.batfish.grammar.arista.AristaParser.ProtocolContext;
 import org.batfish.grammar.arista.AristaParser.RangeContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_static_is_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.Rms_distanceContext;
 import org.batfish.grammar.arista.AristaParser.Ro6_distribute_listContext;
 import org.batfish.grammar.arista.AristaParser.Ro_areaContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_filterlistContext;
@@ -976,6 +977,7 @@ import org.batfish.representation.arista.RouteMapSetCommunityLine;
 import org.batfish.representation.arista.RouteMapSetCommunityListLine;
 import org.batfish.representation.arista.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.arista.RouteMapSetDeleteCommunityLine;
+import org.batfish.representation.arista.RouteMapSetDistanceLine;
 import org.batfish.representation.arista.RouteMapSetLine;
 import org.batfish.representation.arista.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.arista.RouteMapSetMetricLine;
@@ -6639,6 +6641,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
     }
+  }
+
+  @Override
+  public void exitRms_distance(Rms_distanceContext ctx) {
+    int distance = toInteger(ctx.distance);
+    RouteMapSetLine line = new RouteMapSetDistanceLine(distance);
+    _currentRouteMapClause.addSetLine(line);
   }
 
   @Override
