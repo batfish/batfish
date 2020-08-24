@@ -153,7 +153,7 @@ class IncrementalBdpEngine {
               retainReachableIpsecEdges(
                   initialTopologyContext.getIpsecTopology(), configurations, trEngCurrentL3Topogy);
           // VXLAN
-          LOGGER.info("Updating VxLAN topology");
+          LOGGER.info("Updating VXLAN topology");
           VxlanTopology newVxlanTopology =
               prunedVxlanTopology(
                   computeVxlanTopology(partialDataplane.getLayer2Vnis()),
