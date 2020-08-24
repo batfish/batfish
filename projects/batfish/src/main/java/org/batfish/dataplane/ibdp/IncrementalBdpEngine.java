@@ -702,9 +702,9 @@ class IncrementalBdpEngine {
        * Initialize all routers and their message queues (can be done as parallel as possible)
        */
       LOGGER.info("Initialize virtual routers");
-      Span InitializationSpan =
+      Span initializationSpan =
           GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(InitializationSpan)) {
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
         assert innerScope != null; // avoid unused warning
         nodes
             .values()
@@ -712,7 +712,7 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(vr -> vr.initForEgpComputation(topologyContext));
       } finally {
-        InitializationSpan.finish();
+        initializationSpan.finish();
       }
 
       LOGGER.info("Queue initial cross-VRF leaking");
