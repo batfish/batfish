@@ -108,7 +108,7 @@ public class BgpProcess implements Serializable {
   private static final String PROP_ACTIVE_NEIGHBORS = "neighbors";
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_TIE_BREAKER = "tieBreaker";
-  private static final String PROP_CLUSTER_LIST_AS_IGP_COST = "tieBreaker";
+  private static final String PROP_CLUSTER_LIST_AS_IGP_COST = "clusterListAsIgpCost";
 
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
