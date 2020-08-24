@@ -43,9 +43,7 @@ import org.junit.rules.TemporaryFolder;
 
 @ParametersAreNonnullByDefault
 public class AristaRouteMapTest {
-  private static final String DEFAULT_VRF_NAME = "default";
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/arista/testconfigs/";
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/arista/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
