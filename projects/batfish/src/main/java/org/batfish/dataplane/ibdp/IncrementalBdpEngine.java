@@ -701,6 +701,7 @@ class IncrementalBdpEngine {
       /*
        * Initialize all routers and their message queues (can be done as parallel as possible)
        */
+      LOGGER.info("Initialize virtual routers");
       Span InitializationSpan =
           GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(InitializationSpan)) {
@@ -714,6 +715,7 @@ class IncrementalBdpEngine {
         InitializationSpan.finish();
       }
 
+      LOGGER.info("Queue initial cross-VRF leaking");
       Span crossVrfLeakingSpan =
           GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(crossVrfLeakingSpan)) {
@@ -727,6 +729,7 @@ class IncrementalBdpEngine {
         crossVrfLeakingSpan.finish();
       }
 
+      LOGGER.info("Queue initial BGP messages");
       Span bgpInitialSpan = GlobalTracer.get().buildSpan("Queue initial bgp messages").start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(bgpInitialSpan)) {
         assert innerScope != null; // avoid unused warning
@@ -760,7 +763,7 @@ class IncrementalBdpEngine {
       do {
         _numIterations++;
         Span iterSpan = GlobalTracer.get().buildSpan("Iteration " + _numIterations).start();
-        LOGGER.info("Iteration {}", _numIterations);
+        LOGGER.info("Iteration {} begins", _numIterations);
         try (Scope innerScope = GlobalTracer.get().scopeManager().activate(iterSpan)) {
           assert innerScope != null; // avoid unused warning
 
