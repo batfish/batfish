@@ -28,7 +28,7 @@ import org.batfish.datamodel.bgp.community.Community;
  * @author Ryan Beckett
  */
 @ParametersAreNonnullByDefault
-public final class CommunityVar extends Regex implements Comparable<CommunityVar> {
+public final class CommunityVar extends SymbolicRegex implements Comparable<CommunityVar> {
 
   private static final Comparator<CommunityVar> COMPARATOR =
       Comparator.comparing(CommunityVar::getType)
@@ -122,8 +122,7 @@ public final class CommunityVar extends Regex implements Comparable<CommunityVar
       /**
        * A regex need only match a portion of a given community string. For example, the regex
        * "^40:" matches the community 40:11. But to properly relate community regexes to one
-       * another, for example to find their intersection (see Graph::initCommAtomicPredicates), we
-       * need regexes that match completely.
+       * another, for example to find their intersection, we need regexes that match completely.
        *
        * <p>The simple approach below converts a possibly-partial regex into a complete one. It
        * works because below we intersect the resulting automaton with COMMUNITY_FSM, which notably

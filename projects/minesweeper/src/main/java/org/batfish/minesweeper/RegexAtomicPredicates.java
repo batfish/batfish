@@ -29,7 +29,7 @@ import org.batfish.common.BatfishException;
  * @param <T> the particular type of regexes
  */
 @ParametersAreNonnullByDefault
-public class RegexAtomicPredicates<T extends Regex> {
+public class RegexAtomicPredicates<T extends SymbolicRegex> {
 
   @Nonnull private final Set<T> _regexes;
 
