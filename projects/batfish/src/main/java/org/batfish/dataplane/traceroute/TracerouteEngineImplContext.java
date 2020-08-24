@@ -5,9 +5,14 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIn
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByOriginatingVrf;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Ordering;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -17,10 +22,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.TracePruner;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
@@ -72,6 +76,49 @@ public class TracerouteEngineImplContext {
     _topology = topology;
   }
 
+  /** Like {@link TracePruner#prune(List, int)}, but for {@link TraceAndReverseFlow}. */
+  private static List<TraceAndReverseFlow> prune(List<TraceAndReverseFlow> traces, int maxSize) {
+    if (traces.size() <= maxSize) {
+      return traces;
+    }
+    List<Trace> asTraces =
+        traces.stream().map(TraceAndReverseFlow::getTrace).collect(ImmutableList.toImmutableList());
+    Set<Trace> pruned = ImmutableSet.copyOf(TracePruner.prune(asTraces, maxSize));
+    return traces.stream()
+        .filter(tarf -> pruned.contains(tarf.getTrace()))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Some finite limit on the number of traces to keep in memory per flow. Meant to be high enough
+   * for all practical purposes, but also finite.
+   */
+  private static final int MAXIMUM_NUMBER_OF_TRACES_PER_FLOW = 4096;
+
+  private Map.Entry<Flow, List<TraceAndReverseFlow>> traceFlow(Flow flow) {
+    List<TraceAndReverseFlow> currentTraces = new ArrayList<>();
+    validateInputs(_configurations, flow);
+    String ingressNodeName = flow.getIngressNode();
+    String ingressInterfaceName = flow.getIngressInterface();
+    initialFlowTracer(
+            this,
+            ingressNodeName,
+            ingressInterfaceName,
+            flow,
+            tarf -> {
+              currentTraces.add(tarf);
+              // If there are now double the number of traces to track, prune down to the max.
+              if (currentTraces.size() >= 2 * MAXIMUM_NUMBER_OF_TRACES_PER_FLOW) {
+                List<TraceAndReverseFlow> newTraces =
+                    prune(currentTraces, MAXIMUM_NUMBER_OF_TRACES_PER_FLOW);
+                currentTraces.clear();
+                currentTraces.addAll(newTraces);
+              }
+            })
+        .processHop();
+    return new SimpleEntry<>(flow, currentTraces);
+  }
+
   /**
    * Builds the possible {@link Trace}s for a {@link Set} of {@link Flow}s in {@link
    * TracerouteEngineImplContext#_flows}
@@ -79,21 +126,12 @@ public class TracerouteEngineImplContext {
    * @return {@link SortedMap} of {@link Flow} to a {@link List} of {@link Trace}s
    */
   public SortedMap<Flow, List<TraceAndReverseFlow>> buildTracesAndReturnFlows() {
-    Map<Flow, List<TraceAndReverseFlow>> traces = new ConcurrentHashMap<>();
-    _flows
+    return _flows
         .parallelStream()
-        .forEach(
-            flow -> {
-              List<TraceAndReverseFlow> currentTraces =
-                  traces.computeIfAbsent(flow, k -> new ArrayList<>());
-              validateInputs(_configurations, flow);
-              String ingressNodeName = flow.getIngressNode();
-              String ingressInterfaceName = flow.getIngressInterface();
-              initialFlowTracer(
-                      this, ingressNodeName, ingressInterfaceName, flow, currentTraces::add)
-                  .processHop();
-            });
-    return new TreeMap<>(traces);
+        .map(this::traceFlow)
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Ordering.natural(), Entry::getKey, Entry::getValue));
   }
 
   /**
