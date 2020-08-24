@@ -398,7 +398,10 @@ rm_set
 :
   SET
   (
-    set_as_path_prepend_rm_stanza
+    // EOS up here
+    rms_distance
+    // Legacy below
+    | set_as_path_prepend_rm_stanza
     | set_as_path_tag_rm_stanza
     | set_comm_list_delete_rm_stanza
     | set_community_rm_stanza
@@ -425,6 +428,12 @@ rm_set
     | set_traffic_index_rm_stanza_null
     | set_weight_rm_stanza
   )
+;
+
+rms_distance
+:
+// 1-255
+  DISTANCE distance = DEC NEWLINE
 ;
 
 variable_access_list
