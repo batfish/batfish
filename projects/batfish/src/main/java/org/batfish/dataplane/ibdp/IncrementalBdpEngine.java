@@ -146,23 +146,28 @@ class IncrementalBdpEngine {
                   partialDataplane, currentTopologyContext.getLayer3Topology());
 
           // Update topologies
+          LOGGER.info("Updating dynamic topologies");
           // IPsec
+          LOGGER.info("Updating IPsec topology");
           IpsecTopology newIpsecTopology =
               retainReachableIpsecEdges(
                   initialTopologyContext.getIpsecTopology(), configurations, trEngCurrentL3Topogy);
           // VXLAN
+          LOGGER.info("Updating VXLAN topology");
           VxlanTopology newVxlanTopology =
               prunedVxlanTopology(
                   computeVxlanTopology(partialDataplane.getLayer2Vnis()),
                   configurations,
                   trEngCurrentL3Topogy);
           // Layer-2
+          LOGGER.info("Updating Layer 2 topology");
           Optional<Layer2Topology> newLayer2Topology =
               currentTopologyContext
                   .getLayer1LogicalTopology()
                   .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations));
 
           // Tunnel topology
+          LOGGER.info("Updating Tunnel topology");
           TunnelTopology newTunnelTopology =
               pruneUnreachableTunnelEdges(
                   initialTopologyContext.getTunnelTopology(),
@@ -170,6 +175,7 @@ class IncrementalBdpEngine {
                   trEngCurrentL3Topogy);
 
           // Layer-3
+          LOGGER.info("Updating Layer 3 topology");
           Topology newLayer3Topology =
               computeLayer3Topology(
                   computeRawLayer3Topology(
@@ -182,10 +188,12 @@ class IncrementalBdpEngine {
                       toEdgeSet(newIpsecTopology, configurations), newTunnelTopology.asEdgeSet()));
 
           // EIGRP topology
+          LOGGER.info("Updating EIGRP topology");
           EigrpTopology newEigrpTopology =
               EigrpTopologyUtils.initEigrpTopology(configurations, newLayer3Topology);
 
           // Initialize BGP topology
+          LOGGER.info("Updating BGP topology");
           BgpTopology newBgpTopology =
               initBgpTopology(
                   configurations,
@@ -685,6 +693,7 @@ class IncrementalBdpEngine {
       TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    LOGGER.info("Compute EGP");
     Span span = GlobalTracer.get().buildSpan("Compute EGP").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
@@ -692,9 +701,10 @@ class IncrementalBdpEngine {
       /*
        * Initialize all routers and their message queues (can be done as parallel as possible)
        */
-      Span innerSpan =
+      LOGGER.info("Initialize virtual routers");
+      Span initializationSpan =
           GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(innerSpan)) {
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
         assert innerScope != null; // avoid unused warning
         nodes
             .values()
@@ -702,11 +712,13 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(vr -> vr.initForEgpComputation(topologyContext));
       } finally {
-        innerSpan.finish();
+        initializationSpan.finish();
       }
 
-      Span innerSpan1 = GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(innerSpan1)) {
+      LOGGER.info("Queue initial cross-VRF leaking");
+      Span crossVrfLeakingSpan =
+          GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(crossVrfLeakingSpan)) {
         assert innerScope != null; // avoid unused warning
         nodes
             .values()
@@ -714,11 +726,12 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(VirtualRouter::initCrossVrfImports);
       } finally {
-        innerSpan1.finish();
+        crossVrfLeakingSpan.finish();
       }
 
-      Span innerSpan2 = GlobalTracer.get().buildSpan("Queue initial bgp messages").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(innerSpan1)) {
+      LOGGER.info("Queue initial BGP messages");
+      Span bgpInitialSpan = GlobalTracer.get().buildSpan("Queue initial bgp messages").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(bgpInitialSpan)) {
         assert innerScope != null; // avoid unused warning
         // Queue initial outgoing messages
         BgpTopology bgpTopology = topologyContext.getBgpTopology();
@@ -733,7 +746,7 @@ class IncrementalBdpEngine {
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });
       } finally {
-        innerSpan2.finish();
+        bgpInitialSpan.finish();
       }
 
       /*
@@ -750,7 +763,7 @@ class IncrementalBdpEngine {
       do {
         _numIterations++;
         Span iterSpan = GlobalTracer.get().buildSpan("Iteration " + _numIterations).start();
-        LOGGER.info("Iteration {}", _numIterations);
+        LOGGER.info("Iteration {} begins", _numIterations);
         try (Scope innerScope = GlobalTracer.get().scopeManager().activate(iterSpan)) {
           assert innerScope != null; // avoid unused warning
 
@@ -864,7 +877,7 @@ class IncrementalBdpEngine {
   private static void computeIterationStatistics(
       Map<String, Node> nodes, IncrementalBdpAnswerElement ae, int dependentRoutesIterations) {
     Span span = GlobalTracer.get().buildSpan("Compute iteration statistics").start();
-    LOGGER.info("Compute iteration statistics");
+    LOGGER.info("Iteration {}: Compute statistics", dependentRoutesIterations);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       int numBgpBestPathRibRoutes =
