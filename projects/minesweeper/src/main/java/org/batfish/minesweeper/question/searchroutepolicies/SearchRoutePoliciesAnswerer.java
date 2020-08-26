@@ -20,11 +20,14 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,6 +39,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -61,6 +65,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
@@ -144,7 +149,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       if (aps[i].andSat(fullModel)) {
         Automaton a = apAutomata.get(i);
         // community atomic predicates should always be non-empty;
-        // see Graph::initCommAtomicPredicates
+        // see RegexAtomicPredicates::initAtomicPredicates
         checkState(!a.isEmpty(), "Cannot produce example string for empty automaton");
         String str = a.getShortestExample(true);
         // community automata should only accept strings with this property;
@@ -167,10 +172,70 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
+   * Given a single satisfying assignment to the constraints from symbolic route analysis, produce
+   * an AS-path for a given symbolic route that is consistent with the assignment.
+   *
+   * @param fullModel a full model of the symbolic route constraints
+   * @param r the symbolic route
+   * @param g the Graph, which provides information about the AS-path regex atomic predicates
+   * @return an AsPath
+   */
+  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, Graph g) {
+
+    BDD[] aps = r.getAsPathRegexAtomicPredicates();
+    Map<Integer, Automaton> apAutomata =
+        g.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
+
+    // find all atomic predicates that are required to be true in the given model
+    List<Integer> trueAPs =
+        IntStream.range(0, g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
+            .filter(i -> aps[i].andSat(fullModel))
+            .boxed()
+            .collect(Collectors.toList());
+
+    // since atomic predicates are disjoint, at most one of them should be true in the model
+    checkState(
+        trueAPs.size() <= 1,
+        "Error in symbolic AS-path analysis: at most one atomic predicate should be true");
+
+    // create an automaton for the language of AS-paths that are true in the model
+    Automaton asPathRegexAutomaton = SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton();
+    for (Integer i : trueAPs) {
+      asPathRegexAutomaton = asPathRegexAutomaton.intersection(apAutomata.get(i));
+    }
+
+    String asPathStr = asPathRegexAutomaton.getShortestExample(true);
+    // As-path regex automata should only accept strings with this property;
+    // see SymbolicAsPathRegex::toAutomaton
+    checkState(
+        asPathStr.startsWith("^") && asPathStr.endsWith("$"),
+        "AS-path example %s has an unexpected format",
+        asPathStr);
+    // strip off the leading ^ and trailing $
+    asPathStr = asPathStr.substring(1, asPathStr.length() - 1);
+    // the string is a space-separated list of numbers; convert them to a list of numbers
+    List<Long> asns;
+    if (asPathStr.isEmpty()) {
+      asns = ImmutableList.of();
+    } else {
+      try {
+        asns =
+            Arrays.stream(asPathStr.split(" "))
+                .mapToLong(Long::new)
+                .boxed()
+                .collect(Collectors.toList());
+      } catch (NumberFormatException nfe) {
+        throw new BatfishException("Failed to produce a valid AS path for answer");
+      }
+    }
+    return AsPath.ofSingletonAsSets(asns);
+  }
+
+  /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete route for a given symbolic route that is consistent with the assignment.
    *
-   * @param fullModel a full model that extends minimalModel
+   * @param fullModel the satisfying assignment
    * @param r the symbolic route
    * @param g the Graph, which provides information about the community atomic predicates
    * @return either a route or a BDD representing an infeasible constraint
@@ -193,6 +258,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
     builder.setCommunities(communities);
+
+    AsPath asPath = satAssignmentToAsPath(fullModel, r, g);
+    builder.setAsPath(asPath);
 
     return builder.build();
   }

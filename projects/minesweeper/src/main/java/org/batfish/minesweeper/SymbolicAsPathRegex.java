@@ -10,6 +10,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<SymbolicAsPathRegex> {
 
+  public static final SymbolicAsPathRegex ALL_AS_PATHS = new SymbolicAsPathRegex(".*");
+
   @Nonnull private static final String AS_NUM_REGEX = "(0|[1-9][0-9]*)";
 
   // a regex that represents the language of AS paths: a space-separated list of
