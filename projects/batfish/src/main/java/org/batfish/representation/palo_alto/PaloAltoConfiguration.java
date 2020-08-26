@@ -21,7 +21,6 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
@@ -100,6 +99,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -963,6 +963,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return ImmutableRangeSet.copyOf(rangeSet);
   }
 
+  private TraceElement matchSecurityRuleTraceElement(String ruleName, Vsys vsys) {
+    return PaloAltoTraceElementCreators.matchSecurityRuleTraceElement(
+        ruleName, vsys.getName(), _filename);
+  }
+
   /** Convert specified firewall rule into an {@link ExprAclLine}. */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
@@ -1007,7 +1012,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .setName(rule.getName())
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
-        .setTraceElement(matchRuleTraceElement(rule.getName()))
+        .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), vsys))
         .build();
   }
 
