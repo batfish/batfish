@@ -16,9 +16,14 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
   public PrefixRange(Prefix prefix, SubRange lengthRange) {
     // Canonicalize the prefix by dropping extra bits in the address that are longer than any
     // relevant length.
-    int realPrefixLength = Math.min(prefix.getPrefixLength(), lengthRange.getEnd());
-    Ip realPrefixAddress = prefix.getStartIp().getNetworkAddress(realPrefixLength);
-    _prefix = Prefix.create(realPrefixAddress, prefix.getPrefixLength());
+    int prefixLength = prefix.getPrefixLength();
+    int realPrefixLength = Math.min(prefixLength, lengthRange.getEnd());
+    if (realPrefixLength == prefixLength) {
+      _prefix = prefix;
+    } else {
+      Ip realPrefixAddress = prefix.getStartIp().getNetworkAddress(realPrefixLength);
+      _prefix = Prefix.create(realPrefixAddress, prefixLength);
+    }
     _lengthRange = lengthRange;
   }
 
