@@ -616,6 +616,7 @@ import org.batfish.grammar.arista.AristaParser.If_encapsulation_dot1q_eosContext
 import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
+import org.batfish.grammar.arista.AristaParser.If_ip_local_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_destinationContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
@@ -626,6 +627,7 @@ import org.batfish.grammar.arista.AristaParser.If_no_autostateContext;
 import org.batfish.grammar.arista.AristaParser.If_no_bandwidthContext;
 import org.batfish.grammar.arista.AristaParser.If_no_channel_group_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_description_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_no_ip_local_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_ip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_no_speed_eosContext;
@@ -5174,6 +5176,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitIf_ip_local_proxy_arp_eos(If_ip_local_proxy_arp_eosContext ctx) {
+    todo(ctx);
+    _currentInterfaces.forEach(i -> i.setLocalProxyArp(true));
+  }
+
+  @Override
   public void exitIfipo_area_eos(Ifipo_area_eosContext ctx) {
     long area = toLong(ctx.area);
     for (Interface iface : _currentInterfaces) {
@@ -5354,6 +5362,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIf_no_description_eos(If_no_description_eosContext ctx) {
     _currentInterfaces.forEach(i -> i.setDescription(null));
+  }
+
+  @Override
+  public void exitIf_no_ip_local_proxy_arp_eos(If_no_ip_local_proxy_arp_eosContext ctx) {
+    _currentInterfaces.forEach(i -> i.setLocalProxyArp(false));
   }
 
   @Override
