@@ -78,7 +78,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUA
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
@@ -1950,6 +1950,7 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testIntrazoneFilterTraceElements() {
     String hostname = "security-no-explicit-match";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     String vsysName = "vsys1";
     String zoneName = "ZONE";
@@ -1962,8 +1963,8 @@ public final class PaloAltoGrammarTest {
     IpAccessList zoneOutgoingFilter = c.getIpAccessLists().get(zoneOutgoingFilterName);
 
     // Expected trace elements in intrazone filter
-    TraceElement ruleDenyTe = matchRuleTraceElement("DENY");
-    TraceElement rulePermitTe = matchRuleTraceElement("PERMIT");
+    TraceElement ruleDenyTe = matchSecurityRuleTraceElement("DENY", vsysName, filename);
+    TraceElement rulePermitTe = matchSecurityRuleTraceElement("PERMIT", vsysName, filename);
     TraceElement intrazoneDefaultTe = intrazoneDefaultAcceptTraceElement(vsysName, zoneName);
 
     // Expected trace elements in zone outgoing filter
@@ -1987,6 +1988,7 @@ public final class PaloAltoGrammarTest {
     // Device has an interface in the zone. Ensure that outgoing filter lines have expected trace
     // elements and flows leaving the interface generate the expected ACL traces.
     String hostname = "security-no-explicit-match";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     String vsysName = "vsys1";
     String zoneName = "ZONE";
@@ -2038,7 +2040,9 @@ public final class PaloAltoGrammarTest {
         flowTrace,
         contains(
             isChainOfSingleChildren(
-                exitIfaceTe, intrazoneRejectRulesTe, matchRuleTraceElement("DENY"))));
+                exitIfaceTe,
+                intrazoneRejectRulesTe,
+                matchSecurityRuleTraceElement("DENY", vsysName, filename))));
 
     // Flow matching PERMIT security rule should generate a trace pointing to that rule.
     flowTrace =
@@ -2053,7 +2057,9 @@ public final class PaloAltoGrammarTest {
         flowTrace,
         contains(
             isChainOfSingleChildren(
-                exitIfaceTe, intrazoneRulesTe, matchRuleTraceElement("PERMIT"))));
+                exitIfaceTe,
+                intrazoneRulesTe,
+                matchSecurityRuleTraceElement("PERMIT", vsysName, filename))));
   }
 
   @Test
