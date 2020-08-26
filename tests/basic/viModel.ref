@@ -51,6 +51,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -1342,6 +1343,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -2588,6 +2590,7 @@
         "name" : "as1core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -3061,6 +3064,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -4463,6 +4467,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -5755,6 +5760,7 @@
         "name" : "as2core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -6439,6 +6445,7 @@
         "name" : "as2core2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -7068,6 +7075,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -8108,6 +8116,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -8947,6 +8956,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -9814,6 +9824,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -11003,6 +11014,7 @@
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {
@@ -12100,6 +12112,7 @@
         "name" : "as3core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
         "interfaces" : {

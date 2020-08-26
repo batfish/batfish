@@ -3,13 +3,14 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
 import static org.batfish.minesweeper.bdd.CommunityVarConverter.toCommunityVar;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -65,7 +66,6 @@ import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
-import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -76,7 +76,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
@@ -86,30 +85,25 @@ import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
-class TransferBDD {
+public class TransferBDD {
 
   private static BDDFactory factory = BDDRoute.factory;
 
   private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
 
-  private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
-
-  private Set<CommunityVar> _comms;
+  private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
 
   private Configuration _conf;
 
   private Graph _graph;
 
-  private PolicyQuotient _policyQuotient;
-
   private Set<Prefix> _ignoredNetworks;
 
   private List<Statement> _statements;
 
-  TransferBDD(Graph g, Configuration conf, List<Statement> statements, PolicyQuotient pq) {
+  public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
     _graph = g;
     _conf = conf;
-    _policyQuotient = pq;
     _statements = statements;
   }
 
@@ -166,6 +160,14 @@ class TransferBDD {
       return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
     throw new BatfishException("int expr transfer function: " + e);
+  }
+
+  // produce the union of all atomic predicates associated with any of the given community
+  // variables
+  private Set<Integer> atomicPredicatesFor(Set<CommunityVar> cvars) {
+    return cvars.stream()
+        .flatMap(c -> _communityAtomicPredicates.get(c).stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /*
@@ -391,7 +393,7 @@ class TransferBDD {
   }
 
   /*
-   * Convert a list of statements into a Z3 boolean expression for the transfer function.
+   * Convert a list of statements into a boolean expression for the transfer function.
    */
   private TransferResult<TransferReturn, BDD> compute(
       List<Statement> statements, TransferParam<BDDRoute> p) {
@@ -506,26 +508,42 @@ class TransferBDD {
         TransferResult<TransferReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
         curP.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
 
+        // update return values
+
+        // this bdd is used below to account for the fact that we may have already hit a
+        // return/exit statement earlier on this path
+        BDD alreadyReturned = result.getReturnAssignedValue();
+
         BDDRoute r1 = trueBranch.getReturnValue().getFirst();
         BDDRoute r2 = falseBranch.getReturnValue().getFirst();
-        BDDRoute recordVal = ite(guard, r1, r2);
+        BDDRoute recordVal =
+            ite(alreadyReturned, result.getReturnValue().getFirst(), ite(guard, r1, r2));
 
-        // update return values
         BDD returnVal =
             ite(
-                guard,
-                trueBranch.getReturnValue().getSecond(),
-                falseBranch.getReturnValue().getSecond());
+                alreadyReturned,
+                result.getReturnValue().getSecond(),
+                ite(
+                    guard,
+                    trueBranch.getReturnValue().getSecond(),
+                    falseBranch.getReturnValue().getSecond()));
 
         // p.debug("New Return Value (neg): " + returnVal.not());
 
         BDD returnAss =
-            ite(guard, trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
+            alreadyReturned.or(
+                ite(
+                    guard,
+                    trueBranch.getReturnAssignedValue(),
+                    falseBranch.getReturnAssignedValue()));
 
         // p.debug("New Return Assigned: " + returnAss);
 
         BDD fallThrough =
-            ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
+            ite(
+                alreadyReturned,
+                result.getFallthroughValue(),
+                ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue()));
 
         // p.debug("New fallthrough: " + fallThrough);
 
@@ -546,14 +564,22 @@ class TransferBDD {
         SetMetric sm = (SetMetric) stmt;
         LongExpr ie = sm.getMetric();
         BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
-        BDD updateMed = isBGP.and(result.getReturnAssignedValue());
-        BDD updateMet = isBGP.less(result.getReturnAssignedValue());
-        BDDInteger newValue =
-            applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie);
-        BDDInteger med = ite(updateMed, curP.getData().getMed(), newValue);
-        BDDInteger met = ite(updateMet, curP.getData().getMetric(), newValue);
+        // update the MED if the protocol is BGP, and otherwise update the metric
+        // TODO: is this the right thing to do?
+        BDD ignoreMed = isBGP.not().or(result.getReturnAssignedValue());
+        BDD ignoreMet = isBGP.or(result.getReturnAssignedValue());
+        BDDInteger med =
+            ite(
+                ignoreMed,
+                curP.getData().getMed(),
+                applyLongExprModification(curP.indent(), curP.getData().getMed(), ie));
+        BDDInteger met =
+            ite(
+                ignoreMet,
+                curP.getData().getMetric(),
+                applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie));
+        curP.getData().setMed(med);
         curP.getData().setMetric(met);
-        curP.getData().setMetric(med);
 
       } else if (stmt instanceof SetOspfMetricType) {
         curP.debug("SetOspfMetricType");
@@ -584,57 +610,54 @@ class TransferBDD {
         curP.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
         Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-        for (CommunityVar cvar : comms) {
-          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            curP.indent().debug("Value: " + cvar);
-            BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-            curP.indent().debug("New Value: " + newValue);
-            curP.getData().getCommunities().put(cvar, newValue);
-          }
+        // set all atomic predicates associated with these communities to 1 if this statement
+        // is reached
+        Set<Integer> commAPs = atomicPredicatesFor(comms);
+        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        for (int ap : commAPs) {
+          curP.indent().debug("Value: " + ap);
+          BDD comm = commAPBDDs[ap];
+          // on paths where the route policy has already hit a Return or Exit statement earlier,
+          // this AddCommunity statement will not be reached so the atomic predicate's value should
+          // be unchanged; otherwise it should be set to 1.
+          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+          curP.indent().debug("New Value: " + newValue);
+          commAPBDDs[ap] = newValue;
         }
 
       } else if (stmt instanceof SetCommunity) {
         curP.debug("SetCommunity");
         SetCommunity sc = (SetCommunity) stmt;
         Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
-        for (CommunityVar cvar : comms) {
-          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            curP.indent().debug("Value: " + cvar);
-            BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-            curP.indent().debug("New Value: " + newValue);
-            curP.getData().getCommunities().put(cvar, newValue);
-          }
+        // set all atomic predicates associated with these communities to 1, and all other
+        // atomic predicates to zero, if this statement is reached
+        Set<Integer> commAPs = atomicPredicatesFor(comms);
+        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        BDD retassign = result.getReturnAssignedValue();
+        for (int ap = 0; ap < commAPBDDs.length; ap++) {
+          curP.indent().debug("Value: " + ap);
+          BDD comm = commAPBDDs[ap];
+          BDD newValue =
+              ite(retassign, comm, commAPs.contains(ap) ? factory.one() : factory.zero());
+          curP.indent().debug("New Value: " + newValue);
+          commAPBDDs[ap] = newValue;
         }
 
       } else if (stmt instanceof DeleteCommunity) {
         curP.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
         Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-        Set<CommunityVar> toDelete = new HashSet<>();
-        // Find comms to delete
-        for (CommunityVar cvar : comms) {
-          if (cvar.getType() == Type.REGEX) {
-            toDelete.addAll(_commDeps.get(cvar));
-          } else {
-            toDelete.add(cvar);
-          }
+        // set all atomic predicates associated with these communities to 0 on this path
+        Set<Integer> commAPs = atomicPredicatesFor(comms);
+        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        BDD retassign = result.getReturnAssignedValue();
+        for (int ap : commAPs) {
+          curP.indent().debug("Value: " + ap);
+          BDD comm = commAPBDDs[ap];
+          BDD newValue = ite(retassign, comm, factory.zero());
+          curP.indent().debug("New Value: " + newValue);
+          commAPBDDs[ap] = newValue;
         }
-        // Delete the comms
-        for (CommunityVar cvar : toDelete) {
-          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            curP.indent().debug("Value: " + cvar.getRegex() + ", " + cvar.getType());
-            BDD comm = curP.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
-            curP.indent().debug("New Value: " + newValue);
-            curP.getData().getCommunities().put(cvar, newValue);
-          }
-        }
-
-      } else if (stmt instanceof RetainCommunity) {
-        curP.debug("RetainCommunity");
-        // no op
 
       } else if (stmt instanceof PrependAsPath) {
         curP.debug("PrependAsPath");
@@ -676,7 +699,7 @@ class TransferBDD {
 
       // Set all the values to 0 if the return is not true;
       TransferReturn ret = result.getReturnValue();
-      BDDRoute retVal = ite(ret.getSecond(), ret.getFirst(), zeroedRecord());
+      BDDRoute retVal = iteZero(ret.getSecond(), ret.getFirst());
       result = result.setReturnValue(new TransferReturn(retVal, ret.getSecond()));
     }
     return result;
@@ -704,7 +727,7 @@ class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
+  public static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
     BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, p.getPrefixLength());
 
@@ -741,8 +764,14 @@ class TransferBDD {
     return result;
   }
 
-  private BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
-    BDDRoute ret = new BDDRoute(_comms);
+  @VisibleForTesting
+  BDDRoute iteZero(BDD guard, BDDRoute r) {
+    return ite(guard, r, zeroedRecord());
+  }
+
+  @VisibleForTesting
+  BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
+    BDDRoute ret = new BDDRoute(_graph.getNumAtomicPredicates());
 
     BDDInteger x;
     BDDInteger y;
@@ -772,12 +801,12 @@ class TransferBDD {
     y = r2.getMed();
     ret.getMed().setValue(ite(guard, x, y));
 
-    r1.getCommunities()
-        .forEach(
-            (c, var1) -> {
-              BDD var2 = r2.getCommunities().get(c);
-              ret.getCommunities().put(c, ite(guard, var1, var2));
-            });
+    BDD[] retCommAPs = ret.getCommunityAtomicPredicateBDDs();
+    BDD[] r1CommAPs = r1.getCommunityAtomicPredicateBDDs();
+    BDD[] r2CommAPs = r2.getCommunityAtomicPredicateBDDs();
+    for (int i = 0; i < _graph.getNumAtomicPredicates(); i++) {
+      retCommAPs[i] = ite(guard, r1CommAPs[i], r2CommAPs[i]);
+    }
 
     // BDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
@@ -798,16 +827,15 @@ class TransferBDD {
       CommunityVar cvar = toRegexCommunityVar(toCommunityVar(line.getMatchCondition()));
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
-      // Skip this match if it is irrelevant
-      if (_policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
-        continue;
-      }
-      List<CommunityVar> deps = _commDeps.get(cvar);
-      for (CommunityVar dep : deps) {
-        p.debug("Test for: " + dep);
-        BDD c = other.getCommunities().get(dep);
-        acc = ite(c, mkBDD(action), acc);
-      }
+      // the community cvar is logically represented as the disjunction of its corresponding
+      // atomic predicates
+      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(cvar));
+      BDD c =
+          factory.orAll(
+              aps.stream()
+                  .map(ap -> other.getCommunityAtomicPredicateBDDs()[ap])
+                  .collect(Collectors.toList()));
+      acc = ite(c, mkBDD(action), acc);
     }
     return acc;
   }
@@ -827,10 +855,14 @@ class TransferBDD {
       BDD acc = factory.one();
       for (CommunityVar comm : comms) {
         p.debug("Inline Community Set: " + comm);
-        BDD c = other.getCommunities().get(comm);
-        if (c == null) {
-          throw new BatfishException("matchCommunitySet: should not be null");
-        }
+        // the community comm is logically represented as the disjunction of its corresponding
+        // atomic predicates
+        Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(comm));
+        BDD c =
+            factory.orAll(
+                aps.stream()
+                    .map(ap -> other.getCommunityAtomicPredicateBDDs()[ap])
+                    .collect(Collectors.toSet()));
         acc = acc.and(c);
       }
       return acc;
@@ -945,47 +977,36 @@ class TransferBDD {
    * A record of default values that represent the value of the
    * outputs if the route is filtered / dropped in the policy
    */
-  private BDDRoute zeroedRecord() {
-    BDDRoute rec = new BDDRoute(_comms);
+  @VisibleForTesting
+  BDDRoute zeroedRecord() {
+    BDDRoute rec = new BDDRoute(_graph.getNumAtomicPredicates());
     rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
     rec.getMed().setValue(0);
     rec.getPrefix().setValue(0);
-    for (CommunityVar comm : _comms) {
-      rec.getCommunities().put(comm, factory.zero());
+    for (int i = 0; i < rec.getCommunityAtomicPredicateBDDs().length; i++) {
+      rec.getCommunityAtomicPredicateBDDs()[i] = factory.zero();
     }
     rec.getProtocolHistory().getInteger().setValue(0);
     return rec;
   }
 
   /*
-   * Communities assumed to not be attached
-   */
-  private void addCommunityAssumptions(BDDRoute route) {
-    for (CommunityVar comm : _comms) {
-      if (_policyQuotient.getCommsUsedOnlyLocally().contains(comm)) {
-        route.getCommunities().put(comm, factory.zero());
-      }
-    }
-  }
-
-  /*
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
+  public TransferResult<TransferReturn, BDD> compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
-    _commDeps = _graph.getCommunityDependencies();
-    _comms = _graph.getAllCommunities();
-    BDDRoute o = new BDDRoute(_comms);
-    addCommunityAssumptions(o);
+    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates();
+    BDDRoute o = new BDDRoute(_graph.getNumAtomicPredicates());
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
-    return result.getReturnValue().getFirst();
+    //    return result.getReturnValue().getFirst();
+    return result;
   }
 
   /*

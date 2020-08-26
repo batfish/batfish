@@ -119,7 +119,7 @@ public class Interface implements Serializable {
 
   @Nullable private Double _bandwidth;
 
-  private String _channelGroup;
+  private @Nullable Integer _bundleId;
 
   private String _cryptoMap;
 
@@ -276,8 +276,8 @@ public class Interface implements Serializable {
     return _bandwidth;
   }
 
-  public String getChannelGroup() {
-    return _channelGroup;
+  public Integer getBundleId() {
+    return _bundleId;
   }
 
   public String getCryptoMap() {
@@ -459,8 +459,8 @@ public class Interface implements Serializable {
     _bandwidth = bandwidth;
   }
 
-  public void setChannelGroup(String channelGroup) {
-    _channelGroup = channelGroup;
+  public void setBundleId(@Nullable Integer bundleId) {
+    _bundleId = bundleId;
   }
 
   public void setCryptoMap(String cryptoMap) {

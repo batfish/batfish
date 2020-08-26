@@ -30,6 +30,10 @@
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service-annotations
                   </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j-impl
+                  </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
               </configuration>
             </execution>
@@ -101,6 +105,11 @@
     </dependency>
 
     <dependency>
+      <groupId>dk.brics</groupId>
+      <artifactId>automaton</artifactId>
+	  </dependency>
+
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
@@ -141,6 +150,18 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

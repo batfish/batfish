@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -51,7 +50,7 @@ public class CommunityHalvesExpr extends CommunitySetExpr {
 
   @Nonnull
   @Override
-  public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
+  public Set<Community> asLiteralCommunities(@Nonnull Environment environment) {
     throw new UnsupportedOperationException(
         "Cannot be represented as a list of literal communities");
   }

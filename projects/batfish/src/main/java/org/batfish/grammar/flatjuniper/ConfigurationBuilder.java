@@ -119,7 +119,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -202,6 +201,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_remove_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
@@ -465,7 +465,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_tagContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_packet_locationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
@@ -1027,6 +1026,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_GPRS_GTP_U;
     } else if (ctx.JUNOS_GPRS_GTP_V0() != null) {
       return JunosApplication.JUNOS_GPRS_GTP_V0;
+    } else if (ctx.JUNOS_GPRS_SCTP() != null) {
+      return JunosApplication.JUNOS_GPRS_SCTP;
     } else if (ctx.JUNOS_GRE() != null) {
       return JunosApplication.JUNOS_GRE;
     } else if (ctx.JUNOS_GTP() != null) {
@@ -1217,6 +1218,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_SMB_SESSION;
     } else if (ctx.JUNOS_SMTP() != null) {
       return JunosApplication.JUNOS_SMTP;
+    } else if (ctx.JUNOS_SMTPS() != null) {
+      return JunosApplication.JUNOS_SMTPS;
     } else if (ctx.JUNOS_SNMP_AGENTX() != null) {
       return JunosApplication.JUNOS_SNMP_AGENTX;
     } else if (ctx.JUNOS_SNPP() != null) {
@@ -1392,11 +1395,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private @Nullable StandardCommunity toStandardCommunity(Sc_namedContext ctx) {
     if (ctx.NO_ADVERTISE() != null) {
-      return StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE);
+      return StandardCommunity.NO_ADVERTISE;
     } else if (ctx.NO_EXPORT() != null) {
-      return StandardCommunity.of(WellKnownCommunity.NO_EXPORT);
+      return StandardCommunity.NO_EXPORT;
     } else if (ctx.NO_EXPORT_SUBCONFED() != null) {
-      return StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED);
+      return StandardCommunity.NO_EXPORT_SUBCONFED;
     } else {
       return convProblem(StandardCommunity.class, ctx, null);
     }
@@ -1843,34 +1846,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       range.add(sr);
     }
     return range;
-  }
-
-  private static RoutingProtocol toRoutingProtocol(Routing_protocolContext ctx) {
-    if (ctx.AGGREGATE() != null) {
-      return RoutingProtocol.AGGREGATE;
-    } else if (ctx.BGP() != null) {
-      return RoutingProtocol.BGP;
-    } else if (ctx.DIRECT() != null) {
-      return RoutingProtocol.CONNECTED;
-    } else if (ctx.ISIS() != null) {
-      return RoutingProtocol.ISIS_ANY;
-    } else if (ctx.EVPN() != null) {
-      return RoutingProtocol.EVPN;
-    } else if (ctx.LDP() != null) {
-      return RoutingProtocol.LDP;
-    } else if (ctx.LOCAL() != null) {
-      return RoutingProtocol.LOCAL;
-    } else if (ctx.OSPF() != null) {
-      return RoutingProtocol.OSPF;
-    } else if (ctx.OSPF3() != null) {
-      return RoutingProtocol.OSPF3;
-    } else if (ctx.RSVP() != null) {
-      return RoutingProtocol.RSVP;
-    } else if (ctx.STATIC() != null) {
-      return RoutingProtocol.STATIC;
-    } else {
-      throw new BatfishException("missing routing protocol-enum mapping");
-    }
   }
 
   private static SubRange toSubRange(SubrangeContext ctx) {
@@ -3791,6 +3766,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitB_preference(B_preferenceContext ctx) {
+    int preference = toInt(ctx.pref);
+    _currentBgpGroup.setPreference(preference);
+  }
+
+  @Override
   public void exitB_remove_private(B_remove_privateContext ctx) {
     _currentBgpGroup.setRemovePrivate(true);
   }
@@ -4907,7 +4888,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_protocol(Popsf_protocolContext ctx) {
-    RoutingProtocol protocol = toRoutingProtocol(ctx.protocol);
+    RoutingProtocol protocol;
+    if (ctx.AGGREGATE() != null) {
+      protocol = RoutingProtocol.AGGREGATE;
+    } else if (ctx.BGP() != null) {
+      protocol = RoutingProtocol.BGP;
+    } else if (ctx.DIRECT() != null) {
+      protocol = RoutingProtocol.CONNECTED;
+    } else if (ctx.ISIS() != null) {
+      protocol = RoutingProtocol.ISIS_ANY;
+    } else if (ctx.EVPN() != null) {
+      protocol = RoutingProtocol.EVPN;
+    } else if (ctx.LDP() != null) {
+      protocol = RoutingProtocol.LDP;
+    } else if (ctx.LOCAL() != null) {
+      protocol = RoutingProtocol.LOCAL;
+    } else if (ctx.OSPF() != null) {
+      protocol = RoutingProtocol.OSPF;
+    } else if (ctx.OSPF3() != null) {
+      protocol = RoutingProtocol.OSPF3;
+    } else if (ctx.RSVP() != null) {
+      protocol = RoutingProtocol.RSVP;
+    } else if (ctx.STATIC() != null) {
+      protocol = RoutingProtocol.STATIC;
+    } else {
+      todo(ctx);
+      _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+      return;
+    }
     _currentPsTerm.getFroms().addFromProtocol(new PsFromProtocol(protocol));
   }
 

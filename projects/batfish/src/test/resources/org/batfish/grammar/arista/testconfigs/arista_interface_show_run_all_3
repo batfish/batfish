@@ -38,6 +38,7 @@ interface Ethernet1/1
    no flow-spec ipv4 ipv6
    snmp trap link-change
    no ip proxy-arp
+   ip local-proxy-arp
    no ip local-proxy-arp
    no arp gratuitous accept
    ip address 192.0.2.7/32

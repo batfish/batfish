@@ -242,6 +242,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
@@ -263,7 +264,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.BDDMatchers;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -1063,6 +1063,16 @@ public final class CiscoGrammarTest {
       IpAccessList acl = c.getIpAccessLists().get(aclName);
       assertThat(IpAccessListToBdd.toBDD(p, acl), equalTo(p.getIpProtocol().value(IpProtocol.AHP)));
     }
+  }
+
+  @Test
+  public void testAsaGh6042() throws IOException {
+    String hostname = "asa-gh-6042";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae, hasNumReferrers("configs/" + hostname, IPV4_ACCESS_LIST_EXTENDED, "acl_name", 1));
   }
 
   @Test
@@ -3222,6 +3232,25 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosRouteMapLocalPreference() throws IOException {
+    String hostname = "ios-route-map-set-local-preference";
+    Configuration c = parseConfig(hostname);
+    RoutingPolicy setWeightPolicy = c.getRoutingPolicies().get("SET_LOCAL_PREFERENCE");
+    Bgpv4Route r =
+        Bgpv4Route.builder()
+            .setWeight(1)
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route.Builder transformedRoute = r.toBuilder();
+
+    assertThat(setWeightPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
+    assertThat(transformedRoute.build().getLocalPreference(), equalTo((1L << 32) - 1));
+  }
+
+  @Test
   public void testIosRouteMapSetWeight() throws IOException {
     // Config contains a route-map SET_WEIGHT with one line, "set weight 20"
     String hostname = "ios-route-map-set-weight";
@@ -3758,18 +3787,16 @@ public final class CiscoGrammarTest {
     assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
 
     // Check well known community regexes are generated properly
-    assertThat(iosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
-    assertThat(iosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
-    assertThat(iosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
-    assertThat(iosStdGshut, equalTo(StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN)));
-    assertThat(
-        iosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
-    assertThat(eosStdInternet, equalTo(StandardCommunity.of(WellKnownCommunity.INTERNET)));
-    assertThat(eosStdNoAdv, equalTo(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
-    assertThat(eosStdNoExport, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
-    assertThat(eosStdGshut, equalTo(StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN)));
-    assertThat(
-        eosStdLocalAs, equalTo(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+    assertThat(iosStdInternet, equalTo(StandardCommunity.INTERNET));
+    assertThat(iosStdNoAdv, equalTo(StandardCommunity.NO_ADVERTISE));
+    assertThat(iosStdNoExport, equalTo(StandardCommunity.NO_EXPORT));
+    assertThat(iosStdGshut, equalTo(StandardCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(iosStdLocalAs, equalTo(StandardCommunity.NO_EXPORT_SUBCONFED));
+    assertThat(eosStdInternet, equalTo(StandardCommunity.INTERNET));
+    assertThat(eosStdNoAdv, equalTo(StandardCommunity.NO_ADVERTISE));
+    assertThat(eosStdNoExport, equalTo(StandardCommunity.NO_EXPORT));
+    assertThat(eosStdGshut, equalTo(StandardCommunity.GRACEFUL_SHUTDOWN));
+    assertThat(eosStdLocalAs, equalTo(StandardCommunity.NO_EXPORT_SUBCONFED));
 
     // make sure well known communities in expanded lists are not actually converted
     assertThat(iosRegexExpGshut, equalTo("gshut"));
@@ -4118,13 +4145,13 @@ public final class CiscoGrammarTest {
 
   private static Community communityListToCommunity(
       Map<String, CommunityList> communityLists, String communityName) {
-    return communityLists
-        .get(communityName)
-        .getLines()
-        .get(0)
-        .getMatchCondition()
-        .asLiteralCommunities(null)
-        .first();
+    return Iterables.getOnlyElement(
+        communityLists
+            .get(communityName)
+            .getLines()
+            .get(0)
+            .getMatchCondition()
+            .asLiteralCommunities(null));
   }
 
   private static @Nonnull String communityListToRegex(
@@ -5912,11 +5939,11 @@ public final class CiscoGrammarTest {
     Configuration config = parseConfig("ios-portchannel-subinterface");
     double eth1Bandwidth = 1E7;
     assertThat(config, hasInterface("Ethernet1", hasBandwidth(eth1Bandwidth)));
-    assertThat(config, hasInterface("Port-Channel1", hasBandwidth(eth1Bandwidth)));
+    assertThat(config, hasInterface("Port-channel1", hasBandwidth(eth1Bandwidth)));
     assertThat(
         config,
         hasInterface(
-            "Port-Channel1.1",
+            "Port-channel1.1",
             allOf(
                 hasInterfaceType(InterfaceType.AGGREGATE_CHILD),
                 isActive(true),

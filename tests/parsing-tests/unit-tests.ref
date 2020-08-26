@@ -30,6 +30,9 @@
         "arista_bgp" : [
           "configs/arista_bgp"
         ],
+        "arista_bgp_asn" : [
+          "configs/arista_bgp_asn"
+        ],
         "arista_dhcp_relay" : [
           "configs/arista_dhcp_relay"
         ],
@@ -927,6 +930,7 @@
         "configs/arista-logging" : "PASSED",
         "configs/arista_acl" : "PASSED",
         "configs/arista_bgp" : "PASSED",
+        "configs/arista_bgp_asn" : "PASSED",
         "configs/arista_dhcp_relay" : "PASSED",
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
@@ -1093,7 +1097,7 @@
         "configs/foundry_interface" : "PASSED",
         "configs/foundry_misc" : "PASSED",
         "configs/foundry_vlan_group" : "PASSED",
-        "configs/foundry_vrf" : "UNSUPPORTED",
+        "configs/foundry_vrf" : "UNKNOWN",
         "configs/gh-2658-juniper-vrf-import-export.cfg" : "PASSED",
         "configs/host2" : "PASSED",
         "configs/if_tag_is" : "PASSED",
@@ -1484,7 +1488,7 @@
         },
         "configs/arista_acl" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1644,9 +1648,41 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/arista_bgp_asn" : {
+          "sentences" : [
+            "(arista_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'arista_bgp_asn'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (s_boot",
+            "      BOOT:'boot'",
+            "      (null_rest_of_line",
+            "        SYSTEM:'system'",
+            "        FLASH:'flash'",
+            "        VARIABLE:'fake.swi'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'",
+            "      BGP:'bgp'",
+            "      procnum = (bgp_asn",
+            "        asn4b = FLOAT:'65200.50000')",
+            "      NEWLINE:'\\n'",
+            "      (eos_router_bgp_tail",
+            "        (eos_rb_inner",
+            "          (eos_rbi_router_id",
+            "            ROUTER_ID:'router-id'",
+            "            id = IP_ADDRESS:'1.2.3.4'",
+            "            NEWLINE:'\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/arista_dhcp_relay" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1701,19 +1737,21 @@
             "            low = DEC:'0'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_ip_dhcp",
+            "        (if_ip",
             "          IP:'ip'",
-            "          DHCP:'dhcp'",
-            "          (ifdhcp_relay",
-            "            RELAY:'relay'",
-            "            (ifdhcpr_client",
-            "              CLIENT:'client'",
-            "              NEWLINE:'\\n'))))",
+            "          (ifip_dhcp_eos",
+            "            DHCP:'dhcp'",
+            "            (ifipdhcp_relay_eos",
+            "              RELAY:'relay'",
+            "              (ifipdhcpr_client_eos",
+            "                CLIENT:'client'",
+            "                NEWLINE:'\\n')))))",
             "      (if_inner",
-            "        (if_shutdown",
+            "        (if_no",
             "          NO:'no'",
-            "          SHUTDOWN:'shutdown'",
-            "          NEWLINE:'\\n'))))",
+            "          (if_no_shutdown_eos",
+            "            SHUTDOWN:'shutdown'",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_interface",
             "      INTERFACE:'interface'",
@@ -1724,16 +1762,17 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_shutdown",
+            "        (if_no",
             "          NO:'no'",
-            "          SHUTDOWN:'shutdown'",
-            "          NEWLINE:'\\n'))))",
+            "          (if_no_shutdown_eos",
+            "            SHUTDOWN:'shutdown'",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
         "configs/arista_interface" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -1749,24 +1788,41 @@
             "            low = DEC:'1'  <== mode:M_Interface)))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_ip_address",
+            "        (if_ip",
             "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'1.2.3.4/23'",
-            "          NEWLINE:'\\n'))",
+            "          (ifip_address_eos",
+            "            ADDRESS:'address'",
+            "            (ifip_address_address_eos",
+            "              addr = (interface_address",
+            "                prefix = IP_PREFIX:'1.2.3.4/23')",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
-            "        (if_ip_address_secondary",
+            "        (if_ip",
             "          IP:'ip'",
-            "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'2.3.4.5/24'",
-            "          SECONDARY:'secondary'",
-            "          NEWLINE:'\\n'))",
+            "          (ifip_address_eos",
+            "            ADDRESS:'address'",
+            "            (ifip_address_address_eos",
+            "              addr = (interface_address",
+            "                prefix = IP_PREFIX:'2.3.4.5/24')",
+            "              SECONDARY:'secondary'",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
-            "        (if_ip_helper_address",
+            "        (if_ip",
             "          IP:'ip'",
-            "          HELPER_ADDRESS:'helper-address'",
-            "          address = IP_ADDRESS:'5.5.5.5'",
-            "          NEWLINE:'\\n'))",
+            "          (if_ip_helper_address",
+            "            HELPER_ADDRESS:'helper-address'",
+            "            address = IP_ADDRESS:'5.5.5.5'",
+            "            NEWLINE:'\\n')))",
+            "      (if_inner",
+            "        (if_ip",
+            "          IP:'ip'",
+            "          (if_ip_multicast_eos",
+            "            MULTICAST:'multicast'",
+            "            (ifipm_boundary_eos",
+            "              BOUNDARY:'boundary'",
+            "              name = (word",
+            "                WORD:'some_acl'  <== mode:M_Prefix_Or_Standard_Acl)",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_service_policy",
             "          SERVICE_POLICY:'service-policy'",
@@ -1786,12 +1842,14 @@
             "            VARIABLE:'qos-pmap')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_ip_vrf_forwarding",
+            "        (if_vrf",
             "          VRF:'vrf'",
-            "          FORWARDING:'forwarding'",
-            "          vrf = (variable",
-            "            MGMT:'mgmt')",
-            "          NEWLINE:'\\n'))",
+            "          (if_vrf_forwarding",
+            "            FORWARDING:'forwarding'",
+            "            (if_vrf_name",
+            "              name = (variable",
+            "                MGMT:'mgmt')",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner",
             "        (if_vrrp",
             "          VRRP:'vrrp'",
@@ -1842,35 +1900,37 @@
         },
         "configs/arista_ip_route" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
             "      VARIABLE:'arista_ip_route'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
-            "    (ip_route_stanza",
+            "    (s_ip",
             "      IP:'ip'",
-            "      ROUTE:'route'",
-            "      (ip_route_tail",
-            "        prefix = IP_PREFIX:'1.2.3.32/29'",
-            "        nexthopint = (interface_name_unstructured",
-            "          VARIABLE:'Null0')",
-            "        NAME:'name'",
-            "        (variable",
-            "          VARIABLE:'bippety'  <== mode:M_Name)",
-            "        NEWLINE:'\\n')))",
+            "      (s_ip_route",
+            "        ROUTE:'route'",
+            "        (ip_route_tail",
+            "          prefix = IP_PREFIX:'1.2.3.32/29'",
+            "          nexthopint = (interface_name_unstructured",
+            "            VARIABLE:'Null0')",
+            "          NAME:'name'",
+            "          (variable",
+            "            VARIABLE:'bippety'  <== mode:M_Name)",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
-            "    (ip_route_stanza",
+            "    (s_ip",
             "      IP:'ip'",
-            "      ROUTE:'route'",
-            "      (ip_route_tail",
-            "        prefix = IP_PREFIX:'2.3.4.5/32'",
-            "        nexthopip = IP_ADDRESS:'3.4.5.6'",
-            "        NAME:'name'",
-            "        (variable",
-            "          VARIABLE:'boppety'  <== mode:M_Name)",
-            "        NEWLINE:'\\n')))",
+            "      (s_ip_route",
+            "        ROUTE:'route'",
+            "        (ip_route_tail",
+            "          prefix = IP_PREFIX:'2.3.4.5/32'",
+            "          nexthopip = IP_ADDRESS:'3.4.5.6'",
+            "          NAME:'name'",
+            "          (variable",
+            "            VARIABLE:'boppety'  <== mode:M_Name)",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -2247,7 +2307,7 @@
         },
         "configs/arista_queue_monitor" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -2274,7 +2334,7 @@
         },
         "configs/arista_username" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -2290,17 +2350,18 @@
             "          MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
-            "    (s_null",
-            "      (null_single",
-            "        NO:'no'",
+            "    (s_no",
+            "      NO:'no'",
+            "      (no_aaa",
             "        AAA:'aaa'",
-            "        ROOT:'root'",
-            "        NEWLINE:'\\n')))",
+            "        (no_aaa_root",
+            "          ROOT:'root'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza",
             "    (s_username",
             "      USERNAME:'username'",
             "      user = (variable",
-            "        ADMIN:'admin')",
+            "        VARIABLE:'admin')",
             "      (u",
             "        (u_role",
             "          ROLE:'role'",
@@ -2309,11 +2370,9 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_cisco",
+            "          (up_arista_md5",
             "            DEC:'5'",
-            "            (up_cisco_tail",
-            "              pass = (variable_secret",
-            "                MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')))))",
+            "            pass = MD5_ARISTA:'$1$5C7CVuxv$nnhvQ21cl8fsuw/HTaYpA/')))",
             "      NEWLINE:'\\n'))",
             "  (stanza",
             "    (s_username",
@@ -2323,18 +2382,16 @@
             "      (u",
             "        (u_password",
             "          SECRET:'secret'",
-            "          (up_cisco",
-            "            (up_cisco_tail",
-            "              pass = (variable_secret",
-            "                SHA512:'sha512'",
-            "                SHA512_ARISTA:'$6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0')))))",
+            "          (up_arista_sha512",
+            "            SHA512:'sha512'",
+            "            pass = SHA512_ARISTA:'$6$RMxgK5ALGIf.nWEC$tHuKCyfNtJMCY561P52dTzHUmYMmLxb/Mxik.j3vMUs8lMCPocM00/NAS.SN6GCWx7d/vQIgxnClyQLAb7n3x0')))",
             "      NEWLINE:'\\n'))",
             "  EOF:<EOF>)"
           ]
         },
         "configs/arista_vrf" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(arista_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -19687,11 +19744,12 @@
             "          VARIABLE:'asacryptomap')",
             "        seq_num = DEC:'10'",
             "        (crypto_map_tail",
-            "          (crypto_map_t_null",
+            "          (crypto_map_t_match",
             "            MATCH:'match'",
-            "            (null_rest_of_line",
+            "            (crypto_map_t_match_address",
             "              ADDRESS:'address'",
-            "              VARIABLE:'someacl'",
+            "              name = (variable",
+            "                VARIABLE:'someacl')",
             "              NEWLINE:'\\n'))))))",
             "  (stanza",
             "    (s_crypto",
@@ -22210,7 +22268,8 @@
             "        pass = (variable_secret",
             "          DOLLAR:'$'",
             "          DEC:'1'",
-            "          RP_VARIABLE:'$aaaaaaaaaaaaaaaaaaaaaaaaaaa')",
+            "          DOLLAR:'$'",
+            "          VARIABLE:'aaaaaaaaaaaaaaaaaaaaaaaaaaa')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_enable",
@@ -22269,7 +22328,8 @@
             "          pass = (variable_secret",
             "            DOLLAR:'$'",
             "            DEC:'1'",
-            "            RP_VARIABLE:'$i5Rkls3LoyxzS8t9'))",
+            "            DOLLAR:'$'",
+            "            VARIABLE:'i5Rkls3LoyxzS8t9'))",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_enable",
@@ -29166,7 +29226,8 @@
             "          INFORMATIONAL:'informational'",
             "          VARIABLE:'msg'",
             "          DOUBLE_QUOTE:'\"'",
-            "          RP_VARIABLE:'$_cli_msg'",
+            "          DOLLAR:'$'",
+            "          VARIABLE:'_cli_msg'",
             "          DOUBLE_QUOTE:'\"'",
             "          NEWLINE:'\\n'))",
             "      (event_null",
@@ -32023,8 +32084,20 @@
             "            NEWLINE:'\\n')))",
             "      (ro_distance",
             "        DISTANCE:'distance'",
-            "        value = DEC:'110'",
-            "        NEWLINE:'\\n')",
+            "        (ro_distance_distance",
+            "          value = DEC:'110'",
+            "          NEWLINE:'\\n'))",
+            "      (ro_distance",
+            "        DISTANCE:'distance'",
+            "        (ro_distance_ospf",
+            "          OSPF:'ospf'",
+            "          EXTERNAL:'external'",
+            "          ext = DEC:'77'",
+            "          INTER_AREA:'inter-area'",
+            "          inter = DEC:'78'",
+            "          INTRA_AREA:'intra-area'",
+            "          intra = DEC:'79'",
+            "          NEWLINE:'\\n'))",
             "      (ro_distribute_list",
             "        DISTRIBUTE_LIST:'distribute-list'",
             "        name = (variable_distribute_list",
@@ -51141,8 +51214,7 @@
             "                    FROM:'from'",
             "                    (popsf_protocol",
             "                      PROTOCOL:'protocol'",
-            "                      protocol = (routing_protocol",
-            "                        BGP:'bgp'))))))))))",
+            "                      BGP:'bgp')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -52895,6 +52967,27 @@
             "        dst_mac = (xr_mac_specifier",
             "          ANY:'any')",
             "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_ipv4",
+            "      IPV4:'ipv4'",
+            "      (ipv4_access_list",
+            "        ACCESS_LIST:'access-list'",
+            "        name = (variable_aclname",
+            "          VARIABLE:'DENY_ALL')",
+            "        NEWLINE:'\\n'",
+            "        (extended_access_list_tail",
+            "          num = DEC:'5'",
+            "          ala = (access_list_action",
+            "            DENY:'deny')",
+            "          prot = (protocol",
+            "            IPV4:'ipv4')",
+            "          srcipr = (access_list_ip_range",
+            "            ANY:'any')",
+            "          dstipr = (access_list_ip_range",
+            "            ANY:'any')",
+            "          (extended_access_list_additional_feature",
+            "            ICMP_OFF:'icmp-off')",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -58605,6 +58698,24 @@
             "                    (bpa_as",
             "                      asn = (bgp_asn",
             "                        asn = DEC:'12345'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'",
+            "            (p_bgp",
+            "              BGP:'bgp'",
+            "              (b_group",
+            "                GROUP:'group'",
+            "                name = (variable",
+            "                  text = VARIABLE:'someipv4bgpgroup'  <== mode:M_VarOrWildcard)",
+            "                (b_common",
+            "                  (b_preference",
+            "                    PREFERENCE:'preference'",
+            "                    pref = DEC:'130'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -65199,8 +65310,29 @@
             "                    FROM:'from'",
             "                    (popsf_protocol",
             "                      PROTOCOL:'protocol'",
-            "                      protocol = (routing_protocol",
-            "                        STATIC:'static'))))))))))",
+            "                      ACCESS_INTERNAL:'access-internal')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM')",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'",
+            "                      STATIC:'static')))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -65623,8 +65755,7 @@
             "                  FROM:'from'",
             "                  (popsf_protocol",
             "                    PROTOCOL:'protocol'",
-            "                    protocol = (routing_protocol",
-            "                      EVPN:'evpn')))))))))",
+            "                    EVPN:'evpn'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line",
             "    SET:'set'",
@@ -71372,7 +71503,8 @@
             "          NO:'no'",
             "          (i_no_shutdown",
             "            SHUTDOWN:'shutdown'",
-            "            NEWLINE:'\\n'))",
+            "            (inoshut",
+            "              NEWLINE:'\\n')))",
             "        (i_vrf_member",
             "          VRF:'vrf'",
             "          MEMBER:'member'  <== mode:M_Vrf",
@@ -76363,13 +76495,13 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 12,
+              "Line" : 13,
               "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match internal route-map ROUTE_MAP"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 13,
+              "Line" : 14,
               "Parser_Context" : "[eos_rbir_ospf3 eos_rbi_redistribute eos_rb_inner eos_router_bgp_tail router_bgp_stanza stanza arista_configuration]",
               "Text" : "ospf3 match external route-map UNDEFINED_MAP"
             }
@@ -76379,8 +76511,8 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza cisco_configuration]",
+              "Line" : 14,
+              "Parser_Context" : "[ifvrrp_ip if_vrrp if_inner s_interface stanza arista_configuration]",
               "Text" : "ip 2.3.4.5 secondary"
             }
           ]
@@ -76389,13 +76521,13 @@
           "Parse warnings" : [
             {
               "Comment" : "Subnet of NAT pool pool2 does not contain last pool IP",
-              "Line" : 9,
+              "Line" : 11,
               "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255"
             },
             {
               "Comment" : "Subnet of NAT pool pool3 does not contain last pool IP",
-              "Line" : 10,
+              "Line" : 12,
               "Parser_Context" : "[ip_nat_pool s_ip_nat stanza arista_configuration]",
               "Text" : "ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32"
             }
@@ -76691,6 +76823,16 @@
             }
           ]
         },
+        "configs/cisco_crypto" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 232,
+              "Parser_Context" : "[crypto_map_t_match_address crypto_map_t_match crypto_map_tail crypto_map s_crypto stanza cisco_configuration]",
+              "Text" : "address someacl"
+            }
+          ]
+        },
         "configs/cisco_eigrp" : {
           "Parse warnings" : [
             {
@@ -76885,49 +77027,61 @@
             },
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 51,
+              "Parser_Context" : "[ro_distance_distance ro_distance s_router_ospf stanza cisco_configuration]",
+              "Text" : "110"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 52,
-              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list aclin in"
+              "Parser_Context" : "[ro_distance_ospf ro_distance s_router_ospf stanza cisco_configuration]",
+              "Text" : "ospf external 77 inter-area 78 intra-area 79"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 53,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list aclin in ethernet0/0"
+              "Text" : "distribute-list aclin in"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 54,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list aclout out"
+              "Text" : "distribute-list aclin in ethernet0/0"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 57,
+              "Line" : 55,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
-              "Text" : "distribute-list route-map rmin in"
+              "Text" : "distribute-list aclout out"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 58,
               "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+              "Text" : "distribute-list route-map rmin in"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 59,
+              "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
               "Text" : "distribute-list route-map rmout out"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 65,
+              "Line" : 66,
               "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
               "Text" : "maximum-paths 32"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 81,
+              "Line" : 82,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix INFILTER in"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 82,
+              "Line" : 83,
               "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
               "Text" : "area 0 filter-list prefix OUTFILTER out"
             }
@@ -78016,6 +78170,12 @@
               "Line" : 4,
               "Parser_Context" : "[popsf_as_path_group pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "as-path-group AS_PATH_GROUP"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 18,
+              "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "protocol access-internal"
             }
           ],
           "Red flags" : [
@@ -78157,6 +78317,7 @@
         "arista-event-handler" : "PASSED",
         "arista_acl" : "PASSED",
         "arista_bgp" : "WARNINGS",
+        "arista_bgp_asn" : "PASSED",
         "arista_dhcp_relay" : "PASSED",
         "arista_interface" : "PASSED",
         "arista_ip_route" : "PASSED",
@@ -78464,10 +78625,10 @@
           "extended ipv4 access-list" : {
             "abcd" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
-                7
+                7,
+                8
               ],
               "numReferrers" : 0
             }
@@ -78477,26 +78638,27 @@
           "route-map" : {
             "ROUTE_MAP" : {
               "definitionLines" : [
-                15
+                16
               ],
               "numReferrers" : 1
             }
           }
         },
+        "configs/arista_bgp_asn" : { },
         "configs/arista_dhcp_relay" : {
           "interface" : {
             "Ethernet0" : {
               "definitionLines" : [
-                9,
                 10,
-                11
+                11,
+                12
               ],
               "numReferrers" : 1
             },
             "Ethernet1" : {
               "definitionLines" : [
-                13,
-                14
+                14,
+                15
               ],
               "numReferrers" : 1
             }
@@ -78506,7 +78668,6 @@
           "interface" : {
             "Vlan1" : {
               "definitionLines" : [
-                4,
                 5,
                 6,
                 7,
@@ -78517,7 +78678,9 @@
                 12,
                 13,
                 14,
-                15
+                15,
+                16,
+                17
               ],
               "numReferrers" : 1
             }
@@ -78527,7 +78690,7 @@
           "interface" : {
             "Null0" : {
               "definitionLines" : [
-                4
+                5
               ],
               "numReferrers" : 1
             }
@@ -78548,8 +78711,8 @@
           "extended ipv4 access-list" : {
             "acl1" : {
               "definitionLines" : [
-                5,
-                6
+                7,
+                8
               ],
               "numReferrers" : 1
             }
@@ -78557,9 +78720,9 @@
           "interface" : {
             "Ethernet1" : {
               "definitionLines" : [
-                12,
-                13,
-                14
+                14,
+                15,
+                16
               ],
               "numReferrers" : 1
             }
@@ -78567,19 +78730,19 @@
           "nat pool" : {
             "pool1" : {
               "definitionLines" : [
-                8
+                10
               ],
               "numReferrers" : 1
             },
             "pool2" : {
               "definitionLines" : [
-                9
+                11
               ],
               "numReferrers" : 0
             },
             "pool3" : {
               "definitionLines" : [
-                10
+                12
               ],
               "numReferrers" : 0
             }
@@ -81439,7 +81602,7 @@
                 10,
                 11
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             },
             "Port-Channel2" : {
               "definitionLines" : [
@@ -83169,7 +83332,17 @@
             }
           }
         },
-        "configs/ios_xr_acl" : { },
+        "configs/ios_xr_acl" : {
+          "ipv4 access-list" : {
+            "DENY_ALL" : {
+              "definitionLines" : [
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/ios_xr_bgp" : { },
         "configs/ios_xr_bgp_neighbor_group" : {
           "bgp af-group" : {
@@ -83816,7 +83989,6 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "definitionLines" : [
-                27,
                 28,
                 29,
                 30,
@@ -83824,20 +83996,21 @@
                 32,
                 33,
                 34,
-                35
+                35,
+                36
               ],
               "numReferrers" : 2
             },
             "someinternalipv6group" : {
               "definitionLines" : [
-                36,
                 37,
                 38,
                 39,
                 40,
                 41,
                 42,
-                43
+                43,
+                44
               ],
               "numReferrers" : 1
             },
@@ -83853,19 +84026,20 @@
                 16,
                 17,
                 18,
-                19
+                19,
+                20
               ],
               "numReferrers" : 3
             },
             "someipv6bgpgroup" : {
               "definitionLines" : [
-                20,
                 21,
                 22,
                 23,
                 24,
                 25,
-                26
+                26,
+                27
               ],
               "numReferrers" : 1
             }
@@ -84441,13 +84615,13 @@
           "as-path" : {
             "ORIGINATED_IN_65535" : {
               "definitionLines" : [
-                38
+                39
               ],
               "numReferrers" : 1
             },
             "UNUSED_ORIGINATED_IN_65535" : {
               "definitionLines" : [
-                39
+                40
               ],
               "numReferrers" : 0
             }
@@ -84487,7 +84661,8 @@
                 33,
                 34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             }
@@ -86583,6 +86758,9 @@
         "configs/arista_bgp" : [
           "arista_bgp"
         ],
+        "configs/arista_bgp_asn" : [
+          "arista_bgp_asn"
+        ],
         "configs/arista_dhcp_relay" : [
           "arista_dhcp_relay"
         ],
@@ -87466,19 +87644,19 @@
           "bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp neighbor peer-group" : [
-                11
+                12
               ]
             }
           },
           "route-map" : {
             "ROUTE_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
-                12
+                13
               ]
             },
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
-                13
+                14
               ]
             }
           }
@@ -87487,12 +87665,12 @@
           "interface" : {
             "Ethernet0" : {
               "interface" : [
-                9
+                10
               ]
             },
             "Ethernet1" : {
               "interface" : [
-                13
+                14
               ]
             }
           }
@@ -87501,18 +87679,25 @@
           "interface" : {
             "Vlan1" : {
               "interface" : [
-                4
+                5
               ]
             }
           },
           "policy-map" : {
             "pbr-pmap" : {
               "interface service-policy" : [
-                8
+                10
               ]
             },
             "qos-pmap" : {
               "interface service-policy" : [
+                11
+              ]
+            }
+          },
+          "standard ipv4 access-list" : {
+            "some_acl" : {
+              "interface ip multicast boundary" : [
                 9
               ]
             }
@@ -87522,7 +87707,7 @@
           "interface" : {
             "Null0" : {
               "ip route next-hop interface" : [
-                4
+                5
               ]
             }
           }
@@ -87545,21 +87730,21 @@
           "interface" : {
             "Ethernet1" : {
               "interface" : [
-                12
+                14
               ]
             }
           },
           "ipv4 acl" : {
             "acl1" : {
               "ip nat source dynamic access-list" : [
-                14
+                16
               ]
             }
           },
           "nat pool" : {
             "pool1" : {
               "ip nat source pool" : [
-                14
+                16
               ]
             }
           }
@@ -88434,6 +88619,9 @@
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
                 224
+              ],
+              "crypto map match address" : [
+                232
               ]
             }
           }
@@ -88472,12 +88660,12 @@
                 28
               ]
             },
-            "Port-Channel34" : {
+            "Port-channel34" : {
               "eigrp passive-interface" : [
                 29
               ]
             },
-            "Port-Channel35" : {
+            "Port-channel35" : {
               "eigrp passive-interface" : [
                 30
               ]
@@ -88951,7 +89139,7 @@
                 12
               ],
               "router ospf distribute-list in" : [
-                53
+                54
               ]
             },
             "Ethernet1/0" : {
@@ -88968,12 +89156,12 @@
           "ipv4 prefix-list" : {
             "INFILTER" : {
               "ospf area filter-list" : [
-                81
+                82
               ]
             },
             "OUTFILTER" : {
               "ospf area filter-list" : [
-                82
+                83
               ]
             },
             "filterName" : {
@@ -88984,25 +89172,25 @@
             },
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                55
+                56
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                56
+                57
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                52,
-                53
+                53,
+                54
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                54
+                55
               ]
             }
           },
@@ -89014,22 +89202,22 @@
             },
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                67
+                68
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                68
+                69
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                57
+                58
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                58
+                59
               ]
             }
           }
@@ -91174,13 +91362,13 @@
           "bgp group" : {
             "someinternalipv4group" : {
               "bgp group neighbor" : [
-                32,
-                33
+                33,
+                34
               ]
             },
             "someinternalipv6group" : {
               "bgp group neighbor" : [
-                41
+                42
               ]
             },
             "someipv4bgpgroup" : {
@@ -91192,7 +91380,7 @@
             },
             "someipv6bgpgroup" : {
               "bgp group neighbor" : [
-                24
+                25
               ]
             }
           },
@@ -91200,17 +91388,17 @@
             "someexportpolicy" : {
               "bgp export policy-statement" : [
                 10,
-                20,
-                27,
-                36
+                21,
+                28,
+                37
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
                 13,
-                22,
-                29,
-                38
+                23,
+                30,
+                39
               ]
             }
           }
@@ -91613,7 +91801,7 @@
           "as-path" : {
             "ORIGINATED_IN_65535" : {
               "policy-statement from as-path" : [
-                34
+                35
               ]
             }
           },
@@ -93182,14 +93370,14 @@
           "bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
               "bgp neighbor peer-group" : [
-                11
+                12
               ]
             }
           },
           "route-map" : {
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
-                13
+                14
               ]
             }
           }
@@ -93198,11 +93386,18 @@
           "policy-map" : {
             "pbr-pmap" : {
               "interface service-policy" : [
-                8
+                10
               ]
             },
             "qos-pmap" : {
               "interface service-policy" : [
+                11
+              ]
+            }
+          },
+          "standard ipv4 access-list" : {
+            "some_acl" : {
+              "interface ip multicast boundary" : [
                 9
               ]
             }
@@ -93677,6 +93872,9 @@
             "someacl" : {
               "crypto map ipsec-isakmp acl" : [
                 224
+              ],
+              "crypto map match address" : [
+                232
               ]
             }
           }
@@ -93707,12 +93905,12 @@
                 28
               ]
             },
-            "Port-Channel34" : {
+            "Port-channel34" : {
               "eigrp passive-interface" : [
                 29
               ]
             },
-            "Port-Channel35" : {
+            "Port-channel35" : {
               "eigrp passive-interface" : [
                 30
               ]
@@ -93961,25 +94159,25 @@
           "ipv4 prefix-list" : {
             "plin" : {
               "router ospf distribute-list prefix in" : [
-                55
+                56
               ]
             },
             "plout" : {
               "router ospf distribute-list prefix out" : [
-                56
+                57
               ]
             }
           },
           "ipv4/6 acl" : {
             "aclin" : {
               "router ospf distribute-list in" : [
-                52,
-                53
+                53,
+                54
               ]
             },
             "aclout" : {
               "router ospf distribute-list out" : [
-                54
+                55
               ]
             }
           },
@@ -93991,22 +94189,22 @@
             },
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                67
+                68
               ]
             },
             "eigrp-ospf-route-map" : {
               "ospf redistribute eigrp route-map" : [
-                68
+                69
               ]
             },
             "rmin" : {
               "router ospf distribute-list route-map in" : [
-                57
+                58
               ]
             },
             "rmout" : {
               "router ospf distribute-list route-map out" : [
-                58
+                59
               ]
             }
           }
@@ -94338,6 +94536,15 @@
             "RMT_PBI" : {
               "bgp redistribute connected route-map" : [
                 6
+              ]
+            }
+          }
+        },
+        "configs/eos_mlag" : {
+          "interface" : {
+            "Vlan4094" : {
+              "mlag configuration local-interface" : [
+                19
               ]
             }
           }
@@ -94975,17 +95182,17 @@
             "someexportpolicy" : {
               "bgp export policy-statement" : [
                 10,
-                20,
-                27,
-                36
+                21,
+                28,
+                37
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
                 13,
-                22,
-                29,
-                38
+                23,
+                30,
+                39
               ]
             }
           }
@@ -95736,7 +95943,15 @@
             },
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Currently do not support per-neighbor BGP preference"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 3.4.5.6/32"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Currently do not support per-neighbor BGP preference"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -95974,6 +96189,7 @@
         "configs/arista-logging" : "PASSED",
         "configs/arista_acl" : "PASSED",
         "configs/arista_bgp" : "PASSED",
+        "configs/arista_bgp_asn" : "PASSED",
         "configs/arista_dhcp_relay" : "PASSED",
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
@@ -96140,7 +96356,7 @@
         "configs/foundry_interface" : "PASSED",
         "configs/foundry_misc" : "PASSED",
         "configs/foundry_vlan_group" : "PASSED",
-        "configs/foundry_vrf" : "UNSUPPORTED",
+        "configs/foundry_vrf" : "UNKNOWN",
         "configs/gh-2658-juniper-vrf-import-export.cfg" : "PASSED",
         "configs/host2" : "PASSED",
         "configs/if_tag_is" : "PASSED",

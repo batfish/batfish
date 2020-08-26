@@ -480,7 +480,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_autostateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bandwidthContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bfd_templateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_channel_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bundle_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_descriptionContext;
@@ -4060,6 +4060,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         } else if (feature.HOST_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.HOST_UNREACHABLE;
+        } else if (feature.ICMP_OFF() != null) {
+          // This means "do not send ICMP replies when denying because of this line".
+          // Do nothing.
         } else if (feature.INFORMATION_REPLY() != null) {
           icmpType = IcmpType.INFO_REPLY;
         } else if (feature.INFORMATION_REQUEST() != null) {
@@ -4444,10 +4447,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_channel_group(If_channel_groupContext ctx) {
-    int num = toInteger(ctx.num);
-    String name = String.format("Bundle-Ether%d", num);
-    _currentInterfaces.forEach(i -> i.setChannelGroup(name));
+  public void exitIf_bundle_id(If_bundle_idContext ctx) {
+    int id = toInteger(ctx.id);
+    _currentInterfaces.forEach(i -> i.setBundleId(id));
   }
 
   @Override

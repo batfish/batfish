@@ -13,6 +13,7 @@ import
     PaloAlto_interface,
     PaloAlto_network,
     PaloAlto_ospf,
+    PaloAlto_readonly,
     PaloAlto_rip,
     PaloAlto_rulebase,
     PaloAlto_service,
@@ -150,7 +151,7 @@ set_line_device_group
 
 set_line_readonly
 :
-    READONLY null_rest_of_line
+    READONLY s_readonly
 ;
 
 /*
@@ -173,6 +174,7 @@ statement_device_group
     | s_pre_rulebase
     | sdg_description
     | sdg_devices
+    | sdg_parent_dg
     | sdg_profiles
     | sdg_profile_group
 ;

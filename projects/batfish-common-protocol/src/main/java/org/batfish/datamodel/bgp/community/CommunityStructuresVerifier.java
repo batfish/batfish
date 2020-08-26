@@ -66,7 +66,6 @@ import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.MatchEntireCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -93,7 +92,6 @@ import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
-import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -205,13 +203,6 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitMatchCommunitySet(
         MatchCommunitySet matchCommunitySet, CommunityStructuresVerifierContext arg) {
-      // old deprecated API not checked
-      return null;
-    }
-
-    @Override
-    public Void visitMatchEntireCommunitySet(
-        MatchEntireCommunitySet matchEntireCommunitySet, CommunityStructuresVerifierContext arg) {
       // old deprecated API not checked
       return null;
     }
@@ -697,13 +688,6 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitPrependAsPath(
         PrependAsPath prependAsPath, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
-    public Void visitRetainCommunity(
-        RetainCommunity retainCommunity, CommunityStructuresVerifierContext arg) {
-      // old deprecated API not checked
       return null;
     }
 

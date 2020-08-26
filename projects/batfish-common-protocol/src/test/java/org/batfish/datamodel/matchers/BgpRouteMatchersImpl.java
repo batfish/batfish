@@ -22,7 +22,7 @@ final class BgpRouteMatchersImpl {
 
     @Override
     protected Set<Community> featureValueOf(BgpRoute<?, ?> actual) {
-      return actual.getCommunities();
+      return actual.getCommunities().getCommunities();
     }
   }
 

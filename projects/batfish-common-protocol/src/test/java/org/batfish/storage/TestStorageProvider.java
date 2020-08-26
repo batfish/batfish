@@ -2,6 +2,7 @@ package org.batfish.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -629,4 +630,7 @@ public class TestStorageProvider implements StorageProvider {
   public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
+
+  @Override
+  public void runGarbageCollection(Instant expungeBeforeDate) {}
 }

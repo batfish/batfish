@@ -10,12 +10,42 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.WellKnownCommunity;
 
 /**
  * A standard BGP community, as defined in <a href="https://tools.ietf.org/html/rfc1997">RFC1197</a>
  */
 @ParametersAreNonnullByDefault
 public final class StandardCommunity extends Community {
+
+  public static final StandardCommunity ACCEPT_OWN =
+      StandardCommunity.of(WellKnownCommunity.ACCEPT_OWN);
+  public static final StandardCommunity ACCEPT_OWN_NEXTHOP =
+      StandardCommunity.of(WellKnownCommunity.ACCEPT_OWN_NEXTHOP);
+  public static final StandardCommunity BLACKHOLE =
+      StandardCommunity.of(WellKnownCommunity.BLACKHOLE);
+  public static final StandardCommunity GRACEFUL_SHUTDOWN =
+      StandardCommunity.of(WellKnownCommunity.GRACEFUL_SHUTDOWN);
+  public static final StandardCommunity INTERNET =
+      StandardCommunity.of(WellKnownCommunity.INTERNET);
+  public static final StandardCommunity LLGR_STALE =
+      StandardCommunity.of(WellKnownCommunity.LLGR_STALE);
+  public static final StandardCommunity NO_ADVERTISE =
+      StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE);
+  public static final StandardCommunity NO_EXPORT =
+      StandardCommunity.of(WellKnownCommunity.NO_EXPORT);
+  public static final StandardCommunity NO_EXPORT_SUBCONFED =
+      StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED);
+  public static final StandardCommunity NO_LLGR = StandardCommunity.of(WellKnownCommunity.NO_LLGR);
+  public static final StandardCommunity NO_PEER = StandardCommunity.of(WellKnownCommunity.NO_PEER);
+  public static final StandardCommunity ROUTE_FILTER_TRANSLATED_V4 =
+      StandardCommunity.of(WellKnownCommunity.ROUTE_FILTER_TRANSLATED_V4);
+  public static final StandardCommunity ROUTE_FILTER_TRANSLATED_V6 =
+      StandardCommunity.of(WellKnownCommunity.ROUTE_FILTER_TRANSLATED_V6);
+  public static final StandardCommunity ROUTE_FILTER_V4 =
+      StandardCommunity.of(WellKnownCommunity.ROUTE_FILTER_V4);
+  public static final StandardCommunity ROUTE_FILTER_V6 =
+      StandardCommunity.of(WellKnownCommunity.ROUTE_FILTER_V6);
 
   private long _value;
 

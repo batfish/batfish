@@ -35,6 +35,11 @@ ADDITIVE
    'additive'
 ;
 
+ADMINISTRATIVE
+:
+   'administrative'
+;
+
 ADVERTISE
 :
   'advertise'
@@ -189,6 +194,11 @@ CONFEDERATION
 CONNECTED
 :
   'connected'
+;
+
+COST
+:
+  'cost'
 ;
 
 CRITICAL
@@ -457,6 +467,11 @@ LINE
 MAXIMUM_PATHS
 :
   'maximum-paths'
+;
+
+MAX_MED
+:
+  'max-med'
 ;
 
 MESSAGE_DIGEST
@@ -777,6 +792,11 @@ VRF
 VTY
 :
   'vty'
+;
+
+WEIGHT
+:
+  'weight'
 ;
 
 WS

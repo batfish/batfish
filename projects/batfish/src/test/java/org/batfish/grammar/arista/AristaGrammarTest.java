@@ -189,13 +189,11 @@ public class AristaGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    AristaCombinedParser ciscoParser = new AristaCombinedParser(src, settings);
+    AristaCombinedParser parser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(
-            src, ciscoParser, ConfigurationFormat.ARISTA, new Warnings());
+        new AristaControlPlaneExtractor(src, parser, ConfigurationFormat.ARISTA, new Warnings());
     ParserRuleContext tree =
-        Batfish.parse(
-            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     AristaConfiguration vendorConfiguration =
         (AristaConfiguration) extractor.getVendorConfiguration();
@@ -1434,6 +1432,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testMulticastParsing() {
+    // doesn't crash.
+    parseVendorConfig("arista_multicast");
+  }
+
+  @Test
   public void testVrrpConversion() {
     Configuration c = parseConfig("arista_vrrp");
     assertThat(c.getAllInterfaces(), hasKey("Vlan20"));
@@ -1738,6 +1742,18 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testNatParse() {
+    parseVendorConfig("arista_nat");
+    // don't crash.
+  }
+
+  @Test
+  public void testNatConvert() {
+    parseConfig("arista_nat");
+    // don't crash.
+  }
+
+  @Test
   public void testParseAclShowRunAll() {
     Configuration c = parseConfig("arista_acl_show_run_all");
     // Tests that the ACL parses.
@@ -1977,6 +1993,15 @@ public class AristaGrammarTest {
     assertThat(c, hasInterface("Ethernet1/3", hasDescription("Made it to the end of Ethernet1/3")));
     assertThat(c, hasInterface("Loopback0", hasDescription("Made it to the end of Loopback0")));
     assertThat(c, hasInterface("Management1", hasDescription("Made it to the end of Management1")));
+  }
+
+  @Test
+  public void testParseLoggingShowRunAll() {
+    Configuration c = parseConfig("arista_logging_show_run_all");
+    assertThat(
+        c.getLoggingServers(),
+        containsInAnyOrder("1.2.3.4", "1.2.3.5", "1.2.3.6", "some_host.company.com"));
+    assertThat(c.getLoggingSourceInterface(), equalTo("Loopback0"));
   }
 
   @Test
@@ -2279,6 +2304,18 @@ public class AristaGrammarTest {
     Bgpv4Route denyRoute = builder.setNetwork(Prefix.parse("240.1.1.0/24")).build();
     assertTrue(policy.processBgpRoute(acceptRoute, Bgpv4Route.builder(), null, Direction.IN));
     assertFalse(policy.processBgpRoute(denyRoute, Bgpv4Route.builder(), null, Direction.IN));
+  }
+
+  @Test
+  public void testIpv6RouteParsing() {
+    // Don't crash
+    parseConfig("ipv6_route");
+  }
+
+  @Test
+  public void testRouteMapParsing() {
+    // Don't crash
+    parseConfig("route_map");
   }
 
   @Test

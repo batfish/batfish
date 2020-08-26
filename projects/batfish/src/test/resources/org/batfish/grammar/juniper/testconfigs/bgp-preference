@@ -1,0 +1,7 @@
+#
+set system host-name bgp-preference
+#
+set routing-options autonomous-system 1
+set protocols bgp preference 140
+set protocols bgp group MYGROUP neighbor 1.1.1.1 preference 150
+set protocols bgp group MYGROUP type internal

@@ -5,6 +5,7 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
@@ -22,6 +23,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateBgpC
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
+import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
 import static org.batfish.representation.cumulus.CumulusConversions.inferPeerIp;
@@ -96,11 +98,14 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -1282,6 +1287,43 @@ public final class CumulusConversionsTest {
   }
 
   @Test
+  public void testAddOspfInterfaces_HasCost() {
+    CumulusNcluConfiguration config = new CumulusNcluConfiguration();
+    config.setOspfProcess(new OspfProcess());
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    config.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+    vsIface.getOrCreateOspf().setCost(100);
+
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+
+    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    assertThat(viIface.getOspfCost(), equalTo(100));
+  }
+
+  @Test
+  public void testAddOspfInterfaces_NoCost() {
+    CumulusNcluConfiguration config = new CumulusNcluConfiguration();
+    config.setOspfProcess(new OspfProcess());
+    Interface vsIface = new Interface("iface", CumulusInterfaceType.PHYSICAL, null, null);
+    config.getInterfaces().put("iface", vsIface);
+    vsIface.getOrCreateOspf().setOspfArea(0L);
+
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+
+    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    assertNull(viIface.getOspfCost());
+  }
+
+  @Test
   public void testAddOspfInterfaces_NoNetworkType() {
     CumulusNcluConfiguration ncluConfiguration = new CumulusNcluConfiguration();
     ncluConfiguration.setOspfProcess(new OspfProcess());
@@ -1834,5 +1876,83 @@ public final class CumulusConversionsTest {
       ipv4af.setNextHopSelfAll(true);
       assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
     }
+  }
+
+  @Test
+  public void testGetSetMaxMedMetric() {
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+
+    // Test Default Value
+    assertThat(getSetMaxMedMetric(bgpVrf), equalTo(null));
+
+    // Set the value and test again
+    bgpVrf.setMaxMedAdministrative(1234L);
+    assertThat(getSetMaxMedMetric(bgpVrf), equalTo(new SetMetric(new LiteralLong(1234L))));
+  }
+
+  @Test
+  public void testGenerateBgpCommonPeerConfigMaxMedAdministrative() {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+
+    // setup VS model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    BgpProcess bgpProcess = new BgpProcess();
+    vsConfig.setBgpProcess(bgpProcess);
+    vsConfig.setConfiguration(viConfig);
+
+    // setup BgpVrf and BgpNeighbor
+    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    vrf.setRouterId(Ip.parse("1.1.1.1"));
+    vrf.setAutonomousSystem(20000L);
+    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1");
+    bgpNeighbor.setRemoteAs(10000L);
+    bgpNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+    vrf.getNeighbors().put("10.0.0.1", bgpNeighbor);
+
+    org.batfish.datamodel.BgpProcess newProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
+
+    BgpActivePeerConfig.Builder peerConfigBuilder =
+        BgpActivePeerConfig.builder().setPeerAddress(Ip.parse("10.0.0.1"));
+
+    // Method under test
+    generateBgpCommonPeerConfig(
+        viConfig, vsConfig, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
+
+    // Test that by default, we don't set a metric
+
+    assertEquals(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, bgpNeighbor.getName()))
+            .getStatements(),
+        ImmutableList.of(
+            new If(
+                new CallExpr(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME)),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+
+    // Set max-med admin on the vrf, regenerate and test again
+    vrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
+    generateBgpCommonPeerConfig(
+        viConfig, vsConfig, bgpNeighbor, 10000L, vrf, newProc, peerConfigBuilder, new Warnings());
+
+    assertEquals(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, bgpNeighbor.getName()))
+            .getStatements(),
+        ImmutableList.of(
+            new If(
+                new CallExpr(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME)),
+                ImmutableList.of(
+                    new SetMetric(new LiteralLong(DEFAULT_MAX_MED)),
+                    Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
   }
 }

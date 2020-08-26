@@ -35,7 +35,7 @@ access_list_ip6_range
    (
       HOST? ipv6 = IPV6_ADDRESS
    )
-   | ipv6_prefix = IPV6_PREFIX
+   | prefix6 = IPV6_PREFIX
    |
    (
       ADDRGROUP address_group = variable

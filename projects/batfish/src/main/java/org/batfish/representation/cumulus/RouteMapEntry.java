@@ -30,6 +30,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapSetCommunity _setCommunity;
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
   private @Nullable RouteMapSetTag _setTag;
+  private @Nullable RouteMapSetWeight _setWeight;
 
   public RouteMapEntry(int number, LineAction action) {
     _number = number;
@@ -98,7 +99,8 @@ public final class RouteMapEntry implements Serializable {
             _setIpNextHop,
             _setCommunity,
             _setLocalPreference,
-            _setTag)
+            _setTag,
+            _setWeight)
         .filter(Objects::nonNull);
   }
 
@@ -120,6 +122,10 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable RouteMapSetCommunity getSetCommunity() {
     return _setCommunity;
+  }
+
+  public @Nullable RouteMapSetWeight getSetWeight() {
+    return _setWeight;
   }
 
   public void setMatchAsPath(@Nullable RouteMapMatchAsPath matchAsPath) {
@@ -153,6 +159,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {
     _setMetric = setMetric;
+  }
+
+  public void setSetWeight(@Nullable RouteMapSetWeight setWeight) {
+    _setWeight = setWeight;
   }
 
   public void setSetCommListDelete(@Nullable RouteMapSetCommListDelete setCommListDelete) {

@@ -1018,6 +1018,11 @@ PANORAMA_SERVER
     'panorama-server'
 ;
 
+PARENT_DG
+:
+    'parent-dg'
+;
+
 PASSIVE
 :
     'passive'

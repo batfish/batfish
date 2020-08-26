@@ -4,7 +4,11 @@ import static java.util.stream.Collectors.toMap;
 import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
+import dk.brics.automaton.Automaton;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +23,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
@@ -57,8 +62,9 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
-import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.minesweeper.CommunityVar.Type;
+import org.batfish.minesweeper.bdd.CommunityVarConverter;
 import org.batfish.minesweeper.collections.Table2;
 
 /**
@@ -108,6 +114,14 @@ public class Graph {
   private Map<Integer, Set<String>> _domainMapInverse;
 
   /**
+   * The SMT- and BDD-based analyses (see the corresponding smt and bdd packages) handle communities
+   * differently and make different assumptions about these communities, and in the future might
+   * diverge further. Hence we use this flag to build the appropriate Graph object for the given
+   * analysis.
+   */
+  private boolean _bddBasedAnalysis;
+
+  /**
    * A graph with a static route with a dynamic next hop cannot be encoded to SMT, so some of the
    * Minesweeper analyses will fail. Compression is still possible though.
    */
@@ -115,10 +129,26 @@ public class Graph {
 
   private Set<CommunityVar> _allCommunities;
 
-  /** Keys are all REGEX vars, and values are lists of EXACT or OTHER vars. */
+  /**
+   * Keys are all REGEX vars, and values are lists of EXACT or OTHER vars. This field is only used
+   * by the SMT-based analyses.
+   */
   private SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
 
   private Map<String, String> _namedCommunities;
+
+  /**
+   * In order to track community literals and regexes, we compute a set of "atomic predicates" for
+   * them. See initCommAtomicPredicates for details. These fields respectively record the number n
+   * of atomic predicates; a mapping from each community to its set of atomic predicates, each of
+   * which is an integer in the range 0...(n-1); and a mapping from each atomic predicate number to
+   * its semantic representation, which is an automaton representing a predicate on strings. These
+   * fields are only used by the BDD-based analyses.
+   */
+  private int _numAtomicPredicates;
+
+  private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
+  private Map<Integer, Automaton> _atomicPredicateAutomata;
 
   /**
    * Create a graph, loading configurations from the given {@link IBatfish}.
@@ -131,7 +161,12 @@ public class Graph {
    * skip the cloning, assuming that the caller has made a defensive copy first.
    */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot) {
-    this(batfish, snapshot, null, null);
+    this(batfish, snapshot, null, null, null, false);
+  }
+
+  /** Create a graph and specify whether it will be used for a BDD-based analysis or not. */
+  public Graph(IBatfish batfish, NetworkSnapshot snapshot, boolean bddBasedAnalysis) {
+    this(batfish, snapshot, null, null, null, bddBasedAnalysis);
   }
 
   /**
@@ -143,17 +178,41 @@ public class Graph {
    */
   public Graph(
       IBatfish batfish, NetworkSnapshot snapshot, @Nullable Map<String, Configuration> configs) {
-    this(batfish, snapshot, configs, null);
+    this(batfish, snapshot, configs, null, null, false);
   }
 
-  /*
-   * Create a graph, while selecting the subset of routers to use.
-   */
+  /** Create a graph, while selecting the subset of routers to use. */
   public Graph(
       IBatfish batfish,
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers) {
+    this(batfish, snapshot, configs, routers, null, false);
+  }
+
+  /**
+   * Create a graph, specifying an additional set of community expressions (literals and regexes) to
+   * be tracked. This is used by the BDD-based analyses to support user-defined constraints on
+   * symbolic route analysis (e.g., the user is interested only in routes tagged with a particular
+   * community).
+   */
+  public Graph(
+      IBatfish batfish,
+      NetworkSnapshot snapshot,
+      @Nullable Map<String, Configuration> configs,
+      @Nullable Set<String> routers,
+      @Nullable Set<CommunitySetExpr> communities) {
+    this(batfish, snapshot, configs, routers, communities, true);
+  }
+
+  /** Create a graph, specifying all parameters directly. */
+  public Graph(
+      IBatfish batfish,
+      NetworkSnapshot snapshot,
+      @Nullable Map<String, Configuration> configs,
+      @Nullable Set<String> routers,
+      @Nullable Set<CommunitySetExpr> communities,
+      boolean bddBasedAnalysis) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
     _allEdges = new HashSet<>();
@@ -171,8 +230,13 @@ public class Graph {
     _domainMap = new HashMap<>();
     _domainMapInverse = new HashMap<>();
     _configurations = configs;
+    _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
+    _atomicPredicateAutomata = new HashMap<>();
+    _communityAtomicPredicates = new HashMap<>();
     _snapshot = snapshot;
+    _bddBasedAnalysis = bddBasedAnalysis;
+
     if (_configurations == null) {
       // Since many functions that use the graph mutate the configurations, we must clone them
       // before that happens.
@@ -211,8 +275,12 @@ public class Graph {
     initIbgpNeighbors();
     initAreaIds();
     initDomains();
-    initAllCommunities();
-    initCommDependencies();
+    initAllCommunities(communities);
+    if (_bddBasedAnalysis) {
+      initCommAtomicPredicates();
+    } else {
+      initCommDependencies();
+    }
     initNamedCommunities();
   }
 
@@ -817,10 +885,109 @@ public class Graph {
     return _domainMapInverse.get(idx);
   }
 
-  private void initAllCommunities() {
-    _allCommunities = findAllCommunities();
+  /**
+   * Identifies all of the community literals and regexes in the given configurations. An optional
+   * set of additional community expressions (literals and regexes) is also included, which is used
+   * to support user-specified community constraints for symbolic analysis.
+   *
+   * <p>For each literal, a CommunityVar instance of type EXACT is created. For each regex, two
+   * CommunityVar instances are created: one of type REGEX to represent the regex itself, and one of
+   * type OTHER to represent unknown community literals that match this regex. The latter type are
+   * used in the SMT-based analyses but are ignored by the BDD-based analyses.
+   */
+  private void initAllCommunities(@Nullable Set<CommunitySetExpr> communities) {
+    _allCommunities.addAll(findAllCommunities());
+    if (communities != null) {
+      _allCommunities.addAll(
+          communities.stream()
+              .map(CommunityVarConverter::toCommunityVar)
+              .collect(Collectors.toSet()));
+    }
   }
 
+  /**
+   * Create a set of atomic predicates for the given community literals and regexes (see
+   * initAllCommunities above). Specifically, we create the minimal set of atomic predicates such
+   * that: 1. no atomic predicate is logically false; 2. each atomic predicate is disjoint from all
+   * others; 3. each community expression is equivalent to a union of some subset of the atomic
+   * predicates. Atomic predicates are used for tracking communities in the BDD-based analyses.
+   *
+   * <p>The idea of atomic predicates comes from the paper "Real-time Verification of Network
+   * Properties using Atomic Predicates" by Yang and Lam, IEEE/ACM Transactions on Networking, April
+   * 2016, Volume 24, No. 2, pages 887-900.
+   * http://www.cs.utexas.edu/users/lam/Vita/Jpapers/Yang_Lam_TON_2015.pdf
+   *
+   * <p>In that paper, they create atomic predicates in order to precisely and scalably analyze
+   * packet forwarding symbolically; we use the same idea to track communities of interest in
+   * symbolic routing analysis.
+   */
+  private void initCommAtomicPredicates() {
+    SetMultimap<Automaton, CommunityVar> mmap = HashMultimap.create();
+    for (CommunityVar c : _allCommunities) {
+      if (c.getType() == Type.OTHER) {
+        // ignore the OTHER-typed version of a community regex, since there always exists a
+        // REGEX-typed version of the same regex (see initAllCommunities above)
+        continue;
+      }
+      Automaton cAuto = c.toAutomaton();
+      if (cAuto.isEmpty()) {
+        // community c doesn't match any communities; give up
+        throw new BatfishException(
+            "Community regex " + c.toString() + " does not match any communities");
+      }
+      SetMultimap<Automaton, CommunityVar> newMMap = HashMultimap.create(mmap);
+      for (Automaton a : mmap.keySet()) {
+        if (a.equals(cAuto)) {
+          newMMap.put(a, c);
+          // since all atomic predicates are disjoint from one another, if
+          // this community var is equal to an existing one, we can ignore all the rest
+          break;
+        }
+        Automaton inter = a.intersection(cAuto);
+        if (inter.isEmpty()) {
+          // this community var is disjoint from a, so move on to the next atomic predicate
+          continue;
+        }
+        // replace automaton a with two new atomic predicates, representing the intersection
+        // and difference with c's automaton
+        Set<CommunityVar> cvars = newMMap.removeAll(a);
+        Automaton diff = a.minus(cAuto);
+        newMMap.putAll(inter, cvars);
+        if (!diff.isEmpty()) {
+          newMMap.putAll(diff, cvars);
+        }
+        // add c to the intersection
+        newMMap.put(inter, c);
+        // update cAuto with the residual automaton that is left
+        cAuto = cAuto.minus(a);
+      }
+      if (!cAuto.isEmpty()) {
+        // if there's anything left of cAuto by the end, add it
+        newMMap.put(cAuto, c);
+      }
+      mmap = newMMap;
+    }
+    // assign a unique integer to each automaton.
+    // create a mapping from each integer to its corresponding automaton
+    // and a mapping from each community to its corresponding set of integers.
+    SetMultimap<Integer, CommunityVar> iToC = HashMultimap.create();
+    int i = 0;
+    for (Automaton a : mmap.keySet()) {
+      _atomicPredicateAutomata.put(i, a);
+      iToC.putAll(i, mmap.get(a));
+      i++;
+    }
+    _numAtomicPredicates = i;
+    _communityAtomicPredicates = Multimaps.asMap(Multimaps.invertFrom(iToC, HashMultimap.create()));
+  }
+
+  /**
+   * Computes a map from each community variable r of type REGEX to a set of community variables
+   * that depend on it. A community variable v is considered to depend on r if either v is the
+   * corresponding OTHER-typed variable for r (see initAllCommunities above) or if v has type EXACT
+   * and its associated community literal matches r's regex. These dependencies are used to track
+   * the relationships among communities in the SMT-based analyses.
+   */
   private void initCommDependencies() {
     // Map community regex matches to Java regex
     Map<CommunityVar, java.util.regex.Pattern> regexes = new HashMap<>();
@@ -879,12 +1046,28 @@ public class Graph {
     return _allCommunities;
   }
 
+  public boolean getBddBasedAnalysis() {
+    return _bddBasedAnalysis;
+  }
+
   public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {
     return _communityDependencies;
   }
 
   public Map<String, String> getNamedCommunities() {
     return _namedCommunities;
+  }
+
+  public int getNumAtomicPredicates() {
+    return _numAtomicPredicates;
+  }
+
+  public Map<Integer, Automaton> getAtomicPredicateAutomata() {
+    return _atomicPredicateAutomata;
+  }
+
+  public Map<CommunityVar, Set<Integer>> getCommunityAtomicPredicates() {
+    return _communityAtomicPredicates;
   }
 
   /*
@@ -929,10 +1112,6 @@ public class Graph {
             if (stmt instanceof DeleteCommunity) {
               DeleteCommunity dc = (DeleteCommunity) stmt;
               comms.addAll(collectCommunityVars(conf, dc.getExpr()));
-            }
-            if (stmt instanceof RetainCommunity) {
-              RetainCommunity rc = (RetainCommunity) stmt;
-              comms.addAll(collectCommunityVars(conf, rc.getExpr()));
             }
           },
           expr -> {

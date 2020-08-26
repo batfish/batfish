@@ -316,7 +316,7 @@ public class RoutesAnswererUtil {
         .put(COL_LOCAL_PREF, bgpv4Route.getLocalPreference())
         .put(
             COL_COMMUNITIES,
-            bgpv4Route.getCommunities().stream()
+            bgpv4Route.getCommunities().getCommunities().stream()
                 .map(Community::toString)
                 .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, bgpv4Route.getSrcProtocol())
@@ -349,7 +349,9 @@ public class RoutesAnswererUtil {
         .put(COL_LOCAL_PREF, evpnRoute.getLocalPreference())
         .put(
             COL_COMMUNITIES,
-            evpnRoute.getCommunities().stream().map(Community::toString).collect(toImmutableList()))
+            evpnRoute.getCommunities().getCommunities().stream()
+                .map(Community::toString)
+                .collect(toImmutableList()))
         .put(COL_ORIGIN_PROTOCOL, evpnRoute.getSrcProtocol())
         .put(COL_ORIGIN_TYPE, evpnRoute.getOriginType())
         .put(COL_ORIGINATOR_ID, evpnRoute.getOriginatorIp())
@@ -689,7 +691,7 @@ public class RoutesAnswererUtil {
                                                 .setAsPath(route.getAsPath())
                                                 .setLocalPreference(route.getLocalPreference())
                                                 .setCommunities(
-                                                    route.getCommunities().stream()
+                                                    route.getCommunities().getCommunities().stream()
                                                         .map(Community::toString)
                                                         .collect(toImmutableList()))
                                                 .setOriginType(route.getOriginType())

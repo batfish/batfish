@@ -16,19 +16,19 @@ public final class BDDPacketLengthTest {
     // unconstrained
     {
       BDD satAssignment = PKT.getFactory().one().fullSatOne();
-      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(20L));
+      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(20));
     }
 
     // constrained to a single value
     {
       BDD satAssignment = PKT_LEN.value(100).fullSatOne();
-      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(100L));
+      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(100));
     }
 
     // constrained to a range
     {
       BDD satAssignment = PKT_LEN.range(100, 200).fullSatOne();
-      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(100L));
+      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(100));
     }
   }
 }

@@ -9,7 +9,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AsPath;
@@ -97,14 +96,14 @@ public final class BgpProtocolHelper {
 
     // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
     // peer's AS and local peer has not set getAllowRemoteOut
-    if (route.getCommunities().contains(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))
+    if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_ADVERTISE)
         || (sessionProperties.isEbgp()
             && route.getAsPath().containsAs(sessionProperties.getTailAs())
             && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }
     // Also do not export if route has NO_EXPORT community and this is a true ebgp session
-    if (route.getCommunities().contains(StandardCommunity.of(WellKnownCommunity.NO_EXPORT))
+    if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_EXPORT)
         && sessionProperties.isEbgp()
         && sessionProperties.getConfedSessionType() != ConfedSessionType.WITHIN_CONFED) {
       return null;

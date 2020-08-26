@@ -363,6 +363,7 @@ public class IspModelingUtilsTest {
     long asn = 2L;
     String ispName = getDefaultIspNodeName(asn);
     String remoteHostname = "testNode";
+    String remoteIface = "testIface";
     IspModel ispModel =
         IspModel.builder()
             .setAsn(asn)
@@ -381,7 +382,7 @@ public class IspModelingUtilsTest {
             hasHostname(ispName),
             hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
-                ispToRemoteInterfaceName(remoteHostname),
+                ispToRemoteInterfaceName(remoteHostname, remoteIface),
                 hasAllAddresses(equalTo(ImmutableSet.of(ispIfaceAddress)))),
             hasIpAccessList(FROM_INTERNET_ACL_NAME, any(IpAccessList.class)),
             hasIpAccessList(TO_INTERNET_ACL_NAME, any(IpAccessList.class)),
@@ -416,33 +417,37 @@ public class IspModelingUtilsTest {
         equalTo(
             ImmutableSet.of(
                 new Layer1Edge(
-                    remoteHostname, "testIface", ispName, ispToRemoteInterfaceName(remoteHostname)),
+                    remoteHostname,
+                    remoteIface,
+                    ispName,
+                    ispToRemoteInterfaceName(remoteHostname, remoteIface)),
                 new Layer1Edge(
                     ispName,
-                    ispToRemoteInterfaceName(remoteHostname),
+                    ispToRemoteInterfaceName(remoteHostname, remoteIface),
                     remoteHostname,
-                    "testIface"))));
+                    remoteIface))));
   }
 
   @Test
   public void testCreateIspConfigurationNode_unnumbered() {
+    long asn = 2L;
+    String ispName = getDefaultIspNodeName(asn);
+    String remoteHostname = "testNode";
+    String remoteIface = "remoteIface";
     BgpUnnumberedPeerConfig remotePeerConfig =
         BgpUnnumberedPeerConfig.builder()
-            .setPeerInterface("remoteIface")
+            .setPeerInterface(remoteIface)
             .setRemoteAs(1L)
             .setLocalIp(LINK_LOCAL_IP)
             .setLocalAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    long asn = 2L;
-    String ispName = getDefaultIspNodeName(asn);
-    String remoteHostname = "testNode";
     IspModel ispModel =
         IspModel.builder()
             .setAsn(asn)
             .setName(ispName)
             .setRemotes(
-                new Remote(remoteHostname, "remoteIface", LINK_LOCAL_ADDRESS, remotePeerConfig))
+                new Remote(remoteHostname, remoteIface, LINK_LOCAL_ADDRESS, remotePeerConfig))
             .build();
 
     ModeledNodes modeledNodes = new ModeledNodes();
@@ -455,13 +460,14 @@ public class IspModelingUtilsTest {
             hasHostname(ispName),
             hasDeviceType(equalTo(DeviceType.ISP)),
             hasInterface(
-                ispToRemoteInterfaceName(remoteHostname),
+                ispToRemoteInterfaceName(remoteHostname, remoteIface),
                 hasAllAddresses(equalTo(ImmutableSet.of(LINK_LOCAL_ADDRESS)))),
             hasVrf(DEFAULT_VRF_NAME, hasBgpProcess(hasMultipathEbgp(true)))));
 
     // compute the reverse config
     BgpProcess bgpProcess = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    addBgpPeerToIsp(remotePeerConfig, ispToRemoteInterfaceName(remoteHostname), bgpProcess);
+    addBgpPeerToIsp(
+        remotePeerConfig, ispToRemoteInterfaceName(remoteHostname, remoteIface), bgpProcess);
     BgpUnnumberedPeerConfig expectedIspPeerConfig =
         getOnlyElement(bgpProcess.getInterfaceNeighbors().values());
 
@@ -483,14 +489,14 @@ public class IspModelingUtilsTest {
             ImmutableSet.of(
                 new Layer1Edge(
                     remoteHostname,
-                    "remoteIface",
+                    remoteIface,
                     ispName,
-                    ispToRemoteInterfaceName(remoteHostname)),
+                    ispToRemoteInterfaceName(remoteHostname, remoteIface)),
                 new Layer1Edge(
                     ispName,
-                    ispToRemoteInterfaceName(remoteHostname),
+                    ispToRemoteInterfaceName(remoteHostname, remoteIface),
                     remoteHostname,
-                    "remoteIface"))));
+                    remoteIface))));
   }
 
   @Test
@@ -918,7 +924,8 @@ public class IspModelingUtilsTest {
         new Layer1Node(INTERNET_HOST_NAME, internetToIspInterfaceName("isp_1"));
     Layer1Node ispLayer1Iface0 =
         new Layer1Node(
-            ispNode.getHostname(), ispToRemoteInterfaceName(configuration.getHostname()));
+            ispNode.getHostname(),
+            ispToRemoteInterfaceName(configuration.getHostname(), "interface"));
     Layer1Node ispLayer1Iface2 =
         new Layer1Node(ispNode.getHostname(), ISP_TO_INTERNET_INTERFACE_NAME);
     Layer1Node borderLayer1 = new Layer1Node(configuration.getHostname(), "interface");
@@ -1086,8 +1093,8 @@ public class IspModelingUtilsTest {
         isp.getAllInterfaces().keySet(),
         equalTo(
             ImmutableSet.of(
-                ispToRemoteInterfaceName(configuration1.getHostname()),
-                ispToRemoteInterfaceName(configuration2.getHostname()),
+                ispToRemoteInterfaceName(configuration1.getHostname(), "interface1"),
+                ispToRemoteInterfaceName(configuration2.getHostname(), "interface2"),
                 ISP_TO_INTERNET_INTERFACE_NAME)));
   }
 

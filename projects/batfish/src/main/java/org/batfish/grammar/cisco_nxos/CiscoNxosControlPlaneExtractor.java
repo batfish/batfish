@@ -207,7 +207,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
@@ -323,7 +322,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_dhcpContext
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_mtuContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_autostateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_descriptionContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_no_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_private_vlanContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_speed_numberContext;
@@ -379,6 +377,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoip_forwardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inoipo_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inos_switchportContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.InoshutContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
@@ -5193,7 +5192,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitI_no_shutdown(I_no_shutdownContext ctx) {
+  public void exitInoshut(InoshutContext ctx) {
     _currentInterfaces.forEach(iface -> iface.setShutdown(false));
   }
 
@@ -6648,13 +6647,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.literal != null) {
       return Optional.of(toStandardCommunity(ctx.literal));
     } else if (ctx.INTERNET() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.INTERNET));
+      return Optional.of(StandardCommunity.INTERNET);
     } else if (ctx.LOCAL_AS() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+      return Optional.of(StandardCommunity.NO_EXPORT_SUBCONFED);
     } else if (ctx.NO_ADVERTISE() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE));
+      return Optional.of(StandardCommunity.NO_ADVERTISE);
     } else if (ctx.NO_EXPORT() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+      return Optional.of(StandardCommunity.NO_EXPORT);
     } else {
       // assume valid but unsupported
       todo(ctx);

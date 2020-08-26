@@ -1,0 +1,453 @@
+package org.batfish.minesweeper.question.searchroutepolicies;
+
+import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
+import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
+import static org.batfish.datamodel.answers.Schema.NODE;
+import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
+import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
+import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.BoundType;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Range;
+import dk.brics.automaton.Automaton;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.stream.Stream;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
+import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
+import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RegexCommunitySet;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.bdd.BDDRoute;
+import org.batfish.minesweeper.bdd.TransferBDD;
+import org.batfish.minesweeper.bdd.TransferReturn;
+import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
+import org.batfish.specifier.AllNodesNodeSpecifier;
+import org.batfish.specifier.NodeSpecifier;
+import org.batfish.specifier.RoutingPolicySpecifier;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierFactories;
+
+/** An answerer for {@link SearchRoutePoliciesQuestion}. */
+@ParametersAreNonnullByDefault
+public final class SearchRoutePoliciesAnswerer extends Answerer {
+  public static final String COL_NODE = "Node";
+  public static final String COL_POLICY_NAME = "Policy_Name";
+  public static final String COL_INPUT_ROUTE = "Input_Route";
+  public static final String COL_ACTION = "Action";
+  public static final String COL_OUTPUT_ROUTE = "Output_Route";
+  public static final String COL_DIFF = "Difference";
+
+  @Nonnull private final BgpRouteConstraints _inputConstraints;
+  @Nonnull private final BgpRouteConstraints _outputConstraints;
+  @Nonnull private final String _nodes;
+  @Nonnull private final String _policies;
+  @Nonnull private final Action _action;
+
+  @Nonnull private final Set<String> _communityRegexes;
+
+  public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
+    super(question, batfish);
+    _inputConstraints = question.getInputConstraints();
+    _outputConstraints = question.getOutputConstraints();
+    _nodes = question.getNodes();
+    _policies = question.getPolicies();
+    _action = question.getAction();
+
+    // in the future, it may improve performance to combine all input community regexes
+    // into a single regex representing their disjunction, and similarly for all output
+    // community regexes, in order to minimize the number of atomic predicates that are
+    // created and tracked by the analysis
+    _communityRegexes =
+        ImmutableSet.<String>builder()
+            .addAll(_inputConstraints.getCommunities())
+            .addAll(_outputConstraints.getCommunities())
+            .build();
+  }
+
+  private static Optional<Community> stringToCommunity(String str) {
+    Optional<StandardCommunity> scomm = StandardCommunity.tryParse(str);
+    if (scomm.isPresent()) {
+      return Optional.of(scomm.get());
+    }
+    Optional<ExtendedCommunity> ecomm = ExtendedCommunity.tryParse(str);
+    if (ecomm.isPresent()) {
+      return Optional.of(ecomm.get());
+    }
+    Optional<LargeCommunity> lcomm = LargeCommunity.tryParse(str);
+    if (lcomm.isPresent()) {
+      return Optional.of(lcomm.get());
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Given a single satisfying assignment to the constraints from symbolic route analysis, produce a
+   * set of communities for a given symbolic route that is consistent with the assignment.
+   *
+   * @param fullModel a full model of the symbolic route constraints
+   * @param r the symbolic route
+   * @param g the Graph, which provides information about the community atomic predicates
+   * @return a set of communities
+   */
+  static Set<Community> satAssignmentToCommunities(BDD fullModel, BDDRoute r, Graph g) {
+
+    BDD[] aps = r.getCommunityAtomicPredicateBDDs();
+    Map<Integer, Automaton> apAutomata = g.getAtomicPredicateAutomata();
+
+    ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
+    for (int i = 0; i < aps.length; i++) {
+      if (aps[i].andSat(fullModel)) {
+        Automaton a = apAutomata.get(i);
+        // community atomic predicates should always be non-empty;
+        // see Graph::initCommAtomicPredicates
+        checkState(!a.isEmpty(), "Cannot produce example string for empty automaton");
+        String str = a.getShortestExample(true);
+        // community automata should only accept strings with this property;
+        // see CommunityVar::toAutomaton
+        checkState(
+            str.startsWith("^") && str.endsWith("$"),
+            "Community example %s has an unexpected format",
+            str);
+        // strip off the leading ^ and trailing $
+        str = str.substring(1, str.length() - 1);
+        Optional<Community> exampleOpt = stringToCommunity(str);
+        if (exampleOpt.isPresent()) {
+          comms.add(exampleOpt.get());
+        } else {
+          throw new BatfishException("Failed to produce a valid community for answer");
+        }
+      }
+    }
+    return comms.build();
+  }
+
+  /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete route for a given symbolic route that is consistent with the assignment.
+   *
+   * @param fullModel a full model that extends minimalModel
+   * @param r the symbolic route
+   * @param g the Graph, which provides information about the community atomic predicates
+   * @return either a route or a BDD representing an infeasible constraint
+   */
+  private static Bgpv4Route satAssignmentToRoute(BDD fullModel, BDDRoute r, Graph g) {
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP);
+
+    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
+    long len = r.getPrefixLength().satAssignmentToLong(fullModel);
+    builder.setNetwork(Prefix.create(ip, (int) len));
+
+    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
+    builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
+    // the BDDRoute also tracks a metric but I believe for BGP we should use the MED
+    builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
+
+    Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
+    builder.setCommunities(communities);
+
+    return builder.build();
+  }
+
+  /**
+   * Convert the results of symbolic route analysis into an answer to this question, if the
+   * resulting constraints are satisfiable.
+   *
+   * @param constraints intersection of the input and output constraints provided as part of the
+   *     question and the constraints on a solution that come from the symbolic route analysis
+   * @param outputRoute the symbolic output route that results from the route analysis
+   * @param policy the route policy that was analyzed
+   * @param g the Graph, which provides information about the community atomic predicates
+   * @return an optional answer, which includes a concrete input route and (if the desired action is
+   *     PERMIT) concrete output route
+   */
+  private Optional<Result> constraintsToResult(
+      BDD constraints, BDDRoute outputRoute, RoutingPolicy policy, Graph g) {
+    if (constraints.isZero()) {
+      return Optional.empty();
+    } else {
+      BDD fullModel = constraints.fullSatOne();
+      Bgpv4Route inRoute =
+          satAssignmentToRoute(fullModel, new BDDRoute(g.getNumAtomicPredicates()), g);
+      Bgpv4Route outRoute =
+          _action == Action.DENY ? null : satAssignmentToRoute(fullModel, outputRoute, g);
+      return Optional.of(
+          new Result(
+              new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
+              inRoute,
+              _action,
+              outRoute));
+    }
+  }
+
+  private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
+    NodeSpecifier nodeSpec =
+        SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
+
+    RoutingPolicySpecifier policySpec =
+        SpecifierFactories.getRoutingPolicySpecifierOrDefault(_policies, ALL_ROUTING_POLICIES);
+
+    return nodeSpec.resolve(context).stream()
+        .flatMap(
+            node ->
+                policySpec.resolve(node, context).stream()
+                    .map(policy -> new RoutingPolicyId(node, policy.getName())))
+        .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
+  }
+
+  private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
+    BDDFactory factory = r.getPrefix().getFactory();
+    if (space.isEmpty()) {
+      return factory.one();
+    } else {
+      BDD result = factory.zero();
+      for (PrefixRange range : space.getPrefixRanges()) {
+        BDD rangeBDD = isRelevantFor(r, range);
+        result = result.or(rangeBDD);
+      }
+      if (complementPrefixes) {
+        result = result.not();
+      }
+      return result;
+    }
+  }
+
+  // convert a possibly open range of longs to a closed one
+  @VisibleForTesting
+  static Range<Long> toClosedRange(Range<Long> r) {
+    BoundType lowerType = r.lowerBoundType();
+    Long lowerBound = r.lowerEndpoint();
+    BoundType upperType = r.upperBoundType();
+    Long upperBound = r.upperEndpoint();
+
+    return Range.range(
+        lowerType == BoundType.CLOSED ? lowerBound : lowerBound + 1,
+        BoundType.CLOSED,
+        upperType == BoundType.CLOSED ? upperBound : upperBound - 1,
+        BoundType.CLOSED);
+  }
+
+  private BDD longSpaceToBDD(LongSpace space, BDDInteger bddInt) {
+    if (space.isEmpty()) {
+      return bddInt.getFactory().one();
+    } else {
+      BDD result = bddInt.getFactory().zero();
+      for (Range<Long> range : space.getRanges()) {
+        Range<Long> closedRange = toClosedRange(range);
+        result = result.or(bddInt.range(closedRange.lowerEndpoint(), closedRange.upperEndpoint()));
+      }
+      return result;
+    }
+  }
+
+  private BDD communityConstraintsToBDD(
+      Set<String> communityRegexes, boolean complementCommunities, BDDRoute r, Graph g) {
+    if (communityRegexes.isEmpty()) {
+      return r.getFactory().one();
+    } else {
+      // the set of community constraints are represented as the disjunction of all associated
+      // atomic predicates
+      BDD result =
+          r.getFactory()
+              .orAll(
+                  communityRegexes.stream()
+                      .map(CommunityVar::from)
+                      .flatMap(c -> g.getCommunityAtomicPredicates().get(c).stream())
+                      .distinct()
+                      .map(i -> r.getCommunityAtomicPredicateBDDs()[i])
+                      .collect(ImmutableSet.toImmutableSet()));
+      if (complementCommunities) {
+        result = result.not();
+      }
+      return result;
+    }
+  }
+
+  private BDD routeConstraintsToBDD(BgpRouteConstraints constraints, BDDRoute r, Graph g) {
+    // require the protocol to be BGP
+    BDD result = r.getProtocolHistory().value(Protocol.BGP);
+    result =
+        result.and(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
+    result = result.and(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
+    result = result.and(longSpaceToBDD(constraints.getMed(), r.getMed()));
+    result =
+        result.and(
+            communityConstraintsToBDD(
+                constraints.getCommunities(), constraints.getComplementCommunities(), r, g));
+
+    return result;
+  }
+
+  private Optional<Result> searchPolicy(RoutingPolicy policy) {
+    TransferReturn result;
+    Graph g =
+        new Graph(
+            _batfish,
+            _batfish.getSnapshot(),
+            null,
+            ImmutableSet.of(policy.getOwner().getHostname()),
+            _communityRegexes.stream()
+                .map(RegexCommunitySet::new)
+                .collect(ImmutableSet.toImmutableSet()));
+    try {
+      TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
+      result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    } catch (Exception e) {
+      throw new BatfishException(
+          "Unsupported features in route policy "
+              + policy.getName()
+              + " in node "
+              + policy.getOwner().getHostname(),
+          e);
+    }
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outputRoute = result.getFirst();
+    BDD intersection;
+    BDD inConstraints =
+        routeConstraintsToBDD(_inputConstraints, new BDDRoute(g.getNumAtomicPredicates()), g);
+    if (_action == PERMIT) {
+      // incorporate the constraints on the output route as well
+      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
+      intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
+    } else {
+      intersection = acceptedAnnouncements.not().and(inConstraints);
+    }
+
+    return constraintsToResult(intersection, outputRoute, policy, g);
+  }
+
+  @Override
+  public AnswerElement answer(NetworkSnapshot snapshot) {
+    SpecifierContext context = _batfish.specifierContext(snapshot);
+    SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
+    Multiset<Row> rows =
+        getPolicies(context, policies)
+            .map(this::searchPolicy)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(SearchRoutePoliciesAnswerer::toRow)
+            .collect(ImmutableMultiset.toImmutableMultiset());
+
+    TableAnswerElement answerElement = new TableAnswerElement(metadata());
+    answerElement.postProcessAnswer(_question, rows);
+    return answerElement;
+  }
+
+  @Nonnull
+  private Stream<RoutingPolicy> getPolicies(
+      SpecifierContext context, SortedSet<RoutingPolicyId> policies) {
+    Map<String, Configuration> configs = context.getConfigs();
+    return policies.stream()
+        .map(
+            policyId ->
+                configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()));
+  }
+
+  @Nullable
+  private static org.batfish.datamodel.questions.BgpRoute toQuestionsBgpRoute(
+      @Nullable Bgpv4Route dataplaneBgpRoute) {
+    if (dataplaneBgpRoute == null) {
+      return null;
+    }
+    return org.batfish.datamodel.questions.BgpRoute.builder()
+        .setWeight(dataplaneBgpRoute.getWeight())
+        .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
+        .setProtocol(dataplaneBgpRoute.getProtocol())
+        .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
+        .setOriginType(dataplaneBgpRoute.getOriginType())
+        .setOriginatorIp(dataplaneBgpRoute.getOriginatorIp())
+        .setMetric(dataplaneBgpRoute.getMetric())
+        .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
+        .setWeight(dataplaneBgpRoute.getWeight())
+        .setNetwork(dataplaneBgpRoute.getNetwork())
+        .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
+        .setAsPath(dataplaneBgpRoute.getAsPath())
+        .build();
+  }
+
+  public static TableMetadata metadata() {
+    List<ColumnMetadata> columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
+            new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
+            new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
+            new ColumnMetadata(
+                COL_ACTION, STRING, "The action of the policy on the input route", false, true),
+            new ColumnMetadata(COL_OUTPUT_ROUTE, BGP_ROUTE, "The output route", false, false),
+            new ColumnMetadata(
+                COL_DIFF,
+                BGP_ROUTE_DIFFS,
+                "The difference between the input and output routes",
+                false,
+                true));
+    return new TableMetadata(
+        columnMetadata, String.format("Results for policy ${%s}", COL_POLICY_NAME));
+  }
+
+  private static Row toRow(Result result) {
+    org.batfish.datamodel.questions.BgpRoute inputRoute =
+        toQuestionsBgpRoute(result.getInputRoute());
+    org.batfish.datamodel.questions.BgpRoute outputRoute =
+        toQuestionsBgpRoute(result.getOutputRoute());
+
+    Action action = result.getAction();
+    RoutingPolicyId policyId = result.getPolicyId();
+    return Row.builder()
+        .put(COL_NODE, new Node(policyId.getNode()))
+        .put(COL_POLICY_NAME, policyId.getPolicy())
+        .put(COL_INPUT_ROUTE, inputRoute)
+        .put(COL_ACTION, action)
+        .put(COL_OUTPUT_ROUTE, outputRoute)
+        .put(
+            COL_DIFF,
+            action == PERMIT ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
+        .build();
+  }
+}

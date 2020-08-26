@@ -65,7 +65,7 @@ public class Interface implements Serializable {
       return null;
     } else if (name.startsWith("Loopback")) {
       return DEFAULT_LOOPBACK_BANDWIDTH;
-    } else if (name.startsWith("Port-Channel")) {
+    } else if (name.startsWith("Port-channel")) {
       // Derived from member interfaces
       return null;
     } else if (name.startsWith("Vlan")) {
@@ -129,7 +129,7 @@ public class Interface implements Serializable {
     } else {
       // Bundle-Ethernet
       // Loopback
-      // Port-Channel
+      // Port-channel
       // Vlan
       // Wlan-ap0 (a management interface)
       // ... others

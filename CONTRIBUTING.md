@@ -1,7 +1,7 @@
 Batfish is an open source project licensed under the Apache 2.0 License.
 
 By submitting a pull request for this project, you are agreeing to license your
-contribution under the Apache 2.0 License and to grant a pereptual, world-wide,
+contribution under the Apache 2.0 License and to grant a perpetual, world-wide,
 non-exclusive, no-charge, royalty-free, irrevocable copyright license to
 Batfish and any derivative works.
 

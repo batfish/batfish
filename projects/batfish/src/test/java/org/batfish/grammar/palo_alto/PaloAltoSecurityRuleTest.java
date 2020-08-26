@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.main.BatfishTestUtils.getBatfish;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -138,6 +140,56 @@ public class PaloAltoSecurityRuleTest {
     assertFalse(traces.get(flowReject).get(0).getDisposition().isSuccessful());
     // Permitted due to hitting device-group post-rulebase rule (allow) before any deny rule
     assertTrue(traces.get(flowPermit).get(0).getDisposition().isSuccessful());
+  }
+
+  @Test
+  public void testDeviceGroupInheritance() throws IOException {
+    String panoramaHostname = "device-group-inheritance";
+    String firewallId = "00000002";
+    Ip parentAddr1 = Ip.parse("10.10.2.21");
+    Ip parentAddr2 = Ip.parse("10.10.2.22");
+
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+    Configuration firewallConfig =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId)).findFirst().get();
+    Batfish batfish =
+        getBatfish(ImmutableSortedMap.of(firewallConfig.getHostname(), firewallConfig), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    String if1name = "ethernet1/1"; // 192.168.0.1/16
+    Builder baseFlow =
+        Flow.builder()
+            .setIngressNode(firewallConfig.getHostname())
+            .setIngressInterface(if1name)
+            // Arbitrary ports and protocol
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP);
+    Flow flowParentAddr1 = baseFlow.setDstIp(parentAddr1).build();
+    Flow flowParentAddr2 = baseFlow.setDstIp(parentAddr2).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowParentAddr1, flowParentAddr2), false);
+
+    // Firewall 00000002 should have the following security rules in the following order:
+    // Pre-rule (parent)        permit addr1
+    // Pre-rule (child)         deny addr1
+    // Post-rule (child)        permit addr2
+    // Post-rule (parent)       deny addr2
+
+    // Child pre-rulebase deny should come after parent pre-rulebase allow
+    assertThat(
+        traces.get(flowParentAddr1).get(0).getDisposition(),
+        equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
+
+    // Child post-rulebase allow should come before parent post-rulebase deny
+    assertThat(
+        traces.get(flowParentAddr2).get(0).getDisposition(),
+        equalTo(FlowDisposition.DELIVERED_TO_SUBNET));
   }
 
   @Test

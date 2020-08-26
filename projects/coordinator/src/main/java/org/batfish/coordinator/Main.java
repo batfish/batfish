@@ -350,12 +350,6 @@ public class Main {
         bindPortFutures.getWorkV2Port());
   }
 
-  public static void main(String[] args) {
-    mainInit(args);
-    _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile());
-    mainRun(new BindPortFutures());
-  }
-
   public static void main(String[] args, BatfishLogger logger, BindPortFutures portFutures) {
     mainInit(args);
 
@@ -404,6 +398,9 @@ public class Main {
               + Throwables.getStackTraceAsString(e));
       System.exit(1);
     }
+
+    // run GC on startup
+    _workManager.triggerGarbageCollection();
 
     // sleep indefinitely, in 10 minute chunks
     try {

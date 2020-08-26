@@ -267,12 +267,15 @@ if_ip
   IP
   (
     ifip_access_group_eos
+    | ifip_arp_eos
     | ifip_attached_routes_eos
     | ifip_address_eos
     | ifip_dhcp_eos
     | if_ip_helper_address
     | if_ip_igmp
     | if_ip_inband_access_group
+    | if_ip_local_proxy_arp_eos
+    | if_ip_multicast_eos
     | if_ip_nat_destination
     | if_ip_nat_source
     | if_ip_nbar
@@ -288,6 +291,11 @@ if_ip
 ifip_access_group_eos
 :
   ACCESS_GROUP name = variable (IN | OUT) NEWLINE
+;
+
+ifip_arp_eos
+:
+  ARP null_rest_of_line
 ;
 
 ifip_attached_routes_eos
@@ -331,6 +339,7 @@ ifipdhcp_relay_eos
   RELAY
   (
     ifipdhcpr_all_subnets_eos
+    | ifipdhcpr_client_eos
     | ifipdhcpr_information_eos
   )
 ;
@@ -338,6 +347,11 @@ ifipdhcp_relay_eos
 ifipdhcpr_all_subnets_eos
 :
   ALL_SUBNETS NEWLINE
+;
+
+ifipdhcpr_client_eos
+:
+  CLIENT NEWLINE
 ;
 
 ifipdhcpr_information_eos
@@ -365,6 +379,30 @@ if_ip_igmp
       | ifigmp_null
       | ifigmp_static_group
    )
+;
+
+if_ip_local_proxy_arp_eos
+:
+  LOCAL_PROXY_ARP NEWLINE
+;
+
+if_ip_multicast_eos
+:
+  MULTICAST
+  (
+    ifipm_boundary_eos
+    | ifipm_static_eos
+  )
+;
+
+ifipm_boundary_eos
+:
+  BOUNDARY (ip_prefix | name = word) OUT? NEWLINE
+;
+
+ifipm_static_eos
+:
+  STATIC NEWLINE
 ;
 
 if_ip_nat_destination
@@ -663,6 +701,12 @@ if_isis_tag
    TAG tag = DEC NEWLINE
 ;
 
+if_l2_protocol
+:
+  L2_PROTOCOL
+  null_rest_of_line
+;
+
 if_lacp
 :
   LACP
@@ -893,7 +937,8 @@ if_no_ip_local_proxy_arp_eos
 if_no_ip_null_eos
 :
   (
-    ATTACHED_HOST
+    ARP
+    | ATTACHED_HOST
     | ATTACHED_HOSTS
     | IGMP
     | MULTICAST
@@ -943,6 +988,7 @@ if_no_null_eos
     | QOS
     | QUEUE_MONITOR
     | RIP
+    | SFLOW
     | SHAPE
     | SNMP
     | STORM_CONTROL
@@ -1413,9 +1459,25 @@ if_speed_eos
 :
    SPEED
    (
-      AUTO
-      | FORCED
-   )? eos_bandwidth_specifier NEWLINE
+     if_speed_auto_eos
+     | if_speed_bw_eos
+     | if_speed_forced_eos
+   )
+;
+
+if_speed_auto_eos
+:
+  AUTO eos_bandwidth_specifier? NEWLINE
+;
+
+if_speed_bw_eos
+:
+  eos_bandwidth_specifier NEWLINE
+;
+
+if_speed_forced_eos
+:
+  FORCED eos_bandwidth_specifier NEWLINE
 ;
 
 if_st_null
@@ -1923,6 +1985,7 @@ if_inner
    | if_ip
    | if_ipv6
    | if_isis
+   | if_l2_protocol
    | if_lacp
    | if_lldp
    | if_load_interval

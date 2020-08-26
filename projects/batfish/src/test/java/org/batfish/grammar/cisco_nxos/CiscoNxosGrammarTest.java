@@ -140,7 +140,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
@@ -1735,6 +1734,14 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         vc.getInterfaces(),
         hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/1.1", "Ethernet1/1.2"));
+  }
+
+  @Test
+  public void testInterfaceShowRunAll1() throws IOException {
+    String hostname = "nxos_interface_show_all_1";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c, hasInterface("Ethernet1/21", hasDescription("Made it to the end of Ethernet1/21")));
   }
 
   @Test
@@ -3783,13 +3790,13 @@ public final class CiscoNxosGrammarTest {
         // permit 1:1
         assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
         // permit internet
-        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.INTERNET)));
+        assertTrue(expr.accept(eval, StandardCommunity.INTERNET));
         // permit local-AS
-        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED)));
+        assertTrue(expr.accept(eval, StandardCommunity.NO_EXPORT_SUBCONFED));
         // permit no-advertise
-        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE)));
+        assertTrue(expr.accept(eval, StandardCommunity.NO_ADVERTISE));
         // permit no-export
-        assertTrue(expr.accept(eval, StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+        assertTrue(expr.accept(eval, StandardCommunity.NO_EXPORT));
       }
       {
         CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
@@ -3827,20 +3834,13 @@ public final class CiscoNxosGrammarTest {
         // permit 1:1
         assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
         // permit internet
-        assertTrue(
-            expr.accept(eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.INTERNET))));
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.INTERNET)));
         // permit local-AS
-        assertTrue(
-            expr.accept(
-                eval,
-                CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED))));
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_EXPORT_SUBCONFED)));
         // permit no-advertise
-        assertTrue(
-            expr.accept(
-                eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE))));
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_ADVERTISE)));
         // permit no-export
-        assertTrue(
-            expr.accept(eval, CommunitySet.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT))));
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_EXPORT)));
       }
       {
         CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
@@ -3908,10 +3908,10 @@ public final class CiscoNxosGrammarTest {
               .collect(ImmutableList.toImmutableList()),
           contains(
               StandardCommunity.of(1, 1),
-              StandardCommunity.of(WellKnownCommunity.INTERNET),
-              StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED),
-              StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE),
-              StandardCommunity.of(WellKnownCommunity.NO_EXPORT)));
+              StandardCommunity.INTERNET,
+              StandardCommunity.NO_EXPORT_SUBCONFED,
+              StandardCommunity.NO_ADVERTISE,
+              StandardCommunity.NO_EXPORT));
     }
     {
       IpCommunityListStandard cl =
@@ -6114,7 +6114,7 @@ public final class CiscoNxosGrammarTest {
               .build();
 
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), contains(StandardCommunity.of(1, 1)));
+      assertThat(route.getCommunities().getCommunities(), contains(StandardCommunity.of(1, 1)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list_standard");
@@ -6126,7 +6126,8 @@ public final class CiscoNxosGrammarTest {
 
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+          route.getCommunities().getCommunities(),
+          contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_comm_list_standard_single");
@@ -6137,7 +6138,7 @@ public final class CiscoNxosGrammarTest {
               .build();
 
       Bgpv4Route route = processRouteIn(rp, inRoute);
-      assertThat(route.getCommunities(), contains(StandardCommunity.of(2, 2)));
+      assertThat(route.getCommunities().getCommunities(), contains(StandardCommunity.of(2, 2)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
@@ -6145,7 +6146,8 @@ public final class CiscoNxosGrammarTest {
           base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+          route.getCommunities().getCommunities(),
+          contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community_additive");
@@ -6153,8 +6155,8 @@ public final class CiscoNxosGrammarTest {
           base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
       assertThat(
-          route.getCommunities(),
-          contains(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(
               StandardCommunity.of(1, 1), StandardCommunity.of(1, 2), StandardCommunity.of(3, 3)));
     }
     {

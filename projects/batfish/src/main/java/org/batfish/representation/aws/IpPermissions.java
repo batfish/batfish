@@ -435,6 +435,17 @@ public final class IpPermissions implements Serializable {
     return aclLines.build();
   }
 
+  /**
+   * Converts this {@link IpPermissions} to a {@link List} of {@link ExprAclLine}s for analysis:
+   * lines are unnamed and no warnings are filed.
+   *
+   * <p>Returns empty {@link List} if the security group cannot be processed, e.g., uses an
+   * unsupported definition of the affected IP addresses.
+   */
+  public List<ExprAclLine> toIpAccessListLines(boolean ingress, Region region) {
+    return toIpAccessListLines(ingress, region, "", new Warnings());
+  }
+
   private List<ExprAclLine> userIdGroupsToAclLines(
       Region region,
       List<AclLineMatchExpr> protocolAndPortExprs,

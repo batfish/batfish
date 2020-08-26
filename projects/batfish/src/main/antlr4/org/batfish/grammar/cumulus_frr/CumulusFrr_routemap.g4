@@ -82,7 +82,13 @@ rm_set
     | rms_local_preference
     | rms_metric
     | rms_tag
+    | rms_weight
   )
+;
+
+rms_weight
+:
+  WEIGHT weight = uint32 NEWLINE
 ;
 
 rms_metric

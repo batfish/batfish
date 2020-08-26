@@ -1,0 +1,5 @@
+#
+set system host-name interface-undefined
+#
+set security nat source pool some_pool address 10.0.0.1/32
+set protocols ospf area 0.0.0.0 interface xe-2/2/5.204 neighbor 1.2.3.4

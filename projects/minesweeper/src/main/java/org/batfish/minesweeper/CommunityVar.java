@@ -1,6 +1,10 @@
 package org.batfish.minesweeper;
 
+import static org.batfish.minesweeper.CommunityVar.Type.EXACT;
+
 import com.google.common.base.MoreObjects;
+import dk.brics.automaton.Automaton;
+import dk.brics.automaton.RegExp;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -42,6 +46,35 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   @Nonnull private final String _regex;
   @Nullable private final Community _literalValue;
 
+  @Nonnull private static final String NUM_REGEX = "(0|[1-9][0-9]*)";
+
+  // a regex that represents the language of community literals supported by Batfish
+  // see Community::matchString() and its implementations
+  @Nonnull
+  private static final String COMMUNITY_REGEX =
+      // start-of-string character
+      "^"
+          +
+          // standard and extended communities
+          "("
+          + String.join(":", NUM_REGEX, NUM_REGEX)
+          + "|"
+          // large communities
+          + String.join(":", "large", NUM_REGEX, NUM_REGEX, NUM_REGEX)
+          + ")"
+          // end-of-string character
+          + "$";
+
+  /**
+   * When converting a community variable to an automaton (see toAutomaton()), we intersect with
+   * this automaton, which represents the language of community literals supported by Batfish. Doing
+   * so serves two purposes. First, it is necessary for correctness of the symbolic analysis. For
+   * example, a regex like ".*" does not actually match any possible string since communities cannot
+   * be arbitrary strings. Second, it ensures that when we solve for community literals that match
+   * regexes, we will get examples that are sensible and also able to be parsed by Batfish.
+   */
+  @Nonnull static final Automaton COMMUNITY_FSM = new RegExp(COMMUNITY_REGEX).toAutomaton();
+
   private CommunityVar(Type type, String regex, @Nullable Community literalValue) {
     _type = type;
     _regex = regex;
@@ -78,6 +111,36 @@ public final class CommunityVar implements Comparable<CommunityVar> {
   @Nullable
   public Community getLiteralValue() {
     return _literalValue;
+  }
+
+  /**
+   * Convert this community variable into an equivalent finite-state automaton.
+   *
+   * @return the automaton
+   */
+  public Automaton toAutomaton() {
+    String regex = _regex;
+    if (_type == EXACT) {
+      // to turn a literal into a regex, add the start-of-string and end-of-string characters
+      regex = "^" + "(" + regex + ")" + "$";
+    } else {
+      /**
+       * A regex need only match a portion of a given community string. For example, the regex
+       * "^40:" matches the community 40:11. But to properly relate community regexes to one
+       * another, for example to find their intersection (see Graph::initCommAtomicPredicates), we
+       * need regexes that match completely.
+       *
+       * <p>The simple approach below converts a possibly-partial regex into a complete one. It
+       * works because below we intersect the resulting automaton with COMMUNITY_FSM, which notably
+       * includes the start-of-string and end-of-string characters. Note that the automaton library
+       * treats these as ordinary characters.
+       *
+       * <p>For example, the regex "^40:" becomes ".*(^40:).*", and the final automaton after
+       * intersecting with COMMUNITY_FSM accepts the language of the regex "^40:[0-9]+$" as desired.
+       */
+      regex = ".*" + "(" + regex + ")" + ".*";
+    }
+    return new RegExp(regex).toAutomaton().intersection(COMMUNITY_FSM);
   }
 
   @Override

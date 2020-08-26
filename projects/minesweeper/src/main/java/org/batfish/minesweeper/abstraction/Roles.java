@@ -57,7 +57,7 @@ public class Roles {
   }
 
   private Roles(NetworkSnapshot snapshot, IBatfish batfish, NodesSpecifier nodesSpecifier) {
-    _graph = new Graph(batfish, snapshot);
+    _graph = new Graph(batfish, snapshot, true);
     _network = BDDNetwork.create(snapshot, new BDDPacket(), _graph, nodesSpecifier);
     _nodeSpecifier = nodesSpecifier;
     _bgpInEcs = null;

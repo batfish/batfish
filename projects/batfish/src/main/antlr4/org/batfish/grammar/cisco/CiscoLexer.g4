@@ -6257,6 +6257,11 @@ INTER_INTERFACE
    'inter-interface'
 ;
 
+INTER_AREA
+:
+   'inter-area'
+;
+
 INTERAREA
 :
    'interarea'
@@ -6292,6 +6297,11 @@ INTERVAL
 INTERWORKING
 :
    'interworking'
+;
+
+INTRA_AREA
+:
+   'intra-area'
 ;
 
 INTRA_INTERFACE
@@ -15439,11 +15449,6 @@ REGEX
    )* '/'
 ;
 
-RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
-;
-
 SEMICOLON
 :
    ';'
@@ -15824,12 +15829,6 @@ M_AsPath_CONFED
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
-;
-
-M_AsPath_RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type (
-   RP_VARIABLE ) , popMode
 ;
 
 M_AsPath_IN

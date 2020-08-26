@@ -53,13 +53,28 @@ public final class ApplicationBuiltIn {
                   .addPorts(80, 5192, 5190)
                   .build())
           .build();
+  public static final Application BGP =
+      Application.builder("bgp")
+          .setDescription("built-in application bgp")
+          .addService(Service.builder("bgp-tcp").setIpProtocol(IpProtocol.TCP).addPort(179).build())
+          .addService(Service.builder("bgp-udp").setIpProtocol(IpProtocol.UDP).addPort(179).build())
+          .build();
+  public static final Application CISCO_SPARK_BASE =
+      Application.builder("cisco-spark-base")
+          .setDescription("built-in application cisco-spark-base")
+          .addService(
+              Service.builder("cisco-spark-base")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPorts(80, 443)
+                  .build())
+          .build();
   public static final Application DHCP =
       Application.builder("dhcp")
           .setDescription("built-in application dhcp")
           .addService(
-              Service.builder("dhcp-tcp").setIpProtocol(IpProtocol.UDP).addPorts(67, 68).build())
+              Service.builder("dhcp-tcp").setIpProtocol(IpProtocol.TCP).addPorts(67, 68).build())
           .addService(
-              Service.builder("dhcp-udp").setIpProtocol(IpProtocol.TCP).addPorts(67, 68).build())
+              Service.builder("dhcp-udp").setIpProtocol(IpProtocol.UDP).addPorts(67, 68).build())
           .build();
   public static final Application DNS =
       Application.builder("dns")
@@ -72,9 +87,9 @@ public final class ApplicationBuiltIn {
       Application.builder("finger")
           .setDescription("built-in application finger")
           .addService(
-              Service.builder("finger-tcp").setIpProtocol(IpProtocol.UDP).addPort(79).build())
+              Service.builder("finger-tcp").setIpProtocol(IpProtocol.TCP).addPort(79).build())
           .addService(
-              Service.builder("finger-udp").setIpProtocol(IpProtocol.TCP).addPorts(79).build())
+              Service.builder("finger-udp").setIpProtocol(IpProtocol.UDP).addPorts(79).build())
           .build();
 
   public static final Application FTP =
@@ -86,6 +101,17 @@ public final class ApplicationBuiltIn {
   public static final Application GNUTELLA =
       // No well-known ports, DPI only
       Application.builder("gnutella").setDescription("built-in application gnutella").build();
+
+  public static final Application GOOGLE_BASE =
+      Application.builder("google-base")
+          .setDescription("built-in application google-base")
+          .addService(
+              Service.builder("google-base")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPorts(80, 443, 5228, 5229)
+                  .addPorts(new SubRange(5222, 5224))
+                  .build())
+          .build();
 
   public static final Application GOPHER =
       Application.builder("gopher")
@@ -200,6 +226,11 @@ public final class ApplicationBuiltIn {
                   .addPorts(80, 443)
                   .build())
           .build();
+  public static final Application OSPF =
+      Application.builder("ospf")
+          .setDescription("built-in application ospf")
+          .addService(Service.builder("ospf").setIpProtocol(IpProtocol.OSPF).build())
+          .build();
   public static final Application PAN_DB_CLOUD =
       Application.builder("pan-db-cloud")
           .setDescription("built-in application pan-db-cloud")
@@ -236,6 +267,24 @@ public final class ApplicationBuiltIn {
   public static final Application RPC =
       // No well-known ports, DPI only
       Application.builder("rpc").setDescription("built-in application rpc").build();
+  public static final Application RTCP =
+      Application.builder("rtcp")
+          .setDescription("built-in application rtcp")
+          .addService(
+              Service.builder("rtcp")
+                  .setIpProtocol(IpProtocol.UDP)
+                  .addPorts(new SubRange(1, 65535)) // udp/dynamic
+                  .build())
+          .build();
+  public static final Application RTP_BASE =
+      Application.builder("rtp-base")
+          .setDescription("built-in application rtp-base")
+          .addService(
+              Service.builder("rtp-base")
+                  .setIpProtocol(IpProtocol.UDP)
+                  .addPorts(new SubRange(1, 65535)) // udp/dynamic
+                  .build())
+          .build();
   public static final Application SMTP =
       Application.builder("smtp")
           .setDescription("built-in application smtp")
@@ -266,11 +315,42 @@ public final class ApplicationBuiltIn {
           .setDescription("built-in application ssl")
           .addService(Service.builder("ssl").setIpProtocol(IpProtocol.TCP).addPort(443).build())
           .build();
+  public static final Application STUN =
+      Application.builder("stun")
+          .setDescription("built-in application stun")
+          .addService(
+              Service.builder("stun tcp").setIpProtocol(IpProtocol.TCP).addPort(3478).build())
+          .addService(
+              Service.builder("stun udp").setIpProtocol(IpProtocol.UDP).addPort(3478).build())
+          .build();
   public static final Application WEB_BROWSING =
       Application.builder("web-browsing")
           .setDescription("built-in application web-browsing")
           .addService(
               Service.builder("web-browsing").setIpProtocol(IpProtocol.TCP).addPort(80).build())
+          .build();
+  public static final Application WEBEX =
+      Application.builder("webex")
+          .setDescription("built-in application webex")
+          .addService(
+              Service.builder("webex tcp")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPorts(80, 443, 1270)
+                  .build())
+          .addService(
+              Service.builder("webex udp")
+                  .setIpProtocol(IpProtocol.UDP)
+                  .addPorts(8070, 8090, 9000)
+                  .build())
+          .build();
+  public static final Application WEBSOCKET =
+      Application.builder("websocket")
+          .setDescription("built-in application websocket")
+          .addService(
+              Service.builder("websocket")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPorts(80, 443, 8080)
+                  .build())
           .build();
 
   private static final List<Application> BUILTIN_LIST =
@@ -279,11 +359,14 @@ public final class ApplicationBuiltIn {
           AMAZON_CLOUD_DRIVE_UPLOADING,
           AOL_MESSAGEBOARD_POSTING,
           AOL_PROXY,
+          BGP,
+          CISCO_SPARK_BASE,
           DHCP,
           DNS,
           FINGER,
           FTP,
           GNUTELLA,
+          GOOGLE_BASE,
           GOPHER,
           ICMP,
           LDAP,
@@ -297,17 +380,23 @@ public final class ApplicationBuiltIn {
           NETBIOS_SS,
           NTP,
           OFFICE365_ENTERPRISE_ACCESS,
+          OSPF,
           PAN_DB_CLOUD,
           PC_ANYWHERE,
           PING,
           POP3,
           RPC,
+          RTCP,
+          RTP_BASE,
           SMTP,
           SNMP,
           SOAP,
           SSH,
           SSL,
-          WEB_BROWSING);
+          STUN,
+          WEB_BROWSING,
+          WEBEX,
+          WEBSOCKET);
 
   private static final Map<String, Application> BUILTINS =
       BUILTIN_LIST.stream()

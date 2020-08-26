@@ -689,6 +689,25 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpMaxMedAdministrative_value() {
+    parse("router bgp 1\n bgp max-med administrative 12345\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(12345L));
+  }
+
+  @Test
+  public void testBgpMaxMedAdministrative_default() {
+    parse("router bgp 1\n bgp max-med administrative\n");
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(4294967294L));
+  }
+
+  @Test
+  public void testBgpMaxMedAdministrative_unset() {
+    parse("router bgp 1\n");
+    assertThat(_frr.getBgpProcess().getDefaultVrf().getMaxMedAdministrative(), equalTo(null));
+  }
+
+  @Test
   public void testBgpRouterId() {
     parse("router bgp 1\n bgp router-id 1.2.3.4\n");
     assertThat(_frr.getBgpProcess().getDefaultVrf().getRouterId(), equalTo(Ip.parse("1.2.3.4")));
@@ -935,6 +954,16 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getSetMetric().getMetric(), equalTo(new LiteralLong(30)));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapSetWeight() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(String.format("route-map %s permit 10\nset weight 30\n", name));
+
+    RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getSetWeight().getWeight(), equalTo(30));
   }
 
   @Test
@@ -1447,6 +1476,18 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testInterface_ospf_cost() {
+    parse("interface swp1\n ip ospf cost 100\n");
+    assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(100));
+  }
+
+  @Test
+  public void testInterface_ospf_cost_null() {
+    parse("interface swp1\n ip ospf area 0\n");
+    assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(null));
+  }
+
+  @Test
   public void testRouterOspfPassiveInterface_NoInterface() {
     parse("router ospf\n passive-interface lo\n");
     assertThat(_warnings.getParseWarnings(), hasSize(1));
@@ -1706,5 +1747,56 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _frr.getVrfs().get("VRF").getStaticRoutes(),
         contains(new StaticRoute(Prefix.parse("1.2.3.0/24"), null, "eth0", null)));
+  }
+
+  @Test
+  public void testBgpcommunityMatchSetTagAndWeight_behavior() throws IOException {
+    /*
+     There are two nodes in the topology arranged in a line.
+       - frr-originator -- frr-listener
+
+     Features tested:
+     1) Set comm
+     2) Match comm + set tag + set weight
+
+     frr-originator originates routes via network statements and applies a community outbound.
+
+     frr-listener matches on that community and sets a weight and tag.
+
+    */
+
+    String snapshotName = "bgp-comm-match-set-tag-weight";
+    List<String> configurationNames = ImmutableList.of("frr-originator", "frr-listener");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+
+    assertThat(
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                Bgpv4Route.builder()
+                    .setNetwork(Prefix.parse("10.2.2.2/32"))
+                    .setNextHopIp(Ip.parse("10.1.1.1"))
+                    .setReceivedFromIp(Ip.parse("10.1.1.1"))
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setNextHopInterface("dynamic")
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setAsPath(AsPath.ofSingletonAsSets(1L))
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(12345, 123)))
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .setWeight(500)
+                    .setTag(10000L)
+                    .build())));
   }
 }

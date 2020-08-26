@@ -7,7 +7,6 @@ import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
 import io.opentracing.contrib.jaxrs2.client.ClientTracingFeature;
 import io.opentracing.util.GlobalTracer;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,8 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
-import java.security.KeyStore;
-import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
@@ -27,13 +24,7 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.ClientBuilder;
 import org.apache.commons.io.FileUtils;
 import org.batfish.common.BatfishException;
@@ -104,80 +95,12 @@ public class CommonUtil {
   /**
    * Returns a {@link ClientBuilder} with supplied settings
    *
-   * @param noSsl {@link javax.ws.rs.client.Client} will use plain HTTP with no SSL if set to true
-   * @param trustAllSslCerts {@link javax.ws.rs.client.Client} will not verify URL's hostname
-   *     against server's identification hostname
-   * @param keystoreFile File to be used to load the {@link KeyStore}
-   * @param keystorePassword Password to be used with the keyStoreFile
-   * @param truststoreFile File to be used to load the {@link TrustManager}
-   * @param truststorePassword Password to be used with the data in the trustStoreFile
    * @param registerTracing Whether to register JAX-RS tracing on the {@link ClientBuilder}
    * @return {@link ClientBuilder} with the supplied settings
    */
-  public static ClientBuilder createHttpClientBuilder(
-      boolean noSsl,
-      boolean trustAllSslCerts,
-      Path keystoreFile,
-      String keystorePassword,
-      Path truststoreFile,
-      String truststorePassword,
-      boolean registerTracing) {
+  public static ClientBuilder createHttpClientBuilder(boolean registerTracing) {
     ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     try {
-      if (!noSsl) {
-        SSLContext sslcontext = SSLContext.getInstance("TLS");
-        TrustManager[] trustManagers;
-        if (trustAllSslCerts) {
-          trustManagers =
-              new TrustManager[] {
-                new X509TrustManager() {
-                  @Override
-                  public void checkClientTrusted(X509Certificate[] arg0, String arg1) {}
-
-                  @Override
-                  public void checkServerTrusted(X509Certificate[] arg0, String arg1) {}
-
-                  @Override
-                  public X509Certificate[] getAcceptedIssuers() {
-                    return new X509Certificate[0];
-                  }
-                }
-              };
-          clientBuilder.hostnameVerifier(new TrustAllHostNameVerifier());
-        } else if (truststoreFile != null) {
-          TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-          KeyStore ts = KeyStore.getInstance("JKS");
-          if (truststorePassword == null) {
-            throw new BatfishException("Truststore file supplied but truststore password missing");
-          }
-          char[] tsPass = truststorePassword.toCharArray();
-          try (FileInputStream trustInputStream = new FileInputStream(truststoreFile.toFile())) {
-            ts.load(trustInputStream, tsPass);
-          }
-          tmf.init(ts);
-          trustManagers = tmf.getTrustManagers();
-        } else {
-          trustManagers = null;
-        }
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        KeyStore ks = KeyStore.getInstance("JKS");
-        KeyManager[] keyManagers;
-        if (keystoreFile != null) {
-          if (keystorePassword == null) {
-            throw new BatfishException("Keystore file supplied but keystore password missing");
-          }
-          char[] ksPass = keystorePassword.toCharArray();
-          try (FileInputStream keystoreStream = new FileInputStream(keystoreFile.toFile())) {
-            ks.load(keystoreStream, ksPass);
-          }
-          kmf.init(ks, ksPass);
-          keyManagers = kmf.getKeyManagers();
-        } else {
-          keyManagers = null;
-        }
-        sslcontext.init(keyManagers, trustManagers, new java.security.SecureRandom());
-        clientBuilder.sslContext(sslcontext);
-      }
       /* register tracing feature if a tracer was initialized and caller wants client to
       send tracing information */
       if (GlobalTracer.isRegistered() && registerTracing) {

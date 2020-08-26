@@ -33,6 +33,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -99,8 +101,9 @@ import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
-public final class FileBasedStorage implements StorageProvider {
+public class FileBasedStorage implements StorageProvider {
 
+  @VisibleForTesting static final Duration GC_SKEW_ALLOWANCE = Duration.ofMinutes(10L);
   private static final String ID_EXTENSION = ".id";
   private static final String SUFFIX_LOG_FILE = ".log";
   private static final String SUFFIX_ANSWER_JSON_FILE = ".json";
@@ -673,7 +676,9 @@ public final class FileBasedStorage implements StorageProvider {
         .readValue(answerMetadataPath.toFile(), new TypeReference<AnswerMetadata>() {});
   }
 
-  private @Nonnull Path getAnswerPath(AnswerId answerId) {
+  @VisibleForTesting
+  @Nonnull
+  Path getAnswerPath(AnswerId answerId) {
     return getAnswerDir(answerId).resolve(RELPATH_ANSWER_JSON);
   }
 
@@ -1158,6 +1163,40 @@ public final class FileBasedStorage implements StorageProvider {
     FileUtils.deleteDirectory(sanitizedPath.toFile());
   }
 
+  private void deleteIfExists(Path path) throws IOException {
+    Path sanitizedPath = validatePath(path);
+    Files.deleteIfExists(sanitizedPath);
+  }
+
+  private boolean isRegularFile(Path path) {
+    Path sanitizedPath = validatePath(path);
+    return Files.isRegularFile(sanitizedPath);
+  }
+
+  private boolean isDirectory(Path path) {
+    Path sanitizedPath = validatePath(path);
+    return Files.isDirectory(sanitizedPath);
+  }
+
+  private boolean exists(Path path) {
+    Path sanitizedPath = validatePath(path);
+    return Files.exists(sanitizedPath);
+  }
+
+  @MustBeClosed
+  @Nonnull
+  private Stream<Path> list(Path path) throws IOException {
+    Path sanitizedPath = validatePath(path);
+    return Files.list(sanitizedPath);
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Instant getLastModifiedTime(Path path) throws IOException {
+    Path sanitizedPath = validatePath(path);
+    return Files.getLastModifiedTime(sanitizedPath).toInstant();
+  }
+
   /**
    * Read the contents of a file into a string, using the provided input charset.
    *
@@ -1359,7 +1398,7 @@ public final class FileBasedStorage implements StorageProvider {
     if (!Files.exists(idsDir)) {
       return ImmutableSet.of();
     }
-    try (Stream<Path> files = Files.list(idsDir)) {
+    try (Stream<Path> files = list(idsDir)) {
       return files
           .filter(
               path -> {
@@ -1426,7 +1465,7 @@ public final class FileBasedStorage implements StorageProvider {
   @Nonnull
   @Override
   public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
-    return Files.newInputStream(getUploadSnapshotZipPath(key, network));
+    return new FileInputStream(getUploadSnapshotZipPath(key, network).toFile());
   }
 
   @Override
@@ -1443,6 +1482,13 @@ public final class FileBasedStorage implements StorageProvider {
   public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
     Path inputObjectsPath =
         getSnapshotInputObjectsDir(snapshot.getNetwork(), snapshot.getSnapshot());
+    if (!isDirectory(inputObjectsPath)) {
+      if (!isDirectory(inputObjectsPath.getParent())) {
+        throw new FileNotFoundException(String.format("Missing snapshot dir for %s", snapshot));
+      }
+      // snapshot contained no input objects
+      return Stream.empty();
+    }
     return Files.walk(inputObjectsPath)
         .filter(Files::isRegularFile)
         .map(inputObjectsPath::relativize)
@@ -1625,8 +1671,14 @@ public final class FileBasedStorage implements StorageProvider {
     return getNetworkAnalysisDir(network, analysis).resolve(RELPATH_QUESTIONS_DIR);
   }
 
-  private @Nonnull Path getAnswerDir(AnswerId answerId) {
-    return _baseDir.resolve(RELPATH_ANSWERS_DIR).resolve(answerId.getId());
+  private @Nonnull Path getAnswersDir() {
+    return _baseDir.resolve(RELPATH_ANSWERS_DIR);
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path getAnswerDir(AnswerId answerId) {
+    return getAnswersDir().resolve(answerId.getId());
   }
 
   private @Nonnull Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
@@ -1639,16 +1691,25 @@ public final class FileBasedStorage implements StorageProvider {
     return getNetworkDir(network).resolve(RELPATH_ANALYSES_DIR).resolve(analysis.getId());
   }
 
+  private @Nonnull Path getNetworksDir() {
+    return _baseDir.resolve("networks");
+  }
+
   @VisibleForTesting
   @Nonnull
   Path getNetworkDir(NetworkId network) {
-    return _baseDir.resolve(network.getId());
+    return getNetworksDir().resolve(network.getId());
   }
 
   /** Directory where original initialization or fork requests are stored */
+  private @Nonnull Path getOriginalsDir(NetworkId network) {
+    return getNetworkDir(network).resolve(RELPATH_ORIGINAL_DIR);
+  }
+
+  /** Directory where original initialization or fork request is stored */
   @Nonnull
   Path getOriginalDir(String key, NetworkId network) {
-    return getNetworkDir(network).resolve(RELPATH_ORIGINAL_DIR).resolve(toBase64(key));
+    return getOriginalsDir(network).resolve(toBase64(key));
   }
 
   private @Nonnull Path getNetworkSettingsDir(NetworkId network) {
@@ -1666,11 +1727,19 @@ public final class FileBasedStorage implements StorageProvider {
         : getAdHocQuestionDir(network, question);
   }
 
-  private @Nonnull Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
-    return getNetworkDir(network).resolve(RELPATH_SNAPSHOTS_DIR).resolve(snapshot.getId());
+  private @Nonnull Path getSnapshotsDir(NetworkId network) {
+    return getNetworkDir(network).resolve(RELPATH_SNAPSHOTS_DIR);
   }
 
-  private @Nonnull Path getStorageBase() {
+  @VisibleForTesting
+  @Nonnull
+  Path getSnapshotDir(NetworkId network, SnapshotId snapshot) {
+    return getSnapshotsDir(network).resolve(snapshot.getId());
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Path getStorageBase() {
     return _baseDir;
   }
 
@@ -1690,7 +1759,9 @@ public final class FileBasedStorage implements StorageProvider {
     return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_EXTENDED);
   }
 
-  private Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
+  @VisibleForTesting
+  @Nonnull
+  Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_INPUT);
   }
 
@@ -1816,5 +1887,90 @@ public final class FileBasedStorage implements StorageProvider {
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
     return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_PARSE_ANSWER_PATH);
+  }
+
+  @Override
+  public void runGarbageCollection(Instant expungeBeforeDate) throws IOException {
+    // Go back GC_SKEW_ALLOWANCE_MINUTES minutes to account for skew. This should safely
+    // underapproximate data to delete.
+    Instant safeExpungeBeforeDate = expungeBeforeDate.minus(GC_SKEW_ALLOWANCE);
+    _logger.debugf("FBS GC: Expunge before: %s\n", safeExpungeBeforeDate);
+
+    // Iterate over network dirs directly so we can expunge data from both extant and deleted
+    // networks.
+    if (exists(getNetworksDir())) {
+      try (Stream<Path> networkDirStream = list(getNetworksDir())) {
+        networkDirStream
+            .map(networkDir -> new NetworkId(networkDir.getFileName().toString()))
+            .forEach(
+                networkId -> {
+                  try {
+                    expungeOldNetworkData(safeExpungeBeforeDate, networkId);
+                  } catch (IOException e) {
+                    _logger.errorf(
+                        "Failed to expunge old data for network with ID '%s': %s",
+                        networkId, Throwables.getStackTraceAsString(e));
+                  }
+                });
+      }
+    }
+    // expunge answers
+    expungeOldEntries(safeExpungeBeforeDate, getAnswersDir(), true);
+  }
+
+  private void expungeOldNetworkData(Instant expungeBeforeDate, NetworkId networkId)
+      throws IOException {
+    // expunge snapshots
+    expungeOldEntries(expungeBeforeDate, getSnapshotsDir(networkId), true);
+
+    // expunge original uploads
+    expungeOldEntries(expungeBeforeDate, getOriginalsDir(networkId), true);
+
+    // TODO: expunge question IDs, questions, analysis IDs, analyses, node roles IDs, node roles
+  }
+
+  /**
+   * Deletes filesystem entries in {@code dir} whose last modified time precedes {@code
+   * expungeBeforeDate}. When deleting regular files, {@code directories} should be {@code false}.
+   * When deleting directories, {@code directories} should be {@code true}. Has no effect if {@code
+   * dir} does not exist.
+   *
+   * @throws IOException if there is an error
+   */
+  @VisibleForTesting
+  void expungeOldEntries(Instant expungeBeforeDate, Path dir, boolean directories)
+      throws IOException {
+    if (!exists(dir)) {
+      return;
+    }
+    List<Path> toDelete;
+    try (Stream<Path> fsEntryStream = list(dir)) {
+      toDelete =
+          fsEntryStream
+              .filter(
+                  path -> {
+                    if (directories ? !isDirectory(path) : !isRegularFile(path)) {
+                      // If this is not the type of filesystem entry we want to delete, ignore this
+                      // path.
+                      return false;
+                    }
+                    try {
+                      return getLastModifiedTime(path).compareTo(expungeBeforeDate) < 0;
+                    } catch (IOException e) {
+                      // If for some reason the last modified time of the entry cannot be fetched
+                      // (e.g. it was just deleted), ignore this path.
+                      return false;
+                    }
+                  })
+              .collect(ImmutableList.toImmutableList());
+    }
+    for (Path path : toDelete) {
+      if (directories) {
+        deleteDirectory(path);
+      } else {
+        deleteIfExists(path);
+      }
+      _logger.debugf("FBS GC: deleted: %s\n", path);
+    }
   }
 }

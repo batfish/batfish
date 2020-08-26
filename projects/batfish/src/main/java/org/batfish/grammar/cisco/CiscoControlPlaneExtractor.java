@@ -119,6 +119,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_MAP_IP
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.CRYPTO_MAP_MATCH_ADDRESS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
@@ -367,13 +368,10 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.IgpCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.routing_policy.expr.VarAs;
-import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -507,6 +505,7 @@ import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_set_peerContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_set_pfsContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_set_transform_setContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ipsec_isakmpContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_match_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Cs_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Csc_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_information_originate_rb_stanzaContext;
@@ -799,6 +798,8 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_metricContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_distance_distanceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_distance_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_maximum_pathsContext;
@@ -4350,6 +4351,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitCrypto_map_t_match_address(Crypto_map_t_match_addressContext ctx) {
+    todo(ctx);
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(IP_ACCESS_LIST, name, CRYPTO_MAP_MATCH_ADDRESS, line);
+  }
+
+  @Override
   public void exitCs_class(Cs_classContext ctx) {
     _currentServiceClass = null;
   }
@@ -5083,10 +5092,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       case CISCO_ASA:
       case FORCE10:
       case CISCO_IOS:
-        return String.format("Port-Channel%d", num);
-
-      case CISCO_IOS_XR:
-        return String.format("Bundle-Ether%d", num);
+        return String.format("Port-channel%d", num);
 
       default:
         _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
@@ -7658,6 +7664,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRo_distance_distance(Ro_distance_distanceContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRo_distance_ospf(Ro_distance_ospfContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitRo_distribute_list(Ro_distribute_listContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -9267,8 +9283,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarAs(ctx.RP_VARIABLE().getText());
     } else {
       throw convError(AsExpr.class, ctx);
     }
@@ -9662,7 +9676,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private LongExpr toLocalPreferenceLongExpr(Int_exprContext ctx) {
     if (ctx.DEC() != null) {
-      int val = toInteger(ctx.DEC());
+      long val = toLong(ctx.DEC());
       if (ctx.PLUS() != null) {
         return new IncrementLocalPreference(val);
       } else if (ctx.DASH() != null) {
@@ -9670,14 +9684,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       } else {
         return new LiteralLong(val);
       }
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarLong(ctx.RP_VARIABLE().getText());
     } else {
       /*
        * Unsupported local-preference integer expression - do not add cases
        * unless you know what you are doing
        */
-      throw convError(IntExpr.class, ctx);
+      throw convError(LongExpr.class, ctx);
     }
   }
 
@@ -9782,8 +9794,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
     } else if (ctx.IGP_COST() != null) {
       return new IgpCost();
-    } else if (ctx.RP_VARIABLE() != null) {
-      return new VarLong(ctx.RP_VARIABLE().getText());
     } else {
       /*
        * Unsupported metric long expression - do not add cases unless you

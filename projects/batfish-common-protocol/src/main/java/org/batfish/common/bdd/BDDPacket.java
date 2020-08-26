@@ -1,11 +1,11 @@
 package org.batfish.common.bdd;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,10 +247,10 @@ public class BDDPacket {
 
     if (representativeBDD.isZero()) {
       // Should not be possible if the preference is well-formed.
-      return Optional.empty();
+      return Optional.of(getRepresentativeFlow(bdd));
     }
 
-    return Optional.of(getFlowFromAssignment(representativeBDD));
+    return Optional.of(getRepresentativeFlow(representativeBDD));
   }
 
   /**
@@ -265,29 +265,31 @@ public class BDDPacket {
     return getFlow(bdd, FlowPreference.DEBUGGING);
   }
 
-  public Flow.Builder getFlowFromAssignment(BDD satAssignment) {
-    checkArgument(satAssignment.isAssignment());
+  public Flow.Builder getRepresentativeFlow(BDD bdd) {
+    return getFromFromAssignment(bdd.minAssignmentBits());
+  }
 
+  public Flow.Builder getFromFromAssignment(BitSet bits) {
     Flow.Builder fb = Flow.builder();
-    fb.setDstIp(Ip.create(_dstIp.satAssignmentToLong(satAssignment)));
-    fb.setSrcIp(Ip.create(_srcIp.satAssignmentToLong(satAssignment)));
-    fb.setDstPort(_dstPort.satAssignmentToLong(satAssignment).intValue());
-    fb.setSrcPort(_srcPort.satAssignmentToLong(satAssignment).intValue());
-    fb.setIpProtocol(_ipProtocol.satAssignmentToValue(satAssignment));
-    fb.setIcmpCode(_icmpCode.satAssignmentToValue(satAssignment));
-    fb.setIcmpType(_icmpType.satAssignmentToValue(satAssignment));
-    fb.setTcpFlagsAck(_tcpAck.andSat(satAssignment) ? 1 : 0);
-    fb.setTcpFlagsCwr(_tcpCwr.andSat(satAssignment) ? 1 : 0);
-    fb.setTcpFlagsEce(_tcpEce.andSat(satAssignment) ? 1 : 0);
-    fb.setTcpFlagsFin(_tcpFin.andSat(satAssignment) ? 1 : 0);
-    fb.setTcpFlagsPsh(_tcpPsh.andSat(satAssignment) ? 1 : 0);
-    fb.setTcpFlagsRst(_tcpRst.andSat(satAssignment) ? 1 : 0);
-    fb.setTcpFlagsSyn(_tcpSyn.andSat(satAssignment) ? 1 : 0);
-    fb.setTcpFlagsUrg(_tcpUrg.andSat(satAssignment) ? 1 : 0);
-    fb.setDscp(_dscp.satAssignmentToLong(satAssignment).intValue());
-    fb.setEcn(_ecn.satAssignmentToLong(satAssignment).intValue());
-    fb.setFragmentOffset(_fragmentOffset.satAssignmentToLong(satAssignment).intValue());
-    fb.setPacketLength(_packetLength.satAssignmentToValue(satAssignment).intValue());
+    fb.setDstIp(Ip.create(_dstIp.satAssignmentToLong(bits)));
+    fb.setSrcIp(Ip.create(_srcIp.satAssignmentToLong(bits)));
+    fb.setDstPort(_dstPort.satAssignmentToLong(bits).intValue());
+    fb.setSrcPort(_srcPort.satAssignmentToLong(bits).intValue());
+    fb.setIpProtocol(_ipProtocol.satAssignmentToValue(bits));
+    fb.setIcmpCode(_icmpCode.satAssignmentToValue(bits));
+    fb.setIcmpType(_icmpType.satAssignmentToValue(bits));
+    fb.setTcpFlagsAck(bits.get(_tcpAck.level()) ? 1 : 0);
+    fb.setTcpFlagsCwr(bits.get(_tcpCwr.level()) ? 1 : 0);
+    fb.setTcpFlagsEce(bits.get(_tcpEce.level()) ? 1 : 0);
+    fb.setTcpFlagsFin(bits.get(_tcpFin.level()) ? 1 : 0);
+    fb.setTcpFlagsPsh(bits.get(_tcpPsh.level()) ? 1 : 0);
+    fb.setTcpFlagsRst(bits.get(_tcpRst.level()) ? 1 : 0);
+    fb.setTcpFlagsSyn(bits.get(_tcpSyn.level()) ? 1 : 0);
+    fb.setTcpFlagsUrg(bits.get(_tcpUrg.level()) ? 1 : 0);
+    fb.setDscp(_dscp.satAssignmentToLong(bits).intValue());
+    fb.setEcn(_ecn.satAssignmentToLong(bits).intValue());
+    fb.setFragmentOffset(_fragmentOffset.satAssignmentToLong(bits).intValue());
+    fb.setPacketLength(_packetLength.satAssignmentToValue(bits));
     return fb;
   }
 

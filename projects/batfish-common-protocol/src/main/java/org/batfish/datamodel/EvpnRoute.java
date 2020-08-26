@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -50,13 +49,13 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       Ip nextHopIp,
       int admin,
       AsPath asPath,
-      SortedSet<Community> communities,
+      Set<Community> communities,
       boolean discard,
       long localPreference,
       long med,
       String nextHopInterface,
       Ip originatorIp,
-      SortedSet<Long> clusterList,
+      Set<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
       OriginType originType,
       RoutingProtocol protocol,
@@ -100,9 +99,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
   /** Return extended communities that are route targets for this route */
   @JsonIgnore
   public Set<ExtendedCommunity> getRouteTargets() {
-    return _communities.stream()
-        .filter(c -> c instanceof ExtendedCommunity)
-        .map(ExtendedCommunity.class::cast)
+    return _communities.getExtendedCommunities().stream()
         .filter(ExtendedCommunity::isRouteTarget)
         .collect(ImmutableSet.toImmutableSet());
   }

@@ -1,7 +1,9 @@
 set deviceconfig system hostname application-group
 
 set application app1
+set application "app w spaces"
 
 # This is an intentional test of the shorthand notation
 set application-group
 set application-group foo members [ dns app1 ]
+set application-group "foo w spaces" members [ dns "app w spaces" ]

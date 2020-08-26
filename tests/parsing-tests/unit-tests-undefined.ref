@@ -50,7 +50,7 @@
         "Lines" : {
           "filename" : "configs/arista_bgp",
           "lines" : [
-            11
+            12
           ]
         }
       },
@@ -62,7 +62,7 @@
         "Lines" : {
           "filename" : "configs/arista_bgp",
           "lines" : [
-            13
+            14
           ]
         }
       },
@@ -74,7 +74,7 @@
         "Lines" : {
           "filename" : "configs/arista_interface",
           "lines" : [
-            8
+            10
           ]
         }
       },
@@ -83,6 +83,18 @@
         "Struct_Type" : "policy-map",
         "Ref_Name" : "qos-pmap",
         "Context" : "interface service-policy",
+        "Lines" : {
+          "filename" : "configs/arista_interface",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_interface",
+        "Struct_Type" : "standard ipv4 access-list",
+        "Ref_Name" : "some_acl",
+        "Context" : "interface ip multicast boundary",
         "Lines" : {
           "filename" : "configs/arista_interface",
           "lines" : [
@@ -943,6 +955,18 @@
         }
       },
       {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "ipv4/6 acl",
+        "Ref_Name" : "someacl",
+        "Context" : "crypto map match address",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            232
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cisco_domain",
         "Struct_Type" : "interface",
         "Ref_Name" : "Loopback666",
@@ -993,7 +1017,7 @@
       {
         "File_Name" : "configs/cisco_eigrp",
         "Struct_Type" : "interface",
-        "Ref_Name" : "Port-Channel34",
+        "Ref_Name" : "Port-channel34",
         "Context" : "eigrp passive-interface",
         "Lines" : {
           "filename" : "configs/cisco_eigrp",
@@ -1005,7 +1029,7 @@
       {
         "File_Name" : "configs/cisco_eigrp",
         "Struct_Type" : "interface",
-        "Ref_Name" : "Port-Channel35",
+        "Ref_Name" : "Port-channel35",
         "Context" : "eigrp passive-interface",
         "Lines" : {
           "filename" : "configs/cisco_eigrp",
@@ -1491,7 +1515,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            55
+            56
           ]
         }
       },
@@ -1503,7 +1527,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            56
+            57
           ]
         }
       },
@@ -1515,8 +1539,8 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            52,
-            53
+            53,
+            54
           ]
         }
       },
@@ -1528,7 +1552,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            54
+            55
           ]
         }
       },
@@ -1552,7 +1576,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            67
+            68
           ]
         }
       },
@@ -1564,7 +1588,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            68
+            69
           ]
         }
       },
@@ -1576,7 +1600,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            57
+            58
           ]
         }
       },
@@ -1588,7 +1612,7 @@
         "Lines" : {
           "filename" : "configs/cisco_ospf",
           "lines" : [
-            58
+            59
           ]
         }
       },
@@ -2242,6 +2266,18 @@
           "filename" : "configs/colon_in_vrf",
           "lines" : [
             6
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/eos_mlag",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Vlan4094",
+        "Context" : "mlag configuration local-interface",
+        "Lines" : {
+          "filename" : "configs/eos_mlag",
+          "lines" : [
+            19
           ]
         }
       },
@@ -3444,9 +3480,9 @@
           "filename" : "configs/juniper_bgp",
           "lines" : [
             10,
-            20,
-            27,
-            36
+            21,
+            28,
+            37
           ]
         }
       },
@@ -3459,9 +3495,9 @@
           "filename" : "configs/juniper_bgp",
           "lines" : [
             13,
-            22,
-            29,
-            38
+            23,
+            30,
+            39
           ]
         }
       },
@@ -4192,10 +4228,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 340 results",
+      "notes" : "Found 343 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 340
+      "numResults" : 343
     }
   }
 ]

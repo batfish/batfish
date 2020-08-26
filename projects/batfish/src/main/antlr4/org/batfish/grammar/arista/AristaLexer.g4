@@ -1283,7 +1283,12 @@ BOTH
 
 BOUNDARY
 :
-   'boundary'
+  'boundary'
+  {
+    if (lastTokenType() == MULTICAST) {
+      pushMode(M_Prefix_Or_Standard_Acl);
+    }
+  }
 ;
 
 BPDUFILTER
@@ -1735,7 +1740,6 @@ COMMUNITY
 :
    'community'
    { _enableIpv6Address = false; }
-
 ;
 
 COMMUNITY_LIST
@@ -1746,7 +1750,6 @@ COMMUNITY_LIST
       _enableCommunityListNum = true;
       _enableDec = false;
    }
-
 ;
 
 COMMUNITY_MAP
@@ -3613,7 +3616,7 @@ FABRICPATH
 
 FACILITY
 :
-   'facility'
+   'facility' -> pushMode ( M_Word )
 ;
 
 FAIL_MESSAGE
@@ -4293,7 +4296,12 @@ HOPS_OF_STATISTICS_KEPT
 
 HOST
 :
-   'host'
+  'host'
+  {
+    if (lastTokenType() == LOGGING || secondToLastTokenType() == VRF) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 HOST_ASSOCIATION
@@ -5259,7 +5267,12 @@ LEASE
 
 LEVEL
 :
-   'level'
+  'level'
+  {
+    if (lastTokenType() == LOGGING) {
+      pushMode(M_Word);
+    }
+  }
 ;
 
 LEVEL_1
@@ -8333,6 +8346,16 @@ RELOAD_DELAY
    'reload-delay'
 ;
 
+RELOGGING_INTERVAL
+:
+   'relogging-interval'
+;
+
+REPEAT_MESSAGES
+:
+   'repeat-messages'
+;
+
 REMARK
 :
    'remark' -> pushMode ( M_REMARK )
@@ -8651,6 +8674,11 @@ ROGUE_AP_AWARE
 ROLE
 :
    'role'
+;
+
+ROOT
+:
+  'root'
 ;
 
 ROTARY
@@ -11017,9 +11045,14 @@ VPN_IPV6
 
 VRF
 :
-   'vrf'
-   {_enableIpv6Address = false;}
-
+  'vrf'
+  {
+    if (lastTokenType() == LOGGING) {
+      pushMode( M_Word );
+    } else {
+      _enableIpv6Address = false;
+    }
+  }
 ;
 
 VRF_ALSO
@@ -11560,7 +11593,7 @@ EQUALS
 FLOAT
 :
    (
-      F_PositiveDigit* F_Digit '.' F_Digit+
+      F_PositiveDigit F_Digit* '.' F_Digit+
    )
 ;
 
@@ -11635,11 +11668,6 @@ REGEX
       |
       ( '\\' '/')
    )* '/'
-;
-
-RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
 ;
 
 SEMICOLON
@@ -12022,12 +12050,6 @@ M_AsPath_CONFED
 M_AsPath_DEC
 :
    F_Digit+ -> type ( DEC ) , popMode
-;
-
-M_AsPath_RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type (
-   RP_VARIABLE ) , popMode
 ;
 
 M_AsPath_IGNORE
@@ -12874,6 +12896,33 @@ M_NEIGHBOR_VARIABLE
 ;
 
 M_NEIGHBOR_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Prefix_Or_Standard_Acl;
+
+M_Prefix_Or_Standard_Acl_IP_ADDRESS
+:
+  F_IpAddress -> type ( IP_ADDRESS ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_IP_PREFIX
+:
+  F_IpPrefix -> type ( IP_PREFIX ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_WORD
+:
+   F_NonWhitespace+ -> type ( WORD ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Prefix_Or_Standard_Acl_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;

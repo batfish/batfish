@@ -80,6 +80,7 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
@@ -583,7 +584,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _asPathSets;
   }
 
-  private Ip getBgpRouterId(final Configuration c, String vrfName, BgpProcess proc) {
+  private Ip getBgpRouterId(Configuration c, String vrfName, BgpProcess proc) {
     Ip processRouterId = proc.getRouterId();
     if (processRouterId == null) {
       processRouterId = _vrfs.get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getRouterId();
@@ -944,7 +945,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
-      final Configuration c, BgpProcess proc, String vrfName) {
+      Configuration c, BgpProcess proc, String vrfName) {
     org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
@@ -1382,7 +1383,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
-    newIface.setChannelGroup(iface.getChannelGroup());
+    if (iface.getBundleId() != null) {
+      newIface.setChannelGroup(String.format("Bundle-Ether%d", iface.getBundleId()));
+    }
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
@@ -2058,8 +2061,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
-    final Configuration c = new Configuration(_hostname, _vendor);
+    Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCiscoXr(_cf);
+    c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDnsServers(_dnsServers);
@@ -2238,10 +2242,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
      */
     _interfaces.forEach(
         (ifaceName, iface) -> {
-          // Portchannels
-          String chGroup = iface.getChannelGroup();
-          if (chGroup != null) {
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(chGroup);
+          // Bundle ID
+          Integer bundleId = iface.getBundleId();
+          if (bundleId != null) {
+            String bundleName = String.format("Bundle-Ether%d", bundleId);
+            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(bundleName);
             if (viIface != null) {
               viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
             }

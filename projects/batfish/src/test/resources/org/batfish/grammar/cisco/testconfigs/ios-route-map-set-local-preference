@@ -1,0 +1,6 @@
+!
+hostname ios-route-map-set-local-preference
+!
+route-map SET_LOCAL_PREFERENCE permit 10
+  set local-preference 4294967295
+!

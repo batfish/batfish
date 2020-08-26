@@ -1,6 +1,7 @@
 package org.batfish.representation.arista;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,6 +14,8 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 public final class Vrf implements Serializable {
   @Nullable private String _description;
   @Nullable private IsisProcess _isisProcess;
+  private final @Nonnull Map<String, LoggingHost> _loggingHosts;
+  private @Nullable String _loggingSourceInterface;
   @Nonnull private final String _name;
   @Nonnull private Map<String, OspfProcess> _ospfProcesses;
   @Nullable private RipProcess _ripProcess;
@@ -25,6 +28,7 @@ public final class Vrf implements Serializable {
 
   public Vrf(@Nonnull String name) {
     _name = name;
+    _loggingHosts = new HashMap<>();
     // Ensure that processes are in insertion order.
     _ospfProcesses = new LinkedHashMap<>(0);
     _staticRoutes = new HashSet<>();
@@ -38,6 +42,18 @@ public final class Vrf implements Serializable {
   @Nullable
   public IsisProcess getIsisProcess() {
     return _isisProcess;
+  }
+
+  public @Nonnull Map<String, LoggingHost> getLoggingHosts() {
+    return _loggingHosts;
+  }
+
+  public @Nullable String getLoggingSourceInterface() {
+    return _loggingSourceInterface;
+  }
+
+  public void setLoggingSourceInterface(@Nullable String loggingSourceInterface) {
+    _loggingSourceInterface = loggingSourceInterface;
   }
 
   @Nonnull

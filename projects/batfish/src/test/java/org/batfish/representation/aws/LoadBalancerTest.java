@@ -19,12 +19,13 @@ import static org.batfish.representation.aws.LoadBalancer.computeNotForwardedFil
 import static org.batfish.representation.aws.LoadBalancer.computeTargetGroupTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.computeTargetTransformationStep;
 import static org.batfish.representation.aws.LoadBalancer.getActiveTargets;
+import static org.batfish.representation.aws.LoadBalancer.getEnabledTargetZones;
 import static org.batfish.representation.aws.LoadBalancer.getNodeId;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForForwardedPackets;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNoMatchedListener;
 import static org.batfish.representation.aws.LoadBalancer.getTraceElementForNotForwardedPackets;
-import static org.batfish.representation.aws.LoadBalancer.isTargetInAnyEnabledAvailabilityZone;
+import static org.batfish.representation.aws.LoadBalancer.isTargetInValidAvailabilityZone;
 import static org.batfish.representation.aws.Subnet.NLB_INSTANCE_TARGETS_IFACE_SUFFIX;
 import static org.batfish.representation.aws.Utils.interfaceNameToRemote;
 import static org.batfish.representation.aws.Utils.publicIpAddressGroupName;
@@ -300,7 +301,9 @@ public class LoadBalancerTest {
                     "tgArn", new LoadBalancerTargetHealth("tgArn", ImmutableList.of(target))))
             .build();
 
-    _loadBalancer.installTransformations(viIface, "zone1", true, listeners, region, new Warnings());
+    Set<String> enabledTargetZones = ImmutableSet.of("targetZone");
+    _loadBalancer.installTransformations(
+        viIface, enabledTargetZones, listeners, region, new Warnings());
 
     assertThat(
         viIface.getIncomingTransformation(),
@@ -310,17 +313,15 @@ public class LoadBalancerTest {
                     Objects.requireNonNull(
                         _loadBalancer.computeListenerTransformation(
                             listeners.get(0),
-                            "zone1",
                             _loadBalancerIp,
-                            true,
+                            enabledTargetZones,
                             region,
                             new Warnings())),
                     Objects.requireNonNull(
                         _loadBalancer.computeListenerTransformation(
                             listeners.get(1),
-                            "zone1",
                             _loadBalancerIp,
-                            true,
+                            enabledTargetZones,
                             region,
                             new Warnings()))))));
     assertThat(
@@ -335,7 +336,7 @@ public class LoadBalancerTest {
     Interface viIface = Interface.builder().setName("interface").build();
     Region region = Region.builder("r1").build();
     _loadBalancer.installTransformations(
-        viIface, "zone1", true, ImmutableList.of(), region, new Warnings());
+        viIface, ImmutableSet.of("zone1"), ImmutableList.of(), region, new Warnings());
     assertThat(viIface.getIncomingTransformation(), equalTo(FINAL_TRANSFORMATION));
     assertThat(
         viIface.getFirewallSessionInterfaceInfo(),
@@ -387,7 +388,7 @@ public class LoadBalancerTest {
 
     LoadBalancerTransformation loadBalancerTransformation =
         _loadBalancer.computeListenerTransformation(
-            listener, "zone", _loadBalancerIp, true, region, new Warnings());
+            listener, _loadBalancerIp, ImmutableSet.of("targetZone"), region, new Warnings());
 
     assertThat(
         loadBalancerTransformation.getGuard(),
@@ -397,7 +398,11 @@ public class LoadBalancerTest {
         loadBalancerTransformation.getStep(),
         equalTo(
             computeTargetGroupTransformationStep(
-                "tgArnGood", "zone", _loadBalancerIp, true, region, new Warnings())));
+                "tgArnGood",
+                _loadBalancerIp,
+                ImmutableSet.of("targetZone"),
+                region,
+                new Warnings())));
   }
 
   /** Tests that we return null when no good action is possible */
@@ -425,7 +430,7 @@ public class LoadBalancerTest {
 
     assertThat(
         _loadBalancer.computeListenerTransformation(
-            listener, "zone", _loadBalancerIp, true, region, new Warnings()),
+            listener, _loadBalancerIp, ImmutableSet.of("zone"), region, new Warnings()),
         nullValue());
   }
 
@@ -464,7 +469,7 @@ public class LoadBalancerTest {
     // unhealthy target should be ignored
     assertThat(
         computeTargetGroupTransformationStep(
-            targetGroupArn, "zone", loadBalancerIp, true, region, new Warnings()),
+            targetGroupArn, loadBalancerIp, ImmutableSet.of("targetZone"), region, new Warnings()),
         equalTo(
             new ApplyAny(
                 computeTargetTransformationStep(
@@ -507,7 +512,7 @@ public class LoadBalancerTest {
     // unhealthy target is ignored should be ignored
     assertThat(
         computeTargetGroupTransformationStep(
-            targetGroupArn, "zone", loadBalancerIp, false, region, new Warnings()),
+            targetGroupArn, loadBalancerIp, ImmutableSet.of("zone"), region, new Warnings()),
         nullValue());
   }
 
@@ -541,7 +546,7 @@ public class LoadBalancerTest {
 
     assertThat(
         computeTargetGroupTransformationStep(
-            targetGroupArn, "zone", loadBalancerIp, true, region, new Warnings()),
+            targetGroupArn, loadBalancerIp, ImmutableSet.of("targetZone"), region, new Warnings()),
         equalTo(
             new ApplyAny(
                 computeTargetTransformationStep(
@@ -590,7 +595,12 @@ public class LoadBalancerTest {
       rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
       assertThat(
           getActiveTargets(
-              targetHealth, targetGroup, ImmutableSet.of("x"), true, rb.build(), false, null),
+              targetHealth,
+              targetGroup,
+              ImmutableSet.of("zone1", "zone2"),
+              rb.build(),
+              false,
+              null),
           containsInAnyOrder(healthyTarget1, healthyTarget2, healthyTargetAll));
     }
 
@@ -604,7 +614,7 @@ public class LoadBalancerTest {
       rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
       assertThat(
           getActiveTargets(
-              targetHealth, targetGroup, ImmutableSet.of("zone1"), false, rb.build(), false, null),
+              targetHealth, targetGroup, ImmutableSet.of("zone1"), rb.build(), false, null),
           containsInAnyOrder(healthyTarget1, healthyTargetAll));
     }
 
@@ -617,7 +627,7 @@ public class LoadBalancerTest {
       rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
       assertThat(
           getActiveTargets(
-              targetHealth, targetGroup, ImmutableSet.of("zone1"), false, rb.build(), false, null),
+              targetHealth, targetGroup, ImmutableSet.of("zone1"), rb.build(), false, null),
           containsInAnyOrder(healthyTargetAll));
     }
 
@@ -630,7 +640,7 @@ public class LoadBalancerTest {
       rb.setLoadBalancerTargetHealths(ImmutableMap.of(targetGroupArn, targetHealth));
       assertThat(
           getActiveTargets(
-              targetHealth, targetGroup, ImmutableSet.of("zone1"), false, rb.build(), false, null),
+              targetHealth, targetGroup, ImmutableSet.of("zone1"), rb.build(), false, null),
           containsInAnyOrder(unhealthyTarget));
     }
   }
@@ -686,7 +696,7 @@ public class LoadBalancerTest {
   }
 
   @Test
-  public void testIsTargetInEnabledAvailabilityZone_instanceTarget() {
+  public void testIsTargetInValidAvailabilityZone_instanceTarget() {
     Subnet subnet = getTestSubnet(Prefix.parse("1.1.1.1/32"), "subnet", "vpc", "targetZone");
     Instance instance =
         Instance.builder().setInstanceId("instance").setSubnetId(subnet.getId()).build();
@@ -703,29 +713,19 @@ public class LoadBalancerTest {
     Set<String> targetZone = ImmutableSet.of("targetZone");
     Set<String> otherZone = ImmutableSet.of("otherZone");
 
-    // LB in same zone; cross zone load balancing is off
+    // target in enabled zone
     assertTrue(
-        isTargetInAnyEnabledAvailabilityZone(
-            targetHealthDescription, TargetGroup.Type.INSTANCE, targetZone, false, region));
+        isTargetInValidAvailabilityZone(
+            targetHealthDescription, TargetGroup.Type.INSTANCE, targetZone, region));
 
-    // LB in same zone; cross zone load balancing is on
-    assertTrue(
-        isTargetInAnyEnabledAvailabilityZone(
-            targetHealthDescription, TargetGroup.Type.INSTANCE, targetZone, true, region));
-
-    // LB in different zone; cross zone load balancing is off
+    // target in non-enabled zone
     assertFalse(
-        isTargetInAnyEnabledAvailabilityZone(
-            targetHealthDescription, TargetGroup.Type.INSTANCE, otherZone, false, region));
-
-    // LB in different zone; cross zone load balancing is on
-    assertTrue(
-        isTargetInAnyEnabledAvailabilityZone(
-            targetHealthDescription, TargetGroup.Type.INSTANCE, otherZone, true, region));
+        isTargetInValidAvailabilityZone(
+            targetHealthDescription, TargetGroup.Type.INSTANCE, otherZone, region));
   }
 
   @Test
-  public void testIsTargetInEnabledAvailabilityZone_ipTarget() {
+  public void testIsTargetInValidAvailabilityZone_ipTarget() {
     TargetGroup targetGroup =
         new TargetGroup(
             "tgArg", ImmutableList.of(), Protocol.TCP, 80, "tgName", TargetGroup.Type.IP);
@@ -736,51 +736,30 @@ public class LoadBalancerTest {
     Set<String> targetZone = ImmutableSet.of("targetZone");
     Set<String> otherZone = ImmutableSet.of("otherZone");
 
-    // LB in same zone; cross zone load balancing is off
+    // target in enabled zone
     assertTrue(
-        isTargetInAnyEnabledAvailabilityZone(
+        isTargetInValidAvailabilityZone(
             targetHealthDescription,
             targetGroup.getTargetType(),
             targetZone,
-            false,
             Region.builder("r1").build()));
 
-    // LB in same zone; cross zone load balancing is on
-    assertTrue(
-        isTargetInAnyEnabledAvailabilityZone(
-            targetHealthDescription,
-            targetGroup.getTargetType(),
-            targetZone,
-            true,
-            Region.builder("r1").build()));
-
-    // LB in different zone; cross zone load balancing is off
+    // target in non-enabled zone
     assertFalse(
-        isTargetInAnyEnabledAvailabilityZone(
+        isTargetInValidAvailabilityZone(
             targetHealthDescription,
             targetGroup.getTargetType(),
             otherZone,
-            false,
             Region.builder("r1").build()));
 
-    // LB in different zone; cross zone load balancing is on
+    // Target in zone "all"
     assertTrue(
-        isTargetInAnyEnabledAvailabilityZone(
-            targetHealthDescription,
-            targetGroup.getTargetType(),
-            otherZone,
-            true,
-            Region.builder("r1").build()));
-
-    // Target in zone "all"; cross zone is off
-    assertTrue(
-        isTargetInAnyEnabledAvailabilityZone(
+        isTargetInValidAvailabilityZone(
             new TargetHealthDescription(
                 new LoadBalancerTarget("all", "1.1.1.1", 80),
                 new TargetHealth(HealthState.HEALTHY)),
             targetGroup.getTargetType(),
             otherZone,
-            false,
             Region.builder("r1").build()));
   }
 
@@ -995,5 +974,19 @@ public class LoadBalancerTest {
         containsInAnyOrder(
             hasDefaultVrf(hasStaticRoutes(contains(expectedRouteViaSubnet1))),
             hasDefaultVrf(hasStaticRoutes(contains(expectedRouteViaSubnet2)))));
+  }
+
+  @Test
+  public void testGetEnabledTargetZones() {
+    AvailabilityZone myAz = new AvailabilityZone("s", "az1");
+    AvailabilityZone otherAz = new AvailabilityZone("s", "az2");
+    List<AvailabilityZone> allAzs = ImmutableList.of(myAz, otherAz);
+
+    assertThat(
+        getEnabledTargetZones(myAz, false, allAzs), equalTo(ImmutableSet.of(myAz.getZoneName())));
+
+    assertThat(
+        getEnabledTargetZones(myAz, true, allAzs),
+        equalTo(ImmutableSet.of(myAz.getZoneName(), otherAz.getZoneName())));
   }
 }

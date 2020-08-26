@@ -17,12 +17,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 public final class DeviceGroup extends PaloAltoConfiguration {
-  private String _description;
+  private @Nullable String _description;
   private final Set<String> _devices;
+  private final String _name;
+
+  /** The parent {@link DeviceGroup}. */
+  private @Nullable String _parentDg;
+
   /** Map of Device name to set of Vsyses */
   private final Map<String, Set<String>> _vsys;
-
-  private final String _name;
 
   public DeviceGroup(String name) {
     super();
@@ -44,20 +47,28 @@ public final class DeviceGroup extends PaloAltoConfiguration {
     return _description;
   }
 
+  public void setDescription(String description) {
+    _description = description;
+  }
+
   public @Nonnull Set<String> getDevices() {
     return ImmutableSet.copyOf(_devices);
+  }
+
+  public @Nonnull String getName() {
+    return _name;
+  }
+
+  public @Nullable String getParentDg() {
+    return _parentDg;
+  }
+
+  public void setParentDg(@Nullable String parentDg) {
+    _parentDg = parentDg;
   }
 
   /** Return map of device name to set of vsys names, for vsys associated with this device-group. */
   public @Nonnull Map<String, Set<String>> getVsys() {
     return _vsys;
-  }
-
-  public String getName() {
-    return _name;
-  }
-
-  public void setDescription(String description) {
-    _description = description;
   }
 }

@@ -1,0 +1,130 @@
+!RANCID-CONTENT-TYPE: arista
+!
+! Command: show running-config all
+! device: arista_logging_show_run_all (DCS-7260CX-64, EOS-4.22.3M)
+!
+! boot system flash:/EOS-4.22.3M.swi
+!
+hostname arista_logging_show_run_all
+!
+no logging event storm-control discards global
+no logging event storm-control discards interval
+logging event port-channel member-status global
+logging on
+no logging relogging-interval
+no logging repeat-messages
+logging buffered 16384 debugging
+logging trap debugging
+logging console critical
+no logging synchronous
+logging host 1.2.3.4 514 protocol udp
+logging host 1.2.3.5 65535 protocol tcp
+logging host some_host.company.com
+logging vrf foo host 1.2.3.6 514 protocol udp
+logging format timestamp traditional
+no logging format hostname
+no logging format sequence-numbers
+logging facility some-facility
+logging source-interface Loopback0
+logging vrf foo source-interface Loopback3
+no logging policy
+no logging qos dscp
+logging level AAA alerts
+logging level ACCOUNTING critical
+logging level ACL debugging
+logging level AGENT emergencies
+logging level ALE errors
+logging level ARP informational
+logging level BFD notifications
+logging level BGP warnings
+logging level BMP 0
+logging level CAPACITY 1
+logging level CAPI 2
+logging level CLEAR 3
+logging level CVX 4
+logging level DATAPLANE 5
+logging level DHCP 6
+logging level DOT1X 7
+logging level DSCP debugging
+logging level ENVMON debugging
+logging level ETH debugging
+logging level EVENTMON debugging
+logging level EXTENSION debugging
+logging level FHRP debugging
+logging level FLOW debugging
+logging level FORWARDING debugging
+logging level FRU debugging
+logging level FWK debugging
+logging level GMP debugging
+logging level HARDWARE debugging
+logging level HEALTH debugging
+logging level HTTPSERVICE debugging
+logging level IGMP debugging
+logging level IGMPSNOOPING debugging
+logging level INT debugging
+logging level INTF debugging
+logging level IP6ROUTING debugging
+logging level IPRIB debugging
+logging level IRA debugging
+logging level ISIS debugging
+logging level KERNELFIB debugging
+logging level LACP debugging
+logging level LAG debugging
+logging level LAUNCHER debugging
+logging level LDP debugging
+logging level LICENSE debugging
+logging level LINEPROTO debugging
+logging level LLDP debugging
+logging level LOGMGR debugging
+logging level LOOPBACK debugging
+logging level LOOPPROTECT debugging
+logging level MAPREDUCEMONITOR debugging
+logging level MIRRORING debugging
+logging level MKA debugging
+logging level MLAG debugging
+logging level MMODE debugging
+logging level MROUTE debugging
+logging level MRP debugging
+logging level MSDP debugging
+logging level MSRP debugging
+logging level MSSPOLICYMONITOR debugging
+logging level MVRP debugging
+logging level NAT debugging
+logging level OPENCONFIG debugging
+logging level OPENFLOW debugging
+logging level OSPF debugging
+logging level OSPF3 debugging
+logging level PACKAGE debugging
+logging level PFC debugging
+logging level PIMBSR debugging
+logging level PORTSECURITY debugging
+logging level PTP debugging
+logging level PWRMGMT debugging
+logging level QOS debugging
+logging level QUEUEMONITOR debugging
+logging level REDUNDANCY debugging
+logging level RIB debugging
+logging level ROUTING debugging
+logging level SECURITY debugging
+logging level SERVERMONITOR debugging
+logging level SPANTREE debugging
+logging level SSO debugging
+logging level STAGEMGR debugging
+logging level STRATA debugging
+logging level SYS debugging
+logging level SYSDB debugging
+logging level TAPAGG debugging
+logging level TCP debugging
+logging level TRANSCEIVER debugging
+logging level TUNNEL debugging
+logging level TUNNELINTF debugging
+logging level VMTRACERSESS debugging
+logging level VMWAREVI debugging
+logging level VMWAREVS debugging
+logging level VRF debugging
+logging level VRRP debugging
+logging level VXLAN debugging
+logging level XMPP debugging
+logging level ZTP debugging
+logging event link-status global
+logging event spanning-tree global

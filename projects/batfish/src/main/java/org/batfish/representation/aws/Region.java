@@ -692,7 +692,7 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, Subnet> getSubnets() {
+  public Map<String, Subnet> getSubnets() {
     return _subnets;
   }
 

@@ -201,7 +201,7 @@ public class VirtualRouter implements Serializable {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  VirtualRouter(@Nonnull final String name, @Nonnull final Node node) {
+  VirtualRouter(@Nonnull String name, @Nonnull Node node) {
     _node = node;
     _c = node.getConfiguration();
     _name = name;
@@ -253,17 +253,16 @@ public class VirtualRouter implements Serializable {
         .getActions()
         .forEach(
             r -> {
-              // REPLACE does not make sense across routers, update with WITHDRAW
-              Reason reason = r.getReason() == Reason.REPLACE ? Reason.WITHDRAW : r.getReason();
-              queue.add(
-                  RouteAdvertisement.<R>builder().setRoute(r.getRoute()).setReason(reason).build());
+              @SuppressWarnings("unchecked") // Ok to upcast to R since immutable.
+              RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
+              queue.add(sanitized);
             });
   }
 
   /** Lookup the VirtualRouter owner of a remote BGP neighbor. */
   @Nullable
   private static VirtualRouter getRemoteBgpNeighborVR(
-      @Nonnull BgpPeerConfigId bgpId, @Nonnull final Map<String, Node> allNodes) {
+      @Nonnull BgpPeerConfigId bgpId, @Nonnull Map<String, Node> allNodes) {
     return allNodes.get(bgpId.getHostname()).getVirtualRouters().get(bgpId.getVrfName());
   }
 
@@ -505,7 +504,7 @@ public class VirtualRouter implements Serializable {
   void processExternalBgpAdvertisements(
       Set<BgpAdvertisement> externalAdverts,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      final Map<String, Node> allNodes,
+      Map<String, Node> allNodes,
       BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
 
@@ -642,7 +641,8 @@ public class VirtualRouter implements Serializable {
         transformedIncomingRouteBuilder.setAsPath(transformedOutgoingRoute.getAsPath());
 
         // Incoming communities
-        transformedIncomingRouteBuilder.addCommunities(transformedOutgoingRoute.getCommunities());
+        transformedIncomingRouteBuilder.addCommunities(
+            transformedOutgoingRoute.getCommunities().getCommunities());
 
         // Incoming protocol
         transformedIncomingRouteBuilder.setProtocol(targetProtocol);
@@ -1144,6 +1144,9 @@ public class VirtualRouter implements Serializable {
       BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(e.getKey().head()));
       assert ourBgpConfig.getIpv4UnicastAddressFamily() != null;
       // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+      boolean useRibGroups =
+          ourBgpConfig.getAppliedRibGroup() != null
+              && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
       Ip remoteIp = sessionProperties.getTailIp();
 
       Bgpv4Rib targetRib =
@@ -1212,11 +1215,15 @@ public class VirtualRouter implements Serializable {
         if (remoteRouteAdvert.isWithdrawn()) {
           // Note this route was removed
           ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
-          perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
+          if (useRibGroups) {
+            perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
+          }
         } else {
           // Merge into staging rib, note delta
           ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-          perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
+          if (useRibGroups) {
+            perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
+          }
           _prefixTracer.installed(
               transformedIncomingRoute.getNetwork(),
               remoteConfigId.getHostname(),
@@ -1226,8 +1233,8 @@ public class VirtualRouter implements Serializable {
         }
       }
       // Apply rib groups if any
-      RibGroup rg = ourBgpConfig.getAppliedRibGroup();
-      if (rg != null) {
+      if (useRibGroups) {
+        RibGroup rg = ourBgpConfig.getAppliedRibGroup();
         rg.getImportRibs()
             .forEach(
                 rib ->
@@ -1390,7 +1397,7 @@ public class VirtualRouter implements Serializable {
       RibDelta<Bgpv4Route> ebgpBestPathDelta,
       RibDelta<Bgpv4Route> bgpDelta,
       RibDelta<AnnotatedRoute<AbstractRoute>> mainDelta,
-      final Map<String, Node> allNodes,
+      Map<String, Node> allNodes,
       BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
     for (EdgeId edge : _bgpRoutingProcess._bgpv4IncomingRoutes.keySet()) {
@@ -1413,7 +1420,7 @@ public class VirtualRouter implements Serializable {
       Map<String, Node> allNodes,
       BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
-    final BgpSessionProperties session = getBgpSessionProperties(bgpTopology, edge);
+    BgpSessionProperties session = getBgpSessionProperties(bgpTopology, edge);
 
     BgpPeerConfigId remoteConfigId = edge.tail();
     BgpPeerConfigId ourConfigId = edge.head();
@@ -1423,6 +1430,8 @@ public class VirtualRouter implements Serializable {
     if (remoteVirtualRouter == null) {
       return;
     }
+    BgpRoutingProcess remoteBgpRoutingProcess = remoteVirtualRouter.getBgpRoutingProcess();
+    assert remoteBgpRoutingProcess != null;
 
     // Queue mainRib updates that were not introduced by BGP process (i.e., IGP routes)
     // Also, do not double-export main RIB routes
@@ -1487,6 +1496,7 @@ public class VirtualRouter implements Serializable {
     }
 
     RibDelta<AnnotatedRoute<Bgpv4Route>> bgpRoutesToExport = bgpRibExports.build();
+
     // Compute a set of advertisements that can be queued on remote VR
     Stream<RouteAdvertisement<Bgpv4Route>> exportedAdvertisements =
         Stream.concat(
@@ -1501,7 +1511,7 @@ public class VirtualRouter implements Serializable {
                               remoteConfigId,
                               ourConfig,
                               remoteConfig,
-                              allNodes,
+                              remoteBgpRoutingProcess,
                               session,
                               Type.IPV4_UNICAST);
                       // REPLACE does not make sense across routers, update with WITHDRAW
@@ -1517,7 +1527,8 @@ public class VirtualRouter implements Serializable {
                                       .build())
                           .orElse(null);
                     })
-                .filter(Objects::nonNull),
+                .filter(Objects::nonNull)
+                .distinct(),
             mainRibExports);
 
     // Call this on the REMOTE VR and REVERSE the edge!
@@ -1633,7 +1644,7 @@ public class VirtualRouter implements Serializable {
    */
   void finalizeBgpRoutesAndQueueOutgoingMessages(
       Map<Bgpv4Rib, RibDelta<Bgpv4Route>> stagingDeltas,
-      final Map<String, Node> allNodes,
+      Map<String, Node> allNodes,
       BgpTopology bgpTopology,
       NetworkConfigurations networkConfigurations) {
 
@@ -1721,7 +1732,7 @@ public class VirtualRouter implements Serializable {
    * plane iterations.
    */
   void queueInitialBgpMessages(
-      final BgpTopology bgpTopology, final Map<String, Node> allNodes, NetworkConfigurations nc) {
+      BgpTopology bgpTopology, Map<String, Node> allNodes, NetworkConfigurations nc) {
     if (_bgpRoutingProcess == null) {
       // nothing to do
       return;
@@ -1751,6 +1762,8 @@ public class VirtualRouter implements Serializable {
     if (remoteVr == null) {
       return;
     }
+    BgpRoutingProcess remoteBgpRoutingProcess = remoteVr.getBgpRoutingProcess();
+    assert remoteBgpRoutingProcess != null;
 
     /*
     TODO:
@@ -1795,7 +1808,7 @@ public class VirtualRouter implements Serializable {
                       remoteConfigId,
                       localConfig,
                       remoteConfig,
-                      allNodes,
+                      remoteBgpRoutingProcess,
                       sessionProperties,
                       Type.IPV4_UNICAST);
                 })

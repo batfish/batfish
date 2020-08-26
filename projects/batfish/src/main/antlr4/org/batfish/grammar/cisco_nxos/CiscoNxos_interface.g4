@@ -868,6 +868,8 @@ il_null
 :
   (
     FAST_SELECT_HOT_STANDBY
+    | PORT_PRIORITY
+    | RATE
     | SUSPEND_INDIVIDUAL
   ) null_rest_of_line
 ;
@@ -1014,7 +1016,22 @@ i_no_null
 
 i_no_shutdown
 :
-  SHUTDOWN NEWLINE
+  SHUTDOWN
+  (
+    inoshut
+    | inoshut_lan
+  )
+;
+
+inoshut
+:
+  // just "no shutdown"
+  NEWLINE
+;
+
+inoshut_lan
+:
+  LAN NEWLINE
 ;
 
 i_no_switchport
@@ -1023,7 +1040,10 @@ i_no_switchport
   (
     inos_access
     | inos_block
+    | inos_dot1q
     | inos_host
+    | inos_monitor
+    | inos_priority
     | inos_switchport
   )
 ;
@@ -1038,9 +1058,24 @@ inos_block
   BLOCK (MULTICAST | UNICAST) NEWLINE
 ;
 
+inos_dot1q
+:
+  DOT1Q ETHERTYPE NEWLINE
+;
+
 inos_host
 :
   HOST NEWLINE
+;
+
+inos_monitor
+:
+  MONITOR NEWLINE
+;
+
+inos_priority
+:
+  PRIORITY EXTEND NEWLINE
 ;
 
 inos_switchport

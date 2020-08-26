@@ -10,12 +10,13 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 /** A set of {@link Community} objects. */
 public final class CommunitySet implements Serializable {
@@ -25,7 +26,7 @@ public final class CommunitySet implements Serializable {
   }
 
   public static @Nonnull CommunitySet of(Community... communities) {
-    return of(Arrays.asList(communities));
+    return of(ImmutableSet.copyOf(communities));
   }
 
   public static @Nonnull CommunitySet of(Iterable<? extends Community> communities) {
@@ -34,14 +35,55 @@ public final class CommunitySet implements Serializable {
 
   public static @Nonnull CommunitySet of(Set<? extends Community> communities) {
     if (communities.isEmpty()) {
+      // Skip cache if the collection is empty.
       return empty();
     }
-    ImmutableSet<Community> immutableValue = ImmutableSet.copyOf(communities);
-    return CACHE.getUnchecked(immutableValue);
+    if (communities instanceof ImmutableSet) {
+      // Skip a cache operation if the input is immutable.
+      @SuppressWarnings("unchecked") // safe since you cannot insert into ImmutableSet
+      ImmutableSet<Community> immutableKey = (ImmutableSet<Community>) communities;
+      return CACHE.getUnchecked(immutableKey);
+    }
+    // Skip a copy if a mutable copy of the key is already present.
+    CommunitySet ret = CACHE.getIfPresent(communities);
+    if (ret != null) {
+      return ret;
+    }
+    // The input communities might be mutable, so freeze them before caching.
+    ImmutableSet<Community> immutableKey = ImmutableSet.copyOf(communities);
+    ret = new CommunitySet(immutableKey);
+    CACHE.put(immutableKey, ret);
+    return ret;
   }
 
   public @Nonnull Set<Community> getCommunities() {
     return _communities;
+  }
+
+  public @Nonnull Set<ExtendedCommunity> getExtendedCommunities() {
+    if (_communities.isEmpty()) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<ExtendedCommunity> ret = ImmutableSet.builder();
+    for (Community c : _communities) {
+      if (c instanceof ExtendedCommunity) {
+        ret.add((ExtendedCommunity) c);
+      }
+    }
+    return ret.build();
+  }
+
+  public @Nonnull Set<StandardCommunity> getStandardCommunities() {
+    if (_communities.isEmpty()) {
+      return ImmutableSet.of();
+    }
+    ImmutableSet.Builder<StandardCommunity> ret = ImmutableSet.builder();
+    for (Community c : _communities) {
+      if (c instanceof StandardCommunity) {
+        ret.add((StandardCommunity) c);
+      }
+    }
+    return ret.build();
   }
 
   @Override
@@ -52,7 +94,9 @@ public final class CommunitySet implements Serializable {
     if (!(obj instanceof CommunitySet)) {
       return false;
     }
-    return _communities.equals(((CommunitySet) obj)._communities);
+    CommunitySet other = (CommunitySet) obj;
+    return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
+        && _communities.equals(other._communities);
   }
 
   @Override
@@ -91,11 +135,16 @@ public final class CommunitySet implements Serializable {
 
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
-  private static final LoadingCache<ImmutableSet<Community>, CommunitySet> CACHE =
+  private static final LoadingCache<Set<Community>, CommunitySet> CACHE =
       CacheBuilder.newBuilder()
           .softValues()
           .maximumSize(1 << 16)
-          .build(CacheLoader.from(CommunitySet::new));
+          .build(
+              CacheLoader.from(
+                  set -> {
+                    assert set instanceof ImmutableSet;
+                    return new CommunitySet((ImmutableSet<Community>) set);
+                  }));
 
   /* Cache the hashcode */
   private transient int _hashCode = 0;

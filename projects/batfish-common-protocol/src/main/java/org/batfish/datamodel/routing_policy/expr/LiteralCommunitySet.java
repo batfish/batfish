@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
 import java.util.Set;
@@ -24,14 +25,14 @@ public class LiteralCommunitySet extends CommunitySetExpr {
 
   @JsonCreator
   private static @Nonnull LiteralCommunitySet create(
-      @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities) {
-    return new LiteralCommunitySet(firstNonNull(communities, ImmutableSortedSet.of()));
+      @JsonProperty(PROP_COMMUNITIES) Set<Community> communities) {
+    return new LiteralCommunitySet(firstNonNull(communities, ImmutableSet.of()));
   }
 
-  private final SortedSet<Community> _communities;
+  private final Set<Community> _communities;
 
   public LiteralCommunitySet(@Nonnull Collection<? extends Community> communities) {
-    _communities = ImmutableSortedSet.copyOf(communities);
+    _communities = ImmutableSet.copyOf(communities);
   }
 
   @Override
@@ -50,7 +51,7 @@ public class LiteralCommunitySet extends CommunitySetExpr {
    */
   @Nonnull
   @Override
-  public SortedSet<Community> asLiteralCommunities(@Nonnull Environment environment) {
+  public Set<Community> asLiteralCommunities(@Nonnull Environment environment) {
     return _communities;
   }
 
@@ -70,8 +71,7 @@ public class LiteralCommunitySet extends CommunitySetExpr {
     return _communities.equals(((LiteralCommunitySet) obj)._communities);
   }
 
-  @JsonProperty(PROP_COMMUNITIES)
-  public @Nonnull SortedSet<Community> getCommunities() {
+  public @Nonnull Set<Community> getCommunities() {
     return _communities;
   }
 
@@ -98,5 +98,10 @@ public class LiteralCommunitySet extends CommunitySetExpr {
   @Override
   public String toString() {
     return toStringHelper(getClass()).add(PROP_COMMUNITIES, _communities).toString();
+  }
+
+  @JsonProperty(PROP_COMMUNITIES)
+  private @Nonnull SortedSet<Community> getJsonCommunities() {
+    return ImmutableSortedSet.copyOf(_communities);
   }
 }

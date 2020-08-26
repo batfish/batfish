@@ -52,6 +52,7 @@ EOF
 ###### Build tests and code static analysis
 cat <<EOF
   - label: ":mvn: :junit: :coverage: Tests + Coverage"
+    key: junit
     depends_on:
       - format
       - template
@@ -88,14 +89,11 @@ EOF
 
 ###### Ensure the code compiles with Bazel
 cat <<EOF
-  - label: ":bazel: Build"
-    depends_on:
-      - format
-      - template
+  - label: ":bazel: Build and test"
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
-      - "bazel build -- //..."
+      - "bazel test --test_tag_filters=-pmd_test -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
@@ -125,9 +123,11 @@ EOF
 ###### Ref tests
 # TODO: consider parallel builds for this?
 # https://buildkite.com/docs/tutorials/parallel-builds#parallel-jobs
-for cmd in $(find tests -name commands); do
+REFS=$(find tests -name commands)
+for cmd in ${REFS}; do
   cat <<EOF
   - label: ":batfish: ${cmd} ref tests"
+    key: "ref-${cmd//\//-}"
     depends_on: jar
     command: ".buildkite/ref_test.sh ${cmd}"
     plugins:
@@ -143,8 +143,16 @@ done
 
 ###### Code coverage
 cat <<EOF
-  - wait
   - label: ":coverage: Report coverage"
+    depends_on:
+     - junit
+EOF
+for cmd in ${REFS}; do
+  cat <<EOF
+     - "ref-${cmd//\//-}"
+EOF
+done
+cat <<EOF
     command:
       - ".buildkite/jacoco_report.sh"
     plugins:

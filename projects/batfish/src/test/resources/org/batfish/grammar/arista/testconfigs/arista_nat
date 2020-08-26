@@ -1,0 +1,24 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_nat
+!
+ip access-list PERMIT_ALL
+  10 permit ip any any
+!
+ip nat pool POOL prefix-length 27
+   ! NOTE: this is the broadcast IP in a prefix of length 27, but since
+   ! Arista ignores prefix-length for single-IP networks, it will still be used.
+   range 1.2.3.31 1.2.3.31
+!
+interface Ethernet1
+   no switchport
+   no shutdown
+   ip nat source dynamic access-list PERMIT_ALL pool POOL
+   ! has no IP address on purpose
+!
+interface Ethernet2
+   no switchport
+   no shutdown
+   ip address 10.1.2.3/31
+   ip nat source dynamic access-list PERMIT_ALL pool POOL
+!

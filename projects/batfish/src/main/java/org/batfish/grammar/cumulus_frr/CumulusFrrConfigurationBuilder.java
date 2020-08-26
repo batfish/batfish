@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
@@ -42,7 +43,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -56,6 +56,7 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Interface_ospf_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
@@ -80,6 +81,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
@@ -113,6 +115,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrativeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
@@ -129,6 +132,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
@@ -184,6 +188,7 @@ import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
 import org.batfish.representation.cumulus.RouteMapSetTag;
+import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
@@ -228,13 +233,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (ctx.literal != null) {
       return Optional.of(toStandardCommunity(ctx.literal));
     } else if (ctx.INTERNET() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.INTERNET));
+      return Optional.of(StandardCommunity.INTERNET);
     } else if (ctx.LOCAL_AS() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT_SUBCONFED));
+      return Optional.of(StandardCommunity.NO_EXPORT_SUBCONFED);
     } else if (ctx.NO_ADVERTISE() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE));
+      return Optional.of(StandardCommunity.NO_ADVERTISE);
     } else if (ctx.NO_EXPORT() != null) {
-      return Optional.of(StandardCommunity.of(WellKnownCommunity.NO_EXPORT));
+      return Optional.of(StandardCommunity.NO_EXPORT);
     } else {
       // assume valid but unsupported
       todo(ctx);
@@ -730,6 +735,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSiipo_cost(Siipo_costContext ctx) {
+    _currentInterface.getOrCreateOspf().setCost(toInteger(ctx.interface_ospf_cost()));
+  }
+
+  private Integer toInteger(Interface_ospf_costContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  @Override
   public void exitSbbb_aspath_multipath_relax(Sbbb_aspath_multipath_relaxContext ctx) {
     _currentBgpVrf.setAsPathMultipathRelax(true);
   }
@@ -749,6 +763,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitSbb_confederation(Sbb_confederationContext ctx) {
     Long id = toLong(ctx.id);
     _currentBgpVrf.setConfederationId(id);
+  }
+
+  @Override
+  public void exitSbb_max_med_administrative(Sbb_max_med_administrativeContext ctx) {
+    if (ctx.med != null) {
+      _currentBgpVrf.setMaxMedAdministrative(Long.parseLong(ctx.med.getText()));
+    } else {
+      _currentBgpVrf.setMaxMedAdministrative(DEFAULT_MAX_MED);
+    }
   }
 
   @Override
@@ -1065,6 +1088,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitRms_metric(Rms_metricContext ctx) {
     LongExpr val = toMetricLongExpr(ctx.metric);
     _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(val));
+  }
+
+  @Override
+  public void exitRms_weight(Rms_weightContext ctx) {
+    Integer val = Integer.parseInt(ctx.weight.getText());
+    _currentRouteMapEntry.setSetWeight(new RouteMapSetWeight(val));
   }
 
   @Override

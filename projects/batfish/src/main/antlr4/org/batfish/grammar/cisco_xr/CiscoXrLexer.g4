@@ -5250,6 +5250,11 @@ ICMP_OBJECT
    'icmp-object'
 ;
 
+ICMP_OFF
+:
+   'icmp-off'
+;
+
 ICMP_TYPE
 :
    'icmp-type'
@@ -6902,6 +6907,11 @@ MAXIMUM_ACCEPTED_ROUTES
    'maximum-accepted-routes'
 ;
 
+MAXIMUM_ACTIVE
+:
+   'maximum-active'
+;
+
 MAXIMUM_HOPS
 :
    'maximum-hops'
@@ -7185,6 +7195,11 @@ MINIMAL
 MINIMUM
 :
    'minimum'
+;
+
+MINIMUM_ACTIVE
+:
+   'minimum-active'
 ;
 
 MINIMUM_INTERVAL

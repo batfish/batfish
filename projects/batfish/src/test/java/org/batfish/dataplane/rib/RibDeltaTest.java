@@ -171,23 +171,40 @@ public class RibDeltaTest {
         .setOriginatorIp(Ip.parse("7.7.7.7"))
         .setReceivedFromIp(Ip.parse("7.7.7.7"))
         .build();
-    Bgpv4Route oldGoodRoute = routeBuilder.build();
-    // Better preference, kicks out oldGoodRoute
-    routeBuilder.setLocalPreference(oldGoodRoute.getLocalPreference() + 1);
-    Bgpv4Route newGoodRoute = routeBuilder.build();
+    Bgpv4Route route = routeBuilder.build();
+    // Better preference, kicks out route
+    routeBuilder.setLocalPreference(route.getLocalPreference() + 1);
+    Bgpv4Route betterRoute = routeBuilder.build();
 
-    RibDelta.Builder<Bgpv4Route> builder = RibDelta.builder();
-    builder.from(rib.mergeRouteGetDelta(oldGoodRoute));
-    builder.from(rib.mergeRouteGetDelta(newGoodRoute));
+    // Rib is empty beforehand, merges route, and then replaces it with betterRoute.
+    List<RouteAdvertisement<Bgpv4Route>> firstRound =
+        RibDelta.<Bgpv4Route>builder()
+            .from(rib.mergeRouteGetDelta(route))
+            .from(rib.mergeRouteGetDelta(betterRoute))
+            .build()
+            .getActions()
+            .collect(Collectors.toList());
+    // route was added and withdrawn in the same iteration, does not appear in update.
+    assertThat(firstRound, contains(equalTo(new RouteAdvertisement<>(betterRoute))));
 
-    List<RouteAdvertisement<Bgpv4Route>> delta =
-        builder.build().getActions().collect(Collectors.toList());
-    // Route withdrawn
+    Bgpv4Route bestRoute =
+        routeBuilder.setLocalPreference(betterRoute.getLocalPreference() + 1).build();
+    List<RouteAdvertisement<Bgpv4Route>> secondRound =
+        RibDelta.<Bgpv4Route>builder()
+            .from(rib.mergeRouteGetDelta(bestRoute))
+            .build()
+            .getActions()
+            .collect(Collectors.toList());
+    // betterRoute was replaced by bestRoute, and both show in the delta.
     assertThat(
-        delta,
+        secondRound,
         contains(
-            equalTo(new RouteAdvertisement<>(oldGoodRoute, Reason.REPLACE)),
-            equalTo(new RouteAdvertisement<>(newGoodRoute))));
+            equalTo(
+                RouteAdvertisement.<Bgpv4Route>builder()
+                    .setRoute(betterRoute)
+                    .setReason(Reason.REPLACE)
+                    .build()),
+            equalTo(new RouteAdvertisement<>(bestRoute))));
   }
 
   /** Test that the routes are exact route matches are removed from the RIB by default */

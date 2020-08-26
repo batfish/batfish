@@ -56,7 +56,7 @@
             "startLocation": {
                 "description": "Location to start tracing from",
                 "minLength": 1,
-                "type": "string",
+                "type": "locationSpec",
                 "optional": true,
                 "displayName": "Start Location"
             }
