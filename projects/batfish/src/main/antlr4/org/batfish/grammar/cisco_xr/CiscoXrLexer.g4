@@ -5250,6 +5250,11 @@ ICMP_OBJECT
    'icmp-object'
 ;
 
+ICMP_OFF
+:
+   'icmp-off'
+;
+
 ICMP_TYPE
 :
    'icmp-type'

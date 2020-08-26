@@ -6,5 +6,6 @@ ethernet-services access-list sc-coe
  10 deny host 0000.0000.0000 any
  20 permit any any
 !
+ipv4 access-list DENY_ALL
+ 5 deny ipv4 any any icmp-off
 !
-
