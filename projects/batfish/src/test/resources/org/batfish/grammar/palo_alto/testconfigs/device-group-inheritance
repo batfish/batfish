@@ -1,0 +1,49 @@
+set deviceconfig system hostname device-group-inheritance
+
+set device-group DG_PARENT description "test parent device-group"
+set device-group DG_PARENT devices 00000001
+set device-group DG_PARENT address COMMON_ADDR ip-netmask 10.10.2.20
+set device-group DG_PARENT address PARENT_ADDR_1 ip-netmask 10.10.2.21
+set device-group DG_PARENT address PARENT_ADDR_2 ip-netmask 10.10.2.22
+set device-group DG_PARENT pre-rulebase security rules PRE_RULE_1_PARENT to any
+set device-group DG_PARENT pre-rulebase security rules PRE_RULE_1_PARENT from any
+set device-group DG_PARENT pre-rulebase security rules PRE_RULE_1_PARENT source any
+set device-group DG_PARENT pre-rulebase security rules PRE_RULE_1_PARENT destination PARENT_ADDR_1
+set device-group DG_PARENT pre-rulebase security rules PRE_RULE_1_PARENT application any
+set device-group DG_PARENT pre-rulebase security rules PRE_RULE_1_PARENT action allow
+set device-group DG_PARENT post-rulebase security rules POST_RULE_1_PARENT to any
+set device-group DG_PARENT post-rulebase security rules POST_RULE_1_PARENT from any
+set device-group DG_PARENT post-rulebase security rules POST_RULE_1_PARENT source any
+set device-group DG_PARENT post-rulebase security rules POST_RULE_1_PARENT destination PARENT_ADDR_2
+set device-group DG_PARENT post-rulebase security rules POST_RULE_1_PARENT application any
+set device-group DG_PARENT post-rulebase security rules POST_RULE_1_PARENT action deny
+
+set device-group DG_CHILD description "test child device-group"
+set device-group DG_CHILD devices 00000002
+set device-group DG_CHILD address COMMON_ADDR ip-netmask 10.10.3.30
+set device-group DG_CHILD address CHILD_ADDR_1 ip-netmask 10.10.3.31
+set device-group DG_CHILD pre-rulebase security rules PRE_RULE_1_CHILD to any
+set device-group DG_CHILD pre-rulebase security rules PRE_RULE_1_CHILD from any
+set device-group DG_CHILD pre-rulebase security rules PRE_RULE_1_CHILD source any
+set device-group DG_CHILD pre-rulebase security rules PRE_RULE_1_CHILD destination PARENT_ADDR_1
+set device-group DG_CHILD pre-rulebase security rules PRE_RULE_1_CHILD application any
+set device-group DG_CHILD pre-rulebase security rules PRE_RULE_1_CHILD action deny
+set device-group DG_CHILD post-rulebase security rules POST_RULE_1_CHILD to any
+set device-group DG_CHILD post-rulebase security rules POST_RULE_1_CHILD from any
+set device-group DG_CHILD post-rulebase security rules POST_RULE_1_CHILD source any
+set device-group DG_CHILD post-rulebase security rules POST_RULE_1_CHILD destination PARENT_ADDR_2
+set device-group DG_CHILD post-rulebase security rules POST_RULE_1_CHILD application any
+set device-group DG_CHILD post-rulebase security rules POST_RULE_1_CHILD action allow
+
+# Network configuration required to make device 00000001 allow traffic through
+set template T1 config devices localhost.localdomain vsys vsys1 zone Z1 network layer3 ethernet1/1
+set template T1 config devices localhost.localdomain vsys vsys1 zone Z2 network layer3 ethernet1/2
+set template T1 config devices localhost.localdomain vsys vsys1 import network interface [ ethernet1/1 ethernet1/2 ]
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/1 layer3 ip 192.168.0.1/16
+set template T1 config devices localhost.localdomain network interface ethernet ethernet1/2 layer3 ip 10.0.0.1/8
+set template T1 config devices localhost.localdomain network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+set template-stack TS1 templates T1
+set template-stack TS1 devices [ 00000001 00000002 ]
+
+# Make DG_CHILD inherit from DG_PARENT
+set readonly devices localhost.localdomain device-group DG_CHILD parent-dg DG_PARENT

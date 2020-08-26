@@ -388,8 +388,14 @@ public final class PaloAltoGrammarTest {
     Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are three address groups defined in the file, including the empty one
-    assertThat(addressGroups.keySet(), equalTo(ImmutableSet.of("group0", "group1", "group2")));
+    // there are four address groups defined in the file, including empty ones
+    assertThat(
+        addressGroups.keySet(),
+        equalTo(ImmutableSet.of("group0", "group1", "group2", "group w spaces")));
+
+    assertThat(
+        addressGroups.get("group w spaces").getMembers(),
+        equalTo(ImmutableSet.of("addr w spaces")));
 
     // the ip space of the empty group is empty
     assertThat(addressGroups.get("group0").getMembers(), equalTo(ImmutableSet.of()));
@@ -568,10 +574,12 @@ public final class PaloAltoGrammarTest {
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
 
-    // there are four address objects defined in the file, including the empty one
+    // check that we parse normal object names, names with spaces, and that look like IP addresses
     assertThat(
         vsys.getAddressObjects().keySet(),
-        equalTo(ImmutableSet.of("4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4")));
+        equalTo(
+            ImmutableSet.of(
+                "4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4", "addr w spaces")));
 
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
@@ -614,6 +622,7 @@ public final class PaloAltoGrammarTest {
     String name_1 = computeObjectName(DEFAULT_VSYS_NAME, "addr1");
     String name_3 = computeObjectName(DEFAULT_VSYS_NAME, "addr3");
     String name_4 = computeObjectName(DEFAULT_VSYS_NAME, "addr4");
+    String name_5 = computeObjectName(DEFAULT_VSYS_NAME, "addr w spaces");
     String name_ambiguous = computeObjectName(DEFAULT_VSYS_NAME, "4.3.2.1");
 
     // Confirm reference count is correct for used structures
@@ -640,6 +649,7 @@ public final class PaloAltoGrammarTest {
         batfish2.loadConvertConfigurationAnswerElementOrReparse(batfish1.getSnapshot());
     // Confirm reference count is correct for used structure
     assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_1, 2));
+    assertThat(ccae2, hasNumReferrers(filename2, PaloAltoStructureType.ADDRESS_OBJECT, name_5, 1));
     // Confirm undefined reference is detected
     assertThat(
         ccae2, hasUndefinedReference(filename2, PaloAltoStructureType.ADDRESS_LIKE, "addr3"));
@@ -659,12 +669,14 @@ public final class PaloAltoGrammarTest {
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, Application> applications = vsys.getApplications();
 
-    // Should have two applications, including an empty one
-    assertThat(applications.keySet(), equalTo(ImmutableSet.of("app1", "app2")));
+    // Should have three applications, including an empty one
+    assertThat(applications.keySet(), equalTo(ImmutableSet.of("app1", "app2", "app w spaces")));
 
     // Check that descriptions are extracted
     assertThat(applications.get("app1").getDescription(), nullValue());
     assertThat(applications.get("app2").getDescription(), equalTo("this is a description"));
+    assertThat(
+        applications.get("app w spaces").getDescription(), equalTo("this is another description"));
   }
 
   @Test
@@ -2262,6 +2274,7 @@ public final class PaloAltoGrammarTest {
             new RuleEndpoint(IP_ADDRESS, "1.1.1.1"),
             new RuleEndpoint(IP_PREFIX, "2.2.2.0/24"),
             new RuleEndpoint(IP_RANGE, "3.3.3.3-4.4.4.4")));
+    assertTrue(rule1.getDisabled());
 
     NatRule rule2 = natRules.get(rule2Name);
     assertThat(rule2.getTo(), equalTo("TO_2"));
@@ -2288,8 +2301,7 @@ public final class PaloAltoGrammarTest {
         rule2.getDestinationTranslation().getTranslatedAddress(),
         equalTo(new RuleEndpoint(REFERENCE, "DST_2")));
     assertThat(rule2.getDestinationTranslation().getTranslatedPort(), equalTo(1234));
-
-    // TODO: Test semantics after conversion
+    assertFalse(rule2.getDisabled());
   }
 
   @Test
@@ -2955,6 +2967,14 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplicationGroups().get("foo").getMembers(),
         containsInAnyOrder("dns", "app1"));
+
+    assertThat(
+        c.getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getApplicationGroups()
+            .get("foo w spaces")
+            .getMembers(),
+        containsInAnyOrder("dns", "app w spaces"));
   }
 
   @Test
@@ -3230,6 +3250,46 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testDeviceGroupInerhitance() {
+    String panoramaHostname = "device-group-inheritance";
+    String firewallId1 = "00000001";
+    String firewallId2 = "00000002";
+    String commonAddrObjName = "COMMON_ADDR";
+    String parentAddrObjName = "PARENT_ADDR_1";
+    String childAddrObjName = "CHILD_ADDR_1";
+
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get three nodes from the one Panorama config
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2));
+    Configuration firewall1 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId1)).findFirst().get();
+    Configuration firewall2 =
+        viConfigs.stream().filter(vi -> vi.getHostname().equals(firewallId2)).findFirst().get();
+
+    // firewall1 based on parent DG should have the non-overridden common addr value
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(commonAddrObjName), Ip.parse("10.10.2.20").toIpSpace());
+    // firewall2 based on child DG should have the overridden common addr value
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(commonAddrObjName), Ip.parse("10.10.3.30").toIpSpace());
+
+    // both firewalls should have the parent address object
+    assertIpSpacesEqual(
+        firewall1.getIpSpaces().get(parentAddrObjName), Ip.parse("10.10.2.21").toIpSpace());
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(parentAddrObjName), Ip.parse("10.10.2.21").toIpSpace());
+
+    // only firewall2 should have the child address object
+    assertThat(firewall1.getIpSpaces().keySet(), not(contains(childAddrObjName)));
+    assertIpSpacesEqual(
+        firewall2.getIpSpaces().get(childAddrObjName), Ip.parse("10.10.3.31").toIpSpace());
+  }
+
+  @Test
   public void testPanoramaWarning() throws IOException {
     String panoramaHostname = "panorama-warning";
     String firewallId = "00000001";
@@ -3243,7 +3303,26 @@ public final class PaloAltoGrammarTest {
     Warnings warn = ccae.getWarnings().get(firewallId);
     assertThat(
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
-        contains("Unable to identify application undefined_app in vsys RULE1 rule panorama"));
+        contains("Unable to identify application undefined_app in vsys panorama rule RULE1"));
+  }
+
+  @Test
+  public void testDeviceGroupParentWarning() throws IOException {
+    String panoramaHostname = "device-group-invalid";
+    String firewallId1 = "00000001";
+
+    Batfish batfish = getBatfishForConfigurationNames(panoramaHostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Detect cyclical device-group inheritance and unknown device-group inheritance
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(firewallId1)));
+    Warnings warn1 = ccae.getWarnings().get(firewallId1);
+    assertThat(
+        warn1.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        containsInAnyOrder(
+            "Device-group DG1 cannot be inherited more than once.",
+            "Device-group DG2 cannot inherit from unknown device-group DG_INVALID."));
   }
 
   @Test

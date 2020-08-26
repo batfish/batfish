@@ -203,7 +203,7 @@ rm_stanza
    continue_rm_stanza
    | match_rm_stanza
    | null_rm_stanza
-   | set_rm_stanza
+   | rm_set
 ;
 
 route_map_stanza
@@ -215,7 +215,7 @@ route_map_stanza
 
 set_as_path_prepend_rm_stanza
 :
-   SET AS_PATH PREPEND LAST_AS?
+   AS_PATH PREPEND LAST_AS?
    (
       as_list += as_expr
    )+ NEWLINE
@@ -223,17 +223,17 @@ set_as_path_prepend_rm_stanza
 
 set_as_path_tag_rm_stanza
 :
-   SET AS_PATH TAG NEWLINE
+   AS_PATH TAG NEWLINE
 ;
 
 set_comm_list_delete_rm_stanza
 :
-   SET COMM_LIST name = variable DELETE NEWLINE
+   COMM_LIST name = variable DELETE NEWLINE
 ;
 
 set_community_additive_rm_stanza
 :
-   SET COMMUNITY
+   COMMUNITY
    (
       (
          ADD
@@ -252,7 +252,7 @@ set_community_additive_rm_stanza
 
 set_community_list_additive_rm_stanza
 :
-   SET COMMUNITY COMMUNITY_LIST
+   COMMUNITY COMMUNITY_LIST
    (
       comm_lists += variable
    )+ ADDITIVE NEWLINE
@@ -260,7 +260,7 @@ set_community_list_additive_rm_stanza
 
 set_community_list_rm_stanza
 :
-   SET COMMUNITY COMMUNITY_LIST
+   COMMUNITY COMMUNITY_LIST
    (
       comm_lists += variable
    )+ NEWLINE
@@ -268,12 +268,12 @@ set_community_list_rm_stanza
 
 set_community_none_rm_stanza
 :
-   SET COMMUNITY NONE NEWLINE
+   COMMUNITY NONE NEWLINE
 ;
 
 set_community_rm_stanza
 :
-   SET COMMUNITY
+   COMMUNITY
    (
       communities += community
    )+ NEWLINE
@@ -281,7 +281,7 @@ set_community_rm_stanza
 
 set_extcomm_list_rm_stanza
 :
-   SET EXTCOMM_LIST
+   EXTCOMM_LIST
    (
       comm_list += community
    )+ DELETE NEWLINE
@@ -289,7 +289,7 @@ set_extcomm_list_rm_stanza
 
 set_extcommunity_rm_stanza
 :
-   SET EXTCOMMUNITY
+   EXTCOMMUNITY
    (
       COST
       | RT
@@ -298,22 +298,22 @@ set_extcommunity_rm_stanza
 
 set_interface_rm_stanza
 :
-   SET INTERFACE null_rest_of_line
+   INTERFACE null_rest_of_line
 ;
 
 set_ip_default_nexthop_stanza
 :
-   SET IP DEFAULT NEXT_HOP nhip = IP_ADDRESS NEWLINE
+   IP DEFAULT NEXT_HOP nhip = IP_ADDRESS NEWLINE
 ;
 
 set_ip_df_rm_stanza
 :
-   SET IP DF null_rest_of_line
+   IP DF null_rest_of_line
 ;
 
 set_ip_precedence_stanza
 :
-   SET IP PRECEDENCE
+   IP PRECEDENCE
    (
       val = DIGIT
       | CRITICAL
@@ -329,37 +329,37 @@ set_ip_precedence_stanza
 
 set_ipv6_rm_stanza
 :
-   SET IPV6 null_rest_of_line
+   IPV6 null_rest_of_line
 ;
 
 set_local_preference_rm_stanza
 :
-   SET LOCAL_PREFERENCE pref = int_expr NEWLINE
+   LOCAL_PREFERENCE pref = int_expr NEWLINE
 ;
 
 set_metric_rm_stanza
 :
-   SET METRIC metric = int_expr NEWLINE
+   METRIC metric = int_expr NEWLINE
 ;
 
 set_metric_type_rm_stanza
 :
-   SET METRIC_TYPE type = variable NEWLINE
+   METRIC_TYPE type = variable NEWLINE
 ;
 
 set_mpls_label_rm_stanza
 :
-   SET MPLS_LABEL NEWLINE
+   MPLS_LABEL NEWLINE
 ;
 
 set_next_hop_peer_address_stanza
 :
-   SET IP NEXT_HOP PEER_ADDRESS NEWLINE
+   IP NEXT_HOP PEER_ADDRESS NEWLINE
 ;
 
 set_next_hop_rm_stanza
 :
-   SET IP? NEXT_HOP
+   IP? NEXT_HOP
    (
       nexthop_list += IP_ADDRESS
    )+ NEWLINE
@@ -367,7 +367,7 @@ set_next_hop_rm_stanza
 
 set_nlri_rm_stanza_null
 :
-   SET NLRI
+   NLRI
    (
       UNICAST
       | MULTICAST
@@ -376,52 +376,64 @@ set_nlri_rm_stanza_null
 
 set_origin_rm_stanza
 :
-   SET ORIGIN origin_expr_literal NEWLINE
+   ORIGIN origin_expr_literal NEWLINE
 ;
 
 set_tag_rm_stanza
 :
-   SET TAG tag = DEC NEWLINE
+   TAG tag = DEC NEWLINE
 ;
 
 set_traffic_index_rm_stanza_null
 :
-   SET TRAFFIC_INDEX index = DEC NEWLINE
+   TRAFFIC_INDEX index = DEC NEWLINE
 ;
 
 set_weight_rm_stanza
 :
-   SET WEIGHT weight = DEC NEWLINE
+   WEIGHT weight = DEC NEWLINE
 ;
 
-set_rm_stanza
+rm_set
 :
-   set_as_path_prepend_rm_stanza
-   | set_as_path_tag_rm_stanza
-   | set_comm_list_delete_rm_stanza
-   | set_community_rm_stanza
-   | set_community_additive_rm_stanza
-   | set_community_list_additive_rm_stanza
-   | set_community_list_rm_stanza
-   | set_community_none_rm_stanza
-   | set_extcomm_list_rm_stanza
-   | set_extcommunity_rm_stanza
-   | set_interface_rm_stanza
-   | set_ip_default_nexthop_stanza
-   | set_ip_df_rm_stanza
-   | set_ip_precedence_stanza
-   | set_ipv6_rm_stanza
-   | set_local_preference_rm_stanza
-   | set_metric_rm_stanza
-   | set_metric_type_rm_stanza
-   | set_mpls_label_rm_stanza
-   | set_next_hop_peer_address_stanza
-   | set_next_hop_rm_stanza
-   | set_nlri_rm_stanza_null
-   | set_origin_rm_stanza
-   | set_tag_rm_stanza
-   | set_traffic_index_rm_stanza_null
-   | set_weight_rm_stanza
+  SET
+  (
+    // EOS up here
+    rms_distance
+    // Legacy below
+    | set_as_path_prepend_rm_stanza
+    | set_as_path_tag_rm_stanza
+    | set_comm_list_delete_rm_stanza
+    | set_community_rm_stanza
+    | set_community_additive_rm_stanza
+    | set_community_list_additive_rm_stanza
+    | set_community_list_rm_stanza
+    | set_community_none_rm_stanza
+    | set_extcomm_list_rm_stanza
+    | set_extcommunity_rm_stanza
+    | set_interface_rm_stanza
+    | set_ip_default_nexthop_stanza
+    | set_ip_df_rm_stanza
+    | set_ip_precedence_stanza
+    | set_ipv6_rm_stanza
+    | set_local_preference_rm_stanza
+    | set_metric_rm_stanza
+    | set_metric_type_rm_stanza
+    | set_mpls_label_rm_stanza
+    | set_next_hop_peer_address_stanza
+    | set_next_hop_rm_stanza
+    | set_nlri_rm_stanza_null
+    | set_origin_rm_stanza
+    | set_tag_rm_stanza
+    | set_traffic_index_rm_stanza_null
+    | set_weight_rm_stanza
+  )
+;
+
+rms_distance
+:
+// 1-255
+  DISTANCE distance = DEC NEWLINE
 ;
 
 variable_access_list

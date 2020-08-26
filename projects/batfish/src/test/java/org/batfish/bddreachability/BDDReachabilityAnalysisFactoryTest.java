@@ -87,7 +87,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
@@ -1330,7 +1329,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Vrf vrf = nf.vrfBuilder().setName("vrf1").setOwner(config).build();
     Vrf vrf2 = nf.vrfBuilder().setName("vrf2").setOwner(config).build();
 
+    // Create a packet policy that does a fib lookup in vrf2 for 8.8.8.0/24
     final String packetPolicyName = "packetPolicyName";
+    Prefix dstPrefix = Prefix.parse("8.8.8.0/24");
     config.setPacketPolicies(
         ImmutableSortedMap.of(
             packetPolicyName,
@@ -1338,11 +1339,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 packetPolicyName,
                 ImmutableList.of(
                     new If(
-                        new PacketMatchExpr(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setDstIps(Prefix.parse("8.8.8.0/24").toIpSpace())
-                                    .build())),
+                        new PacketMatchExpr(matchDst(dstPrefix)),
                         ImmutableList.of(
                             new Return(new FibLookup(new LiteralVrfName(vrf2.getName())))))),
                 new Return(Drop.instance()))));
@@ -1357,10 +1354,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     StaticRoute sb =
         StaticRoute.builder()
             .setAdministrativeCost(1)
-            .setNetwork(Prefix.parse("8.8.8.0/24"))
+            .setNetwork(dstPrefix)
             .setNextHopInterface(i1.getName())
             .build();
-
     vrf2.setStaticRoutes(ImmutableSortedSet.of(sb));
 
     if (!withNeighbor) {
@@ -1458,12 +1454,31 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // Check state edge presence (note, INGRESS_IFACE is in vrf1, not INGRESS_VRF)
     PbrFibLookup pbrFibLookup = new PbrFibLookup(hostname, "vrf1", "vrf2");
     PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
+    NodeDropNoRoute nodeDropNoRoute = new NodeDropNoRoute(hostname);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+    BDD routableFromLookupVrf = ipSpaceToBDD.toBDD(Prefix.parse("8.8.8.0/24"));
+    BDD acceptedInIngressVrf =
+        // These are the concrete addresses of the two interfaces in the ingress vrf
+        ipSpaceToBDD.toBDD(Ip.parse("1.1.1.0")).or(ipSpaceToBDD.toBDD(Ip.parse("2.2.2.0")));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
             equalTo(new PreInInterface(hostname, INGRESS_IFACE)), hasKey(equalTo(pbrFibLookup))));
     assertThat(
-        analysis.getForwardEdgeMap(), hasEntry(equalTo(pbrFibLookup), hasKey(equalTo(preOutVrf2))));
+        analysis.getForwardEdgeMap(),
+        hasEntry(
+            equalTo(pbrFibLookup),
+            // edge to preOutVrf2 should be limited to traffic routable in vrf2
+            hasEntry(equalTo(preOutVrf2), mapsForward(ONE, routableFromLookupVrf))));
+    assertThat(
+        analysis.getForwardEdgeMap(),
+        hasEntry(
+            equalTo(pbrFibLookup),
+            hasEntry(
+                equalTo(nodeDropNoRoute),
+                // edge to nodeDropNoRoute should have traffic not accepted in vrf1 and not routable
+                // in vrf2
+                mapsForward(ONE, routableFromLookupVrf.nor(acceptedInIngressVrf)))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(

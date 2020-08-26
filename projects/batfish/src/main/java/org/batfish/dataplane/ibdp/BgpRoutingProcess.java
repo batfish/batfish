@@ -781,6 +781,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpPeerConfig remoteConfig = nc.getBgpPeerConfig(remoteConfigId);
     assert ourConfig != null; // Invariant of the edge existing
     assert remoteConfig != null; // Invariant of the edge existing
+    BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
     return Stream.concat(evpnDelta._ebgpDelta.getActions(), evpnDelta._ibgpDelta.getActions())
         .map(
             // TODO: take into account address-family session settings, such as add-path or
@@ -793,7 +794,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                         remoteConfigId,
                         ourConfig,
                         remoteConfig,
-                        allNodes,
+                        remoteBgpRoutingProcess,
                         session,
                         Type.EVPN)
                     .map(
@@ -816,7 +817,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param exportCandidate a route to try and export
    * @param ourConfig {@link BgpPeerConfig} that sends the route
    * @param remoteConfig {@link BgpPeerConfig} that will be receiving the route
-   * @param allNodes all nodes in the network
+   * @param remoteBgpRoutingProcess {@link BgpRoutingProcess} that will be recieving the route
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
    * @param afType {@link AddressFamily.Type} for which the transformation should occur
@@ -830,7 +831,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           BgpPeerConfigId remoteConfigId,
           BgpPeerConfig ourConfig,
           BgpPeerConfig remoteConfig,
-          Map<String, Node> allNodes,
+          BgpRoutingProcess remoteBgpRoutingProcess,
           BgpSessionProperties sessionProperties,
           AddressFamily.Type afType) {
 
@@ -852,7 +853,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             remoteConfig,
             sessionProperties,
             _process,
-            getNeighborBgpProcess(remoteConfigId, allNodes)._process,
+            remoteBgpRoutingProcess._process,
             exportCandidate,
             addressFamily.getType());
 

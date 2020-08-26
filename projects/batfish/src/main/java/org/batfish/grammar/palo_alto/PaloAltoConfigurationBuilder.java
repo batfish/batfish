@@ -269,6 +269,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_sourceContext;
@@ -276,6 +277,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srndt_translated_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srnst_dynamic_ip_and_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sro_device_groupContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_actionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_definitionContext;
@@ -1447,7 +1449,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterS_application_definition(S_application_definitionContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentApplication =
         _currentVsys
             .getApplications()
@@ -1464,7 +1466,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSappg_definition(Sappg_definitionContext ctx) {
-    String name = ctx.name.getText();
+    String name = getText(ctx.name);
     _currentApplicationGroup =
         _currentVsys.getApplicationGroups().computeIfAbsent(name, ApplicationGroup::new);
     // Use constructed name so same-named defs across vsys are unique
@@ -1713,6 +1715,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentDeviceGroup.addVsys(getText(ctx.device), _currentDeviceGroupVsys);
     }
     _currentDeviceGroupVsys = null;
+  }
+
+  @Override
+  public void enterSro_device_group(Sro_device_groupContext ctx) {
+    String deviceGroupName = getText(ctx.name);
+    _currentDeviceGroup = _mainConfiguration.getOrCreateDeviceGroup(deviceGroupName);
+    _currentConfiguration = _currentDeviceGroup;
+    _currentVsys = getOrCreatePanoramaVsys();
+  }
+
+  @Override
+  public void exitSro_device_group(Sro_device_groupContext ctx) {
+    _currentDeviceGroup = null;
+    _currentConfiguration = _mainConfiguration;
+    _currentVsys = _defaultVsys;
   }
 
   @Override
@@ -2265,6 +2282,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrn_destination_translation(Srn_destination_translationContext ctx) {
     _currentNatRule.setDestinationTranslation(_currentNatRuleDestinationTranslation);
     _currentNatRuleDestinationTranslation = null;
+  }
+
+  @Override
+  public void exitSrn_disabled(Srn_disabledContext ctx) {
+    _currentNatRule.setDisabled(toBoolean(ctx.yn));
   }
 
   @Override

@@ -1085,7 +1085,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       _w.redFlag(
           String.format(
               "Unable to identify application %s in vsys %s rule %s",
-              name, rule.getName(), vsys.getName()));
+              name, vsys.getName(), rule.getName()));
     }
     return ret.build();
   }
@@ -1484,6 +1484,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> lines =
         ImmutableList.builder();
     for (NatRule rule : natRules) {
+      // Handled by caller
+      assert !rule.getDisabled();
+
       Zone toZone = vsys.getZones().get(rule.getTo());
       if (toZone == null) {
         continue;
@@ -1600,7 +1603,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return steps.build();
   }
 
-  /** Return a list of all valid NAT rules to apply to packets entering the specified zone. */
+  /**
+   * Return a list of all valid, enabled NAT rules to apply to packets entering the specified zone.
+   */
   private List<NatRule> getNatRulesForEnteringZone(Zone zone) {
     Vsys vsys = zone.getVsys();
     return getAllNatRules(vsys)
@@ -1609,6 +1614,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 // Note: This isn't a good place to file warnings for invalid NAT rules because it
                 // leaves out rules that aren't in a zone. Instead file warnings per vsys.
                 checkNatRuleValid(rule, false)
+                    && !rule.getDisabled()
                     && (rule.getFrom().contains(zone.getName())
                         || rule.getFrom().contains(CATCHALL_ZONE_NAME)))
         .collect(ImmutableList.toImmutableList());
@@ -2028,7 +2034,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Apply the specified device-group "pseudo-config" and shared config to this
    * PaloAltoConfiguration. Any previously made changes will be overwritten in this process.
    */
-  private void applyDeviceGroup(PaloAltoConfiguration template, @Nullable Vsys shared) {
+  private void applyDeviceGroup(
+      DeviceGroup template, @Nullable Vsys shared, Map<String, DeviceGroup> panoramaDeviceGroups) {
     // TODO support applying device-group to specific vsys
     // https://github.com/batfish/batfish/issues/5910
 
@@ -2037,11 +2044,45 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert _panorama == null;
     _panorama = target;
 
-    // Apply shared config first
+    // Apply shared config first, since it is overwritten by device-groups applied after it
     applyVsys(shared, target);
 
-    // Apply the actual device-group after shared, to overwrite conflicting shared config
-    applyVsys(template.getPanorama(), target);
+    List<DeviceGroup> inheritedDeviceGroups = new ArrayList<>();
+    inheritedDeviceGroups.add(template);
+    collectParents(template, panoramaDeviceGroups, inheritedDeviceGroups);
+
+    // Apply higher level parents first
+    // since their config should be overwritten by lower level parents
+    for (DeviceGroup parent : ImmutableList.copyOf(inheritedDeviceGroups).reverse()) {
+      applyVsys(parent.getPanorama(), target);
+    }
+  }
+
+  /** Collect all parents of the specified device-group (recursively) into the specified list. */
+  private void collectParents(
+      DeviceGroup deviceGroup,
+      Map<String, DeviceGroup> panoramaDeviceGroups,
+      List<DeviceGroup> parents) {
+    String parentName = deviceGroup.getParentDg();
+    if (parentName == null) {
+      return;
+    }
+    DeviceGroup parent = panoramaDeviceGroups.get(parentName);
+    if (parents.contains(parent)) {
+      _w.redFlag(String.format("Device-group %s cannot be inherited more than once.", parentName));
+      return;
+    }
+    if (parent == null) {
+      _w.redFlag(
+          String.format(
+              "Device-group %s cannot inherit from unknown device-group %s.",
+              deviceGroup.getName(), parentName));
+      return;
+    }
+
+    parents.add(parent);
+    // If this parent has its own parent(s), collect those too
+    collectParents(parent, panoramaDeviceGroups, parents);
   }
 
   /**
@@ -2158,7 +2199,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
                             c.setHostname(name);
-                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                            c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                             managedConfigurations.put(name, c);
                           }
                         }));
@@ -2187,7 +2228,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           // This may not actually be the device's hostname
                           // but this is all we know at this point
                           c.setHostname(deviceName);
-                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared);
+                          c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                           managedConfigurations.put(deviceName, c);
                         }));
     // Apply template-stacks

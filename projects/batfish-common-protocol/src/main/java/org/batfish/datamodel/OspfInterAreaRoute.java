@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -15,6 +14,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class OspfInterAreaRoute extends OspfInternalRoute {
 
+  /* Cache the hashcode */
+  private transient int _hashCode;
   private static final Interner<OspfInterAreaRoute> _cache = Interners.newWeakInterner();
 
   @JsonCreator
@@ -140,7 +141,18 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _network, _admin, _area, _metric, _nextHopIp, getNonForwarding(), getNonRouting(), _tag);
+    int h = _hashCode;
+    if (h == 0) {
+      h = _network.hashCode();
+      h = 31 * h + _admin;
+      h = 31 * h + Long.hashCode(_area);
+      h = 31 * h + Long.hashCode(_metric);
+      h = 31 * h + _nextHopIp.hashCode();
+      h = 31 * h + Boolean.hashCode(getNonForwarding());
+      h = 31 * h + Boolean.hashCode(getNonRouting());
+      h = 31 * h + Long.hashCode(_tag);
+      _hashCode = h;
+    }
+    return h;
   }
 }
