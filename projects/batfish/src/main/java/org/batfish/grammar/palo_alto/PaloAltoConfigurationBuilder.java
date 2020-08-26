@@ -269,6 +269,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_sourceContext;
@@ -2281,6 +2282,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitSrn_destination_translation(Srn_destination_translationContext ctx) {
     _currentNatRule.setDestinationTranslation(_currentNatRuleDestinationTranslation);
     _currentNatRuleDestinationTranslation = null;
+  }
+
+  @Override
+  public void exitSrn_disabled(Srn_disabledContext ctx) {
+    _currentNatRule.setDisabled(toBoolean(ctx.yn));
   }
 
   @Override
