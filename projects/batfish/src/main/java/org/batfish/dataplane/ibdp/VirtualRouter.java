@@ -1430,6 +1430,8 @@ public class VirtualRouter implements Serializable {
     if (remoteVirtualRouter == null) {
       return;
     }
+    BgpRoutingProcess remoteBgpRoutingProcess = remoteVirtualRouter.getBgpRoutingProcess();
+    assert remoteBgpRoutingProcess != null;
 
     // Queue mainRib updates that were not introduced by BGP process (i.e., IGP routes)
     // Also, do not double-export main RIB routes
@@ -1494,6 +1496,7 @@ public class VirtualRouter implements Serializable {
     }
 
     RibDelta<AnnotatedRoute<Bgpv4Route>> bgpRoutesToExport = bgpRibExports.build();
+
     // Compute a set of advertisements that can be queued on remote VR
     Stream<RouteAdvertisement<Bgpv4Route>> exportedAdvertisements =
         Stream.concat(
@@ -1508,7 +1511,7 @@ public class VirtualRouter implements Serializable {
                               remoteConfigId,
                               ourConfig,
                               remoteConfig,
-                              allNodes,
+                              remoteBgpRoutingProcess,
                               session,
                               Type.IPV4_UNICAST);
                       // REPLACE does not make sense across routers, update with WITHDRAW
@@ -1524,7 +1527,8 @@ public class VirtualRouter implements Serializable {
                                       .build())
                           .orElse(null);
                     })
-                .filter(Objects::nonNull),
+                .filter(Objects::nonNull)
+                .distinct(),
             mainRibExports);
 
     // Call this on the REMOTE VR and REVERSE the edge!
@@ -1758,6 +1762,8 @@ public class VirtualRouter implements Serializable {
     if (remoteVr == null) {
       return;
     }
+    BgpRoutingProcess remoteBgpRoutingProcess = remoteVr.getBgpRoutingProcess();
+    assert remoteBgpRoutingProcess != null;
 
     /*
     TODO:
@@ -1802,7 +1808,7 @@ public class VirtualRouter implements Serializable {
                       remoteConfigId,
                       localConfig,
                       remoteConfig,
-                      allNodes,
+                      remoteBgpRoutingProcess,
                       sessionProperties,
                       Type.IPV4_UNICAST);
                 })

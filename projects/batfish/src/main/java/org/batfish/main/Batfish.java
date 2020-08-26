@@ -83,6 +83,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.BDDLoopDetectionAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysis;
 import org.batfish.bddreachability.BDDReachabilityAnalysisFactory;
@@ -2310,6 +2312,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               EMPTY_SNAPSHOT_RUNTIME_DATA);
       Map<String, VendorConfiguration> vendorConfigs;
       Map<String, Configuration> configurations;
+      LOGGER.info(
+          "Converting the Vendor-Specific configurations to Vendor-Independent configurations");
       Span convertSpan = GlobalTracer.get().buildSpan("convert VS to VI").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
         assert childScope != null; // avoid unused warning
@@ -2355,6 +2359,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         storeSpan.finish();
       }
 
+      LOGGER.info("Post-processing the Vendor-Independent devices");
       Span ppSpan = GlobalTracer.get().buildSpan("Post-process vendor-independent configs").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
         assert childScope != null; // avoid unused warning
@@ -2423,6 +2428,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     IspConfiguration ispConfiguration =
         _storage.loadIspConfiguration(snapshot.getNetwork(), snapshot.getSnapshot());
     if (ispConfiguration != null) {
+      LOGGER.info("Loading Batfish ISP Configuration");
       ispConfigurations.add(ispConfiguration);
     }
 
@@ -2570,6 +2576,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
 
       AtomicInteger batch = newBatch("Parse network configs", jobs.size());
+      LOGGER.info("Parsing {} configuration files", jobs.size());
       parseResults =
           jobs.parallelStream()
               .map(
@@ -2613,7 +2620,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             if (name.contains(File.separator)) {
               // iptables will get a hostname like configs/iptables-save if they
               // are not set up correctly using host files
-              _logger.errorf("Cannot serialize configuration with hostname %s\n", name);
+              _logger.errorf("Cannot serialize configuration with bad hostname %s\n", name);
               answerElement.addRedFlagWarning(
                   name,
                   new Warning(
@@ -3167,4 +3174,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     AnswererCreator creator = _answererCreators.get(question.getName());
     return creator != null ? creator.create(question, this) : null;
   }
+
+  private static final Logger LOGGER = LogManager.getLogger(Batfish.class);
 }

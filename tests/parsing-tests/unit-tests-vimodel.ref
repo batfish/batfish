@@ -35311,6 +35311,42 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "ipAccessLists" : {
+          "DENY_ALL" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "5 deny ipv4 any any icmp-off",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched line 5 deny ipv4 any any icmp-off"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "DENY_ALL",
+            "sourceName" : "DENY_ALL",
+            "sourceType" : "ipv4 access-list"
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {

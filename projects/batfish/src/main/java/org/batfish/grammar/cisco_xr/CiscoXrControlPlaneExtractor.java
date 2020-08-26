@@ -4060,6 +4060,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         } else if (feature.HOST_UNREACHABLE() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.HOST_UNREACHABLE;
+        } else if (feature.ICMP_OFF() != null) {
+          // This means "do not send ICMP replies when denying because of this line".
+          // Do nothing.
         } else if (feature.INFORMATION_REPLY() != null) {
           icmpType = IcmpType.INFO_REPLY;
         } else if (feature.INFORMATION_REQUEST() != null) {
