@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
@@ -141,13 +142,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     for (int i = 0; i < aps.length; i++) {
       if (aps[i].andSat(fullModel)) {
         Automaton a = apAutomata.get(i);
+        // community atomic predicates should always be non-empty;
+        // see Graph::initCommAtomicPredicates
+        checkState(!a.isEmpty(), "Cannot produce example string for empty automaton");
         String str = a.getShortestExample(true);
-        if (!(str.startsWith("^") && str.endsWith("$"))) {
-          throw new BatfishException("Failed to produce a valid community for answer");
-        } else {
-          // strip off the leading ^ and trailing $
-          str = str.substring(1, str.length() - 1);
-        }
+        // community automata should only accept strings with this property;
+        // see CommunityVar::toAutomaton
+        checkState(
+            str.startsWith("^") && str.endsWith("$"),
+            "Community example %s has an unexpected format",
+            str);
+        // strip off the leading ^ and trailing $
+        str = str.substring(1, str.length() - 1);
         Optional<Community> exampleOpt = stringToCommunity(str);
         if (exampleOpt.isPresent()) {
           comms.add(exampleOpt.get());
