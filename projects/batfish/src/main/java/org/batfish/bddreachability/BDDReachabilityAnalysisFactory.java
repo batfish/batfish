@@ -746,6 +746,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PostInInterface_NodeDropAclIn(),
         generateRules_PostInInterface_PostInVrf(),
         generateRules_PbrFibLookup_InterfaceAccept(),
+        generateRules_PbrFibLookup_NodeDropNoRoute(),
         generateRules_PbrFibLookup_PreOutVrf(),
         generateRules_PreOutEdge_NodeDropAclOut(),
         generateRules_PreOutEdge_PreOutEdgePostNat(),
@@ -980,8 +981,48 @@ public final class BDDReachabilityAnalysisFactory {
 
   /**
    * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
-   * From there they can either get accepted into the ingress VRF or forwarded based on the PBR FIB
-   * lookup. These edges represent the latter.
+   * From there they can be:
+   *
+   * <ul>
+   *   <li>Accepted (represented by edge to {@link InterfaceAccept})
+   *   <li>Forwarded based on the PBR FIB lookup, and:
+   *       <ul>
+   *         <li>Successfully routed out (represented by edge to {@link PreOutVrf})
+   *         <li>Dropped due to no route (represented by edge to {@link NodeDropNoRoute}, created in
+   *             this method)
+   *       </ul>
+   * </ul>
+   */
+  private Stream<Edge> generateRules_PbrFibLookup_NodeDropNoRoute() {
+    return getInterfaces()
+        .flatMap(this::interfaceToPbrFibLookups)
+        .distinct()
+        .map(
+            pbrFibLookup -> {
+              // Generate PbrFibLookup -> NodeDropNoRoute edge for each PbrFibLookup
+              String hostname = pbrFibLookup.getHostname();
+              String ingressVrf = pbrFibLookup.getIngressVrf();
+              String lookupVrf = pbrFibLookup.getLookupVrf();
+              BDD acceptedBdd = _vrfAcceptBDDs.get(hostname).get(ingressVrf);
+              BDD routableBDD = _routableBDDs.get(hostname).get(lookupVrf);
+              return new Edge(
+                  pbrFibLookup, new NodeDropNoRoute(hostname), acceptedBdd.nor(routableBDD));
+            });
+  }
+
+  /**
+   * Flows at {@link PbrFibLookup} state have already matched the packet policy (not DENIED_IN).
+   * From there they can be:
+   *
+   * <ul>
+   *   <li>Accepted (represented by edge to {@link InterfaceAccept})
+   *   <li>Forwarded based on the PBR FIB lookup, and:
+   *       <ul>
+   *         <li>Successfully routed out (represented by edge to {@link PreOutVrf}, created in this
+   *             method)
+   *         <li>Dropped due to no route (represented by edge to {@link NodeDropNoRoute})
+   *       </ul>
+   * </ul>
    */
   private Stream<Edge> generateRules_PbrFibLookup_PreOutVrf() {
     return getInterfaces()
@@ -992,11 +1033,11 @@ public final class BDDReachabilityAnalysisFactory {
               // Generate PbrFibLookup -> PreOutVrf edge for each PbrFibLookup
               String hostname = pbrFibLookup.getHostname();
               String ingressVrf = pbrFibLookup.getIngressVrf();
-              BDD notAcceptedBdd = _vrfAcceptBDDs.get(hostname).get(ingressVrf).not();
+              String lookupVrf = pbrFibLookup.getLookupVrf();
+              BDD acceptedBdd = _vrfAcceptBDDs.get(hostname).get(ingressVrf);
+              BDD routableBDD = _routableBDDs.get(hostname).get(lookupVrf);
               return new Edge(
-                  pbrFibLookup,
-                  new PreOutVrf(hostname, pbrFibLookup.getLookupVrf()),
-                  notAcceptedBdd);
+                  pbrFibLookup, new PreOutVrf(hostname, lookupVrf), routableBDD.diff(acceptedBdd));
             });
   }
 
