@@ -217,6 +217,7 @@ extended_access_list_additional_feature
    | HOST_TOS_UNREACHABLE
    | HOST_UNKNOWN
    | HOST_UNREACHABLE
+   | ICMP_OFF
    | INFORMATION_REPLY
    | INFORMATION_REQUEST
    |

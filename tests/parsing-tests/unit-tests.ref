@@ -52967,6 +52967,27 @@
             "        dst_mac = (xr_mac_specifier",
             "          ANY:'any')",
             "        NEWLINE:'\\n')))",
+            "  (statement",
+            "    (s_ipv4",
+            "      IPV4:'ipv4'",
+            "      (ipv4_access_list",
+            "        ACCESS_LIST:'access-list'",
+            "        name = (variable_aclname",
+            "          VARIABLE:'DENY_ALL')",
+            "        NEWLINE:'\\n'",
+            "        (extended_access_list_tail",
+            "          num = DEC:'5'",
+            "          ala = (access_list_action",
+            "            DENY:'deny')",
+            "          prot = (protocol",
+            "            IPV4:'ipv4')",
+            "          srcipr = (access_list_ip_range",
+            "            ANY:'any')",
+            "          dstipr = (access_list_ip_range",
+            "            ANY:'any')",
+            "          (extended_access_list_additional_feature",
+            "            ICMP_OFF:'icmp-off')",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -83311,7 +83332,17 @@
             }
           }
         },
-        "configs/ios_xr_acl" : { },
+        "configs/ios_xr_acl" : {
+          "ipv4 access-list" : {
+            "DENY_ALL" : {
+              "definitionLines" : [
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/ios_xr_bgp" : { },
         "configs/ios_xr_bgp_neighbor_group" : {
           "bgp af-group" : {
