@@ -1484,6 +1484,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ImmutableList.Builder<org.batfish.datamodel.packet_policy.Statement> lines =
         ImmutableList.builder();
     for (NatRule rule : natRules) {
+      // Handled by caller
+      assert !rule.getDisabled();
+
       Zone toZone = vsys.getZones().get(rule.getTo());
       if (toZone == null) {
         continue;
@@ -1600,7 +1603,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return steps.build();
   }
 
-  /** Return a list of all valid NAT rules to apply to packets entering the specified zone. */
+  /**
+   * Return a list of all valid, enabled NAT rules to apply to packets entering the specified zone.
+   */
   private List<NatRule> getNatRulesForEnteringZone(Zone zone) {
     Vsys vsys = zone.getVsys();
     return getAllNatRules(vsys)
