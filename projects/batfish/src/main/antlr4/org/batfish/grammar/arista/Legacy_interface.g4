@@ -274,6 +274,7 @@ if_ip
     | if_ip_helper_address
     | if_ip_igmp
     | if_ip_inband_access_group
+    | if_ip_local_proxy_arp_eos
     | if_ip_multicast_eos
     | if_ip_nat_destination
     | if_ip_nat_source
@@ -378,6 +379,11 @@ if_ip_igmp
       | ifigmp_null
       | ifigmp_static_group
    )
+;
+
+if_ip_local_proxy_arp_eos
+:
+  LOCAL_PROXY_ARP NEWLINE
 ;
 
 if_ip_multicast_eos
