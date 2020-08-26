@@ -786,7 +786,7 @@ public final class FileBasedStorageTest {
   public void testListSnapshotInputObjectKeysNoInputs() throws IOException {
     NetworkId networkId = new NetworkId("n1");
     SnapshotId snapshotId = new SnapshotId("s1");
-    Files.createDirectories(_storage.getSnapshotInputObjectsDir(networkId, snapshotId));
+    Files.createDirectories(_storage.getSnapshotInputObjectsDir(networkId, snapshotId).getParent());
     try (Stream<String> keys =
         _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, snapshotId))) {
       assertThat(keys.count(), equalTo(0L));
