@@ -28,6 +28,7 @@ public final class PaloAltoTraceElementCreators {
                 computeObjectName(vsysName, ruleName)))
         .build();
   }
+
   /**
    * Creates {@link TraceElement} for ACL line representing security rules for going from {@code
    * fromZone} to {@code toZone} (intrazone rules if zones are the same)
