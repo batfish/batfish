@@ -634,7 +634,9 @@ import org.batfish.grammar.arista.AristaParser.If_no_switchport_switchportContex
 import org.batfish.grammar.arista.AristaParser.If_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.If_shutdown_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_spanning_treeContext;
-import org.batfish.grammar.arista.AristaParser.If_speed_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_speed_auto_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_speed_bw_eosContext;
+import org.batfish.grammar.arista.AristaParser.If_speed_forced_eosContext;
 import org.batfish.grammar.arista.AristaParser.If_st_portfastContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_accessContext;
 import org.batfish.grammar.arista.AristaParser.If_switchport_modeContext;
@@ -756,6 +758,7 @@ import org.batfish.grammar.arista.AristaParser.ProtocolContext;
 import org.batfish.grammar.arista.AristaParser.RangeContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_static_is_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.Rms_distanceContext;
 import org.batfish.grammar.arista.AristaParser.Ro6_distribute_listContext;
 import org.batfish.grammar.arista.AristaParser.Ro_areaContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_filterlistContext;
@@ -974,6 +977,7 @@ import org.batfish.representation.arista.RouteMapSetCommunityLine;
 import org.batfish.representation.arista.RouteMapSetCommunityListLine;
 import org.batfish.representation.arista.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.arista.RouteMapSetDeleteCommunityLine;
+import org.batfish.representation.arista.RouteMapSetDistanceLine;
 import org.batfish.representation.arista.RouteMapSetLine;
 import org.batfish.representation.arista.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.arista.RouteMapSetMetricLine;
@@ -5400,7 +5404,21 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_speed_eos(If_speed_eosContext ctx) {
+  public void exitIf_speed_auto_eos(If_speed_auto_eosContext ctx) {
+    if (ctx.eos_bandwidth_specifier() != null) {
+      double speed = toBandwidth(ctx.eos_bandwidth_specifier());
+      _currentInterfaces.forEach(i -> i.setSpeed(speed));
+    }
+  }
+
+  @Override
+  public void exitIf_speed_bw_eos(If_speed_bw_eosContext ctx) {
+    double speed = toBandwidth(ctx.eos_bandwidth_specifier());
+    _currentInterfaces.forEach(i -> i.setSpeed(speed));
+  }
+
+  @Override
+  public void exitIf_speed_forced_eos(If_speed_forced_eosContext ctx) {
     double speed = toBandwidth(ctx.eos_bandwidth_specifier());
     _currentInterfaces.forEach(i -> i.setSpeed(speed));
   }
@@ -6623,6 +6641,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
     }
+  }
+
+  @Override
+  public void exitRms_distance(Rms_distanceContext ctx) {
+    int distance = toInteger(ctx.distance);
+    RouteMapSetLine line = new RouteMapSetDistanceLine(distance);
+    _currentRouteMapClause.addSetLine(line);
   }
 
   @Override
