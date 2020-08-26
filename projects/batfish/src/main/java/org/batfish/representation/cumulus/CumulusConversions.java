@@ -427,6 +427,11 @@ public final class CumulusConversions {
     if (firstNonNull(bgpVrf.getAsPathMultipathRelax(), Boolean.FALSE)) {
       newProc.setMultipathEquivalentAsPathMatchMode(PATH_LENGTH);
     }
+    /*
+    Cluster List Length functions like IGP cost in FRR/Quagga
+    */
+    newProc.setClusterListAsIgpCost(true);
+
     Long confederationId = bgpProcess.getDefaultVrf().getConfederationId();
     Long asn = bgpProcess.getDefaultVrf().getAutonomousSystem();
     if (confederationId != null && asn != null) {
