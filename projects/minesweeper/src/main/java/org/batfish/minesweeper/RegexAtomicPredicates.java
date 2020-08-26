@@ -5,6 +5,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import dk.brics.automaton.Automaton;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -44,8 +45,15 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   // automaton
   @Nonnull private Map<Integer, Automaton> _atomicPredicateAutomata;
 
-  public RegexAtomicPredicates(Set<T> regexes) {
-    _regexes = regexes;
+  /**
+   * Create atomic predicates for the given set of regexes.
+   *
+   * @param regexes the regexes
+   * @param trueRegex a regex representing logical "true", or all possible valid strings
+   */
+  public RegexAtomicPredicates(Set<T> regexes, T trueRegex) {
+    _regexes = new HashSet<>(regexes);
+    _regexes.add(trueRegex);
     initAtomicPredicates();
   }
 
