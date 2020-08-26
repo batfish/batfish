@@ -780,7 +780,6 @@ public final class FileBasedStorageTest {
       // silence warning; shouldn't be hit because of expected exception
       assert keys != null;
     }
-    ;
   }
 
   @Test
