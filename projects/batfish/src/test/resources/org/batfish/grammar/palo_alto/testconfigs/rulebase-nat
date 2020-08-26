@@ -11,6 +11,7 @@ set rulebase nat rules RULE1 to TO_ZONE
 set rulebase nat rules RULE1 from any
 set rulebase nat rules RULE1 source any
 set rulebase nat rules RULE1 destination any
+set rulebase nat rules RULE1 disabled yes
 
 # This rule comes before the first alphabetically but should be processed last
 set rulebase nat rules 2nd_RULE to TO_1
