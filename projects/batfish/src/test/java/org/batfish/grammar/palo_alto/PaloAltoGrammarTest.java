@@ -2274,6 +2274,7 @@ public final class PaloAltoGrammarTest {
             new RuleEndpoint(IP_ADDRESS, "1.1.1.1"),
             new RuleEndpoint(IP_PREFIX, "2.2.2.0/24"),
             new RuleEndpoint(IP_RANGE, "3.3.3.3-4.4.4.4")));
+    assertTrue(rule1.getDisabled());
 
     NatRule rule2 = natRules.get(rule2Name);
     assertThat(rule2.getTo(), equalTo("TO_2"));
@@ -2300,8 +2301,7 @@ public final class PaloAltoGrammarTest {
         rule2.getDestinationTranslation().getTranslatedAddress(),
         equalTo(new RuleEndpoint(REFERENCE, "DST_2")));
     assertThat(rule2.getDestinationTranslation().getTranslatedPort(), equalTo(1234));
-
-    // TODO: Test semantics after conversion
+    assertFalse(rule2.getDisabled());
   }
 
   @Test

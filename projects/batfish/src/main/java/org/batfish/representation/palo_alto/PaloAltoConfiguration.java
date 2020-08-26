@@ -1609,6 +1609,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 // Note: This isn't a good place to file warnings for invalid NAT rules because it
                 // leaves out rules that aren't in a zone. Instead file warnings per vsys.
                 checkNatRuleValid(rule, false)
+                    && !rule.getDisabled()
                     && (rule.getFrom().contains(zone.getName())
                         || rule.getFrom().contains(CATCHALL_ZONE_NAME)))
         .collect(ImmutableList.toImmutableList());
