@@ -2168,6 +2168,21 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Create a new configuration for a managed device (managed by the current configuration). New
+   * config inherits some structures from the current configuration.
+   */
+  private PaloAltoConfiguration createManagedDeviceConfig(String deviceId) {
+    PaloAltoConfiguration c = new PaloAltoConfiguration();
+    c.setWarnings(_w);
+    c.setVendor(_vendor);
+    c.setRuntimeData(_runtimeData);
+    // This may not actually be the device's hostname
+    // but this is all we know at this point
+    c.setHostname(deviceId);
+    return c;
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
@@ -2187,25 +2202,19 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                     .getValue()
                     .getDevices()
                     .forEach(
-                        name -> {
+                        deviceId -> {
                           // Create new managed config if one doesn't already exist for this device
-                          if (managedConfigurations.containsKey(name)) {
+                          if (managedConfigurations.containsKey(deviceId)) {
                             // If the device already has a config associated with it, it must
                             // already be associated with another device-group (should not happen)
                             _w.redFlag(
                                 String.format(
                                     "Managed device '%s' cannot be associated with more than one device-group. Ignoring association with device-group '%s'.",
-                                    name, deviceGroupEntry.getKey()));
+                                    deviceId, deviceGroupEntry.getKey()));
                           } else {
-                            PaloAltoConfiguration c = new PaloAltoConfiguration();
-                            c.setWarnings(_w);
-                            c.setVendor(_vendor);
-                            c.setRuntimeData(_runtimeData);
-                            // This may not actually be the device's hostname
-                            // but this is all we know at this point
-                            c.setHostname(name);
+                            PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
                             c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
-                            managedConfigurations.put(name, c);
+                            managedConfigurations.put(deviceId, c);
                           }
                         }));
     // Apply device-groups to individual vsyses
@@ -2217,24 +2226,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                     .getValue()
                     .getVsys()
                     .forEach(
-                        (deviceName, vsys) -> {
+                        (deviceId, vsys) -> {
                           // Create new managed config if one doesn't already exist for this device
-                          if (managedConfigurations.containsKey(deviceName)) {
+                          if (managedConfigurations.containsKey(deviceId)) {
                             _w.redFlag(
                                 String.format(
                                     "Associating vsys on a managed device with different device-groups is not yet supported. Ignoring association with device-group '%s' for managed device '%s'.",
-                                    deviceGroupEntry.getKey(), deviceName));
+                                    deviceGroupEntry.getKey(), deviceId));
                             return;
                           }
-                          PaloAltoConfiguration c = new PaloAltoConfiguration();
-                          c.setWarnings(_w);
-                          c.setVendor(_vendor);
-                          c.setRuntimeData(_runtimeData);
-                          // This may not actually be the device's hostname
-                          // but this is all we know at this point
-                          c.setHostname(deviceName);
+                          PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
                           c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
-                          managedConfigurations.put(deviceName, c);
+                          managedConfigurations.put(deviceId, c);
                         }));
     // Apply template-stacks
     _templateStacks
@@ -2245,18 +2248,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                     .getValue()
                     .getDevices()
                     .forEach(
-                        name -> {
-                          PaloAltoConfiguration c = managedConfigurations.get(name);
+                        deviceId -> {
+                          PaloAltoConfiguration c = managedConfigurations.get(deviceId);
                           // Create new managed config if one doesn't already exist for this device
                           if (c == null) {
-                            c = new PaloAltoConfiguration();
-                            c.setWarnings(_w);
-                            c.setVendor(_vendor);
-                            c.setRuntimeData(_runtimeData);
-                            // This may not actually be the device's hostname
-                            // but this is all we know at this point
-                            c.setHostname(name);
-                            managedConfigurations.put(name, c);
+                            c = createManagedDeviceConfig(deviceId);
+                            managedConfigurations.put(deviceId, c);
                           }
                           c.applyTemplateStack(stackEntry.getValue(), this);
                         }));
