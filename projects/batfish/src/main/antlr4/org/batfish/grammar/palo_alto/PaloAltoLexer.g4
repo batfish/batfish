@@ -693,6 +693,16 @@ INTERFACE
     'interface'
 ;
 
+INTERZONE
+:
+    'interzone'
+;
+
+INTRAZONE
+:
+    'intrazone'
+;
+
 IP
 :
     'ip'
@@ -801,6 +811,11 @@ LOG_COLLECTOR_GROUP
 LOG_END
 :
     'log-end'
+;
+
+LOG_SETTING
+:
+    'log-setting'
 ;
 
 LOG_SETTINGS
@@ -1233,6 +1248,11 @@ ROUTING_TABLE
     'routing-table'
 ;
 
+RULE_TYPE
+:
+    'rule-type'
+;
+
 RULEBASE
 :
     'rulebase'
@@ -1413,6 +1433,11 @@ TAP
     'tap'
 ;
 
+TARGET
+:
+    'target'
+;
+
 TCP
 :
     [Tt][Cc][Pp]
@@ -1506,6 +1531,11 @@ UNICAST
 UNITS
 :
     'units'
+;
+
+UNIVERSAL
+:
+    'universal'
 ;
 
 UP
