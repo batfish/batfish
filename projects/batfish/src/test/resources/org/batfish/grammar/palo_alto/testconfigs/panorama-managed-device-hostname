@@ -1,0 +1,17 @@
+set device-group DG1 address ADDR1 ip-netmask 10.10.10.10
+set device-group DG1 devices 00000001
+set device-group DG1 devices 00000002
+set device-group DG1 devices 00000003
+# Firewall 2 has a configured hostname
+set template T1 config deviceconfig system hostname other-hostname
+set template-stack TS1 templates [ T1 ]
+set template-stack TS1 devices 00000002
+
+# Panorama response to query about managed devices
+# Indicating firewall 1 and 2 have these hostnames (should override assumed/inherited hostnames)
+set response result devices 00000001 hostname firewall-1
+set response result devices 00000002 hostname firewall-2
+set response result devices 00000004 hostname firewall-unknown
+
+# Regular, non-device-group config - intentionally after device-group config to confirm we pop out as expected
+set deviceconfig system hostname panorama-managed-device-hostname
