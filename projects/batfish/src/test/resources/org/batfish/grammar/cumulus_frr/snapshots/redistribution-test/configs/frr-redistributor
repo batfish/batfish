@@ -26,9 +26,6 @@ router bgp 1
 router ospf
  ospf router-id 1.1.1.1
 !
-ip prefix-list TEST_PREFIX_LIST seq 10 permit 2.2.2.2/32
-!
 route-map OSPF-TO-BGP permit 10
- match ip address prefix-list TEST_PREFIX_LIST_PERMIT
 !
 end

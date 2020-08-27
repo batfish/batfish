@@ -376,16 +376,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSb_redistribute(Sb_redistributeContext ctx) {
     String routeMap = ctx.route_map_name() == null ? null : ctx.route_map_name().getText();
-    handleBgpRedistribution(ctx, ctx.bgp_redist_type(), routeMap);
+    handleOspfToBgpRedistribution(ctx, ctx.bgp_redist_type(), routeMap);
   }
 
   @Override
   public void exitSbafi_redistribute(Sbafi_redistributeContext ctx) {
     String routeMap = ctx.route_map_name() == null ? null : ctx.route_map_name().getText();
-    handleBgpRedistribution(ctx, ctx.bgp_redist_type(), routeMap);
+    handleOspfToBgpRedistribution(ctx, ctx.bgp_redist_type(), routeMap);
   }
 
-  public void handleBgpRedistribution(
+  public void handleOspfToBgpRedistribution(
       ParserRuleContext ctx,
       Bgp_redist_typeContext bgpRedistTypeContext,
       @Nullable String routeMap) {
