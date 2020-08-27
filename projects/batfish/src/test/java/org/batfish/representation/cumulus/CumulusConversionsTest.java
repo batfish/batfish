@@ -1249,6 +1249,7 @@ public final class CumulusConversionsTest {
     If policy =
         convertOspfRedistributionPolicy(viConfig, ospfVrf, rp, vsOspf, vsConfig.getRouteMaps());
     List<BooleanExpr> guard = ((Conjunction) policy.getGuard()).getConjuncts();
+
     assertThat(
         guard,
         contains(

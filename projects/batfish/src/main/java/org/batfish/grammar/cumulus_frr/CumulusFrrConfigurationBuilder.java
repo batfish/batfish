@@ -674,8 +674,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         ctx, getCumulusRoutingProtocol(ctx.ospf_redist_type().getText()), routeMap);
   }
 
-  private CumulusRoutingProtocol getCumulusRoutingProtocol(String redist_type) {
-    return CumulusRoutingProtocol.valueOf(redist_type.toUpperCase());
+  private CumulusRoutingProtocol getCumulusRoutingProtocol(String redistType) {
+    return CumulusRoutingProtocol.valueOf(redistType.toUpperCase());
   }
 
   private CumulusStructureUsage getRedistributionCumulusStructureUsage(
