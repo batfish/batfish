@@ -2168,7 +2168,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
-  /** Create a new config, managed the by the current device/PaloAltoConfiguration. */
+  /** Create a config for a new device, managed the by the current device. */
   private PaloAltoConfiguration createManagedDeviceConfig(String deviceId) {
     PaloAltoConfiguration c = new PaloAltoConfiguration();
     c.setWarnings(_w);
