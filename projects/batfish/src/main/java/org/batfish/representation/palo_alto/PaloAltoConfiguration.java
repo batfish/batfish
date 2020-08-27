@@ -2183,6 +2183,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Create a config for a new device, managed the by the current device. */
   private PaloAltoConfiguration createManagedDeviceConfig(String deviceId) {
     PaloAltoConfiguration c = new PaloAltoConfiguration();
+    c.setFilename(_filename);
     c.setWarnings(_w);
     c.setVendor(_vendor);
     c.setRuntimeData(_runtimeData);
@@ -2191,13 +2192,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return c;
   }
 
-  @Override
-  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
-    ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
-    // Build primary config
-    Configuration primaryConfig = this.toVendorIndependentConfiguration();
-    outputConfigurations.add(primaryConfig);
-
+  @VisibleForTesting
+  public List<PaloAltoConfiguration> getManagedConfigurations() {
     // Build configs for each managed device, if applicable
     // Map of managed device ID to managed device config
     Map<String, PaloAltoConfiguration> managedConfigurations = new HashMap<>();
@@ -2275,10 +2271,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             _w.redFlag(String.format("Cannot set hostname for unknown device id %s.", deviceId));
           }
         });
+    return ImmutableList.copyOf(managedConfigurations.values());
+  }
 
+  @Override
+  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+    ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
+    // Build primary config
+    Configuration primaryConfig = this.toVendorIndependentConfiguration();
+    outputConfigurations.add(primaryConfig);
+
+    List<PaloAltoConfiguration> managedConfigurations = getManagedConfigurations();
     // Once managed devices are built, convert them too
     outputConfigurations.addAll(
-        managedConfigurations.values().stream()
+        managedConfigurations.stream()
             .map(PaloAltoConfiguration::toVendorIndependentConfiguration)
             .collect(ImmutableList.toImmutableList()));
 

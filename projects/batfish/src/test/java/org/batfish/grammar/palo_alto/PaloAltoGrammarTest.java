@@ -3111,6 +3111,19 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testPanoramaManagedDeviceFilename() {
+    String panoramaHostname = "panorama-managed-device-hostname";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<PaloAltoConfiguration> managedDevices = c.getManagedConfigurations();
+
+    assertThat(c.getFilename(), notNullValue());
+    assertThat(managedDevices, not(empty()));
+    for (PaloAltoConfiguration device : managedDevices) {
+      assertThat(device.getFilename(), equalTo(c.getFilename()));
+    }
+  }
+
+  @Test
   public void testPanoramaManagedDeviceHostname() {
     String panoramaHostname = "panorama-managed-device-hostname";
     String firewallId1 = "firewall-1";
