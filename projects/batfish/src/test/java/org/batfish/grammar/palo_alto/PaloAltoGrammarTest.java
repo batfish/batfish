@@ -3111,6 +3111,21 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testPanoramaManagedDeviceHostname() {
+    String panoramaHostname = "panorama-managed-device-hostname";
+    String firewallId1 = "firewall-1";
+    String firewallId2 = "firewall-2";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config with the correct hostnames
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+  }
+
+  @Test
   public void testTemplate() {
     String hostname = "template";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);

@@ -175,6 +175,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
+  /** Map of device id to hostname. */
+  private final Map<String, String> _hostnameMap;
+
   private final SortedMap<String, Interface> _interfaces;
 
   private Ip _mgmtIfaceAddress;
@@ -209,11 +212,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _cryptoProfiles = new LinkedList<>();
     _deviceGroups = new TreeMap<>();
     _interfaces = new TreeMap<>();
+    _hostnameMap = new HashMap<>();
     _sharedGateways = new TreeMap<>();
     _templates = new TreeMap<>();
     _templateStacks = new HashMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
+  }
+
+  /** Add mapping from specified device id to specified hostname. */
+  public void addHostnameMapping(String deviceId, String hostname) {
+    _hostnameMap.put(deviceId, hostname);
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -2203,7 +2212,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             c.setRuntimeData(_runtimeData);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
-                            c.setHostname(name);
+                            c.setHostname(_hostnameMap.getOrDefault(name, name));
                             c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                             managedConfigurations.put(name, c);
                           }
@@ -2232,7 +2241,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           c.setRuntimeData(_runtimeData);
                           // This may not actually be the device's hostname
                           // but this is all we know at this point
-                          c.setHostname(deviceName);
+                          c.setHostname(_hostnameMap.getOrDefault(deviceName, deviceName));
                           c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
                           managedConfigurations.put(deviceName, c);
                         }));
@@ -2255,7 +2264,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             c.setRuntimeData(_runtimeData);
                             // This may not actually be the device's hostname
                             // but this is all we know at this point
-                            c.setHostname(name);
+                            c.setHostname(_hostnameMap.getOrDefault(name, name));
                             managedConfigurations.put(name, c);
                           }
                           c.applyTemplateStack(stackEntry.getValue(), this);
