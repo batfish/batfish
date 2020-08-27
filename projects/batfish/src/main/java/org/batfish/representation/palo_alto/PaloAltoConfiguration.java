@@ -175,7 +175,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
-  /** Map of device id to hostname. */
+  /**
+   * Map of device id to hostname. This represents hostname mapping extracted from Panorama `show
+   * devices` commands.
+   */
   private final Map<String, String> _hostnameMap;
 
   private final SortedMap<String, Interface> _interfaces;
