@@ -1188,6 +1188,16 @@ RESOLVE
     'resolve'
 ;
 
+RESPONSE
+:
+    'response'
+;
+
+RESULT
+:
+    'result'
+;
+
 RETRANSMIT_INTERVAL
 :
     'retransmit-interval'

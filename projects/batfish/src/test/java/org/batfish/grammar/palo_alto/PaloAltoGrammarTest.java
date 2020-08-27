@@ -3111,6 +3111,36 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testPanoramaManagedDeviceHostname() {
+    String panoramaHostname = "panorama-managed-device-hostname";
+    String firewallId1 = "firewall-1";
+    String firewallId2 = "firewall-2";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config with the correct hostnames
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+  }
+
+  @Test
+  public void testPanoramaManagedDeviceHostnameWarning() throws IOException {
+    String hostname = "panorama-managed-device-hostname";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should have a warning about trying to set hostname for an unknown device id
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        contains("Cannot set hostname for unknown device id 00000004."));
+  }
+
+  @Test
   public void testTemplate() {
     String hostname = "template";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);

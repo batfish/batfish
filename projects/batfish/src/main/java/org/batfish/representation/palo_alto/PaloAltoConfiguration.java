@@ -175,6 +175,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
+  /**
+   * Map of device id to hostname. This represents hostname mapping extracted from Panorama `show
+   * devices` commands.
+   */
+  private final Map<String, String> _hostnameMap;
+
   private final SortedMap<String, Interface> _interfaces;
 
   private Ip _mgmtIfaceAddress;
@@ -209,11 +215,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _cryptoProfiles = new LinkedList<>();
     _deviceGroups = new TreeMap<>();
     _interfaces = new TreeMap<>();
+    _hostnameMap = new HashMap<>();
     _sharedGateways = new TreeMap<>();
     _templates = new TreeMap<>();
     _templateStacks = new HashMap<>();
     _virtualRouters = new TreeMap<>();
     _virtualSystems = new TreeMap<>();
+  }
+
+  /** Add mapping from specified device id to specified hostname. */
+  public void addHostnameMapping(String deviceId, String hostname) {
+    _hostnameMap.put(deviceId, hostname);
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -2174,8 +2186,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     c.setWarnings(_w);
     c.setVendor(_vendor);
     c.setRuntimeData(_runtimeData);
-    // This may not actually be the device's hostname
-    // but this is all we know at this point
+    // Assume hostname is device id for now
     c.setHostname(deviceId);
     return c;
   }
@@ -2254,6 +2265,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           }
                           c.applyTemplateStack(stackEntry.getValue(), this);
                         }));
+
+    // Update hostnames for managed devices
+    _hostnameMap.forEach(
+        (deviceId, hostname) -> {
+          if (managedConfigurations.containsKey(deviceId)) {
+            managedConfigurations.get(deviceId).setHostname(hostname);
+          } else {
+            _w.redFlag(String.format("Cannot set hostname for unknown device id %s.", deviceId));
+          }
+        });
+
     // Once managed devices are built, convert them too
     outputConfigurations.addAll(
         managedConfigurations.values().stream()

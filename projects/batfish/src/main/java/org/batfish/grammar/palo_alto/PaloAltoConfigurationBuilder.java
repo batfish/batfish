@@ -265,6 +265,8 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
@@ -451,6 +453,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private OspfVr _currentOspfVr;
   private RedistProfile _currentRedistProfile;
   private RedistRule _currentRedistRule;
+  private String _currentResultDeviceName;
   private RulebaseId _currentRuleScope;
   private SecurityRule _currentSecurityRule;
   private Service _currentService;
@@ -1719,6 +1722,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentDeviceGroup.addVsys(getText(ctx.device), _currentDeviceGroupVsys);
     }
     _currentDeviceGroupVsys = null;
+  }
+
+  @Override
+  public void enterSrespr_devices(Srespr_devicesContext ctx) {
+    _currentResultDeviceName = getText(ctx.name);
+  }
+
+  @Override
+  public void exitSrespr_devices(Srespr_devicesContext ctx) {
+    _currentResultDeviceName = null;
+  }
+
+  @Override
+  public void exitSresprd_hostname(Sresprd_hostnameContext ctx) {
+    _currentConfiguration.addHostnameMapping(_currentResultDeviceName, getText(ctx.hostname));
   }
 
   @Override
