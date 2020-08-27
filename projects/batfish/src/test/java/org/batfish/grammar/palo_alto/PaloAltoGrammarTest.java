@@ -3126,6 +3126,21 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testPanoramaManagedDeviceHostnameWarning() throws IOException {
+    String hostname = "panorama-managed-device-hostname";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should have a warning about trying to set hostname for an unknown device id
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        contains("Cannot set hostname for unknown device id 00000004."));
+  }
+
+  @Test
   public void testTemplate() {
     String hostname = "template";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);

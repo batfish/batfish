@@ -2183,9 +2183,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     c.setWarnings(_w);
     c.setVendor(_vendor);
     c.setRuntimeData(_runtimeData);
-    // Use hostname from device id -> hostname mapping if it exists
-    // Otherwise just use the device id
-    c.setHostname(_hostnameMap.getOrDefault(deviceId, deviceId));
+    // Assume hostname is device id for now
+    c.setHostname(deviceId);
     return c;
   }
 
@@ -2263,6 +2262,17 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           }
                           c.applyTemplateStack(stackEntry.getValue(), this);
                         }));
+
+    // Update hostnames for managed devices
+    _hostnameMap.forEach(
+        (deviceId, hostname) -> {
+          if (managedConfigurations.containsKey(deviceId)) {
+            managedConfigurations.get(deviceId).setHostname(hostname);
+          } else {
+            _w.redFlag(String.format("Cannot set hostname for unknown device id %s.", deviceId));
+          }
+        });
+
     // Once managed devices are built, convert them too
     outputConfigurations.addAll(
         managedConfigurations.values().stream()
