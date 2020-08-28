@@ -1365,17 +1365,16 @@ public final class CumulusConversionsTest {
     vsConfig.getRouteMaps().put("redist_policy", new RouteMap("redist_policy"));
 
     // setup routing policy - block default and allow all else.
-    RoutingPolicy routemapPolicy =
-        RoutingPolicy.builder()
-            .setOwner(viConfig)
-            .setName("redist_policy")
-            .addStatement(REJECT_DEFAULT_ROUTE)
-            .addStatement(
-                // accept non-default
-                new If(
-                    new Not(Common.matchDefaultRoute()),
-                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
-            .build();
+    RoutingPolicy.builder()
+        .setOwner(viConfig)
+        .setName("redist_policy")
+        .addStatement(REJECT_DEFAULT_ROUTE)
+        .addStatement(
+            // accept non-default
+            new If(
+                new Not(Common.matchDefaultRoute()),
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+        .build();
 
     // setup BgpVrf
     BgpVrf vrf = bgpProcess.getDefaultVrf();
@@ -1390,8 +1389,7 @@ public final class CumulusConversionsTest {
     ospf.setRouterId(Ip.parse("1.1.1.1"));
 
     // the method under test
-    org.batfish.datamodel.BgpProcess viBgp =
-        toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+    toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
 
     // Spawn test prefixes
     Prefix prefix = Prefix.parse("1.1.1.1/32");
