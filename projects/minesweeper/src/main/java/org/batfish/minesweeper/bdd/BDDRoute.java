@@ -227,6 +227,31 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return new BDDRoute(this);
   }
 
+  /**
+   * Not all assignments to the BDD variables that make up a BDDRoute represent valid routes. This
+   * method produces constraints that well-formed routes must satisfy, represented as a BDD. It is
+   * useful when the goal is to produce concrete example routes from a BDDRoute, for instance.
+   *
+   * @return the constraints
+   */
+  public BDD wellFormednessConstraints() {
+
+    // the prefix length should be 32 or less
+    BDD prefLenConstraint = _prefixLength.leq(32);
+    // at most one AS-path regex atomic predicate should be true, since by construction their
+    // regexes are all pairwise disjoint
+    // Note: the same constraint does not apply to community regexes because a route has a set
+    // of communities, so more than one regex can be simultaneously true
+    BDD asPathConstraint = factory.one();
+    for (int i = 0; i < _asPathRegexAtomicPredicates.length; i++) {
+      for (int j = i + 1; j < _asPathRegexAtomicPredicates.length; j++) {
+        asPathConstraint.andWith(
+            _asPathRegexAtomicPredicates[i].nand(_asPathRegexAtomicPredicates[j]));
+      }
+    }
+    return prefLenConstraint.andWith(asPathConstraint);
+  }
+
   /*
    * Converts a BDD to the graphviz DOT format for debugging.
    */

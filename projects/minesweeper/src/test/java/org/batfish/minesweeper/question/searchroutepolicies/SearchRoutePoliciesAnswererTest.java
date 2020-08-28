@@ -583,10 +583,29 @@ public class SearchRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
+    assertThat(answer.getRows().size(), equalTo(0));
+  }
+
+  @Test
+  public void testAsPathConstraints() {
+    _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            BgpRouteConstraints.builder().setAsPath(ImmutableSet.of("^40( |$)")).build(),
+            BgpRouteConstraints.builder().setAsPath(ImmutableSet.of("(^| )50$")).build(),
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
     BgpRoute inputRoute =
         BgpRoute.builder()
             .setNetwork(Prefix.parse("0.0.0.0/0"))
-            .setAsPath(AsPath.ofSingletonAsSets(40L))
+            .setAsPath(AsPath.ofSingletonAsSets(40L, 50L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
