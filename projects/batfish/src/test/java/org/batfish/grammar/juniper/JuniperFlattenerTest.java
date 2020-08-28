@@ -2,6 +2,8 @@ package org.batfish.grammar.juniper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -17,6 +19,30 @@ import org.junit.Test;
 
 public class JuniperFlattenerTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
+
+  /** Test for https://github.com/batfish/batfish/issue/6149. */
+  @Test
+  public void testGH6149Flatten() {
+    String hostname = "gh-6149-flatten";
+    Flattener flattener =
+        Batfish.flatten(
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    assert flattener instanceof JuniperFlattener;
+    String flatText = flattener.getFlattenedConfigurationText();
+    // Flattening the configs does not lose either of the filter lines in the input.
+    assertThat(
+        flatText,
+        allOf(
+            containsString(
+                "set groups FOO interfaces <*> unit <*> family inet filter input-list filterA"),
+            containsString(
+                "set groups FOO interfaces <*> unit <*> family inet filter input-list filterB")));
+  }
 
   @Test
   public void testNestedConfigLineMap() {

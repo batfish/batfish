@@ -12,7 +12,6 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources/org/batfish/grammar/juniper/testconfigs",
-        "//projects/batfish/src/test/resources/org/batfish/grammar/juniper/testrigs",
     ],
     deps = [
         "//projects/batfish",
