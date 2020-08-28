@@ -7211,7 +7211,7 @@ M_InterfaceWildcard_APPLY_GROUPS
 
 M_InterfaceWildcard_APPLY_GROUPS_EXCEPT
 :
-  'apply-groups' -> type(APPLY_GROUPS_EXCEPT), popMode
+  'apply-groups-except' -> type(APPLY_GROUPS_EXCEPT), popMode
 ;
 
 M_InterfaceWildcard_NEWLINE
