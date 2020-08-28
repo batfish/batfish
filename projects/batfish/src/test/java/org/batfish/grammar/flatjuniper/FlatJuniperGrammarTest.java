@@ -50,6 +50,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
@@ -77,6 +78,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasName;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
@@ -200,6 +202,8 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -4555,6 +4559,28 @@ public final class FlatJuniperGrammarTest {
     assertThat(incomingFilter, rejects(testFlow1, null, c));
     assertThat(incomingFilter, rejects(testFlow2, null, c));
     assertThat(incomingFilter, rejects(testFlow3, null, c));
+  }
+
+  @Test
+  public void testGH6149Preprocess() {
+    Configuration c = parseConfig("gh-6149-preprocess");
+    assertThat(
+        c,
+        allOf(
+            hasInterface("ae1.0"),
+            hasIpAccessList("ae1.0-i"),
+            hasIpAccessList("filterA"),
+            hasIpAccessList("filterB")));
+    Interface ae1_0 = c.getAllInterfaces().get("ae1.0");
+    // The interface gets the Juniper-standard name for a composite input filter.
+    assertThat(ae1_0, hasIncomingFilter(hasName("ae1.0-i")));
+    // The ACL has the correct lines.
+    List<AclLine> lines = c.getIpAccessLists().get("ae1.0-i").getLines();
+    assertThat(lines, contains(instanceOf(AclAclLine.class), instanceOf(AclAclLine.class)));
+    AclAclLine line0 = (AclAclLine) lines.get(0);
+    assertThat(line0.getAclName(), equalTo("filterA"));
+    AclAclLine line1 = (AclAclLine) lines.get(1);
+    assertThat(line1.getAclName(), equalTo("filterB"));
   }
 
   @Test
