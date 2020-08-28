@@ -50,6 +50,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
@@ -77,6 +78,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasName;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPeerConfigMatchers.hasDestinationAddress;
@@ -200,6 +202,8 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -305,10 +309,7 @@ import org.batfish.datamodel.transformation.Noop;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
-import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
-import org.batfish.grammar.flattener.Flattener;
-import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -2317,30 +2318,6 @@ public final class FlatJuniperGrammarTest {
         ccae,
         hasDefinedStructureWithDefinitionLines(
             filename, FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
-  }
-
-  @Test
-  public void testNestedConfigLineMap() {
-    String hostname = "nested-config";
-    Flattener flattener =
-        Batfish.flatten(
-            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            new Settings(),
-            new Warnings(),
-            ConfigurationFormat.JUNIPER,
-            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
-    /*
-     * Flattened config should be two lines: header line and set-host-name line
-     * This test is only checking content of the set-host-name line
-     */
-    String flatText = flattener.getFlattenedConfigurationText().split("\n", -1)[1];
-
-    /* Confirm original line numbers are preserved */
-    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
-    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("host-name")), equalTo(3));
-    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("nested-config")), equalTo(3));
   }
 
   @Test
@@ -4582,6 +4559,28 @@ public final class FlatJuniperGrammarTest {
     assertThat(incomingFilter, rejects(testFlow1, null, c));
     assertThat(incomingFilter, rejects(testFlow2, null, c));
     assertThat(incomingFilter, rejects(testFlow3, null, c));
+  }
+
+  @Test
+  public void testGH6149Preprocess() {
+    Configuration c = parseConfig("gh-6149-preprocess");
+    assertThat(
+        c,
+        allOf(
+            hasInterface("ae1.0"),
+            hasIpAccessList("ae1.0-i"),
+            hasIpAccessList("filterA"),
+            hasIpAccessList("filterB")));
+    Interface ae1_0 = c.getAllInterfaces().get("ae1.0");
+    // The interface gets the Juniper-standard name for a composite input filter.
+    assertThat(ae1_0, hasIncomingFilter(hasName("ae1.0-i")));
+    // The ACL has the correct lines.
+    List<AclLine> lines = c.getIpAccessLists().get("ae1.0-i").getLines();
+    assertThat(lines, contains(instanceOf(AclAclLine.class), instanceOf(AclAclLine.class)));
+    AclAclLine line0 = (AclAclLine) lines.get(0);
+    assertThat(line0.getAclName(), equalTo("filterA"));
+    AclAclLine line1 = (AclAclLine) lines.get(1);
+    assertThat(line1.getAclName(), equalTo("filterB"));
   }
 
   @Test

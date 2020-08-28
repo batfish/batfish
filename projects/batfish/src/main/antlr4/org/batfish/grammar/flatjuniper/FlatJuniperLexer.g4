@@ -7227,6 +7227,11 @@ M_InterfaceWildcard_INTERFACE_WILDCARD
   ) -> type(INTERFACE_WILDCARD), popMode
 ;
 
+M_InterfaceWildcard_WILDCARD
+:
+  '<' ~'>'* '>' -> type(WILDCARD), popMode
+;
+
 M_InterfaceWildcard_WS
 :
   F_WhitespaceChar+ -> channel(HIDDEN)
