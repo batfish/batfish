@@ -346,14 +346,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
   }
 
-  public static @Nonnull String computeCommunitySetMatchAnyName(String name) {
-    return String.format("~MATCH_ANY~%s~", name);
-  }
-
-  public static @Nonnull String computeCommunitySetMatchEveryName(String name) {
-    return String.format("~MATCH_EVERY~%s~", name);
-  }
-
   public static String computeIcmpObjectGroupAclName(String name) {
     return String.format("~ICMP_OBJECT_GROUP~%s~", name);
   }
