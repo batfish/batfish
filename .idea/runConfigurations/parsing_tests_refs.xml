@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="parsing-tests refs" type="Application" factoryName="Application" singleton="true">
+    <option name="MAIN_CLASS_NAME" value="org.batfish.allinone.Main" />
+    <module name="allinone" />
+    <option name="PROGRAM_PARAMETERS" value="-cmdfile tests/parsing-tests/commands" />
+    <option name="VM_PARAMETERS" value="-enableassertions" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
