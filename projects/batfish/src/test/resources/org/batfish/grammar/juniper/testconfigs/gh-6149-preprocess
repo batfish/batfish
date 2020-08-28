@@ -1,6 +1,6 @@
 ####BATFISH FLATTENED JUNIPER CONFIG####
 set system host-name gh-6149-preprocess
-#set groups BAR class-of-service interfaces <*> output-traffic-control-profile qos-control-profile
+set groups BAR class-of-service interfaces <*> output-traffic-control-profile qos-control-profile
 set groups FOO interfaces <*> unit <*> family inet filter input-list filterA
 set groups FOO interfaces <*> unit <*> family inet filter input-list filterB
 set interfaces ae1 apply-groups FOO
