@@ -5,8 +5,6 @@ import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
@@ -70,6 +68,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_redist_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
@@ -670,36 +669,30 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRo_redistribute(Ro_redistributeContext ctx) {
     String routeMap = ctx.route_map_name() == null ? null : ctx.route_map_name().getText();
-    handleOspfRedistribution(
-        ctx, getCumulusRoutingProtocol(ctx.ospf_redist_type().getText()), routeMap);
+    handleToOspfRedistribution(ctx, ctx.ospf_redist_type(), routeMap);
   }
 
-  private CumulusRoutingProtocol getCumulusRoutingProtocol(String redistType) {
-    return CumulusRoutingProtocol.valueOf(redistType.toUpperCase());
-  }
+  public void handleToOspfRedistribution(
+      ParserRuleContext ctx,
+      Ospf_redist_typeContext ospfRedistTypeContext,
+      @Nullable String routeMap) {
+    CumulusRoutingProtocol srcProtocol;
+    CumulusStructureUsage usage;
 
-  private CumulusStructureUsage getRedistributionCumulusStructureUsage(
-      CumulusRoutingProtocol srcProtocol, CumulusRoutingProtocol dstProtocol) {
-    if (dstProtocol == CumulusRoutingProtocol.OSPF) {
-      switch (srcProtocol) {
-        case STATIC:
-          return OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
-        case CONNECTED:
-          return OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
-        case BGP:
-          return OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
-        default:
-          throw new BatfishException("Unexpected Redistribution Protocol");
-      }
+    if (ospfRedistTypeContext.STATIC() != null) {
+      usage = OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
+      srcProtocol = CumulusRoutingProtocol.STATIC;
+    } else if (ospfRedistTypeContext.CONNECTED() != null) {
+      usage = OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+      srcProtocol = CumulusRoutingProtocol.CONNECTED;
+    } else if (ospfRedistTypeContext.BGP() != null) {
+      usage = OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+      srcProtocol = CumulusRoutingProtocol.BGP;
+    } else {
+      throw new BatfishException("Unexpected redistribution protocol");
     }
-    throw new BatfishException("Unhandled Redistribution Protocol");
-  }
 
-  public void handleOspfRedistribution(
-      ParserRuleContext ctx, CumulusRoutingProtocol srcProtocol, @Nullable String routeMap) {
     OspfProcess proc = _frr.getOspfProcess();
-    CumulusStructureUsage usage =
-        getRedistributionCumulusStructureUsage(srcProtocol, CumulusRoutingProtocol.OSPF);
 
     VI_PROTOCOLS_MAP
         .get(srcProtocol)
