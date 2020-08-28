@@ -1186,6 +1186,37 @@ public final class CumulusConversionsTest {
   }
 
   @Test
+  public void testOspfProcess() {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+
+    // Setup VS
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    viConfig.getVrfs().put("default", new Vrf("default"));
+    vsConfig.setConfiguration(viConfig);
+
+    // Setup OSPF
+    OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
+    ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
+    OspfProcess vsOspf = new OspfProcess();
+    vsConfig.setOspfProcess(vsOspf);
+
+    // Check defaults
+    assertEquals(vsOspf.getDefaultMetric(), 20L);
+    assertEquals(vsOspf.getDefaultRedistributeMetricType(), OspfMetricType.E2);
+    assertNotNull(vsOspf.getRedistributionPolicies());
+
+    vsOspf.setDefaultMetric(30L);
+    vsOspf.setDefaultRedistributeMetricType(OspfMetricType.E1);
+
+    assertEquals(vsOspf.getDefaultMetric(), 30L);
+    assertEquals(vsOspf.getDefaultRedistributeMetricType(), OspfMetricType.E1);
+  }
+
+  @Test
   public void testGenerateOspfMetricAndTypePolicy() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();

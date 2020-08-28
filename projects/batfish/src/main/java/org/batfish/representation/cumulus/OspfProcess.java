@@ -21,6 +21,8 @@ public class OspfProcess implements Serializable {
 
   private static final OspfMetricType DEFAULT_REDISTRIBUTE_METRIC_TYPE = OspfMetricType.E2;
 
+  private static final Long DEFAULT_METRIC = 20L;
+
   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
 
   private Long _defaultMetric;
@@ -33,6 +35,7 @@ public class OspfProcess implements Serializable {
     _defaultPassiveInterface = false;
     _vrfs = new HashMap<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+    _defaultMetric = DEFAULT_METRIC;
     _defaultRedistributeMetricType = DEFAULT_REDISTRIBUTE_METRIC_TYPE;
   }
 
@@ -53,11 +56,7 @@ public class OspfProcess implements Serializable {
   }
 
   public long getDefaultMetric() {
-    if (_defaultMetric != null) {
       return _defaultMetric;
-    }
-
-    return 20;
   }
 
   public OspfMetricType getDefaultRedistributeMetricType() {
