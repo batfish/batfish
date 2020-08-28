@@ -56,7 +56,7 @@ public class OspfProcess implements Serializable {
   }
 
   public long getDefaultMetric() {
-      return _defaultMetric;
+    return _defaultMetric;
   }
 
   public OspfMetricType getDefaultRedistributeMetricType() {
