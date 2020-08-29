@@ -1,17 +1,32 @@
 package org.batfish.representation.palo_alto;
 
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
+
 import com.google.common.annotations.VisibleForTesting;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.vendor.VendorStructureId;
 
 /** Collection of methods to create {@link TraceElement trace elements} for Palo Alto ACL lines. */
 public final class PaloAltoTraceElementCreators {
 
   private PaloAltoTraceElementCreators() {}
 
-  /** Creates {@link TraceElement} for ACL line representing security rule {@code ruleName} */
+  /**
+   * Creates {@link TraceElement} for ACL line representing the given security rule in the given
+   * vsys.
+   */
   @VisibleForTesting
-  public static TraceElement matchRuleTraceElement(String ruleName) {
-    return TraceElement.of("Matched security rule " + ruleName);
+  public static TraceElement matchSecurityRuleTraceElement(
+      String ruleName, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched security rule ")
+        .add(
+            ruleName,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.SECURITY_RULE.getDescription(),
+                computeObjectName(vsysName, ruleName)))
+        .build();
   }
 
   /**

@@ -78,7 +78,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUA
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
@@ -1950,6 +1950,7 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testIntrazoneFilterTraceElements() {
     String hostname = "security-no-explicit-match";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     String vsysName = "vsys1";
     String zoneName = "ZONE";
@@ -1962,8 +1963,8 @@ public final class PaloAltoGrammarTest {
     IpAccessList zoneOutgoingFilter = c.getIpAccessLists().get(zoneOutgoingFilterName);
 
     // Expected trace elements in intrazone filter
-    TraceElement ruleDenyTe = matchRuleTraceElement("DENY");
-    TraceElement rulePermitTe = matchRuleTraceElement("PERMIT");
+    TraceElement ruleDenyTe = matchSecurityRuleTraceElement("DENY", vsysName, filename);
+    TraceElement rulePermitTe = matchSecurityRuleTraceElement("PERMIT", vsysName, filename);
     TraceElement intrazoneDefaultTe = intrazoneDefaultAcceptTraceElement(vsysName, zoneName);
 
     // Expected trace elements in zone outgoing filter
@@ -1987,6 +1988,7 @@ public final class PaloAltoGrammarTest {
     // Device has an interface in the zone. Ensure that outgoing filter lines have expected trace
     // elements and flows leaving the interface generate the expected ACL traces.
     String hostname = "security-no-explicit-match";
+    String filename = "configs/" + hostname;
     Configuration c = parseConfig(hostname);
     String vsysName = "vsys1";
     String zoneName = "ZONE";
@@ -2038,7 +2040,9 @@ public final class PaloAltoGrammarTest {
         flowTrace,
         contains(
             isChainOfSingleChildren(
-                exitIfaceTe, intrazoneRejectRulesTe, matchRuleTraceElement("DENY"))));
+                exitIfaceTe,
+                intrazoneRejectRulesTe,
+                matchSecurityRuleTraceElement("DENY", vsysName, filename))));
 
     // Flow matching PERMIT security rule should generate a trace pointing to that rule.
     flowTrace =
@@ -2053,7 +2057,9 @@ public final class PaloAltoGrammarTest {
         flowTrace,
         contains(
             isChainOfSingleChildren(
-                exitIfaceTe, intrazoneRulesTe, matchRuleTraceElement("PERMIT"))));
+                exitIfaceTe,
+                intrazoneRulesTe,
+                matchSecurityRuleTraceElement("PERMIT", vsysName, filename))));
   }
 
   @Test
@@ -2274,6 +2280,7 @@ public final class PaloAltoGrammarTest {
             new RuleEndpoint(IP_ADDRESS, "1.1.1.1"),
             new RuleEndpoint(IP_PREFIX, "2.2.2.0/24"),
             new RuleEndpoint(IP_RANGE, "3.3.3.3-4.4.4.4")));
+    assertTrue(rule1.getDisabled());
 
     NatRule rule2 = natRules.get(rule2Name);
     assertThat(rule2.getTo(), equalTo("TO_2"));
@@ -2300,8 +2307,7 @@ public final class PaloAltoGrammarTest {
         rule2.getDestinationTranslation().getTranslatedAddress(),
         equalTo(new RuleEndpoint(REFERENCE, "DST_2")));
     assertThat(rule2.getDestinationTranslation().getTranslatedPort(), equalTo(1234));
-
-    // TODO: Test semantics after conversion
+    assertFalse(rule2.getDisabled());
   }
 
   @Test
@@ -3102,6 +3108,49 @@ public final class PaloAltoGrammarTest {
     // Third firewall should inherit definitions from second Panorama device-group
     assertIpSpacesEqual(
         firewall3.getIpSpaces().get(addressObject2Name), Ip.parse("2.3.4.5").toIpSpace());
+  }
+
+  @Test
+  public void testPanoramaManagedDeviceFilename() {
+    String panoramaHostname = "panorama-managed-device-hostname";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<PaloAltoConfiguration> managedDevices = c.getManagedConfigurations();
+
+    assertThat(c.getFilename(), notNullValue());
+    assertThat(managedDevices, not(empty()));
+    for (PaloAltoConfiguration device : managedDevices) {
+      assertThat(device.getFilename(), equalTo(c.getFilename()));
+    }
+  }
+
+  @Test
+  public void testPanoramaManagedDeviceHostname() {
+    String panoramaHostname = "panorama-managed-device-hostname";
+    String firewallId1 = "firewall-1";
+    String firewallId2 = "firewall-2";
+    String firewallId3 = "00000003";
+    PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
+    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+
+    // Should get four nodes from the one Panorama config with the correct hostnames
+    assertThat(
+        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+  }
+
+  @Test
+  public void testPanoramaManagedDeviceHostnameWarning() throws IOException {
+    String hostname = "panorama-managed-device-hostname";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should have a warning about trying to set hostname for an unknown device id
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        contains("Cannot set hostname for unknown device id 00000004."));
   }
 
   @Test

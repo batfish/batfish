@@ -1,0 +1,14 @@
+####BATFISH FLATTENED JUNIPER CONFIG####
+set system host-name gh-6149-preprocess
+set groups BAR class-of-service interfaces <*> output-traffic-control-profile qos-control-profile
+set groups FOO interfaces <*> unit <*> family inet filter input-list filterA
+set groups FOO interfaces <*> unit <*> family inet filter input-list filterB
+set interfaces ae1 apply-groups FOO
+set interfaces ae1 unit 0 family inet address 1.1.1.1/31
+set firewall family inet filter filterA term x1y2 from ip-options any
+set firewall family inet filter filterA term x1y2 then count ip-options
+set firewall family inet filter filterA term x1y2 then next term
+set firewall family inet filter filterB term xyz from source-address 0.0.0.0/8
+set firewall family inet filter filterB term xyz then count tmp
+set firewall family inet filter filterB term xyz then sample
+set firewall family inet filter filterB term xyz then discard
