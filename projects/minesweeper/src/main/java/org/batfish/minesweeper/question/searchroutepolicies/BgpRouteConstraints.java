@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,7 +54,7 @@ public class BgpRouteConstraints {
         processBuilder(localPreference),
         processBuilder(med),
         communities,
-        processAsPath(asPath));
+        asPath);
   }
 
   private BgpRouteConstraints(
@@ -84,23 +83,6 @@ public class BgpRouteConstraints {
       return builder.including(THIRTY_TWO_BIT_RANGE).build();
     }
     return builder.build();
-  }
-
-  @VisibleForTesting
-  @Nullable
-  static RegexConstraints processAsPath(@Nullable RegexConstraints asPath) {
-    if (asPath == null) {
-      return null;
-    }
-    // if there are only negative AS-path constraints, add .* as a positive one
-    if (!asPath.isEmpty() && asPath.getPositiveRegexConstraints().isEmpty()) {
-      return new RegexConstraints(
-          ImmutableList.<RegexConstraint>builder()
-              .addAll(asPath.getRegexConstraints())
-              .add(new RegexConstraint(".*"))
-              .build());
-    }
-    return asPath;
   }
 
   /** Check that the constraints contain valid values. */
