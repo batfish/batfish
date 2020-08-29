@@ -59,6 +59,12 @@ public final class ApplicationBuiltIn {
           .addService(Service.builder("bgp-tcp").setIpProtocol(IpProtocol.TCP).addPort(179).build())
           .addService(Service.builder("bgp-udp").setIpProtocol(IpProtocol.UDP).addPort(179).build())
           .build();
+  public static final Application BOXNET =
+      Application.builder("boxnet")
+          .setDescription("built-in application boxnet")
+          .addService(
+              Service.builder("boxnet").setIpProtocol(IpProtocol.TCP).addPorts(80, 443).build())
+          .build();
   public static final Application CISCO_SPARK_BASE =
       Application.builder("cisco-spark-base")
           .setDescription("built-in application cisco-spark-base")
@@ -323,6 +329,18 @@ public final class ApplicationBuiltIn {
           .addService(
               Service.builder("stun udp").setIpProtocol(IpProtocol.UDP).addPort(3478).build())
           .build();
+  public static final Application TRACEROUTE =
+      Application.builder("traceroute")
+          .setDescription("built-in application traceroute")
+          .addService(Service.builder("traceroute icmp").setIpProtocol(IpProtocol.ICMP).build())
+          .addService(
+              Service.builder("traceroute icmpv6").setIpProtocol(IpProtocol.IPV6_ICMP).build())
+          .addService(
+              Service.builder("traceroute udp")
+                  .setIpProtocol(IpProtocol.UDP)
+                  .addPorts(new SubRange(33434, 33534))
+                  .build())
+          .build();
   public static final Application WEB_BROWSING =
       Application.builder("web-browsing")
           .setDescription("built-in application web-browsing")
@@ -360,6 +378,7 @@ public final class ApplicationBuiltIn {
           AOL_MESSAGEBOARD_POSTING,
           AOL_PROXY,
           BGP,
+          BOXNET,
           CISCO_SPARK_BASE,
           DHCP,
           DNS,
@@ -394,6 +413,7 @@ public final class ApplicationBuiltIn {
           SSH,
           SSL,
           STUN,
+          TRACEROUTE,
           WEB_BROWSING,
           WEBEX,
           WEBSOCKET);

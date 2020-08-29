@@ -14,6 +14,7 @@ import
     PaloAlto_network,
     PaloAlto_ospf,
     PaloAlto_readonly,
+    PaloAlto_response,
     PaloAlto_rip,
     PaloAlto_rulebase,
     PaloAlto_service,
@@ -155,6 +156,15 @@ set_line_readonly
 ;
 
 /*
+ * Special-case for handling extra data from device queries (e.g. hostname information for firewalls
+ * managed by a Panorama device)
+ */
+set_line_response
+:
+    RESPONSE sresp_result
+;
+
+/*
  * Device-group supports a subset of device configuration (statement_config_devices)
  * plus some device-group / panorama specific items
  */
@@ -185,6 +195,7 @@ set_line_tail
     | set_line_config_general
     | set_line_device_group
     | set_line_readonly
+    | set_line_response
     | set_line_template
     | set_line_template_stack
     | s_policy

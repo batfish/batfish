@@ -1,0 +1,68 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+    host-name gh-6149-flatten;
+}
+groups {
+    BAR {
+        class-of-service {
+            interfaces {
+                <*> {
+                    output-traffic-control-profile qos-control-profile;
+                }
+            }
+        }
+    }
+    FOO {
+        interfaces {
+            <*> {
+                unit <*> {
+                    family inet {
+                        filter {
+                            input-list [ filterA filterB ];
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+interfaces {
+    ae1 {
+        apply-groups FOO;
+        unit 0 {
+            family inet {
+                address 1.1.1.1/31;
+            }
+        }
+    }
+}
+firewall {
+    family inet {
+        filter filterA {
+            term x1y2 {
+                from {
+                    ip-options any;
+                }
+                then {
+                    count ip-options;
+                    next term;
+                }
+            }
+        }
+        filter filterB {
+            term xyz {
+                from {
+                    source-address {
+                        0.0.0.0/8;
+                    }
+                }
+                then {
+                    count tmp;
+                    sample;
+                    discard;
+                }
+            }
+        }
+    }
+}
