@@ -314,8 +314,8 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             BgpRouteConstraints.builder()
-                .setCommunities(ImmutableSet.of("^20:30$"))
-                .setComplementCommunities(true)
+                .setCommunities(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("!20:30"))))
                 .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
@@ -393,8 +393,14 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^40:33$")).build(),
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^3:44$")).build(),
+            BgpRouteConstraints.builder()
+                .setCommunities(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("40:33"))))
+                .build(),
+            BgpRouteConstraints.builder()
+                .setCommunities(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("3:44"))))
+                .build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -437,7 +443,10 @@ public class SearchRoutePoliciesAnswererTest {
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^20:30$")).build(),
+            BgpRouteConstraints.builder()
+                .setCommunities(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("20:30"))))
+                .build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -459,7 +468,10 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            BgpRouteConstraints.builder().setCommunities(ImmutableSet.of("^1:40$")).build(),
+            BgpRouteConstraints.builder()
+                .setCommunities(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("1:40"))))
+                .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
@@ -514,8 +526,8 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder()
-                .setCommunities(ImmutableSet.of(".*"))
-                .setComplementCommunities(true)
+                .setCommunities(
+                    new RegexConstraints(ImmutableList.of(new RegexConstraint(".*", true))))
                 .build(),
             HOSTNAME,
             policy.getName(),
@@ -566,7 +578,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testIncompatibleAsPathConstraints() {
+  public void testIncompatibleAsPathMatches() {
     _policyBuilder.addStatement(
         new If(
             new MatchAsPath(new NamedAsPathSet(AS_PATH_1)),
@@ -593,8 +605,14 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            BgpRouteConstraints.builder().setAsPath(ImmutableSet.of("^40( |$)")).build(),
-            BgpRouteConstraints.builder().setAsPath(ImmutableSet.of("(^| )50$")).build(),
+            BgpRouteConstraints.builder()
+                .setAsPath(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("/^40( |$)/"))))
+                .build(),
+            BgpRouteConstraints.builder()
+                .setAsPath(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("/(^| )50$/"))))
+                .build(),
             HOSTNAME,
             policy.getName(),
             Action.PERMIT);
@@ -606,6 +624,51 @@ public class SearchRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.parse("0.0.0.0/0"))
             .setAsPath(AsPath.ofSingletonAsSets(40L, 50L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testNegatedAsPathConstraints() {
+    _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            BgpRouteConstraints.builder()
+                .setAsPath(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("/^40( |$)/"))))
+                .build(),
+            BgpRouteConstraints.builder()
+                .setAsPath(
+                    new RegexConstraints(ImmutableList.of(RegexConstraint.parse("!/(^| )40$/"))))
+                .build(),
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setAsPath(AsPath.ofSingletonAsSets(40L, 0L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
@@ -970,8 +1033,8 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder()
-                .setCommunities(ImmutableSet.of("^4:44$"))
-                .setComplementCommunities(true)
+                .setCommunities(
+                    new RegexConstraints(ImmutableList.of(new RegexConstraint("^4:44$", true))))
                 .build(),
             HOSTNAME,
             policy.getName(),
@@ -1014,8 +1077,9 @@ public class SearchRoutePoliciesAnswererTest {
         new SearchRoutePoliciesQuestion(
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder()
-                .setCommunities(ImmutableSet.of("^2[0-9]:30$"))
-                .setComplementCommunities(true)
+                .setCommunities(
+                    new RegexConstraints(
+                        ImmutableList.of(new RegexConstraint("^2[0-9]:30$", true))))
                 .build(),
             HOSTNAME,
             policy.getName(),

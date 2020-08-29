@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -111,13 +112,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // created and tracked by the analysis
     _communityRegexes =
         ImmutableSet.<String>builder()
-            .addAll(_inputConstraints.getCommunities())
-            .addAll(_outputConstraints.getCommunities())
+            .addAll(_inputConstraints.getCommunities().getAllRegexes())
+            .addAll(_outputConstraints.getCommunities().getAllRegexes())
             .build();
     _asPathRegexes =
         ImmutableSet.<String>builder()
-            .addAll(_inputConstraints.getAsPath())
-            .addAll(_outputConstraints.getAsPath())
+            .addAll(_inputConstraints.getAsPath().getAllRegexes())
+            .addAll(_outputConstraints.getAsPath().getAllRegexes())
             .build();
   }
 
@@ -364,41 +365,49 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Convert regex constraints from a {@link BgpRouteConstraints} object to a BDD. The overall
-   * constraint is a disjunction of each regex constraint, and each regex constraint is itself a
-   * disjunction of its corresponding atomic predicates.
+   * Convert regex constraints from a {@link BgpRouteConstraints} object to a BDD.
    *
    * @param regexes the user-defined regex constraints
-   * @param complementConstraint flag indicating whether we want to negate the final constraints
+   * @param constructor convert a regex string into a symbolic regex object
    * @param atomicPredicates information about the atomic predicates corresponding to the regexes
    * @param atomicPredicateBDDs one BDD per atomic predicate, coming from a {@link BDDRoute} object
    * @param factory the BDD factory
-   * @param <T> the particular type of regexes (community or AS-path)
+   * @param <T> the particular type of symbolic regexes (community or AS-path)
    * @return the overall constraint as a BDD
    */
   private <T extends SymbolicRegex> BDD regexConstraintsToBDD(
-      Set<T> regexes,
-      boolean complementConstraint,
+      RegexConstraints regexes,
+      Function<String, T> constructor,
       RegexAtomicPredicates<T> atomicPredicates,
       BDD[] atomicPredicateBDDs,
       BDDFactory factory) {
-    if (regexes.isEmpty()) {
-      return factory.one();
-    } else {
-      // the set of regex constraints is represented as the disjunction of all associated
-      // atomic predicates
-      BDD result =
-          factory.orAll(
-              regexes.stream()
-                  .flatMap(regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
-                  .distinct()
-                  .map(i -> atomicPredicateBDDs[i])
-                  .collect(ImmutableSet.toImmutableSet()));
-      if (complementConstraint) {
-        result = result.not();
-      }
-      return result;
-    }
+    /**
+     * disjoin all positive regex constraints, each of which is itself logically represented as the
+     * disjunction of its corresponding atomic predicates. special case: if there are no positive
+     * constraints then treat the constraint as "true", i.e. no constraints.
+     */
+    BDD positiveConstraints =
+        regexes.getPositiveRegexConstraints().isEmpty()
+            ? factory.one()
+            : factory.orAll(
+                regexes.getPositiveRegexConstraints().stream()
+                    .map(RegexConstraint::getRegex)
+                    .map(constructor)
+                    .flatMap(
+                        regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
+                    .map(i -> atomicPredicateBDDs[i])
+                    .collect(ImmutableSet.toImmutableSet()));
+    // disjoin all negative regex constraints, similarly
+    BDD negativeConstraints =
+        factory.orAll(
+            regexes.getNegativeRegexConstraints().stream()
+                .map(RegexConstraint::getRegex)
+                .map(constructor)
+                .flatMap(regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
+                .map(i -> atomicPredicateBDDs[i])
+                .collect(ImmutableSet.toImmutableSet()));
+
+    return positiveConstraints.diffWith(negativeConstraints);
   }
 
   private BDD routeConstraintsToBDD(BgpRouteConstraints constraints, BDDRoute r, Graph g) {
@@ -413,19 +422,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
     result.andWith(
         regexConstraintsToBDD(
-            constraints.getCommunities().stream()
-                .map(CommunityVar::from)
-                .collect(Collectors.toSet()),
-            constraints.getComplementCommunities(),
+            constraints.getCommunities(),
+            CommunityVar::from,
             g.getCommunityAtomicPredicates(),
             r.getCommunityAtomicPredicates(),
             r.getFactory()));
     result.andWith(
         regexConstraintsToBDD(
-            constraints.getAsPath().stream()
-                .map(SymbolicAsPathRegex::new)
-                .collect(Collectors.toSet()),
-            false,
+            constraints.getAsPath(),
+            SymbolicAsPathRegex::new,
             g.getAsPathRegexAtomicPredicates(),
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
