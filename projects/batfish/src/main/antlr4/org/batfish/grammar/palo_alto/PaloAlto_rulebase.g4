@@ -52,12 +52,15 @@ srs_definition
         | srs_from
         | srs_hip_profiles
         | srs_log_end
+        | srs_log_setting
         | srs_log_start
         | srs_negate_destination
         | srs_negate_source
+        | srs_rule_type
         | srs_service
         | srs_source
         | srs_source_user
+        | srs_target
         | srs_to
     )?
 ;
@@ -116,6 +119,12 @@ srs_log_end
     LOG_END yn = yes_or_no
 ;
 
+srs_log_setting
+:
+    LOG_SETTING
+    null_rest_of_line
+;
+
 srs_log_start
 :
     LOG_START yn = yes_or_no
@@ -131,6 +140,16 @@ srs_negate_source
     NEGATE_SOURCE yn = yes_or_no
 ;
 
+srs_rule_type
+:
+    RULE_TYPE
+    (
+      interzone = INTERZONE
+      | intrazone = INTRAZONE
+      | universal = UNIVERSAL
+    )
+;
+
 srs_service
 :
     SERVICE variable_list
@@ -144,6 +163,12 @@ srs_source
 srs_source_user
 :
     SOURCE_USER ANY // only support user any so far
+;
+
+srs_target
+:
+    TARGET
+    null_rest_of_line
 ;
 
 srs_to

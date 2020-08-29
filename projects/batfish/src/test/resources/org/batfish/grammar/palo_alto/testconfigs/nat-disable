@@ -1,0 +1,117 @@
+policy {
+  panorama {
+  }
+}
+config {
+  devices {
+    localhost.localdomain {
+      network {
+        interface {
+          ethernet {
+            ethernet1/1 {
+              layer3 {
+                units {
+                  ethernet1/1.1 {
+                    ip {
+                      1.1.1.3/24;
+                    }
+                  }
+                }
+              }
+            }
+            ethernet1/2 {
+              layer3 {
+                units {
+                  ethernet1/2.1 {
+                    ip {
+                      1.2.1.3/24;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        virtual-router {
+          vr1 {
+            interface [ ethernet1/1.1 ethernet1/2.1];
+          }
+        }
+      }
+      deviceconfig {
+        system {
+          hostname nat-disable;
+        }
+      }
+      vsys {
+        vsys1 {
+          address {
+            SOURCE_ADDR {
+              ip-netmask 1.1.1.2/30;
+            }
+            NEW_SRC_ADDR {
+              ip-netmask 1.1.1.99/32;
+            }
+            NEW_SRC_ADDR_2 {
+              ip-netmask 1.1.1.98/32;
+            }
+          }
+          rulebase {
+            nat {
+              rules {
+                DISABLED {
+                  source-translation {
+                    dynamic-ip-and-port {
+                      translated-address NEW_SRC_ADDR_2;
+                    }
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source SOURCE_ADDR;
+                  destination any;
+                  disabled yes;
+                }
+                TRANSLATE_SRC {
+                  source-translation {
+                    dynamic-ip-and-port {
+                      translated-address NEW_SRC_ADDR;
+                    }
+                  }
+                  to OUTSIDE;
+                  from INSIDE;
+                  source SOURCE_ADDR;
+                  destination any;
+                }
+              }
+            }
+            security {
+              rules {
+                PERMIT_ALL {
+                  to any;
+                  from any;
+                  source any;
+                  destination any;
+                  application any;
+                  service any;
+                  action allow;
+                }
+              }
+            }
+          }
+          zone {
+            INSIDE {
+              network {
+                layer3 [ ethernet1/1.1];
+              }
+            }
+            OUTSIDE {
+              network {
+                layer3 [ ethernet1/2.1];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

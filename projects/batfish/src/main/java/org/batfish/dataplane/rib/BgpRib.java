@@ -53,15 +53,20 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   /** Map to keep track when routes were merged in. */
   protected Map<R, Long> _logicalArrivalTime;
 
+  /** For FRR, Cluster List Length is used as an IGP metric. */
+  protected boolean _clusterListAsIgpCost;
+
   protected BgpRib(
       @Nullable Rib mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
-      boolean withBackups) {
+      boolean withBackups,
+      boolean clusterListAsIgpCost) {
     super(withBackups);
     _mainRib = mainRib;
     _tieBreaker = tieBreaker;
+    _clusterListAsIgpCost = clusterListAsIgpCost;
     checkArgument(maxPaths == null || maxPaths > 0, "Invalid max-paths value %s", maxPaths);
     if (maxPaths != null && maxPaths > 1) {
       /*
@@ -86,6 +91,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    *
    * - https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/13753-25.html
    * - https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-address-representation.html
+   * - http://docs.frrouting.org/en/latest/bgp.html
    */
   @Override
   public int comparePreference(R lhs, R rhs) {
@@ -118,6 +124,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
             .thenComparing(R::getMetric, Comparator.reverseOrder())
             // Prefer next hop IPs with the lowest IGP metric
             .thenComparing(this::getIgpCostToNextHopIp, Comparator.reverseOrder())
+            // Prefer lowest CLL as a proxy for IGP Metric. FRR-Only.
+            .thenComparing(this::getClusterListLength, Comparator.reverseOrder())
             // Evaluate AS path compatibility for multipath
             .thenComparing(this::compareRouteAsPath)
             .compare(lhs, rhs);
@@ -288,5 +296,19 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     }
     Set<AnnotatedRoute<AbstractRoute>> s = _mainRib.longestPrefixMatch(nextHopIp);
     return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getAbstractRoute().getMetric();
+  }
+
+  /**
+   * return Cluster List Length for a given route, if appropriate. For non-FRR RIBs, we simply
+   * return 0's here to guarantee equivalence.
+   *
+   * @param route bgp route
+   * @return integer representing cluster list length. 0 by default.
+   */
+  private int getClusterListLength(R route) {
+    if (!_clusterListAsIgpCost) {
+      return 0;
+    }
+    return route.getClusterList().size();
   }
 }

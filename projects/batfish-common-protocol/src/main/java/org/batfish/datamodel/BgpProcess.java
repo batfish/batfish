@@ -108,6 +108,7 @@ public class BgpProcess implements Serializable {
   private static final String PROP_ACTIVE_NEIGHBORS = "neighbors";
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_TIE_BREAKER = "tieBreaker";
+  private static final String PROP_CLUSTER_LIST_AS_IGP_COST = "clusterListAsIgpCost";
 
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
@@ -117,6 +118,7 @@ public class BgpProcess implements Serializable {
   private boolean _multipathEbgp;
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
   private boolean _multipathIbgp;
+  private boolean _clusterListAsIbgpCost;
 
   /**
    * A map of all non-dynamic bgp neighbors with which the router owning this process is configured
@@ -169,6 +171,7 @@ public class BgpProcess implements Serializable {
     _originationSpace = new PrefixSpace();
     _passiveNeighbors = new TreeMap<>();
     _routerId = routerId;
+    _clusterListAsIbgpCost = false;
   }
 
   @JsonCreator
@@ -313,6 +316,11 @@ public class BgpProcess implements Serializable {
     return _tieBreaker;
   }
 
+  @JsonProperty(PROP_CLUSTER_LIST_AS_IGP_COST)
+  public boolean getClusterListAsIgpCost() {
+    return _clusterListAsIbgpCost;
+  }
+
   /**
    * Return an iterable over all types of {@link BgpPeerConfig peer configurations} defined for this
    * process
@@ -374,5 +382,10 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TIE_BREAKER)
   public void setTieBreaker(BgpTieBreaker tieBreaker) {
     _tieBreaker = tieBreaker;
+  }
+
+  @JsonProperty(PROP_CLUSTER_LIST_AS_IGP_COST)
+  public void setClusterListAsIgpCost(boolean clusterListAsIbgpCost) {
+    _clusterListAsIbgpCost = clusterListAsIbgpCost;
   }
 }
