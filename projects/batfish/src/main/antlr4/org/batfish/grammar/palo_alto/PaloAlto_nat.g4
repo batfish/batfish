@@ -27,6 +27,7 @@ srn_definition
         | srn_source
         | srn_destination
         | srn_service
+        | srn_disabled
     )?
 ;
 
@@ -67,6 +68,11 @@ srn_source
 srn_service
 :
     SERVICE service = variable
+;
+
+srn_disabled
+:
+    DISABLED yn = yes_or_no
 ;
 
 srnst_dynamic_ip_and_port

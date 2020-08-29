@@ -83,11 +83,15 @@ set mgt-config users admin permissions role-based superuser yes
 set mgt-config users admin public-key c3NoLX...
 #
 #
+set rulebase security rules RULE1 target negate no
 set rulebase security rules RULE1 category streaming
 set rulebase security rules RULE1 hip-profiles any
 set rulebase security rules RULE1 source-user any
 set rulebase security rules RULE1 log-end no
 set rulebase security rules RULE1 log-start yes
+set rulebase security rules RULE1 log-setting default
+# TODO: implement and move out of here
+set rulebase security rules RULE1 rule-type universal
 #
 set vsys vsys1 log-settings syslog NAME server NAME facility LOG_LOCAL0
 set vsys vsys1 log-settings syslog NAME server NAME format IETF

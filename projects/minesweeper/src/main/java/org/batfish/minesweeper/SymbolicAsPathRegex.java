@@ -14,7 +14,9 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   // a regex that represents the language of AS paths: a space-separated list of
   // AS numbers, starting and ending with the ^ (start-of-string) and $ (end-of-string)
-  // tokens respectively
+  // tokens respectively.
+  // Note: in general an AS path is a list of *sets* of AS numbers.  but the format of
+  // regexes over sets is apparently vendor-dependent.  for now we do not support them.
   @Nonnull
   private static final String AS_PATH_REGEX =
       // the empty AS-path

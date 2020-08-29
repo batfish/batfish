@@ -29,11 +29,14 @@ public final class NatRule implements Serializable {
   @Nullable private SourceTranslation _sourceTranslation;
   @Nullable private DestinationTranslation _destinationTranslation;
 
+  private boolean _disabled;
+
   public NatRule(String name) {
     _name = name;
     _from = new TreeSet<>();
     _source = new LinkedList<>();
     _destination = new LinkedList<>();
+    _disabled = false;
   }
 
   @Nonnull
@@ -44,6 +47,10 @@ public final class NatRule implements Serializable {
   @Nullable
   public DestinationTranslation getDestinationTranslation() {
     return _destinationTranslation;
+  }
+
+  public boolean getDisabled() {
+    return _disabled;
   }
 
   @Nonnull
@@ -78,6 +85,10 @@ public final class NatRule implements Serializable {
 
   public void setDestinationTranslation(DestinationTranslation destinationTranslation) {
     _destinationTranslation = destinationTranslation;
+  }
+
+  public void setDisabled(boolean disabled) {
+    _disabled = disabled;
   }
 
   public void setService(ServiceOrServiceGroupReference service) {
