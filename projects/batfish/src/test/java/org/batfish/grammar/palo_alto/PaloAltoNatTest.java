@@ -488,6 +488,46 @@ public class PaloAltoNatTest {
   }
 
   @Test
+  public void testNatDisabledRule() throws IOException {
+    /*
+    Setup: 2 NAT rules
+    - First rule is disabled, otherwise matches src 1.1.1.2/30, translates source
+    - Second rule is not disabled, matches same src 1.1.1.2/30, translates source to different addr
+     */
+    Configuration c = parseConfig("nat-disable");
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    String ingressIfaceName = "ethernet1/1.1"; // 1.1.1.3/24
+
+    // Flow matching both rules
+    Ip dstIp = Ip.parse("1.2.1.2");
+    Ip matchSrcTransRuleIp = Ip.parse("1.1.1.3");
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(ingressIfaceName)
+            .setDstIp(dstIp)
+            .setSrcPort(111)
+            .setDstPort(222)
+            .setIpProtocol(IpProtocol.TCP);
+    Flow matchesRules = flowBuilder.setSrcIp(matchSrcTransRuleIp).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish.getTracerouteEngine(snapshot).computeTraces(ImmutableSet.of(matchesRules), false);
+
+    // Translated source IP from the non-disabled rule
+    Ip newSrcIp = Ip.parse("1.1.1.99");
+    int newSrcPort = NamedPort.EPHEMERAL_LOWEST.number();
+
+    // Make sure the translated source IP matches that from the non-disabled rule
+    // i.e. make sure the disabled rule was skipped
+    assertEquals(
+        getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesRules))),
+        matchesRules.toBuilder().setSrcIp(newSrcIp).setSrcPort(newSrcPort).build());
+  }
+
+  @Test
   public void testNatRulesWithEmptyPools() throws IOException {
     /*
     Setup: 2 NAT rules

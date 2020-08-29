@@ -1904,6 +1904,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
+              "clusterListAsIgpCost" : false,
               "interfaceNeighbors" : {
                 "backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -13989,6 +13990,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
+              "clusterListAsIgpCost" : false,
               "interfaceNeighbors" : {
                 "backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -14168,6 +14170,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
+              "clusterListAsIgpCost" : false,
               "interfaceNeighbors" : {
                 "backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -14346,6 +14349,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
+              "clusterListAsIgpCost" : false,
               "interfaceNeighbors" : {
                 "backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -14495,6 +14499,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "240.254.254.1",
+              "clusterListAsIgpCost" : false,
               "interfaceNeighbors" : {
                 "To-isp_16509" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -16962,6 +16967,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
+              "clusterListAsIgpCost" : false,
               "interfaceNeighbors" : {
                 "To-Internet" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -34910,6 +34916,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "10.10.255.8",
+              "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
@@ -38213,6 +38220,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
+              "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
@@ -38290,6 +38298,7 @@
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "routerId" : "169.254.0.1",
+              "clusterListAsIgpCost" : false,
               "interfaceNeighbors" : {
                 "backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",

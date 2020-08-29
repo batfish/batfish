@@ -2100,7 +2100,8 @@ s_banner_eos
 
 eos_banner_type
 :
-  LOGIN
+  EXEC
+  | LOGIN
   | MOTD
 ;
 

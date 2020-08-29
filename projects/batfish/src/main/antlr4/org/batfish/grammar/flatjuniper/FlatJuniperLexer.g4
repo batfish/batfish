@@ -7211,7 +7211,7 @@ M_InterfaceWildcard_APPLY_GROUPS
 
 M_InterfaceWildcard_APPLY_GROUPS_EXCEPT
 :
-  'apply-groups' -> type(APPLY_GROUPS_EXCEPT), popMode
+  'apply-groups-except' -> type(APPLY_GROUPS_EXCEPT), popMode
 ;
 
 M_InterfaceWildcard_NEWLINE
@@ -7225,6 +7225,11 @@ M_InterfaceWildcard_INTERFACE_WILDCARD
     [A-Za-z]+ [-A-Za-z0-9]+ '*'?
     | '*'
   ) -> type(INTERFACE_WILDCARD), popMode
+;
+
+M_InterfaceWildcard_WILDCARD
+:
+  '<' ~'>'* '>' -> type(WILDCARD), popMode
 ;
 
 M_InterfaceWildcard_WS

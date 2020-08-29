@@ -100,6 +100,8 @@ public class Interface implements Serializable {
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
+  private @Nullable Boolean _localProxyArp;
+
   private final @Nonnull Set<String> _memberInterfaces;
 
   @Nullable private Integer _mlagId;
@@ -280,6 +282,14 @@ public class Interface implements Serializable {
 
   public IsisInterfaceMode getIsisInterfaceMode() {
     return _isisInterfaceMode;
+  }
+
+  public @Nullable Boolean getLocalProxyArp() {
+    return _localProxyArp;
+  }
+
+  public void setLocalProxyArp(@Nullable Boolean localProxyArp) {
+    _localProxyArp = localProxyArp;
   }
 
   public @Nonnull Set<String> getMemberInterfaces() {

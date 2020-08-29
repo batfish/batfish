@@ -2732,6 +2732,7 @@
             "ebgpAdminCost" : 20,
             "ibgpAdminCost" : 200,
             "routerId" : "1.1.1.1",
+            "clusterListAsIgpCost" : false,
             "multipathEbgp" : true,
             "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
             "multipathIbgp" : true,
