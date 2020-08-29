@@ -18,11 +18,14 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
@@ -38,8 +41,10 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
@@ -52,6 +57,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
@@ -69,6 +75,8 @@ public class TransferBDDTest {
   private BDDRoute _anyRoute;
 
   private static final String COMMUNITY_NAME = "community";
+
+  private static final String AS_PATH_NAME = "asPathName";
 
   static final class MockBatfish extends IBatfishTestAdapter {
     private final SortedMap<String, Configuration> _baseConfigs;
@@ -113,7 +121,7 @@ public class TransferBDDTest {
     _policyBuilder = nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME);
 
     _batfish = new MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
-    _anyRoute = new BDDRoute(0);
+    _anyRoute = new BDDRoute(1, 1);
   }
 
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {
@@ -419,6 +427,45 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testMatchAsPath() {
+    _baseConfig.setAsPathAccessLists(
+        ImmutableMap.of(
+            AS_PATH_NAME,
+            new AsPathAccessList(
+                AS_PATH_NAME,
+                ImmutableList.of(
+                    new AsPathAccessListLine(LineAction.PERMIT, " 40$"),
+                    new AsPathAccessListLine(LineAction.DENY, "^$")))));
+    _policyBuilder.addStatement(
+        new If(
+            new MatchAsPath(new NamedAsPathSet(AS_PATH_NAME)),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRouteWithAPs = new BDDRoute(_g);
+    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+
+    // get the unique atomic predicate that corresponds to " 40$"
+    Integer ap =
+        _g.getAsPathRegexAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(new SymbolicAsPathRegex(" 40$"))
+            .iterator()
+            .next();
+
+    BDD expectedBDD = aps[ap];
+    assertEquals(expectedBDD, acceptedAnnouncements);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRouteWithAPs), outAnnouncements);
+  }
+
+  @Test
   public void testMatchCommunity() {
     _baseConfig.setCommunityLists(
         ImmutableMap.of(
@@ -443,13 +490,27 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    BDDRoute anyRoute2APs = new BDDRoute(2);
-    BDD[] aps = anyRoute2APs.getCommunityAtomicPredicateBDDs();
+    BDDRoute anyRoute3APs = new BDDRoute(_g);
+    BDD[] aps = anyRoute3APs.getCommunityAtomicPredicates();
 
-    BDD expectedBDD = aps[0].or(aps[1]);
+    // get the unique atomic predicates that respectively correspond to 20:30 and 30:30
+    Integer ap2030 =
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from("^20:30$"))
+            .iterator()
+            .next();
+    Integer ap3030 =
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from("^30:30$"))
+            .iterator()
+            .next();
+
+    BDD expectedBDD = aps[ap2030].or(aps[ap3030]);
     assertEquals(expectedBDD, acceptedAnnouncements);
 
-    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute2APs), outAnnouncements);
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute3APs), outAnnouncements);
   }
 
   @Test
@@ -473,10 +534,11 @@ public class TransferBDDTest {
     // each atomic predicate for community 20:30 has the 0 BDD
     for (int ap :
         _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("20:30")))) {
       assertEquals(
           outAnnouncements.getFactory().zero(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
   }
 
@@ -499,10 +561,11 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
-          outAnnouncements.getFactory().one(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
   }
 
@@ -526,17 +589,20 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
-          outAnnouncements.getFactory().one(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
     // each atomic predicate for community 3:33 has the 0 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
           outAnnouncements.getFactory().zero(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
   }
 
@@ -560,17 +626,19 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
-          outAnnouncements.getFactory().one(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
     // each atomic predicate for community 3:33 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
-          outAnnouncements.getFactory().one(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
   }
 
@@ -594,10 +662,10 @@ public class TransferBDDTest {
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
         _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
             .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
       assertEquals(
-          outAnnouncements.getFactory().one(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
   }
 
@@ -620,10 +688,11 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
       assertEquals(
-          outAnnouncements.getFactory().one(),
-          outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
   }
 

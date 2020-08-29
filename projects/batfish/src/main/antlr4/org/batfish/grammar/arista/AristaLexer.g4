@@ -1108,7 +1108,7 @@ BANDWIDTH_CONTRACT
 
 BANNER
 :
-  'banner'
+  'banner' -> pushMode ( M_Banner )
 ;
 
 BATCH_SIZE
@@ -5567,7 +5567,7 @@ LOGGING
 
 LOGIN
 :
-  'login' -> pushMode(M_BannerEos)
+  'login'
 ;
 
 LOGIN_ATTEMPTS
@@ -12420,6 +12420,34 @@ M_AuthenticationUsernamePromptText_RAW_TEXT
 M_AuthenticationUsernamePromptText_DOUBLE_QUOTE
 :
    '"' -> type ( DOUBLE_QUOTE ) , popMode
+;
+
+mode M_Banner;
+
+M_Banner_EXEC
+:
+   'exec' -> type ( EXEC ), mode ( M_BannerEos )
+;
+
+M_Banner_LOGIN
+:
+   'login' -> type ( LOGIN ), mode ( M_BannerEos )
+;
+
+M_Banner_MOTD
+:
+   'motd' -> type ( MOTD ), mode ( M_BannerEos )
+;
+
+M_Banner_NEWLINE
+:
+  // Did not get a banner type, so exit banner mode
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+M_Banner_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
 ;
 
 mode M_BannerEos;

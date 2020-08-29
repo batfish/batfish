@@ -17,6 +17,8 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -31,6 +33,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -57,6 +60,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
@@ -79,6 +83,8 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
 import org.batfish.minesweeper.TransferResult;
 import org.batfish.minesweeper.collections.Table2;
@@ -91,7 +97,15 @@ public class TransferBDD {
 
   private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
 
+  /**
+   * We track community and AS-path regexes by computing a set of atomic predicates for them. See
+   * {@link org.batfish.minesweeper.RegexAtomicPredicates}. During the symbolic route analysis, we
+   * simply need the map from each regex to its corresponding set of atomic predicates, each
+   * represented by a unique integer.
+   */
   private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
+
+  private Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
   private Configuration _conf;
 
@@ -162,11 +176,11 @@ public class TransferBDD {
     throw new BatfishException("int expr transfer function: " + e);
   }
 
-  // produce the union of all atomic predicates associated with any of the given community
-  // variables
-  private Set<Integer> atomicPredicatesFor(Set<CommunityVar> cvars) {
-    return cvars.stream()
-        .flatMap(c -> _communityAtomicPredicates.get(c).stream())
+  // produce the union of all atomic predicates associated with any of the given symbolic regexes
+  private <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
+      Set<T> regexes, Map<T, Set<Integer>> apMap) {
+    return regexes.stream()
+        .flatMap(r -> apMap.get(r).stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -384,8 +398,9 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchAsPath) {
       p.debug("MatchAsPath");
-      // System.out.println("Warning: use of unimplemented feature MatchAsPath");
-      TransferReturn ret = new TransferReturn(p.getData(), factory.one());
+      MatchAsPath matchAsPathNode = (MatchAsPath) expr;
+      BDD asPathPredicate = matchAsPath(p.indent(), _conf, matchAsPathNode.getExpr(), p.getData());
+      TransferReturn ret = new TransferReturn(p.getData(), asPathPredicate);
       return fromExpr(ret);
     }
 
@@ -612,8 +627,8 @@ public class TransferBDD {
         Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         // set all atomic predicates associated with these communities to 1 if this statement
         // is reached
-        Set<Integer> commAPs = atomicPredicatesFor(comms);
-        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
         for (int ap : commAPs) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
@@ -631,8 +646,8 @@ public class TransferBDD {
         Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
         // set all atomic predicates associated with these communities to 1, and all other
         // atomic predicates to zero, if this statement is reached
-        Set<Integer> commAPs = atomicPredicatesFor(comms);
-        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
         BDD retassign = result.getReturnAssignedValue();
         for (int ap = 0; ap < commAPBDDs.length; ap++) {
           curP.indent().debug("Value: " + ap);
@@ -648,8 +663,8 @@ public class TransferBDD {
         DeleteCommunity ac = (DeleteCommunity) stmt;
         Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
         // set all atomic predicates associated with these communities to 0 on this path
-        Set<Integer> commAPs = atomicPredicatesFor(comms);
-        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
+        Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
         BDD retassign = result.getReturnAssignedValue();
         for (int ap : commAPs) {
           curP.indent().debug("Value: " + ap);
@@ -771,7 +786,10 @@ public class TransferBDD {
 
   @VisibleForTesting
   BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
-    BDDRoute ret = new BDDRoute(_graph.getNumAtomicPredicates());
+    BDDRoute ret =
+        new BDDRoute(
+            _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+            _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
     BDDInteger x;
     BDDInteger y;
@@ -801,11 +819,17 @@ public class TransferBDD {
     y = r2.getMed();
     ret.getMed().setValue(ite(guard, x, y));
 
-    BDD[] retCommAPs = ret.getCommunityAtomicPredicateBDDs();
-    BDD[] r1CommAPs = r1.getCommunityAtomicPredicateBDDs();
-    BDD[] r2CommAPs = r2.getCommunityAtomicPredicateBDDs();
-    for (int i = 0; i < _graph.getNumAtomicPredicates(); i++) {
+    BDD[] retCommAPs = ret.getCommunityAtomicPredicates();
+    BDD[] r1CommAPs = r1.getCommunityAtomicPredicates();
+    BDD[] r2CommAPs = r2.getCommunityAtomicPredicates();
+    for (int i = 0; i < _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
       retCommAPs[i] = ite(guard, r1CommAPs[i], r2CommAPs[i]);
+    }
+    BDD[] retAsPathRegexAPs = ret.getAsPathRegexAtomicPredicates();
+    BDD[] r1AsPathRegexAPs = r1.getAsPathRegexAtomicPredicates();
+    BDD[] r2AsPathRegexAPs = r2.getAsPathRegexAtomicPredicates();
+    for (int i = 0; i < _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
+      retAsPathRegexAPs[i] = ite(guard, r1AsPathRegexAPs[i], r2AsPathRegexAPs[i]);
     }
 
     // BDDInteger i =
@@ -813,6 +837,40 @@ public class TransferBDD {
     // ret.getProtocolHistory().setInteger(i);
 
     return ret;
+  }
+
+  // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
+  private BDD matchAsPath(
+      TransferParam<BDDRoute> p, Configuration conf, AsPathSetExpr e, BDDRoute other) {
+    if (e instanceof NamedAsPathSet) {
+      NamedAsPathSet namedAsPathSet = (NamedAsPathSet) e;
+      AsPathAccessList accessList = conf.getAsPathAccessLists().get(namedAsPathSet.getName());
+      p.debug("Named As Path Set: " + namedAsPathSet.getName());
+      return matchAsPathAccessList(accessList, other);
+    }
+    // TODO: handle other kinds of AsPathSetExprs
+    throw new BatfishException("Unhandled match as-path expression " + e);
+  }
+
+  /* Convert an AS-path access list to a boolean formula represented as a BDD. */
+  private BDD matchAsPathAccessList(AsPathAccessList accessList, BDDRoute other) {
+    List<AsPathAccessListLine> lines = new ArrayList<>(accessList.getLines());
+    Collections.reverse(lines);
+    BDD acc = factory.zero();
+    for (AsPathAccessListLine line : lines) {
+      boolean action = (line.getAction() == LineAction.PERMIT);
+      // each line's regex is represented as the disjunction of all of the regex's
+      // corresponding atomic predicates
+      SymbolicAsPathRegex regex = new SymbolicAsPathRegex(line.getRegex());
+      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(regex), _asPathRegexAtomicPredicates);
+      BDD regexAPBdd =
+          factory.orAll(
+              aps.stream()
+                  .map(ap -> other.getAsPathRegexAtomicPredicates()[ap])
+                  .collect(Collectors.toList()));
+      acc = ite(regexAPBdd, mkBDD(action), acc);
+    }
+    return acc;
   }
 
   /*
@@ -829,11 +887,11 @@ public class TransferBDD {
       p.debug("Action: " + line.getAction());
       // the community cvar is logically represented as the disjunction of its corresponding
       // atomic predicates
-      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(cvar));
+      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(cvar), _communityAtomicPredicates);
       BDD c =
           factory.orAll(
               aps.stream()
-                  .map(ap -> other.getCommunityAtomicPredicateBDDs()[ap])
+                  .map(ap -> other.getCommunityAtomicPredicates()[ap])
                   .collect(Collectors.toList()));
       acc = ite(c, mkBDD(action), acc);
     }
@@ -857,11 +915,11 @@ public class TransferBDD {
         p.debug("Inline Community Set: " + comm);
         // the community comm is logically represented as the disjunction of its corresponding
         // atomic predicates
-        Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(comm));
+        Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(comm), _communityAtomicPredicates);
         BDD c =
             factory.orAll(
                 aps.stream()
-                    .map(ap -> other.getCommunityAtomicPredicateBDDs()[ap])
+                    .map(ap -> other.getCommunityAtomicPredicates()[ap])
                     .collect(Collectors.toSet()));
         acc = acc.and(c);
       }
@@ -979,15 +1037,21 @@ public class TransferBDD {
    */
   @VisibleForTesting
   BDDRoute zeroedRecord() {
-    BDDRoute rec = new BDDRoute(_graph.getNumAtomicPredicates());
+    BDDRoute rec =
+        new BDDRoute(
+            _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+            _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
     rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
     rec.getMed().setValue(0);
     rec.getPrefix().setValue(0);
-    for (int i = 0; i < rec.getCommunityAtomicPredicateBDDs().length; i++) {
-      rec.getCommunityAtomicPredicateBDDs()[i] = factory.zero();
+    for (int i = 0; i < rec.getCommunityAtomicPredicates().length; i++) {
+      rec.getCommunityAtomicPredicates()[i] = factory.zero();
+    }
+    for (int i = 0; i < rec.getAsPathRegexAtomicPredicates().length; i++) {
+      rec.getAsPathRegexAtomicPredicates()[i] = factory.zero();
     }
     rec.getProtocolHistory().getInteger().setValue(0);
     return rec;
@@ -999,8 +1063,10 @@ public class TransferBDD {
    */
   public TransferResult<TransferReturn, BDD> compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
-    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates();
-    BDDRoute o = new BDDRoute(_graph.getNumAtomicPredicates());
+    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    _asPathRegexAtomicPredicates =
+        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    BDDRoute o = new BDDRoute(_graph);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult<TransferReturn, BDD> result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();

@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -768,5 +769,40 @@ public final class FileBasedStorageTest {
   public void testRunGarbageCollectionFreshStartup() throws IOException {
     // Should not throw
     _storage.runGarbageCollection(Instant.MAX);
+  }
+
+  @Test
+  public void testListSnapshotInputObjectKeysMissingSnapshot() throws IOException {
+    _thrown.expect(FileNotFoundException.class);
+    try (Stream<String> keys =
+        _storage.listSnapshotInputObjectKeys(
+            new NetworkSnapshot(new NetworkId("n1"), new SnapshotId("s1")))) {
+      // silence warning; shouldn't be hit because of expected exception
+      assert keys != null;
+    }
+  }
+
+  @Test
+  public void testListSnapshotInputObjectKeysNoInputs() throws IOException {
+    NetworkId networkId = new NetworkId("n1");
+    SnapshotId snapshotId = new SnapshotId("s1");
+    Files.createDirectories(_storage.getSnapshotInputObjectsDir(networkId, snapshotId).getParent());
+    try (Stream<String> keys =
+        _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, snapshotId))) {
+      assertThat(keys.count(), equalTo(0L));
+    }
+  }
+
+  @Test
+  public void testListSnapshotInputObjectKeys() throws IOException {
+    NetworkId networkId = new NetworkId("n1");
+    SnapshotId snapshotId = new SnapshotId("s1");
+    NetworkSnapshot snapshot = new NetworkSnapshot(networkId, snapshotId);
+    _storage.storeSnapshotInputObject(new ByteArrayInputStream(new byte[] {}), "k1", snapshot);
+    _storage.storeSnapshotInputObject(new ByteArrayInputStream(new byte[] {}), "k2", snapshot);
+    try (Stream<String> keys =
+        _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, snapshotId))) {
+      assertThat(keys.collect(ImmutableSet.toImmutableSet()), equalTo(ImmutableSet.of("k1", "k2")));
+    }
   }
 }

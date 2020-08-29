@@ -4,13 +4,10 @@ import static java.util.stream.Collectors.toMap;
 import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
-import dk.brics.automaton.Automaton;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +27,8 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -138,17 +137,18 @@ public class Graph {
   private Map<String, String> _namedCommunities;
 
   /**
-   * In order to track community literals and regexes, we compute a set of "atomic predicates" for
-   * them. See initCommAtomicPredicates for details. These fields respectively record the number n
-   * of atomic predicates; a mapping from each community to its set of atomic predicates, each of
-   * which is an integer in the range 0...(n-1); and a mapping from each atomic predicate number to
-   * its semantic representation, which is an automaton representing a predicate on strings. These
-   * fields are only used by the BDD-based analyses.
+   * In order to track community literals and regexes in the BDD-based analysis, we compute a set of
+   * "atomic predicates" for them.
    */
-  private int _numAtomicPredicates;
+  private RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
 
-  private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
-  private Map<Integer, Automaton> _atomicPredicateAutomata;
+  /**
+   * We collect up the set of AS-path regexes that appear in the given configurations and compute a
+   * set of atomic predicates for them.
+   */
+  private Set<SymbolicAsPathRegex> _asPathRegexes;
+
+  private RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
 
   /**
    * Create a graph, loading configurations from the given {@link IBatfish}.
@@ -161,12 +161,12 @@ public class Graph {
    * skip the cloning, assuming that the caller has made a defensive copy first.
    */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot) {
-    this(batfish, snapshot, null, null, null, false);
+    this(batfish, snapshot, null, null, null, null, false);
   }
 
   /** Create a graph and specify whether it will be used for a BDD-based analysis or not. */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot, boolean bddBasedAnalysis) {
-    this(batfish, snapshot, null, null, null, bddBasedAnalysis);
+    this(batfish, snapshot, null, null, null, null, bddBasedAnalysis);
   }
 
   /**
@@ -178,7 +178,7 @@ public class Graph {
    */
   public Graph(
       IBatfish batfish, NetworkSnapshot snapshot, @Nullable Map<String, Configuration> configs) {
-    this(batfish, snapshot, configs, null, null, false);
+    this(batfish, snapshot, configs, null, null, null, false);
   }
 
   /** Create a graph, while selecting the subset of routers to use. */
@@ -187,22 +187,23 @@ public class Graph {
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers) {
-    this(batfish, snapshot, configs, routers, null, false);
+    this(batfish, snapshot, configs, routers, null, null, false);
   }
 
   /**
-   * Create a graph, specifying an additional set of community expressions (literals and regexes) to
-   * be tracked. This is used by the BDD-based analyses to support user-defined constraints on
-   * symbolic route analysis (e.g., the user is interested only in routes tagged with a particular
-   * community).
+   * Create a graph, specifying an additional set of community expressions (literals and regexes)
+   * and AS-path regexes to be tracked. This is used by the BDD-based analyses to support
+   * user-defined constraints on symbolic route analysis (e.g., the user is interested only in
+   * routes tagged with a particular community).
    */
   public Graph(
       IBatfish batfish,
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers,
-      @Nullable Set<CommunitySetExpr> communities) {
-    this(batfish, snapshot, configs, routers, communities, true);
+      @Nullable Set<CommunitySetExpr> communities,
+      @Nullable Set<String> asPathRegexes) {
+    this(batfish, snapshot, configs, routers, communities, asPathRegexes, true);
   }
 
   /** Create a graph, specifying all parameters directly. */
@@ -212,6 +213,7 @@ public class Graph {
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers,
       @Nullable Set<CommunitySetExpr> communities,
+      @Nullable Set<String> asPathRegexes,
       boolean bddBasedAnalysis) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
@@ -232,8 +234,7 @@ public class Graph {
     _configurations = configs;
     _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
-    _atomicPredicateAutomata = new HashMap<>();
-    _communityAtomicPredicates = new HashMap<>();
+    _asPathRegexes = new HashSet<>();
     _snapshot = snapshot;
     _bddBasedAnalysis = bddBasedAnalysis;
 
@@ -277,11 +278,20 @@ public class Graph {
     initDomains();
     initAllCommunities(communities);
     if (_bddBasedAnalysis) {
-      initCommAtomicPredicates();
+      // compute atomic predicates for the BDD-based analysis
+      // ignore community regexes of type OTHER, which are not used by that analysis
+      Set<CommunityVar> comms =
+          _allCommunities.stream()
+              .filter(c -> c.getType() != Type.OTHER)
+              .collect(Collectors.toSet());
+      _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
     } else {
       initCommDependencies();
     }
     initNamedCommunities();
+    initAsPathRegexes(asPathRegexes);
+    _asPathRegexAtomicPredicates =
+        new RegexAtomicPredicates<>(_asPathRegexes, SymbolicAsPathRegex.ALL_AS_PATHS);
   }
 
   /*
@@ -906,79 +916,18 @@ public class Graph {
   }
 
   /**
-   * Create a set of atomic predicates for the given community literals and regexes (see
-   * initAllCommunities above). Specifically, we create the minimal set of atomic predicates such
-   * that: 1. no atomic predicate is logically false; 2. each atomic predicate is disjoint from all
-   * others; 3. each community expression is equivalent to a union of some subset of the atomic
-   * predicates. Atomic predicates are used for tracking communities in the BDD-based analyses.
-   *
-   * <p>The idea of atomic predicates comes from the paper "Real-time Verification of Network
-   * Properties using Atomic Predicates" by Yang and Lam, IEEE/ACM Transactions on Networking, April
-   * 2016, Volume 24, No. 2, pages 887-900.
-   * http://www.cs.utexas.edu/users/lam/Vita/Jpapers/Yang_Lam_TON_2015.pdf
-   *
-   * <p>In that paper, they create atomic predicates in order to precisely and scalably analyze
-   * packet forwarding symbolically; we use the same idea to track communities of interest in
-   * symbolic routing analysis.
+   * Identifies all of the AS-path regexes in the given configurations. An optional set of
+   * additional AS-path regexes is also included, which is used to support user-specified community
+   * constraints for symbolic analysis.
    */
-  private void initCommAtomicPredicates() {
-    SetMultimap<Automaton, CommunityVar> mmap = HashMultimap.create();
-    for (CommunityVar c : _allCommunities) {
-      if (c.getType() == Type.OTHER) {
-        // ignore the OTHER-typed version of a community regex, since there always exists a
-        // REGEX-typed version of the same regex (see initAllCommunities above)
-        continue;
-      }
-      Automaton cAuto = c.toAutomaton();
-      if (cAuto.isEmpty()) {
-        // community c doesn't match any communities; give up
-        throw new BatfishException(
-            "Community regex " + c.toString() + " does not match any communities");
-      }
-      SetMultimap<Automaton, CommunityVar> newMMap = HashMultimap.create(mmap);
-      for (Automaton a : mmap.keySet()) {
-        if (a.equals(cAuto)) {
-          newMMap.put(a, c);
-          // since all atomic predicates are disjoint from one another, if
-          // this community var is equal to an existing one, we can ignore all the rest
-          break;
-        }
-        Automaton inter = a.intersection(cAuto);
-        if (inter.isEmpty()) {
-          // this community var is disjoint from a, so move on to the next atomic predicate
-          continue;
-        }
-        // replace automaton a with two new atomic predicates, representing the intersection
-        // and difference with c's automaton
-        Set<CommunityVar> cvars = newMMap.removeAll(a);
-        Automaton diff = a.minus(cAuto);
-        newMMap.putAll(inter, cvars);
-        if (!diff.isEmpty()) {
-          newMMap.putAll(diff, cvars);
-        }
-        // add c to the intersection
-        newMMap.put(inter, c);
-        // update cAuto with the residual automaton that is left
-        cAuto = cAuto.minus(a);
-      }
-      if (!cAuto.isEmpty()) {
-        // if there's anything left of cAuto by the end, add it
-        newMMap.put(cAuto, c);
-      }
-      mmap = newMMap;
+  private void initAsPathRegexes(Set<String> asPathRegexes) {
+    for (String router : getRouters()) {
+      _asPathRegexes.addAll(findAsPathRegexes(router));
     }
-    // assign a unique integer to each automaton.
-    // create a mapping from each integer to its corresponding automaton
-    // and a mapping from each community to its corresponding set of integers.
-    SetMultimap<Integer, CommunityVar> iToC = HashMultimap.create();
-    int i = 0;
-    for (Automaton a : mmap.keySet()) {
-      _atomicPredicateAutomata.put(i, a);
-      iToC.putAll(i, mmap.get(a));
-      i++;
+    if (asPathRegexes != null) {
+      _asPathRegexes.addAll(
+          asPathRegexes.stream().map(SymbolicAsPathRegex::new).collect(Collectors.toSet()));
     }
-    _numAtomicPredicates = i;
-    _communityAtomicPredicates = Multimaps.asMap(Multimaps.invertFrom(iToC, HashMultimap.create()));
   }
 
   /**
@@ -1046,6 +995,10 @@ public class Graph {
     return _allCommunities;
   }
 
+  public Set<SymbolicAsPathRegex> getAsPathRegexes() {
+    return _asPathRegexes;
+  }
+
   public boolean getBddBasedAnalysis() {
     return _bddBasedAnalysis;
   }
@@ -1058,16 +1011,12 @@ public class Graph {
     return _namedCommunities;
   }
 
-  public int getNumAtomicPredicates() {
-    return _numAtomicPredicates;
-  }
-
-  public Map<Integer, Automaton> getAtomicPredicateAutomata() {
-    return _atomicPredicateAutomata;
-  }
-
-  public Map<CommunityVar, Set<Integer>> getCommunityAtomicPredicates() {
+  public RegexAtomicPredicates<CommunityVar> getCommunityAtomicPredicates() {
     return _communityAtomicPredicates;
+  }
+
+  public RegexAtomicPredicates<SymbolicAsPathRegex> getAsPathRegexAtomicPredicates() {
+    return _asPathRegexAtomicPredicates;
   }
 
   /*
@@ -1124,6 +1073,30 @@ public class Graph {
     }
 
     return comms;
+  }
+
+  /**
+   * Collect up all AS-path regexes that appear in the given router's configuration.
+   *
+   * <p>Currently we only collect up AS-path regexes that appear in an AS-path access list. As other
+   * features are supported by symbolic route analysis, notably the {@link
+   * org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet} class, this method will have to be
+   * extended accordingly.
+   *
+   * @param router the router
+   * @return a set of all AS-path regexes that appear
+   */
+  private Set<SymbolicAsPathRegex> findAsPathRegexes(String router) {
+    Set<SymbolicAsPathRegex> result = new HashSet<>();
+    Configuration conf = getConfigurations().get(router);
+    Collection<AsPathAccessList> asPathAccessLists = conf.getAsPathAccessLists().values();
+    result =
+        asPathAccessLists.stream()
+            .flatMap(lst -> lst.getLines().stream())
+            .map(AsPathAccessListLine::getRegex)
+            .map(SymbolicAsPathRegex::new)
+            .collect(ImmutableSet.toImmutableSet());
+    return result;
   }
 
   /*

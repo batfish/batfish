@@ -427,6 +427,11 @@ public final class CumulusConversions {
     if (firstNonNull(bgpVrf.getAsPathMultipathRelax(), Boolean.FALSE)) {
       newProc.setMultipathEquivalentAsPathMatchMode(PATH_LENGTH);
     }
+    /*
+    Cluster List Length functions like IGP cost in FRR/Quagga
+    */
+    newProc.setClusterListAsIgpCost(true);
+
     Long confederationId = bgpProcess.getDefaultVrf().getConfederationId();
     Long asn = bgpProcess.getDefaultVrf().getAutonomousSystem();
     if (confederationId != null && asn != null) {
@@ -957,27 +962,32 @@ public final class CumulusConversions {
         firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
 
     // Add conditions to redistribute other protocols
-    for (BgpRedistributionPolicy redistributeProtocolPolicy :
-        bgpIpv4UnicastAddressFamily.getRedistributionPolicies().values()) {
+    Stream.concat(
+            bgpVrf.getRedistributionPolicies().values().stream(),
+            bgpIpv4UnicastAddressFamily.getRedistributionPolicies().values().stream())
+        .forEach(
+            redistributeProtocolPolicy -> {
 
-      // Get a match expression for the protocol to be redistributed
-      CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
-      MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
+              // Get a match expression for the protocol to be redistributed
+              CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
+              MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
 
-      // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      String mapName = redistributeProtocolPolicy.getRouteMap();
-      if (mapName != null && routeMaps.keySet().contains(mapName)) {
-        weInterior = new CallExpr(mapName);
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
+              // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
+              BooleanExpr weInterior = BooleanExprs.TRUE;
+              String mapName = redistributeProtocolPolicy.getRouteMap();
+              if (mapName != null && routeMaps.keySet().contains(mapName)) {
+                weInterior = new CallExpr(mapName);
+              }
+              BooleanExpr we =
+                  bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
 
-      // Export routes that match the protocol and WithEnvironmentExpr
-      Conjunction exportProtocolConditions = new Conjunction(ImmutableList.of(matchProtocol, we));
-      exportProtocolConditions.setComment(
-          String.format("Redistribute %s routes into BGP", protocol));
-      exportConditions.add(exportProtocolConditions);
-    }
+              // Export routes that match the protocol and WithEnvironmentExpr
+              Conjunction exportProtocolConditions =
+                  new Conjunction(ImmutableList.of(matchProtocol, we));
+              exportProtocolConditions.setComment(
+                  String.format("Redistribute %s routes into BGP", protocol));
+              exportConditions.add(exportProtocolConditions);
+            });
 
     // create origination prefilter from listed advertised networks
     Sets.union(bgpVrf.getNetworks().keySet(), bgpIpv4UnicastAddressFamily.getNetworks().keySet())

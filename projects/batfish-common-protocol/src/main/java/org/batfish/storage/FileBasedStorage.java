@@ -1482,6 +1482,13 @@ public class FileBasedStorage implements StorageProvider {
   public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
     Path inputObjectsPath =
         getSnapshotInputObjectsDir(snapshot.getNetwork(), snapshot.getSnapshot());
+    if (!isDirectory(inputObjectsPath)) {
+      if (!isDirectory(inputObjectsPath.getParent())) {
+        throw new FileNotFoundException(String.format("Missing snapshot dir for %s", snapshot));
+      }
+      // snapshot contained no input objects
+      return Stream.empty();
+    }
     return Files.walk(inputObjectsPath)
         .filter(Files::isRegularFile)
         .map(inputObjectsPath::relativize)
@@ -1752,7 +1759,9 @@ public class FileBasedStorage implements StorageProvider {
     return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_EXTENDED);
   }
 
-  private Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
+  @VisibleForTesting
+  @Nonnull
+  Path getSnapshotInputObjectsDir(NetworkId networkId, SnapshotId snapshotId) {
     return getSnapshotDir(networkId, snapshotId).resolve(BfConsts.RELPATH_INPUT);
   }
 
