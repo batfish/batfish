@@ -10,6 +10,7 @@ java_library(
         ":NxosRoutingTableParserBaseListener.java",
         ":NxosRoutingTableParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "@maven//:org_antlr_antlr4_runtime",

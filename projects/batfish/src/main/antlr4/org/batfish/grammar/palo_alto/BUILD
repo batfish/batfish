@@ -10,6 +10,7 @@ java_library(
         ":PaloAltoParserBaseListener.java",
         ":PaloAltoParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto/parsing:palo_alto_base",

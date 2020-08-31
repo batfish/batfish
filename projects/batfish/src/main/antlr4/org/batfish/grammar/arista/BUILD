@@ -10,6 +10,7 @@ java_library(
         ":AristaParserBaseListener.java",
         ":AristaParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish/src/main/java/org/batfish/grammar/arista/parsing:arista_base_parser",
         "@maven//:org_antlr_antlr4_runtime",
