@@ -136,7 +136,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   static Set<Community> satAssignmentToCommunities(BDD fullModel, BDDRoute r, Graph g) {
 
     BDD[] aps = r.getCommunityAtomicPredicateBDDs();
-    Map<Integer, Automaton> apAutomata = g.getAtomicPredicateAutomata();
+    Map<Integer, Automaton> apAutomata =
+        g.getCommunityAtomicPredicates().getAtomicPredicateAutomata();
 
     ImmutableSet.Builder<Community> comms = new ImmutableSet.Builder<>();
     for (int i = 0; i < aps.length; i++) {
@@ -215,7 +216,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     } else {
       BDD fullModel = constraints.fullSatOne();
       Bgpv4Route inRoute =
-          satAssignmentToRoute(fullModel, new BDDRoute(g.getNumAtomicPredicates()), g);
+          satAssignmentToRoute(
+              fullModel,
+              new BDDRoute(g.getCommunityAtomicPredicates().getNumAtomicPredicates()),
+              g);
       Bgpv4Route outRoute =
           _action == Action.DENY ? null : satAssignmentToRoute(fullModel, outputRoute, g);
       return Optional.of(
@@ -299,7 +303,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
               .orAll(
                   communityRegexes.stream()
                       .map(CommunityVar::from)
-                      .flatMap(c -> g.getCommunityAtomicPredicates().get(c).stream())
+                      .flatMap(
+                          c ->
+                              g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(c)
+                                  .stream())
                       .distinct()
                       .map(i -> r.getCommunityAtomicPredicateBDDs()[i])
                       .collect(ImmutableSet.toImmutableSet()));
@@ -351,7 +358,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;
     BDD inConstraints =
-        routeConstraintsToBDD(_inputConstraints, new BDDRoute(g.getNumAtomicPredicates()), g);
+        routeConstraintsToBDD(
+            _inputConstraints,
+            new BDDRoute(g.getCommunityAtomicPredicates().getNumAtomicPredicates()),
+            g);
     if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
       BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
