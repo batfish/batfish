@@ -473,6 +473,7 @@ public class TransferBDDTest {
     // each atomic predicate for community 20:30 has the 0 BDD
     for (int ap :
         _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
             .get(CommunityVar.from(StandardCommunity.parse("20:30")))) {
       assertEquals(
           outAnnouncements.getFactory().zero(),
@@ -499,7 +500,9 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
           outAnnouncements.getFactory().one(),
           outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
@@ -526,14 +529,18 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
           outAnnouncements.getFactory().one(),
           outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
     // each atomic predicate for community 3:33 has the 0 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
           outAnnouncements.getFactory().zero(),
           outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
@@ -560,14 +567,18 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       assertEquals(
           outAnnouncements.getFactory().one(),
           outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
     }
     // each atomic predicate for community 3:33 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
           outAnnouncements.getFactory().one(),
           outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
@@ -594,6 +605,7 @@ public class TransferBDDTest {
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
         _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
             .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")))) {
       assertEquals(
           outAnnouncements.getFactory().one(),
@@ -620,7 +632,9 @@ public class TransferBDDTest {
 
     // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int ap :
-        _g.getCommunityAtomicPredicates().get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(LargeCommunity.of(10, 20, 30)))) {
       assertEquals(
           outAnnouncements.getFactory().one(),
           outAnnouncements.getCommunityAtomicPredicateBDDs()[ap]);
