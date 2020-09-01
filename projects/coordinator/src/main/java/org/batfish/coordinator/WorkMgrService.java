@@ -8,7 +8,6 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.util.GlobalTracer;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessControlException;
@@ -33,7 +32,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.apache.commons.io.FileExistsException;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -1795,10 +1793,7 @@ public class WorkMgrService {
           Main.getWorkMgr().syncSnapshotsUpdateSettings(networkName, pluginId, settings);
 
       return successResponse(new JSONObject().put("result", result));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
+    } catch (IOException e) {
       _logger.errorf("WMS:syncSnapshotsUpdateSettings exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
