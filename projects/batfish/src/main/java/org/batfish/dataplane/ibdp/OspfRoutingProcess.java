@@ -572,13 +572,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     return new InternalDelta(intraAreaDelta.build(), interAreaDelta.build());
   }
 
-  /** Process a intraArea advertisement from a neighbor.
-   * This will transform advertisement on import, and place it in the appropriate RIB(s).
+  /**
+   * Process a intraArea advertisement from a neighbor. This will transform advertisement on import,
+   * and place it in the appropriate RIB(s).
    *
    * @param intraAreaDelta builder for the intraArea RIB delta
    * @param interAreaDelta builder for the interArea RIB delta
    * @param interAreaDelta builder for the interArea RIB delta
-   * */
+   */
   @VisibleForTesting
   void processIntraAreaAdvertisement(
       RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta,

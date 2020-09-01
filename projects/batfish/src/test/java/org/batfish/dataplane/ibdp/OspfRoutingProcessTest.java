@@ -1170,11 +1170,19 @@ public class OspfRoutingProcessTest {
   public void testProcessIntraAreaAdvertisement() {
     RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
-    _routingProcess.processIntraAreaAdvertisement(intraAreaDelta, interAreaDelta, ACTIVE_IFACE_NAME, 10,
-            RouteAdvertisement.<OspfIntraAreaRoute>builder().setRoute(OspfIntraAreaRoute.builder()
-            .setArea(0)
-            .setNetwork(Prefix.parse("1.1.1.1/29"))
-            .setMetric(1).build()).build());
+    _routingProcess.processIntraAreaAdvertisement(
+        intraAreaDelta,
+        interAreaDelta,
+        ACTIVE_IFACE_NAME,
+        10,
+        RouteAdvertisement.<OspfIntraAreaRoute>builder()
+            .setRoute(
+                OspfIntraAreaRoute.builder()
+                    .setArea(0)
+                    .setNetwork(Prefix.parse("1.1.1.1/29"))
+                    .setMetric(1)
+                    .build())
+            .build());
 
     // Both deltas should have the route at ABR
     assertFalse(intraAreaDelta.isEmpty());
