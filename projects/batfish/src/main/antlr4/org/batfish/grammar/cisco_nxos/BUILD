@@ -10,6 +10,7 @@ java_library(
         ":CiscoNxosParserBaseListener.java",
         ":CiscoNxosParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/parsing:cisco_nxos_base",
         "@maven//:org_antlr_antlr4_runtime",

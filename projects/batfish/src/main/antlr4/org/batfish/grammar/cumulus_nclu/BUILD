@@ -10,6 +10,7 @@ java_library(
         ":CumulusNcluParserBaseListener.java",
         ":CumulusNcluParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_nclu/parsing:cumulus_nclu_base_parser",
