@@ -17,6 +17,4 @@ public interface ICoordinator {
       Path srcDir,
       boolean autoAnalyze,
       Instant creationTime);
-
-  void registerTestrigSyncer(String name, SyncTestrigsPlugin plugin);
 }

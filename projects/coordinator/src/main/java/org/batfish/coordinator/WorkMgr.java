@@ -2262,23 +2262,6 @@ public class WorkMgr extends AbstractCoordinator {
             TimeUnit.MILLISECONDS);
   }
 
-  public int syncSnapshotsSyncNow(String networkName, String pluginId, boolean force) {
-    if (!_snapshotsSyncers.containsKey(pluginId)) {
-      throw new BatfishException(
-          "PluginId " + pluginId + " not found." + " (Are SyncSnapshots plugins loaded?)");
-    }
-    return _snapshotsSyncers.get(pluginId).syncNow(networkName, force);
-  }
-
-  public boolean syncSnapshotsUpdateSettings(
-      String networkName, String pluginId, Map<String, String> settings) {
-    if (!_snapshotsSyncers.containsKey(pluginId)) {
-      throw new BatfishException(
-          "PluginId " + pluginId + " not found." + " (Are SyncSnapshots plugins loaded?)");
-    }
-    return _snapshotsSyncers.get(pluginId).updateSettings(networkName, settings);
-  }
-
   /**
    * Uploads the given ad-hoc question to the given network. Returns {@code true} if successful.
    * Returns {@code false} if network does not exist.
