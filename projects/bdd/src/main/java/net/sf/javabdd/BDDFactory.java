@@ -41,6 +41,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Interface for the creation and manipulation of BDDs.
@@ -50,6 +52,7 @@ import java.util.StringTokenizer;
  * @version $Id: BDDFactory.java,v 1.18 2005/10/12 10:27:08 joewhaley Exp $
  */
 public abstract class BDDFactory {
+  private static final Logger LOGGER = LogManager.getLogger(BDDFactory.class);
 
   public static final String getProperty(String key, String def) {
     try {
@@ -89,8 +92,7 @@ public abstract class BDDFactory {
         return JFactory.init(nodenum, cachesize);
       }
     } catch (LinkageError e) {
-      System.out.println(
-          "Could not load BDD package " + bddpackage + ": " + e.getLocalizedMessage());
+      LOGGER.info("Could not load BDD package {}: {}", bddpackage, e.getLocalizedMessage());
     }
     try {
       Class<?> c = Class.forName(bddpackage);
@@ -1029,7 +1031,7 @@ public abstract class BDDFactory {
 
     int[] varorder = new int[varnum];
 
-    // System.out.println("Ordering: "+ordering);
+    // LOGGER.info("Ordering: "+ordering);
     StringTokenizer st = new StringTokenizer(ordering, "x_", true);
     int numberOfDomains = 0, bitIndex = 0;
     boolean[] done = new boolean[nDomains];
@@ -1115,10 +1117,10 @@ public abstract class BDDFactory {
           int di = d.getIndex();
           int local = localOrders[di][bitNumber];
           if (local >= d.vars().length) {
-            System.out.println("bug!");
+            LOGGER.error("bug!");
           }
           if (bitIndex >= varorder.length) {
-            System.out.println("bug2!");
+            LOGGER.error("bug2!");
           }
           varorder[bitIndex++] = d.vars()[local];
         }
@@ -1294,7 +1296,7 @@ public abstract class BDDFactory {
 
   protected static void bdd_default_gbchandler(boolean pre, GCStats s) {
     if (!pre) {
-      System.err.println(s.toString());
+      LOGGER.info(s);
     }
   }
 
@@ -1317,9 +1319,9 @@ public abstract class BDDFactory {
     int verbose = 1;
     if (verbose > 0) {
       if (prestate) {
-        System.out.println("Start reordering");
+        LOGGER.info("Start reordering");
       } else {
-        System.out.println("End reordering. " + s);
+        LOGGER.info("End reordering. {}", s);
       }
     }
   }
@@ -1335,7 +1337,7 @@ public abstract class BDDFactory {
   protected static void bdd_default_reshandler(int oldsize, int newsize) {
     int verbose = 1;
     if (verbose > 0) {
-      System.out.println("Resizing node table from " + oldsize + " to " + newsize);
+      LOGGER.info("Resizing node table from {} to {}", oldsize, newsize);
     }
   }
 
