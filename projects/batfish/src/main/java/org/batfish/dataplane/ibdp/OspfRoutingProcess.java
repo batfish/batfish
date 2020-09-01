@@ -8,7 +8,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Streams;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -907,7 +915,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param delta ABR's inter- or intra- RIB delta
    * @param areaConfig area configuration at the ABR for this neighbor adjacency
    * @param filterList route filter list defined at the ABR (to enable correct summarization)
-   * @param neighborIp
+   * @param neighborIp IP of the neighbor to which we're sending the route
    * @param nextHopIp next hop ip to use when creating the route.
    * @param customMetric if provided (i.e., not {@code null}) it will be used instead of the routes
    */
