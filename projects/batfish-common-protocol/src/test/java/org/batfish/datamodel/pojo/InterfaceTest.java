@@ -20,7 +20,7 @@ public class InterfaceTest {
   @Test
   public void constructorFail() throws IOException {
     String ifaceStr = "{\"nofield\" : \"test\"}";
-    _thrown.expect(com.fasterxml.jackson.databind.exc.InvalidDefinitionException.class);
+    _thrown.expect(com.fasterxml.jackson.databind.exc.ValueInstantiationException.class);
     BatfishObjectMapper.mapper().readValue(ifaceStr, Interface.class);
   }
 

@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class ReferenceLibraryTest {
   /** check that we barf on duplicate book names */
   @Test
   public void testLibraryDeserializationDuplicateBooks() throws IOException {
-    _thrown.expect(InvalidDefinitionException.class);
+    _thrown.expect(ValueInstantiationException.class);
     _thrown.expectMessage("Duplicate");
 
     BatfishObjectMapper.mapper()
