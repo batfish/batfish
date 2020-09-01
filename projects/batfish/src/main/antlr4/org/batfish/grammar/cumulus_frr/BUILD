@@ -10,6 +10,7 @@ java_library(
         ":CumulusFrrParserBaseListener.java",
         ":CumulusFrrParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_frr/parsing:cumulus_frr_base",
         "@maven//:org_antlr_antlr4_runtime",
