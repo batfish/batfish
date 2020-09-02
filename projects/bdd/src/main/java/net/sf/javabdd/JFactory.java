@@ -3154,7 +3154,7 @@ public final class JFactory extends BDDFactory {
     // is LEVEL(r) [aka, which variable is tested in this node] as well as the path we take through
     // the BDD. This is a lot like netconan, but no need for cryptographic security.
     int newSeed = seed * 31 + level;
-    boolean preferLo = (newSeed & 1) == 0;
+    boolean preferLo = (newSeed & 65536) == 0;
     if (level < LEVEL(r)) {
       // The BDD r is the same no matter which branch at the current level is taken. Pick one
       // randomly.
