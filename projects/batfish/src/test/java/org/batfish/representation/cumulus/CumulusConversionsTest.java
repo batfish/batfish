@@ -20,7 +20,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeBgpPe
 import static org.batfish.representation.cumulus.CumulusConversions.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreas;
-import static org.batfish.representation.cumulus.CumulusConversions.computeOspfRedistDefaultMetricAndTypePolicyName;
+import static org.batfish.representation.cumulus.CumulusConversions.computeOspfExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
@@ -28,7 +28,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.generateBgpC
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
-import static org.batfish.representation.cumulus.CumulusConversions.generateOspfDefaultRedistMetricAndTypePolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
@@ -1186,7 +1185,7 @@ public final class CumulusConversionsTest {
   }
 
   @Test
-  public void testGenerateOspfMetricAndTypePolicy() {
+  public void testToOspfProcess_RedistributionPolicy() {
     // setup VI model
     NetworkFactory nf = new NetworkFactory();
     Configuration viConfig =
@@ -1195,24 +1194,21 @@ public final class CumulusConversionsTest {
 
     // Setup VS
     CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
-    viConfig.getVrfs().put("default", new Vrf("default"));
-    vsConfig.setConfiguration(viConfig);
-
     // Setup OSPF
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
     ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
     OspfProcess vsOspf = new OspfProcess();
     vsConfig.setOspfProcess(vsOspf);
 
-    String policyName =
-        generateOspfDefaultRedistMetricAndTypePolicy(viConfig, ospfVrf.getVrfName());
+    vsConfig.getRouteMaps().put("some-map", new RouteMap("some-map"));
+    String policyName = computeOspfExportPolicyName(ospfVrf.getVrfName());
+
+    toOspfProcess(viConfig, vsConfig, ospfVrf, ImmutableMap.of(), new Warnings());
 
     assertEquals(
         viConfig.getRoutingPolicies().get(policyName).getStatements(),
         ImmutableList.of(
-            new SetOspfMetricType(OspfMetricType.E2),
-            new SetMetric(new LiteralLong(20L)),
-            Statements.ReturnTrue.toStaticStatement()));
+            new SetOspfMetricType(OspfMetricType.E2), new SetMetric(new LiteralLong(20L))));
   }
 
   @Test
@@ -1236,19 +1232,10 @@ public final class CumulusConversionsTest {
     vsConfig.getRouteMaps().put("some-map", new RouteMap("some-map"));
 
     // Method under test
-    If policy =
-        convertOspfRedistributionPolicy(
-            viConfig, ospfVrf.getVrfName(), rp, vsConfig.getRouteMaps());
+    If policy = convertOspfRedistributionPolicy(rp, vsConfig.getRouteMaps());
     List<BooleanExpr> guard = ((Conjunction) policy.getGuard()).getConjuncts();
 
-    assertThat(
-        guard,
-        contains(
-            new MatchProtocol(BGP, IBGP),
-            new CallExpr(
-                computeOspfRedistDefaultMetricAndTypePolicyName(
-                    vsOspf.getDefaultVrf().getVrfName())),
-            new CallExpr("some-map")));
+    assertThat(guard, contains(new MatchProtocol(BGP, IBGP), new CallExpr("some-map")));
     assertThat(policy.getTrueStatements(), contains(ExitAccept.toStaticStatement()));
   }
 
