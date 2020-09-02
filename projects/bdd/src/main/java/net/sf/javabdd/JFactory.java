@@ -5096,7 +5096,6 @@ public final class JFactory extends BDDFactory {
       n_low = bdd_makenode(levToInsert + 1, val <= 0 ? lo : 0, val <= 0 ? 0 : lo);
       n_high = bdd_makenode(levToInsert + 1, val == 0 ? hi : 0, val == 0 ? 0 : hi);
       bdd_delref(n);
-      // ("+new bdd(n_low)+") new high = "+n_high+" ("+new bdd(n_high)+")");
       newLev = lev;
       SETLOW(n, n_low);
       SETHIGH(n, n_high);
