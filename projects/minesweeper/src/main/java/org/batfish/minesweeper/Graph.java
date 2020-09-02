@@ -278,7 +278,7 @@ public class Graph {
       Set<CommunityVar> comms =
           _allCommunities.stream()
               .filter(c -> c.getType() != Type.OTHER)
-              .collect(Collectors.toSet());
+              .collect(ImmutableSet.toImmutableSet());
       _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.from(".*"));
     } else {
       initCommDependencies();

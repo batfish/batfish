@@ -1,11 +1,11 @@
 package org.batfish.minesweeper;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import dk.brics.automaton.Automaton;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -52,8 +52,7 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
    * @param trueRegex a regex representing logical "true", or all possible valid strings
    */
   public RegexAtomicPredicates(Set<T> regexes, T trueRegex) {
-    _regexes = new HashSet<>(regexes);
-    _regexes.add(trueRegex);
+    _regexes = ImmutableSet.<T>builder().addAll(regexes).add(trueRegex).build();
     initAtomicPredicates();
   }
 

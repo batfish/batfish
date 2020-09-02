@@ -178,6 +178,7 @@ java_library(
         ":RecoveryParserBaseListener.java",
         ":RecoveryParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         ":parser_common",
         "@maven//:org_antlr_antlr4_runtime",
@@ -216,6 +217,7 @@ java_library(
         ":RecoveryInlineAltsParserBaseListener.java",
         ":RecoveryInlineAltsParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         ":parser_common",
         "@maven//:org_antlr_antlr4_runtime",
@@ -254,6 +256,7 @@ java_library(
         ":RecoveryRuleAltsParserBaseListener.java",
         ":RecoveryRuleAltsParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         ":parser_common",
         "@maven//:org_antlr_antlr4_runtime",
