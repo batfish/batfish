@@ -57,7 +57,7 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Metric",
-          "schema" : "Integer"
+          "schema" : "Long"
         },
         {
           "description" : "Route's Admin distance",
@@ -71,7 +71,7 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Tag",
-          "schema" : "Integer"
+          "schema" : "Long"
         }
       ],
       "textDesc" : "Display RIB routes"
