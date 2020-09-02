@@ -1,17 +1,37 @@
 package net.sf.javabdd;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import java.util.Arrays;
+import java.util.BitSet;
+import java.util.HashSet;
 import org.junit.Test;
 
 /** Tests of {@link JFactory}. */
 public class JFactoryTest {
   private JFactory _factory = (JFactory) JFactory.init(10000, 10000);
+
+  @Test
+  public void testRandomSatDoesntSuck() {
+    _factory.setVarNum(64);
+    HashSet<BitSet> differentAssignments = new HashSet<>();
+    BDD one = _factory.one();
+    HashFunction someFn = Hashing.goodFastHash(8);
+    for (int i = 0; i < 128; ++i) {
+      int seed = someFn.hashInt(i).asInt();
+      differentAssignments.add(one.randomFullSatOne(seed).minAssignmentBits());
+    }
+    // Collisions are plausible, but not all the time.
+    assertThat(differentAssignments, hasSize(greaterThanOrEqualTo(100)));
+  }
 
   @Test
   public void testAnd() {
