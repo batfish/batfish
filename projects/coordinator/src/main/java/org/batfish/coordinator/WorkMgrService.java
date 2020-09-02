@@ -8,7 +8,6 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import io.opentracing.util.GlobalTracer;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.AccessControlException;
@@ -33,7 +32,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import org.apache.commons.io.FileExistsException;
 import org.batfish.common.AnswerRowsOptions;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -1702,110 +1700,6 @@ public class WorkMgrService {
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:queueWork exception for apikey:%s; exception:%s", apiKey, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * Sync snapshots
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The network to sync snapshots for
-   * @param pluginId The plugin id to use for syncing
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_SYNC_SNAPSHOTS_SYNC_NOW)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray syncSnapshotsSyncNow(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
-      @FormDataParam(CoordConsts.SVC_KEY_FORCE) String forceStr) {
-    try {
-      _logger.infof("WMS:syncSnapshotsSyncNow %s %s %s\n", apiKey, networkName, pluginId);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(pluginId, "Plugin Id");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      boolean force = !Strings.isNullOrEmpty(forceStr) && Boolean.parseBoolean(forceStr);
-
-      int numCommits = Main.getWorkMgr().syncSnapshotsSyncNow(networkName, pluginId, force);
-
-      return successResponse(new JSONObject().put("numCommits", numCommits));
-    } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:syncSnapshotsSyncNow exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:syncSnapshotsSyncNow exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
-      return failureResponse(e.getMessage());
-    }
-  }
-
-  /**
-   * Update settings for syncing snapshots
-   *
-   * @param apiKey The API key of the client
-   * @param clientVersion The version of the client
-   * @param networkName The network to sync snapshots for
-   * @param pluginId The plugin id to use for syncing
-   * @param settingsStr The stringified version of settings
-   * @return TODO: document JSON response
-   */
-  @POST
-  @Path(CoordConsts.SVC_RSC_SYNC_SNAPSHOTS_UPDATE_SETTINGS)
-  @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray syncSnapshotsUpdateSettings(
-      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
-      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
-      @FormDataParam(CoordConsts.SVC_KEY_NETWORK_NAME) String networkName,
-      @FormDataParam(CoordConsts.SVC_KEY_PLUGIN_ID) String pluginId,
-      @FormDataParam(CoordConsts.SVC_KEY_SETTINGS) String settingsStr) {
-    try {
-      _logger.infof(
-          "WMS:syncSnapshotsUpdateSettings %s %s %s %s\n",
-          apiKey, networkName, pluginId, settingsStr);
-
-      checkStringParam(apiKey, "API key");
-      checkStringParam(clientVersion, "Client version");
-      checkStringParam(networkName, "Network name");
-      checkStringParam(pluginId, "Plugin Id");
-      checkStringParam(settingsStr, "Settings");
-
-      checkApiKeyValidity(apiKey);
-
-      checkNetworkAccessibility(apiKey, networkName);
-
-      Map<String, String> settings =
-          BatfishObjectMapper.mapper()
-              .readValue(settingsStr, new TypeReference<Map<String, String>>() {});
-
-      boolean result =
-          Main.getWorkMgr().syncSnapshotsUpdateSettings(networkName, pluginId, settings);
-
-      return successResponse(new JSONObject().put("result", result));
-    } catch (FileExistsException
-        | FileNotFoundException
-        | IllegalArgumentException
-        | AccessControlException e) {
-      _logger.errorf("WMS:syncSnapshotsUpdateSettings exception: %s\n", e.getMessage());
-      return failureResponse(e.getMessage());
-    } catch (Exception e) {
-      String stackTrace = Throwables.getStackTraceAsString(e);
-      _logger.errorf(
-          "WMS:syncSnapshotsUpdateSettings exception for apikey:%s in network:%s; exception:%s",
-          apiKey, networkName, stackTrace);
       return failureResponse(e.getMessage());
     }
   }

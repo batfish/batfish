@@ -10,6 +10,7 @@ java_library(
         ":FlatJuniperParserBaseListener.java",
         ":FlatJuniperParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper/parsing:flatjuniper_base",

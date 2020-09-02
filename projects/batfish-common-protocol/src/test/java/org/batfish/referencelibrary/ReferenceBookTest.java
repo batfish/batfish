@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -46,7 +46,7 @@ public class ReferenceBookTest {
   /** check that we throw an error for duplicate address groups */
   @Test
   public void testBookDeserializationDupAddressGroup() throws IOException {
-    _thrown.expect(InvalidDefinitionException.class);
+    _thrown.expect(ValueInstantiationException.class);
     _thrown.expectMessage("Duplicate");
 
     BatfishObjectMapper.mapper()
@@ -58,7 +58,7 @@ public class ReferenceBookTest {
   /** check that we throw an error for a non-existent child address group name */
   @Test
   public void testBookUndefChildAddressGroup() throws IOException {
-    _thrown.expect(InvalidDefinitionException.class);
+    _thrown.expect(ValueInstantiationException.class);
     _thrown.expectMessage("Following child address group names are not defined: [ag3]");
 
     BatfishObjectMapper.mapper()
@@ -70,7 +70,7 @@ public class ReferenceBookTest {
   /** check that we throw an error when the same name is used in a service object and group */
   @Test
   public void testBookDeserializationDupServiceName() throws IOException {
-    _thrown.expect(InvalidDefinitionException.class);
+    _thrown.expect(ValueInstantiationException.class);
     _thrown.expectMessage("Duplicate");
 
     BatfishObjectMapper.mapper()
@@ -82,7 +82,7 @@ public class ReferenceBookTest {
   /** check that we throw an error for undefined address groups */
   @Test
   public void testBookDeserializationUndefAddressGroup() throws IOException {
-    _thrown.expect(InvalidDefinitionException.class);
+    _thrown.expect(ValueInstantiationException.class);
     _thrown.expectMessage("Undefined");
 
     BatfishObjectMapper.mapper()
@@ -94,7 +94,7 @@ public class ReferenceBookTest {
   /** check that we throw an error for undefined service name */
   @Test
   public void testBookDeserializationUndefServiceName() throws IOException {
-    _thrown.expect(InvalidDefinitionException.class);
+    _thrown.expect(ValueInstantiationException.class);
     _thrown.expectMessage("Undefined");
 
     BatfishObjectMapper.mapper()

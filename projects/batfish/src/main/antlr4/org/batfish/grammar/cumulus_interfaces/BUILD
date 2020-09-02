@@ -10,6 +10,7 @@ java_library(
         ":CumulusInterfacesParserBaseListener.java",
         ":CumulusInterfacesParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_interfaces/parsing:cumulus_interfaces_base",
         "@maven//:org_antlr_antlr4_runtime",

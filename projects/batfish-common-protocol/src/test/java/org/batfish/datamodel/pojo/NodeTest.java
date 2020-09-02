@@ -20,7 +20,7 @@ public class NodeTest {
   @Test
   public void constructorFail() throws IOException {
     String nodeStr = "{\"nonamefield\" : \"nodeName\"}";
-    _thrown.expect(com.fasterxml.jackson.databind.exc.InvalidDefinitionException.class);
+    _thrown.expect(com.fasterxml.jackson.databind.exc.ValueInstantiationException.class);
     BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
   }
 

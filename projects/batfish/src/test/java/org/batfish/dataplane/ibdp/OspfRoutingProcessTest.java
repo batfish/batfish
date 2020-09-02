@@ -5,7 +5,6 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasN
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.applyDistributeList;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.computeDefaultInterAreaRouteToInject;
-import static org.batfish.dataplane.ibdp.OspfRoutingProcess.convertAndFilterIntraAreaRoutesToPropagate;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.filterInterAreaRoutesToPropagateAtABR;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.getIfaceAddressesForIntraAreaRoutes;
 import static org.batfish.dataplane.ibdp.OspfRoutingProcess.transformInterAreaRoutesOnExportNonABR;
@@ -561,97 +560,6 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testConvertAndFilterIntraAreaRoutesToPropagate() {
-    OspfIntraAreaRoute route0 =
-        OspfIntraAreaRoute.builder()
-            .setArea(0)
-            .setNetwork(Prefix.ZERO)
-            .setMetric(1)
-            .setNextHopIp(Ip.parse("8.8.8.8"))
-            .build();
-    OspfIntraAreaRoute route1 =
-        OspfIntraAreaRoute.builder()
-            .setArea(1)
-            .setNetwork(Prefix.parse("1.0.0.0/8"))
-            .setMetric(42)
-            .setNextHopIp(Ip.parse("8.8.8.8"))
-            .build();
-
-    final Ip nextHopIp = Ip.parse("9.9.9.9");
-    final RibDelta<OspfIntraAreaRoute> delta =
-        RibDelta.<OspfIntraAreaRoute>builder().add(route0).add(route1).build();
-
-    // Regular conversion
-    List<RouteAdvertisement<OspfInterAreaRoute>> transformed =
-        convertAndFilterIntraAreaRoutesToPropagate(delta, AREA0_CONFIG, null, nextHopIp, null)
-            .collect(Collectors.toList());
-    assertThat(
-        transformed,
-        contains(
-            hasRoute(
-                allOf(
-                    hasPrefix(route1.getNetwork()),
-                    hasNextHopIp(equalTo(nextHopIp)),
-                    hasMetric(route1.getMetric())))));
-
-    // Regular conversion but with custom metric
-    transformed =
-        convertAndFilterIntraAreaRoutesToPropagate(delta, AREA0_CONFIG, null, nextHopIp, 999L)
-            .collect(Collectors.toList());
-    assertThat(
-        transformed,
-        contains(
-            hasRoute(
-                allOf(
-                    hasPrefix(route1.getNetwork()),
-                    hasNextHopIp(equalTo(nextHopIp)),
-                    hasMetric(999L)))));
-
-    // Convert and filter with route filter list
-    transformed =
-        convertAndFilterIntraAreaRoutesToPropagate(
-                delta,
-                AREA0_CONFIG,
-                new RouteFilterList(
-                    "filter",
-                    ImmutableList.of(
-                        new RouteFilterLine(
-                            LineAction.DENY, Prefix.parse("1.0.0.0/8"), SubRange.singleton(8)))),
-                nextHopIp,
-                999L)
-            .collect(Collectors.toList());
-    assertThat(transformed, empty());
-
-    // Convert but filter because STUB and suppress type 3
-    transformed =
-        convertAndFilterIntraAreaRoutesToPropagate(
-                delta,
-                OspfArea.builder()
-                    .setStub(StubSettings.builder().setSuppressType3(true).build())
-                    .setNumber(2)
-                    .build(),
-                null,
-                nextHopIp,
-                null)
-            .collect(Collectors.toList());
-    assertThat(transformed, empty());
-
-    // Convert but filter because NSSA and suppress type 3
-    transformed =
-        convertAndFilterIntraAreaRoutesToPropagate(
-                delta,
-                OspfArea.builder()
-                    .setNssa(NssaSettings.builder().setSuppressType3(true).build())
-                    .setNumber(2)
-                    .build(),
-                null,
-                nextHopIp,
-                null)
-            .collect(Collectors.toList());
-    assertThat(transformed, empty());
-  }
-
-  @Test
   public void testFilterInterAreaRoutesToPropagateAtABR() {
     OspfInterAreaRoute route0 =
         OspfInterAreaRoute.builder()
@@ -669,12 +577,14 @@ public class OspfRoutingProcessTest {
             .build();
 
     final Ip nextHopIp = Ip.parse("9.9.9.9");
+    Ip neighborIp = Ip.parse("2.2.2.2");
     final RibDelta<OspfInterAreaRoute> delta =
         RibDelta.<OspfInterAreaRoute>builder().add(route0).add(route1).build();
 
     // Regular conversion
     List<RouteAdvertisement<OspfInterAreaRoute>> transformed =
-        filterInterAreaRoutesToPropagateAtABR(delta, AREA0_CONFIG, null, nextHopIp, null)
+        filterInterAreaRoutesToPropagateAtABR(
+                delta, AREA0_CONFIG, null, neighborIp, nextHopIp, null)
             .collect(Collectors.toList());
     assertThat(
         transformed,
@@ -687,7 +597,8 @@ public class OspfRoutingProcessTest {
 
     // Regular conversion but with custom metric
     transformed =
-        filterInterAreaRoutesToPropagateAtABR(delta, AREA0_CONFIG, null, nextHopIp, 999L)
+        filterInterAreaRoutesToPropagateAtABR(
+                delta, AREA0_CONFIG, null, neighborIp, nextHopIp, 999L)
             .collect(Collectors.toList());
     assertThat(
         transformed,
@@ -708,6 +619,7 @@ public class OspfRoutingProcessTest {
                     ImmutableList.of(
                         new RouteFilterLine(
                             LineAction.DENY, Prefix.parse("1.0.0.0/8"), SubRange.singleton(8)))),
+                neighborIp,
                 nextHopIp,
                 999L)
             .collect(Collectors.toList());
@@ -722,6 +634,7 @@ public class OspfRoutingProcessTest {
                     .setNumber(2)
                     .build(),
                 null,
+                neighborIp,
                 nextHopIp,
                 null)
             .collect(Collectors.toList());
@@ -736,6 +649,7 @@ public class OspfRoutingProcessTest {
                     .setNumber(2)
                     .build(),
                 null,
+                neighborIp,
                 nextHopIp,
                 null)
             .collect(Collectors.toList());
@@ -763,9 +677,11 @@ public class OspfRoutingProcessTest {
     final RibDelta<OspfInterAreaRoute> delta =
         RibDelta.<OspfInterAreaRoute>builder().add(route0).add(route1).build();
 
+    Ip neighborIp = Ip.parse("2.2.2.2");
+
     // Regular conversion
     Collection<RouteAdvertisement<OspfInterAreaRoute>> transformed =
-        transformInterAreaRoutesOnExportNonABR(delta, AREA0_CONFIG, nextHopIp, null);
+        transformInterAreaRoutesOnExportNonABR(delta, AREA0_CONFIG, neighborIp, nextHopIp, null);
     assertThat(
         transformed,
         contains(
@@ -776,7 +692,8 @@ public class OspfRoutingProcessTest {
                     hasMetric(route0.getMetric())))));
 
     // Regular conversion but with custom metric
-    transformed = transformInterAreaRoutesOnExportNonABR(delta, AREA0_CONFIG, nextHopIp, 999L);
+    transformed =
+        transformInterAreaRoutesOnExportNonABR(delta, AREA0_CONFIG, neighborIp, nextHopIp, 999L);
     assertThat(
         transformed,
         contains(
@@ -1247,5 +1164,28 @@ public class OspfRoutingProcessTest {
     assertThat(
         getIfaceAddressesForIntraAreaRoutes(p2pLoopback).collect(ImmutableList.toImmutableList()),
         containsInAnyOrder(primary, secondary));
+  }
+
+  @Test
+  public void testProcessIntraAreaAdvertisement() {
+    RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
+    RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
+    _routingProcess.processIntraAreaAdvertisement(
+        intraAreaDelta,
+        interAreaDelta,
+        ACTIVE_IFACE_NAME,
+        10,
+        RouteAdvertisement.<OspfIntraAreaRoute>builder()
+            .setRoute(
+                OspfIntraAreaRoute.builder()
+                    .setArea(0)
+                    .setNetwork(Prefix.parse("1.1.1.1/29"))
+                    .setMetric(1)
+                    .build())
+            .build());
+
+    // Both deltas should have the route at ABR
+    assertFalse(intraAreaDelta.isEmpty());
+    assertFalse(interAreaDelta.isEmpty());
   }
 }

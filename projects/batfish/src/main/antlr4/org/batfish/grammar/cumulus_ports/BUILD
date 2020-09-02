@@ -10,6 +10,7 @@ java_library(
         ":CumulusPortsParserBaseListener.java",
         ":CumulusPortsParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_ports/parsing:cumulus_ports_base",
         "@maven//:org_antlr_antlr4_runtime",
