@@ -92,14 +92,14 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Snapshot_Metric",
-          "schema" : "Integer"
+          "schema" : "Long"
         },
         {
           "description" : "Route's Metric",
           "isKey" : false,
           "isValue" : true,
           "name" : "Reference_Metric",
-          "schema" : "Integer"
+          "schema" : "Long"
         },
         {
           "description" : "Route's Admin distance",
@@ -120,14 +120,14 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Snapshot_Tag",
-          "schema" : "Integer"
+          "schema" : "Long"
         },
         {
           "description" : "Tag for this route",
           "isKey" : false,
           "isValue" : true,
           "name" : "Reference_Tag",
-          "schema" : "Integer"
+          "schema" : "Long"
         }
       ],
       "textDesc" : "Display diff of RIB routes"

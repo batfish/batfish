@@ -248,9 +248,9 @@ public class RoutesAnswererTest {
             Schema.IP,
             Schema.STRING,
             Schema.STRING,
+            Schema.LONG,
             Schema.INTEGER,
-            Schema.INTEGER,
-            Schema.INTEGER));
+            Schema.LONG));
   }
 
   @Test
@@ -358,12 +358,12 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.STRING,
             Schema.STRING,
+            Schema.LONG,
+            Schema.LONG,
             Schema.INTEGER,
             Schema.INTEGER,
-            Schema.INTEGER,
-            Schema.INTEGER,
-            Schema.INTEGER,
-            Schema.INTEGER));
+            Schema.LONG,
+            Schema.LONG));
   }
 
   @Test
@@ -405,8 +405,8 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.STRING,
         Schema.STRING,
-        Schema.INTEGER,
-        Schema.INTEGER,
+        Schema.LONG,
+        Schema.LONG,
         Schema.LONG,
         Schema.LONG,
         Schema.list(Schema.STRING),
@@ -415,8 +415,8 @@ public class RoutesAnswererTest {
         Schema.STRING,
         Schema.STRING,
         Schema.STRING,
-        Schema.INTEGER,
-        Schema.INTEGER);
+        Schema.LONG,
+        Schema.LONG);
 
     List<ColumnMetadata> columnMetadata = getDiffTableMetadata(RibProtocol.BGP).getColumnMetadata();
     assertThat(
