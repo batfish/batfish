@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.ospf.OspfMetricType;
 
 /** Class for ospf process */
 public class OspfProcess implements Serializable {
@@ -19,24 +17,14 @@ public class OspfProcess implements Serializable {
       100E9D; // https://docs.cumulusnetworks.com/cumulus-linux/Layer-3/Open-Shortest-Path-First-OSPF/#auto-cost-reference-bandwidth
   public static String DEFAULT_OSPF_PROCESS_NAME = "default";
 
-  private static final OspfMetricType DEFAULT_REDISTRIBUTE_METRIC_TYPE = OspfMetricType.E2;
-
-  private static final Long DEFAULT_METRIC = 20L;
-
-  private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
-
-  private Long _defaultMetric;
-
-  private OspfMetricType _defaultRedistributeMetricType;
+  private Map<CumulusRoutingProtocol, RedistributionPolicy> _redistributionPolicies;
 
   public OspfProcess() {
     _defaultVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
     // default value
     _defaultPassiveInterface = false;
     _vrfs = new HashMap<>();
-    _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
-    _defaultMetric = DEFAULT_METRIC;
-    _defaultRedistributeMetricType = DEFAULT_REDISTRIBUTE_METRIC_TYPE;
+    _redistributionPolicies = new EnumMap<>(CumulusRoutingProtocol.class);
   }
 
   public @Nonnull OspfVrf getDefaultVrf() {
@@ -55,23 +43,7 @@ public class OspfProcess implements Serializable {
     _defaultPassiveInterface = defaultPassiveInterface;
   }
 
-  public long getDefaultMetric() {
-    return _defaultMetric;
-  }
-
-  public OspfMetricType getDefaultRedistributeMetricType() {
-    return _defaultRedistributeMetricType;
-  }
-
-  public void setDefaultMetric(Long metric) {
-    _defaultMetric = metric;
-  }
-
-  public void setDefaultRedistributeMetricType(OspfMetricType metricType) {
-    _defaultRedistributeMetricType = metricType;
-  }
-
-  public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
+  public Map<CumulusRoutingProtocol, RedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 }

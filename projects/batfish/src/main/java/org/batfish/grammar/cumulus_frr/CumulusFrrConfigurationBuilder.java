@@ -5,7 +5,6 @@ import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
@@ -179,7 +178,7 @@ import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
-import org.batfish.representation.cumulus.OspfRedistributionPolicy;
+import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
 import org.batfish.representation.cumulus.RouteMapContinue;
@@ -692,21 +691,51 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       throw new BatfishException("Unexpected redistribution protocol");
     }
 
+    if (routeMap != null) {
+      _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+    }
+
     OspfProcess proc = _frr.getOspfProcess();
 
-    VI_PROTOCOLS_MAP
-        .get(srcProtocol)
-        .forEach(
-            protocol -> {
-              OspfRedistributionPolicy r = new OspfRedistributionPolicy(protocol);
-              proc.getRedistributionPolicies().put(protocol, r);
-              if (routeMap != null) {
-                r.setRouteMap(routeMap);
-                _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
-              }
-              r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-              r.setOnlyClassfulRoutes(false);
-            });
+    RedistributionPolicy oldRedistributionPolicy;
+    oldRedistributionPolicy =
+        proc.getRedistributionPolicies()
+            .put(srcProtocol, new RedistributionPolicy(srcProtocol, routeMap));
+
+    if (oldRedistributionPolicy != null) {
+      _w.addWarning(
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format(
+              "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
+              proc.getDefaultVrf().getVrfName(), srcProtocol));
+    }
+
+    //    BgpRedistributionPolicy oldRedistributionPolicy;
+    //
+    //    _currentBgpVrf.getOrCreateIpv4Unicast();
+    //
+    //    oldRedistributionPolicy =
+    //        _currentBgpVrf
+    //            .getIpv4Unicast()
+    //            .getRedistributionPolicies()
+    //            .put(srcProtocol, new BgpRedistributionPolicy(srcProtocol, routeMap));
+    //
+
+    //    VI_PROTOCOLS_MAP
+    //        .get(srcProtocol)
+    //        .forEach(
+    //            protocol -> {
+    //              RedistributionPolicy r = new RedistributionPolicy(protocol);
+    //              proc.getRedistributionPolicies().put(protocol, r);
+    //              if (routeMap != null) {
+    //                r.setRouteMap(routeMap);
+    //                _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+    //              }
+    //              r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+    //              r.setOnlyClassfulRoutes(false);
+    //            });
   }
 
   @Override

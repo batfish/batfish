@@ -83,6 +83,7 @@ import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusFrrConfiguration;
+import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.FrrInterface;
@@ -94,7 +95,7 @@ import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
-import org.batfish.representation.cumulus.OspfRedistributionPolicy;
+import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -1583,8 +1584,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testOspfRedistributeConnected() {
     parseLines("router ospf", "redistribute connected");
-    OspfRedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.CONNECTED);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
@@ -1592,8 +1593,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testOspfRedistributeConnectedRouteMap() {
     parseLines("router ospf", "redistribute connected route-map foo");
-    OspfRedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.CONNECTED);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }
@@ -1601,8 +1602,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testOspfRedistributeStatic() {
     parseLines("router ospf", "redistribute static");
-    OspfRedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.STATIC);
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.STATIC);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
@@ -1610,8 +1611,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testOspfRedistributeStaticRouteMap() {
     parseLines("router ospf", "redistribute static route-map foo");
-    OspfRedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.STATIC);
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.STATIC);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }
@@ -1619,8 +1620,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testOspfRedistributeBgp() {
     parseLines("router ospf", "redistribute bgp");
-    OspfRedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.BGP);
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.BGP);
     assertNotNull(policy);
     assertNull(policy.getRouteMap());
   }
@@ -1628,8 +1629,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testOspfRedistributeBgpRouteMap() {
     parseLines("router ospf", "redistribute bgp route-map foo");
-    OspfRedistributionPolicy policy =
-        _frr.getOspfProcess().getRedistributionPolicies().get(RoutingProtocol.BGP);
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.BGP);
     assertNotNull(policy);
     assertThat(policy.getRouteMap(), equalTo("foo"));
   }

@@ -1,43 +1,47 @@
 package org.batfish.representation.cumulus;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.TreeMap;
-import org.batfish.datamodel.RoutingProtocol;
+import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public abstract class RedistributionPolicy implements Serializable {
-
-  protected final RoutingProtocol _destinationProtocol;
-
-  protected String _routeMap;
-
-  protected final RoutingProtocol _sourceProtocol;
-
-  protected final Map<String, Object> _specialAttributes;
-
-  public RedistributionPolicy(RoutingProtocol sourceProtocol, RoutingProtocol destinationProtocol) {
-    _sourceProtocol = sourceProtocol;
-    _destinationProtocol = destinationProtocol;
-    _specialAttributes = new TreeMap<>();
+/** Represents a redistribution policy configuration for Cumulus FRR. */
+public final class RedistributionPolicy implements Serializable {
+  public RedistributionPolicy(
+      CumulusRoutingProtocol cumulusRoutingProtocol, @Nullable String routeMap) {
+    _cumulusRoutingProtocol = cumulusRoutingProtocol;
+    _routeMap = routeMap;
   }
 
-  public RoutingProtocol getDestinationProtocol() {
-    return _destinationProtocol;
+  public @Nonnull CumulusRoutingProtocol getCumulusRoutingProtocol() {
+    return _cumulusRoutingProtocol;
   }
 
-  public String getRouteMap() {
+  public @Nullable String getRouteMap() {
     return _routeMap;
   }
 
-  public RoutingProtocol getSourceProtocol() {
-    return _sourceProtocol;
+  //////////////////////////////////////////
+  ///// Private implementation details /////
+  //////////////////////////////////////////
+
+  private final @Nonnull CumulusRoutingProtocol _cumulusRoutingProtocol;
+  private final @Nullable String _routeMap;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof RedistributionPolicy)) {
+      return false;
+    }
+    RedistributionPolicy that = (RedistributionPolicy) o;
+    return Objects.equals(_cumulusRoutingProtocol, that._cumulusRoutingProtocol)
+        && Objects.equals(_routeMap, that._routeMap);
   }
 
-  public Map<String, Object> getSpecialAttributes() {
-    return _specialAttributes;
-  }
-
-  public void setRouteMap(String routeMap) {
-    _routeMap = routeMap;
+  @Override
+  public int hashCode() {
+    return Objects.hash(_cumulusRoutingProtocol, _routeMap);
   }
 }
