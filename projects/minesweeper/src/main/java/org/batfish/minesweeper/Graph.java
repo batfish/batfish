@@ -7,6 +7,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +27,8 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -138,6 +141,12 @@ public class Graph {
    * "atomic predicates" for them.
    */
   private RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
+
+  /**
+   * We also compute a set of atomic predicates for the AS-path regexes that appear in the given
+   * configurations.
+   */
+  private RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
 
   /**
    * Create a graph, loading configurations from the given {@link IBatfish}.
@@ -275,6 +284,7 @@ public class Graph {
       initCommDependencies();
     }
     initNamedCommunities();
+    _asPathRegexAtomicPredicates = new RegexAtomicPredicates<>(findAllAsPathRegexes());
   }
 
   /*
@@ -898,6 +908,14 @@ public class Graph {
     }
   }
 
+  private Set<SymbolicAsPathRegex> findAllAsPathRegexes() {
+    ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
+    for (String router : getRouters()) {
+      builder.addAll(findAsPathRegexes(router));
+    }
+    return builder.build();
+  }
+
   /**
    * Computes a map from each community variable r of type REGEX to a set of community variables
    * that depend on it. A community variable v is considered to depend on r if either v is the
@@ -979,6 +997,10 @@ public class Graph {
     return _communityAtomicPredicates;
   }
 
+  public RegexAtomicPredicates<SymbolicAsPathRegex> getAsPathRegexAtomicPredicates() {
+    return _asPathRegexAtomicPredicates;
+  }
+
   /*
    * Finds all uniquely mentioned community matches
    * in the network by walking over every configuration.
@@ -1033,6 +1055,27 @@ public class Graph {
     }
 
     return comms;
+  }
+
+  /**
+   * Collect up all AS-path regexes that appear in the given router's configuration.
+   *
+   * <p>Currently we only collect up AS-path regexes that appear in an AS-path access list. As other
+   * features are supported by symbolic route analysis, notably the {@link
+   * org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet} class, this method will have to be
+   * extended accordingly.
+   *
+   * @param router the router
+   * @return a set of all AS-path regexes that appear
+   */
+  private Set<SymbolicAsPathRegex> findAsPathRegexes(String router) {
+    Configuration conf = getConfigurations().get(router);
+    Collection<AsPathAccessList> asPathAccessLists = conf.getAsPathAccessLists().values();
+    return asPathAccessLists.stream()
+        .flatMap(lst -> lst.getLines().stream())
+        .map(AsPathAccessListLine::getRegex)
+        .map(SymbolicAsPathRegex::new)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /*
