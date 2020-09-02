@@ -279,12 +279,13 @@ public class Graph {
           _allCommunities.stream()
               .filter(c -> c.getType() != Type.OTHER)
               .collect(ImmutableSet.toImmutableSet());
-      _communityAtomicPredicates = new RegexAtomicPredicates<>(comms);
+      _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.from(".*"));
     } else {
       initCommDependencies();
     }
     initNamedCommunities();
-    _asPathRegexAtomicPredicates = new RegexAtomicPredicates<>(findAllAsPathRegexes());
+    _asPathRegexAtomicPredicates =
+        new RegexAtomicPredicates<>(findAllAsPathRegexes(), new SymbolicAsPathRegex(".*"));
   }
 
   /*

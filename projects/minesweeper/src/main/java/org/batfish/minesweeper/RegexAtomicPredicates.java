@@ -1,6 +1,7 @@
 package org.batfish.minesweeper;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import dk.brics.automaton.Automaton;
@@ -16,8 +17,9 @@ import org.batfish.common.BatfishException;
  * symbolic analysis to reason about community regexes and also AS-path regexes.
  *
  * <p>The atomic predicates are the minimal set of predicates such that: 1. no atomic predicate is
- * logically false; 2. each atomic predicate is disjoint from all others; 3. each regex is
- * equivalent to a union of some subset of the atomic predicates.
+ * logically false; 2. the disjunction of all atomic predicates is logically true; 3. each atomic
+ * predicate is disjoint from all others; 4. each regex is equivalent to a disjunction of some
+ * subset of the atomic predicates.
  *
  * <p>The idea of atomic predicates comes from the paper "Real-time Verification of Network
  * Properties using Atomic Predicates" by Yang and Lam, IEEE/ACM Transactions on Networking, April
@@ -44,8 +46,14 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
   // automaton
   @Nonnull private Map<Integer, Automaton> _atomicPredicateAutomata;
 
-  public RegexAtomicPredicates(Set<T> regexes) {
-    _regexes = regexes;
+  /**
+   * Create atomic predicates for the given set of regexes.
+   *
+   * @param regexes the regexes
+   * @param trueRegex a regex representing logical "true", or all possible valid strings
+   */
+  public RegexAtomicPredicates(Set<T> regexes, T trueRegex) {
+    _regexes = ImmutableSet.<T>builder().addAll(regexes).add(trueRegex).build();
     initAtomicPredicates();
   }
 

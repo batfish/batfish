@@ -135,7 +135,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   static Set<Community> satAssignmentToCommunities(BDD fullModel, BDDRoute r, Graph g) {
 
-    BDD[] aps = r.getCommunityAtomicPredicateBDDs();
+    BDD[] aps = r.getCommunityAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
         g.getCommunityAtomicPredicates().getAtomicPredicateAutomata();
 
@@ -215,11 +215,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       return Optional.empty();
     } else {
       BDD fullModel = constraints.fullSatOne();
-      Bgpv4Route inRoute =
-          satAssignmentToRoute(
-              fullModel,
-              new BDDRoute(g.getCommunityAtomicPredicates().getNumAtomicPredicates()),
-              g);
+      Bgpv4Route inRoute = satAssignmentToRoute(fullModel, new BDDRoute(g), g);
       Bgpv4Route outRoute =
           _action == Action.DENY ? null : satAssignmentToRoute(fullModel, outputRoute, g);
       return Optional.of(
@@ -308,7 +304,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                               g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(c)
                                   .stream())
                       .distinct()
-                      .map(i -> r.getCommunityAtomicPredicateBDDs()[i])
+                      .map(i -> r.getCommunityAtomicPredicates()[i])
                       .collect(ImmutableSet.toImmutableSet()));
       if (complementCommunities) {
         result = result.not();
@@ -357,11 +353,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;
-    BDD inConstraints =
-        routeConstraintsToBDD(
-            _inputConstraints,
-            new BDDRoute(g.getCommunityAtomicPredicates().getNumAtomicPredicates()),
-            g);
+    BDD inConstraints = routeConstraintsToBDD(_inputConstraints, new BDDRoute(g), g);
     if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
       BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
