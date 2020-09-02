@@ -61,9 +61,6 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
      * because below we intersect the resulting automaton with AS_PATH_FSM, which notably includes
      * the start-of-string and end-of-string characters. Note that the automaton library treats
      * these as ordinary characters.
-     *
-     * <p>For example, the regex "_40_" becomes ".*(_40_).*", and the final automaton after
-     * intersecting with AS_PATH_FSM accepts AS paths that contain 40 anywhere.
      */
     String regex = ".*" + "(" + _regex + ")" + ".*";
     return new RegExp(regex).toAutomaton().intersection(AS_PATH_FSM);

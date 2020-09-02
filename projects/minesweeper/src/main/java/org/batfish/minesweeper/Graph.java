@@ -143,11 +143,9 @@ public class Graph {
   private RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
 
   /**
-   * We collect up the set of AS-path regexes that appear in the given configurations and compute a
-   * set of atomic predicates for them.
+   * We also compute a set of atomic predicates for the AS-path regexes that appear in the given
+   * configurations.
    */
-  private Set<SymbolicAsPathRegex> _asPathRegexes;
-
   private RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
 
   /**
@@ -232,7 +230,6 @@ public class Graph {
     _configurations = configs;
     _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
-    _asPathRegexes = new HashSet<>();
     _snapshot = snapshot;
     _bddBasedAnalysis = bddBasedAnalysis;
 
@@ -287,9 +284,8 @@ public class Graph {
       initCommDependencies();
     }
     initNamedCommunities();
-    initAsPathRegexes();
     _asPathRegexAtomicPredicates =
-        new RegexAtomicPredicates<>(_asPathRegexes, new SymbolicAsPathRegex(".*"));
+        new RegexAtomicPredicates<>(findAllAsPathRegexes(), new SymbolicAsPathRegex(".*"));
   }
 
   /*
@@ -913,10 +909,12 @@ public class Graph {
     }
   }
 
-  private void initAsPathRegexes() {
+  private Set<SymbolicAsPathRegex> findAllAsPathRegexes() {
+    ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
     for (String router : getRouters()) {
-      _asPathRegexes.addAll(findAsPathRegexes(router));
+      builder.addAll(findAsPathRegexes(router));
     }
+    return builder.build();
   }
 
   /**
@@ -982,10 +980,6 @@ public class Graph {
 
   public Set<CommunityVar> getAllCommunities() {
     return _allCommunities;
-  }
-
-  public Set<SymbolicAsPathRegex> getAsPathRegexes() {
-    return _asPathRegexes;
   }
 
   public boolean getBddBasedAnalysis() {
@@ -1076,16 +1070,13 @@ public class Graph {
    * @return a set of all AS-path regexes that appear
    */
   private Set<SymbolicAsPathRegex> findAsPathRegexes(String router) {
-    Set<SymbolicAsPathRegex> result = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
     Collection<AsPathAccessList> asPathAccessLists = conf.getAsPathAccessLists().values();
-    result =
-        asPathAccessLists.stream()
-            .flatMap(lst -> lst.getLines().stream())
-            .map(AsPathAccessListLine::getRegex)
-            .map(SymbolicAsPathRegex::new)
-            .collect(ImmutableSet.toImmutableSet());
-    return result;
+    return asPathAccessLists.stream()
+        .flatMap(lst -> lst.getLines().stream())
+        .map(AsPathAccessListLine::getRegex)
+        .map(SymbolicAsPathRegex::new)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /*
