@@ -128,9 +128,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   /**
    * Creates a collection of BDD variables representing the various attributes of a control plane
-   * advertisement. The argument Graph is used only to obtain the number of atomic predicates needed
-   * to respectively represent community regexes and AS-path regexes. Each atomic predicate will be
-   * allocated a BDD variable.
+   * advertisement. Each atomic predicate created to represent community regexes will be allocated a
+   * BDD variable and a BDD, and similarly for the atomic predicates for AS-path regexes, so the
+   * number of such atomic predicates is provided.
    */
   public BDDRoute(int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
     int numVars = factory.varNum();
