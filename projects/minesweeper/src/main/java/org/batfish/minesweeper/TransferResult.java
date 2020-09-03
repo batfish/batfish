@@ -8,32 +8,47 @@ import org.batfish.minesweeper.collections.PList;
 import org.batfish.minesweeper.utils.MsPair;
 
 /**
- * This class is used to keep track of the state of a symbolic control-plane analysis.
+ * This class is used to keep track of the state of a symbolic control-plane analysis. It's
+ * effectively the symbolic version of {@link org.batfish.datamodel.routing_policy.Result}.
  *
  * @param <U> the type of the data that the analysis produces
  * @param <T> the type of the predicate used to track the internal state of the analysis
  */
 public class TransferResult<U, T> {
 
+  /**
+   * this field and the associated functions are currently not used at all by the symbolic route
+   * analysis, {@link org.batfish.minesweeper.bdd.TransferBDD}. they are used only by the
+   * TransferSSA analysis in minesweeper, which is not being maintained currently.
+   */
   private PList<MsPair<String, Expr>> _changedVariables; // should be a map
 
-  // holds the current data that the analysis has produced so far
+  // a predicate indicating whether the policy accepts (true) or rejects (false)
   private U _returnValue;
 
-  // a predicate indicating whether the analysis has hit a fall-through condition in the
-  // configuration structure being analyzed, which is used to ensure that the analysis accurately
-  // identifies all and only feasible execution paths through the structure
+  /**
+   * The following three fields are used to ensure that the analysis accurately identifies all and
+   * only feasible execution paths through a route policy.
+   */
+
+  // the state of the analysis when it has hit a fall-through condition in the configuration
+  // structure being analyzed, meaning that control flow should continue to the next statement
   private T _fallthroughValue;
 
-  // a predicate indicating whether the analysis has hit a return or exit condition in the
-  // configuration structure being analyzed, which is used to ensure that the analysis accurately
-  // identifies all and only feasible execution paths through the structure
+  // the state of the analysis when it has hit an exit condition in the
+  // configuration structure being analyzed, which represents the termination of the execution
+  private T _exitAssignedValue;
+
+  // a predicate indicating whether the analysis has hit a return condition in the
+  // configuration structure being analyzed, which represents the termination of a nested call to a
+  // routing policy.
   private T _returnAssignedValue;
 
   public TransferResult() {
     _changedVariables = PList.empty();
     _returnValue = null;
     _fallthroughValue = null;
+    _exitAssignedValue = null;
     _returnAssignedValue = null;
   }
 
@@ -41,6 +56,7 @@ public class TransferResult<U, T> {
     _changedVariables = other._changedVariables;
     _returnValue = other._returnValue;
     _fallthroughValue = other._fallthroughValue;
+    _exitAssignedValue = other._exitAssignedValue;
     _returnAssignedValue = other._returnAssignedValue;
   }
 
@@ -97,6 +113,10 @@ public class TransferResult<U, T> {
     return _fallthroughValue;
   }
 
+  public T getExitAssignedValue() {
+    return _exitAssignedValue;
+  }
+
   public T getReturnAssignedValue() {
     return _returnAssignedValue;
   }
@@ -143,6 +163,12 @@ public class TransferResult<U, T> {
   public TransferResult<U, T> setReturnAssignedValue(T x) {
     TransferResult<U, T> ret = new TransferResult<>(this);
     ret._returnAssignedValue = x;
+    return ret;
+  }
+
+  public TransferResult<U, T> setExitAssignedValue(T x) {
+    TransferResult<U, T> ret = new TransferResult<>(this);
+    ret._exitAssignedValue = x;
     return ret;
   }
 }

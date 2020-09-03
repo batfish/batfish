@@ -420,6 +420,7 @@ public class TransferBDD {
         result
             .setReturnValue(new TransferReturn(curP.getData(), factory.zero()))
             .setFallthroughValue(factory.zero())
+            .setExitAssignedValue(factory.zero())
             .setReturnAssignedValue(factory.zero());
 
     for (Statement stmt : statements) {
@@ -431,11 +432,9 @@ public class TransferBDD {
           case ExitAccept:
             doesReturn = true;
             curP.debug("ExitAccept");
-            result = returnValue(result, true);
+            result = exitValue(result, true);
             break;
 
-            // TODO: implement proper unsuppression of routes covered by aggregates
-          case Unsuppress:
           case ReturnTrue:
             doesReturn = true;
             curP.debug("ReturnTrue");
@@ -445,11 +444,9 @@ public class TransferBDD {
           case ExitReject:
             doesReturn = true;
             curP.debug("ExitReject");
-            result = returnValue(result, false);
+            result = exitValue(result, false);
             break;
 
-            // TODO: implement proper suppression of routes covered by aggregates
-          case Suppress:
           case ReturnFalse:
             doesReturn = true;
             curP.debug("ReturnFalse");
@@ -457,7 +454,7 @@ public class TransferBDD {
             break;
 
           case SetDefaultActionAccept:
-            curP.debug("SetDefaulActionAccept");
+            curP.debug("SetDefaultActionAccept");
             curP = curP.setDefaultAccept(true);
             break;
 
@@ -477,13 +474,9 @@ public class TransferBDD {
             break;
 
           case ReturnLocalDefaultAction:
+            doesReturn = true;
             curP.debug("ReturnLocalDefaultAction");
-            // TODO: need to set local default action in an environment
-            if (curP.getDefaultAcceptLocal()) {
-              result = returnValue(result, true);
-            } else {
-              result = returnValue(result, false);
-            }
+            result = returnValue(result, curP.getDefaultAcceptLocal());
             break;
 
           case FallThrough:
@@ -492,17 +485,14 @@ public class TransferBDD {
             break;
 
           case Return:
-            // TODO: assumming this happens at the end of the function, so it is ignored for now.
+            doesReturn = true;
             curP.debug("Return");
-            break;
-
-          case RemovePrivateAs:
-            curP.debug("RemovePrivateAs");
-            // System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
+            result = result.setReturnAssignedValue(factory.one());
             break;
 
           default:
-            throw new BatfishException("TODO: computeTransferFunction: " + ss.getType());
+            throw new BatfishException(
+                "Unhandled statement in route policy analysis: " + ss.getType());
         }
 
       } else if (stmt instanceof If) {
@@ -525,14 +515,12 @@ public class TransferBDD {
 
         // update return values
 
-        // this bdd is used below to account for the fact that we may have already hit a
-        // return/exit statement earlier on this path
-        BDD alreadyReturned = result.getReturnAssignedValue();
+        BDD alreadyReturned = unreachable(result);
 
         BDDRoute r1 = trueBranch.getReturnValue().getFirst();
         BDDRoute r2 = falseBranch.getReturnValue().getFirst();
         BDDRoute recordVal =
-            ite(alreadyReturned, result.getReturnValue().getFirst(), ite(guard, r1, r2));
+            ite(unreachable(result), result.getReturnValue().getFirst(), ite(guard, r1, r2));
 
         BDD returnVal =
             ite(
@@ -552,6 +540,10 @@ public class TransferBDD {
                     trueBranch.getReturnAssignedValue(),
                     falseBranch.getReturnAssignedValue()));
 
+        BDD exitAss =
+            alreadyReturned.or(
+                ite(guard, trueBranch.getExitAssignedValue(), falseBranch.getExitAssignedValue()));
+
         // p.debug("New Return Assigned: " + returnAss);
 
         BDD fallThrough =
@@ -566,6 +558,7 @@ public class TransferBDD {
             result
                 .setReturnValue(new TransferReturn(recordVal, returnVal))
                 .setReturnAssignedValue(returnAss)
+                .setExitAssignedValue(exitAss)
                 .setFallthroughValue(fallThrough);
 
         curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
@@ -581,8 +574,8 @@ public class TransferBDD {
         BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
         // update the MED if the protocol is BGP, and otherwise update the metric
         // TODO: is this the right thing to do?
-        BDD ignoreMed = isBGP.not().or(result.getReturnAssignedValue());
-        BDD ignoreMet = isBGP.or(result.getReturnAssignedValue());
+        BDD ignoreMed = isBGP.not().or(unreachable(result));
+        BDD ignoreMet = isBGP.or(unreachable(result));
         BDDInteger med =
             ite(
                 ignoreMed,
@@ -609,7 +602,7 @@ public class TransferBDD {
           curP.indent().debug("Value: E2");
           newValue.setValue(OspfType.E1);
         }
-        newValue = ite(result.getReturnAssignedValue(), curP.getData().getOspfMetric(), newValue);
+        newValue = ite(unreachable(result), curP.getData().getOspfMetric(), newValue);
         curP.getData().setOspfMetric(newValue);
 
       } else if (stmt instanceof SetLocalPreference) {
@@ -618,7 +611,7 @@ public class TransferBDD {
         LongExpr ie = slp.getLocalPreference();
         BDDInteger newValue =
             applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
-        newValue = ite(result.getReturnAssignedValue(), curP.getData().getLocalPref(), newValue);
+        newValue = ite(unreachable(result), curP.getData().getLocalPref(), newValue);
         curP.getData().setLocalPref(newValue);
 
       } else if (stmt instanceof AddCommunity) {
@@ -635,7 +628,7 @@ public class TransferBDD {
           // on paths where the route policy has already hit a Return or Exit statement earlier,
           // this AddCommunity statement will not be reached so the atomic predicate's value should
           // be unchanged; otherwise it should be set to 1.
-          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+          BDD newValue = ite(unreachable(result), comm, factory.one());
           curP.indent().debug("New Value: " + newValue);
           commAPBDDs[ap] = newValue;
         }
@@ -648,12 +641,11 @@ public class TransferBDD {
         // atomic predicates to zero, if this statement is reached
         Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-        BDD retassign = result.getReturnAssignedValue();
         for (int ap = 0; ap < commAPBDDs.length; ap++) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
           BDD newValue =
-              ite(retassign, comm, commAPs.contains(ap) ? factory.one() : factory.zero());
+              ite(unreachable(result), comm, commAPs.contains(ap) ? factory.one() : factory.zero());
           curP.indent().debug("New Value: " + newValue);
           commAPBDDs[ap] = newValue;
         }
@@ -665,11 +657,10 @@ public class TransferBDD {
         // set all atomic predicates associated with these communities to 0 on this path
         Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
         BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-        BDD retassign = result.getReturnAssignedValue();
         for (int ap : commAPs) {
           curP.indent().debug("Value: " + ap);
           BDD comm = commAPBDDs[ap];
-          BDD newValue = ite(retassign, comm, factory.zero());
+          BDD newValue = ite(unreachable(result), comm, factory.zero());
           curP.indent().debug("New Value: " + newValue);
           commAPBDDs[ap] = newValue;
         }
@@ -681,7 +672,7 @@ public class TransferBDD {
         curP.indent().debug("Cost: " + prependCost);
         BDDInteger met = curP.getData().getMetric();
         BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
-        newValue = ite(result.getReturnAssignedValue(), curP.getData().getMetric(), newValue);
+        newValue = ite(unreachable(result), curP.getData().getMetric(), newValue);
         curP.getData().setMetric(newValue);
 
       } else if (stmt instanceof SetOrigin) {
@@ -706,9 +697,9 @@ public class TransferBDD {
       if (!doesReturn) {
         curP.debug("Applying default action: " + curP.getDefaultAccept());
         if (curP.getDefaultAccept()) {
-          result = returnValue(result, true);
+          result = exitValue(result, true);
         } else {
-          result = returnValue(result, false);
+          result = exitValue(result, false);
         }
       }
 
@@ -721,7 +712,7 @@ public class TransferBDD {
   }
 
   private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
+    BDD b = ite(unreachable(r), r.getFallthroughValue(), factory.one());
     return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
   }
 
@@ -729,9 +720,7 @@ public class TransferBDD {
    * Wrap a simple boolean expression return value in a transfer function result
    */
   private TransferResult<TransferReturn, BDD> fromExpr(TransferReturn b) {
-    return new TransferResult<TransferReturn, BDD>()
-        .setReturnAssignedValue(factory.one())
-        .setReturnValue(b);
+    return new TransferResult<TransferReturn, BDD>().setReturnValue(b);
   }
 
   /*
@@ -1021,14 +1010,35 @@ public class TransferBDD {
     throw new BatfishException("Error[prependLength]: unreachable");
   }
 
+  /**
+   * A BDD representing the conditions under which the current statement is not reachable, because
+   * we've already returned or exited before getting there.
+   *
+   * @param currState
+   * @return
+   */
+  private static BDD unreachable(TransferResult<TransferReturn, BDD> currState) {
+    return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
+  }
+
   /*
-   * Create a new variable reflecting the final return value of the function
+   * Create the result of reaching a return statement, returning with the given value.
    */
   private TransferResult<TransferReturn, BDD> returnValue(
       TransferResult<TransferReturn, BDD> r, boolean val) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getReturnValue().getSecond(), mkBDD(val));
+    BDD b = ite(unreachable(r), r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
     return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
+  }
+
+  /*
+   * Create the result of reaching an exit statement, returning with the given value.
+   */
+  private TransferResult<TransferReturn, BDD> exitValue(
+      TransferResult<TransferReturn, BDD> r, boolean val) {
+    BDD b = ite(unreachable(r), r.getReturnValue().getSecond(), mkBDD(val));
+    TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
+    return r.setReturnValue(ret).setExitAssignedValue(factory.one());
   }
 
   /*
