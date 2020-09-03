@@ -14,7 +14,13 @@ s_interface
     | si_ip
     | si_ipv6
     | si_no
+    | si_shutdown
   )*
+;
+
+si_shutdown
+:
+  SHUTDOWN NEWLINE
 ;
 
 si_ip
