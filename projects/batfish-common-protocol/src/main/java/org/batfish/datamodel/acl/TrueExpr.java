@@ -2,12 +2,22 @@ package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.TraceElement;
 
 public class TrueExpr extends AclLineMatchExpr {
   public static final TrueExpr INSTANCE = new TrueExpr();
 
+  @Nullable private final TraceElement _traceElement;
+
   private TrueExpr() {
     super(null);
+    _traceElement = null;
+  }
+
+  public TrueExpr(@Nullable TraceElement traceElement) {
+    super(traceElement);
+    _traceElement = traceElement;
   }
 
   @Override
@@ -21,8 +31,20 @@ public class TrueExpr extends AclLineMatchExpr {
   }
 
   @Override
+  public boolean equals(@Nullable Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof TrueExpr)) {
+      return false;
+    }
+    TrueExpr rhs = (TrueExpr) obj;
+    return Objects.equals(_traceElement, rhs._traceElement);
+  }
+
+  @Override
   public int hashCode() {
-    return Objects.hashCode((Boolean) true);
+    return Objects.hash((Boolean) true, _traceElement);
   }
 
   @Override

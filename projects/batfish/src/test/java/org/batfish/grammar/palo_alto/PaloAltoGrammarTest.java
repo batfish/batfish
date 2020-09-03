@@ -79,6 +79,8 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceGroupTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
@@ -1945,6 +1947,34 @@ public final class PaloAltoGrammarTest {
   public void testShowConfig() {
     PaloAltoConfiguration vc = parseNestedConfig("show-config");
     assertThat(vc.getHostname(), equalTo("show-config-custom-hostname"));
+  }
+
+  @Test
+  public void testServiceTraceElements() {
+    String hostname = "service";
+    String filename = "configs/" + hostname;
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+
+    String sg1AclName = computeServiceGroupMemberAclName(vsysName, "SG1");
+    String sg2AclName = computeServiceGroupMemberAclName(vsysName, "SG 2");
+    String service1AclName = computeServiceGroupMemberAclName(vsysName, "SERVICE1");
+    String service2AclName = computeServiceGroupMemberAclName(vsysName, "SERVICE2");
+
+    TraceElement sg1Te = matchServiceGroupTraceElement("SG1", vsysName, filename);
+    TraceElement sg2Te = matchServiceGroupTraceElement("SG 2", vsysName, filename);
+    TraceElement service1Te = matchServiceTraceElement("SERVICE1", vsysName, filename);
+    TraceElement service2Te = matchServiceTraceElement("SERVICE2", vsysName, filename);
+
+    IpAccessList sg1Acl = c.getIpAccessLists().get(sg1AclName);
+    IpAccessList sg2Acl = c.getIpAccessLists().get(sg2AclName);
+    IpAccessList service1Acl = c.getIpAccessLists().get(service1AclName);
+    IpAccessList service2Acl = c.getIpAccessLists().get(service2AclName);
+
+    assertThat(sg1Acl.getLines(), contains(hasTraceElement(sg1Te)));
+    assertThat(sg2Acl.getLines(), contains(hasTraceElement(sg2Te)));
+    assertThat(service1Acl.getLines(), contains(hasTraceElement(service1Te)));
+    assertThat(service2Acl.getLines(), contains(hasTraceElement(service2Te)));
   }
 
   @Test

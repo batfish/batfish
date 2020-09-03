@@ -29,6 +29,54 @@ public final class PaloAltoTraceElementCreators {
         .build();
   }
 
+  @VisibleForTesting
+  public static TraceElement matchServiceAnyTraceElement() {
+    return TraceElement.of("Matched service any");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchServiceOrApplicationTraceElement() {
+    return TraceElement.of("Matched service/application");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchServiceApplicationDefaultTraceElement() {
+    return TraceElement.of("Matched service application-default");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchServiceTraceElement(
+      String service, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched service object ")
+        .add(
+            service,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.SERVICE.getDescription(),
+                computeObjectName(vsysName, service)))
+        .build();
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchServiceGroupTraceElement(
+      String serviceGroup, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched service group ")
+        .add(
+            serviceGroup,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.SERVICE_GROUP.getDescription(),
+                computeObjectName(vsysName, serviceGroup)))
+        .build();
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchBuiltInServiceTraceElement(String service) {
+    return TraceElement.of(String.format("Matched built-in service %s", service));
+  }
+
   /**
    * Creates {@link TraceElement} for ACL line representing security rules for going from {@code
    * fromZone} to {@code toZone} (intrazone rules if zones are the same)

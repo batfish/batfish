@@ -6,6 +6,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.Iterator;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
@@ -314,10 +315,18 @@ public final class AclLineMatchExprs {
   }
 
   public static PermittedByAcl permittedByAcl(String aclName) {
-    return new PermittedByAcl(aclName);
+    return permittedByAcl(aclName, null);
+  }
+
+  public static PermittedByAcl permittedByAcl(String aclName, @Nullable TraceElement traceElement) {
+    return new PermittedByAcl(aclName, traceElement);
   }
 
   public static DeniedByAcl deniedByAcl(String aclName) {
-    return new DeniedByAcl(aclName);
+    return deniedByAcl(aclName, null);
+  }
+
+  public static DeniedByAcl deniedByAcl(String aclName, @Nullable TraceElement traceElement) {
+    return new DeniedByAcl(aclName, traceElement);
   }
 }

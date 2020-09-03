@@ -7,7 +7,8 @@ import org.batfish.datamodel.LineAction;
 
 public interface ServiceGroupMember extends Serializable {
   /** Convert the ServiceGroupMember to an IpAccessList */
-  IpAccessList toIpAccessList(LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w);
+  IpAccessList toIpAccessList(
+      LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w, String filename);
 
   /** Return the name of this ServiceGroupMember */
   String getName();

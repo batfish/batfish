@@ -21,6 +21,8 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceOrApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
@@ -556,14 +558,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
               // Services
               for (Service service : namespace.getServices().values()) {
-                IpAccessList acl = service.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
+                IpAccessList acl =
+                    service.toIpAccessList(LineAction.PERMIT, this, namespace, _w, _filename);
                 _c.getIpAccessLists().put(acl.getName(), acl);
               }
 
               // Service groups
               for (ServiceGroup serviceGroup : namespace.getServiceGroups().values()) {
                 IpAccessList acl =
-                    serviceGroup.toIpAccessList(LineAction.PERMIT, this, namespace, _w);
+                    serviceGroup.toIpAccessList(LineAction.PERMIT, this, namespace, _w, _filename);
                 _c.getIpAccessLists().put(acl.getName(), acl);
               }
             });
@@ -1050,24 +1053,27 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
       } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
         // Anything is allowed.
-        return Optional.empty();
+        return Optional.of(ServiceBuiltIn.ANY.toAclLineMatchExpr());
       } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
         if (rule.getAction() == LineAction.PERMIT) {
           // Since Batfish cannot currently match above L4, we follow Cisco-fragments-like logic:
           // When permitting an application, optimistically permit all traffic where the L4 rule
           // matches, assuming it is this application. But when blocking a specific application, do
           // not block all matching L4 traffic, since we can't know it is this specific application.
-          serviceDisjuncts.addAll(matchServicesForApplications(rule, vsys));
+          serviceDisjuncts.add(
+              new OrMatchExpr(
+                  matchServicesForApplications(rule, vsys),
+                  matchServiceApplicationDefaultTraceElement()));
         }
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
-        serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()));
+        serviceDisjuncts.add(ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr());
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-        serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
+        serviceDisjuncts.add(ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr());
       } else {
         _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
       }
     }
-    return Optional.of(new OrMatchExpr(serviceDisjuncts));
+    return Optional.of(new OrMatchExpr(serviceDisjuncts, matchServiceOrApplicationTraceElement()));
   }
 
   private List<AclLineMatchExpr> matchServicesForApplications(SecurityRule rule, Vsys vsys) {
@@ -1466,13 +1472,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
               permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName))));
     } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
       // Anything is allowed
-      return Optional.of(new PacketMatchExpr(TrueExpr.INSTANCE));
+      return Optional.of(new PacketMatchExpr(ServiceBuiltIn.ANY.toAclLineMatchExpr()));
     } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
-      return Optional.of(
-          new PacketMatchExpr(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace())));
+      return Optional.of(new PacketMatchExpr(ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr()));
     } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-      return Optional.of(
-          new PacketMatchExpr(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace())));
+      return Optional.of(new PacketMatchExpr(ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr()));
     } else {
       _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
     }

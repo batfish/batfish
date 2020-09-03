@@ -2,6 +2,7 @@ package org.batfish.representation.palo_alto;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
 
 import com.google.common.collect.ImmutableList;
 import javax.annotation.Nonnull;
@@ -146,7 +147,7 @@ public final class Service implements ServiceGroupMember {
 
   @Override
   public IpAccessList toIpAccessList(
-      LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w) {
+      LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w, String filename) {
     IpAccessList.Builder retAcl =
         IpAccessList.builder()
             .setName(computeServiceGroupMemberAclName(vsys.getName(), _name))
@@ -159,6 +160,7 @@ public final class Service implements ServiceGroupMember {
                 ExprAclLine.builder()
                     .setAction(action)
                     .setMatchCondition(toMatchHeaderSpace(w))
+                    .setTraceElement(matchServiceTraceElement(_name, vsys.getName(), filename))
                     .build()))
         .build();
   }

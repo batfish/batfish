@@ -1,5 +1,8 @@
 package org.batfish.representation.palo_alto;
 
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
+
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
@@ -7,6 +10,9 @@ import java.util.function.Supplier;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 
 public enum ServiceBuiltIn {
   ANY,
@@ -42,6 +48,20 @@ public enum ServiceBuiltIn {
 
   public HeaderSpace getHeaderSpace() {
     return _serviceHeaderSpace.get();
+  }
+
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    switch (this) {
+      case ANY:
+        return new TrueExpr(matchServiceAnyTraceElement());
+      case APPLICATION_DEFAULT:
+      case SERVICE_HTTP:
+      case SERVICE_HTTPS:
+        return new MatchHeaderSpace(
+            _serviceHeaderSpace.get(), matchBuiltInServiceTraceElement(getName()));
+      default:
+        return new MatchHeaderSpace(_serviceHeaderSpace.get());
+    }
   }
 
   public String getName() {
