@@ -230,7 +230,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       try {
         asns =
             Arrays.stream(asPathStr.split(" "))
-                .mapToLong(Long::new)
+                .mapToLong(Long::valueOf)
                 .boxed()
                 .collect(Collectors.toList());
       } catch (NumberFormatException nfe) {
