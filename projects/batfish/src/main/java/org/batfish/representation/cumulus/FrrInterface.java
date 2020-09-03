@@ -16,7 +16,7 @@ public class FrrInterface implements Serializable {
   private final @Nonnull List<ConcreteInterfaceAddress> _ipAddresses;
   private final @Nonnull String _name;
   private final @Nullable String _vrfName;
-  private @Nonnull Boolean _shutdown = false;
+  private boolean _shutdown = false;
 
   private @Nullable OspfInterface _ospf;
 
@@ -52,7 +52,7 @@ public class FrrInterface implements Serializable {
     return _vrfName;
   }
 
-  public @Nonnull Boolean getShutdown() {
+  public boolean getShutdown() {
     return _shutdown;
   }
 
