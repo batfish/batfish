@@ -190,6 +190,58 @@ public class CumulusConcatenatedConfigurationTest {
             .getActive());
   }
 
+  @Test
+  public void testToVIConfigIntfShut() {
+    InterfacesInterface vsIface = new InterfacesInterface("swp1");
+    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+
+    CumulusConcatenatedConfiguration vsConfig =
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
+            .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
+            .setFrrConfiguration(frrConfiguration)
+            .build();
+
+    // Setup the FRR Interface
+    FrrInterface frrInterface = new FrrInterface("swp1");
+    frrInterface.setShutdown(true);
+    frrConfiguration.getInterfaces().put("swp1", frrInterface);
+
+    // Convert - method under test
+    Configuration c = vsConfig.toVendorIndependentConfiguration();
+
+    assertFalse(c.getAllInterfaces().get(vsIface.getName()).getActive());
+
+    // Flip the shutdown status around and test again.
+    frrInterface.setShutdown(false);
+    frrConfiguration.getInterfaces().put("swp1", frrInterface);
+    c = vsConfig.toVendorIndependentConfiguration();
+
+    assertTrue(c.getAllInterfaces().get(vsIface.getName()).getActive());
+  }
+
+  @Test
+  public void testToVIConfigIntfNoShut() {
+    InterfacesInterface vsIface = new InterfacesInterface("swp1");
+    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
+
+    CumulusConcatenatedConfiguration vsConfig =
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
+            .addInterfaces(ImmutableMap.of(vsIface.getName(), vsIface))
+            .setFrrConfiguration(frrConfiguration)
+            .build();
+
+    // Setup the FRR Interface
+    FrrInterface frrInterface = new FrrInterface("swp1");
+    frrConfiguration.getInterfaces().put("swp1", frrInterface);
+
+    // Convert - method under test
+    Configuration c = vsConfig.toVendorIndependentConfiguration();
+
+    assertTrue(c.getAllInterfaces().get(vsIface.getName()).getActive());
+  }
+
   /** Tests that interfaces are assigned LLAs iff needed */
   @Test
   public void testInterface_assignLla() {
