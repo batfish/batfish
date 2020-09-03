@@ -20,11 +20,14 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,6 +39,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -61,6 +65,9 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.RegexAtomicPredicates;
+import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
@@ -88,6 +95,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Action _action;
 
   @Nonnull private final Set<String> _communityRegexes;
+  @Nonnull private final Set<String> _asPathRegexes;
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -105,6 +113,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         ImmutableSet.<String>builder()
             .addAll(_inputConstraints.getCommunities())
             .addAll(_outputConstraints.getCommunities())
+            .build();
+    _asPathRegexes =
+        ImmutableSet.<String>builder()
+            .addAll(_inputConstraints.getAsPath())
+            .addAll(_outputConstraints.getAsPath())
             .build();
   }
 
@@ -144,7 +157,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       if (aps[i].andSat(fullModel)) {
         Automaton a = apAutomata.get(i);
         // community atomic predicates should always be non-empty;
-        // see Graph::initCommAtomicPredicates
+        // see RegexAtomicPredicates::initAtomicPredicates
         checkState(!a.isEmpty(), "Cannot produce example string for empty automaton");
         String str = a.getShortestExample(true);
         // community automata should only accept strings with this property;
@@ -167,10 +180,70 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
+   * Given a single satisfying assignment to the constraints from symbolic route analysis, produce
+   * an AS-path for a given symbolic route that is consistent with the assignment.
+   *
+   * @param fullModel a full model of the symbolic route constraints
+   * @param r the symbolic route
+   * @param g the Graph, which provides information about the AS-path regex atomic predicates
+   * @return an AsPath
+   */
+  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, Graph g) {
+
+    BDD[] aps = r.getAsPathRegexAtomicPredicates();
+    Map<Integer, Automaton> apAutomata =
+        g.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
+
+    // find all atomic predicates that are required to be true in the given model
+    List<Integer> trueAPs =
+        IntStream.range(0, g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
+            .filter(i -> aps[i].andSat(fullModel))
+            .boxed()
+            .collect(Collectors.toList());
+
+    // since atomic predicates are disjoint, at most one of them should be true in the model
+    checkState(
+        trueAPs.size() <= 1,
+        "Error in symbolic AS-path analysis: at most one atomic predicate should be true");
+
+    // create an automaton for the language of AS-paths that are true in the model
+    Automaton asPathRegexAutomaton = SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton();
+    for (Integer i : trueAPs) {
+      asPathRegexAutomaton = asPathRegexAutomaton.intersection(apAutomata.get(i));
+    }
+
+    String asPathStr = asPathRegexAutomaton.getShortestExample(true);
+    // As-path regex automata should only accept strings with this property;
+    // see SymbolicAsPathRegex::toAutomaton
+    checkState(
+        asPathStr.startsWith("^") && asPathStr.endsWith("$"),
+        "AS-path example %s has an unexpected format",
+        asPathStr);
+    // strip off the leading ^ and trailing $
+    asPathStr = asPathStr.substring(1, asPathStr.length() - 1);
+    // the string is a space-separated list of numbers; convert them to a list of numbers
+    List<Long> asns;
+    if (asPathStr.isEmpty()) {
+      asns = ImmutableList.of();
+    } else {
+      try {
+        asns =
+            Arrays.stream(asPathStr.split(" "))
+                .mapToLong(Long::new)
+                .boxed()
+                .collect(Collectors.toList());
+      } catch (NumberFormatException nfe) {
+        throw new BatfishException("Failed to produce a valid AS path for answer");
+      }
+    }
+    return AsPath.ofSingletonAsSets(asns);
+  }
+
+  /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete route for a given symbolic route that is consistent with the assignment.
    *
-   * @param fullModel a full model that extends minimalModel
+   * @param fullModel the satisfying assignment
    * @param r the symbolic route
    * @param g the Graph, which provides information about the community atomic predicates
    * @return either a route or a BDD representing an infeasible constraint
@@ -193,6 +266,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
     builder.setCommunities(communities);
+
+    AsPath asPath = satAssignmentToAsPath(fullModel, r, g);
+    builder.setAsPath(asPath);
 
     return builder.build();
   }
@@ -287,26 +363,38 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  private BDD communityConstraintsToBDD(
-      Set<String> communityRegexes, boolean complementCommunities, BDDRoute r, Graph g) {
-    if (communityRegexes.isEmpty()) {
-      return r.getFactory().one();
+  /**
+   * Convert regex constraints from a {@link BgpRouteConstraints} object to a BDD. The overall
+   * constraint is a disjunction of each regex constraint, and each regex constraint is itself a
+   * disjunction of its corresponding atomic predicates.
+   *
+   * @param regexes the user-defined regex constraints
+   * @param complementConstraint flag indicating whether we want to negate the final constraints
+   * @param atomicPredicates information about the atomic predicates corresponding to the regexes
+   * @param atomicPredicateBDDs one BDD per atomic predicate, coming from a {@link BDDRoute} object
+   * @param factory the BDD factory
+   * @param <T> the particular type of regexes (community or AS-path)
+   * @return the overall constraint as a BDD
+   */
+  private <T extends SymbolicRegex> BDD regexConstraintsToBDD(
+      Set<T> regexes,
+      boolean complementConstraint,
+      RegexAtomicPredicates<T> atomicPredicates,
+      BDD[] atomicPredicateBDDs,
+      BDDFactory factory) {
+    if (regexes.isEmpty()) {
+      return factory.one();
     } else {
-      // the set of community constraints are represented as the disjunction of all associated
+      // the set of regex constraints is represented as the disjunction of all associated
       // atomic predicates
       BDD result =
-          r.getFactory()
-              .orAll(
-                  communityRegexes.stream()
-                      .map(CommunityVar::from)
-                      .flatMap(
-                          c ->
-                              g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(c)
-                                  .stream())
-                      .distinct()
-                      .map(i -> r.getCommunityAtomicPredicates()[i])
-                      .collect(ImmutableSet.toImmutableSet()));
-      if (complementCommunities) {
+          factory.orAll(
+              regexes.stream()
+                  .flatMap(regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
+                  .distinct()
+                  .map(i -> atomicPredicateBDDs[i])
+                  .collect(ImmutableSet.toImmutableSet()));
+      if (complementConstraint) {
         result = result.not();
       }
       return result;
@@ -314,16 +402,33 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   private BDD routeConstraintsToBDD(BgpRouteConstraints constraints, BDDRoute r, Graph g) {
+
+    // make sure the model we end up getting corresponds to a valid route
+    BDD result = r.wellFormednessConstraints();
+
     // require the protocol to be BGP
-    BDD result = r.getProtocolHistory().value(Protocol.BGP);
-    result =
-        result.and(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
-    result = result.and(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
-    result = result.and(longSpaceToBDD(constraints.getMed(), r.getMed()));
-    result =
-        result.and(
-            communityConstraintsToBDD(
-                constraints.getCommunities(), constraints.getComplementCommunities(), r, g));
+    result.andWith(r.getProtocolHistory().value(Protocol.BGP));
+    result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
+    result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
+    result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
+    result.andWith(
+        regexConstraintsToBDD(
+            constraints.getCommunities().stream()
+                .map(CommunityVar::from)
+                .collect(Collectors.toSet()),
+            constraints.getComplementCommunities(),
+            g.getCommunityAtomicPredicates(),
+            r.getCommunityAtomicPredicates(),
+            r.getFactory()));
+    result.andWith(
+        regexConstraintsToBDD(
+            constraints.getAsPath().stream()
+                .map(SymbolicAsPathRegex::new)
+                .collect(Collectors.toSet()),
+            false,
+            g.getAsPathRegexAtomicPredicates(),
+            r.getAsPathRegexAtomicPredicates(),
+            r.getFactory()));
 
     return result;
   }
@@ -338,7 +443,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             ImmutableSet.of(policy.getOwner().getHostname()),
             _communityRegexes.stream()
                 .map(RegexCommunitySet::new)
-                .collect(ImmutableSet.toImmutableSet()));
+                .collect(ImmutableSet.toImmutableSet()),
+            _asPathRegexes);
     try {
       TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();

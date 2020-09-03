@@ -26,7 +26,7 @@ public class RegexAtomicPredicatesTest {
             CommunityVar.from(StandardCommunity.parse("22:22")));
 
     RegexAtomicPredicates<CommunityVar> commAPs =
-        new RegexAtomicPredicates<>(cvars, CommunityVar.from(".*"));
+        new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_COMMUNITIES);
 
     assertEquals(commAPs.getNumAtomicPredicates(), 6);
 
@@ -72,7 +72,7 @@ public class RegexAtomicPredicatesTest {
             new SymbolicAsPathRegex("^5 "));
 
     RegexAtomicPredicates<SymbolicAsPathRegex> asPathAPs =
-        new RegexAtomicPredicates<>(asPathRegexes, new SymbolicAsPathRegex(".*"));
+        new RegexAtomicPredicates<>(asPathRegexes, SymbolicAsPathRegex.ALL_AS_PATHS);
 
     assertEquals(asPathAPs.getNumAtomicPredicates(), 5);
 

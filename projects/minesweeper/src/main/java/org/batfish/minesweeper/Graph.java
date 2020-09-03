@@ -159,12 +159,12 @@ public class Graph {
    * skip the cloning, assuming that the caller has made a defensive copy first.
    */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot) {
-    this(batfish, snapshot, null, null, null, false);
+    this(batfish, snapshot, null, null, null, null, false);
   }
 
   /** Create a graph and specify whether it will be used for a BDD-based analysis or not. */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot, boolean bddBasedAnalysis) {
-    this(batfish, snapshot, null, null, null, bddBasedAnalysis);
+    this(batfish, snapshot, null, null, null, null, bddBasedAnalysis);
   }
 
   /**
@@ -176,7 +176,7 @@ public class Graph {
    */
   public Graph(
       IBatfish batfish, NetworkSnapshot snapshot, @Nullable Map<String, Configuration> configs) {
-    this(batfish, snapshot, configs, null, null, false);
+    this(batfish, snapshot, configs, null, null, null, false);
   }
 
   /** Create a graph, while selecting the subset of routers to use. */
@@ -185,22 +185,23 @@ public class Graph {
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers) {
-    this(batfish, snapshot, configs, routers, null, false);
+    this(batfish, snapshot, configs, routers, null, null, false);
   }
 
   /**
-   * Create a graph, specifying an additional set of community expressions (literals and regexes) to
-   * be tracked. This is used by the BDD-based analyses to support user-defined constraints on
-   * symbolic route analysis (e.g., the user is interested only in routes tagged with a particular
-   * community).
+   * Create a graph, specifying an additional set of community expressions (literals and regexes)
+   * and AS-path regexes to be tracked. This is used by the BDD-based analyses to support
+   * user-defined constraints on symbolic route analysis (e.g., the user is interested only in
+   * routes tagged with a particular community).
    */
   public Graph(
       IBatfish batfish,
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers,
-      @Nullable Set<CommunitySetExpr> communities) {
-    this(batfish, snapshot, configs, routers, communities, true);
+      @Nullable Set<CommunitySetExpr> communities,
+      @Nullable Set<String> asPathRegexes) {
+    this(batfish, snapshot, configs, routers, communities, asPathRegexes, true);
   }
 
   /** Create a graph, specifying all parameters directly. */
@@ -210,6 +211,7 @@ public class Graph {
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers,
       @Nullable Set<CommunitySetExpr> communities,
+      @Nullable Set<String> asPathRegexes,
       boolean bddBasedAnalysis) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
@@ -279,13 +281,14 @@ public class Graph {
           _allCommunities.stream()
               .filter(c -> c.getType() != Type.OTHER)
               .collect(ImmutableSet.toImmutableSet());
-      _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.from(".*"));
+      _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
     } else {
       initCommDependencies();
     }
     initNamedCommunities();
     _asPathRegexAtomicPredicates =
-        new RegexAtomicPredicates<>(findAllAsPathRegexes(), new SymbolicAsPathRegex(".*"));
+        new RegexAtomicPredicates<>(
+            findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
   }
 
   /*
@@ -909,10 +912,21 @@ public class Graph {
     }
   }
 
-  private Set<SymbolicAsPathRegex> findAllAsPathRegexes() {
+  /**
+   * Identifies all of the AS-path regexes in the given configurations. An optional set of
+   * additional AS-path regexes is also included, which is used to support user-specified AS-path
+   * constraints for symbolic analysis.
+   */
+  private Set<SymbolicAsPathRegex> findAllAsPathRegexes(Set<String> asPathRegexes) {
     ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
     for (String router : getRouters()) {
       builder.addAll(findAsPathRegexes(router));
+    }
+    if (asPathRegexes != null) {
+      builder.addAll(
+          asPathRegexes.stream()
+              .map(SymbolicAsPathRegex::new)
+              .collect(ImmutableSet.toImmutableSet()));
     }
     return builder.build();
   }
