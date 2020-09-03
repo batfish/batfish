@@ -96,9 +96,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private BDD[] _communityAtomicPredicates;
 
   /**
-   * Each As-path regex atomic predicate (see class Graph) is allocated both a BDD variable and a
+   * Each AS-path regex atomic predicate (see class Graph) is allocated both a BDD variable and a
    * BDD, as in the general encoding described above. This array maintains the BDDs. The nth BDD
    * indicates the conditions under which the route's AS path satisfies the nth atomic predicate.
+   *
+   * <p>Since the AS-path atomic predicates are disjoint, at most one of them can be true in any
+   * concrete route. So we could use a binary encoding instead, where we use log(N) BDDs to
+   * represent N atomic predicates. See {@link org.batfish.common.bdd.BDDFiniteDomain} for an
+   * example of that encoding. If N is large, that could improve efficiency of symbolic route
+   * analysis (see {@link TransferBDD}) and of the route well-formedness constraints (see
+   * wellFormednessConstraints() below).
    */
   private BDD[] _asPathRegexAtomicPredicates;
 
@@ -225,6 +232,39 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   @Override
   public BDDRoute deepCopy() {
     return new BDDRoute(this);
+  }
+
+  /**
+   * Not all assignments to the BDD variables that make up a BDDRoute represent valid routes. This
+   * method produces constraints that well-formed routes must satisfy, represented as a BDD. It is
+   * useful when the goal is to produce concrete example routes from a BDDRoute, for instance.
+   *
+   * <p>Note that it does not suffice to enforce these constraints as part of symbolic route
+   * analysis (see {@link TransferBDD}). That analysis computes a BDD representing the input routes
+   * that are accepted by a given route map. Conjoining the well-formedness constraints with that
+   * BDD would ensure that all models are feasible routes. But if a client of the analysis is
+   * instead interested in routes that are denied by the route map, then negating that BDD and
+   * obtaining models would be incorrect, because it would not ensure that the well-formedness
+   * constraints hold.
+   *
+   * @return the constraints
+   */
+  public BDD wellFormednessConstraints() {
+
+    // the prefix length should be 32 or less
+    BDD prefLenConstraint = _prefixLength.leq(32);
+    // at most one AS-path regex atomic predicate should be true, since by construction their
+    // regexes are all pairwise disjoint
+    // Note: the same constraint does not apply to community regexes because a route has a set
+    // of communities, so more than one regex can be simultaneously true
+    BDD asPathConstraint = factory.one();
+    for (int i = 0; i < _asPathRegexAtomicPredicates.length; i++) {
+      for (int j = i + 1; j < _asPathRegexAtomicPredicates.length; j++) {
+        asPathConstraint.andWith(
+            _asPathRegexAtomicPredicates[i].nand(_asPathRegexAtomicPredicates[j]));
+      }
+    }
+    return prefLenConstraint.andWith(asPathConstraint);
   }
 
   /*
