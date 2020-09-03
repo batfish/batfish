@@ -34,7 +34,7 @@ public class BgpRouteConstraints {
   @Nonnull private final LongSpace _med;
   // the announcement's communities must satisfy these constraints
   @Nonnull private final RegexConstraints _communities;
-  // the announcement's AS path must must satisfy these constraints
+  // the announcement's AS path must satisfy these constraints
   @Nonnull private final RegexConstraints _asPath;
 
   private static final LongSpace THIRTY_TWO_BIT_RANGE =

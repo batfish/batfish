@@ -26,8 +26,20 @@ public class RegexConstraintTest {
   }
 
   @Test
-  public void testDoNotParse() {
+  public void testDoNotParse1() {
     _exception.expect(BatfishException.class);
     RegexConstraint.parse("/^40:");
+  }
+
+  @Test
+  public void testDoNotParse2() {
+    _exception.expect(BatfishException.class);
+    RegexConstraint.parse("^40:/");
+  }
+
+  @Test
+  public void testDoNotParse3() {
+    _exception.expect(BatfishException.class);
+    RegexConstraint.parse("/");
   }
 }
