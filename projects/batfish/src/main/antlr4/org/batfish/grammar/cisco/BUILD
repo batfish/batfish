@@ -10,6 +10,7 @@ java_library(
         ":CiscoParserBaseListener.java",
         ":CiscoParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco/parsing:cisco_base_parser",
         "@maven//:org_antlr_antlr4_runtime",
