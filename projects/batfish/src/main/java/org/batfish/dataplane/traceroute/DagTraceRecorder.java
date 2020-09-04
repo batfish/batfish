@@ -67,7 +67,13 @@ public class DagTraceRecorder implements TraceRecorder {
     }
   }
 
-  /** Traces are generated in DFS order, i.e. grouped by common prefix. */
+  /**
+   * Traces are generated in DFS order, i.e. grouped by common prefix. We accumulate all the
+   * sub-traces from this node until the prefix changes, then we build the node. In order for the
+   * node to be reusable for other prefixes (i.e. a different path from the start location), we
+   * compute constraints on the prefix. The constraints ensure that the full trace is valid wrt loop
+   * detection. See {@link Node#matches(List)}.
+   */
   @VisibleForTesting
   final class NodeBuilder {
     private final @Nonnull NodeKey _key;
@@ -191,8 +197,10 @@ public class DagTraceRecorder implements TraceRecorder {
     }
 
     /**
-     * sessionAction will be non-null for checking if we can reuse traces in traceroute. it can be
-     * null when de-duping a node after creation.
+     * Return whether this {@link Node} can be reused for a prefix visiting the input {@link
+     * Breadcrumb breadcrumbs}. Depending on whether the paths from this node end in {@link
+     * org.batfish.datamodel.FlowDisposition#LOOP the loop disposition}, reuse may require or forbid
+     * certain breadcrumbs.
      */
     boolean matches(List<Breadcrumb> breadcrumbs) {
       return breadcrumbs.containsAll(_requiredBreadcrumbs)
@@ -224,7 +232,6 @@ public class DagTraceRecorder implements TraceRecorder {
     }
   }
 
-  // indices are aligned
   private final List<Node> _roots = new ArrayList<>();
   private final Multimap<NodeKey, Node> _nodeMap = HashMultimap.create();
   private NodeBuilder _rootBuilder = null;
