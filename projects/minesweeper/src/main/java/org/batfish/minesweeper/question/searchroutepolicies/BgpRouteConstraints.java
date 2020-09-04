@@ -6,9 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -24,7 +22,6 @@ public class BgpRouteConstraints {
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
   private static final String PROP_MED = "med";
   private static final String PROP_COMMUNITIES = "communities";
-  private static final String PROP_COMPLEMENT_COMMUNITIES = "complementCommunities";
   private static final String PROP_AS_PATH = "asPath";
 
   // the announcement's prefix must be within this space
@@ -35,13 +32,10 @@ public class BgpRouteConstraints {
   @Nonnull private final LongSpace _localPreference;
   // the announcement's MED must be within this range
   @Nonnull private final LongSpace _med;
-  // the announcement must be tagged with at least one community matching a regex in this set
-  @Nonnull private final Set<String> _communities;
-  // if this flag is set, the announcement must not be tagged with any of
-  // community matching a regex in the above set
-  private final boolean _complementCommunities;
-  // the announcement's AS path must match at least one regex in this set
-  @Nonnull private final Set<String> _asPath;
+  // the announcement's communities must satisfy these constraints
+  @Nonnull private final RegexConstraints _communities;
+  // the announcement's AS path must satisfy these constraints
+  @Nonnull private final RegexConstraints _asPath;
 
   private static final LongSpace THIRTY_TWO_BIT_RANGE =
       LongSpace.builder().including(Range.closed(0L, 4294967295L)).build();
@@ -52,16 +46,14 @@ public class BgpRouteConstraints {
       @JsonProperty(PROP_COMPLEMENT_PREFIX) boolean complementPrefix,
       @Nullable @JsonProperty(PROP_LOCAL_PREFERENCE) LongSpace.Builder localPreference,
       @Nullable @JsonProperty(PROP_MED) LongSpace.Builder med,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) Set<String> communities,
-      @JsonProperty(PROP_COMPLEMENT_COMMUNITIES) boolean complementCommunities,
-      @Nullable @JsonProperty(PROP_AS_PATH) Set<String> asPath) {
+      @Nullable @JsonProperty(PROP_COMMUNITIES) RegexConstraints communities,
+      @Nullable @JsonProperty(PROP_AS_PATH) RegexConstraints asPath) {
     this(
         prefix,
         complementPrefix,
         processBuilder(localPreference),
         processBuilder(med),
         communities,
-        complementCommunities,
         asPath);
   }
 
@@ -70,16 +62,14 @@ public class BgpRouteConstraints {
       boolean complementPrefix,
       @Nullable LongSpace localPreference,
       @Nullable LongSpace med,
-      @Nullable Set<String> communities,
-      boolean complementCommunities,
-      @Nullable Set<String> asPath) {
+      @Nullable RegexConstraints communities,
+      @Nullable RegexConstraints asPath) {
     _prefix = firstNonNull(prefix, new PrefixSpace());
     _complementPrefix = complementPrefix;
     _localPreference = firstNonNull(localPreference, LongSpace.EMPTY);
     _med = firstNonNull(med, LongSpace.EMPTY);
-    _communities = firstNonNull(communities, ImmutableSet.of());
-    _complementCommunities = complementCommunities;
-    _asPath = firstNonNull(asPath, ImmutableSet.of());
+    _communities = firstNonNull(communities, new RegexConstraints());
+    _asPath = firstNonNull(asPath, new RegexConstraints());
     validate(this);
   }
 
@@ -119,9 +109,8 @@ public class BgpRouteConstraints {
     private boolean _complementPrefix = false;
     private LongSpace _localPreference;
     private LongSpace _med;
-    private Set<String> _communities;
-    private boolean _complementCommunities = false;
-    private Set<String> _asPath;
+    private RegexConstraints _communities;
+    private RegexConstraints _asPath;
 
     private Builder() {}
 
@@ -145,30 +134,19 @@ public class BgpRouteConstraints {
       return this;
     }
 
-    public Builder setCommunities(Set<String> communities) {
+    public Builder setCommunities(RegexConstraints communities) {
       _communities = communities;
       return this;
     }
 
-    public Builder setComplementCommunities(boolean complementCommunities) {
-      _complementCommunities = complementCommunities;
-      return this;
-    }
-
-    public Builder setAsPath(Set<String> asPath) {
+    public Builder setAsPath(RegexConstraints asPath) {
       _asPath = asPath;
       return this;
     }
 
     public BgpRouteConstraints build() {
       return new BgpRouteConstraints(
-          _prefix,
-          _complementPrefix,
-          _localPreference,
-          _med,
-          _communities,
-          _complementCommunities,
-          _asPath);
+          _prefix, _complementPrefix, _localPreference, _med, _communities, _asPath);
     }
   }
 
@@ -197,18 +175,13 @@ public class BgpRouteConstraints {
 
   @JsonProperty(PROP_COMMUNITIES)
   @Nonnull
-  public Set<String> getCommunities() {
+  public RegexConstraints getCommunities() {
     return _communities;
-  }
-
-  @JsonProperty(PROP_COMPLEMENT_COMMUNITIES)
-  public boolean getComplementCommunities() {
-    return _complementCommunities;
   }
 
   @JsonProperty(PROP_AS_PATH)
   @Nonnull
-  public Set<String> getAsPath() {
+  public RegexConstraints getAsPath() {
     return _asPath;
   }
 }
