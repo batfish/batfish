@@ -23,7 +23,7 @@ public class TransferResult<U, T> {
    */
   private PList<MsPair<String, Expr>> _changedVariables; // should be a map
 
-  // a predicate indicating whether the policy accepts (true) or rejects (false)
+  // the current state of the analysis
   private U _returnValue;
 
   /**
@@ -31,17 +31,16 @@ public class TransferResult<U, T> {
    * only feasible execution paths through a route policy.
    */
 
-  // the state of the analysis when it has hit a fall-through condition in the configuration
-  // structure being analyzed, meaning that control flow should continue to the next statement
+  // predicate indicating when the analysis has hit a fall-through condition in the policy
+  // being analyzed, meaning that control flow should continue to the next policy
   private T _fallthroughValue;
 
-  // the state of the analysis when it has hit an exit condition in the
-  // configuration structure being analyzed, which represents the termination of the execution
+  // predicate indicating when the anlaysis has hit an exit condition in the policy
+  // being analyzed, which represents the termination of the execution
   private T _exitAssignedValue;
 
-  // a predicate indicating whether the analysis has hit a return condition in the
-  // configuration structure being analyzed, which represents the termination of a nested call to a
-  // routing policy.
+  // predicate indicating when the analysis has hit a return condition in the policy
+  // being analyzed, which represents the termination of a nested call to a routing policy
   private T _returnAssignedValue;
 
   public TransferResult() {

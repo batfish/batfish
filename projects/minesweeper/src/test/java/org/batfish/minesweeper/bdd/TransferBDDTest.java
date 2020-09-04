@@ -255,6 +255,41 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testEarlyReturn() {
+    _policyBuilder.addStatement(Statements.ReturnFalse.toStaticStatement());
+    _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+  }
+
+  @Test
+  public void testSetDefault() {
+    _policyBuilder.addStatement(Statements.SetDefaultActionAccept.toStaticStatement());
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    assertEquals(_anyRoute, outAnnouncements);
+  }
+
+  @Test
   public void testPartialAccept() {
     _policyBuilder.addStatement(
         new If(

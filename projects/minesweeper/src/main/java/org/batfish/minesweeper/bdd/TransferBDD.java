@@ -479,6 +479,12 @@ public class TransferBDD {
             result = returnValue(result, curP.getDefaultAcceptLocal());
             break;
 
+          case DefaultAction:
+            doesReturn = true;
+            curP.debug("DefaultAction");
+            result = exitValue(result, curP.getDefaultAccept());
+            break;
+
           case FallThrough:
             curP.debug("Fallthrough");
             result = fallthrough(result);
