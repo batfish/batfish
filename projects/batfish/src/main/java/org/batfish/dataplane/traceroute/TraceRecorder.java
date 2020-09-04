@@ -12,7 +12,8 @@ public interface TraceRecorder {
 
   /**
    * Try to record a partial trace (i.e. one in which the final {@link HopInfo} does not have a
-   * nonnull {@link HopInfo#getDisposition() disposition}).
+   * nonnull {@link HopInfo#getDisposition() disposition}). This requires all possible suffixes of
+   * the partial trace to have been previously recorded.
    *
    * @return whether the trace was recorded successfully.
    */
