@@ -89,7 +89,7 @@ public final class HopInfo {
       @Nullable Breadcrumb visitedBreadcrumb) {
     checkArgument(
         loopDetectedBreadcrumb == null || visitedBreadcrumb == null,
-        "Cannot have loopDetectBreadcrumb and visitedBreadcrumbs");
+        "Cannot have loopDetectBreadcrumb and visitedBreadcrumb");
     checkArgument(
         (disposition != null && disposition.isSuccessful()) == (returnFlow != null),
         "return flow should be present if and only if the hop has a successful disposition");
