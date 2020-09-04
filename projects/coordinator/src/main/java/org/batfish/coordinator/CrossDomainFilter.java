@@ -37,7 +37,6 @@ public class CrossDomainFilter implements ContainerRequestFilter, ContainerRespo
    */
   @Override
   public void filter(ContainerRequestContext creq, ContainerResponseContext cres) {
-    cres.getHeaders().add("Access-Control-Allow-Origin", "*");
     cres.getHeaders()
         .add(
             "Access-Control-Allow-Headers",
@@ -58,7 +57,6 @@ public class CrossDomainFilter implements ContainerRequestFilter, ContainerRespo
                 CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY,
                 CoordConstsV2.HTTP_HEADER_BATFISH_VERSION));
 
-    cres.getHeaders().add("Access-Control-Allow-Credentials", "true");
     cres.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
     cres.getHeaders().add("Access-Control-Max-Age", "3600");
   }
