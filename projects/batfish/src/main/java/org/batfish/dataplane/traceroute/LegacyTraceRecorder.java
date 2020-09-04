@@ -14,7 +14,9 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
-/** A {@link TraceRecorder} that only records complete traces, and passes them to a {@link Consumer}. */
+/**
+ * A {@link TraceRecorder} that only records complete traces, and passes them to a {@link Consumer}.
+ */
 public final class LegacyTraceRecorder implements TraceRecorder {
 
   private final Consumer<TraceAndReverseFlow> _consumer;
