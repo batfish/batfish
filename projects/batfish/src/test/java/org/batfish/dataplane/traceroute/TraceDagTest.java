@@ -89,5 +89,7 @@ public class TraceDagTest {
                 null,
                 ImmutableList.of())));
     assertEquals(6, dag.size());
+    assertEquals(6, dag.countNodes());
+    assertEquals(8, dag.countEdges());
   }
 }

@@ -7,13 +7,17 @@ import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.dataplane.traceroute.DagTraceRecorder.NodeKey;
 import org.junit.Test;
 
 public class DagTraceRecorderTest {
@@ -52,7 +56,7 @@ public class DagTraceRecorderTest {
   }
 
   /**
-   * Test that a node on a looping path are not reused for paths that do include the breadcrumb
+   * Test that a node on a looping path are not reused for paths that do not include the breadcrumb
    * required for detecting the loop.
    *
    * <p>Setup: We have a looping path A -> B -> A
@@ -140,6 +144,8 @@ public class DagTraceRecorderTest {
     assertFalse(recorder.tryRecordPartialTrace(ImmutableList.of(hopA2)));
     assertTrue(recorder.tryRecordPartialTrace(ImmutableList.of(hopA2, hopB)));
     TraceDag dag = recorder.build();
+    assertEquals(5, dag.countNodes());
+    assertEquals(4, dag.countEdges());
     assertThat(
         dag.getTraces().collect(ImmutableList.toImmutableList()),
         contains(
@@ -171,5 +177,18 @@ public class DagTraceRecorderTest {
                         hasDisposition(FlowDisposition.ACCEPTED),
                         hasHops(contains(hopA2.getHop(), hopB.getHop(), hopC2.getHop())))),
                 hasReverseFlow(hopC2.getReturnFlow()))));
+  }
+
+  @Test
+  public void testNodeKeyEquals() {
+    Flow flow1 = TEST_FLOW;
+    Flow flow2 = TEST_FLOW.toBuilder().setDstIp(Ip.parse("2.2.2.2")).build();
+    Hop hop1 = HopTestUtils.acceptedHop("hop1");
+    Hop hop2 = HopTestUtils.acceptedHop("hop2");
+    new EqualsTester()
+        .addEqualityGroup(new NodeKey(flow1, hop1), new NodeKey(flow1, hop1))
+        .addEqualityGroup(new NodeKey(flow2, hop1))
+        .addEqualityGroup(new NodeKey(flow1, hop2))
+        .testEquals();
   }
 }

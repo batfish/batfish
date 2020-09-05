@@ -40,11 +40,13 @@ public class DagTraceRecorder implements TraceRecorder {
    *
    * <p>TODO: implement equals/hashCode for {@link Hop} instead of using JSON.
    */
-  private static final class NodeKey {
+  @VisibleForTesting
+  static final class NodeKey {
     private final @Nonnull Flow _initialFlow;
     private final @Nonnull String _hopJson;
 
-    private NodeKey(Flow initialFlow, Hop hop) {
+    @VisibleForTesting
+    NodeKey(Flow initialFlow, Hop hop) {
       _initialFlow = initialFlow;
       _hopJson = BatfishObjectMapper.writeStringRuntimeError(hop);
     }
@@ -221,6 +223,7 @@ public class DagTraceRecorder implements TraceRecorder {
 
       HopInfo hopInfo = _hopInfo;
       nodeId = traceDagNodes.size();
+      cache.put(this, nodeId);
       traceDagNodes.add(
           new TraceDag.Node(
               hopInfo.getHop(),
