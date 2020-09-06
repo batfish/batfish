@@ -46,5 +46,7 @@ java -jar ${JAR} ${ARGS} @files_to_check || FAIL="fail"
 rm -f files_to_check
 if [ "${FAIL:-}" = "fail" ]; then
   echo -e "\nThe files listed above are not formatted correctly. Use $0 to fix these issues. We recommend you install the Eclipse or IntelliJ plugin for google-java-format version ${GJF_VERSION}."
+  echo
+  echo "To never have to deal with this again, enable Batfish's pre-commit integration: https://pre-commit.com/#install"
   exit 1
 fi

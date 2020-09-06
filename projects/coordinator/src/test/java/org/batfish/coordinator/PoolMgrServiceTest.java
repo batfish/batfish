@@ -57,8 +57,7 @@ public final class PoolMgrServiceTest extends JerseyTest {
     forceSet(TestProperties.CONTAINER_PORT, "0");
     return new ResourceConfig(PoolMgrService.class)
         .register(new JettisonFeature())
-        .register(MultiPartFeature.class)
-        .register(CrossDomainFilter.class);
+        .register(MultiPartFeature.class);
   }
 
   @Override

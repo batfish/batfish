@@ -659,6 +659,11 @@ SERVICE
   'service'
 ;
 
+SHUTDOWN
+:
+  'shutdown'
+;
+
 SOFT_RECONFIGURATION
 :
   'soft-reconfiguration'

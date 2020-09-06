@@ -1603,6 +1603,18 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testSetInterfaceShutdown() {
+    parseLines("interface eth1", "shutdown");
+    assertTrue(_frr.getInterfaces().get("eth1").getShutdown());
+  }
+
+  @Test
+  public void testGetInterfaceShutdown() {
+    parseLines("interface eth1", "ip address 1.1.1.1/30");
+    assertFalse(_frr.getInterfaces().get("eth1").getShutdown());
+  }
+
+  @Test
   public void testFRRDefaultTraditional() {
     parse("frr defaults traditional\n");
   }

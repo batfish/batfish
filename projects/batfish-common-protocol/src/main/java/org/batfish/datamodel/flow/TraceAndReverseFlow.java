@@ -3,6 +3,7 @@ package org.batfish.datamodel.flow;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,5 +45,24 @@ public final class TraceAndReverseFlow {
   /** Return the new firewall sessions initialized by the trace. */
   public @Nonnull Set<FirewallSessionTraceInfo> getNewFirewallSessions() {
     return _newFirewallSessions;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof TraceAndReverseFlow)) {
+      return false;
+    }
+    TraceAndReverseFlow that = (TraceAndReverseFlow) o;
+    return _trace.equals(that._trace)
+        && Objects.equals(_reverseFlow, that._reverseFlow)
+        && _newFirewallSessions.equals(that._newFirewallSessions);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_trace, _reverseFlow, _newFirewallSessions);
   }
 }
