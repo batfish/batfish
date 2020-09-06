@@ -4,6 +4,7 @@ import com.microsoft.z3.Expr;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.minesweeper.collections.PList;
 import org.batfish.minesweeper.utils.MsPair;
 
@@ -14,6 +15,7 @@ import org.batfish.minesweeper.utils.MsPair;
  * @param <U> the type of the data that the analysis produces
  * @param <T> the type of the predicate used to track the internal state of the analysis
  */
+@ParametersAreNonnullByDefault
 public class TransferResult<U, T> {
 
   /**
@@ -44,11 +46,19 @@ public class TransferResult<U, T> {
   private T _returnAssignedValue;
 
   public TransferResult() {
+    this(null, null, null, null);
+  }
+
+  public TransferResult(
+      @Nullable U retVal,
+      @Nullable T exitAssignedValue,
+      @Nullable T fallThroughValue,
+      @Nullable T returnAssignedAValue) {
     _changedVariables = PList.empty();
-    _returnValue = null;
-    _fallthroughValue = null;
-    _exitAssignedValue = null;
-    _returnAssignedValue = null;
+    _returnValue = retVal;
+    _exitAssignedValue = exitAssignedValue;
+    _fallthroughValue = fallThroughValue;
+    _returnAssignedValue = returnAssignedAValue;
   }
 
   private TransferResult(TransferResult<U, T> other) {

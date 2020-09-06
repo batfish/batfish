@@ -67,6 +67,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
@@ -86,6 +87,7 @@ import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
+import org.batfish.minesweeper.TransferParam.CallContext;
 import org.batfish.minesweeper.TransferResult;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
@@ -415,13 +417,12 @@ public class TransferBDD {
     TransferParam<BDDRoute> curP = p;
     boolean doesReturn = false;
 
-    TransferResult<TransferReturn, BDD> result = new TransferResult<>();
-    result =
-        result
-            .setReturnValue(new TransferReturn(curP.getData(), factory.zero()))
-            .setFallthroughValue(factory.zero())
-            .setExitAssignedValue(factory.zero())
-            .setReturnAssignedValue(factory.zero());
+    TransferResult<TransferReturn, BDD> result =
+        new TransferResult<>(
+            new TransferReturn(curP.getData(), factory.zero()),
+            factory.zero(),
+            factory.zero(),
+            factory.zero());
 
     for (Statement stmt : statements) {
 
@@ -493,7 +494,9 @@ public class TransferBDD {
           case Return:
             doesReturn = true;
             curP.debug("Return");
-            result = result.setReturnAssignedValue(factory.one());
+            result =
+                result.setReturnAssignedValue(
+                    ite(unreachable(result), result.getReturnAssignedValue(), factory.one()));
             break;
 
           default:
@@ -523,49 +526,7 @@ public class TransferBDD {
 
         BDD alreadyReturned = unreachable(result);
 
-        BDDRoute r1 = trueBranch.getReturnValue().getFirst();
-        BDDRoute r2 = falseBranch.getReturnValue().getFirst();
-        BDDRoute recordVal =
-            ite(unreachable(result), result.getReturnValue().getFirst(), ite(guard, r1, r2));
-
-        BDD returnVal =
-            ite(
-                alreadyReturned,
-                result.getReturnValue().getSecond(),
-                ite(
-                    guard,
-                    trueBranch.getReturnValue().getSecond(),
-                    falseBranch.getReturnValue().getSecond()));
-
-        // p.debug("New Return Value (neg): " + returnVal.not());
-
-        BDD returnAss =
-            alreadyReturned.or(
-                ite(
-                    guard,
-                    trueBranch.getReturnAssignedValue(),
-                    falseBranch.getReturnAssignedValue()));
-
-        BDD exitAss =
-            alreadyReturned.or(
-                ite(guard, trueBranch.getExitAssignedValue(), falseBranch.getExitAssignedValue()));
-
-        // p.debug("New Return Assigned: " + returnAss);
-
-        BDD fallThrough =
-            ite(
-                alreadyReturned,
-                result.getFallthroughValue(),
-                ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue()));
-
-        // p.debug("New fallthrough: " + fallThrough);
-
-        result =
-            result
-                .setReturnValue(new TransferReturn(recordVal, returnVal))
-                .setReturnAssignedValue(returnAss)
-                .setExitAssignedValue(exitAss)
-                .setFallthroughValue(fallThrough);
+        result = ite(alreadyReturned, result, ite(guard, trueBranch, falseBranch));
 
         curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
 
@@ -671,6 +632,47 @@ public class TransferBDD {
           commAPBDDs[ap] = newValue;
         }
 
+      } else if (stmt instanceof CallStatement) {
+        curP.debug("CallStatement");
+        CallStatement cs = (CallStatement) stmt;
+        String name = cs.getCalledPolicyName();
+        RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
+        if (pol == null) {
+          throw new BatfishException("Called route policy does not exist: " + name);
+        }
+        TransferParam<BDDRoute> newParam = curP.indent().setCallContext(CallContext.STMT_CALL);
+        TransferResult<TransferReturn, BDD> callResult = compute(pol.getStatements(), newParam);
+
+        BDD alreadyReturned = unreachable(result);
+
+        BDDRoute newRoute =
+            ite(
+                alreadyReturned,
+                result.getReturnValue().getFirst(),
+                callResult.getReturnValue().getFirst());
+
+        BDD newAccepted =
+            ite(
+                alreadyReturned,
+                result.getReturnValue().getSecond(),
+                callResult.getReturnValue().getSecond());
+
+        BDD newExitAsgn = alreadyReturned.or(callResult.getExitAssignedValue());
+
+        // apparently fall-through status determined in the called function can affect the
+        // callee.  this is consistent with CallStatement::execute, which doesn't do anything
+        // special to save/restore the fall-through status.
+        BDD newFallThrough =
+            ite(alreadyReturned, result.getFallthroughValue(), callResult.getFallthroughValue());
+
+        // the returnAssigned BDD is unchanged, since any returns in the called policy apply
+        // only to that policy
+        result =
+            result
+                .setReturnValue(new TransferReturn(newRoute, newAccepted))
+                .setExitAssignedValue(newExitAsgn)
+                .setFallthroughValue(newFallThrough);
+
       } else if (stmt instanceof PrependAsPath) {
         curP.debug("PrependAsPath");
         PrependAsPath pap = (PrependAsPath) stmt;
@@ -718,8 +720,10 @@ public class TransferBDD {
   }
 
   private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
-    BDD b = ite(unreachable(r), r.getFallthroughValue(), factory.one());
-    return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
+    BDD notReached = unreachable(r);
+    BDD fall = ite(notReached, r.getFallthroughValue(), factory.one());
+    BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), factory.one());
+    return r.setFallthroughValue(fall).setReturnAssignedValue(retAsgn);
   }
 
   /*
@@ -832,6 +836,19 @@ public class TransferBDD {
     // ret.getProtocolHistory().setInteger(i);
 
     return ret;
+  }
+
+  TransferResult<TransferReturn, BDD> ite(
+      BDD guard, TransferResult<TransferReturn, BDD> r1, TransferResult<TransferReturn, BDD> r2) {
+    BDDRoute route = ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
+    BDD accepted = ite(guard, r1.getReturnValue().getSecond(), r2.getReturnValue().getSecond());
+
+    BDD exitAsgn = ite(guard, r1.getExitAssignedValue(), r2.getExitAssignedValue());
+    BDD retAsgn = ite(guard, r1.getReturnAssignedValue(), r2.getReturnAssignedValue());
+    BDD fallThrough = ite(guard, r1.getFallthroughValue(), r2.getFallthroughValue());
+
+    return new TransferResult<TransferReturn, BDD>(
+        new TransferReturn(route, accepted), exitAsgn, fallThrough, retAsgn);
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
@@ -1032,9 +1049,11 @@ public class TransferBDD {
    */
   private TransferResult<TransferReturn, BDD> returnValue(
       TransferResult<TransferReturn, BDD> r, boolean val) {
-    BDD b = ite(unreachable(r), r.getReturnValue().getSecond(), mkBDD(val));
+    BDD notReached = unreachable(r);
+    BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
-    return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
+    BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), factory.one());
+    return r.setReturnValue(ret).setReturnAssignedValue(retAsgn);
   }
 
   /*
@@ -1042,9 +1061,11 @@ public class TransferBDD {
    */
   private TransferResult<TransferReturn, BDD> exitValue(
       TransferResult<TransferReturn, BDD> r, boolean val) {
-    BDD b = ite(unreachable(r), r.getReturnValue().getSecond(), mkBDD(val));
+    BDD notReached = unreachable(r);
+    BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
-    return r.setReturnValue(ret).setExitAssignedValue(factory.one());
+    BDD exitAsgn = ite(notReached, r.getExitAssignedValue(), factory.one());
+    return r.setReturnValue(ret).setExitAssignedValue(exitAsgn);
   }
 
   /*
