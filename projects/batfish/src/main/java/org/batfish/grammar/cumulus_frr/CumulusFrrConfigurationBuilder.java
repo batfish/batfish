@@ -131,6 +131,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_shutdownContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_costContext;
@@ -630,6 +631,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitS_interface(S_interfaceContext ctx) {
     _currentInterface = null;
+  }
+
+  @Override
+  public void exitSi_shutdown(Si_shutdownContext ctx) {
+    _currentInterface.setShutdown(true);
   }
 
   @Override

@@ -18,6 +18,10 @@ import static org.batfish.datamodel.flow.StepAction.FORWARDED_TO_NEXT_VRF;
 import static org.batfish.datamodel.flow.StepAction.NULL_ROUTED;
 import static org.batfish.datamodel.flow.StepAction.PERMITTED;
 import static org.batfish.datamodel.flow.StepAction.TRANSMITTED;
+import static org.batfish.dataplane.traceroute.HopInfo.failureHop;
+import static org.batfish.dataplane.traceroute.HopInfo.forwardedHop;
+import static org.batfish.dataplane.traceroute.HopInfo.loopHop;
+import static org.batfish.dataplane.traceroute.HopInfo.successHop;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildEnterSrcIfaceStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.createFilterStep;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.fibEntriesToRouteInfos;
@@ -36,7 +40,6 @@ import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -206,19 +209,21 @@ class FlowTracer {
   private final Configuration _currentConfig;
   private final @Nullable String _ingressInterface;
   private final Node _currentNode;
-  private final Consumer<TraceAndReverseFlow> _flowTraces;
+  private final TraceRecorder _traceRecorder;
   private final @Nullable NodeInterfacePair _lastHopNodeAndOutgoingInterface;
-  private final Set<FirewallSessionTraceInfo> _newSessions;
+  private final List<FirewallSessionTraceInfo> _newSessions;
+  private final int _origNewSessionsSize; // size of _newSessions at construction
   private final Flow _originalFlow;
   private final @Nonnull String _vrfName;
 
   // Mutable list of hops in the current trace
-  private final List<Hop> _hops;
+  private final List<HopInfo> _hops;
 
   // Mutable list of steps in the current hop
   private final List<Step<?>> _steps;
 
   private final Stack<Breadcrumb> _breadcrumbs;
+  private final int _origBreadcrumbsSize; // size of _breadcrumbs at construction
 
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
@@ -230,22 +235,36 @@ class FlowTracer {
       String node,
       @Nullable String ingressInterface,
       Flow originalFlow,
-      Consumer<TraceAndReverseFlow> flowTraces) {
+      Consumer<TraceAndReverseFlow> consumer) {
+    return initialFlowTracer(
+        tracerouteContext, node, ingressInterface, originalFlow, new LegacyTraceRecorder(consumer));
+  }
+
+  /** Creates an initial {@link FlowTracer} for a new traceroute. */
+  @Nonnull
+  static FlowTracer initialFlowTracer(
+      TracerouteEngineImplContext tracerouteContext,
+      String node,
+      @Nullable String ingressInterface,
+      Flow originalFlow,
+      TraceRecorder traceRecorder) {
     Configuration currentConfig = tracerouteContext.getConfigurations().get(node);
     return new FlowTracer(
         tracerouteContext,
         currentConfig,
         ingressInterface,
         new Node(node),
-        flowTraces,
+        traceRecorder,
         null,
-        new HashSet<>(),
+        new ArrayList<>(),
         originalFlow,
         initVrfName(ingressInterface, currentConfig, originalFlow),
         new ArrayList<>(),
         new ArrayList<>(),
         new Stack<>(),
-        originalFlow);
+        originalFlow,
+        0,
+        0);
   }
 
   /**
@@ -267,15 +286,17 @@ class FlowTracer {
         newConfig,
         newIngressInterface,
         new Node(newConfig.getHostname()),
-        _flowTraces,
+        _traceRecorder,
         lastHopNodeAndOutgoingInterface,
-        new HashSet<>(_newSessions),
+        new ArrayList<>(_newSessions),
         _originalFlow,
         newVrfName,
         new ArrayList<>(_hops),
         new ArrayList<>(initialSteps),
         _breadcrumbs,
-        _currentFlow);
+        _currentFlow,
+        _newSessions.size(),
+        _breadcrumbs.size());
   }
 
   private static @Nonnull String initVrfName(
@@ -300,15 +321,17 @@ class FlowTracer {
       Configuration currentConfig,
       @Nullable String ingressInterface,
       Node currentNode,
-      Consumer<TraceAndReverseFlow> flowTraces,
+      TraceRecorder traceRecorder,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface,
-      Set<FirewallSessionTraceInfo> newSessions,
+      List<FirewallSessionTraceInfo> newSessions,
       Flow originalFlow,
       @Nonnull String vrfName,
-      List<Hop> hops,
+      List<HopInfo> hops,
       List<Step<?>> steps,
       Stack<Breadcrumb> breadcrumbs,
-      Flow currentFlow) {
+      Flow currentFlow,
+      int origNewSessionsSize,
+      int origBreadcrumbsSize) {
     assert originalFlow.equals(currentFlow)
             || steps.stream()
                 .anyMatch(step -> step instanceof TransformationStep || step instanceof PolicyStep)
@@ -317,7 +340,7 @@ class FlowTracer {
     _currentConfig = currentConfig;
     _ingressInterface = ingressInterface;
     _currentNode = currentNode;
-    _flowTraces = flowTraces;
+    _traceRecorder = traceRecorder;
     _lastHopNodeAndOutgoingInterface = lastHopNodeAndOutgoingInterface;
     _newSessions = newSessions;
     _originalFlow = originalFlow;
@@ -326,6 +349,26 @@ class FlowTracer {
     _steps = steps;
     _breadcrumbs = breadcrumbs;
     _currentFlow = currentFlow;
+    _origNewSessionsSize = origNewSessionsSize;
+    _origBreadcrumbsSize = origBreadcrumbsSize;
+  }
+
+  @Nullable
+  Breadcrumb getVisitedBreadcrumb() {
+    int breadcrumbsSize = _breadcrumbs.size();
+    checkState(
+        breadcrumbsSize == _origBreadcrumbsSize || breadcrumbsSize == _origBreadcrumbsSize + 1,
+        "Breadcrumbs can only grow, and only by 1 breadcrumb per hop");
+    return breadcrumbsSize == _origBreadcrumbsSize ? null : _breadcrumbs.peek();
+  }
+
+  @Nullable
+  FirewallSessionTraceInfo getHopSessionInfo() {
+    int newSessionsSize = _newSessions.size();
+    checkState(
+        newSessionsSize == _origNewSessionsSize || newSessionsSize == _origNewSessionsSize + 1,
+        "new sessions can only grow, and only by 1 breadcrumb per hop");
+    return newSessionsSize == _origNewSessionsSize ? null : _newSessions.get(newSessionsSize - 1);
   }
 
   /**
@@ -349,16 +392,18 @@ class FlowTracer {
         newConfig,
         newIngressInterface,
         new Node(newConfig.getHostname()),
-        _flowTraces,
+        _traceRecorder,
         exitIface,
-        new HashSet<>(_newSessions),
+        new ArrayList<>(_newSessions),
         // the original flow of the next hop is the final (i.e. current) flow of this hop
         _currentFlow,
         initVrfName(newIngressInterface, newConfig, _currentFlow),
         new ArrayList<>(_hops),
         new ArrayList<>(ImmutableList.of()),
         _breadcrumbs,
-        _currentFlow);
+        _currentFlow,
+        _newSessions.size(),
+        _breadcrumbs.size());
   }
 
   /** Return forked {@link FlowTracer} on same node and VRF. Used for taking ECMP actions. */
@@ -374,8 +419,24 @@ class FlowTracer {
    */
   private @Nonnull FlowTracer forkTracerSameNode(String newVrfName) {
     checkState(_hops.size() == _breadcrumbs.size() - 1, "Must be just ready to add another hop");
-    return forkTracer(
-        _currentConfig, _ingressInterface, _steps, _lastHopNodeAndOutgoingInterface, newVrfName);
+
+    // hops and sessions are per-trace.
+    return new FlowTracer(
+        _tracerouteContext,
+        _currentConfig,
+        _ingressInterface,
+        new Node(_currentConfig.getHostname()),
+        _traceRecorder,
+        _lastHopNodeAndOutgoingInterface,
+        new ArrayList<>(_newSessions),
+        _originalFlow,
+        newVrfName,
+        new ArrayList<>(_hops),
+        new ArrayList<>(_steps),
+        _breadcrumbs,
+        _currentFlow,
+        _origNewSessionsSize,
+        _origBreadcrumbsSize);
   }
 
   private void processOutgoingInterfaceEdges(
@@ -404,7 +465,10 @@ class FlowTracer {
     }
 
     Hop hop = new Hop(_currentNode, _steps);
-    _hops.add(hop);
+    _hops.add(forwardedHop(hop, _originalFlow, getVisitedBreadcrumb(), getHopSessionInfo()));
+    if (_traceRecorder.tryRecordPartialTrace(_hops)) {
+      return;
+    }
 
     NodeInterfacePair exitIface = NodeInterfacePair.of(_currentNode.getName(), outgoingInterface);
     interfacesThatReplyToArp.forEach(
@@ -713,7 +777,7 @@ class FlowTracer {
     Breadcrumb breadcrumb =
         new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
-      buildLoopTrace();
+      buildLoopTrace(breadcrumb);
       return;
     }
     if (intraHopBreadcrumbs.isEmpty()) {
@@ -885,7 +949,7 @@ class FlowTracer {
                 Breadcrumb breadcrumb =
                     new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, originalFlow);
                 if (_breadcrumbs.contains(breadcrumb)) {
-                  buildLoopTrace();
+                  buildLoopTrace(breadcrumb);
                   return null;
                 }
                 _breadcrumbs.push(breadcrumb);
@@ -928,7 +992,19 @@ class FlowTracer {
                         FlowDisposition.EXITS_NETWORK);
                     return null;
                   }
-                  _hops.add(new Hop(new Node(currentNodeName), _steps));
+
+                  Hop hop = new Hop(new Node(currentNodeName), _steps);
+                  _hops.add(
+                      forwardedHop(
+                          hop,
+                          _originalFlow,
+                          checkNotNull(
+                              getVisitedBreadcrumb(),
+                              "Must push a breadcrumb before forwarding to next hop"),
+                          getHopSessionInfo()));
+                  if (_traceRecorder.tryRecordPartialTrace(_hops)) {
+                    return null;
+                  }
 
                   // Forward to neighbor.
                   forkTracerFollowEdge(
@@ -950,9 +1026,14 @@ class FlowTracer {
     checkState(
         Iterables.getLast(_steps).getAction() == NULL_ROUTED,
         "The last routing step should should have the action as NULL_ROUTED");
-    _hops.add(new Hop(_currentNode, _steps));
-    Trace trace = new Trace(FlowDisposition.NULL_ROUTED, _hops);
-    _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
+    _hops.add(
+        failureHop(
+            new Hop(_currentNode, _steps),
+            _originalFlow,
+            FlowDisposition.NULL_ROUTED,
+            getHopSessionInfo(),
+            getVisitedBreadcrumb()));
+    _traceRecorder.recordTrace(_hops);
   }
 
   /** add a step for NO_ROUTE from source to output interface */
@@ -962,9 +1043,14 @@ class FlowTracer {
         .setDetail(RoutingStepDetail.builder().build())
         .setAction(StepAction.NO_ROUTE);
     _steps.add(routingStepBuilder.build());
-    _hops.add(new Hop(_currentNode, _steps));
-    Trace trace = new Trace(FlowDisposition.NO_ROUTE, _hops);
-    _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
+    _hops.add(
+        failureHop(
+            new Hop(_currentNode, _steps),
+            _originalFlow,
+            FlowDisposition.NO_ROUTE,
+            getHopSessionInfo(),
+            getVisitedBreadcrumb()));
+    _traceRecorder.recordTrace(_hops);
   }
 
   /**
@@ -1166,17 +1252,27 @@ class FlowTracer {
     InboundStep inboundStep =
         InboundStep.builder().setDetail(new InboundStepDetail(acceptingInterface)).build();
     _steps.add(inboundStep);
-    _hops.add(new Hop(_currentNode, _steps));
-    Trace trace = new Trace(FlowDisposition.ACCEPTED, _hops);
     Flow returnFlow = returnFlow(_currentFlow, _currentNode.getName(), _vrfName, null);
-    _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
+    _hops.add(
+        successHop(
+            new Hop(_currentNode, _steps),
+            _originalFlow,
+            FlowDisposition.ACCEPTED,
+            returnFlow,
+            getHopSessionInfo(),
+            getVisitedBreadcrumb()));
+    _traceRecorder.recordTrace(_hops);
   }
 
-  private void buildLoopTrace() {
+  private void buildLoopTrace(Breadcrumb loopDetectedBreadcrumb) {
     _steps.add(LoopStep.INSTANCE);
-    _hops.add(new Hop(_currentNode, _steps));
-    Trace trace = new Trace(FlowDisposition.LOOP, _hops);
-    _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
+    _hops.add(
+        loopHop(
+            new Hop(_currentNode, _steps),
+            _originalFlow,
+            loopDetectedBreadcrumb,
+            getHopSessionInfo()));
+    _traceRecorder.recordTrace(_hops);
   }
 
   /**
@@ -1221,9 +1317,14 @@ class FlowTracer {
 
   @VisibleForTesting
   void buildDeniedTrace(FlowDisposition disposition) {
-    _hops.add(new Hop(_currentNode, _steps));
-    Trace trace = new Trace(disposition, _hops);
-    _flowTraces.accept(new TraceAndReverseFlow(trace, null, _newSessions));
+    _hops.add(
+        failureHop(
+            new Hop(_currentNode, _steps),
+            _originalFlow,
+            disposition,
+            getHopSessionInfo(),
+            getVisitedBreadcrumb()));
+    _traceRecorder.recordTrace(_hops);
   }
 
   /**
@@ -1237,15 +1338,22 @@ class FlowTracer {
 
     _steps.add(buildArpFailureStep(outInterface, resolvedNhIp, disposition));
 
-    _hops.add(new Hop(_currentNode, _steps));
-
-    Flow returnFlow =
-        disposition.isSuccessful()
-            ? returnFlow(_currentFlow, currentNodeName, null, outInterface)
-            : null;
-
-    Trace trace = new Trace(disposition, _hops);
-    _flowTraces.accept(new TraceAndReverseFlow(trace, returnFlow, _newSessions));
+    Hop hop = new Hop(_currentNode, _steps);
+    if (disposition.isSuccessful()) {
+      Flow returnFlow = returnFlow(_currentFlow, currentNodeName, null, outInterface);
+      _hops.add(
+          successHop(
+              hop,
+              _originalFlow,
+              disposition,
+              returnFlow,
+              getHopSessionInfo(),
+              getVisitedBreadcrumb()));
+    } else {
+      _hops.add(
+          failureHop(hop, _originalFlow, disposition, getHopSessionInfo(), getVisitedBreadcrumb()));
+    }
+    _traceRecorder.recordTrace(_hops);
   }
 
   @VisibleForTesting
@@ -1299,7 +1407,7 @@ class FlowTracer {
           @Override
           public Void visitFibNextVrf(FibNextVrf fibNextVrf) {
             if (intraHopBreadcrumbs.contains(breadcrumb)) {
-              buildLoopTrace();
+              buildLoopTrace(breadcrumb);
               return null;
             }
             intraHopBreadcrumbs.push(breadcrumb);

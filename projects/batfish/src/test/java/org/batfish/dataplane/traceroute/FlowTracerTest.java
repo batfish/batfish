@@ -45,7 +45,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -193,15 +192,17 @@ public final class FlowTracerTest {
             c,
             null,
             new Node(c.getHostname()),
-            traces::add,
+            new LegacyTraceRecorder(traces::add),
             NodeInterfacePair.of("node", "iface"),
-            ImmutableSet.of(sessionInfo),
+            ImmutableList.of(sessionInfo),
             flow,
             vrf.getName(),
             new ArrayList<>(),
             ImmutableList.of(),
             new Stack<>(),
-            flow);
+            flow,
+            0,
+            0);
 
     flowTracer.buildDeniedTrace(DENIED_IN);
     assertThat(
@@ -262,15 +263,17 @@ public final class FlowTracerTest {
             c,
             ingressIface.getName(),
             new Node(c.getHostname()),
-            traces::add,
+            new LegacyTraceRecorder(traces::add),
             lastHopNodeAndOutgoingInterface,
-            new HashSet<>(),
+            new ArrayList<>(),
             flow,
             vrf.getName(),
             new ArrayList<>(),
             new ArrayList<>(),
             new Stack<>(),
-            flow);
+            flow,
+            0,
+            0);
     flowTracer.buildAcceptTrace();
     return Iterables.getOnlyElement(traces);
   }
@@ -404,15 +407,17 @@ public final class FlowTracerTest {
             c,
             null,
             new Node(c.getHostname()),
-            traces::add,
+            new LegacyTraceRecorder(traces::add),
             null,
-            new HashSet<>(),
+            new ArrayList<>(),
             flow,
             vrf.getName(),
             new ArrayList<>(),
             new ArrayList<>(),
             new Stack<>(),
-            flow);
+            flow,
+            0,
+            0);
 
     flowTracer.buildAcceptTrace();
     TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
@@ -490,15 +495,17 @@ public final class FlowTracerTest {
               c,
               null,
               new Node(c.getHostname()),
-              traces::add,
+              new LegacyTraceRecorder(traces::add),
               null,
-              new HashSet<>(),
+              new ArrayList<>(),
               returnFlow,
               vrf.getName(),
               new ArrayList<>(),
               new ArrayList<>(),
               new Stack<>(),
-              returnFlow);
+              returnFlow,
+              0,
+              0);
       flowTracer.processHop();
 
       // Reverse trace should match session and get forwarded out original ingress interface
@@ -519,15 +526,17 @@ public final class FlowTracerTest {
               c,
               null,
               new Node(c.getHostname()),
-              traces::add,
+              new LegacyTraceRecorder(traces::add),
               null,
-              new HashSet<>(),
+              new ArrayList<>(),
               nonMatchingReturnFlow,
               vrf.getName(),
               new ArrayList<>(),
               new ArrayList<>(),
               new Stack<>(),
-              nonMatchingReturnFlow);
+              nonMatchingReturnFlow,
+              0,
+              0);
       flowTracer.processHop();
 
       // Reverse trace should not match session, so should be dropped (FIB has no routes)
@@ -1162,15 +1171,17 @@ public final class FlowTracerTest {
             c,
             null,
             new Node(c.getHostname()),
-            traces::add,
+            new LegacyTraceRecorder(traces::add),
             NodeInterfacePair.of(node, iface),
-            ImmutableSet.of(),
+            new ArrayList<>(),
             flow,
             vrf.getName(),
             new ArrayList<>(),
             ImmutableList.of(),
             new Stack<>(),
-            flow);
+            flow,
+            0,
+            0);
 
     {
       FlowDisposition disposition = FlowDisposition.INSUFFICIENT_INFO;
@@ -1374,15 +1385,17 @@ public final class FlowTracerTest {
             currentConfig,
             null,
             new Node(node),
-            traceAndReverseFlow -> {},
+            new LegacyTraceRecorder(traceAndReverseFlow -> {}),
             null,
-            new HashSet<>(),
+            new ArrayList<>(),
             flow,
             vrf.getName(),
             new ArrayList<>(),
             new ArrayList<>(),
             breadcrumbs,
-            flow);
+            flow,
+            0,
+            0);
 
     Ip dstIp2 = Ip.parse("2.2.2.2");
     flowTracer.applyTransformation(
@@ -1509,15 +1522,17 @@ public final class FlowTracerTest {
               c,
               null,
               new Node(c.getHostname()),
-              traces::add,
+              new LegacyTraceRecorder(traces::add),
               NodeInterfacePair.of("node", "iface"),
-              ImmutableSet.of(),
+              new ArrayList<>(),
               flowWithBlockedSrc, // original flow
               vrf.getName(),
               new ArrayList<>(),
               steps,
               new Stack<>(),
-              flowWithPermittedSrc); // current flow
+              flowWithPermittedSrc, // current flow
+              0,
+              0);
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
@@ -1535,15 +1550,17 @@ public final class FlowTracerTest {
               c,
               null,
               new Node(c.getHostname()),
-              traces::add,
+              new LegacyTraceRecorder(traces::add),
               NodeInterfacePair.of("node", "iface"),
-              ImmutableSet.of(),
+              new ArrayList<>(),
               flowWithPermittedSrc, // original flow
               vrf.getName(),
               new ArrayList<>(),
               steps,
               new Stack<>(),
-              flowWithBlockedSrc); // current flow
+              flowWithBlockedSrc, // current flow
+              0,
+              0);
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
