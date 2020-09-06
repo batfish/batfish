@@ -47,6 +47,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
@@ -69,6 +70,7 @@ public class TransferBDDTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
+  private NetworkFactory _nf;
   private RoutingPolicy.Builder _policyBuilder;
   private IBatfish _batfish;
   private Configuration _baseConfig;
@@ -112,14 +114,14 @@ public class TransferBDDTest {
 
   @Before
   public void setup() {
-    NetworkFactory nf = new NetworkFactory();
+    _nf = new NetworkFactory();
     Configuration.Builder cb =
-        nf.configurationBuilder()
+        _nf.configurationBuilder()
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _baseConfig = cb.build();
-    nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
-    _policyBuilder = nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME);
+    _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
+    _policyBuilder = _nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME);
 
     _batfish = new MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
     _anyRoute = new BDDRoute(1, 1);
@@ -760,6 +762,123 @@ public class TransferBDDTest {
       assertEquals(
           outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
+  }
+
+  @Test
+  public void testCallStatement() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new CallStatement(calledPolicyName))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(outAnnouncements, expectedOut);
+  }
+
+  @Test
+  public void testNestedCalls() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .build();
+
+    String calledPolicyName2 = "calledPolicy2";
+
+    RoutingPolicy calledPolicy2 =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+                    ImmutableList.of(
+                        new CallStatement(calledPolicyName),
+                        new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new CallStatement(calledPolicyName2)).build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(
+            calledPolicyName2, calledPolicy2, calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDD expected =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+    expectedOut = tbdd.ite(expected, expectedOut, tbdd.zeroedRecord());
+
+    // the policy is applicable to all announcements
+    assertEquals(acceptedAnnouncements, expected);
+    assertEquals(outAnnouncements, expectedOut);
+  }
+
+  @Test
+  public void testCallStatementEarlyExit() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new CallStatement(calledPolicyName))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // no accepted routes because the callee uniformly rejects
+    assertTrue(acceptedAnnouncements.isZero());
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
   }
 
   @Test
