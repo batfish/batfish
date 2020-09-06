@@ -473,7 +473,7 @@ public class TransferBDD {
 
         case FallThrough:
           curP.debug("Fallthrough");
-          result = fallthrough(result);
+          result = fallthrough(result, true);
           break;
 
         case Return:
@@ -637,6 +637,11 @@ public class TransferBDD {
       }
 
     } else if (stmt instanceof CallStatement) {
+
+      /*
+       this code is based on the concrete semantics defined by CallStatement::execute, which also
+       relies on RoutingPolicy::call
+      */
       curP.debug("CallStatement");
       CallStatement cs = (CallStatement) stmt;
       String name = cs.getCalledPolicyName();
@@ -644,38 +649,24 @@ public class TransferBDD {
       if (pol == null) {
         throw new BatfishException("Called route policy does not exist: " + name);
       }
+
+      // save callee state
+      BDD oldReturnAssigned = result.getReturnAssignedValue();
+
       TransferParam<BDDRoute> newParam = curP.indent().setCallContext(CallContext.STMT_CALL);
-      TransferResult<TransferReturn, BDD> callResult = compute(pol.getStatements(), newParam);
+      // TODO: Currently dropping the returned TransferParam on the floor
+      TransferResult<TransferReturn, BDD> callResult =
+          compute(
+                  pol.getStatements(),
+                  new TransferBDDState(
+                      newParam,
+                      result
+                          .setReturnValue(new TransferReturn(newParam.getData(), factory.zero()))
+                          .setReturnAssignedValue(factory.zero())))
+              .getTransferResult();
 
-      BDD alreadyReturned = unreachable(result);
-
-      BDDRoute newRoute =
-          ite(
-              alreadyReturned,
-              result.getReturnValue().getFirst(),
-              callResult.getReturnValue().getFirst());
-
-      BDD newAccepted =
-          ite(
-              alreadyReturned,
-              result.getReturnValue().getSecond(),
-              callResult.getReturnValue().getSecond());
-
-      BDD newExitAsgn = alreadyReturned.or(callResult.getExitAssignedValue());
-
-      // apparently fall-through status determined in the called function can affect the
-      // callee.  this is consistent with CallStatement::execute, which doesn't do anything
-      // special to save/restore the fall-through status.
-      BDD newFallThrough =
-          ite(alreadyReturned, result.getFallthroughValue(), callResult.getFallthroughValue());
-
-      // the returnAssigned BDD is unchanged, since any returns in the called policy apply
-      // only to that policy
-      result =
-          result
-              .setReturnValue(new TransferReturn(newRoute, newAccepted))
-              .setExitAssignedValue(newExitAsgn)
-              .setFallthroughValue(newFallThrough);
+      // restore the original returnAssigned value
+      result = callResult.setReturnAssignedValue(oldReturnAssigned);
 
     } else if (stmt instanceof BufferedStatement) {
       curP.debug("BufferedStatement");
@@ -753,9 +744,10 @@ public class TransferBDD {
     return result;
   }
 
-  private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
+  private TransferResult<TransferReturn, BDD> fallthrough(
+      TransferResult<TransferReturn, BDD> r, boolean val) {
     BDD notReached = unreachable(r);
-    BDD fall = ite(notReached, r.getFallthroughValue(), factory.one());
+    BDD fall = ite(notReached, r.getFallthroughValue(), mkBDD(val));
     BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), factory.one());
     return r.setFallthroughValue(fall).setReturnAssignedValue(retAsgn);
   }
