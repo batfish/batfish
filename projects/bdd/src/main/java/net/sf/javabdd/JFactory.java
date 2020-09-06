@@ -35,6 +35,8 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Random;
 import javax.annotation.Nonnull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This is a 100% Java implementation of the BDD factory. It is based on the C source code for
@@ -45,6 +47,7 @@ import javax.annotation.Nonnull;
  * @version $Id: JFactory.java,v 1.28 2005/09/27 22:56:18 joewhaley Exp $
  */
 public final class JFactory extends BDDFactory {
+  private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
   private static final boolean CACHESTATS = false;
 
@@ -415,7 +418,7 @@ public final class JFactory extends BDDFactory {
       super.finalize();
       if (USE_FINALIZER) {
         if (DEBUG_FINALIZER && _index >= 0) {
-          System.out.println("BDD not freed! " + System.identityHashCode(this));
+          LOGGER.error("BDD not freed! {}", System.identityHashCode(this));
         }
         free();
       }
@@ -3151,7 +3154,7 @@ public final class JFactory extends BDDFactory {
     // is LEVEL(r) [aka, which variable is tested in this node] as well as the path we take through
     // the BDD. This is a lot like netconan, but no need for cryptographic security.
     int newSeed = seed * 31 + level;
-    boolean preferLo = (newSeed & 1) == 0;
+    boolean preferLo = (newSeed & 65536) == 0;
     if (level < LEVEL(r)) {
       // The BDD r is the same no matter which branch at the current level is taken. Pick one
       // randomly.
@@ -3963,9 +3966,11 @@ public final class JFactory extends BDDFactory {
     }
 
     if (CACHESTATS) {
-      System.err.printf(
-          "Cache %s resize: %d/%d slots used%n",
-          getCacheName(cache), cache.used(), cache.table.length);
+      LOGGER.info(
+          "Cache {} resize: {}/{} slots used",
+          getCacheName(cache),
+          cache.used(),
+          cache.table.length);
     }
 
     newsize = bdd_prime_gte(newsize);
@@ -4014,9 +4019,11 @@ public final class JFactory extends BDDFactory {
       return;
     }
     if (CACHESTATS) {
-      System.err.printf(
-          "Cache %s reset: %d/%d slots used%n",
-          getCacheName(cache), cache.used(), cache.table.length);
+      LOGGER.info(
+          "Cache {} reset: {}/{} slots used",
+          getCacheName(cache),
+          cache.used(),
+          cache.table.length);
     }
 
     for (int n = 0; n < cache.tablesize; n++) {
@@ -4400,7 +4407,6 @@ public final class JFactory extends BDDFactory {
 
     int newVar = bddvarnum;
     int lev = bddvar2level[var];
-    // System.out.println("Adding new variable "+newVar+" at level "+(lev+1));
     // Increase the size of the various data structures.
     bdd_setvarnum(bddvarnum + 1);
     // Actually duplicate the var in all BDDs.
@@ -4437,7 +4443,6 @@ public final class JFactory extends BDDFactory {
         }
       }
       pair.result[lev + 1] = bdd_ithvar(newVar);
-      // System.out.println("Pair "+pair);
     }
 
     return newVar;
@@ -5091,8 +5096,6 @@ public final class JFactory extends BDDFactory {
       n_low = bdd_makenode(levToInsert + 1, val <= 0 ? lo : 0, val <= 0 ? 0 : lo);
       n_high = bdd_makenode(levToInsert + 1, val == 0 ? hi : 0, val == 0 ? 0 : hi);
       bdd_delref(n);
-      // System.out.println("Lev = "+lev+" old low = "+lo+" old high = "+hi+" new low = "+n_low+"
-      // ("+new bdd(n_low)+") new high = "+n_high+" ("+new bdd(n_high)+")");
       newLev = lev;
       SETLOW(n, n_low);
       SETHIGH(n, n_high);

@@ -10,6 +10,7 @@ java_library(
         ":F5BigipImishParserBaseListener.java",
         ":F5BigipImishParserListener.java",
     ],
+    javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_imish/parsing:f5_bigip_imish_base_parser",

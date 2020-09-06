@@ -143,11 +143,9 @@ public class Graph {
   private RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
 
   /**
-   * We collect up the set of AS-path regexes that appear in the given configurations and compute a
-   * set of atomic predicates for them.
+   * We also compute a set of atomic predicates for the AS-path regexes that appear in the given
+   * configurations.
    */
-  private Set<SymbolicAsPathRegex> _asPathRegexes;
-
   private RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
 
   /**
@@ -234,7 +232,6 @@ public class Graph {
     _configurations = configs;
     _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
-    _asPathRegexes = new HashSet<>();
     _snapshot = snapshot;
     _bddBasedAnalysis = bddBasedAnalysis;
 
@@ -283,15 +280,15 @@ public class Graph {
       Set<CommunityVar> comms =
           _allCommunities.stream()
               .filter(c -> c.getType() != Type.OTHER)
-              .collect(Collectors.toSet());
+              .collect(ImmutableSet.toImmutableSet());
       _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
     } else {
       initCommDependencies();
     }
     initNamedCommunities();
-    initAsPathRegexes(asPathRegexes);
     _asPathRegexAtomicPredicates =
-        new RegexAtomicPredicates<>(_asPathRegexes, SymbolicAsPathRegex.ALL_AS_PATHS);
+        new RegexAtomicPredicates<>(
+            findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
   }
 
   /*
@@ -917,17 +914,21 @@ public class Graph {
 
   /**
    * Identifies all of the AS-path regexes in the given configurations. An optional set of
-   * additional AS-path regexes is also included, which is used to support user-specified community
+   * additional AS-path regexes is also included, which is used to support user-specified AS-path
    * constraints for symbolic analysis.
    */
-  private void initAsPathRegexes(Set<String> asPathRegexes) {
+  private Set<SymbolicAsPathRegex> findAllAsPathRegexes(Set<String> asPathRegexes) {
+    ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
     for (String router : getRouters()) {
-      _asPathRegexes.addAll(findAsPathRegexes(router));
+      builder.addAll(findAsPathRegexes(router));
     }
     if (asPathRegexes != null) {
-      _asPathRegexes.addAll(
-          asPathRegexes.stream().map(SymbolicAsPathRegex::new).collect(Collectors.toSet()));
+      builder.addAll(
+          asPathRegexes.stream()
+              .map(SymbolicAsPathRegex::new)
+              .collect(ImmutableSet.toImmutableSet()));
     }
+    return builder.build();
   }
 
   /**
@@ -993,10 +994,6 @@ public class Graph {
 
   public Set<CommunityVar> getAllCommunities() {
     return _allCommunities;
-  }
-
-  public Set<SymbolicAsPathRegex> getAsPathRegexes() {
-    return _asPathRegexes;
   }
 
   public boolean getBddBasedAnalysis() {
@@ -1087,16 +1084,13 @@ public class Graph {
    * @return a set of all AS-path regexes that appear
    */
   private Set<SymbolicAsPathRegex> findAsPathRegexes(String router) {
-    Set<SymbolicAsPathRegex> result = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
     Collection<AsPathAccessList> asPathAccessLists = conf.getAsPathAccessLists().values();
-    result =
-        asPathAccessLists.stream()
-            .flatMap(lst -> lst.getLines().stream())
-            .map(AsPathAccessListLine::getRegex)
-            .map(SymbolicAsPathRegex::new)
-            .collect(ImmutableSet.toImmutableSet());
-    return result;
+    return asPathAccessLists.stream()
+        .flatMap(lst -> lst.getLines().stream())
+        .map(AsPathAccessListLine::getRegex)
+        .map(SymbolicAsPathRegex::new)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /*

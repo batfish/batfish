@@ -138,6 +138,12 @@ public final class BatfishObjectMapper {
    * which is better suited towards complex, highly-nested objects.
    */
   private static class PrettyPrinter extends DefaultPrettyPrinter {
+    @Override
+    public DefaultPrettyPrinter createInstance() {
+      // Doc: Method called to ensure that we have a non-blueprint object to use; it is either this
+      // object (if stateless), or a newly created object with separate state.
+      return this;
+    }
 
     public PrettyPrinter() {
       _arrayIndenter = DefaultIndenter.SYSTEM_LINEFEED_INSTANCE;

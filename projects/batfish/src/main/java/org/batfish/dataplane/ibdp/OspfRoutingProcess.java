@@ -110,7 +110,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /* State we need to maintain between iterations */
 
   /** Delta that captures process initialization (creating intra-area routes based on interfaces) */
-  @Nonnull private RibDelta<OspfIntraAreaRoute> _initializationDelta;
+  @Nonnull private InternalDelta _initializationDelta;
   /** Delta to pass to the main RIB */
   @Nonnull private RibDelta.Builder<OspfRoute> _changeset;
   /** Delta of routes we have locally queued for re-distribution */
@@ -159,7 +159,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     }
 
     _changeset = RibDelta.builder();
-    _initializationDelta = RibDelta.empty();
+    _initializationDelta = new InternalDelta(RibDelta.empty(), RibDelta.empty());
     _queuedForRedistribution = new ExternalDelta();
     _activatedGeneratedRoutes = RibDelta.empty();
     _neighborsWhereDefaultIARouteWasInjected = new HashSet<>(0);
@@ -175,9 +175,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     if (!_initializationDelta.isEmpty()) {
       // If we haven't sent out the first round of updates after initialization, do so now. Then
       // clear the initialization delta
-      sendOutInternalRoutes(
-          new InternalDelta(_initializationDelta, RibDelta.empty()), allNodes, _topology);
-      _initializationDelta = RibDelta.empty();
+      sendOutInternalRoutes(_initializationDelta, allNodes, _topology);
+      _initializationDelta = new InternalDelta(RibDelta.empty(), RibDelta.empty());
     }
 
     // Process internal routes
@@ -316,10 +315,23 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /** Initialize intra-area routes based on available interfaces. */
   private void initializeIntraAreaRoutes() {
-    RibDelta.Builder<OspfIntraAreaRoute> deltaBuilder = RibDelta.builder();
-    _process.getAreas().values().forEach(area -> deltaBuilder.from(initializeRoutesByArea(area)));
-    _initializationDelta = deltaBuilder.build();
-    _changeset.from(RibDelta.importRibDelta(_ospfRib, _initializationDelta));
+    RibDelta.Builder<OspfIntraAreaRoute> intraAreaBuilder = RibDelta.builder();
+    _process
+        .getAreas()
+        .values()
+        .forEach(area -> intraAreaBuilder.from(initializeRoutesByArea(area)));
+    RibDelta<OspfIntraAreaRoute> intraAreaDelta = intraAreaBuilder.build();
+    RibDelta.Builder<OspfInterAreaRoute> interAreaBuilder = RibDelta.builder();
+    if (isABR()) {
+      // If we are an ABR, also do conversion to IA routes here.
+      intraAreaDelta
+          .getRoutesStream()
+          .forEach(
+              r -> interAreaBuilder.add(OspfInterAreaRoute.builder(r).setNonRouting(true).build()));
+    }
+
+    _initializationDelta = new InternalDelta(intraAreaDelta, interAreaBuilder.build());
+    _changeset.from(RibDelta.importRibDelta(_ospfRib, intraAreaDelta));
   }
 
   /**
@@ -447,10 +459,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Process all OSPF internal messages from all the message queues */
   @Nonnull
   private InternalDelta processInternalRoutes() {
-    RibDelta<OspfIntraAreaRoute> intraAreaDelta = processIntraAreaRoutes();
+    InternalDelta intraProcessingDelta = processIntraAreaRoutes();
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = processInterAreaRoutes();
     RibDelta<OspfInterAreaRoute> deltaOfSummaries = computeInterAreaSummaries();
-    return new InternalDelta(intraAreaDelta, interAreaDelta.from(deltaOfSummaries).build());
+    // Merge inter-area deltas
+    return new InternalDelta(
+        intraProcessingDelta._intraArea,
+        interAreaDelta.from(intraProcessingDelta._interArea).from(deltaOfSummaries).build());
   }
 
   /**
@@ -549,26 +564,62 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return the resulting intra-area RIB delta builder.
    */
   @Nonnull
-  private RibDelta<OspfIntraAreaRoute> processIntraAreaRoutes() {
+  private InternalDelta processIntraAreaRoutes() {
     RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
+    RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
     _intraAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
           String ifaceName = edgeId.getHead().getInterfaceName();
           long incrementalCost = getIncrementalCost(ifaceName, false);
           while (!queue.isEmpty()) {
             RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement = queue.remove();
-            OspfIntraAreaRoute.Builder ospfRouteBuilder =
-                transformIntraAreaRouteOnImport(routeAdvertisement.getRoute(), incrementalCost);
-
-            applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
-
-            intraAreaDelta.from(
-                processRouteAdvertisement(
-                    routeAdvertisement.toBuilder().setRoute(ospfRouteBuilder.build()).build(),
-                    _intraAreaRib));
+            processIntraAreaAdvertisement(
+                intraAreaDelta, interAreaDelta, ifaceName, incrementalCost, routeAdvertisement);
           }
         });
-    return intraAreaDelta.build();
+    return new InternalDelta(intraAreaDelta.build(), interAreaDelta.build());
+  }
+
+  /**
+   * Process a intraArea advertisement from a neighbor. This will transform advertisement on import,
+   * and place it in the appropriate RIB(s).
+   *
+   * @param intraAreaDelta builder for the intraArea RIB delta
+   * @param interAreaDelta builder for the interArea RIB delta
+   * @param interAreaDelta builder for the interArea RIB delta
+   */
+  @VisibleForTesting
+  void processIntraAreaAdvertisement(
+      RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta,
+      RibDelta.Builder<OspfInterAreaRoute> interAreaDelta,
+      String ifaceName,
+      long incrementalCost,
+      RouteAdvertisement<OspfIntraAreaRoute> routeAdvertisement) {
+    OspfIntraAreaRoute.Builder ospfRouteBuilder =
+        transformIntraAreaRouteOnImport(routeAdvertisement.getRoute(), incrementalCost);
+
+    applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
+
+    OspfIntraAreaRoute intraAreaRoute = ospfRouteBuilder.build();
+    intraAreaDelta.from(
+        processRouteAdvertisement(
+            routeAdvertisement.toBuilder().setRoute(intraAreaRoute).build(), _intraAreaRib));
+
+    /*
+    If we are an ABR, convert intra-area routes to inter-area routes (i.e., Type 1 -> Type 3) and put them
+    into our inter-area RIB. Note these non-routing because intra-area specific routes should always be preferred.
+    */
+    if (isABR()) {
+      OspfInterAreaRoute interAreaRoute =
+          OspfInterAreaRoute.builder(intraAreaRoute).setNonRouting(true).build();
+      interAreaDelta.from(
+          processRouteAdvertisement(
+              RouteAdvertisement.<OspfInterAreaRoute>builder()
+                  .setReason(routeAdvertisement.getReason())
+                  .setRoute(interAreaRoute)
+                  .build(),
+              _interAreaRib));
+    }
   }
 
   /**
@@ -710,7 +761,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     sendOutIntraAreaRoutesPerEdge(
         delta._intraArea, edgeId, remoteProcess, areaConfig, session.get());
     if (isABR()) {
-      sendOutInterAreaRoutesPerEdgeABR(delta, edgeId, remoteProcess, areaConfig, session.get());
+      sendOutInterAreaRoutesPerEdgeABR(
+          delta._interArea, edgeId, remoteProcess, areaConfig, session.get());
     } else {
       sendOutInterAreaRoutesPerEdgeNonABR(
           delta._interArea, edgeId, remoteProcess, areaConfig, session.get());
@@ -765,7 +817,11 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     Ip nextHopIp = sessionProperties.getIpLink().getIp2();
     Collection<RouteAdvertisement<OspfInterAreaRoute>> updatedDelta =
         transformInterAreaRoutesOnExportNonABR(
-            delta, areaConfig, nextHopIp, _process.getMaxMetricTransitLinks());
+            delta,
+            areaConfig,
+            sessionProperties.getIpLink().getIp1(),
+            nextHopIp,
+            _process.getMaxMetricTransitLinks());
     remoteProcess.enqueueMessagesInter(edgeId.reverse(), updatedDelta);
   }
 
@@ -775,6 +831,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *
    * @param delta RIB delta containing candidates for re-advertisement to neighbors
    * @param areaConfig {@link OspfArea} to which the routes will be sent
+   * @param neighborIp {@link Ip} of the neighbor to which the route is being sent. Used to
+   *     implement a split-horizon rule to avoid loops
    * @param nextHopIp next hop IP to use for the transformed route
    * @param customMetric if set (i.e., not {@code null}) will be used to override the route's
    *     original metric
@@ -783,6 +841,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   static Collection<RouteAdvertisement<OspfInterAreaRoute>> transformInterAreaRoutesOnExportNonABR(
       RibDelta<OspfInterAreaRoute> delta,
       OspfArea areaConfig,
+      Ip neighborIp,
       Ip nextHopIp,
       @Nullable Long customMetric) {
     return delta
@@ -792,6 +851,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
          * inter-area routes for area X in area X.
          */
         .filter(r -> r.getRoute().getArea() == areaConfig.getAreaNumber())
+        /* Do not send the route to the neighbor that has sent it to us originally. (split horizon) */
+        .filter(r -> !r.getRoute().getNextHopIp().equals(neighborIp))
         .map(
             r ->
                 r.toBuilder()
@@ -807,7 +868,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /** Send out inter-area routes from an ABR to a neighbor */
   private void sendOutInterAreaRoutesPerEdgeABR(
-      InternalDelta delta,
+      RibDelta<OspfInterAreaRoute> delta,
       EdgeId edgeId,
       OspfRoutingProcess remoteProcess,
       OspfArea areaConfig,
@@ -835,16 +896,11 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     remoteProcess.enqueueMessagesInter(
         edgeId.reverse(),
         Streams.concat(
-                convertAndFilterIntraAreaRoutesToPropagate(
-                    delta._intraArea,
-                    areaConfig,
-                    filterList,
-                    nextHopIp,
-                    _process.getMaxMetricSummaryNetworks()),
                 filterInterAreaRoutesToPropagateAtABR(
-                    delta._interArea,
+                    delta,
                     areaConfig,
                     filterList,
+                    sessionProperties.getIpLink().getIp1(),
                     nextHopIp,
                     _process.getMaxMetricSummaryNetworks()),
                 computeDefaultInterAreaRouteToInject(edgeId, areaConfig, nextHopIp))
@@ -859,9 +915,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param delta ABR's inter- or intra- RIB delta
    * @param areaConfig area configuration at the ABR for this neighbor adjacency
    * @param filterList route filter list defined at the ABR (to enable correct summarization)
+   * @param neighborIp IP of the neighbor to which we're sending the route
    * @param nextHopIp next hop ip to use when creating the route.
    * @param customMetric if provided (i.e., not {@code null}) it will be used instead of the routes
-   *     original metric
    */
   @Nonnull
   @VisibleForTesting
@@ -869,6 +925,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       RibDelta<OspfInterAreaRoute> delta,
       OspfArea areaConfig,
       @Nullable RouteFilterList filterList,
+      Ip neighborIp,
       Ip nextHopIp,
       @Nullable Long customMetric) {
     if (areaConfig.getStubType() == StubType.STUB && areaConfig.getStub().getSuppressType3()
@@ -880,6 +937,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .getActions()
         // Only propagate routes from different areas
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
+        /* Do not send the route to the neighbor that has sent it to us originally. (split horizon) */
+        .filter(r -> !r.getRoute().getNextHopIp().equals(neighborIp))
         // Only propagate routes permitted by the filter list
         // Fail open. Treat missing filter list as "allow all".
         .filter(r -> filterList == null || filterList.permits(r.getRoute().getNetwork()))
@@ -894,44 +953,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                             .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
                             .setNextHopIp(nextHopIp)
                             .build())
-                    .build());
-  }
-
-  /**
-   * Convert intra-area routes to inter-area routes. Only routes that pass filtering conditions are
-   * returned.
-   */
-  @Nonnull
-  @VisibleForTesting
-  static Stream<RouteAdvertisement<OspfInterAreaRoute>> convertAndFilterIntraAreaRoutesToPropagate(
-      RibDelta<OspfIntraAreaRoute> delta,
-      OspfArea areaConfig,
-      @Nullable RouteFilterList filterList,
-      Ip nextHopIp,
-      @Nullable Long customMetric) {
-    if (areaConfig.getStubType() == StubType.STUB && areaConfig.getStub().getSuppressType3()
-        || areaConfig.getStubType() == StubType.NSSA && areaConfig.getNssa().getSuppressType3()) {
-      // Nothing to do for totally stubby areas, where summaries are suppressed
-      return Stream.empty();
-    }
-    return delta
-        .getActions()
-        // Only propagate routes from different areas
-        .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
-        // Only propagate routes permitted by the filter list
-        // Fail open. Treat missing filter list as "allow all".
-        .filter(r -> filterList == null || filterList.permits(r.getRoute().getNetwork()))
-        // Overwrite area on the route before sending it out
-        .map(
-            r ->
-                RouteAdvertisement.<OspfInterAreaRoute>builder()
-                    .setRoute(
-                        OspfInterAreaRoute.builder(r.getRoute())
-                            .setArea(areaConfig.getAreaNumber())
-                            .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
-                            .setNextHopIp(nextHopIp)
-                            .build())
-                    .setReason(r.getReason())
                     .build());
   }
 
@@ -1515,6 +1536,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     InternalDelta(RibDelta<OspfIntraAreaRoute> intraArea, RibDelta<OspfInterAreaRoute> interArea) {
       _intraArea = intraArea;
       _interArea = interArea;
+    }
+
+    private boolean isEmpty() {
+      return _intraArea.isEmpty() && _interArea.isEmpty();
     }
   }
 

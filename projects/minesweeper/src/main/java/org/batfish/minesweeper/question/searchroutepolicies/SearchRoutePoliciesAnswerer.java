@@ -230,7 +230,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       try {
         asns =
             Arrays.stream(asPathStr.split(" "))
-                .mapToLong(Long::new)
+                .mapToLong(Long::valueOf)
                 .boxed()
                 .collect(Collectors.toList());
       } catch (NumberFormatException nfe) {
@@ -368,7 +368,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * Convert regex constraints from a {@link BgpRouteConstraints} object to a BDD.
    *
    * @param regexes the user-defined regex constraints
-   * @param constructor convert a regex string into a symbolic regex object
+   * @param constructor function to convert a regex string into a symbolic regex object
    * @param atomicPredicates information about the atomic predicates corresponding to the regexes
    * @param atomicPredicateBDDs one BDD per atomic predicate, coming from a {@link BDDRoute} object
    * @param factory the BDD factory
