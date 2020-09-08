@@ -6,7 +6,7 @@ import org.batfish.minesweeper.TransferParam;
 
 /**
  * The state that is tracked during symbolic BDD-based route analysis: a pair of a {@link
- * org.batfish.minesweeper.TransferParam} and a {@link TransferReturn}.
+ * org.batfish.minesweeper.TransferParam} and a {@link TransferResult}.
  */
 @ParametersAreNonnullByDefault
 public class TransferBDDState {
