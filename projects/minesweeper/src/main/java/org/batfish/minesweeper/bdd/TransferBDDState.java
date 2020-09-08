@@ -2,9 +2,7 @@ package org.batfish.minesweeper.bdd;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import net.sf.javabdd.BDD;
 import org.batfish.minesweeper.TransferParam;
-import org.batfish.minesweeper.TransferResult;
 
 /**
  * The state that is tracked during symbolic BDD-based route analysis: a pair of a {@link
@@ -14,10 +12,9 @@ import org.batfish.minesweeper.TransferResult;
 public class TransferBDDState {
 
   @Nonnull private final TransferParam<BDDRoute> _param;
-  @Nonnull private final TransferResult<TransferReturn, BDD> _result;
+  @Nonnull private final TransferResult _result;
 
-  public TransferBDDState(
-      TransferParam<BDDRoute> param, TransferResult<TransferReturn, BDD> result) {
+  public TransferBDDState(TransferParam<BDDRoute> param, TransferResult result) {
     _param = param;
     _result = result;
   }
@@ -26,7 +23,7 @@ public class TransferBDDState {
     return _param;
   }
 
-  public TransferResult<TransferReturn, BDD> getTransferResult() {
+  public TransferResult getTransferResult() {
     return _result;
   }
 }

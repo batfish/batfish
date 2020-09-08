@@ -4,68 +4,46 @@ import com.microsoft.z3.Expr;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.minesweeper.collections.PList;
 import org.batfish.minesweeper.utils.MsPair;
 
 /**
- * This class is used to keep track of the state of a symbolic control-plane analysis. It's
- * effectively the symbolic version of {@link org.batfish.datamodel.routing_policy.Result}.
+ * This class is used to keep track of the state of a symbolic control-plane analysis. It is not
+ * currently being maintained. The BDD-based route analysis in {@link
+ * org.batfish.minesweeper.bdd.TransferBDD} uses its own version of this class in the bdd package,
+ * {@link org.batfish.minesweeper.bdd.TransferResult}.
  *
  * @param <U> the type of the data that the analysis produces
  * @param <T> the type of the predicate used to track the internal state of the analysis
  */
-@ParametersAreNonnullByDefault
 public class TransferResult<U, T> {
 
-  /**
-   * this field and the associated functions are currently not used at all by the symbolic route
-   * analysis, {@link org.batfish.minesweeper.bdd.TransferBDD}. they are used only by the
-   * TransferSSA analysis in minesweeper, which is not being maintained currently.
-   */
   private PList<MsPair<String, Expr>> _changedVariables; // should be a map
 
-  // the current state of the analysis
+  // holds the current data that the analysis has produced so far
   private U _returnValue;
 
-  /**
-   * The following three fields are used to ensure that the analysis accurately identifies all and
-   * only feasible execution paths through a route policy.
-   */
-
-  // predicate indicating when the analysis has hit a fall-through condition in the policy
-  // being analyzed, meaning that control flow should continue to the next policy
+  // a predicate indicating whether the analysis has hit a fall-through condition in the
+  // configuration structure being analyzed, which is used to ensure that the analysis accurately
+  // identifies all and only feasible execution paths through the structure
   private T _fallthroughValue;
 
-  // predicate indicating when the anlaysis has hit an exit condition in the policy
-  // being analyzed, which represents the termination of the execution
-  private T _exitAssignedValue;
-
-  // predicate indicating when the analysis has hit a return condition in the policy
-  // being analyzed, which represents the termination of a nested call to a routing policy
+  // a predicate indicating whether the analysis has hit a return or exit condition in the
+  // configuration structure being analyzed, which is used to ensure that the analysis accurately
+  // identifies all and only feasible execution paths through the structure
   private T _returnAssignedValue;
 
   public TransferResult() {
-    this(null, null, null, null);
-  }
-
-  public TransferResult(
-      @Nullable U retVal,
-      @Nullable T exitAssignedValue,
-      @Nullable T fallThroughValue,
-      @Nullable T returnAssignedAValue) {
     _changedVariables = PList.empty();
-    _returnValue = retVal;
-    _exitAssignedValue = exitAssignedValue;
-    _fallthroughValue = fallThroughValue;
-    _returnAssignedValue = returnAssignedAValue;
+    _returnValue = null;
+    _fallthroughValue = null;
+    _returnAssignedValue = null;
   }
 
   private TransferResult(TransferResult<U, T> other) {
     _changedVariables = other._changedVariables;
     _returnValue = other._returnValue;
     _fallthroughValue = other._fallthroughValue;
-    _exitAssignedValue = other._exitAssignedValue;
     _returnAssignedValue = other._returnAssignedValue;
   }
 
@@ -122,10 +100,6 @@ public class TransferResult<U, T> {
     return _fallthroughValue;
   }
 
-  public T getExitAssignedValue() {
-    return _exitAssignedValue;
-  }
-
   public T getReturnAssignedValue() {
     return _returnAssignedValue;
   }
@@ -172,12 +146,6 @@ public class TransferResult<U, T> {
   public TransferResult<U, T> setReturnAssignedValue(T x) {
     TransferResult<U, T> ret = new TransferResult<>(this);
     ret._returnAssignedValue = x;
-    return ret;
-  }
-
-  public TransferResult<U, T> setExitAssignedValue(T x) {
-    TransferResult<U, T> ret = new TransferResult<>(this);
-    ret._exitAssignedValue = x;
     return ret;
   }
 }

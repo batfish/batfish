@@ -59,7 +59,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
-import org.batfish.minesweeper.TransferResult;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
@@ -354,7 +353,7 @@ public class TransferBDDTest {
     _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
-    TransferResult<TransferReturn, BDD> ret = tbdd.compute(ImmutableSet.of());
+    TransferResult ret = tbdd.compute(ImmutableSet.of());
 
     BDD returnAssigned =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
