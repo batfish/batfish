@@ -40,11 +40,15 @@ public class CommunitySetExprVarCollector
   public Set<CommunityVar> visitCommunitySetDifference(
       CommunitySetDifference communitySetDifference, CommunityContext arg) {
     Set<CommunityVar> s1 = communitySetDifference.getInitial().accept(this, arg);
-    Set<CommunityVar> s2 =
-        communitySetDifference
-            .getRemovalCriterion()
-            .accept(new CommunityMatchExprVarCollector(), arg);
-    return ImmutableSet.<CommunityVar>builder().addAll(s1).addAll(s2).build();
+    // TODO: re-enable this once the match expr visitor is implemented
+    /*  Set<CommunityVar> s2 =
+    communitySetDifference
+        .getRemovalCriterion()
+        .accept(new CommunityMatchExprVarCollector(), arg); */
+    return ImmutableSet.<CommunityVar>builder()
+        .addAll(s1)
+        // .addAll(s2)
+        .build();
   }
 
   @Override
