@@ -1,11 +1,11 @@
-package org.batfish.minesweeper;
+package org.batfish.minesweeper.communities;
 
 import java.util.Set;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunityContext;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
@@ -23,126 +23,128 @@ import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedComm
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
+import org.batfish.minesweeper.CommunityVar;
 
 public class CommunityMatchExprVarCollector
-    implements CommunityMatchExprVisitor<Set<CommunityVar>, Configuration> {
+    implements CommunityMatchExprVisitor<Set<CommunityVar>, CommunityContext> {
   @Override
   public Set<CommunityVar> visitAllExtendedCommunities(
-      AllExtendedCommunities allExtendedCommunities, Configuration arg) {
+      AllExtendedCommunities allExtendedCommunities, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitAllLargeCommunities(
-      AllLargeCommunities allLargeCommunities, Configuration arg) {
+      AllLargeCommunities allLargeCommunities, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitAllStandardCommunities(
-      AllStandardCommunities allStandardCommunities, Configuration arg) {
+      AllStandardCommunities allStandardCommunities, CommunityContext arg) {
     return null;
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityAcl(CommunityAcl communityAcl, Configuration arg) {
+  public Set<CommunityVar> visitCommunityAcl(CommunityAcl communityAcl, CommunityContext arg) {
     return null;
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityIn(CommunityIn communityIn, Configuration arg) {
+  public Set<CommunityVar> visitCommunityIn(CommunityIn communityIn, CommunityContext arg) {
     return null;
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityIs(CommunityIs communityIs, Configuration arg) {
+  public Set<CommunityVar> visitCommunityIs(CommunityIs communityIs, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchAll(
-      CommunityMatchAll communityMatchAll, Configuration arg) {
+      CommunityMatchAll communityMatchAll, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchAny(
-      CommunityMatchAny communityMatchAny, Configuration arg) {
+      CommunityMatchAny communityMatchAny, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchExprReference(
-      CommunityMatchExprReference communityMatchExprReference, Configuration arg) {
+      CommunityMatchExprReference communityMatchExprReference, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchRegex(
-      CommunityMatchRegex communityMatchRegex, Configuration arg) {
+      CommunityMatchRegex communityMatchRegex, CommunityContext arg) {
     return null;
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityNot(CommunityNot communityNot, Configuration arg) {
+  public Set<CommunityVar> visitCommunityNot(CommunityNot communityNot, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorHighMatch(
       ExtendedCommunityGlobalAdministratorHighMatch extendedCommunityGlobalAdministratorHighMatch,
-      Configuration arg) {
+      CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorLowMatch(
       ExtendedCommunityGlobalAdministratorLowMatch extendedCommunityGlobalAdministratorLowMatch,
-      Configuration arg) {
+      CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorMatch(
       ExtendedCommunityGlobalAdministratorMatch extendedCommunityGlobalAdministratorMatch,
-      Configuration arg) {
+      CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityLocalAdministratorMatch(
       ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch,
-      Configuration arg) {
+      CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitRouteTargetExtendedCommunities(
-      RouteTargetExtendedCommunities routeTargetExtendedCommunities, Configuration arg) {
+      RouteTargetExtendedCommunities routeTargetExtendedCommunities, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitSiteOfOriginExtendedCommunities(
-      SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Configuration arg) {
+      SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityHighMatch(
-      StandardCommunityHighMatch standardCommunityHighMatch, Configuration arg) {
+      StandardCommunityHighMatch standardCommunityHighMatch, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityLowMatch(
-      StandardCommunityLowMatch standardCommunityLowMatch, Configuration arg) {
+      StandardCommunityLowMatch standardCommunityLowMatch, CommunityContext arg) {
     return null;
   }
 
   @Override
   public Set<CommunityVar> visitVpnDistinguisherExtendedCommunities(
-      VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Configuration arg) {
+      VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities,
+      CommunityContext arg) {
     return null;
   }
 }

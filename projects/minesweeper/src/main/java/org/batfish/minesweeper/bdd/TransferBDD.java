@@ -49,6 +49,8 @@ import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -607,7 +609,16 @@ public class TransferBDD {
     } else if (stmt instanceof SetCommunity) {
       curP.debug("SetCommunity");
       SetCommunity sc = (SetCommunity) stmt;
-      Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
+      /**
+       * TODO: simply collecting all community variables in the expression is not correct in
+       * general, since for example some of them may be negated in the expression. for now we only
+       * support setting literal communities.
+       */
+      CommunitySetExpr setExpr = sc.getExpr();
+      if (!(setExpr instanceof LiteralCommunity || setExpr instanceof LiteralCommunitySet)) {
+        throw new BatfishException("Unhandled community expression in 'set community': " + setExpr);
+      }
+      Set<CommunityVar> comms = collectCommunityVars(_conf, setExpr);
       // set all atomic predicates associated with these communities to 1, and all other
       // atomic predicates to zero, if this statement is reached
       Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
