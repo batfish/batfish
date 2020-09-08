@@ -28,7 +28,8 @@ public final class Trace {
 
   public Trace(FlowDisposition disposition, List<Hop> hops) {
     _disposition = disposition;
-    _hops = validateHops(hops);
+    assert validateHops(hops);
+    _hops = ImmutableList.copyOf(hops);
   }
 
   @JsonCreator
@@ -77,7 +78,7 @@ public final class Trace {
    */
   @Nonnull
   @VisibleForTesting
-  static List<Hop> validateHops(@Nonnull List<Hop> hops) {
+  static boolean validateHops(@Nonnull List<Hop> hops) {
     for (int i = 0; i < hops.size(); ++i) {
       Hop h = hops.get(i);
       List<Step<?>> steps = h.getSteps();
@@ -102,6 +103,6 @@ public final class Trace {
             h);
       }
     }
-    return ImmutableList.copyOf(hops);
+    return true;
   }
 }
