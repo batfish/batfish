@@ -1052,8 +1052,8 @@ public class TransferBDD {
    * A BDD representing the conditions under which the current statement is not reachable, because
    * we've already returned or exited before getting there.
    *
-   * @param currState
-   * @return
+   * @param currState the current state of the analysis
+   * @return the bdd
    */
   private static BDD unreachable(TransferResult currState) {
     return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
