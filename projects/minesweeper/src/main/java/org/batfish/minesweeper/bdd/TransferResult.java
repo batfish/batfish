@@ -18,6 +18,14 @@ public class TransferResult {
   /**
    * The following three fields are used to ensure that the analysis accurately identifies all and
    * only feasible execution paths through a route policy.
+   *
+   * <p>Some invariants that the route analysis should maintain:
+   *
+   * <p>_exitAssignedValue and _returnAssignedValue are disjoint, since they represent distinct ways
+   * in which a path through a route policy can be terminated
+   *
+   * <p>_fallthroughValue is a subset of _returnAssignedValue, namely the situations in which the
+   * policy's execution returns and signals that control flow should fall through to the next policy
    */
 
   /* predicate indicating when the analysis has hit a fall-through condition in the policy
