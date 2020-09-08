@@ -89,7 +89,7 @@ public final class Trace {
             "Hop %s/%s of trace does not begin with an %s: %s",
             i + 1,
             hops.size(),
-            EnterInputIfaceStep.class.getSimpleName(),
+            "EnterInputIfaceStep",
             h);
       }
       if (i < hops.size() - 1) {
@@ -99,7 +99,7 @@ public final class Trace {
             "Hop %s/%s of trace does not end with an %s: %s",
             i + 1,
             hops.size(),
-            ExitOutputIfaceStep.class.getSimpleName(),
+            "ExitOutputIfaceStep",
             h);
       }
     }
