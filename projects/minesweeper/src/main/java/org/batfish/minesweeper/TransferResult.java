@@ -8,7 +8,10 @@ import org.batfish.minesweeper.collections.PList;
 import org.batfish.minesweeper.utils.MsPair;
 
 /**
- * This class is used to keep track of the state of a symbolic control-plane analysis.
+ * This class is used to keep track of the state of a symbolic control-plane analysis. It is not
+ * currently being maintained. The BDD-based route analysis in {@link
+ * org.batfish.minesweeper.bdd.TransferBDD} uses its own version of this class in the bdd package,
+ * {@link org.batfish.minesweeper.bdd.TransferResult}.
  *
  * @param <U> the type of the data that the analysis produces
  * @param <T> the type of the predicate used to track the internal state of the analysis
