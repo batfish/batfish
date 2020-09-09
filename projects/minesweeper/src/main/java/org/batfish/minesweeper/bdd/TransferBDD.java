@@ -89,7 +89,6 @@ import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
 import org.batfish.minesweeper.TransferParam.CallContext;
-import org.batfish.minesweeper.TransferResult;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
@@ -98,7 +97,7 @@ public class TransferBDD {
 
   private static BDDFactory factory = BDDRoute.factory;
 
-  private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
+  private static Table2<String, String, TransferResult> CACHE = new Table2<>();
 
   /**
    * We track community and AS-path regexes by computing a set of atomic predicates for them. See
@@ -191,7 +190,7 @@ public class TransferBDD {
    * Convert a Batfish AST boolean expression to a symbolic Z3 boolean expression
    * by performing inlining of stateful side effects.
    */
-  private TransferResult<TransferReturn, BDD> compute(BooleanExpr expr, TransferParam<BDDRoute> p) {
+  private TransferResult compute(BooleanExpr expr, TransferParam<BDDRoute> p) {
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
@@ -210,9 +209,9 @@ public class TransferBDD {
       p.debug("Conjunction");
       Conjunction c = (Conjunction) expr;
       BDD acc = factory.one();
-      TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+      TransferResult result = new TransferResult(p.getData());
       for (BooleanExpr be : c.getConjuncts()) {
-        TransferResult<TransferReturn, BDD> r = compute(be, p.indent());
+        TransferResult r = compute(be, p.indent());
         acc = acc.and(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
@@ -224,10 +223,9 @@ public class TransferBDD {
       p.debug("Disjunction");
       Disjunction d = (Disjunction) expr;
       BDD acc = factory.zero();
-      TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+      TransferResult result = new TransferResult(p.getData());
       for (BooleanExpr be : d.getDisjuncts()) {
-        TransferResult<TransferReturn, BDD> r = compute(be, p.indent());
-        result = result.addChangedVariables(r);
+        TransferResult r = compute(be, p.indent());
         acc = acc.or(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
@@ -248,7 +246,7 @@ public class TransferBDD {
         TransferReturn ret = new TransferReturn(p.getData(), factory.one());
         return fromExpr(ret);
       } else {
-        TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+        TransferResult result = new TransferResult(p.getData());
         TransferParam<BDDRoute> record = p;
         BDD acc = factory.zero();
         for (int i = conjuncts.size() - 1; i >= 0; i--) {
@@ -258,7 +256,7 @@ public class TransferBDD {
                   .setDefaultPolicy(null)
                   .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                   .indent();
-          TransferResult<TransferReturn, BDD> r = compute(conjunct, param);
+          TransferResult r = compute(conjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
         }
@@ -279,7 +277,7 @@ public class TransferBDD {
         // No identity for an empty FirstMatchChain; default policy should always be set.
         throw new BatfishException("Default policy is not set");
       }
-      TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+      TransferResult result = new TransferResult(p.getData());
       TransferParam<BDDRoute> record = p;
       BDD acc = factory.zero();
       for (int i = chainPolicies.size() - 1; i >= 0; i--) {
@@ -289,7 +287,7 @@ public class TransferBDD {
                 .setDefaultPolicy(null)
                 .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                 .indent();
-        TransferResult<TransferReturn, BDD> r = compute(policyMatcher, param);
+        TransferResult r = compute(policyMatcher, param);
         record = record.setData(r.getReturnValue().getFirst());
         acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
       }
@@ -300,7 +298,7 @@ public class TransferBDD {
     if (expr instanceof Not) {
       p.debug("mkNot");
       Not n = (Not) expr;
-      TransferResult<TransferReturn, BDD> result = compute(n.getExpr(), p);
+      TransferResult result = compute(n.getExpr(), p);
       TransferReturn r = result.getReturnValue();
       TransferReturn ret = new TransferReturn(r.getFirst(), r.getSecond().not());
       return result.setReturnValue(ret);
@@ -346,7 +344,7 @@ public class TransferBDD {
       CallExpr c = (CallExpr) expr;
       String router = _conf.getHostname();
       String name = c.getCalledPolicyName();
-      TransferResult<TransferReturn, BDD> r = CACHE.get(router, name);
+      TransferResult r = CACHE.get(router, name);
       if (r != null) {
         return r;
       }
@@ -415,7 +413,7 @@ public class TransferBDD {
    */
   private TransferBDDState compute(Statement stmt, TransferBDDState state) {
     TransferParam<BDDRoute> curP = state.getTransferParam();
-    TransferResult<TransferReturn, BDD> result = state.getTransferResult();
+    TransferResult result = state.getTransferResult();
 
     if (stmt instanceof StaticStatement) {
       StaticStatement ss = (StaticStatement) stmt;
@@ -492,7 +490,7 @@ public class TransferBDD {
       curP.debug("If");
       If i = (If) stmt;
       /** TODO: Currently we are assuming that the guard is side-effect free. */
-      TransferResult<TransferReturn, BDD> r = compute(i.getGuard(), curP.indent());
+      TransferResult r = compute(i.getGuard(), curP.indent());
       BDD guard = r.getReturnValue().getSecond();
       curP.debug("guard: ");
 
@@ -508,7 +506,7 @@ public class TransferBDD {
        * we can track the conditions under which each of them is true/false.
        */
       // symbolically execute both branches from the current state
-      TransferResult<TransferReturn, BDD> trueBranch =
+      TransferResult trueBranch =
           compute(
                   i.getTrueStatements(),
                   new TransferBDDState(
@@ -517,7 +515,7 @@ public class TransferBDD {
               .getTransferResult();
       curP.debug("True Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
       curP.debug("False Branch");
-      TransferResult<TransferReturn, BDD> falseBranch =
+      TransferResult falseBranch =
           compute(
                   i.getFalseStatements(),
                   new TransferBDDState(
@@ -655,7 +653,7 @@ public class TransferBDD {
 
       TransferParam<BDDRoute> newParam = curP.indent().setCallContext(CallContext.STMT_CALL);
       // TODO: Currently dropping the returned TransferParam on the floor
-      TransferResult<TransferReturn, BDD> callResult =
+      TransferResult callResult =
           compute(
                   pol.getStatements(),
                   new TransferBDDState(
@@ -712,16 +710,11 @@ public class TransferBDD {
   }
 
   /** Symbolic analysis of a list of route-policy statements */
-  private TransferResult<TransferReturn, BDD> compute(
-      List<Statement> statements, TransferParam<BDDRoute> p) {
+  @VisibleForTesting
+  TransferResult compute(List<Statement> statements, TransferParam<BDDRoute> p) {
     TransferParam<BDDRoute> curP = p;
 
-    TransferResult<TransferReturn, BDD> result =
-        new TransferResult<>(
-            new TransferReturn(curP.getData(), factory.zero()),
-            factory.zero(),
-            factory.zero(),
-            factory.zero());
+    TransferResult result = new TransferResult(curP.getData());
 
     TransferBDDState state = compute(statements, new TransferBDDState(curP, result));
     curP = state.getTransferParam();
@@ -744,8 +737,7 @@ public class TransferBDD {
     return result;
   }
 
-  private TransferResult<TransferReturn, BDD> fallthrough(
-      TransferResult<TransferReturn, BDD> r, boolean val) {
+  private TransferResult fallthrough(TransferResult r, boolean val) {
     BDD notReached = unreachable(r);
     BDD fall = ite(notReached, r.getFallthroughValue(), mkBDD(val));
     BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), factory.one());
@@ -755,8 +747,8 @@ public class TransferBDD {
   /*
    * Wrap a simple boolean expression return value in a transfer function result
    */
-  private TransferResult<TransferReturn, BDD> fromExpr(TransferReturn b) {
-    return new TransferResult<TransferReturn, BDD>().setReturnValue(b);
+  private TransferResult fromExpr(TransferReturn ret) {
+    return new TransferResult(ret, factory.zero());
   }
 
   /*
@@ -864,8 +856,7 @@ public class TransferBDD {
     return ret;
   }
 
-  TransferResult<TransferReturn, BDD> ite(
-      BDD guard, TransferResult<TransferReturn, BDD> r1, TransferResult<TransferReturn, BDD> r2) {
+  TransferResult ite(BDD guard, TransferResult r1, TransferResult r2) {
     BDDRoute route = ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
     BDD accepted = ite(guard, r1.getReturnValue().getSecond(), r2.getReturnValue().getSecond());
 
@@ -873,8 +864,7 @@ public class TransferBDD {
     BDD retAsgn = ite(guard, r1.getReturnAssignedValue(), r2.getReturnAssignedValue());
     BDD fallThrough = ite(guard, r1.getFallthroughValue(), r2.getFallthroughValue());
 
-    return new TransferResult<TransferReturn, BDD>(
-        new TransferReturn(route, accepted), exitAsgn, fallThrough, retAsgn);
+    return new TransferResult(new TransferReturn(route, accepted), exitAsgn, fallThrough, retAsgn);
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
@@ -1063,18 +1053,17 @@ public class TransferBDD {
    * A BDD representing the conditions under which the current statement is not reachable, because
    * we've already returned or exited before getting there.
    *
-   * @param currState
-   * @return
+   * @param currState the current state of the analysis
+   * @return the bdd
    */
-  private static BDD unreachable(TransferResult<TransferReturn, BDD> currState) {
+  private static BDD unreachable(TransferResult currState) {
     return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
   }
 
   /*
    * Create the result of reaching a return statement, returning with the given value.
    */
-  private TransferResult<TransferReturn, BDD> returnValue(
-      TransferResult<TransferReturn, BDD> r, boolean val) {
+  private TransferResult returnValue(TransferResult r, boolean val) {
     BDD notReached = unreachable(r);
     BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
@@ -1085,8 +1074,7 @@ public class TransferBDD {
   /*
    * Create the result of reaching an exit statement, returning with the given value.
    */
-  private TransferResult<TransferReturn, BDD> exitValue(
-      TransferResult<TransferReturn, BDD> r, boolean val) {
+  private TransferResult exitValue(TransferResult r, boolean val) {
     BDD notReached = unreachable(r);
     BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
@@ -1124,14 +1112,14 @@ public class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public TransferResult<TransferReturn, BDD> compute(@Nullable Set<Prefix> ignoredNetworks) {
+  public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     _asPathRegexAtomicPredicates =
         _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     BDDRoute o = new BDDRoute(_graph);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
-    TransferResult<TransferReturn, BDD> result = compute(_statements, p);
+    TransferResult result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
     //    return result.getReturnValue().getFirst();
