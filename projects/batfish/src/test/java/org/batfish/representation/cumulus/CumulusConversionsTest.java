@@ -5,6 +5,9 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
+import static org.batfish.datamodel.RoutingProtocol.BGP;
+import static org.batfish.datamodel.RoutingProtocol.IBGP;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
@@ -17,7 +20,9 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeBgpPe
 import static org.batfish.representation.cumulus.CumulusConversions.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreas;
+import static org.batfish.representation.cumulus.CumulusConversions.computeOspfExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
+import static org.batfish.representation.cumulus.CumulusConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
 import static org.batfish.representation.cumulus.CumulusConversions.generateExportAggregateConditions;
@@ -37,6 +42,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilte
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -101,14 +107,17 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -1114,11 +1123,14 @@ public final class CumulusConversionsTest {
   @Test
   public void testToOspfProcess_NoRouterId() {
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    OspfProcess vsOspf = new OspfProcess();
+    vsConfig.setOspfProcess(vsOspf);
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_NCLU),
-            new CumulusNcluConfiguration(),
+            vsConfig,
             ospfVrf,
             ImmutableMap.of(),
             new Warnings());
@@ -1132,11 +1144,14 @@ public final class CumulusConversionsTest {
   @Test
   public void testToOspfProcess_InferRouterId() {
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    OspfProcess vsOspf = new OspfProcess();
+    vsConfig.setOspfProcess(vsOspf);
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             getConfigurationWithLoopback(ConcreteInterfaceAddress.parse("1.1.1.1/24")),
-            new CumulusNcluConfiguration(),
+            vsConfig,
             ospfVrf,
             ImmutableMap.of(),
             new Warnings());
@@ -1151,11 +1166,14 @@ public final class CumulusConversionsTest {
   public void testToOspfProcess_ConfigedRouterId() {
     OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
     ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    OspfProcess vsOspf = new OspfProcess();
+    vsConfig.setOspfProcess(vsOspf);
 
     org.batfish.datamodel.ospf.OspfProcess ospfProcess =
         toOspfProcess(
             new Configuration("dummy", ConfigurationFormat.CUMULUS_NCLU),
-            new CumulusNcluConfiguration(),
+            vsConfig,
             ospfVrf,
             ImmutableMap.of(),
             new Warnings());
@@ -1164,6 +1182,61 @@ public final class CumulusConversionsTest {
     assertThat(
         ospfProcess.getReferenceBandwidth(),
         equalTo(org.batfish.representation.cumulus.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testToOspfProcess_RedistributionPolicy() {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+
+    // Setup VS
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    // Setup OSPF
+    OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
+    ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
+    OspfProcess vsOspf = new OspfProcess();
+    vsConfig.setOspfProcess(vsOspf);
+
+    vsConfig.getRouteMaps().put("some-map", new RouteMap("some-map"));
+    String policyName = computeOspfExportPolicyName(ospfVrf.getVrfName());
+
+    toOspfProcess(viConfig, vsConfig, ospfVrf, ImmutableMap.of(), new Warnings());
+
+    assertEquals(
+        viConfig.getRoutingPolicies().get(policyName).getStatements(),
+        ImmutableList.of(
+            new SetOspfMetricType(OspfMetricType.E2), new SetMetric(new LiteralLong(20L))));
+  }
+
+  @Test
+  public void testConvertOspfRedistributionPolicy() {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+
+    // Setup VS
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+
+    // Setup OSPF
+    OspfVrf ospfVrf = new OspfVrf(DEFAULT_VRF_NAME);
+    ospfVrf.setRouterId(Ip.parse("1.2.3.4"));
+    OspfProcess vsOspf = new OspfProcess();
+    vsConfig.setOspfProcess(vsOspf);
+
+    RedistributionPolicy rp = new RedistributionPolicy(CumulusRoutingProtocol.BGP, "some-map");
+    vsConfig.getRouteMaps().put("some-map", new RouteMap("some-map"));
+
+    // Method under test
+    If policy = convertOspfRedistributionPolicy(rp, vsConfig.getRouteMaps());
+    List<BooleanExpr> guard = ((Conjunction) policy.getGuard()).getConjuncts();
+
+    assertThat(guard, contains(new MatchProtocol(BGP, IBGP), new CallExpr("some-map")));
+    assertThat(policy.getTrueStatements(), contains(ExitAccept.toStaticStatement()));
   }
 
   @Test

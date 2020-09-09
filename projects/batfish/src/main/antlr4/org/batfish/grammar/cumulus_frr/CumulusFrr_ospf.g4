@@ -14,6 +14,7 @@ s_router_ospf
     | ro_no
     | ro_passive_interface
     | ro_router_id
+    | ro_redistribute
   )*
 ;
 
@@ -37,6 +38,11 @@ rono_passive_interface
     ronopi_default
     | ronopi_interface_name
   )
+;
+
+ro_redistribute
+:
+  REDISTRIBUTE ospf_redist_type (ROUTE_MAP route_map_name)? NEWLINE
 ;
 
 ronopi_default

@@ -62,6 +62,11 @@ loglevel
     | WARNINGS
 ;
 
+ospf_redist_type
+:
+  STATIC | CONNECTED | BGP
+;
+
 prefix
 :
   IP_PREFIX
