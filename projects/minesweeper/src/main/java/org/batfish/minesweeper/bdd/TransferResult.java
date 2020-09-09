@@ -3,6 +3,7 @@ package org.batfish.minesweeper.bdd;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.parboiled.common.Preconditions;
 
 /**
  * This class is used to keep track of the state of the BDD-based symbolic control-plane analysis in
@@ -13,32 +14,24 @@ import net.sf.javabdd.BDD;
 public class TransferResult {
 
   // the current symbolic route information
-  @Nonnull private TransferReturn _returnValue;
+  @Nonnull private final TransferReturn _returnValue;
 
   /**
    * The following three fields are used to ensure that the analysis accurately identifies all and
    * only feasible execution paths through a route policy.
-   *
-   * <p>Some invariants that the route analysis should maintain:
-   *
-   * <p>_exitAssignedValue and _returnAssignedValue are disjoint, since they represent distinct ways
-   * in which a path through a route policy can be terminated
-   *
-   * <p>_fallthroughValue is a subset of _returnAssignedValue, namely the situations in which the
-   * policy's execution returns and signals that control flow should fall through to the next policy
    */
 
   /* predicate indicating when the analysis has hit a fall-through condition in the policy
   being analyzed, meaning that control flow should continue to the next policy */
-  @Nonnull private BDD _fallthroughValue;
+  @Nonnull private final BDD _fallthroughValue;
 
   /* predicate indicating when the anlaysis has hit an exit condition in the policy
   being analyzed, which represents the termination of the execution */
-  @Nonnull private BDD _exitAssignedValue;
+  @Nonnull private final BDD _exitAssignedValue;
 
   /* predicate indicating when the analysis has hit a return condition in the policy
   being analyzed, which represents the termination of a nested call to a routing policy */
-  @Nonnull private BDD _returnAssignedValue;
+  @Nonnull private final BDD _returnAssignedValue;
 
   // Construct a TransferResult from a BDDRoute, using the zero BDD for all BDDs
   public TransferResult(BDDRoute bddRoute) {
@@ -54,17 +47,14 @@ public class TransferResult {
       BDD exitAssignedValue,
       BDD fallThroughValue,
       BDD returnAssignedAValue) {
+    // the conditions for exiting and returning should be disjoint
+    Preconditions.checkArgument(!exitAssignedValue.andSat(returnAssignedAValue));
+    // the conditions for signaling to fall through should be a subset of those for returning
+    Preconditions.checkArgument(!fallThroughValue.diffSat(returnAssignedAValue));
     _returnValue = retVal;
     _exitAssignedValue = exitAssignedValue;
     _fallthroughValue = fallThroughValue;
     _returnAssignedValue = returnAssignedAValue;
-  }
-
-  private TransferResult(TransferResult other) {
-    _returnValue = other._returnValue;
-    _fallthroughValue = other._fallthroughValue;
-    _exitAssignedValue = other._exitAssignedValue;
-    _returnAssignedValue = other._returnAssignedValue;
   }
 
   @Nonnull
@@ -88,30 +78,26 @@ public class TransferResult {
   }
 
   @Nonnull
-  public TransferResult setReturnValue(TransferReturn x) {
-    TransferResult ret = new TransferResult(this);
-    ret._returnValue = x;
-    return ret;
+  public TransferResult setReturnValue(TransferReturn newReturn) {
+    return new TransferResult(
+        newReturn, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
   }
 
   @Nonnull
-  public TransferResult setFallthroughValue(BDD x) {
-    TransferResult ret = new TransferResult(this);
-    ret._fallthroughValue = x;
-    return ret;
+  public TransferResult setExitAssignedValue(BDD exitAssignedValue) {
+    return new TransferResult(
+        _returnValue, exitAssignedValue, _fallthroughValue, _returnAssignedValue);
   }
 
   @Nonnull
-  public TransferResult setReturnAssignedValue(BDD x) {
-    TransferResult ret = new TransferResult(this);
-    ret._returnAssignedValue = x;
-    return ret;
+  public TransferResult setFallthroughValue(BDD fallthroughValue) {
+    return new TransferResult(
+        _returnValue, _exitAssignedValue, fallthroughValue, _returnAssignedValue);
   }
 
   @Nonnull
-  public TransferResult setExitAssignedValue(BDD x) {
-    TransferResult ret = new TransferResult(this);
-    ret._exitAssignedValue = x;
-    return ret;
+  public TransferResult setReturnAssignedValue(BDD returnAssignedValue) {
+    return new TransferResult(
+        _returnValue, _exitAssignedValue, _fallthroughValue, returnAssignedValue);
   }
 }
