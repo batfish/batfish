@@ -711,31 +711,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
               "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
               proc.getDefaultVrf().getVrfName(), srcProtocol));
     }
-
-    //    BgpRedistributionPolicy oldRedistributionPolicy;
-    //
-    //    _currentBgpVrf.getOrCreateIpv4Unicast();
-    //
-    //    oldRedistributionPolicy =
-    //        _currentBgpVrf
-    //            .getIpv4Unicast()
-    //            .getRedistributionPolicies()
-    //            .put(srcProtocol, new BgpRedistributionPolicy(srcProtocol, routeMap));
-    //
-
-    //    VI_PROTOCOLS_MAP
-    //        .get(srcProtocol)
-    //        .forEach(
-    //            protocol -> {
-    //              RedistributionPolicy r = new RedistributionPolicy(protocol);
-    //              proc.getRedistributionPolicies().put(protocol, r);
-    //              if (routeMap != null) {
-    //                r.setRouteMap(routeMap);
-    //                _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
-    //              }
-    //              r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    //              r.setOnlyClassfulRoutes(false);
-    //            });
   }
 
   @Override
