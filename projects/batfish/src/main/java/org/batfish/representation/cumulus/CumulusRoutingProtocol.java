@@ -17,13 +17,16 @@ public enum CumulusRoutingProtocol {
    */
   public static final Map<CumulusRoutingProtocol, Set<RoutingProtocol>> VI_PROTOCOLS_MAP =
       ImmutableMap.of(
-          BGP, ImmutableSet.of(RoutingProtocol.BGP, RoutingProtocol.IBGP),
+          BGP,
+          ImmutableSet.of(RoutingProtocol.BGP, RoutingProtocol.IBGP),
           OSPF,
-              ImmutableSet.of(
-                  RoutingProtocol.OSPF,
-                  RoutingProtocol.OSPF_E1,
-                  RoutingProtocol.OSPF_E2,
-                  RoutingProtocol.OSPF_IA),
-          CONNECTED, ImmutableSet.of(RoutingProtocol.CONNECTED),
-          STATIC, ImmutableSet.of(RoutingProtocol.STATIC));
+          ImmutableSet.of(
+              RoutingProtocol.OSPF,
+              RoutingProtocol.OSPF_E1,
+              RoutingProtocol.OSPF_E2,
+              RoutingProtocol.OSPF_IA),
+          CONNECTED,
+          ImmutableSet.of(RoutingProtocol.CONNECTED),
+          STATIC,
+          ImmutableSet.of(RoutingProtocol.STATIC));
 }
