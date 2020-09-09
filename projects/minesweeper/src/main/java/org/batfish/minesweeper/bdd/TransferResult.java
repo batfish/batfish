@@ -3,7 +3,6 @@ package org.batfish.minesweeper.bdd;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.parboiled.common.Preconditions;
 
 /**
  * This class is used to keep track of the state of the BDD-based symbolic control-plane analysis in
@@ -13,7 +12,12 @@ import org.parboiled.common.Preconditions;
 @ParametersAreNonnullByDefault
 public class TransferResult {
 
-  // the current symbolic route information
+  /**
+   * the symbolic route information that is ultimately returned as the result of the analysis: a
+   * pair of a BDDRoute, which represents a route policy's output announcement as a function of the
+   * input announcement; and a BDD, which represents the conditions under which a route announcement
+   * is accepted by the route policy.
+   */
   @Nonnull private final TransferReturn _returnValue;
 
   /**
@@ -33,6 +37,19 @@ public class TransferResult {
   being analyzed, which represents the termination of a nested call to a routing policy */
   @Nonnull private final BDD _returnAssignedValue;
 
+  /**
+   * Some examples of how to use the information in this object:
+   *
+   * <p>_returnValue.getSecond().and(_exitAssignedValue) represents all scenarios in which the
+   * policy exits and permits the route
+   *
+   * <p>_returnValue.getSecond().not().and(_exitAssignedValue) represents all scenarios in which the
+   * * policy exits and denies the route
+   *
+   * <p>replacing _exitAssignedValue with _returnAssignedValue in the two examples above
+   * respectively represents all scenarios in which the policy returns true/false
+   */
+
   // Construct a TransferResult from a BDDRoute, using the zero BDD for all BDDs
   public TransferResult(BDDRoute bddRoute) {
     this(new TransferReturn(bddRoute, bddRoute.getFactory().zero()), bddRoute.getFactory().zero());
@@ -47,10 +64,10 @@ public class TransferResult {
       BDD exitAssignedValue,
       BDD fallThroughValue,
       BDD returnAssignedAValue) {
-    // the conditions for exiting and returning should be disjoint
-    Preconditions.checkArgument(!exitAssignedValue.andSat(returnAssignedAValue));
-    // the conditions for signaling to fall through should be a subset of those for returning
-    Preconditions.checkArgument(!fallThroughValue.diffSat(returnAssignedAValue));
+    assert !exitAssignedValue.andSat(returnAssignedAValue)
+        : "the predicates for exiting and returning should be disjoint";
+    assert !fallThroughValue.diffSat(returnAssignedAValue)
+        : "the predicate for signaling a fall-through should imply the predicate for returning";
     _returnValue = retVal;
     _exitAssignedValue = exitAssignedValue;
     _fallthroughValue = fallThroughValue;

@@ -53,12 +53,14 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.TransferParam;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
@@ -265,13 +267,17 @@ public class TransferBDDTest {
     _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
+    TransferResult result = tbdd.compute(ImmutableSet.of());
+    TransferReturn ret = result.getReturnValue();
+    BDD acceptedAnnouncements = ret.getSecond();
+    BDDRoute outAnnouncements = ret.getFirst();
 
     assertTrue(acceptedAnnouncements.isZero());
 
     assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+
+    assertTrue(result.getExitAssignedValue().isZero());
+    assertTrue(result.getReturnAssignedValue().isOne());
   }
 
   @Test
@@ -353,14 +359,74 @@ public class TransferBDDTest {
     _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
-    TransferResult ret = tbdd.compute(ImmutableSet.of());
+    TransferResult result = tbdd.compute(ImmutableSet.of());
+    TransferReturn ret = result.getReturnValue();
 
     BDD returnAssigned =
         isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
 
-    assertEquals(returnAssigned, ret.getReturnAssignedValue());
+    BDD permitted =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
-    assertEquals(returnAssigned.not(), ret.getExitAssignedValue());
+    assertEquals(returnAssigned, result.getReturnAssignedValue());
+
+    assertEquals(returnAssigned.not(), result.getExitAssignedValue());
+
+    assertEquals(permitted, ret.getSecond());
+    // at the top level, the update to local preference is ignored since it only occurs on
+    // paths that return false
+    assertEquals(tbdd.iteZero(permitted, _anyRoute), ret.getFirst());
+  }
+
+  @Test
+  public void testPartialReturnStatements() {
+    List<Statement> stmts =
+        ImmutableList.of(
+            new If(
+                matchPrefixSet(
+                    ImmutableList.of(
+                        new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+                ImmutableList.of(
+                    new SetLocalPreference(new LiteralLong(2)),
+                    Statements.ExitAccept.toStaticStatement())),
+            new If(
+                matchPrefixSet(
+                    ImmutableList.of(
+                        new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+                ImmutableList.of(
+                    new SetLocalPreference(new LiteralLong(3)),
+                    Statements.ReturnFalse.toStaticStatement())));
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    // indenting the parameter ensures that this will not be considered a top-level call,
+    // so a default exit reject will not be added, and route updates on paths that return
+    // false will not be removed
+    TransferParam<BDDRoute> p = new TransferParam<>(new BDDRoute(_g), false).indent();
+    TransferResult result = tbdd.compute(stmts, p);
+    TransferReturn ret = result.getReturnValue();
+
+    BDD returnAssigned =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
+
+    BDD exitAssigned =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+
+    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    BDDInteger localPref2 = BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 2);
+    BDDInteger localPref3 = BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 3);
+    expectedOut.setLocalPref(
+        localPref2.ite(exitAssigned, localPref3.ite(returnAssigned, expectedOut.getLocalPref())));
+
+    assertEquals(returnAssigned, result.getReturnAssignedValue());
+
+    assertEquals(exitAssigned, result.getExitAssignedValue());
+
+    assertEquals(exitAssigned, ret.getSecond());
+
+    assertEquals(expectedOut, ret.getFirst());
   }
 
   @Test

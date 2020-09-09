@@ -710,7 +710,8 @@ public class TransferBDD {
   }
 
   /** Symbolic analysis of a list of route-policy statements */
-  private TransferResult compute(List<Statement> statements, TransferParam<BDDRoute> p) {
+  @VisibleForTesting
+  TransferResult compute(List<Statement> statements, TransferParam<BDDRoute> p) {
     TransferParam<BDDRoute> curP = p;
 
     TransferResult result = new TransferResult(curP.getData());
