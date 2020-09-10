@@ -10,6 +10,7 @@ java_library(
     ]),
     deps = [
         "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:org_apache_logging_log4j_log4j_api",
     ],
 )
 
@@ -37,7 +38,9 @@ junit_tests(
     deps = [
         ":bdd",
         ":bdd_testlib",
+        "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
+        "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_hamcrest_hamcrest",
     ],
 )

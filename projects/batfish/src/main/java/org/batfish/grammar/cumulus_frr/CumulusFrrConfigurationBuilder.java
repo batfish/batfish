@@ -16,6 +16,9 @@ import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
@@ -64,6 +67,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_redist_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
@@ -83,6 +87,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
@@ -131,6 +136,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_shutdownContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_costContext;
@@ -173,6 +179,7 @@ import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
+import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
 import org.batfish.representation.cumulus.RouteMapContinue;
@@ -633,6 +640,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSi_shutdown(Si_shutdownContext ctx) {
+    _currentInterface.setShutdown(true);
+  }
+
+  @Override
   public void exitSiip_address(Siip_addressContext ctx) {
     if (_currentInterface == null) {
       _w.addWarning(ctx, ctx.getText(), _parser, "no interfaces found for address declaration");
@@ -657,6 +669,54 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
 
     _frr.getOspfProcess().getDefaultVrf().setRouterId(Ip.parse(ctx.ip.getText()));
+  }
+
+  @Override
+  public void exitRo_redistribute(Ro_redistributeContext ctx) {
+    String routeMap = ctx.route_map_name() == null ? null : ctx.route_map_name().getText();
+    handleToOspfRedistribution(ctx, ctx.ospf_redist_type(), routeMap);
+  }
+
+  public void handleToOspfRedistribution(
+      ParserRuleContext ctx,
+      Ospf_redist_typeContext ospfRedistTypeContext,
+      @Nullable String routeMap) {
+    CumulusRoutingProtocol srcProtocol;
+    CumulusStructureUsage usage;
+
+    if (ospfRedistTypeContext.STATIC() != null) {
+      usage = OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
+      srcProtocol = CumulusRoutingProtocol.STATIC;
+    } else if (ospfRedistTypeContext.CONNECTED() != null) {
+      usage = OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+      srcProtocol = CumulusRoutingProtocol.CONNECTED;
+    } else if (ospfRedistTypeContext.BGP() != null) {
+      usage = OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+      srcProtocol = CumulusRoutingProtocol.BGP;
+    } else {
+      throw new BatfishException("Unexpected redistribution protocol");
+    }
+
+    if (routeMap != null) {
+      _c.referenceStructure(ROUTE_MAP, routeMap, usage, ctx.getStart().getLine());
+    }
+
+    OspfProcess proc = _frr.getOspfProcess();
+
+    RedistributionPolicy oldRedistributionPolicy;
+    oldRedistributionPolicy =
+        proc.getRedistributionPolicies()
+            .put(srcProtocol, new RedistributionPolicy(srcProtocol, routeMap));
+
+    if (oldRedistributionPolicy != null) {
+      _w.addWarning(
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format(
+              "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
+              proc.getDefaultVrf().getVrfName(), srcProtocol));
+    }
   }
 
   @Override

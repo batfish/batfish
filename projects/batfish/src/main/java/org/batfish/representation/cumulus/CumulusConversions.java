@@ -82,6 +82,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -120,6 +121,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -136,6 +138,9 @@ public final class CumulusConversions {
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
+
+  private static final Long DEFAULT_REDISTRIBUTE_METRIC = 20L;
+  private static final OspfMetricType DEFAULT_REDISTRIBUTE_METRIC_TYPE = OspfMetricType.E2;
 
   public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
@@ -189,6 +194,10 @@ public final class CumulusConversions {
 
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
+  }
+
+  public static String computeOspfExportPolicyName(String vrfName) {
+    return String.format("~OSPF_EXPORT_POLICY:%s~", vrfName);
   }
 
   /**
@@ -1246,7 +1255,54 @@ public final class CumulusConversions {
 
     addOspfInterfaces(vsConfig, vrfInterfaces, proc.getProcessId(), w);
     proc.setAreas(computeOspfAreas(vsConfig, vrfInterfaces.keySet()));
+
+    // Handle Redistribution
+    String ospfExportPolicyName = computeOspfExportPolicyName(ospfVrf.getVrfName());
+    RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
+    c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
+    List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
+    proc.setExportPolicy(ospfExportPolicyName);
+
+    // In FRR, default metric-type is E2 and metric value is 20.
+    ospfExportStatements.add(new SetOspfMetricType(DEFAULT_REDISTRIBUTE_METRIC_TYPE));
+    ospfExportStatements.add(new SetMetric(new LiteralLong(DEFAULT_REDISTRIBUTE_METRIC)));
+
+    ospfExportStatements.addAll(
+        vsConfig.getOspfProcess().getRedistributionPolicies().values().stream()
+            .map(policy -> convertOspfRedistributionPolicy(policy, vsConfig.getRouteMaps()))
+            .collect(Collectors.toList()));
+
     return proc;
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  static If convertOspfRedistributionPolicy(
+      RedistributionPolicy policy, Map<String, RouteMap> routeMaps) {
+    CumulusRoutingProtocol protocol = policy.getCumulusRoutingProtocol();
+
+    // All redistribution must match the specified protocol.
+    Conjunction ospfExportConditions = new Conjunction();
+    ospfExportConditions.getConjuncts().add(new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol)));
+    ImmutableList.Builder<Statement> ospfExportStatements = ImmutableList.builder();
+
+    // If a route-map filter is present, honor it.
+    String exportRouteMapName = policy.getRouteMap();
+    if (exportRouteMapName != null) {
+      RouteMap exportRouteMap = routeMaps.get(exportRouteMapName);
+      if (exportRouteMap != null) {
+        ospfExportConditions.getConjuncts().add(new CallExpr(exportRouteMapName));
+      }
+    }
+
+    ospfExportStatements.add(Statements.ExitAccept.toStaticStatement());
+
+    // Construct the policy and add it before returning.
+    return new If(
+        "OSPF export routes for " + protocol.name(),
+        ospfExportConditions,
+        ospfExportStatements.build(),
+        ImmutableList.of());
   }
 
   /**

@@ -30,6 +30,8 @@ import org.batfish.datamodel.bgp.community.Community;
 @ParametersAreNonnullByDefault
 public final class CommunityVar extends SymbolicRegex implements Comparable<CommunityVar> {
 
+  public static final CommunityVar ALL_COMMUNITIES = CommunityVar.from(".*");
+
   private static final Comparator<CommunityVar> COMPARATOR =
       Comparator.comparing(CommunityVar::getType)
           .thenComparing(CommunityVar::getRegex)

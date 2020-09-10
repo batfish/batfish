@@ -57,9 +57,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
-import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1024,114 +1022,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Queue up the routes to be merged into our main RIB
     _changeSet.from(importRibDelta(_evpnRib, delta));
     return delta;
-  }
-
-  /**
-   * Compute type 5 routes to send to neighbors from the main RIB v4 routes.
-   *
-   * <p>Affects {@link #_type5RoutesToSendForEveryone} and {@link #_type5RoutesToSendPerNeighbor}
-   *
-   * @param srcVrf the name of the <em>source</em> VRF (i.e., the VRF whose main RIB routes we are
-   *     processing)
-   */
-  private void computeType5DeltaFromMainRibRoutes(
-      String srcVrf,
-      RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta,
-      NetworkConfigurations nc) {
-    RibDelta.Builder<EvpnType5Route> ebgpAll = RibDelta.builder();
-    RibDelta.Builder<EvpnType5Route> ibgpAll = RibDelta.builder();
-    for (EdgeId edge : _evpnType5IncomingRoutes.keySet()) {
-      RibDelta.Builder<EvpnType5Route> ebgp = RibDelta.builder();
-      RibDelta.Builder<EvpnType5Route> ibgp = RibDelta.builder();
-      BgpPeerConfig ourConfig = nc.getBgpPeerConfig(edge.head());
-      assert ourConfig != null;
-
-      mainRibDelta
-          .getActions()
-          .forEach(
-              ra -> {
-                AbstractRoute route = ra.getRoute().getRoute();
-                if (route instanceof Bgpv4Route) {
-                  // These routes came into scrVrf's main RIB from the srcVrf's BGP RIB,
-                  // so just convert them to type 5s and send to all neighbors
-                  bgpv4RouteToType5Route(ebgpAll, ibgpAll, ourConfig, ra, route, srcVrf);
-                } else if (!(route instanceof BgpRoute)) {
-                  if (ourConfig.getIpv4UnicastAddressFamily() == null) {
-                    return;
-                  }
-                  /*
-                   * This is crap.
-                   *
-                   * Since we don't keep locally converted routes in BGP RIB,
-                   * do a pretend export from abstract route to Bgpv4route,
-                   * and then convert that to a type 5 route
-                   *
-                   * Note that our export policies are per-neighbor so we keep a mapping of
-                   */
-                  BgpPeerConfigId remoteConfigId = edge.tail();
-                  BgpSessionProperties session = getSessionProperties(_topology, edge);
-                  Bgpv4Route bgpv4Route =
-                      exportNonBgpRouteToBgp(ra.getRoute(), remoteConfigId, ourConfig, session);
-                  if (bgpv4Route != null) {
-                    bgpv4RouteToType5Route(ebgp, ibgp, ourConfig, ra, bgpv4Route, srcVrf);
-                  }
-                }
-              });
-
-      BgpDelta<EvpnType5Route> existingDelta = _type5RoutesToSendPerNeighbor.get(edge);
-      BgpDelta<EvpnType5Route> computedDelta = new BgpDelta<>(ebgp.build(), ibgp.build());
-      if (existingDelta == null) {
-        _type5RoutesToSendPerNeighbor.put(edge, computedDelta);
-      } else {
-        _type5RoutesToSendPerNeighbor.put(edge, existingDelta.union(computedDelta));
-      }
-    }
-    // Since this function is called in a loop, union results to existing
-    _type5RoutesToSendForEveryone =
-        _type5RoutesToSendForEveryone.union(new BgpDelta<>(ebgpAll.build(), ibgpAll.build()));
-  }
-
-  private static void bgpv4RouteToType5Route(
-      Builder<EvpnType5Route> ebgpDeltaBuilder,
-      Builder<EvpnType5Route> ibgpDeltaBuilder,
-      BgpPeerConfig ourConfig,
-      RouteAdvertisement<? extends AnnotatedRoute<AbstractRoute>> ra,
-      AbstractRoute route,
-      String srcVrfName) {
-    if (ourConfig.getEvpnAddressFamily() == null) {
-      return;
-    }
-    ImmutableSet<Layer3VniConfig> allVniConfigs =
-        ourConfig.getEvpnAddressFamily().getL3VNIs().stream()
-            // Only advertise routes if permitted by VNI config
-            .filter(layer3VniConfig -> layer3VniConfig.getVrf().equals(srcVrfName))
-            .filter(Layer3VniConfig::getAdvertiseV4Unicast)
-            .collect(ImmutableSet.toImmutableSet());
-    for (VniConfig config : allVniConfigs) {
-      if (route.getProtocol() == RoutingProtocol.BGP) {
-        if (ra.isWithdrawn()) {
-          ebgpDeltaBuilder.remove(
-              toEvpnType5Route(
-                  (Bgpv4Route) route, config.getRouteDistinguisher(), config.getRouteTarget()),
-              ra.getReason());
-        } else {
-          ebgpDeltaBuilder.add(
-              toEvpnType5Route(
-                  (Bgpv4Route) route, config.getRouteDistinguisher(), config.getRouteTarget()));
-        }
-      } else if (route.getProtocol() == RoutingProtocol.IBGP) {
-        if (ra.isWithdrawn()) {
-          ibgpDeltaBuilder.remove(
-              toEvpnType5Route(
-                  (Bgpv4Route) route, config.getRouteDistinguisher(), config.getRouteTarget()),
-              ra.getReason());
-        } else {
-          ibgpDeltaBuilder.add(
-              toEvpnType5Route(
-                  (Bgpv4Route) route, config.getRouteDistinguisher(), config.getRouteTarget()));
-        }
-      }
-    }
   }
 
   /**

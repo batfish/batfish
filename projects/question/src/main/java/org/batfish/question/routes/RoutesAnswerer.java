@@ -204,7 +204,7 @@ public class RoutesAnswerer extends Answerer {
                     COL_AS_PATH, Schema.STRING, "Route's AS path", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
-                    COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
+                    COL_METRIC, Schema.LONG, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_LOCAL_PREF,
@@ -268,7 +268,7 @@ public class RoutesAnswerer extends Answerer {
                     COL_AS_PATH, Schema.STRING, "Route's AS path", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
-                    COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
+                    COL_METRIC, Schema.LONG, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_LOCAL_PREF,
@@ -337,7 +337,7 @@ public class RoutesAnswerer extends Answerer {
                     COL_PROTOCOL, Schema.STRING, "Route's Protocol", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
-                    COL_METRIC, Schema.INTEGER, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
+                    COL_METRIC, Schema.LONG, "Route's Metric", Boolean.FALSE, Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_ADMIN_DISTANCE,
@@ -355,7 +355,7 @@ public class RoutesAnswerer extends Answerer {
       ImmutableList.Builder<ColumnMetadata> columnBuilder) {
     columnBuilder.add(
         new ColumnMetadata(
-            COL_TAG, Schema.INTEGER, "Tag for this route", Boolean.FALSE, Boolean.TRUE));
+            COL_TAG, Schema.LONG, "Tag for this route", Boolean.FALSE, Boolean.TRUE));
   }
 
   /** Generate table columns that should be always present, at the start of table. */
@@ -429,14 +429,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_METRIC,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Metric",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_METRIC,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Metric",
                 Boolean.FALSE,
                 Boolean.TRUE));
@@ -558,14 +558,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_METRIC,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Metric",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_METRIC,
-                Schema.INTEGER,
+                Schema.LONG,
                 "Route's Metric",
                 Boolean.FALSE,
                 Boolean.TRUE));
@@ -587,14 +587,14 @@ public class RoutesAnswerer extends Answerer {
     columnBuilder.add(
         new ColumnMetadata(
             COL_BASE_PREFIX + COL_TAG,
-            Schema.INTEGER,
+            Schema.LONG,
             "Tag for this route",
             Boolean.FALSE,
             Boolean.TRUE));
     columnBuilder.add(
         new ColumnMetadata(
             COL_DELTA_PREFIX + COL_TAG,
-            Schema.INTEGER,
+            Schema.LONG,
             "Tag for this route",
             Boolean.FALSE,
             Boolean.TRUE));

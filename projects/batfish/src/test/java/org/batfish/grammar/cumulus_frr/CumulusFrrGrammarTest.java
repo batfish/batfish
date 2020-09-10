@@ -59,6 +59,7 @@ import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute.Builder;
@@ -82,6 +83,7 @@ import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusFrrConfiguration;
+import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.FrrInterface;
@@ -93,6 +95,7 @@ import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkType;
+import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -1579,6 +1582,98 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testOspfRedistributeConnected() {
+    parseLines("router ospf", "redistribute connected");
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.CONNECTED);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
+  public void testOspfRedistributeConnectedRouteMap() {
+    parseLines("router ospf", "redistribute connected route-map foo");
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.CONNECTED);
+    assertNotNull(policy);
+    assertThat(policy.getRouteMap(), equalTo("foo"));
+  }
+
+  @Test
+  public void testOspfRedistributeStatic() {
+    parseLines("router ospf", "redistribute static");
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.STATIC);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
+  public void testOspfRedistributeStaticRouteMap() {
+    parseLines("router ospf", "redistribute static route-map foo");
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.STATIC);
+    assertNotNull(policy);
+    assertThat(policy.getRouteMap(), equalTo("foo"));
+  }
+
+  @Test
+  public void testOspfRedistributeBgp() {
+    parseLines("router ospf", "redistribute bgp");
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.BGP);
+    assertNotNull(policy);
+    assertNull(policy.getRouteMap());
+  }
+
+  @Test
+  public void testOspfRedistributeBgpRouteMap() {
+    parseLines("router ospf", "redistribute bgp route-map foo");
+    RedistributionPolicy policy =
+        _frr.getOspfProcess().getRedistributionPolicies().get(CumulusRoutingProtocol.BGP);
+    assertNotNull(policy);
+    assertThat(policy.getRouteMap(), equalTo("foo"));
+  }
+
+  @Test
+  public void testOspfRedistributeBgpSetMetric_behavior() throws IOException {
+    /*
+      Three nodes in a line - frr-originator spawns a route into BGP, redistributor redistributes this route into OSPF and sets metric of 10k
+      We expect to see 10.2.2.2/32 with a Metric Type of E2 and Ospf Cost of 10k in frr-listener.
+    */
+
+    String snapshotName = "ospf-bgp-redist-set-metric";
+    List<String> configurationNames =
+        ImmutableList.of("frr-originator", "frr-listener", "frr-redistributor");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+
+    // frr-reoriginator should get a default route from frr-originator
+    assertThat(
+        dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(
+            equalTo(
+                OspfExternalType2Route.builder()
+                    .setNetwork(Prefix.parse("10.2.2.2/32"))
+                    .setNextHopIp(Ip.parse("10.1.1.2"))
+                    .setAdvertiser("frr-redistributor")
+                    .setAdmin(110)
+                    .setLsaMetric(10000L)
+                    .setArea(0L)
+                    .setCostToAdvertiser(10L)
+                    .setMetric(10000L)
+                    .build())));
+  }
+
+  @Test
   public void testCreatePhysicalInterfaceInFRR() {
     String name = "eth1";
     parse(String.format("interface %s\n", name));
@@ -1600,6 +1695,18 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _frr.getInterfaces().get("eth1").getIpAddresses(),
         equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
+  }
+
+  @Test
+  public void testSetInterfaceShutdown() {
+    parseLines("interface eth1", "shutdown");
+    assertTrue(_frr.getInterfaces().get("eth1").getShutdown());
+  }
+
+  @Test
+  public void testGetInterfaceShutdown() {
+    parseLines("interface eth1", "ip address 1.1.1.1/30");
+    assertFalse(_frr.getInterfaces().get("eth1").getShutdown());
   }
 
   @Test

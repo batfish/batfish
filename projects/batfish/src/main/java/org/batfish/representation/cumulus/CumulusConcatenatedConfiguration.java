@@ -247,6 +247,9 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     if (iface.getAlias() != null) {
       viIface.setDescription(iface.getAlias());
     }
+    if (iface.getShutdown()) {
+      viIface.setActive(false);
+    }
     if (!iface.getIpAddresses().isEmpty()) {
       viIface.setAddress(iface.getIpAddresses().get(0));
       viIface.setAllAddresses(

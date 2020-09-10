@@ -17,6 +17,8 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
+import org.batfish.datamodel.AsPathAccessList;
+import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -31,6 +33,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -57,12 +60,15 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
@@ -79,8 +85,10 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
-import org.batfish.minesweeper.TransferResult;
+import org.batfish.minesweeper.TransferParam.CallContext;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
@@ -89,9 +97,17 @@ public class TransferBDD {
 
   private static BDDFactory factory = BDDRoute.factory;
 
-  private static Table2<String, String, TransferResult<TransferReturn, BDD>> CACHE = new Table2<>();
+  private static Table2<String, String, TransferResult> CACHE = new Table2<>();
 
+  /**
+   * We track community and AS-path regexes by computing a set of atomic predicates for them. See
+   * {@link org.batfish.minesweeper.RegexAtomicPredicates}. During the symbolic route analysis, we
+   * simply need the map from each regex to its corresponding set of atomic predicates, each
+   * represented by a unique integer.
+   */
   private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
+
+  private Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
   private Configuration _conf;
 
@@ -162,11 +178,11 @@ public class TransferBDD {
     throw new BatfishException("int expr transfer function: " + e);
   }
 
-  // produce the union of all atomic predicates associated with any of the given community
-  // variables
-  private Set<Integer> atomicPredicatesFor(Set<CommunityVar> cvars) {
-    return cvars.stream()
-        .flatMap(c -> _communityAtomicPredicates.get(c).stream())
+  // produce the union of all atomic predicates associated with any of the given symbolic regexes
+  private <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
+      Set<T> regexes, Map<T, Set<Integer>> apMap) {
+    return regexes.stream()
+        .flatMap(r -> apMap.get(r).stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -174,7 +190,7 @@ public class TransferBDD {
    * Convert a Batfish AST boolean expression to a symbolic Z3 boolean expression
    * by performing inlining of stateful side effects.
    */
-  private TransferResult<TransferReturn, BDD> compute(BooleanExpr expr, TransferParam<BDDRoute> p) {
+  private TransferResult compute(BooleanExpr expr, TransferParam<BDDRoute> p) {
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
@@ -193,9 +209,9 @@ public class TransferBDD {
       p.debug("Conjunction");
       Conjunction c = (Conjunction) expr;
       BDD acc = factory.one();
-      TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+      TransferResult result = new TransferResult(p.getData());
       for (BooleanExpr be : c.getConjuncts()) {
-        TransferResult<TransferReturn, BDD> r = compute(be, p.indent());
+        TransferResult r = compute(be, p.indent());
         acc = acc.and(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
@@ -207,10 +223,9 @@ public class TransferBDD {
       p.debug("Disjunction");
       Disjunction d = (Disjunction) expr;
       BDD acc = factory.zero();
-      TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+      TransferResult result = new TransferResult(p.getData());
       for (BooleanExpr be : d.getDisjuncts()) {
-        TransferResult<TransferReturn, BDD> r = compute(be, p.indent());
-        result = result.addChangedVariables(r);
+        TransferResult r = compute(be, p.indent());
         acc = acc.or(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
@@ -231,7 +246,7 @@ public class TransferBDD {
         TransferReturn ret = new TransferReturn(p.getData(), factory.one());
         return fromExpr(ret);
       } else {
-        TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+        TransferResult result = new TransferResult(p.getData());
         TransferParam<BDDRoute> record = p;
         BDD acc = factory.zero();
         for (int i = conjuncts.size() - 1; i >= 0; i--) {
@@ -241,7 +256,7 @@ public class TransferBDD {
                   .setDefaultPolicy(null)
                   .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                   .indent();
-          TransferResult<TransferReturn, BDD> r = compute(conjunct, param);
+          TransferResult r = compute(conjunct, param);
           record = record.setData(r.getReturnValue().getFirst());
           acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
         }
@@ -262,7 +277,7 @@ public class TransferBDD {
         // No identity for an empty FirstMatchChain; default policy should always be set.
         throw new BatfishException("Default policy is not set");
       }
-      TransferResult<TransferReturn, BDD> result = new TransferResult<>();
+      TransferResult result = new TransferResult(p.getData());
       TransferParam<BDDRoute> record = p;
       BDD acc = factory.zero();
       for (int i = chainPolicies.size() - 1; i >= 0; i--) {
@@ -272,7 +287,7 @@ public class TransferBDD {
                 .setDefaultPolicy(null)
                 .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                 .indent();
-        TransferResult<TransferReturn, BDD> r = compute(policyMatcher, param);
+        TransferResult r = compute(policyMatcher, param);
         record = record.setData(r.getReturnValue().getFirst());
         acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
       }
@@ -283,7 +298,7 @@ public class TransferBDD {
     if (expr instanceof Not) {
       p.debug("mkNot");
       Not n = (Not) expr;
-      TransferResult<TransferReturn, BDD> result = compute(n.getExpr(), p);
+      TransferResult result = compute(n.getExpr(), p);
       TransferReturn r = result.getReturnValue();
       TransferReturn ret = new TransferReturn(r.getFirst(), r.getSecond().not());
       return result.setReturnValue(ret);
@@ -329,7 +344,7 @@ public class TransferBDD {
       CallExpr c = (CallExpr) expr;
       String router = _conf.getHostname();
       String name = c.getCalledPolicyName();
-      TransferResult<TransferReturn, BDD> r = CACHE.get(router, name);
+      TransferResult r = CACHE.get(router, name);
       if (r != null) {
         return r;
       }
@@ -384,8 +399,9 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchAsPath) {
       p.debug("MatchAsPath");
-      // System.out.println("Warning: use of unimplemented feature MatchAsPath");
-      TransferReturn ret = new TransferReturn(p.getData(), factory.one());
+      MatchAsPath matchAsPathNode = (MatchAsPath) expr;
+      BDD asPathPredicate = matchAsPath(p.indent(), _conf, matchAsPathNode.getExpr(), p.getData());
+      TransferReturn ret = new TransferReturn(p.getData(), asPathPredicate);
       return fromExpr(ret);
     }
 
@@ -393,310 +409,326 @@ public class TransferBDD {
   }
 
   /*
-   * Convert a list of statements into a boolean expression for the transfer function.
+   * Symbolic analysis of a single route-policy statement.
    */
-  private TransferResult<TransferReturn, BDD> compute(
-      List<Statement> statements, TransferParam<BDDRoute> p) {
-    TransferParam<BDDRoute> curP = p;
-    boolean doesReturn = false;
+  private TransferBDDState compute(Statement stmt, TransferBDDState state) {
+    TransferParam<BDDRoute> curP = state.getTransferParam();
+    TransferResult result = state.getTransferResult();
 
-    TransferResult<TransferReturn, BDD> result = new TransferResult<>();
-    result =
-        result
-            .setReturnValue(new TransferReturn(curP.getData(), factory.zero()))
-            .setFallthroughValue(factory.zero())
-            .setReturnAssignedValue(factory.zero());
+    if (stmt instanceof StaticStatement) {
+      StaticStatement ss = (StaticStatement) stmt;
 
-    for (Statement stmt : statements) {
+      switch (ss.getType()) {
+        case ExitAccept:
+          curP.debug("ExitAccept");
+          result = exitValue(result, true);
+          break;
 
-      if (stmt instanceof StaticStatement) {
-        StaticStatement ss = (StaticStatement) stmt;
+        case ReturnTrue:
+          curP.debug("ReturnTrue");
+          result = returnValue(result, true);
+          break;
 
-        switch (ss.getType()) {
-          case ExitAccept:
-            doesReturn = true;
-            curP.debug("ExitAccept");
-            result = returnValue(result, true);
-            break;
+        case ExitReject:
+          curP.debug("ExitReject");
+          result = exitValue(result, false);
+          break;
 
-            // TODO: implement proper unsuppression of routes covered by aggregates
-          case Unsuppress:
-          case ReturnTrue:
-            doesReturn = true;
-            curP.debug("ReturnTrue");
-            result = returnValue(result, true);
-            break;
+        case ReturnFalse:
+          curP.debug("ReturnFalse");
+          result = returnValue(result, false);
+          break;
 
-          case ExitReject:
-            doesReturn = true;
-            curP.debug("ExitReject");
-            result = returnValue(result, false);
-            break;
+        case SetDefaultActionAccept:
+          curP.debug("SetDefaultActionAccept");
+          curP = curP.setDefaultAccept(true);
+          break;
 
-            // TODO: implement proper suppression of routes covered by aggregates
-          case Suppress:
-          case ReturnFalse:
-            doesReturn = true;
-            curP.debug("ReturnFalse");
-            result = returnValue(result, false);
-            break;
+        case SetDefaultActionReject:
+          curP.debug("SetDefaultActionReject");
+          curP = curP.setDefaultAccept(false);
+          break;
 
-          case SetDefaultActionAccept:
-            curP.debug("SetDefaulActionAccept");
-            curP = curP.setDefaultAccept(true);
-            break;
+        case SetLocalDefaultActionAccept:
+          curP.debug("SetLocalDefaultActionAccept");
+          curP = curP.setDefaultAcceptLocal(true);
+          break;
 
-          case SetDefaultActionReject:
-            curP.debug("SetDefaultActionReject");
-            curP = curP.setDefaultAccept(false);
-            break;
+        case SetLocalDefaultActionReject:
+          curP.debug("SetLocalDefaultActionReject");
+          curP = curP.setDefaultAcceptLocal(false);
+          break;
 
-          case SetLocalDefaultActionAccept:
-            curP.debug("SetLocalDefaultActionAccept");
-            curP = curP.setDefaultAcceptLocal(true);
-            break;
+        case ReturnLocalDefaultAction:
+          curP.debug("ReturnLocalDefaultAction");
+          result = returnValue(result, curP.getDefaultAcceptLocal());
+          break;
 
-          case SetLocalDefaultActionReject:
-            curP.debug("SetLocalDefaultActionReject");
-            curP = curP.setDefaultAcceptLocal(false);
-            break;
+        case DefaultAction:
+          curP.debug("DefaultAction");
+          result = exitValue(result, curP.getDefaultAccept());
+          break;
 
-          case ReturnLocalDefaultAction:
-            curP.debug("ReturnLocalDefaultAction");
-            // TODO: need to set local default action in an environment
-            if (curP.getDefaultAcceptLocal()) {
-              result = returnValue(result, true);
-            } else {
-              result = returnValue(result, false);
-            }
-            break;
+        case FallThrough:
+          curP.debug("Fallthrough");
+          result = fallthrough(result, true);
+          break;
 
-          case FallThrough:
-            curP.debug("Fallthrough");
-            result = fallthrough(result);
-            break;
+        case Return:
+          curP.debug("Return");
+          result =
+              result.setReturnAssignedValue(
+                  ite(unreachable(result), result.getReturnAssignedValue(), factory.one()));
+          break;
 
-          case Return:
-            // TODO: assumming this happens at the end of the function, so it is ignored for now.
-            curP.debug("Return");
-            break;
-
-          case RemovePrivateAs:
-            curP.debug("RemovePrivateAs");
-            // System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
-            break;
-
-          default:
-            throw new BatfishException("TODO: computeTransferFunction: " + ss.getType());
-        }
-
-      } else if (stmt instanceof If) {
-        curP.debug("If");
-        If i = (If) stmt;
-        TransferResult<TransferReturn, BDD> r = compute(i.getGuard(), curP.indent());
-        BDD guard = r.getReturnValue().getSecond();
-        curP.debug("guard: ");
-
-        BDDRoute current = result.getReturnValue().getFirst();
-
-        TransferParam<BDDRoute> pTrue = curP.indent().setData(current.deepCopy());
-        TransferParam<BDDRoute> pFalse = curP.indent().setData(current.deepCopy());
-        curP.debug("True Branch");
-        TransferResult<TransferReturn, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
-        curP.debug("True Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
-        curP.debug("False Branch");
-        TransferResult<TransferReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
-        curP.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
-
-        // update return values
-
-        // this bdd is used below to account for the fact that we may have already hit a
-        // return/exit statement earlier on this path
-        BDD alreadyReturned = result.getReturnAssignedValue();
-
-        BDDRoute r1 = trueBranch.getReturnValue().getFirst();
-        BDDRoute r2 = falseBranch.getReturnValue().getFirst();
-        BDDRoute recordVal =
-            ite(alreadyReturned, result.getReturnValue().getFirst(), ite(guard, r1, r2));
-
-        BDD returnVal =
-            ite(
-                alreadyReturned,
-                result.getReturnValue().getSecond(),
-                ite(
-                    guard,
-                    trueBranch.getReturnValue().getSecond(),
-                    falseBranch.getReturnValue().getSecond()));
-
-        // p.debug("New Return Value (neg): " + returnVal.not());
-
-        BDD returnAss =
-            alreadyReturned.or(
-                ite(
-                    guard,
-                    trueBranch.getReturnAssignedValue(),
-                    falseBranch.getReturnAssignedValue()));
-
-        // p.debug("New Return Assigned: " + returnAss);
-
-        BDD fallThrough =
-            ite(
-                alreadyReturned,
-                result.getFallthroughValue(),
-                ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue()));
-
-        // p.debug("New fallthrough: " + fallThrough);
-
-        result =
-            result
-                .setReturnValue(new TransferReturn(recordVal, returnVal))
-                .setReturnAssignedValue(returnAss)
-                .setFallthroughValue(fallThrough);
-
-        curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
-
-      } else if (stmt instanceof SetDefaultPolicy) {
-        curP.debug("SetDefaultPolicy");
-        curP = curP.setDefaultPolicy((SetDefaultPolicy) stmt);
-
-      } else if (stmt instanceof SetMetric) {
-        curP.debug("SetMetric");
-        SetMetric sm = (SetMetric) stmt;
-        LongExpr ie = sm.getMetric();
-        BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
-        // update the MED if the protocol is BGP, and otherwise update the metric
-        // TODO: is this the right thing to do?
-        BDD ignoreMed = isBGP.not().or(result.getReturnAssignedValue());
-        BDD ignoreMet = isBGP.or(result.getReturnAssignedValue());
-        BDDInteger med =
-            ite(
-                ignoreMed,
-                curP.getData().getMed(),
-                applyLongExprModification(curP.indent(), curP.getData().getMed(), ie));
-        BDDInteger met =
-            ite(
-                ignoreMet,
-                curP.getData().getMetric(),
-                applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie));
-        curP.getData().setMed(med);
-        curP.getData().setMetric(met);
-
-      } else if (stmt instanceof SetOspfMetricType) {
-        curP.debug("SetOspfMetricType");
-        SetOspfMetricType somt = (SetOspfMetricType) stmt;
-        OspfMetricType mt = somt.getMetricType();
-        BDDDomain<OspfType> current = result.getReturnValue().getFirst().getOspfMetric();
-        BDDDomain<OspfType> newValue = new BDDDomain<>(current);
-        if (mt == OspfMetricType.E1) {
-          curP.indent().debug("Value: E1");
-          newValue.setValue(OspfType.E1);
-        } else {
-          curP.indent().debug("Value: E2");
-          newValue.setValue(OspfType.E1);
-        }
-        newValue = ite(result.getReturnAssignedValue(), curP.getData().getOspfMetric(), newValue);
-        curP.getData().setOspfMetric(newValue);
-
-      } else if (stmt instanceof SetLocalPreference) {
-        curP.debug("SetLocalPreference");
-        SetLocalPreference slp = (SetLocalPreference) stmt;
-        LongExpr ie = slp.getLocalPreference();
-        BDDInteger newValue =
-            applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
-        newValue = ite(result.getReturnAssignedValue(), curP.getData().getLocalPref(), newValue);
-        curP.getData().setLocalPref(newValue);
-
-      } else if (stmt instanceof AddCommunity) {
-        curP.debug("AddCommunity");
-        AddCommunity ac = (AddCommunity) stmt;
-        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-        // set all atomic predicates associated with these communities to 1 if this statement
-        // is reached
-        Set<Integer> commAPs = atomicPredicatesFor(comms);
-        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
-        for (int ap : commAPs) {
-          curP.indent().debug("Value: " + ap);
-          BDD comm = commAPBDDs[ap];
-          // on paths where the route policy has already hit a Return or Exit statement earlier,
-          // this AddCommunity statement will not be reached so the atomic predicate's value should
-          // be unchanged; otherwise it should be set to 1.
-          BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-          curP.indent().debug("New Value: " + newValue);
-          commAPBDDs[ap] = newValue;
-        }
-
-      } else if (stmt instanceof SetCommunity) {
-        curP.debug("SetCommunity");
-        SetCommunity sc = (SetCommunity) stmt;
-        Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
-        // set all atomic predicates associated with these communities to 1, and all other
-        // atomic predicates to zero, if this statement is reached
-        Set<Integer> commAPs = atomicPredicatesFor(comms);
-        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
-        BDD retassign = result.getReturnAssignedValue();
-        for (int ap = 0; ap < commAPBDDs.length; ap++) {
-          curP.indent().debug("Value: " + ap);
-          BDD comm = commAPBDDs[ap];
-          BDD newValue =
-              ite(retassign, comm, commAPs.contains(ap) ? factory.one() : factory.zero());
-          curP.indent().debug("New Value: " + newValue);
-          commAPBDDs[ap] = newValue;
-        }
-
-      } else if (stmt instanceof DeleteCommunity) {
-        curP.debug("DeleteCommunity");
-        DeleteCommunity ac = (DeleteCommunity) stmt;
-        Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-        // set all atomic predicates associated with these communities to 0 on this path
-        Set<Integer> commAPs = atomicPredicatesFor(comms);
-        BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicateBDDs();
-        BDD retassign = result.getReturnAssignedValue();
-        for (int ap : commAPs) {
-          curP.indent().debug("Value: " + ap);
-          BDD comm = commAPBDDs[ap];
-          BDD newValue = ite(retassign, comm, factory.zero());
-          curP.indent().debug("New Value: " + newValue);
-          commAPBDDs[ap] = newValue;
-        }
-
-      } else if (stmt instanceof PrependAsPath) {
-        curP.debug("PrependAsPath");
-        PrependAsPath pap = (PrependAsPath) stmt;
-        int prependCost = prependLength(pap.getExpr());
-        curP.indent().debug("Cost: " + prependCost);
-        BDDInteger met = curP.getData().getMetric();
-        BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
-        newValue = ite(result.getReturnAssignedValue(), curP.getData().getMetric(), newValue);
-        curP.getData().setMetric(newValue);
-
-      } else if (stmt instanceof SetOrigin) {
-        curP.debug("SetOrigin");
-        // System.out.println("Warning: use of unimplemented feature SetOrigin");
-        // TODO: implement me
-
-      } else if (stmt instanceof SetNextHop) {
-        curP.debug("SetNextHop");
-        // System.out.println("Warning: use of unimplemented feature SetNextHop");
-        // TODO: implement me
-
-      } else {
-        throw new BatfishException("TODO: statement transfer function: " + stmt);
+        default:
+          throw new BatfishException(
+              "Unhandled statement in route policy analysis: " + ss.getType());
       }
+
+    } else if (stmt instanceof If) {
+      curP.debug("If");
+      If i = (If) stmt;
+      /** TODO: Currently we are assuming that the guard is side-effect free. */
+      TransferResult r = compute(i.getGuard(), curP.indent());
+      BDD guard = r.getReturnValue().getSecond();
+      curP.debug("guard: ");
+
+      BDDRoute current = result.getReturnValue().getFirst();
+
+      // copy the current BDDRoute so we can separately track any updates on the two branches
+      TransferParam<BDDRoute> pTrue = curP.indent().setData(current.deepCopy());
+      TransferParam<BDDRoute> pFalse = curP.indent().setData(current.deepCopy());
+      curP.debug("True Branch");
+      /**
+       * TODO: any updates to the TransferParam in the branches, for example updates to the default
+       * action, are lost. In general it seems we need to replace the booleans there with BDDs, so
+       * we can track the conditions under which each of them is true/false.
+       */
+      // symbolically execute both branches from the current state
+      TransferResult trueBranch =
+          compute(
+                  i.getTrueStatements(),
+                  new TransferBDDState(
+                      pTrue,
+                      result.setReturnValue(new TransferReturn(pTrue.getData(), factory.zero()))))
+              .getTransferResult();
+      curP.debug("True Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
+      curP.debug("False Branch");
+      TransferResult falseBranch =
+          compute(
+                  i.getFalseStatements(),
+                  new TransferBDDState(
+                      pFalse,
+                      result.setReturnValue(new TransferReturn(pFalse.getData(), factory.zero()))))
+              .getTransferResult();
+      curP.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
+
+      // update return values
+
+      BDD alreadyReturned = unreachable(result);
+
+      result = ite(alreadyReturned, result, ite(guard, trueBranch, falseBranch));
+
+      curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
+
+    } else if (stmt instanceof SetDefaultPolicy) {
+      curP.debug("SetDefaultPolicy");
+      curP = curP.setDefaultPolicy((SetDefaultPolicy) stmt);
+
+    } else if (stmt instanceof SetMetric) {
+      curP.debug("SetMetric");
+      SetMetric sm = (SetMetric) stmt;
+      LongExpr ie = sm.getMetric();
+      BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
+      // update the MED if the protocol is BGP, and otherwise update the metric
+      // TODO: is this the right thing to do?
+      BDD ignoreMed = isBGP.not().or(unreachable(result));
+      BDD ignoreMet = isBGP.or(unreachable(result));
+      BDDInteger med =
+          ite(
+              ignoreMed,
+              curP.getData().getMed(),
+              applyLongExprModification(curP.indent(), curP.getData().getMed(), ie));
+      BDDInteger met =
+          ite(
+              ignoreMet,
+              curP.getData().getMetric(),
+              applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie));
+      curP.getData().setMed(med);
+      curP.getData().setMetric(met);
+
+    } else if (stmt instanceof SetOspfMetricType) {
+      curP.debug("SetOspfMetricType");
+      SetOspfMetricType somt = (SetOspfMetricType) stmt;
+      OspfMetricType mt = somt.getMetricType();
+      BDDDomain<OspfType> current = result.getReturnValue().getFirst().getOspfMetric();
+      BDDDomain<OspfType> newValue = new BDDDomain<>(current);
+      if (mt == OspfMetricType.E1) {
+        curP.indent().debug("Value: E1");
+        newValue.setValue(OspfType.E1);
+      } else {
+        curP.indent().debug("Value: E2");
+        newValue.setValue(OspfType.E1);
+      }
+      newValue = ite(unreachable(result), curP.getData().getOspfMetric(), newValue);
+      curP.getData().setOspfMetric(newValue);
+
+    } else if (stmt instanceof SetLocalPreference) {
+      curP.debug("SetLocalPreference");
+      SetLocalPreference slp = (SetLocalPreference) stmt;
+      LongExpr ie = slp.getLocalPreference();
+      BDDInteger newValue =
+          applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
+      newValue = ite(unreachable(result), curP.getData().getLocalPref(), newValue);
+      curP.getData().setLocalPref(newValue);
+
+    } else if (stmt instanceof AddCommunity) {
+      curP.debug("AddCommunity");
+      AddCommunity ac = (AddCommunity) stmt;
+      Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
+      // set all atomic predicates associated with these communities to 1 if this statement
+      // is reached
+      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+      for (int ap : commAPs) {
+        curP.indent().debug("Value: " + ap);
+        BDD comm = commAPBDDs[ap];
+        // on paths where the route policy has already hit a Return or Exit statement earlier,
+        // this AddCommunity statement will not be reached so the atomic predicate's value should
+        // be unchanged; otherwise it should be set to 1.
+        BDD newValue = ite(unreachable(result), comm, factory.one());
+        curP.indent().debug("New Value: " + newValue);
+        commAPBDDs[ap] = newValue;
+      }
+
+    } else if (stmt instanceof SetCommunity) {
+      curP.debug("SetCommunity");
+      SetCommunity sc = (SetCommunity) stmt;
+      Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
+      // set all atomic predicates associated with these communities to 1, and all other
+      // atomic predicates to zero, if this statement is reached
+      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+      for (int ap = 0; ap < commAPBDDs.length; ap++) {
+        curP.indent().debug("Value: " + ap);
+        BDD comm = commAPBDDs[ap];
+        BDD newValue =
+            ite(unreachable(result), comm, commAPs.contains(ap) ? factory.one() : factory.zero());
+        curP.indent().debug("New Value: " + newValue);
+        commAPBDDs[ap] = newValue;
+      }
+
+    } else if (stmt instanceof DeleteCommunity) {
+      curP.debug("DeleteCommunity");
+      DeleteCommunity ac = (DeleteCommunity) stmt;
+      Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
+      // set all atomic predicates associated with these communities to 0 on this path
+      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+      for (int ap : commAPs) {
+        curP.indent().debug("Value: " + ap);
+        BDD comm = commAPBDDs[ap];
+        BDD newValue = ite(unreachable(result), comm, factory.zero());
+        curP.indent().debug("New Value: " + newValue);
+        commAPBDDs[ap] = newValue;
+      }
+
+    } else if (stmt instanceof CallStatement) {
+
+      /*
+       this code is based on the concrete semantics defined by CallStatement::execute, which also
+       relies on RoutingPolicy::call
+      */
+      curP.debug("CallStatement");
+      CallStatement cs = (CallStatement) stmt;
+      String name = cs.getCalledPolicyName();
+      RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
+      if (pol == null) {
+        throw new BatfishException("Called route policy does not exist: " + name);
+      }
+
+      // save callee state
+      BDD oldReturnAssigned = result.getReturnAssignedValue();
+
+      TransferParam<BDDRoute> newParam = curP.indent().setCallContext(CallContext.STMT_CALL);
+      // TODO: Currently dropping the returned TransferParam on the floor
+      TransferResult callResult =
+          compute(
+                  pol.getStatements(),
+                  new TransferBDDState(
+                      newParam,
+                      result
+                          .setReturnValue(new TransferReturn(newParam.getData(), factory.zero()))
+                          .setReturnAssignedValue(factory.zero())))
+              .getTransferResult();
+
+      // restore the original returnAssigned value
+      result = callResult.setReturnAssignedValue(oldReturnAssigned);
+
+    } else if (stmt instanceof BufferedStatement) {
+      curP.debug("BufferedStatement");
+      BufferedStatement bufStmt = (BufferedStatement) stmt;
+      /**
+       * The {@link Environment} class for simulating route policies keeps track of whether a
+       * statement is buffered, but it currently does not seem to ever use that information. So we
+       * ignore it.
+       */
+      return compute(bufStmt.getStatement(), new TransferBDDState(curP, result));
+    } else if (stmt instanceof PrependAsPath) {
+      curP.debug("PrependAsPath");
+      PrependAsPath pap = (PrependAsPath) stmt;
+      int prependCost = prependLength(pap.getExpr());
+      curP.indent().debug("Cost: " + prependCost);
+      BDDInteger met = curP.getData().getMetric();
+      BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
+      newValue = ite(unreachable(result), curP.getData().getMetric(), newValue);
+      curP.getData().setMetric(newValue);
+
+    } else if (stmt instanceof SetOrigin) {
+      curP.debug("SetOrigin");
+      // System.out.println("Warning: use of unimplemented feature SetOrigin");
+      // TODO: implement me
+
+    } else if (stmt instanceof SetNextHop) {
+      curP.debug("SetNextHop");
+      // System.out.println("Warning: use of unimplemented feature SetNextHop");
+      // TODO: implement me
+
+    } else {
+      throw new BatfishException("TODO: statement transfer function: " + stmt);
     }
+    return new TransferBDDState(curP, result);
+  }
+
+  private TransferBDDState compute(List<Statement> statements, TransferBDDState state) {
+    TransferBDDState currState = state;
+    for (Statement stmt : statements) {
+      currState = compute(stmt, currState);
+    }
+    return currState;
+  }
+
+  /** Symbolic analysis of a list of route-policy statements */
+  @VisibleForTesting
+  TransferResult compute(List<Statement> statements, TransferParam<BDDRoute> p) {
+    TransferParam<BDDRoute> curP = p;
+
+    TransferResult result = new TransferResult(curP.getData());
+
+    TransferBDDState state = compute(statements, new TransferBDDState(curP, result));
+    curP = state.getTransferParam();
+    result = state.getTransferResult();
 
     // If this is the outermost call, then we relate the variables
     if (curP.getInitialCall()) {
       curP.debug("InitialCall finalizing");
-      // Apply the default action
-      if (!doesReturn) {
-        curP.debug("Applying default action: " + curP.getDefaultAccept());
-        if (curP.getDefaultAccept()) {
-          result = returnValue(result, true);
-        } else {
-          result = returnValue(result, false);
-        }
+      // incorporate the default action
+      if (curP.getDefaultAccept()) {
+        result = exitValue(result, true);
+      } else {
+        result = exitValue(result, false);
       }
-
       // Set all the values to 0 if the return is not true;
       TransferReturn ret = result.getReturnValue();
       BDDRoute retVal = iteZero(ret.getSecond(), ret.getFirst());
@@ -705,18 +737,18 @@ public class TransferBDD {
     return result;
   }
 
-  private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
-    return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
+  private TransferResult fallthrough(TransferResult r, boolean val) {
+    BDD notReached = unreachable(r);
+    BDD fall = ite(notReached, r.getFallthroughValue(), mkBDD(val));
+    BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), factory.one());
+    return r.setFallthroughValue(fall).setReturnAssignedValue(retAsgn);
   }
 
   /*
    * Wrap a simple boolean expression return value in a transfer function result
    */
-  private TransferResult<TransferReturn, BDD> fromExpr(TransferReturn b) {
-    return new TransferResult<TransferReturn, BDD>()
-        .setReturnAssignedValue(factory.one())
-        .setReturnValue(b);
+  private TransferResult fromExpr(TransferReturn ret) {
+    return new TransferResult(ret, factory.zero());
   }
 
   /*
@@ -771,7 +803,10 @@ public class TransferBDD {
 
   @VisibleForTesting
   BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
-    BDDRoute ret = new BDDRoute(_graph.getCommunityAtomicPredicates().getNumAtomicPredicates());
+    BDDRoute ret =
+        new BDDRoute(
+            _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+            _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
     BDDInteger x;
     BDDInteger y;
@@ -801,11 +836,17 @@ public class TransferBDD {
     y = r2.getMed();
     ret.getMed().setValue(ite(guard, x, y));
 
-    BDD[] retCommAPs = ret.getCommunityAtomicPredicateBDDs();
-    BDD[] r1CommAPs = r1.getCommunityAtomicPredicateBDDs();
-    BDD[] r2CommAPs = r2.getCommunityAtomicPredicateBDDs();
+    BDD[] retCommAPs = ret.getCommunityAtomicPredicates();
+    BDD[] r1CommAPs = r1.getCommunityAtomicPredicates();
+    BDD[] r2CommAPs = r2.getCommunityAtomicPredicates();
     for (int i = 0; i < _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
       retCommAPs[i] = ite(guard, r1CommAPs[i], r2CommAPs[i]);
+    }
+    BDD[] retAsPathRegexAPs = ret.getAsPathRegexAtomicPredicates();
+    BDD[] r1AsPathRegexAPs = r1.getAsPathRegexAtomicPredicates();
+    BDD[] r2AsPathRegexAPs = r2.getAsPathRegexAtomicPredicates();
+    for (int i = 0; i < _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
+      retAsPathRegexAPs[i] = ite(guard, r1AsPathRegexAPs[i], r2AsPathRegexAPs[i]);
     }
 
     // BDDInteger i =
@@ -813,6 +854,51 @@ public class TransferBDD {
     // ret.getProtocolHistory().setInteger(i);
 
     return ret;
+  }
+
+  TransferResult ite(BDD guard, TransferResult r1, TransferResult r2) {
+    BDDRoute route = ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
+    BDD accepted = ite(guard, r1.getReturnValue().getSecond(), r2.getReturnValue().getSecond());
+
+    BDD exitAsgn = ite(guard, r1.getExitAssignedValue(), r2.getExitAssignedValue());
+    BDD retAsgn = ite(guard, r1.getReturnAssignedValue(), r2.getReturnAssignedValue());
+    BDD fallThrough = ite(guard, r1.getFallthroughValue(), r2.getFallthroughValue());
+
+    return new TransferResult(new TransferReturn(route, accepted), exitAsgn, fallThrough, retAsgn);
+  }
+
+  // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
+  private BDD matchAsPath(
+      TransferParam<BDDRoute> p, Configuration conf, AsPathSetExpr e, BDDRoute other) {
+    if (e instanceof NamedAsPathSet) {
+      NamedAsPathSet namedAsPathSet = (NamedAsPathSet) e;
+      AsPathAccessList accessList = conf.getAsPathAccessLists().get(namedAsPathSet.getName());
+      p.debug("Named As Path Set: " + namedAsPathSet.getName());
+      return matchAsPathAccessList(accessList, other);
+    }
+    // TODO: handle other kinds of AsPathSetExprs
+    throw new BatfishException("Unhandled match as-path expression " + e);
+  }
+
+  /* Convert an AS-path access list to a boolean formula represented as a BDD. */
+  private BDD matchAsPathAccessList(AsPathAccessList accessList, BDDRoute other) {
+    List<AsPathAccessListLine> lines = new ArrayList<>(accessList.getLines());
+    Collections.reverse(lines);
+    BDD acc = factory.zero();
+    for (AsPathAccessListLine line : lines) {
+      boolean action = (line.getAction() == LineAction.PERMIT);
+      // each line's regex is represented as the disjunction of all of the regex's
+      // corresponding atomic predicates
+      SymbolicAsPathRegex regex = new SymbolicAsPathRegex(line.getRegex());
+      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(regex), _asPathRegexAtomicPredicates);
+      BDD regexAPBdd =
+          factory.orAll(
+              aps.stream()
+                  .map(ap -> other.getAsPathRegexAtomicPredicates()[ap])
+                  .collect(Collectors.toList()));
+      acc = ite(regexAPBdd, mkBDD(action), acc);
+    }
+    return acc;
   }
 
   /*
@@ -829,11 +915,11 @@ public class TransferBDD {
       p.debug("Action: " + line.getAction());
       // the community cvar is logically represented as the disjunction of its corresponding
       // atomic predicates
-      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(cvar));
+      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(cvar), _communityAtomicPredicates);
       BDD c =
           factory.orAll(
               aps.stream()
-                  .map(ap -> other.getCommunityAtomicPredicateBDDs()[ap])
+                  .map(ap -> other.getCommunityAtomicPredicates()[ap])
                   .collect(Collectors.toList()));
       acc = ite(c, mkBDD(action), acc);
     }
@@ -857,11 +943,11 @@ public class TransferBDD {
         p.debug("Inline Community Set: " + comm);
         // the community comm is logically represented as the disjunction of its corresponding
         // atomic predicates
-        Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(comm));
+        Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(comm), _communityAtomicPredicates);
         BDD c =
             factory.orAll(
                 aps.stream()
-                    .map(ap -> other.getCommunityAtomicPredicateBDDs()[ap])
+                    .map(ap -> other.getCommunityAtomicPredicates()[ap])
                     .collect(Collectors.toSet()));
         acc = acc.and(c);
       }
@@ -963,14 +1049,37 @@ public class TransferBDD {
     throw new BatfishException("Error[prependLength]: unreachable");
   }
 
-  /*
-   * Create a new variable reflecting the final return value of the function
+  /**
+   * A BDD representing the conditions under which the current statement is not reachable, because
+   * we've already returned or exited before getting there.
+   *
+   * @param currState the current state of the analysis
+   * @return the bdd
    */
-  private TransferResult<TransferReturn, BDD> returnValue(
-      TransferResult<TransferReturn, BDD> r, boolean val) {
-    BDD b = ite(r.getReturnAssignedValue(), r.getReturnValue().getSecond(), mkBDD(val));
+  private static BDD unreachable(TransferResult currState) {
+    return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
+  }
+
+  /*
+   * Create the result of reaching a return statement, returning with the given value.
+   */
+  private TransferResult returnValue(TransferResult r, boolean val) {
+    BDD notReached = unreachable(r);
+    BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
-    return r.setReturnValue(ret).setReturnAssignedValue(factory.one());
+    BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), factory.one());
+    return r.setReturnValue(ret).setReturnAssignedValue(retAsgn);
+  }
+
+  /*
+   * Create the result of reaching an exit statement, returning with the given value.
+   */
+  private TransferResult exitValue(TransferResult r, boolean val) {
+    BDD notReached = unreachable(r);
+    BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
+    TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
+    BDD exitAsgn = ite(notReached, r.getExitAssignedValue(), factory.one());
+    return r.setReturnValue(ret).setExitAssignedValue(exitAsgn);
   }
 
   /*
@@ -979,15 +1088,21 @@ public class TransferBDD {
    */
   @VisibleForTesting
   BDDRoute zeroedRecord() {
-    BDDRoute rec = new BDDRoute(_graph.getCommunityAtomicPredicates().getNumAtomicPredicates());
+    BDDRoute rec =
+        new BDDRoute(
+            _graph.getCommunityAtomicPredicates().getNumAtomicPredicates(),
+            _graph.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
     rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
     rec.getMed().setValue(0);
     rec.getPrefix().setValue(0);
-    for (int i = 0; i < rec.getCommunityAtomicPredicateBDDs().length; i++) {
-      rec.getCommunityAtomicPredicateBDDs()[i] = factory.zero();
+    for (int i = 0; i < rec.getCommunityAtomicPredicates().length; i++) {
+      rec.getCommunityAtomicPredicates()[i] = factory.zero();
+    }
+    for (int i = 0; i < rec.getAsPathRegexAtomicPredicates().length; i++) {
+      rec.getAsPathRegexAtomicPredicates()[i] = factory.zero();
     }
     rec.getProtocolHistory().getInteger().setValue(0);
     return rec;
@@ -997,12 +1112,14 @@ public class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public TransferResult<TransferReturn, BDD> compute(@Nullable Set<Prefix> ignoredNetworks) {
+  public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    BDDRoute o = new BDDRoute(_graph.getCommunityAtomicPredicates().getNumAtomicPredicates());
+    _asPathRegexAtomicPredicates =
+        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    BDDRoute o = new BDDRoute(_graph);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
-    TransferResult<TransferReturn, BDD> result = compute(_statements, p);
+    TransferResult result = compute(_statements, p);
     // BDDRoute route = result.getReturnValue().getFirst();
     // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
     //    return result.getReturnValue().getFirst();
