@@ -15,6 +15,9 @@ public class TransferBDDState {
   @Nonnull private final TransferResult _result;
 
   public TransferBDDState(TransferParam<BDDRoute> param, TransferResult result) {
+    // eventually we may want to refactor things so that the BDDRoute appears only once
+    assert param.getData().equals(result.getReturnValue().getFirst())
+        : "TransferParam and TransferReturn should contain the same BDDRoute object";
     _param = param;
     _result = result;
   }
