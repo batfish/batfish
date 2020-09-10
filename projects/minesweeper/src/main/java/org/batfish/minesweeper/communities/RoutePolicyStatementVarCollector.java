@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.Environment;
-import org.batfish.datamodel.routing_policy.communities.CommunityContext;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -71,8 +69,8 @@ public class RoutePolicyStatementVarCollector
   @Override
   public Set<CommunityVar> visitIf(If if1, Configuration arg) {
     ImmutableSet.Builder<CommunityVar> builder = ImmutableSet.builder();
-    // TODO: Visit the BooleanExpr guard
     return builder
+        .addAll(if1.getGuard().accept(new BooleanExprVarCollector(), arg))
         .addAll(visitAll(if1.getTrueStatements(), arg))
         .addAll(visitAll(if1.getFalseStatements(), arg))
         .build();
@@ -91,8 +89,7 @@ public class RoutePolicyStatementVarCollector
 
   @Override
   public Set<CommunityVar> visitSetCommunities(SetCommunities setCommunities, Configuration arg) {
-    CommunityContext cc = CommunityContext.fromEnvironment(Environment.builder(arg).build());
-    return setCommunities.getCommunitySetExpr().accept(new CommunitySetExprVarCollector(), cc);
+    return setCommunities.getCommunitySetExpr().accept(new CommunitySetExprVarCollector(), arg);
   }
 
   @Override
@@ -171,7 +168,7 @@ public class RoutePolicyStatementVarCollector
     return ImmutableSet.of();
   }
 
-  private Set<CommunityVar> visitAll(List<Statement> statements, Configuration arg) {
+  public Set<CommunityVar> visitAll(List<Statement> statements, Configuration arg) {
     return statements.stream()
         .flatMap(stmt -> stmt.accept(this, arg).stream())
         .collect(ImmutableSet.toImmutableSet());

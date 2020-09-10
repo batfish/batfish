@@ -1,15 +1,22 @@
 package org.batfish.minesweeper.communities;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.Set;
+import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
-import org.batfish.datamodel.routing_policy.communities.CommunityContext;
+import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
@@ -25,126 +32,150 @@ import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatc
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
 import org.batfish.minesweeper.CommunityVar;
 
+@ParametersAreNonnullByDefault
 public class CommunityMatchExprVarCollector
-    implements CommunityMatchExprVisitor<Set<CommunityVar>, CommunityContext> {
+    implements CommunityMatchExprVisitor<Set<CommunityVar>, Configuration> {
   @Override
   public Set<CommunityVar> visitAllExtendedCommunities(
-      AllExtendedCommunities allExtendedCommunities, CommunityContext arg) {
-    return null;
+      AllExtendedCommunities allExtendedCommunities, Configuration arg) {
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitAllLargeCommunities(
-      AllLargeCommunities allLargeCommunities, CommunityContext arg) {
-    return null;
+      AllLargeCommunities allLargeCommunities, Configuration arg) {
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitAllStandardCommunities(
-      AllStandardCommunities allStandardCommunities, CommunityContext arg) {
-    return null;
+      AllStandardCommunities allStandardCommunities, Configuration arg) {
+    return ImmutableSet.of();
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityAcl(CommunityAcl communityAcl, CommunityContext arg) {
-    return null;
+  public Set<CommunityVar> visitCommunityAcl(CommunityAcl communityAcl, Configuration arg) {
+    return visitAll(
+        communityAcl.getLines().stream()
+            .map(CommunityAclLine::getCommunityMatchExpr)
+            .collect(ImmutableList.toImmutableList()),
+        arg);
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityIn(CommunityIn communityIn, CommunityContext arg) {
-    return null;
+  public Set<CommunityVar> visitCommunityIn(CommunityIn communityIn, Configuration arg) {
+    return communityIn.getCommunitySetExpr().accept(new CommunitySetExprVarCollector(), arg);
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityIs(CommunityIs communityIs, CommunityContext arg) {
-    return null;
+  public Set<CommunityVar> visitCommunityIs(CommunityIs communityIs, Configuration arg) {
+    return ImmutableSet.of(CommunityVar.from(communityIs.getCommunity()));
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchAll(
-      CommunityMatchAll communityMatchAll, CommunityContext arg) {
-    return null;
+      CommunityMatchAll communityMatchAll, Configuration arg) {
+    return visitAll(communityMatchAll.getExprs(), arg);
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchAny(
-      CommunityMatchAny communityMatchAny, CommunityContext arg) {
-    return null;
+      CommunityMatchAny communityMatchAny, Configuration arg) {
+    return visitAll(communityMatchAny.getExprs(), arg);
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchExprReference(
-      CommunityMatchExprReference communityMatchExprReference, CommunityContext arg) {
-    return null;
+      CommunityMatchExprReference communityMatchExprReference, Configuration arg) {
+    String name = communityMatchExprReference.getName();
+    CommunityMatchExpr matchExpr = arg.getCommunityMatchExprs().get(name);
+    if (matchExpr == null) {
+      throw new BatfishException("Cannot find community match expression: " + name);
+    }
+    return matchExpr.accept(this, arg);
   }
 
   @Override
   public Set<CommunityVar> visitCommunityMatchRegex(
-      CommunityMatchRegex communityMatchRegex, CommunityContext arg) {
-    return null;
+      CommunityMatchRegex communityMatchRegex, Configuration arg) {
+    return ImmutableSet.of(CommunityVar.from(communityMatchRegex.getRegex()));
   }
 
   @Override
-  public Set<CommunityVar> visitCommunityNot(CommunityNot communityNot, CommunityContext arg) {
-    return null;
+  public Set<CommunityVar> visitCommunityNot(CommunityNot communityNot, Configuration arg) {
+    return communityNot.getExpr().accept(this, arg);
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorHighMatch(
       ExtendedCommunityGlobalAdministratorHighMatch extendedCommunityGlobalAdministratorHighMatch,
-      CommunityContext arg) {
-    return null;
+      Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on extended communities");
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorLowMatch(
       ExtendedCommunityGlobalAdministratorLowMatch extendedCommunityGlobalAdministratorLowMatch,
-      CommunityContext arg) {
-    return null;
+      Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on extended communities");
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorMatch(
       ExtendedCommunityGlobalAdministratorMatch extendedCommunityGlobalAdministratorMatch,
-      CommunityContext arg) {
-    return null;
+      Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on extended communities");
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityLocalAdministratorMatch(
       ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch,
-      CommunityContext arg) {
-    return null;
+      Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on extended communities");
   }
 
   @Override
   public Set<CommunityVar> visitRouteTargetExtendedCommunities(
-      RouteTargetExtendedCommunities routeTargetExtendedCommunities, CommunityContext arg) {
-    return null;
+      RouteTargetExtendedCommunities routeTargetExtendedCommunities, Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on extended communities");
   }
 
   @Override
   public Set<CommunityVar> visitSiteOfOriginExtendedCommunities(
-      SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, CommunityContext arg) {
-    return null;
+      SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on extended communities");
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityHighMatch(
-      StandardCommunityHighMatch standardCommunityHighMatch, CommunityContext arg) {
-    return null;
+      StandardCommunityHighMatch standardCommunityHighMatch, Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting integer comparisons in community matching");
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityLowMatch(
-      StandardCommunityLowMatch standardCommunityLowMatch, CommunityContext arg) {
-    return null;
+      StandardCommunityLowMatch standardCommunityLowMatch, Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting integer comparisons in community matching");
   }
 
   @Override
   public Set<CommunityVar> visitVpnDistinguisherExtendedCommunities(
-      VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities,
-      CommunityContext arg) {
-    return null;
+      VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Configuration arg) {
+    throw new UnsupportedOperationException(
+        "Currently not supporting matches on extended communities");
+  }
+
+  private Set<CommunityVar> visitAll(Collection<CommunityMatchExpr> exprs, Configuration arg) {
+    return exprs.stream()
+        .flatMap(expr -> expr.accept(this, arg).stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

@@ -32,6 +32,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -92,6 +93,7 @@ import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
 import org.batfish.minesweeper.TransferParam.CallContext;
 import org.batfish.minesweeper.collections.Table2;
+import org.batfish.minesweeper.communities.SetCommunitiesVarCollector;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
@@ -617,18 +619,15 @@ public class TransferBDD {
         throw new BatfishException("Unhandled community expression in 'set community': " + setExpr);
       }
       Set<CommunityVar> comms = collectCommunityVars(_conf, setExpr);
-      // set all atomic predicates associated with these communities to 1, and all other
-      // atomic predicates to zero, if this statement is reached
-      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
-      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-      for (int ap = 0; ap < commAPBDDs.length; ap++) {
-        curP.indent().debug("Value: " + ap);
-        BDD comm = commAPBDDs[ap];
-        BDD newValue =
-            ite(unreachable(result), comm, commAPs.contains(ap) ? factory.one() : factory.zero());
-        curP.indent().debug("New Value: " + newValue);
-        commAPBDDs[ap] = newValue;
-      }
+      setCommunities(comms, curP, result);
+
+    } else if (stmt instanceof SetCommunities) {
+      curP.debug("SetCommunities");
+      SetCommunities sc = (SetCommunities) stmt;
+      org.batfish.datamodel.routing_policy.communities.CommunitySetExpr setExpr =
+          sc.getCommunitySetExpr();
+      Set<CommunityVar> comms = setExpr.accept(new SetCommunitiesVarCollector(), _conf);
+      setCommunities(comms, curP, result);
 
     } else if (stmt instanceof DeleteCommunity) {
       curP.debug("DeleteCommunity");
@@ -1058,6 +1057,26 @@ public class TransferBDD {
       return x.getList().size();
     }
     throw new BatfishException("Error[prependLength]: unreachable");
+  }
+
+  /*
+   * A helper for route analysis of SetCommunity and SetCommunities.  Given a set of
+   * CommunityVars that are set by the statement, we update all community atomic predicates
+   * appropriately:  the ones corresponding to the given CommunityVars are set to 1, and
+   * the others are set to 0.
+   */
+  private void setCommunities(
+      Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result) {
+    Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+    for (int ap = 0; ap < commAPBDDs.length; ap++) {
+      curP.indent().debug("Value: " + ap);
+      BDD comm = commAPBDDs[ap];
+      BDD newValue =
+          ite(unreachable(result), comm, commAPs.contains(ap) ? factory.one() : factory.zero());
+      curP.indent().debug("New Value: " + newValue);
+      commAPBDDs[ap] = newValue;
+    }
   }
 
   /**

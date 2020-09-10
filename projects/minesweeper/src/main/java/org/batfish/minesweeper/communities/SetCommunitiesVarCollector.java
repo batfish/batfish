@@ -5,13 +5,7 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.routing_policy.Environment;
-import org.batfish.datamodel.routing_policy.communities.CommunityContext;
-import org.batfish.datamodel.routing_policy.communities.CommunityExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunityExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
@@ -22,31 +16,33 @@ import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.minesweeper.CommunityVar;
 
+/**
+ * Collect the set of community variables that should be set to true during the symbolic route
+ * analysis of a {@link org.batfish.datamodel.routing_policy.communities.SetCommunities} statement.
+ * To handle arbitrary CommunitySetExprs we will likely need to generalize this to keep track of
+ * CommunityVars that should be set as well as those that should not be set.
+ */
 @ParametersAreNonnullByDefault
-public class CommunitySetExprVarCollector
+public class SetCommunitiesVarCollector
     implements CommunitySetExprVisitor<Set<CommunityVar>, Configuration> {
 
   @Override
   public Set<CommunityVar> visitCommunityExprsSet(
       CommunityExprsSet communityExprsSet, Configuration arg) {
-    ImmutableSet.Builder<CommunityVar> builder = ImmutableSet.builder();
-    Set<CommunityExpr> exprs = communityExprsSet.getExprs();
-    for (CommunityExpr expr : exprs) {
-      Community c = expr.accept(CommunityExprEvaluator.instance(), configToCommunityContext(arg));
-      builder.add(CommunityVar.from(c));
-    }
-    return builder.build();
+    return communityExprsSet.accept(new CommunitySetExprVarCollector(), arg);
   }
 
   @Override
   public Set<CommunityVar> visitCommunitySetDifference(
       CommunitySetDifference communitySetDifference, Configuration arg) {
     Set<CommunityVar> s1 = communitySetDifference.getInitial().accept(this, arg);
-    Set<CommunityVar> s2 =
-        communitySetDifference
-            .getRemovalCriterion()
-            .accept(new CommunityMatchExprVarCollector(), arg);
-    return ImmutableSet.<CommunityVar>builder().addAll(s1).addAll(s2).build();
+    // TODO: handle set differences; for now we handle the special case when the first
+    // operand in the difference is empty, so that the second operand is irrelevant
+    if (s1.isEmpty()) {
+      return s1;
+    } else {
+      throw new BatfishException("Community set differences are not supported");
+    }
   }
 
   @Override
@@ -63,12 +59,7 @@ public class CommunitySetExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetReference(
       CommunitySetReference communitySetReference, Configuration arg) {
-    String name = communitySetReference.getName();
-    CommunitySet cset = arg.getCommunitySets().get(name);
-    if (cset == null) {
-      throw new BatfishException("Cannot find community set: " + name);
-    }
-    return toCommunityVarSet(cset);
+    return communitySetReference.accept(new CommunitySetExprVarCollector(), arg);
   }
 
   @Override
@@ -82,22 +73,12 @@ public class CommunitySetExprVarCollector
   @Override
   public Set<CommunityVar> visitInputCommunities(
       InputCommunities inputCommunities, Configuration arg) {
-    return toCommunityVarSet(configToCommunityContext(arg).getInputCommunitySet());
+    return inputCommunities.accept(new CommunitySetExprVarCollector(), arg);
   }
 
   @Override
   public Set<CommunityVar> visitLiteralCommunitySet(
       LiteralCommunitySet literalCommunitySet, Configuration arg) {
-    return toCommunityVarSet(literalCommunitySet.getCommunitySet());
-  }
-
-  private static Set<CommunityVar> toCommunityVarSet(CommunitySet cset) {
-    return cset.getCommunities().stream()
-        .map(CommunityVar::from)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  private static CommunityContext configToCommunityContext(Configuration config) {
-    return CommunityContext.fromEnvironment(Environment.builder(config).build());
+    return literalCommunitySet.accept(new CommunitySetExprVarCollector(), arg);
   }
 }

@@ -914,7 +914,7 @@ public class Graph {
    * additional AS-path regexes is also included, which is used to support user-specified AS-path
    * constraints for symbolic analysis.
    */
-  private Set<SymbolicAsPathRegex> findAllAsPathRegexes(Set<String> asPathRegexes) {
+  private Set<SymbolicAsPathRegex> findAllAsPathRegexes(@Nullable Set<String> asPathRegexes) {
     ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
     for (String router : getRouters()) {
       builder.addAll(findAsPathRegexes(router));
