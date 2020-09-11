@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.minesweeper.TransferParam;
@@ -16,8 +17,9 @@ public class TransferBDDState {
 
   public TransferBDDState(TransferParam<BDDRoute> param, TransferResult result) {
     // eventually we may want to refactor things so that the BDDRoute appears only once
-    assert param.getData().equals(result.getReturnValue().getFirst())
-        : "TransferParam and TransferReturn should contain the same BDDRoute object";
+    Preconditions.checkArgument(
+        param.getData() == result.getReturnValue().getFirst(),
+        "TransferParam and TransferReturn should contain the same BDDRoute object");
     _param = param;
     _result = result;
   }
