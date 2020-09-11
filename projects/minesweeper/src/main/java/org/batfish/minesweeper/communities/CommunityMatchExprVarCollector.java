@@ -30,11 +30,17 @@ import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedComm
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 
 @ParametersAreNonnullByDefault
 public class CommunityMatchExprVarCollector
     implements CommunityMatchExprVisitor<Set<CommunityVar>, Configuration> {
+
   @Override
   public Set<CommunityVar> visitAllExtendedCommunities(
       AllExtendedCommunities allExtendedCommunities, Configuration arg) {
@@ -155,15 +161,15 @@ public class CommunityMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitStandardCommunityHighMatch(
       StandardCommunityHighMatch standardCommunityHighMatch, Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting integer comparisons in community matching");
+    int high = intMatchExprToInt(standardCommunityHighMatch.getExpr());
+    return ImmutableSet.of(CommunityVar.from("^" + high + ":"));
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityLowMatch(
       StandardCommunityLowMatch standardCommunityLowMatch, Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting integer comparisons in community matching");
+    int low = intMatchExprToInt(standardCommunityLowMatch.getExpr());
+    return ImmutableSet.of(CommunityVar.from(":" + low + "$"));
   }
 
   @Override
@@ -177,5 +183,20 @@ public class CommunityMatchExprVarCollector
     return exprs.stream()
         .flatMap(expr -> expr.accept(this, arg).stream())
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /**
+   * The only integer match expressions currently supported are equality comparisons with an integer
+   * constant; this method returns that constant.
+   */
+  private int intMatchExprToInt(IntMatchExpr intMatchExpr) {
+    if (intMatchExpr instanceof IntComparison) {
+      IntComparison intComp = (IntComparison) intMatchExpr;
+      IntExpr expr = intComp.getExpr();
+      if (intComp.getComparator() == IntComparator.EQ && expr instanceof LiteralInt) {
+        return ((LiteralInt) expr).getValue();
+      }
+    }
+    throw new BatfishException("Unsupported integer match expression: " + intMatchExpr);
   }
 }
