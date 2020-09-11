@@ -31,6 +31,11 @@ public class TrueExpr extends AclLineMatchExpr {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash((Boolean) true, _traceElement);
+  }
+
+  @Override
   public boolean equals(@Nullable Object obj) {
     if (this == obj) {
       return true;
@@ -40,11 +45,6 @@ public class TrueExpr extends AclLineMatchExpr {
     }
     TrueExpr rhs = (TrueExpr) obj;
     return Objects.equals(_traceElement, rhs._traceElement);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash((Boolean) true, _traceElement);
   }
 
   @Override
