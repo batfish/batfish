@@ -14,11 +14,13 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -502,19 +504,25 @@ class IncrementalBdpEngine {
     Span propSpan =
         GlobalTracer.get().buildSpan(iterationLabel + ": Propagate BGP v4 routes").start();
     LOGGER.info("{}: Propagate BGP v4 routes", iterationLabel);
+
     try (Scope innerScope = GlobalTracer.get().scopeManager().activate(propSpan)) {
       assert innerScope != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
-          .forEach(
-              vr -> {
+
+      List<Entry<VirtualRouter, Map<Bgpv4Rib, RibDelta<Bgpv4Route>>>> routeDeltas = nodes
+              .values()
+              .parallelStream()
+              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .map(vr -> {
                 Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
-                    vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
-                vr.finalizeBgpRoutesAndQueueOutgoingMessages(
-                    deltas, allNodes, bgpTopology, networkConfigurations);
-              });
+                        vr.processBgpMessages(bgpTopology, networkConfigurations, allNodes);
+                return Maps.immutableEntry(vr, deltas);
+              }).collect(Collectors.toList());
+
+      routeDeltas.parallelStream().forEach(entry -> {
+        VirtualRouter vr = entry.getKey();
+        Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas = entry.getValue();
+        vr.finalizeBgpRoutesAndQueueOutgoingMessages(deltas);
+      });
 
       // Merge BGP routes from BGP process into the main RIB
       nodes
@@ -742,7 +750,7 @@ class IncrementalBdpEngine {
             .forEach(
                 vr -> {
                   vr.processExternalBgpAdvertisements(
-                      externalAdverts, ipVrfOwners, nodes, bgpTopology, networkConfigurations);
+                      externalAdverts, ipVrfOwners);
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });
       } finally {
