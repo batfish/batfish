@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
@@ -40,7 +39,6 @@ public final class ServiceGroup implements ServiceGroupMember {
   @Override
   public IpAccessList toIpAccessList(
       LineAction action, PaloAltoConfiguration pc, Vsys vsys, Warnings w, String filename) {
-    List<AclLine> lines = new LinkedList<>();
     List<AclLineMatchExpr> exprLines = new LinkedList<>();
     for (ServiceOrServiceGroupReference memberReference : _references) {
       // Check for matching object before using built-ins
@@ -48,31 +46,19 @@ public final class ServiceGroup implements ServiceGroupMember {
       String serviceName = memberReference.getName();
 
       if (vsysName != null) {
-        lines.add(
-            new ExprAclLine(
-                action,
-                new PermittedByAcl(
-                    computeServiceGroupMemberAclName(vsysName, memberReference.getName())),
-                memberReference.getName()));
         exprLines.add(new PermittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
       } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
-        lines.clear();
-        lines.add(new ExprAclLine(action, ServiceBuiltIn.ANY.toAclLineMatchExpr(), _name));
         exprLines.clear();
         exprLines.add(ServiceBuiltIn.ANY.toAclLineMatchExpr());
         break;
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
-        lines.add(new ExprAclLine(action, ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr(), _name));
         exprLines.add(ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr());
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-        lines.add(
-            new ExprAclLine(action, ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr(), _name));
         exprLines.add(ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr());
       }
     }
     return IpAccessList.builder()
         .setName(computeServiceGroupMemberAclName(vsys.getName(), _name))
-        // .setLines(lines)
         .setLines(
             ImmutableList.of(
                 new ExprAclLine(

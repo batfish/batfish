@@ -1053,7 +1053,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
       } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
         // Anything is allowed.
-        return Optional.of(ServiceBuiltIn.ANY.toAclLineMatchExpr());
+        serviceDisjuncts.clear();
+        serviceDisjuncts.add(ServiceBuiltIn.ANY.toAclLineMatchExpr());
+        break;
       } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
         if (rule.getAction() == LineAction.PERMIT) {
           // Since Batfish cannot currently match above L4, we follow Cisco-fragments-like logic:

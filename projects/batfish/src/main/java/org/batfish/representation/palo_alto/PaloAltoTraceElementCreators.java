@@ -41,7 +41,7 @@ public final class PaloAltoTraceElementCreators {
 
   @VisibleForTesting
   public static TraceElement matchServiceApplicationDefaultTraceElement() {
-    return TraceElement.of("Matched service application-default");
+    return TraceElement.of("Matched service from application (application-default)");
   }
 
   @VisibleForTesting

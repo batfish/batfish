@@ -268,6 +268,18 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @Override
+  public Boolean visitTrueExpr(TrueExpr trueExpr) {
+    setTraceElement(trueExpr.getTraceElement());
+    return true;
+  }
+
+  @Override
+  public Boolean visitFalseExpr(FalseExpr falseExpr) {
+    setTraceElement(falseExpr.getTraceElement());
+    return false;
+  }
+
+  @Override
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     setTraceElement(permittedByAcl.getTraceElement());
     return trace(_availableAcls.get(permittedByAcl.getAclName())) == LineAction.PERMIT;
