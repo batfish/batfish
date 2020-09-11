@@ -47,6 +47,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -203,9 +204,9 @@ public class VirtualRouter implements Serializable {
   final Vrf _vrf;
 
   // deltas for the current round. must be null between rounds?
-  private RibDelta<Bgpv4Route> _ebgpDelta = RibDelta.<Bgpv4Route>builder().build();
-  private RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibRouteDelta = RibDelta.<AnnotatedRoute<AbstractRoute>>builder().build();
-  private RibDelta<Bgpv4Route> _bgpv4Delta = RibDelta.<Bgpv4Route>builder().build();
+  private RibDelta<Bgpv4Route> _ebgpDelta = null;
+  private RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibRouteDelta = null;
+  private RibDelta<Bgpv4Route> _bgpv4Delta = null;
 
   VirtualRouter(@Nonnull String name, @Nonnull Node node) {
     _node = node;
@@ -507,8 +508,7 @@ public class VirtualRouter implements Serializable {
    * @param ipVrfOwners mapping of IPs to their owners in our network
    */
   void processExternalBgpAdvertisements(
-          Set<BgpAdvertisement> externalAdverts,
-          Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+      Set<BgpAdvertisement> externalAdverts, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
 
     if (_bgpRoutingProcess == null) {
       // Nothing to do
@@ -1115,12 +1115,11 @@ public class VirtualRouter implements Serializable {
    * Process BGP messages from neighbors, return a list of delta changes to the RIBs
    *
    * @param bgpTopology the bgp peering relationships
-   * @param allNodes
    * @return Map from a {@link Bgpv4Rib} to {@link RibDelta} objects
    */
   @Nonnull
   Map<Bgpv4Rib, RibDelta<Bgpv4Route>> processBgpMessages(
-          BgpTopology bgpTopology, NetworkConfigurations nc, Map<String, Node> nodes) {
+      BgpTopology bgpTopology, NetworkConfigurations nc, Map<String, Node> nodes) {
 
     // If we have no BGP process, nothing to do
     if (_bgpRoutingProcess == null) {
@@ -1158,13 +1157,17 @@ public class VirtualRouter implements Serializable {
               : _bgpRoutingProcess._ibgpv4StagingRib;
       Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
 
-      VirtualRouter neighborVr = getRemoteBgpNeighborVR(remoteConfigId,nodes);
-      Iterator<RouteAdvertisement<Bgpv4Route>> exportedRoutes = neighborVr.getOutgoingRoutesForEdge(e.getKey().reverse(), nodes, bgpTopology, nc).iterator();
+      VirtualRouter neighborVr = getRemoteBgpNeighborVR(remoteConfigId, nodes);
+      Iterator<RouteAdvertisement<Bgpv4Route>> exportedRoutes =
+          neighborVr
+              .getOutgoingRoutesForEdge(e.getKey().reverse(), nodes, bgpTopology, nc)
+              .iterator();
 
       // Process all routes from neighbor
       while (exportedRoutes.hasNext() || queue.peek() != null) {
         // consume exported routes before reading from the queue
-        RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.hasNext() ? exportedRoutes.next() : queue.remove();
+        RouteAdvertisement<Bgpv4Route> remoteRouteAdvert =
+            exportedRoutes.hasNext() ? exportedRoutes.next() : queue.remove();
         Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
 
         Bgpv4Route.Builder transformedIncomingRouteBuilder =
@@ -1245,7 +1248,7 @@ public class VirtualRouter implements Serializable {
         rg.getImportRibs()
             .forEach(
                 rib ->
-                        // TODO can use helper method here
+                    // TODO can use helper method here
                     nodes
                         .get(_c.getHostname())
                         .getVirtualRouters()
@@ -1508,6 +1511,14 @@ public class VirtualRouter implements Serializable {
     return exportedAdvertisements;
   }
 
+  private static <R extends AbstractRouteDecorator> RibDelta<R> mergeRibDeltas(
+      @Nullable RibDelta<R> delta1, RibDelta<R> delta2) {
+    if (delta1 == null || delta1.isEmpty()) {
+      return delta2;
+    }
+    return RibDelta.<R>builder().from(delta1.getActions()).from(delta2.getActions()).build();
+  }
+
   private static BgpSessionProperties getBgpSessionProperties(
       BgpTopology bgpTopology, EdgeId edge) {
     // BGP topology edge guaranteed to exist since the session is established
@@ -1614,7 +1625,8 @@ public class VirtualRouter implements Serializable {
    * @param stagingDeltas a map of RIB to corresponding delta. Keys are expected to contain {@link
    *     BgpRoutingProcess#_ebgpv4StagingRib} and {@link BgpRoutingProcess#_ibgpv4StagingRib}
    */
-  void finalizeBgpRoutesAndQueueOutgoingMessages(Map<Bgpv4Rib, RibDelta<Bgpv4Route>> stagingDeltas) {
+  void finalizeBgpRoutesAndQueueOutgoingMessages(
+      Map<Bgpv4Rib, RibDelta<Bgpv4Route>> stagingDeltas) {
 
     if (_bgpRoutingProcess == null) {
       return;
@@ -1633,13 +1645,20 @@ public class VirtualRouter implements Serializable {
         importRibDelta(_bgpRoutingProcess._bgpv4Rib, ebgpDelta));
     _bgpRoutingProcess._bgpv4DeltaBuilder.from(
         importRibDelta(_bgpRoutingProcess._bgpv4Rib, ibgpDelta));
-    _mainRibRouteDeltaBuilder.from(
-        RibDelta.importRibDelta(_mainRib, _bgpRoutingProcess._bgpv4DeltaBuilder.build(), _name));
 
-    _bgpv4Delta = _bgpRoutingProcess._bgpv4DeltaBuilder.build();
-    _ebgpDelta = ebgpDelta;
-    _mainRibRouteDelta = _mainRibRouteDeltaBuilder.build();
+    RibDelta<Bgpv4Route> newBgpv4Delta = _bgpRoutingProcess._bgpv4DeltaBuilder.build();
+    _mainRibRouteDeltaBuilder.from(RibDelta.importRibDelta(_mainRib, newBgpv4Delta, _name));
 
+    // TODO this merge nonsense sucks
+    _bgpv4Delta = mergeRibDeltas(_bgpv4Delta, newBgpv4Delta);
+    _ebgpDelta = mergeRibDeltas(_ebgpDelta, ebgpDelta);
+    _mainRibRouteDelta = mergeRibDeltas(_mainRibRouteDelta, _mainRibRouteDeltaBuilder.build());
+  }
+
+  void endOfRound() {
+    _bgpv4Delta = null;
+    _ebgpDelta = null;
+    _mainRibRouteDelta = null;
   }
 
   /**
@@ -1703,8 +1722,7 @@ public class VirtualRouter implements Serializable {
       return;
     }
     for (EdgeId edge : _bgpRoutingProcess._bgpv4IncomingRoutes.keySet()) {
-      newBgpSessionEstablishedHook(
-          edge, getBgpSessionProperties(bgpTopology, edge), allNodes, nc, bgpTopology);
+      newBgpSessionEstablishedHook(edge, getBgpSessionProperties(bgpTopology, edge), allNodes, nc);
     }
     _bgpRoutingProcess.redistribute(
         RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build());
@@ -1715,8 +1733,7 @@ public class VirtualRouter implements Serializable {
       @Nonnull EdgeId edge,
       @Nonnull BgpSessionProperties sessionProperties,
       @Nonnull Map<String, Node> allNodes,
-      NetworkConfigurations nc,
-      BgpTopology topology) {
+      NetworkConfigurations nc) {
 
     BgpPeerConfigId localConfigId = edge.head();
     BgpPeerConfigId remoteConfigId = edge.tail();
@@ -1741,11 +1758,25 @@ public class VirtualRouter implements Serializable {
     /*
      * Export routes by looking at main RIB and BGPv4 RIB
      */
-    _ebgpDelta = RibDelta.<Bgpv4Route>builder()
-            .add(_bgpRoutingProcess._ebgpv4Rib.getBestPathRoutes())
-            .build();
-    _bgpv4Delta = RibDelta.<Bgpv4Route>builder().add(_bgpRoutingProcess._bgpv4Rib.getTypedRoutes()).build();
-    _mainRibRouteDelta = RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build();
+    // TODO this merging nonsense sucks. Try to get some reasonable invariants
+    _ebgpDelta =
+        mergeRibDeltas(
+            _ebgpDelta,
+            RibDelta.<Bgpv4Route>builder()
+                .add(_bgpRoutingProcess._ebgpv4Rib.getBestPathRoutes())
+                .build());
+    _bgpv4Delta =
+        mergeRibDeltas(
+            _bgpv4Delta,
+            RibDelta.<Bgpv4Route>builder()
+                .add(_bgpRoutingProcess._bgpv4Rib.getTypedRoutes())
+                .build());
+    _mainRibRouteDelta =
+        mergeRibDeltas(
+            _mainRibRouteDelta,
+            RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+                .add(_mainRib.getTypedRoutes())
+                .build());
 
     /*
      * Export neighbor-specific generated routes, these routes skip global export policy

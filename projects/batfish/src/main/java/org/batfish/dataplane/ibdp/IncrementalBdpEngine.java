@@ -29,6 +29,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishLogger;
@@ -429,7 +430,6 @@ class IncrementalBdpEngine {
       }
 
       computeIterationOfBgpRoutes(
-          nodes,
           iterationLabel,
           allNodes,
           topologyContext.getBgpTopology(),
@@ -456,7 +456,6 @@ class IncrementalBdpEngine {
   }
 
   private static void computeIterationOfBgpRoutes(
-      Map<String, Node> nodes,
       String iterationLabel,
       Map<String, Node> allNodes,
       BgpTopology bgpTopology,
@@ -467,7 +466,7 @@ class IncrementalBdpEngine {
     LOGGER.info("{}: Init for new BGP iteration", iterationLabel);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      nodes.values().stream()
+      allNodes.values().stream()
           .forEach(
               n ->
                   n.getVirtualRouters()
@@ -492,7 +491,7 @@ class IncrementalBdpEngine {
     try (Scope innerScope = GlobalTracer.get().scopeManager().activate(genSpan)) {
       assert innerScope != null; // avoid unused warning
       // first let's initialize nodes-level generated/aggregate routes
-      nodes
+      allNodes
           .values()
           .parallelStream()
           .forEach(
@@ -508,31 +507,38 @@ class IncrementalBdpEngine {
     try (Scope innerScope = GlobalTracer.get().scopeManager().activate(propSpan)) {
       assert innerScope != null; // avoid unused warning
 
-      List<Entry<VirtualRouter, Map<Bgpv4Rib, RibDelta<Bgpv4Route>>>> routeDeltas = nodes
+      List<Entry<VirtualRouter, Map<Bgpv4Rib, RibDelta<Bgpv4Route>>>> routeDeltas =
+          allNodes
               .values()
               .parallelStream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
-              .map(vr -> {
-                Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
+              .map(
+                  vr -> {
+                    Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
                         vr.processBgpMessages(bgpTopology, networkConfigurations, allNodes);
-                return Maps.immutableEntry(vr, deltas);
-              }).collect(Collectors.toList());
+                    return Maps.immutableEntry(vr, deltas);
+                  })
+              .collect(Collectors.toList());
 
-      routeDeltas.parallelStream().forEach(entry -> {
-        VirtualRouter vr = entry.getKey();
-        Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas = entry.getValue();
-        vr.finalizeBgpRoutesAndQueueOutgoingMessages(deltas);
-      });
+      routeDeltas
+          .parallelStream()
+          .forEach(
+              entry -> {
+                VirtualRouter vr = entry.getKey();
+                Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas = entry.getValue();
+                vr.endOfRound();
+                vr.finalizeBgpRoutesAndQueueOutgoingMessages(deltas);
+              });
 
       // Merge BGP routes from BGP process into the main RIB
-      nodes
+      allNodes
           .values()
           .parallelStream()
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
       // Multi-VRF redistribution of BGP routes:
-      nodes
+      allNodes
           .values()
           .parallelStream()
           .forEach(
@@ -749,8 +755,7 @@ class IncrementalBdpEngine {
             .flatMap(n -> n.getVirtualRouters().values().stream())
             .forEach(
                 vr -> {
-                  vr.processExternalBgpAdvertisements(
-                      externalAdverts, ipVrfOwners);
+                  vr.processExternalBgpAdvertisements(externalAdverts, ipVrfOwners);
                   vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
                 });
       } finally {
