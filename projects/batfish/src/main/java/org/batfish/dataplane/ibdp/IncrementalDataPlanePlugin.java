@@ -10,7 +10,6 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
-import org.batfish.datamodel.isis.IsisTopology;
 
 /** A batfish plugin that registers the Incremental Batfish Data Plane (ibdp) Engine. */
 @AutoService(Plugin.class)
@@ -31,15 +30,11 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
     TopologyContext topologyContext =
         TopologyContext.builder()
             .setIpsecTopology(topologyProvider.getInitialIpsecTopology(snapshot))
-            .setIsisTopology(
-                IsisTopology.initIsisTopology(
-                    configurations, topologyProvider.getInitialLayer3Topology(snapshot)))
             .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(snapshot))
             .setLayer2Topology(topologyProvider.getInitialLayer2Topology(snapshot))
             .setLayer3Topology(topologyProvider.getInitialLayer3Topology(snapshot))
             .setOspfTopology(topologyProvider.getInitialOspfTopology(snapshot))
             .setRawLayer1PhysicalTopology(topologyProvider.getRawLayer1PhysicalTopology(snapshot))
-            .setTunnelTopology(topologyProvider.getInitialTunnelTopology(snapshot))
             .build();
 
     ComputeDataPlaneResult answer =
