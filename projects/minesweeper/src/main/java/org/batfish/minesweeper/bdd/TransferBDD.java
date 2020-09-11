@@ -191,8 +191,14 @@ public class TransferBDD {
   }
 
   /*
-   * Convert a Batfish AST boolean expression to a symbolic Z3 boolean expression
-   * by performing inlining of stateful side effects.
+   * Convert a Batfish AST boolean expression to a BDD.
+   * TODO: Currently we assume that the boolean expression has no side effects.  For example,
+   *  any route announcement updates in the expression will not be accounted for.  Instead,
+   *  the returned BDDRoute will be identical to the one passed in as part of the TransferParam
+   *  object.  More generally we should also handle other side effects that could occur, for example
+   *  early returns/exits and changes to the default action but are not currently doing so.
+   *  Hence the only part of the returned TransferResult o that should be used currently is
+   *  o.getReturnValue().getSecond(), which represents this Boolean expression as a BDD.
    */
   private TransferResult compute(BooleanExpr expr, TransferParam<BDDRoute> p) {
 
@@ -213,28 +219,26 @@ public class TransferBDD {
       p.debug("Conjunction");
       Conjunction c = (Conjunction) expr;
       BDD acc = factory.one();
-      TransferResult result = new TransferResult(p.getData());
       for (BooleanExpr be : c.getConjuncts()) {
         TransferResult r = compute(be, p.indent());
         acc = acc.and(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
       p.debug("Conjunction return: " + acc);
-      return result.setReturnValue(ret);
+      return new TransferResult(ret, factory.zero());
     }
 
     if (expr instanceof Disjunction) {
       p.debug("Disjunction");
       Disjunction d = (Disjunction) expr;
       BDD acc = factory.zero();
-      TransferResult result = new TransferResult(p.getData());
       for (BooleanExpr be : d.getDisjuncts()) {
         TransferResult r = compute(be, p.indent());
         acc = acc.or(r.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(p.getData(), acc);
       p.debug("Disjunction return: " + acc);
-      return result.setReturnValue(ret);
+      return new TransferResult(ret, factory.zero());
     }
 
     // TODO: thread the BDDRecord through calls
@@ -304,8 +308,8 @@ public class TransferBDD {
       Not n = (Not) expr;
       TransferResult result = compute(n.getExpr(), p);
       TransferReturn r = result.getReturnValue();
-      TransferReturn ret = new TransferReturn(r.getFirst(), r.getSecond().not());
-      return result.setReturnValue(ret);
+      TransferReturn ret = new TransferReturn(p.getData(), r.getSecond().not());
+      return new TransferResult(ret, factory.zero());
     }
 
     if (expr instanceof MatchProtocol) {
