@@ -66,6 +66,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpI
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -2686,6 +2687,9 @@ public final class FlatJuniperGrammarTest {
     // Expecting an Interface in TRUNK mode with VLANs 6
     assertThat(c, hasInterface("ge-0/3/0.1", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(c, hasInterface("ge-0/3/0.1", hasAllowedVlans(IntegerSpace.of(6))));
+
+    // Expecting interface with encapsulation VLAN set to 1
+    assertThat(c, hasInterface("ge-0/4/0.1", hasEncapsulationVlan(1)));
   }
 
   @Test
