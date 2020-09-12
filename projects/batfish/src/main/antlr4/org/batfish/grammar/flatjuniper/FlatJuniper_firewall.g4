@@ -51,7 +51,7 @@ ff_interface_specific
 
 ff_term
 :
-   TERM name = variable
+   TERM name = WORD
    (
       fft_from
       | fft_then

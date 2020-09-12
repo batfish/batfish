@@ -48,7 +48,7 @@ aa_description
 
 aa_term
 :
-   TERM name = variable aa_common+
+   TERM name = WORD aa_common+
 ;
 
 aas_application

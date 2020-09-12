@@ -146,7 +146,7 @@ pops_from
 
 pops_term
 :
-   TERM name = variable pops_common
+   TERM name = WORD pops_common
 ;
 
 pops_then

@@ -2283,7 +2283,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFwTerm = terms.computeIfAbsent(name, FwTerm::new);
     _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
     _configuration.referenceStructure(
-        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name.text));
+        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name));
   }
 
   @Override

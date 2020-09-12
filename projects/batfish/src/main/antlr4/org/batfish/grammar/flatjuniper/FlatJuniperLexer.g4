@@ -23,7 +23,8 @@ tokens {
    RST,
    SYN,
    VERSION_STRING,
-   WILDCARD_ARTIFACT
+   WILDCARD_ARTIFACT,
+   WORD
 }
 
 // Juniper Keywords
@@ -5729,7 +5730,7 @@ TELNET
 
 TERM
 :
-   'term'
+   'term' -> pushMode ( M_Word )
 ;
 
 TFTP
@@ -6822,6 +6823,19 @@ F_WhitespaceChar
    [ \t\u000C]
 ;
 
+fragment
+F_Word
+:
+  F_WordChar+
+;
+
+fragment
+F_WordChar
+:
+  [0-9A-Za-z!@#$%^&*()_=+.;:{}/]
+  | '-'
+;
+
 mode M_AsPath;
 
 M_AsPath_NEWLINE
@@ -6849,7 +6863,7 @@ M_AsPath_PATH
 
 M_AsPath_TERM
 :
-   'term' -> type ( TERM ) , popMode
+   'term' -> type ( TERM ) , mode ( M_Word )
 ;
 
 M_AsPath_VARIABLE
@@ -7736,4 +7750,21 @@ mode M_WildcardAddress2;
 M_WildcardAddress2_IP_ADDRESS
 :
     F_IpAddress -> type ( IP_ADDRESS ) , popMode
+;
+
+mode M_Word;
+
+M_Word_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_Word_WORD
+:
+  F_Word -> type ( WORD ) , popMode
+;
+
+M_Word_WS
+:
+  F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
