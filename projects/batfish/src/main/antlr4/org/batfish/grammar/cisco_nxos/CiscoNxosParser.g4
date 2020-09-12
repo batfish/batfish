@@ -31,6 +31,7 @@ import
   CiscoNxos_snmp,
   CiscoNxos_static,
   CiscoNxos_tacacs_server,
+  CiscoNxos_vdc,
   CiscoNxos_vlan,
   CiscoNxos_vrf;
 
@@ -78,6 +79,7 @@ statement
   | s_tacacs_server
   | s_track
   | s_version
+  | s_vdc
   | s_vlan
   | s_vrf_context
 ;
