@@ -2202,6 +2202,7 @@ s_default
   (
     default_ip
     | sdef_hardware
+    | default_snmp_server
   )
 ;
 
@@ -2736,6 +2737,7 @@ s_no
     | no_errdisable
     | no_ip
     | no_logging
+    | no_snmp_server
   )
 ;
 
