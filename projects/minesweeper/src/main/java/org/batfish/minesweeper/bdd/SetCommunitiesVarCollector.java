@@ -38,7 +38,7 @@ public class SetCommunitiesVarCollector
       CommunitySetDifference communitySetDifference, Configuration arg) {
     Set<CommunityVar> s1 = communitySetDifference.getInitial().accept(this, arg);
     // TODO: handle set differences; for now we handle the special case when the first
-    // operand in the difference is empty, so that the second operand is irrelevant
+    //  operand in the difference is empty, so that the second operand is irrelevant
     if (s1.isEmpty()) {
       return s1;
     } else {

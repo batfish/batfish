@@ -93,14 +93,7 @@ public class CommunitySetMatchExprToBDD
     BDDRoute bddRoute = arg.getBDDRoute();
 
     CommunityVar cvar = CommunityVar.from(communitySetMatchRegex.getRegex());
-    Set<Integer> commAPs =
-        transferBDD.atomicPredicatesFor(
-            ImmutableSet.of(cvar), transferBDD.getCommunityAtomicPredicates());
-
-    BDD[] apBDDs = bddRoute.getCommunityAtomicPredicates();
-
-    return BDDRoute.factory.orAll(
-        commAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
+    return communityVarsToBDD(ImmutableSet.of(cvar), arg);
   }
 
   @Override
@@ -110,7 +103,16 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitHasCommunity(HasCommunity hasCommunity, Arg arg) {
-    // TODO: this case needs another visitor
-    return null;
+    return hasCommunity.getExpr().accept(new CommunityMatchExprToBDD(), arg);
+  }
+
+  static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {
+    TransferBDD transferBDD = arg.getTransferBDD();
+    BDDRoute bddRoute = arg.getBDDRoute();
+    Set<Integer> commAPs =
+        transferBDD.atomicPredicatesFor(commVars, transferBDD.getCommunityAtomicPredicates());
+    BDD[] apBDDs = bddRoute.getCommunityAtomicPredicates();
+    return BDDRoute.factory.orAll(
+        commAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
   }
 }

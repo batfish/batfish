@@ -94,6 +94,7 @@ import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
 import org.batfish.minesweeper.TransferParam.CallContext;
+import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
@@ -387,6 +388,12 @@ public class TransferBDD {
         throw new BatfishException(
             "Matching for communities other than the input communities is not supported: " + mc);
       }
+      BDD mcPredicate =
+          mc.getCommunitySetMatchExpr()
+              .accept(new CommunitySetMatchExprToBDD(), new Arg(this, p.getData()));
+      TransferReturn ret = new TransferReturn(p.getData(), mcPredicate);
+      return fromExpr(ret);
+
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
       TransferReturn ret;
