@@ -3256,6 +3256,11 @@ EQ
    'eq'
 ;
 
+ERRDISABLE
+:
+   'errdisable'
+;
+
 ERROR
 :
    'error'

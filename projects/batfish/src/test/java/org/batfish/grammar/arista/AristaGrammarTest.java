@@ -1743,6 +1743,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseErrdisable() {
+    parseVendorConfig("arista_errdisable");
+    // don't crash.
+  }
+
+  @Test
   public void testNatParse() {
     parseVendorConfig("arista_nat");
     // don't crash.
