@@ -1,0 +1,117 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_hardware
+!
+hardware access-list ipv6 implicit-permit icmpv6 all
+!
+default hardware capacity alert table MAC
+default hardware capacity alert table MAC feature L2
+default hardware capacity alert table ALPM
+default hardware capacity alert table ALPM feature V4Routes
+default hardware capacity alert table ALPM feature V6Routes
+default hardware capacity alert table Host
+default hardware capacity alert table Host feature Multicast
+default hardware capacity alert table Host feature V4Hosts
+default hardware capacity alert table Host feature V6Hosts
+default hardware capacity alert table LPM
+default hardware capacity alert table LPM feature V4Routes
+default hardware capacity alert table LPM feature V6Routes
+default hardware capacity alert table NextHop
+default hardware capacity alert table NextHop feature Multicast
+default hardware capacity alert table NextHop feature Unicast
+default hardware capacity alert table NextHop feature VxLan
+default hardware capacity alert table EFP
+default hardware capacity alert table EFP feature Slice-0
+default hardware capacity alert table EFP feature Slice-1
+default hardware capacity alert table EFP feature Slice-2
+default hardware capacity alert table EFP feature Slice-3
+default hardware capacity alert table IFP
+default hardware capacity alert table IFP feature Slice-0
+default hardware capacity alert table IFP feature Slice-1
+default hardware capacity alert table IFP feature Slice-10
+default hardware capacity alert table IFP feature Slice-11
+default hardware capacity alert table IFP feature Slice-2
+default hardware capacity alert table IFP feature Slice-3
+default hardware capacity alert table IFP feature Slice-4
+default hardware capacity alert table IFP feature Slice-5
+default hardware capacity alert table IFP feature Slice-6
+default hardware capacity alert table IFP feature Slice-7
+default hardware capacity alert table IFP feature Slice-8
+default hardware capacity alert table IFP feature Slice-9
+default hardware capacity alert table VFP
+default hardware capacity alert table VFP feature Slice-0
+default hardware capacity alert table VFP feature Slice-1
+default hardware capacity alert table VFP feature Slice-2
+default hardware capacity alert table VFP feature Slice-3
+default hardware capacity alert table EFP
+default hardware capacity alert table EFP feature Slice-0
+default hardware capacity alert table EFP feature Slice-1
+default hardware capacity alert table EFP feature Slice-2
+default hardware capacity alert table EFP feature Slice-3
+default hardware capacity alert table IFP
+default hardware capacity alert table IFP feature Slice-0
+default hardware capacity alert table IFP feature Slice-1
+default hardware capacity alert table IFP feature Slice-10
+default hardware capacity alert table IFP feature Slice-11
+default hardware capacity alert table IFP feature Slice-2
+default hardware capacity alert table IFP feature Slice-3
+default hardware capacity alert table IFP feature Slice-4
+default hardware capacity alert table IFP feature Slice-5
+default hardware capacity alert table IFP feature Slice-6
+default hardware capacity alert table IFP feature Slice-7
+default hardware capacity alert table IFP feature Slice-8
+default hardware capacity alert table IFP feature Slice-9
+default hardware capacity alert table VFP
+default hardware capacity alert table VFP feature Slice-0
+default hardware capacity alert table VFP feature Slice-1
+default hardware capacity alert table VFP feature Slice-2
+default hardware capacity alert table VFP feature Slice-3
+default hardware capacity alert table EFP
+default hardware capacity alert table EFP feature Slice-0
+default hardware capacity alert table EFP feature Slice-1
+default hardware capacity alert table EFP feature Slice-2
+default hardware capacity alert table EFP feature Slice-3
+default hardware capacity alert table IFP
+default hardware capacity alert table IFP feature Slice-0
+default hardware capacity alert table IFP feature Slice-1
+default hardware capacity alert table IFP feature Slice-10
+default hardware capacity alert table IFP feature Slice-11
+default hardware capacity alert table IFP feature Slice-2
+default hardware capacity alert table IFP feature Slice-3
+default hardware capacity alert table IFP feature Slice-4
+default hardware capacity alert table IFP feature Slice-5
+default hardware capacity alert table IFP feature Slice-6
+default hardware capacity alert table IFP feature Slice-7
+default hardware capacity alert table IFP feature Slice-8
+default hardware capacity alert table IFP feature Slice-9
+default hardware capacity alert table VFP
+default hardware capacity alert table VFP feature Slice-0
+default hardware capacity alert table VFP feature Slice-1
+default hardware capacity alert table VFP feature Slice-2
+default hardware capacity alert table VFP feature Slice-3
+default hardware capacity alert table EFP
+default hardware capacity alert table EFP feature Slice-0
+default hardware capacity alert table EFP feature Slice-1
+default hardware capacity alert table EFP feature Slice-2
+default hardware capacity alert table EFP feature Slice-3
+default hardware capacity alert table IFP
+default hardware capacity alert table IFP feature Slice-0
+default hardware capacity alert table IFP feature Slice-1
+default hardware capacity alert table IFP feature Slice-10
+default hardware capacity alert table IFP feature Slice-11
+default hardware capacity alert table IFP feature Slice-2
+default hardware capacity alert table IFP feature Slice-3
+default hardware capacity alert table IFP feature Slice-4
+default hardware capacity alert table IFP feature Slice-5
+default hardware capacity alert table IFP feature Slice-6
+default hardware capacity alert table IFP feature Slice-7
+default hardware capacity alert table IFP feature Slice-8
+default hardware capacity alert table IFP feature Slice-9
+default hardware capacity alert table VFP
+default hardware capacity alert table VFP feature Slice-0
+default hardware capacity alert table VFP feature Slice-1
+default hardware capacity alert table VFP feature Slice-2
+default hardware capacity alert table VFP feature Slice-3
+!
+hardware fpga error action log
+!
