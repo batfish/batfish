@@ -11,6 +11,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -54,13 +55,15 @@ public enum ServiceBuiltIn {
     switch (this) {
       case ANY:
         return new TrueExpr(matchServiceAnyTraceElement());
-      case APPLICATION_DEFAULT:
       case SERVICE_HTTP:
       case SERVICE_HTTPS:
         return new MatchHeaderSpace(
             _serviceHeaderSpace.get(), matchBuiltInServiceTraceElement(getName()));
+      case APPLICATION_DEFAULT:
+        // application-default doesn't provide useful headerspace info
       default:
-        return new MatchHeaderSpace(_serviceHeaderSpace.get());
+        // Should never get here
+        return FalseExpr.INSTANCE;
     }
   }
 
