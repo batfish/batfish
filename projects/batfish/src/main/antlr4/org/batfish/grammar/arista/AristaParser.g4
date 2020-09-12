@@ -6,6 +6,7 @@ Legacy_common,
 Arista_bgp,
 Arista_cvx,
 Arista_email,
+Arista_igmp,
 Arista_logging,
 Arista_mlag,
 Arista_vlan,
@@ -2199,8 +2200,14 @@ s_default
 :
   DEFAULT
   (
-    sdef_hardware
+    default_ip
+    | sdef_hardware
   )
+;
+
+default_ip
+:
+  IP default_ip_igmp
 ;
 
 sdef_hardware
@@ -2459,6 +2466,7 @@ s_ip
   IP
   (
     s_ip_domain_name
+    | s_ip_igmp
     | s_ip_name_server
     | s_ip_nbar
     | s_ip_probe
@@ -2726,6 +2734,7 @@ s_no
   (
     no_aaa
     | no_errdisable
+    | no_ip
     | no_logging
   )
 ;
@@ -2733,6 +2742,11 @@ s_no
 no_errdisable
 :
   ERRDISABLE null_rest_of_line
+;
+
+no_ip
+:
+  IP no_ip_igmp
 ;
 
 s_no_access_list_extended
