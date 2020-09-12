@@ -32,6 +32,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
@@ -93,7 +95,6 @@ import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
 import org.batfish.minesweeper.TransferParam.CallContext;
 import org.batfish.minesweeper.collections.Table2;
-import org.batfish.minesweeper.communities.SetCommunitiesVarCollector;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
@@ -113,13 +114,13 @@ public class TransferBDD {
 
   private Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
-  private Configuration _conf;
+  private final Configuration _conf;
 
-  private Graph _graph;
+  private final Graph _graph;
 
   private Set<Prefix> _ignoredNetworks;
 
-  private List<Statement> _statements;
+  private final List<Statement> _statements;
 
   public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
     _graph = g;
@@ -183,7 +184,7 @@ public class TransferBDD {
   }
 
   // produce the union of all atomic predicates associated with any of the given symbolic regexes
-  private <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
+  <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
       Set<T> regexes, Map<T, Set<Integer>> apMap) {
     return regexes.stream()
         .flatMap(r -> apMap.get(r).stream())
@@ -378,6 +379,14 @@ public class TransferBDD {
       TransferReturn ret = new TransferReturn(p.getData(), c);
       return fromExpr(ret);
 
+    } else if (expr instanceof MatchCommunities) {
+      p.debug("MatchCommunities");
+      MatchCommunities mc = (MatchCommunities) expr;
+      // we only handle the case where the expression being matched is just the input communities
+      if (!mc.getCommunitySetExpr().equals(InputCommunities.instance())) {
+        throw new BatfishException(
+            "Matching for communities other than the input communities is not supported: " + mc);
+      }
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
       TransferReturn ret;
@@ -1044,7 +1053,7 @@ public class TransferBDD {
   /*
    * Return a BDD from a boolean
    */
-  private BDD mkBDD(boolean b) {
+  BDD mkBDD(boolean b) {
     return b ? factory.one() : factory.zero();
   }
 
@@ -1175,5 +1184,17 @@ public class TransferBDD {
       default:
         throw new BatfishException("Unexpected CommunityVar type: " + cvar.getType());
     }
+  }
+
+  public Map<CommunityVar, Set<Integer>> getCommunityAtomicPredicates() {
+    return _communityAtomicPredicates;
+  }
+
+  public Configuration getConfiguration() {
+    return _conf;
+  }
+
+  public Graph getGraph() {
+    return _graph;
   }
 }

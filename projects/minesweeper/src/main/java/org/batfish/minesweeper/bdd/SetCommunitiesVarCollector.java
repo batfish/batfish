@@ -1,4 +1,4 @@
-package org.batfish.minesweeper.communities;
+package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
@@ -15,6 +15,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 
 /**
  * Collect the set of community variables that should be set to true during the symbolic route
