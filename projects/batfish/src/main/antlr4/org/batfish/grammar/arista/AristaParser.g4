@@ -2330,6 +2330,11 @@ s_ephone_dn_template
    )*
 ;
 
+s_errdisable
+:
+  ERRDISABLE null_rest_of_line
+;
+
 s_event
 :
    NO? EVENT null_rest_of_line
@@ -2721,8 +2726,14 @@ s_no
   NO
   (
     no_aaa
+    | no_errdisable
     | no_logging
   )
+;
+
+no_errdisable
+:
+  ERRDISABLE null_rest_of_line
 ;
 
 s_no_access_list_extended
@@ -3511,6 +3522,7 @@ stanza
    | s_end
    | s_eos_mlag
    | s_ephone_dn_template
+   | s_errdisable
    | s_ethernet_services
    | s_event
    | s_event_handler
