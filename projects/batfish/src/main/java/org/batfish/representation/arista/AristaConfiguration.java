@@ -146,7 +146,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -1314,11 +1313,6 @@ public final class AristaConfiguration extends VendorConfiguration {
             Common.matchDefaultRoute(),
             ImmutableList.of(new SetMetric(new LiteralLong(1L))),
             ImmutableList.of(new SetMetric(new LiteralLong(metric)))));
-
-    // If only classful routes should be redistributed, filter to classful routes.
-    if (policy.getOnlyClassfulRoutes()) {
-      ospfExportConditions.getConjuncts().add(RouteIsClassful.instance());
-    }
 
     // If a route-map filter is present, honor it.
     String exportRouteMapName = policy.getRouteMap();
