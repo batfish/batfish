@@ -89,9 +89,6 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    TransferBDD transferBDD = arg.getTransferBDD();
-    BDDRoute bddRoute = arg.getBDDRoute();
-
     CommunityVar cvar = CommunityVar.from(communitySetMatchRegex.getRegex());
     return communityVarsToBDD(ImmutableSet.of(cvar), arg);
   }
