@@ -2690,6 +2690,8 @@ public final class FlatJuniperGrammarTest {
 
     // Expecting interface with encapsulation VLAN set to 1
     assertThat(c, hasInterface("ge-0/4/0.1", hasEncapsulationVlan(1)));
+    // Setting vlan-id on unit 0 is not allowed
+    assertThat(c, hasInterface("ge-0/4/0.0", hasEncapsulationVlan(nullValue())));
   }
 
   @Test
