@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
@@ -44,14 +45,19 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -1200,8 +1206,7 @@ public class TransferBDDTest {
    * We support CommunitySetDifference for the special case when the set being differenced is empty.
    * This is necessary to handle the translation of IOS XR community sets, which includes (at least
    * in some cases) an initial difference of {@link InputCommunities} with {@link
-   * AllStandardCommunities}. Currently we don't support non-empty InputCommunities or arbitrary
-   * community set differences.
+   * AllStandardCommunities}.
    */
   @Test
   public void testSetEmptyCommunitySetDifference() {
@@ -1229,6 +1234,40 @@ public class TransferBDDTest {
       assertEquals(
           outAnnouncements.getFactory().zero(), outAnnouncements.getCommunityAtomicPredicates()[i]);
     }
+  }
+
+  @Test
+  public void testMatchCommunities() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(),
+                        new HasCommunity(
+                            new StandardCommunityHighMatch(
+                                new IntComparison(IntComparator.EQ, new LiteralInt(30))))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRoute = new BDDRoute(_g);
+    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
+
+    // get the atomic predicates that correspond to ^30:
+    Set<Integer> ap30 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from("^30:"));
+
+    BDD expectedBDD =
+        BDDRoute.factory.orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
+    assertEquals(expectedBDD, acceptedAnnouncements);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test

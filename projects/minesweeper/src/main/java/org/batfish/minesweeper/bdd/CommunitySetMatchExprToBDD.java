@@ -1,7 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -89,8 +88,7 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    CommunityVar cvar = CommunityVar.from(communitySetMatchRegex.getRegex());
-    return communityVarsToBDD(ImmutableSet.of(cvar), arg);
+    throw new UnsupportedOperationException("Currently not supporting community set regexes");
   }
 
   @Override
