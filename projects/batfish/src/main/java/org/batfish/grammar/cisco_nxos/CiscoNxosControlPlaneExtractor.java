@@ -638,6 +638,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vdcContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv4aclContext;
@@ -673,6 +674,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vcaf4u_route_targetContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vcaf6u_route_targetContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vdc_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_vlanContext;
@@ -961,6 +963,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @VisibleForTesting
   public static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
 
+  private static final IntegerSpace VDC_ID_RANGE = IntegerSpace.of(Range.closed(1, 4));
   private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(0, 16777214));
   private static final IntegerSpace VRF_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 32));
 
@@ -5984,6 +5987,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitS_vdc(S_vdcContext ctx) {
+    Optional<Integer> maybeId = toInteger(ctx, ctx.id);
+    if (!maybeId.isPresent()) {
+      return;
+    }
+    int vdcId = maybeId.get();
+    if (vdcId != 1) {
+      warn(ctx, "Virtual device contexts are not yet supported");
+    }
+  }
+
+  @Override
   public void exitS_vrf_context(S_vrf_contextContext ctx) {
     _currentVrf = _c.getDefaultVrf();
   }
@@ -6424,6 +6439,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       todo(ctx);
       return Optional.empty();
     }
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Vdc_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VDC_ID_RANGE, "vdc id");
   }
 
   private @Nonnull Optional<Integer> toInteger(

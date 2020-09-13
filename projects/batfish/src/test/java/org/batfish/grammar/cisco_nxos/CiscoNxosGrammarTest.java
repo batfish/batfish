@@ -7177,6 +7177,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testVdcParsing() {
+    // don't throw
+    parseVendorConfig("nxos_vdc");
+  }
+
+  @Test
   public void testVersionExtraction() {
     String hostname = "nxos_version";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
