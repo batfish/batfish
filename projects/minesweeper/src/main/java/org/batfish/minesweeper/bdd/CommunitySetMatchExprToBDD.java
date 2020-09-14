@@ -25,8 +25,7 @@ import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.minesweeper.CommunityVar;
 
 /**
- * Create a BDD that represents a {@link CommunitySetMatchExpr}. The BDD is a predicate on community
- * atomic predicates that represents all allowed community sets. A concrete community set
+ * Create a BDD that represents a {@link CommunitySetMatchExpr}. A concrete community set
  * {C1,....Cn} satisfies the BDD if AND(ap(C1),...,ap(Cn)) implies the BDD, where ap(C) denotes the
  * unique atomic predicate that the community C satisfies.
  */
@@ -100,11 +99,7 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetNot(CommunitySetNot communitySetNot, Arg arg) {
-    // TODO: To support negation we need to change the way that we turn models into
-    //  community sets in SearchRoutePolicies, because it needs to be aware not only of
-    //  communities that must exist, but also those that must not exist.
-    throw new UnsupportedOperationException(
-        "Currently not supporting community set expression negation");
+    return communitySetNot.getExpr().accept(this, arg).not();
   }
 
   @Override

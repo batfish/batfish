@@ -35,8 +35,7 @@ import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 
 /**
- * Create a BDD that represents a {@link CommunityMatchExpr}. The BDD is a predicate on community
- * atomic predicates that represents all allowed communities. A concrete community C satisfies the
+ * Create a BDD that represents a {@link CommunityMatchExpr}. A concrete community C satisfies the
  * BDD if ap(C) implies the BDD, where ap(C) denotes the unique atomic predicate that the community
  * C satisfies.
  */
@@ -121,8 +120,13 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitCommunityNot(CommunityNot communityNot, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting community expression negation");
+    BDD toBeNegated = communityNot.getExpr().accept(this, arg);
+    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
+    // to negate a predicate on a single community, we diff it from a predicate representing
+    // all possible communities: the disjunction of all community atomic predicates.  simply
+    // negating toBeNegated is not sufficient because it could allow a model where all atomic
+    // predicates are false, which doesn't correspond to any concrete communities.
+    return BDDRoute.factory.orAll(aps).diffWith(toBeNegated);
   }
 
   @Override
