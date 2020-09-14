@@ -7,8 +7,10 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
 /**
- * Boolean expression that tests whether an IPv4 route is classful, i.e. the distributed prefix is
- * exactly an entire subnet in its IPv4 address class.
+ * Boolean expression that tests whether an IPv4 route is classful, i.e. the matched prefix is not a
+ * strict subset of an IPv4 address class.
+ *
+ * <p>This is typically used for Cisco IOS {@code redistribute} without {@code subnets} keyword.
  */
 public final class RouteIsClassful extends BooleanExpr {
 
@@ -27,8 +29,8 @@ public final class RouteIsClassful extends BooleanExpr {
   }
 
   /**
-   * Returns {@code true} iff the IPv4 route is classful, i.e. the distributed prefix is exactly an
-   * entire subnet in its IPv4 address class.
+   * Returns {@code true} iff the IPv4 route is classful, i.e. the matched prefix is not a struct
+   * subset of an IPv4 address class.
    *
    * <p>Returns {@code true} for networks that do not have a subnet size.
    */
@@ -37,7 +39,7 @@ public final class RouteIsClassful extends BooleanExpr {
     AbstractRoute route = environment.getOriginalRoute();
     Prefix network = route.getNetwork();
     int classSize = network.getStartIp().getClassNetworkSize();
-    return new Result(classSize == network.getPrefixLength());
+    return new Result(network.getPrefixLength() <= classSize);
   }
 
   @Override
