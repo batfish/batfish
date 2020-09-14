@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +41,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
@@ -52,6 +54,7 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -1265,6 +1268,50 @@ public class TransferBDDTest {
 
     BDD expectedBDD =
         BDDRoute.factory.orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
+    assertEquals(expectedBDD, acceptedAnnouncements);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testMatchCommunityInHalves() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(),
+                        new HasCommunity(
+                            new CommunityMatchAll(
+                                ImmutableList.of(
+                                    new StandardCommunityHighMatch(
+                                        new IntComparison(IntComparator.EQ, new LiteralInt(30))),
+                                    new StandardCommunityLowMatch(
+                                        new IntComparison(
+                                            IntComparator.EQ, new LiteralInt(20))))))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRoute = new BDDRoute(_g);
+    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
+
+    // only the APs that belong to both ^30: and :20$ should be allowed
+    Set<Integer> ap30 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from("^30:"));
+    Set<Integer> ap20 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(":20$"));
+
+    Set<Integer> intersection = new HashSet<>(ap30);
+    intersection.retainAll(ap20);
+
+    BDD expectedBDD =
+        BDDRoute.factory.orAll(intersection.stream().map(i -> aps[i]).collect(Collectors.toList()));
     assertEquals(expectedBDD, acceptedAnnouncements);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);

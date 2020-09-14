@@ -18,6 +18,11 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 
+/**
+ * Create a BDD that represents a {@link CommunitySetExpr}. The BDD is a predicate on community
+ * atomic predicates. A concrete community C satisfies the BDD if ap(C) implies the BDD, where ap(C)
+ * denotes the unique atomic predicate that the community C satisfies.
+ */
 @ParametersAreNonnullByDefault
 public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> {
   @Override

@@ -34,6 +34,12 @@ import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtended
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 
+/**
+ * Create a BDD that represents a {@link CommunityMatchExpr}. The BDD is a predicate on community
+ * atomic predicates that represents all allowed communities. A concrete community C satisfies the
+ * BDD if ap(C) implies the BDD, where ap(C) denotes the unique atomic predicate that the community
+ * C satisfies.
+ */
 @ParametersAreNonnullByDefault
 public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, Arg> {
   @Override
@@ -115,7 +121,8 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitCommunityNot(CommunityNot communityNot, Arg arg) {
-    return communityNot.getExpr().accept(this, arg).not();
+    throw new UnsupportedOperationException(
+        "Currently not supporting community expression negation");
   }
 
   @Override

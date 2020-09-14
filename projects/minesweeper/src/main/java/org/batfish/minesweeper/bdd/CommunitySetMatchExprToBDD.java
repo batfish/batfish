@@ -2,6 +2,7 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +24,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.minesweeper.CommunityVar;
 
+/**
+ * Create a BDD that represents a {@link CommunitySetMatchExpr}. The BDD is a predicate on community
+ * atomic predicates that represents all allowed community sets. A concrete community set
+ * {C1,....Cn} satisfies the BDD if AND(ap(C1),...,ap(Cn)) implies the BDD, where ap(C) denotes the
+ * unique atomic predicate that the community C satisfies.
+ */
 @ParametersAreNonnullByDefault
 public class CommunitySetMatchExprToBDD
     implements CommunitySetMatchExprVisitor<BDD, CommunitySetMatchExprToBDD.Arg> {
@@ -93,12 +100,25 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetNot(CommunitySetNot communitySetNot, Arg arg) {
-    return communitySetNot.getExpr().accept(this, arg).not();
+    // TODO: To support negation we need to change the way that we turn models into
+    //  community sets in SearchRoutePolicies, because it needs to be aware not only of
+    //  communities that must exist, but also those that must not exist.
+    throw new UnsupportedOperationException(
+        "Currently not supporting community set expression negation");
   }
 
   @Override
   public BDD visitHasCommunity(HasCommunity hasCommunity, Arg arg) {
-    return hasCommunity.getExpr().accept(new CommunityMatchExprToBDD(), arg);
+    BDD matchExprBDD = hasCommunity.getExpr().accept(new CommunityMatchExprToBDD(), arg);
+    /* the above BDD applies to a single community so we can't treat it as a BDD for a
+      community set, or else it could be satisfied by introducing multiple communities in the set.
+      to avoid this problem, we convert this BDD to the largest disjunction of atomic predicates
+      that implies the BDD, thereby ensuring that in the end a community matching one of these
+      atomic predicates will exist in the community set.
+    */
+    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
+    return BDDRoute.factory.orAll(
+        Arrays.stream(aps).filter(ap -> !ap.diffSat(matchExprBDD)).collect(Collectors.toList()));
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {
