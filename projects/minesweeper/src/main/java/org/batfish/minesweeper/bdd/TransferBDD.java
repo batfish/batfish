@@ -111,9 +111,9 @@ public class TransferBDD {
    * simply need the map from each regex to its corresponding set of atomic predicates, each
    * represented by a unique integer.
    */
-  private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
+  private final Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
 
-  private Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
+  private final Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
   private final Configuration _conf;
 
@@ -127,6 +127,10 @@ public class TransferBDD {
     _graph = g;
     _conf = conf;
     _statements = statements;
+
+    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    _asPathRegexAtomicPredicates =
+        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
   }
 
   /*
@@ -1166,9 +1170,6 @@ public class TransferBDD {
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
-    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    _asPathRegexAtomicPredicates =
-        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     BDDRoute o = new BDDRoute(_graph);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult result = compute(_statements, p);

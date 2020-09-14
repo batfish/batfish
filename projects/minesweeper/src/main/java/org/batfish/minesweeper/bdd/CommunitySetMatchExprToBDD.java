@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -106,14 +107,28 @@ public class CommunitySetMatchExprToBDD
   public BDD visitHasCommunity(HasCommunity hasCommunity, Arg arg) {
     BDD matchExprBDD = hasCommunity.getExpr().accept(new CommunityMatchExprToBDD(), arg);
     /* the above BDD applies to a single community so we can't treat it as a BDD for a
-      community set, or else it could be satisfied by introducing multiple communities in the set.
-      to avoid this problem, we convert this BDD to the largest disjunction of atomic predicates
-      that implies the BDD, thereby ensuring that in the end a community matching one of these
-      atomic predicates will exist in the community set.
+      community set, or else its constraints could be satisfied by multiple communities
+      in the set that each satisfy some of the constraints.  to avoid this problem, we instead
+      return the largest disjunction of atomic predicates that satisfy the BDD.  hence any community
+      set that satisfies this disjunction must contain at least one community that satisfies our
+      original BDD.
     */
     BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
-    return BDDRoute.factory.orAll(
-        Arrays.stream(aps).filter(ap -> !ap.diffSat(matchExprBDD)).collect(Collectors.toList()));
+    /**
+     * first figure out which atomic predicates satisfy matchExprBDD. when considering each atomic
+     * predicate, we use the exactlyOneAP helper function to include the fact that all other atomic
+     * predicates will be false, which must be the case since atomic predicates are disjoint.
+     * otherwise, we would not be able to show that ap1 satisfies the community constraint (ap1 /\
+     * !ap2), for example.
+     */
+    IntStream disjuncts =
+        IntStream.range(0, aps.length).filter(i -> !exactlyOneAP(aps, i).diffSat(matchExprBDD));
+    /**
+     * now return a disjunction of all of the satisfying atomic predicates. here we do NOT use the
+     * exactlyOneAP function, because we are returning a BDD for a community set, which can satisfy
+     * multiple atomic predicates due to multiple elements of the set.
+     */
+    return BDDRoute.factory.orAll(disjuncts.mapToObj(i -> aps[i]).collect(Collectors.toList()));
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {
@@ -122,7 +137,18 @@ public class CommunitySetMatchExprToBDD
     Set<Integer> commAPs =
         transferBDD.atomicPredicatesFor(commVars, transferBDD.getCommunityAtomicPredicates());
     BDD[] apBDDs = bddRoute.getCommunityAtomicPredicates();
-    return BDDRoute.factory.orAll(
-        commAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
+    return bddRoute
+        .getFactory()
+        .orAll(commAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
+  }
+
+  /*
+  Return a BDD that represents the scenario where the ith BDD in aps is satisfied and all others
+  are falsified.
+   */
+  static BDD exactlyOneAP(BDD[] aps, int i) {
+    ArrayList<BDD> negs = new ArrayList<>(Arrays.asList(aps));
+    negs.remove(i);
+    return aps[i].and(negs.stream().reduce(BDDRoute.factory.one(), BDD::and));
   }
 }
