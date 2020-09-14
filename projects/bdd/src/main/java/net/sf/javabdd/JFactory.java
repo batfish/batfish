@@ -897,6 +897,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_orAll(int[] operands) {
+    if (applycache == null) {
+      applycache = BddCacheI_init(cachesize);
+    }
     if (multiopcache == null) {
       multiopcache = BddCacheMultiOp_init(cachesize);
     }
