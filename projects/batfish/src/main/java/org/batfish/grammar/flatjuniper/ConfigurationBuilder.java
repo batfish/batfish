@@ -266,6 +266,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.If_ethernet_switchingContext;
@@ -4220,6 +4221,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitI_unit(I_unitContext ctx) {
     _currentInterfaceOrRange = _currentMasterInterface;
+  }
+
+  @Override
+  public void exitI_vlan_id(I_vlan_idContext ctx) {
+    _currentInterfaceOrRange.setVlanId(toInt(ctx.DEC()));
   }
 
   @Override

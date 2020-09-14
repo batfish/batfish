@@ -103,6 +103,7 @@ public class Interface implements Serializable {
   private String _routingInstance;
   private final SortedMap<String, Interface> _units;
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
+  @Nullable private Integer _vlanId;
   private Integer _tcpMss;
 
   public Interface(String name) {
@@ -269,6 +270,15 @@ public class Interface implements Serializable {
 
   public Map<String, Interface> getUnits() {
     return _units;
+  }
+
+  @Nullable
+  public Integer getVlanId() {
+    return _vlanId;
+  }
+
+  public void setVlanId(@Nullable Integer vlanId) {
+    _vlanId = vlanId;
   }
 
   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {

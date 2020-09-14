@@ -1461,6 +1461,11 @@ FEATURE_CONTROL
   'feature-control'
 ;
 
+FEATURE_SET
+:
+  'feature-set'
+;
+
 FEATUREOPSTATUSCHANGE
 :
   [Ff] [Ee] [Aa] [Tt] [Uu] [Rr] [Ee] [Oo] [Pp] [Ss] [Tt] [Aa] [Tt] [Uu] [Ss]
@@ -1816,6 +1821,11 @@ ICMP_ECHO
   'icmp-echo' -> pushMode(M_Words)
 ;
 
+ID
+:
+  'id'
+;
+
 IDENT
 :
   'ident'
@@ -2164,6 +2174,11 @@ LICENSE
   'license'
 ;
 
+LIMIT_RESOURCE
+:
+  'limit-resource'
+;
+
 LINE
 :
   'line'
@@ -2402,6 +2417,16 @@ LSA_GROUP_PACING
 LT
 :
   'lt'
+;
+
+M4ROUTE_MEM
+:
+  'm4route-mem'
+;
+
+M6ROUTE_MEM
+:
+  'm6route-mem'
 ;
 
 MAC
@@ -4645,6 +4670,16 @@ TYPE7
   'type7'
 ;
 
+U4ROUTE_MEM
+:
+  'u4route-mem'
+;
+
+U6ROUTE_MEM
+:
+  'u6route-mem'
+;
+
 UDLD
 :
   'udld'
@@ -4785,6 +4820,11 @@ V3_REPORT_SUPPRESSION
 VALIDATE
 :
   'validate'
+;
+
+VDC
+:
+  'vdc' -> pushMode ( M_Word )
 ;
 
 VERIFY
