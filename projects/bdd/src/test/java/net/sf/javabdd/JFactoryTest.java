@@ -140,7 +140,7 @@ public class JFactoryTest {
   @Test
   public void testOrAll() {
     _factory.setVarNum(10);
-    BDD x = _factory.nithVar(0);
+    BDD x = _factory.ithVar(0);
     BDD noty = _factory.nithVar(1);
 
     assertThat(_factory.orAll(x, noty), equalTo(x.or(noty)));
