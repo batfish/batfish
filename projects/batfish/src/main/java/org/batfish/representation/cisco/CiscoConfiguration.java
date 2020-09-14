@@ -314,6 +314,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("tw", "TwoGigabitEthernet")
           .put("twe", "TwentyFiveGigE")
           .put("TwentyFiveGigE", "TwentyFiveGigE")
+          .put("TwentyFiveGigabitEthernet", "TwentyFiveGigE")
           .put("TwoGigabitEthernet", "TwoGigabitEthernet")
           .put("ve", "VirtualEthernet")
           .put("VirtualEthernet", "VirtualEthernet")
