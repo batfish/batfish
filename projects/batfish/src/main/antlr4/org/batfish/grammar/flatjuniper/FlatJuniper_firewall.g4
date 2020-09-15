@@ -51,7 +51,7 @@ ff_interface_specific
 
 ff_term
 :
-   TERM name = WORD
+   TERM name = junos_name
    (
       fft_from
       | fft_then

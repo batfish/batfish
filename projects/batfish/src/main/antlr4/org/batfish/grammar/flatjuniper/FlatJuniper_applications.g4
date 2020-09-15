@@ -48,7 +48,7 @@ aa_description
 
 aa_term
 :
-   TERM name = WORD aa_common+
+   TERM name = junos_name aa_common+
 ;
 
 aas_application

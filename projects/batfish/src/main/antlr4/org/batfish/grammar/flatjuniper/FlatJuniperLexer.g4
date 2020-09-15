@@ -13,18 +13,19 @@ options {
 tokens {
    ACK,
    BANG,
+   DOUBLE_QUOTED_NAME,
    DYNAMIC_DB,
    FIN,
    INTERFACE_NAME,
    INTERFACE_WILDCARD,
    ISO_ADDRESS,
    LITERAL_OR_REGEX_COMMUNITY,
+   NAME,
    PIPE,
    RST,
    SYN,
    VERSION_STRING,
-   WILDCARD_ARTIFACT,
-   WORD
+   WILDCARD_ARTIFACT
 }
 
 // Juniper Keywords
@@ -5730,7 +5731,7 @@ TELNET
 
 TERM
 :
-   'term' -> pushMode ( M_Word )
+   'term' -> pushMode ( M_Name )
 ;
 
 TFTP
@@ -6722,6 +6723,25 @@ F_Letter
 ;
 
 fragment
+F_Name
+:
+  F_NameChar+
+;
+
+fragment
+F_NameQuoted
+:
+  '"' F_NameChar (F_NameChar | ' ')+ F_NameChar '"'
+;
+
+fragment
+F_NameChar
+:
+  [0-9A-Za-z_]
+  | '-'
+;
+
+fragment
 F_NewlineChar
 :
    [\r\n]
@@ -6863,7 +6883,7 @@ M_AsPath_PATH
 
 M_AsPath_TERM
 :
-   'term' -> type ( TERM ) , mode ( M_Word )
+   'term' -> type ( TERM ) , mode ( M_Name )
 ;
 
 M_AsPath_VARIABLE
@@ -7370,6 +7390,28 @@ M_Members_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
+mode M_Name;
+
+M_Name_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_Name_NAME
+:
+  F_Name -> type ( NAME ) , popMode
+;
+
+M_Name_QUOTED_NAME
+:
+  F_NameQuoted -> type ( DOUBLE_QUOTED_NAME ), popMode
+;
+
+M_Name_WS
+:
+  F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
 mode M_PrefixListName;
 
 M_PrefixListName_WILDCARD
@@ -7750,21 +7792,4 @@ mode M_WildcardAddress2;
 M_WildcardAddress2_IP_ADDRESS
 :
     F_IpAddress -> type ( IP_ADDRESS ) , popMode
-;
-
-mode M_Word;
-
-M_Word_NEWLINE
-:
-  F_NewlineChar+ -> type ( NEWLINE ) , popMode
-;
-
-M_Word_WORD
-:
-  F_Word -> type ( WORD ) , popMode
-;
-
-M_Word_WS
-:
-  F_WhitespaceChar+ -> channel ( HIDDEN )
 ;

@@ -324,6 +324,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protoco
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_poolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_pool_default_port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Nat_rule_setContext;
@@ -2185,7 +2186,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterAa_term(Aa_termContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     _currentApplicationTerm =
         _currentApplication.getTerms().computeIfAbsent(name, n -> new Term(name));
   }
@@ -2278,13 +2279,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterFf_term(Ff_termContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     String defName = computeFirewallFilterTermName(_currentFilter.getName(), name);
     Map<String, FwTerm> terms = _currentFilter.getTerms();
     _currentFwTerm = terms.computeIfAbsent(name, FwTerm::new);
     _configuration.defineFlattenedStructure(FIREWALL_FILTER_TERM, defName, ctx, _parser);
     _configuration.referenceStructure(
-        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name));
+        FIREWALL_FILTER_TERM, defName, FIREWALL_FILTER_TERM_DEFINITION, getLine(ctx.name.start));
   }
 
   @Override
@@ -2705,7 +2706,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterPops_term(Pops_termContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     Map<String, PsTerm> terms = _currentPolicyStatement.getTerms();
     _currentPsTerm = terms.computeIfAbsent(name, PsTerm::new);
     _currentPsThens = _currentPsTerm.getThens();
@@ -6333,6 +6334,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     List<AsSet> asPath =
         path.items.stream().map(this::toAsSet).collect(ImmutableList.toImmutableList());
     return AsPath.of(asPath);
+  }
+
+  private String toString(Junos_nameContext ctx) {
+    if (ctx.NAME() != null) {
+      return ctx.NAME().getText();
+    } else {
+      assert ctx.DOUBLE_QUOTED_NAME() != null;
+      return unquote(ctx.DOUBLE_QUOTED_NAME().getText());
+    }
   }
 
   private String toComplexPolicyStatement(
