@@ -6731,7 +6731,8 @@ F_Name
 fragment
 F_NameQuoted
 :
-  '"' F_NameChar (F_NameChar | ' ')* F_NameChar '"'
+// Quotes, at least one char, does not end in space
+  '"' F_NameChar ((F_NameChar | ' ')* F_NameChar)? '"'
 ;
 
 fragment
