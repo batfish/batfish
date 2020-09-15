@@ -8,8 +8,10 @@ options {
 
 s_email
 :
-  EMAIL
-  email_no
+  EMAIL NEWLINE
+  (
+    email_no
+  )*
 ;
 
 email_no
