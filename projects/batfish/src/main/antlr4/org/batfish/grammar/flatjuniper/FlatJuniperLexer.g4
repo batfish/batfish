@@ -6731,7 +6731,7 @@ F_Name
 fragment
 F_NameQuoted
 :
-  '"' F_NameChar (F_NameChar | ' ')+ F_NameChar '"'
+  '"' F_NameChar (F_NameChar | ' ')* F_NameChar '"'
 ;
 
 fragment
@@ -6841,19 +6841,6 @@ fragment
 F_WhitespaceChar
 :
    [ \t\u000C]
-;
-
-fragment
-F_Word
-:
-  F_WordChar+
-;
-
-fragment
-F_WordChar
-:
-  [0-9A-Za-z!@#$%^&*()_=+.;:{}/]
-  | '-'
 ;
 
 mode M_AsPath;
