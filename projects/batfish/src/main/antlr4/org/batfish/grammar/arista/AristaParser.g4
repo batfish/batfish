@@ -5,6 +5,7 @@ Arista_common,
 Legacy_common,
 Arista_bgp,
 Arista_cvx,
+Arista_email,
 Arista_logging,
 Arista_mlag,
 Arista_vlan,
@@ -3517,6 +3518,7 @@ stanza
    | s_dot11
    | s_dspfarm
    | s_dynamic_access_policy_record
+   | s_email
    | s_enable
    | s_end
    | s_eos_mlag
