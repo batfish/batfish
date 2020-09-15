@@ -661,18 +661,6 @@ gpsec_null
    ) null_rest_of_line
 ;
 
-hardware_null
-:
-   NO?
-   (
-      IFACL
-      | QOS
-      | RBACL
-      | SPAN
-      | VACL
-   ) null_rest_of_line
-;
-
 ids_ap_classification_rule
 :
    AP_CLASSIFICATION_RULE double_quoted_string NEWLINE
@@ -2206,6 +2194,19 @@ s_daemon
    )*
 ;
 
+s_default
+:
+  DEFAULT
+  (
+    sdef_hardware
+  )
+;
+
+sdef_hardware
+:
+  HARDWARE null_rest_of_line
+;
+
 s_dhcp
 :
    NO? DHCP null_rest_of_line
@@ -2402,10 +2403,7 @@ s_guest_access_email
 
 s_hardware
 :
-   NO? HARDWARE null_rest_of_line
-   (
-      hardware_null
-   )*
+  HARDWARE null_rest_of_line
 ;
 
 s_hostname
@@ -3508,6 +3506,7 @@ stanza
    | s_ctl_file
    | s_cvx
    | s_daemon
+   | s_default
    | s_depi_class
    | s_depi_tunnel
    | s_dhcp
