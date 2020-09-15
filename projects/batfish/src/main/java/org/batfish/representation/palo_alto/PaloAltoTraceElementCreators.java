@@ -29,6 +29,61 @@ public final class PaloAltoTraceElementCreators {
         .build();
   }
 
+  @VisibleForTesting
+  public static TraceElement matchServiceAnyTraceElement() {
+    return TraceElement.of("Matched service any");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchSourceAddressTraceElement() {
+    return TraceElement.of("Matched a source address");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchSourceAddressNegatedTraceElement() {
+    return TraceElement.of("Matched negated source address");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchSourceAddressAnyTraceElement() {
+    return TraceElement.of("Matched source address any");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchDestinationAddressTraceElement() {
+    return TraceElement.of("Matched a destination address");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchDestinationAddressNegatedTraceElement() {
+    return TraceElement.of("Matched negated destination address");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchDestinationAddressAnyTraceElement() {
+    return TraceElement.of("Matched destination address any");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchServiceTraceElement() {
+    return TraceElement.of("Matched a service");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchBuiltInServiceTraceElement() {
+    return TraceElement.of("Matched a built-in service");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchServiceApplicationDefaultTraceElement() {
+    return TraceElement.of("Matched service application-default");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchApplicationTraceElement() {
+    return TraceElement.of("Matched an application");
+  }
+
   /**
    * Creates {@link TraceElement} for ACL line representing security rules for going from {@code
    * fromZone} to {@code toZone} (intrazone rules if zones are the same)

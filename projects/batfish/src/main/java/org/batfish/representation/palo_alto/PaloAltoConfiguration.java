@@ -21,6 +21,14 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressNegatedTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressNegatedTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
@@ -996,10 +1004,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // 2. Match SRC IPs if specified.
     IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
     if (srcIps != null) {
+      TraceElement te =
+          (srcIps.equals(UniverseIpSpace.INSTANCE))
+              ? matchSourceAddressAnyTraceElement()
+              : matchSourceAddressTraceElement();
       AclLineMatchExpr match =
-          new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).build());
+          new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).build(), te);
       if (rule.getNegateSource()) {
-        match = new NotMatchExpr(match);
+        match = new NotMatchExpr(match, matchSourceAddressNegatedTraceElement());
       }
       conjuncts.add(match);
     }
@@ -1008,12 +1020,18 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // 3. Match DST IPs if specified.
     IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
     if (dstIps != null) {
+      TraceElement te =
+          (dstIps.equals(UniverseIpSpace.INSTANCE))
+              ? matchDestinationAddressAnyTraceElement()
+              : matchDestinationAddressTraceElement();
       AclLineMatchExpr match =
-          new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstIps).build());
+          new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstIps).build(), te);
       if (rule.getNegateDestination()) {
-        match = new NotMatchExpr(match);
+        match = new NotMatchExpr(match, matchDestinationAddressNegatedTraceElement());
       }
       conjuncts.add(match);
+    } else {
+      conjuncts.add(new TrueExpr(matchDestinationAddressAnyTraceElement()));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1047,22 +1065,27 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       String vsysName = service.getVsysName(this, vsys);
       if (vsysName != null) {
         serviceDisjuncts.add(
-            permittedByAcl(computeServiceGroupMemberAclName(vsysName, serviceName)));
+            permittedByAcl(
+                computeServiceGroupMemberAclName(vsysName, serviceName),
+                matchServiceTraceElement()));
       } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
         // Anything is allowed.
-        return Optional.empty();
+        serviceDisjuncts.add(ServiceBuiltIn.ANY.toAclLineMatchExpr());
       } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
         if (rule.getAction() == LineAction.PERMIT) {
           // Since Batfish cannot currently match above L4, we follow Cisco-fragments-like logic:
           // When permitting an application, optimistically permit all traffic where the L4 rule
           // matches, assuming it is this application. But when blocking a specific application, do
           // not block all matching L4 traffic, since we can't know it is this specific application.
-          serviceDisjuncts.addAll(matchServicesForApplications(rule, vsys));
+          serviceDisjuncts.add(
+              new OrMatchExpr(
+                  matchServicesForApplications(rule, vsys),
+                  matchServiceApplicationDefaultTraceElement()));
         }
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
-        serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTP.getHeaderSpace()));
+        serviceDisjuncts.add(ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr());
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-        serviceDisjuncts.add(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace()));
+        serviceDisjuncts.add(ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr());
       } else {
         _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
       }
