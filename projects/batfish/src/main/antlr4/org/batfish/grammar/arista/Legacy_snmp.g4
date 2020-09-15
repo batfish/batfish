@@ -6,6 +6,30 @@ options {
    tokenVocab = AristaLexer;
 }
 
+default_snmp_server
+:
+  SNMP_SERVER
+  default_ss_enable
+;
+
+default_ss_enable
+:
+  ENABLE TRAPS null_rest_of_line
+;
+
+no_snmp_server
+:
+  SNMP_SERVER no_ss_null
+;
+
+no_ss_null
+:
+  (
+    ENGINEID
+    | CHASSIS_ID
+  ) null_rest_of_line
+;
+
 snmp_file_transfer_protocol
 :
    FTP
@@ -157,6 +181,7 @@ ss_null
       | PACKETSIZE
       | PRIORITY
       | PROTOCOL
+      | QOS
       | QUEUE_LENGTH
       | SYSTEM_SHUTDOWN
       | TCP_SESSION
