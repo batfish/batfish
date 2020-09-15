@@ -94,6 +94,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
@@ -3286,8 +3287,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // snmp
       SnmpServer snmpServer = ri.getSnmpServer();
-      vrf.setSnmpServer(snmpServer);
       if (snmpServer != null) {
+        snmpServer.getCommunities().values().forEach(this::populateCommunityClientIps);
+        vrf.setSnmpServer(snmpServer);
         _c.getSnmpTrapServers().addAll(snmpServer.getHosts().keySet());
       }
 
@@ -3536,6 +3538,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpAccessList acl = securityPolicyToIpAccessList(filter);
       _c.getIpAccessLists().put(acl.getName(), acl);
     }
+  }
+
+  private void populateCommunityClientIps(SnmpCommunity community) {
+    String clientListName = community.getAccessList();
+    if (clientListName == null) {
+      return;
+    }
+    PrefixList pl = _masterLogicalSystem.getPrefixLists().get(clientListName);
+    if (pl == null) {
+      // Unreferenced error elsewhere.
+      return;
+    }
+    community.setClientIps(
+        AclIpSpace.union(
+            pl.getPrefixes().stream().map(Prefix::toIpSpace).collect(Collectors.toList())));
   }
 
   private void preprocessFilters() {

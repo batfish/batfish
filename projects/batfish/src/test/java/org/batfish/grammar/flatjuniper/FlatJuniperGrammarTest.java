@@ -204,6 +204,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -257,6 +258,7 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -4894,6 +4896,21 @@ public final class FlatJuniperGrammarTest {
     Zone untrust = zones.get("untrust");
     assertThat(untrust.getFromZonePolicies().keySet(), hasSize(1));
     assertThat(untrust.getToZonePolicies().keySet(), hasSize(0));
+  }
+
+  @Test
+  public void testSnmpClientIps() {
+    Configuration c = parseConfig("snmp");
+    Map<String, SnmpCommunity> communities = c.getDefaultVrf().getSnmpServer().getCommunities();
+    {
+      assertThat(communities, hasKey("COMM1"));
+      SnmpCommunity comm = communities.get("COMM1");
+      assertThat(
+          comm.getClientIps(),
+          equalTo(
+              AclIpSpace.union(
+                  Prefix.parse("1.2.3.4/31").toIpSpace(), Prefix.parse("10.0.0.0/8").toIpSpace())));
+    }
   }
 
   @Test
