@@ -5,6 +5,7 @@ Arista_common,
 Legacy_common,
 Arista_bgp,
 Arista_cvx,
+Arista_email,
 Arista_logging,
 Arista_mlag,
 Arista_vlan,
@@ -658,18 +659,6 @@ gpsec_null
    (
       AGE
       | DELETE_DYNAMIC_LEARN
-   ) null_rest_of_line
-;
-
-hardware_null
-:
-   NO?
-   (
-      IFACL
-      | QOS
-      | RBACL
-      | SPAN
-      | VACL
    ) null_rest_of_line
 ;
 
@@ -2206,6 +2195,19 @@ s_daemon
    )*
 ;
 
+s_default
+:
+  DEFAULT
+  (
+    sdef_hardware
+  )
+;
+
+sdef_hardware
+:
+  HARDWARE null_rest_of_line
+;
+
 s_dhcp
 :
    NO? DHCP null_rest_of_line
@@ -2402,10 +2404,7 @@ s_guest_access_email
 
 s_hardware
 :
-   NO? HARDWARE null_rest_of_line
-   (
-      hardware_null
-   )*
+  HARDWARE null_rest_of_line
 ;
 
 s_hostname
@@ -3508,6 +3507,7 @@ stanza
    | s_ctl_file
    | s_cvx
    | s_daemon
+   | s_default
    | s_depi_class
    | s_depi_tunnel
    | s_dhcp
@@ -3518,6 +3518,7 @@ stanza
    | s_dot11
    | s_dspfarm
    | s_dynamic_access_policy_record
+   | s_email
    | s_enable
    | s_end
    | s_eos_mlag
