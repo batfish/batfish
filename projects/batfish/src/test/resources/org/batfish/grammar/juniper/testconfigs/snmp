@@ -1,0 +1,9 @@
+#
+set system host-name snmp
+#
+set policy-options prefix-list COMM1_CLIENTS 1.2.3.4/31
+set policy-options prefix-list COMM1_CLIENTS 10.0.0.0/8
+#
+set snmp community COMM1 authorization read-only
+set snmp community COMM1 client-list-name COMM1_CLIENTS
+#
