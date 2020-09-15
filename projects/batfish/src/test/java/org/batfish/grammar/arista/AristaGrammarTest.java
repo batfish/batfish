@@ -1749,6 +1749,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseHardware() {
+    parseVendorConfig("arista_hardware");
+    // don't crash.
+  }
+
+  @Test
   public void testNatParse() {
     parseVendorConfig("arista_nat");
     // don't crash.
