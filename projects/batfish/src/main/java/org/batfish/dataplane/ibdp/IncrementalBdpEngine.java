@@ -524,32 +524,28 @@ class IncrementalBdpEngine {
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
       // Multi-VRF redistribution of BGP routes:
-      if (false) {
-        // This is only used for EVPN Type 5 routes, which are currently disabled. See comments
-        // elsewhere in this file.
-        nodes
-            .values()
-            .parallelStream()
-            .forEach(
-                n -> {
-                  for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
-                    for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
-                      if (dstVr.getBgpRoutingProcess() == null) {
-                        continue;
-                      }
-                      dstVr
-                          .getBgpRoutingProcess()
-                          .redistribute(
-                              iteration > 1
-                                  ? srcVr._mainRibRouteDeltaBuilder.build()
-                                  : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-                                      .add(srcVr.getMainRib().getTypedRoutes())
-                                      .build(),
-                              srcVr.getName());
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
+                  for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
+                    if (dstVr.getBgpRoutingProcess() == null) {
+                      continue;
                     }
+                    dstVr
+                        .getBgpRoutingProcess()
+                        .redistribute(
+                            iteration > 1
+                                ? srcVr._mainRibRouteDeltaBuilder.build()
+                                : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+                                    .add(srcVr.getMainRib().getTypedRoutes())
+                                    .build(),
+                            srcVr.getName());
                   }
-                });
-      }
+                }
+              });
     } finally {
       propSpan.finish();
     }
