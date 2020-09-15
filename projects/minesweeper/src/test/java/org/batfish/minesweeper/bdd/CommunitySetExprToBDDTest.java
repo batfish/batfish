@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -34,6 +33,7 @@ import org.batfish.minesweeper.Graph;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetExprToBDD}. */
 public class CommunitySetExprToBDDTest {
   private static final String HOSTNAME = "hostname";
   private IBatfish _batfish;
@@ -83,24 +83,10 @@ public class CommunitySetExprToBDDTest {
 
     BDD result = _communitySetExprToBDD.visitCommunityExprsSet(ces, _arg);
 
-    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
-
-    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-
     CommunityVar cvar1 = CommunityVar.from(StandardCommunity.parse("20:30"));
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
 
-    BDD expectedBDD =
-        BDDRoute.factory.orAll(
-            IntStream.range(0, aps.length)
-                .filter(
-                    i ->
-                        regexAtomicPredicates.get(cvar1).contains(i)
-                            || regexAtomicPredicates.get(cvar2).contains(i))
-                .mapToObj(i -> aps[i])
-                .collect(Collectors.toList()));
-    assertEquals(expectedBDD, result);
+    assertEquals(cvarToBDD(cvar1).or(cvarToBDD(cvar2)), result);
   }
 
   @Test
@@ -114,26 +100,10 @@ public class CommunitySetExprToBDDTest {
 
     BDD result = _communitySetExprToBDD.visitCommunitySetDifference(csd, _arg);
 
-    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
-
-    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-
     CommunityVar cvar1 = CommunityVar.from(StandardCommunity.parse("21:30"));
     CommunityVar cvar2 = CommunityVar.from("^20:");
 
-    BDD cvar1BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar1).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
-    BDD cvar2BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar2).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
-
-    assertEquals(cvar1BDD.diff(cvar2BDD), result);
+    assertEquals(cvarToBDD(cvar1).diff(cvarToBDD(cvar2)), result);
   }
 
   @Test
@@ -149,26 +119,10 @@ public class CommunitySetExprToBDDTest {
 
     BDD result = _communitySetExprToBDD.visitCommunitySetExprReference(cser, _arg);
 
-    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
-
-    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-
     CommunityVar cvar1 = CommunityVar.from(StandardCommunity.parse("20:30"));
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
 
-    BDD cvar1BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar1).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
-    BDD cvar2BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar2).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
-
-    assertEquals(cvar1BDD.or(cvar2BDD), result);
+    assertEquals(cvarToBDD(cvar1).or(cvarToBDD(cvar2)), result);
   }
 
   @Test
@@ -182,26 +136,10 @@ public class CommunitySetExprToBDDTest {
 
     BDD result = _communitySetExprToBDD.visitCommunitySetReference(csr, _arg);
 
-    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
-
-    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-
     CommunityVar cvar1 = CommunityVar.from(StandardCommunity.parse("20:30"));
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
 
-    BDD cvar1BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar1).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
-    BDD cvar2BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar2).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
-
-    assertEquals(cvar1BDD.or(cvar2BDD), result);
+    assertEquals(cvarToBDD(cvar1).or(cvarToBDD(cvar2)), result);
   }
 
   @Test
@@ -213,25 +151,17 @@ public class CommunitySetExprToBDDTest {
 
     BDD result = _communitySetExprToBDD.visitCommunitySetUnion(csu, _arg);
 
-    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
-
-    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-
     CommunityVar cvar1 = CommunityVar.from(StandardCommunity.parse("20:30"));
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
 
-    BDD cvar1BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar1).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
-    BDD cvar2BDD =
-        BDDRoute.factory.orAll(
-            regexAtomicPredicates.get(cvar2).stream()
-                .map(i -> aps[i])
-                .collect(Collectors.toList()));
+    assertEquals(cvarToBDD(cvar1).or(cvarToBDD(cvar2)), result);
+  }
 
-    assertEquals(cvar1BDD.or(cvar2BDD), result);
+  private BDD cvarToBDD(CommunityVar cvar) {
+    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
+    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    return BDDRoute.factory.orAll(
+        regexAtomicPredicates.get(cvar).stream().map(i -> aps[i]).collect(Collectors.toList()));
   }
 }

@@ -19,9 +19,9 @@ import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 
 /**
- * Create a BDD that represents a {@link CommunitySetExpr}. The BDD is a predicate on community
- * atomic predicates. A concrete community C satisfies the BDD if ap(C) implies the BDD, where ap(C)
- * denotes the unique atomic predicate that the community C satisfies.
+ * Create a BDD from a {@link CommunitySetExpr}, such that the models of the BDD represent all and
+ * only elements of the CommunitySetExpr. This BDD is used as part of symbolic route analysis of the
+ * {@link org.batfish.datamodel.routing_policy.communities.MatchCommunities} expression.
  */
 @ParametersAreNonnullByDefault
 public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> {

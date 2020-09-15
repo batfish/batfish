@@ -26,9 +26,13 @@ import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.minesweeper.CommunityVar;
 
 /**
- * Create a BDD that represents a {@link CommunitySetMatchExpr}. A concrete community set
- * {C1,....Cn} satisfies the BDD if AND(ap(C1),...,ap(Cn)) implies the BDD, where ap(C) denotes the
- * unique atomic predicate that the community C satisfies.
+ * Create a BDD from a {@link
+ * org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr} expression, such that the
+ * models of the BDD represent all and only the community sets that match the expression. A
+ * community set {C1,....Cn} satisfies the BDD if AND(ap(C1),...,ap(Cn)) implies the BDD, where
+ * ap(C) denotes the unique atomic predicate that the community C satisfies. This BDD is used as
+ * part of symbolic route analysis of the {@link
+ * org.batfish.datamodel.routing_policy.communities.MatchCommunities} expression.
  */
 @ParametersAreNonnullByDefault
 public class CommunitySetMatchExprToBDD
@@ -106,13 +110,13 @@ public class CommunitySetMatchExprToBDD
   @Override
   public BDD visitHasCommunity(HasCommunity hasCommunity, Arg arg) {
     BDD matchExprBDD = hasCommunity.getExpr().accept(new CommunityMatchExprToBDD(), arg);
-    /* the above BDD applies to a single community so we can't treat it as a BDD for a
-      community set, or else its constraints could be satisfied by multiple communities
-      in the set that each satisfy some of the constraints.  to avoid this problem, we instead
-      return the largest disjunction of atomic predicates that satisfy the BDD.  hence any community
-      set that satisfies this disjunction must contain at least one community that satisfies our
-      original BDD.
-    */
+    /**
+     * the above BDD applies to a single community so we can't treat it as a BDD for a community
+     * set, or else its constraints could be satisfied by multiple communities in the set that each
+     * satisfy some of the constraints. therefore, we instead return the largest disjunction of
+     * atomic predicates that satisfies the BDD. hence any community set that satisfies this
+     * disjunction must contain at least one community that satisfies our original BDD.
+     */
     BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
     /**
      * first figure out which atomic predicates satisfy matchExprBDD. when considering each atomic
