@@ -21,12 +21,14 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressNegatedTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressNegatedTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
@@ -974,6 +976,30 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
+  private List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointSources(
+      Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
+    return endpoints.stream()
+        .map(
+            source ->
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setSrcIps(ruleEndpointToIpSpace(source, vsys, w)).build(),
+                    ruleEndpointToTraceElement(source, vsys, filename)))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @Nonnull
+  private List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointDestinations(
+      Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
+    return endpoints.stream()
+        .map(
+            dest ->
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setDstIps(ruleEndpointToIpSpace(dest, vsys, w)).build(),
+                    ruleEndpointToTraceElement(dest, vsys, filename)))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  @Nonnull
   private RangeSet<Ip> ipRangeSetFromRuleEndpoints(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
     RangeSet<Ip> rangeSet = TreeRangeSet.create();
@@ -1002,37 +1028,23 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 2. Match SRC IPs if specified.
-    IpSpace srcIps = ipSpaceFromRuleEndpoints(rule.getSource(), vsys, _w);
-    if (srcIps != null) {
-      TraceElement te =
-          (srcIps.equals(UniverseIpSpace.INSTANCE))
-              ? matchSourceAddressAnyTraceElement()
-              : matchSourceAddressTraceElement();
-      AclLineMatchExpr match =
-          new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(srcIps).build(), te);
-      if (rule.getNegateSource()) {
-        match = new NotMatchExpr(match, matchSourceAddressNegatedTraceElement());
-      }
-      conjuncts.add(match);
+    List<AclLineMatchExpr> srcExprs =
+        aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
+    AclLineMatchExpr srcMatch = new OrMatchExpr(srcExprs, matchSourceAddressTraceElement());
+    if (rule.getNegateSource()) {
+      srcMatch = new NotMatchExpr(srcMatch, matchSourceAddressNegatedTraceElement());
     }
+    conjuncts.add(srcMatch);
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs if specified.
-    IpSpace dstIps = ipSpaceFromRuleEndpoints(rule.getDestination(), vsys, _w);
-    if (dstIps != null) {
-      TraceElement te =
-          (dstIps.equals(UniverseIpSpace.INSTANCE))
-              ? matchDestinationAddressAnyTraceElement()
-              : matchDestinationAddressTraceElement();
-      AclLineMatchExpr match =
-          new MatchHeaderSpace(HeaderSpace.builder().setDstIps(dstIps).build(), te);
-      if (rule.getNegateDestination()) {
-        match = new NotMatchExpr(match, matchDestinationAddressNegatedTraceElement());
-      }
-      conjuncts.add(match);
-    } else {
-      conjuncts.add(new TrueExpr(matchDestinationAddressAnyTraceElement()));
+    List<AclLineMatchExpr> dstExprs =
+        aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
+    AclLineMatchExpr dstMatch = new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement());
+    if (rule.getNegateSource()) {
+      dstMatch = new NotMatchExpr(dstMatch, matchDestinationAddressNegatedTraceElement());
     }
+    conjuncts.add(dstMatch);
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match services.
@@ -1225,6 +1237,50 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           default:
             w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
             return EmptyIpSpace.INSTANCE;
+        }
+    }
+  }
+
+  /** Gets {@code TraceElement} for specified {@link RuleEndpoint} */
+  @Nullable
+  @SuppressWarnings("fallthrough")
+  private TraceElement ruleEndpointToTraceElement(
+      RuleEndpoint endpoint, Vsys vsys, String filename) {
+    String endpointValue = endpoint.getValue();
+    String vsysName = vsys.getName();
+    // Palo Alto allows object references that look like IP addresses, ranges, etc.
+    // Devices use objects over constants when possible, so, check to see if there is a matching
+    // group or object regardless of the type of endpoint we're expecting.
+    if (vsys.getAddressObjects().containsKey(endpointValue)) {
+      return matchAddressObjectTraceElement(endpointValue, vsysName, filename);
+    }
+    if (vsys.getAddressGroups().containsKey(endpoint.getValue())) {
+      return matchAddressGroupTraceElement(endpointValue, vsysName, filename);
+    }
+    switch (vsys.getNamespaceType()) {
+      case LEAF:
+        if (_shared != null) {
+          return ruleEndpointToTraceElement(endpoint, _shared, filename);
+        }
+        // fall-through
+      case SHARED:
+        if (_panorama != null) {
+          return ruleEndpointToTraceElement(endpoint, _panorama, filename);
+        }
+        // fall-through
+      default:
+        // No named object found matching this endpoint, so parse the endpoint value as is
+        switch (endpoint.getType()) {
+          case Any:
+            return matchAddressAnyTraceElement();
+          case IP_ADDRESS:
+          case IP_PREFIX:
+          case IP_RANGE:
+            return matchAddressValueTraceElement(endpointValue);
+          case REFERENCE:
+          default:
+            // Unresolved reference or unhandled type
+            return null;
         }
     }
   }

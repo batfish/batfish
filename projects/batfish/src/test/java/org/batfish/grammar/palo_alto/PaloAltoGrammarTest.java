@@ -79,14 +79,15 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUA
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
@@ -3548,8 +3549,8 @@ public final class PaloAltoGrammarTest {
 
     Flow rule1aFlow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 1);
     Flow rule1bFlow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 443);
-    Flow rule2Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
-    Flow rule3Flow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 53);
+    Flow rule2Flow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 53);
+    Flow rule3Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
 
     IpAccessList filter = c.getIpAccessLists().get(crossZoneFilterName);
     BiFunction<String, Flow, List<TraceTree>> trace =
@@ -3569,8 +3570,12 @@ public final class PaloAltoGrammarTest {
           contains(
               isTraceTree(
                   matchSecurityRuleTraceElement("RULE1", "vsys1", filename),
-                  isTraceTree(matchSourceAddressTraceElement()),
-                  isTraceTree(matchDestinationAddressTraceElement()),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(matchAddressGroupTraceElement("addr_group1", "vsys1", filename))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
                   isTraceTree(matchServiceTraceElement()))));
     }
     {
@@ -3580,8 +3585,12 @@ public final class PaloAltoGrammarTest {
           contains(
               isTraceTree(
                   matchSecurityRuleTraceElement("RULE1", "vsys1", filename),
-                  isTraceTree(matchSourceAddressTraceElement()),
-                  isTraceTree(matchDestinationAddressTraceElement()),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(matchAddressGroupTraceElement("addr_group1", "vsys1", filename))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
                   isTraceTree(matchBuiltInServiceTraceElement()))));
     }
     {
@@ -3591,8 +3600,12 @@ public final class PaloAltoGrammarTest {
           contains(
               isTraceTree(
                   matchSecurityRuleTraceElement("RULE2", "vsys1", filename),
-                  isTraceTree(matchSourceAddressTraceElement()),
-                  isTraceTree(matchDestinationAddressTraceElement()),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressGroupTraceElement("addr_group1", "vsys1", filename))),
                   isTraceTree(matchServiceApplicationDefaultTraceElement()))));
     }
     {
@@ -3602,8 +3615,11 @@ public final class PaloAltoGrammarTest {
           contains(
               isTraceTree(
                   matchSecurityRuleTraceElement("RULE3", "vsys1", filename),
-                  isTraceTree(matchSourceAddressAnyTraceElement()),
-                  isTraceTree(matchDestinationAddressAnyTraceElement()),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressAnyTraceElement())),
                   isTraceTree(matchServiceAnyTraceElement()))));
     }
   }

@@ -36,7 +36,45 @@ public final class PaloAltoTraceElementCreators {
 
   @VisibleForTesting
   public static TraceElement matchSourceAddressTraceElement() {
-    return TraceElement.of("Matched a source address");
+    return TraceElement.of("Matched source address");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchAddressAnyTraceElement() {
+    return TraceElement.of("Matched address any");
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchAddressValueTraceElement(String value) {
+    return TraceElement.of(String.format("Matched address value %s", value));
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchAddressObjectTraceElement(
+      String name, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched address object ")
+        .add(
+            name,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.ADDRESS_OBJECT.getDescription(),
+                computeObjectName(vsysName, name)))
+        .build();
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchAddressGroupTraceElement(
+      String name, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched address-group ")
+        .add(
+            name,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.ADDRESS_OBJECT.getDescription(),
+                computeObjectName(vsysName, name)))
+        .build();
   }
 
   @VisibleForTesting
@@ -51,7 +89,7 @@ public final class PaloAltoTraceElementCreators {
 
   @VisibleForTesting
   public static TraceElement matchDestinationAddressTraceElement() {
-    return TraceElement.of("Matched a destination address");
+    return TraceElement.of("Matched destination address");
   }
 
   @VisibleForTesting
