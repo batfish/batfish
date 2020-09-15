@@ -82,6 +82,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
@@ -2047,13 +2048,23 @@ public final class PaloAltoGrammarTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
+
     assertThat(
         flowTrace,
         contains(
-            isChainOfSingleChildren(
+            isTraceTree(
                 exitIfaceTe,
-                intrazoneRejectRulesTe,
-                matchSecurityRuleTraceElement("DENY", vsysName, filename))));
+                isTraceTree(
+                    intrazoneRejectRulesTe,
+                    isTraceTree(
+                        matchSecurityRuleTraceElement("DENY", vsysName, filename),
+                        isTraceTree(
+                            matchSourceAddressTraceElement(),
+                            isTraceTree(matchAddressValueTraceElement("2.2.2.2/32"))),
+                        isTraceTree(
+                            matchDestinationAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(matchServiceAnyTraceElement()))))));
 
     // Flow matching PERMIT security rule should generate a trace pointing to that rule.
     flowTrace =
@@ -2064,13 +2075,23 @@ public final class PaloAltoGrammarTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
+
     assertThat(
         flowTrace,
         contains(
-            isChainOfSingleChildren(
+            isTraceTree(
                 exitIfaceTe,
-                intrazoneRulesTe,
-                matchSecurityRuleTraceElement("PERMIT", vsysName, filename))));
+                isTraceTree(
+                    intrazoneRulesTe,
+                    isTraceTree(
+                        matchSecurityRuleTraceElement("PERMIT", vsysName, filename),
+                        isTraceTree(
+                            matchSourceAddressTraceElement(),
+                            isTraceTree(matchAddressValueTraceElement("3.3.3.3/32"))),
+                        isTraceTree(
+                            matchDestinationAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(matchServiceAnyTraceElement()))))));
   }
 
   @Test
@@ -3602,10 +3623,10 @@ public final class PaloAltoGrammarTest {
                   matchSecurityRuleTraceElement("RULE2", "vsys1", filename),
                   isTraceTree(
                       matchSourceAddressTraceElement(),
-                      isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
+                      isTraceTree(matchAddressValueTraceElement("1.1.4.10/32"))),
                   isTraceTree(
                       matchDestinationAddressTraceElement(),
-                      isTraceTree(matchAddressGroupTraceElement("addr_group1", "vsys1", filename))),
+                      isTraceTree(matchAddressValueTraceElement("1.1.1.10"))),
                   isTraceTree(matchServiceApplicationDefaultTraceElement()))));
     }
     {

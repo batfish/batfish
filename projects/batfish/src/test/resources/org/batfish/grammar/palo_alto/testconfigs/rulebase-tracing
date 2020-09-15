@@ -24,9 +24,9 @@ set rulebase security rules RULE1 action deny
 
 set rulebase security rules RULE2 from any
 set rulebase security rules RULE2 to any
-set rulebase security rules RULE2 source [ addr_group1 addr2 ]
+set rulebase security rules RULE2 source [ 1.1.1.10/32 1.1.4.10/32 ]
 set rulebase security rules RULE2 source-user any
-set rulebase security rules RULE2 destination addr_group1
+set rulebase security rules RULE2 destination 1.1.1.10
 set rulebase security rules RULE2 service application-default
 set rulebase security rules RULE2 application app_group1
 set rulebase security rules RULE2 action allow
