@@ -57,7 +57,7 @@ import org.w3c.dom.NodeList;
 
 /** A collection for utilities for AWS vendor model */
 @ParametersAreNonnullByDefault
-final class Utils {
+public final class Utils {
 
   static final Statement ACCEPT_ALL_BGP =
       new If(
@@ -169,8 +169,16 @@ final class Utils {
         .build();
   }
 
+  /**
+   * Parse the protocol string from an SG rule or a NACL rule into an {@link IpProtocol}, or {@code
+   * null} if the protocol is "-1", which means "All traffic".
+   *
+   * @param ipProtocolAsString The protocol string, possible values are "tcp", "udp", "icmp",
+   *     "icmpv6", "-1" or protocol numbers ranging 0-255.
+   * @return {@link IpProtocol} or {@code null} parsed from the protocol string
+   */
   @Nullable
-  static IpProtocol toIpProtocol(String ipProtocolAsString) {
+  public static IpProtocol toIpProtocol(String ipProtocolAsString) {
     switch (ipProtocolAsString) {
       case "tcp":
         return IpProtocol.TCP;
@@ -178,6 +186,8 @@ final class Utils {
         return IpProtocol.UDP;
       case "icmp":
         return IpProtocol.ICMP;
+      case "icmpv6":
+        return IpProtocol.IPV6_ICMP;
       case "-1":
         return null;
       default:
