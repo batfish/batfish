@@ -23,6 +23,8 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
@@ -146,6 +148,70 @@ public class CommunitySetExprToBDDTest {
     CommunitySetExprReference cser = new CommunitySetExprReference(name);
 
     BDD result = _communitySetExprToBDD.visitCommunitySetExprReference(cser, _arg);
+
+    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
+
+    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+
+    CommunityVar cvar1 = CommunityVar.from(StandardCommunity.parse("20:30"));
+    CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
+
+    BDD cvar1BDD =
+        BDDRoute.factory.orAll(
+            regexAtomicPredicates.get(cvar1).stream()
+                .map(i -> aps[i])
+                .collect(Collectors.toList()));
+    BDD cvar2BDD =
+        BDDRoute.factory.orAll(
+            regexAtomicPredicates.get(cvar2).stream()
+                .map(i -> aps[i])
+                .collect(Collectors.toList()));
+
+    assertEquals(cvar1BDD.or(cvar2BDD), result);
+  }
+
+  @Test
+  public void testVisitCommunitySetReference() {
+    String name = "name";
+    _baseConfig.setCommunitySets(
+        ImmutableMap.of(
+            name,
+            CommunitySet.of(StandardCommunity.parse("20:30"), StandardCommunity.parse("21:30"))));
+    CommunitySetReference csr = new CommunitySetReference(name);
+
+    BDD result = _communitySetExprToBDD.visitCommunitySetReference(csr, _arg);
+
+    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
+
+    Map<CommunityVar, Set<Integer>> regexAtomicPredicates =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+
+    CommunityVar cvar1 = CommunityVar.from(StandardCommunity.parse("20:30"));
+    CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
+
+    BDD cvar1BDD =
+        BDDRoute.factory.orAll(
+            regexAtomicPredicates.get(cvar1).stream()
+                .map(i -> aps[i])
+                .collect(Collectors.toList()));
+    BDD cvar2BDD =
+        BDDRoute.factory.orAll(
+            regexAtomicPredicates.get(cvar2).stream()
+                .map(i -> aps[i])
+                .collect(Collectors.toList()));
+
+    assertEquals(cvar1BDD.or(cvar2BDD), result);
+  }
+
+  @Test
+  public void testVisitCommunitySetUnion() {
+    CommunitySetUnion csu =
+        CommunitySetUnion.of(
+            new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("20:30"))),
+            new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("21:30"))));
+
+    BDD result = _communitySetExprToBDD.visitCommunitySetUnion(csu, _arg);
 
     BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
 
