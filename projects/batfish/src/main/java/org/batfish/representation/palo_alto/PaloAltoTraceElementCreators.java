@@ -102,11 +102,6 @@ public final class PaloAltoTraceElementCreators {
     return TraceElement.of("Matched service application-default");
   }
 
-  @VisibleForTesting
-  public static TraceElement matchApplicationTraceElement() {
-    return TraceElement.of("Matched an application");
-  }
-
   /**
    * Creates {@link TraceElement} for ACL line representing security rules for going from {@code
    * fromZone} to {@code toZone} (intrazone rules if zones are the same)
