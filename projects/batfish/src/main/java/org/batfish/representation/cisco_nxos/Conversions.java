@@ -347,12 +347,7 @@ final class Conversions {
 
     newNeighborBuilder.setLocalIp(
         computeUpdateSource(
-            vrf.getName(),
-            c.getActiveInterfaces(vrf.getName()),
-            prefix,
-            neighbor,
-            dynamic,
-            warnings));
+            vrf.getName(), c.getAllInterfaces(vrf.getName()), prefix, neighbor, dynamic, warnings));
 
     @Nullable
     BgpVrfNeighborAddressFamilyConfiguration naf4 = neighbor.getIpv4UnicastAddressFamily();
