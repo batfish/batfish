@@ -32,6 +32,7 @@ java_library(
         "@maven//:io_opentracing_opentracing_util",
         "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:javax_ws_rs_javax_ws_rs_api",
+        "@maven//:org_apache_logging_log4j_log4j_api",
         "@maven//:org_codehaus_jettison_jettison",
         "@maven//:org_glassfish_grizzly_grizzly_http_server",
         "@maven//:org_glassfish_jersey_containers_jersey_container_grizzly2_http",
