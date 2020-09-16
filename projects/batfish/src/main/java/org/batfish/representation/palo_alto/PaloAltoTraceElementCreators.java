@@ -78,18 +78,13 @@ public final class PaloAltoTraceElementCreators {
   }
 
   @VisibleForTesting
-  public static TraceElement matchSourceAddressNegatedTraceElement() {
-    return TraceElement.of("Matched negated source address");
+  public static TraceElement matchNegatedAddressTraceElement() {
+    return TraceElement.of("Matched negated address");
   }
 
   @VisibleForTesting
   public static TraceElement matchDestinationAddressTraceElement() {
     return TraceElement.of("Matched destination address");
-  }
-
-  @VisibleForTesting
-  public static TraceElement matchDestinationAddressNegatedTraceElement() {
-    return TraceElement.of("Matched negated destination address");
   }
 
   @VisibleForTesting

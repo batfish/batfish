@@ -25,11 +25,10 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressNegatedTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressNegatedTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
@@ -976,7 +975,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
-  private List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointSources(
+  private List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointSources(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
@@ -988,7 +987,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   @Nonnull
-  private List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointDestinations(
+  private List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointDestinations(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
@@ -1014,6 +1013,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         ruleName, vsys.getName(), _filename);
   }
 
+  /**
+   * Negate source and destination IPs for specified list of {@link MatchHeaderSpace}, and wrap with
+   * negate trace element
+   */
+  private List<AclLineMatchExpr> negateMatchIps(List<MatchHeaderSpace> sources) {
+    return sources.stream()
+        .map(e -> new NotMatchExpr(e, matchNegatedAddressTraceElement()))
+        .collect(ImmutableList.toImmutableList());
+  }
+
   /** Convert specified firewall rule into an {@link ExprAclLine}. */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
@@ -1028,26 +1037,28 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 2. Match SRC IPs if specified.
-    List<AclLineMatchExpr> srcExprs =
+    List<MatchHeaderSpace> srcExprs =
         aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
     if (!srcExprs.isEmpty()) {
-      AclLineMatchExpr srcMatch = new OrMatchExpr(srcExprs, matchSourceAddressTraceElement());
-      if (rule.getNegateSource()) {
-        srcMatch = new NotMatchExpr(srcMatch, matchSourceAddressNegatedTraceElement());
-      }
-      conjuncts.add(srcMatch);
+      conjuncts.add(
+          rule.getNegateSource()
+              // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
+              // And(Not(...)) to push Not further down in trace
+              ? new AndMatchExpr(negateMatchIps(srcExprs), matchSourceAddressTraceElement())
+              : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs if specified.
-    List<AclLineMatchExpr> dstExprs =
+    List<MatchHeaderSpace> dstExprs =
         aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
     if (!dstExprs.isEmpty()) {
-      AclLineMatchExpr dstMatch = new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement());
-      if (rule.getNegateDestination()) {
-        dstMatch = new NotMatchExpr(dstMatch, matchDestinationAddressNegatedTraceElement());
-      }
-      conjuncts.add(dstMatch);
+      conjuncts.add(
+          rule.getNegateDestination()
+              // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
+              // And(Not(...)) to push Not further down in trace
+              ? new AndMatchExpr(negateMatchIps(dstExprs), matchDestinationAddressTraceElement())
+              : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
