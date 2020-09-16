@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import static org.batfish.grammar.flatjuniper.ConfigurationBuilder.unquote;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.Lexer;
@@ -83,7 +81,7 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitS_groups_named(S_groups_namedContext ctx) {
-    String groupName = unquote(ctx.name.getText());
+    String groupName = ConfigurationBuilder.toString(ctx.name);
     HierarchyTree tree = _hierarchy.getTree(groupName);
     if (tree == null) {
       tree = _hierarchy.newTree(groupName);

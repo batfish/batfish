@@ -6336,7 +6336,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return AsPath.of(asPath);
   }
 
-  private String toString(Junos_nameContext ctx) {
+  static String toString(Junos_nameContext ctx) {
     if (ctx.NAME() != null) {
       return ctx.NAME().getText();
     } else {

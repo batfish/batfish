@@ -34,12 +34,12 @@ apply
 
 apply_groups
 :
-  APPLY_GROUPS name = variable
+  APPLY_GROUPS name = junos_name
 ;
 
 apply_groups_except
 :
-  APPLY_GROUPS_EXCEPT name = variable
+  APPLY_GROUPS_EXCEPT name = junos_name
 ;
 
 as_path_expr

@@ -4052,6 +4052,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNames() {
+    // Do not crash.
+    parseJuniperConfig("names");
+  }
+
+  @Test
   public void testNatDest() {
     Configuration config = parseConfig("nat-dest");
 

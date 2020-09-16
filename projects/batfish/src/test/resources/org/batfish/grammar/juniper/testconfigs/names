@@ -1,0 +1,33 @@
+#
+set system host-name names
+#
+# All these are legal names according to vqfx.
+#
+set groups a:b
+set groups a+b
+set groups a-b
+set groups "a;b"
+set groups a.b
+set groups "a$b"
+set groups "a%b"
+set groups "a@b"
+set groups a1b
+set groups *1b
+set groups *
+set groups *=b
+set groups "*#b"
+set groups "a;"
+set groups "a; "
+set groups " a; "
+set groups " a;<> "
+set groups " a;<>,/? "
+set groups a/
+set groups a
+set groups "a?"
+set groups a,
+set groups ,
+set groups " a "
+set groups " a"
+set groups " a  "
+set groups " a   "
+#

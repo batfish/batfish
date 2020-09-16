@@ -1,7 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import static org.batfish.grammar.flatjuniper.ConfigurationBuilder.unquote;
-
 import com.google.common.base.Throwables;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +54,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
     if (_inGroup) {
       return;
     }
-    String groupName = unquote(ctx.name.getText());
+    String groupName = ConfigurationBuilder.toString(ctx.name);
     if (groupName.equals("${node}")) {
       processGroup("node0", true, false);
       processGroup("node1", true, true);

@@ -324,11 +324,20 @@ APPLICATIONS
 APPLY_GROUPS
 :
    'apply-groups'
+   {
+     if (lastTokenType() == SET) {
+       // '"${node}"'
+       pushMode(M_ApplyGroups);
+     } else {
+       // A valid name elsewhere
+       pushMode(M_Name);
+     }
+   }
 ;
 
 APPLY_GROUPS_EXCEPT
 :
-   'apply-groups-except'
+   'apply-groups-except' -> pushMode ( M_Name )
 ;
 
 APPLY_MACRO
@@ -1622,7 +1631,7 @@ GROUP5
 
 GROUPS
 :
-   'groups'
+   'groups' -> pushMode ( M_Name )
 ;
 
 HASH_KEY
@@ -6731,15 +6740,26 @@ F_Name
 fragment
 F_NameQuoted
 :
-// Quotes, at least one char, does not end in space
-  '"' F_NameChar ((F_NameChar | ' ')* F_NameChar)? '"'
+// Quotes, at least one char. Apparently with quotes it can start and end with insane stuff too.
+  '"' F_NameCharInQuotes+ '"'
 ;
 
 fragment
 F_NameChar
 :
-  [0-9A-Za-z_]
-  | '-'
+  [0-9A-Za-z_:\-.*+=<>/,]
+;
+
+fragment
+F_NameCharInQuotes
+:
+  F_NameLastCharInQuotes | ';'
+;
+
+fragment
+F_NameLastCharInQuotes
+:
+  F_NameChar | [$%@#^? ]
 ;
 
 fragment
@@ -6842,6 +6862,34 @@ fragment
 F_WhitespaceChar
 :
    [ \t\u000C]
+;
+
+mode M_ApplyGroups;
+
+M_ApplyGroups_NODE
+:
+  // $ is not legal in general names, so special-case it here.
+  '"${node}"' -> type ( DOUBLE_QUOTED_NAME ) , popMode
+;
+
+M_ApplyGroups_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_ApplyGroups_NAME
+:
+  F_Name -> type ( NAME ) , popMode
+;
+
+M_ApplyGroups_QUOTED_NAME
+:
+  F_NameQuoted -> type ( DOUBLE_QUOTED_NAME ), popMode
+;
+
+M_ApplyGroups_WS
+:
+  F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_AsPath;
@@ -7116,12 +7164,12 @@ M_Interface_ALL
 
 M_Interface_APPLY_GROUPS
 :
-   'apply-groups' -> type ( APPLY_GROUPS ) , popMode
+   'apply-groups' -> type ( APPLY_GROUPS ) , mode ( M_Name )
 ;
 
 M_Interface_APPLY_GROUPS_EXCEPT
 :
-   'apply-groups-except' -> type ( APPLY_GROUPS_EXCEPT ) , popMode
+   'apply-groups-except' -> type ( APPLY_GROUPS_EXCEPT ) , mode ( M_Name )
 ;
 
 M_Interface_NEWLINE
@@ -7228,12 +7276,12 @@ mode M_InterfaceWildcard;
 
 M_InterfaceWildcard_APPLY_GROUPS
 :
-  'apply-groups' -> type(APPLY_GROUPS), popMode
+  'apply-groups' -> type(APPLY_GROUPS), mode ( M_Name )
 ;
 
 M_InterfaceWildcard_APPLY_GROUPS_EXCEPT
 :
-  'apply-groups-except' -> type(APPLY_GROUPS_EXCEPT), popMode
+  'apply-groups-except' -> type(APPLY_GROUPS_EXCEPT), mode ( M_Name )
 ;
 
 M_InterfaceWildcard_NEWLINE

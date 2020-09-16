@@ -28,7 +28,7 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
     _addLine = false;
     _hierarchy.addMasterPath(_currentPath, null);
-    String groupName = ctx.name.getText();
+    String groupName = ConfigurationBuilder.toString(ctx.name);
     _hierarchy.setApplyGroupsExcept(_currentPath, groupName);
   }
 
