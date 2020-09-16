@@ -12,6 +12,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationGroupTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
@@ -287,7 +288,8 @@ public class PaloAltoSecurityRuleTest {
     Flow rule1bFlow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 443);
     Flow rule2aFlow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 53);
     Flow rule2bFlow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 179);
-    Flow rule3Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
+    Flow rule3Flow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 1234);
+    Flow rule4Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
 
     IpAccessList filter = c.getIpAccessLists().get(crossZoneFilterName);
     BiFunction<String, Flow, List<TraceTree>> trace =
@@ -372,6 +374,23 @@ public class PaloAltoSecurityRuleTest {
           contains(
               isTraceTree(
                   matchSecurityRuleTraceElement("RULE3", "vsys1", filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(),
+                      isTraceTree(matchAddressValueTraceElement("1.1.4.10/32"))),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressValueTraceElement("1.1.1.10"))),
+                  isTraceTree(
+                      matchServiceApplicationDefaultTraceElement(),
+                      isTraceTree(matchApplicationAnyTraceElement())))));
+    }
+    {
+      List<TraceTree> traces = trace.apply(iface1, rule4Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE4", "vsys1", filename),
                   isTraceTree(
                       matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
                   isTraceTree(

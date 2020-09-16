@@ -1141,7 +1141,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           new OrMatchExpr(
               group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
                   .stream()
-                  // Don't add trace for children, since we flatten intermediate application groups
+                  // Don't add trace for children; we've already flattened intermediate app groups
                   .map(a -> aclLineMatchExprForApplication(a, null))
                   .collect(ImmutableList.toImmutableList()),
               matchApplicationGroupTraceElement(name, vsysName, _filename)));

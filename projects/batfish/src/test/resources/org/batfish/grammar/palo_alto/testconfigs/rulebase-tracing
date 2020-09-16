@@ -33,10 +33,19 @@ set rulebase security rules RULE2 action allow
 
 set rulebase security rules RULE3 from any
 set rulebase security rules RULE3 to any
-set rulebase security rules RULE3 source any
+set rulebase security rules RULE3 source [ 1.1.1.10/32 1.1.4.10/32 ]
 set rulebase security rules RULE3 source-user any
-set rulebase security rules RULE3 destination [ 10.11.12.13 10.11.11.0/24 ]
-set rulebase security rules RULE3 negate-destination yes
-set rulebase security rules RULE3 service any
+set rulebase security rules RULE3 destination 1.1.1.10
+set rulebase security rules RULE3 service application-default
 set rulebase security rules RULE3 application any
 set rulebase security rules RULE3 action allow
+
+set rulebase security rules RULE4 from any
+set rulebase security rules RULE4 to any
+set rulebase security rules RULE4 source any
+set rulebase security rules RULE4 source-user any
+set rulebase security rules RULE4 destination [ 10.11.12.13 10.11.11.0/24 ]
+set rulebase security rules RULE4 negate-destination yes
+set rulebase security rules RULE4 service any
+set rulebase security rules RULE4 application any
+set rulebase security rules RULE4 action allow
