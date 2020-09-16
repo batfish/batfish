@@ -21,7 +21,7 @@ public final class ApplicationGroup implements Serializable {
   }
 
   @VisibleForTesting
-  Set<String> getDescendantObjects(
+  Set<Application> getDescendantObjects(
       Map<String, Application> applications,
       Map<String, ApplicationGroup> applicationGroups,
       Set<String> alreadyTraversedGroups) {
@@ -29,17 +29,17 @@ public final class ApplicationGroup implements Serializable {
       return ImmutableSet.of();
     }
     alreadyTraversedGroups.add(_name);
-    Set<String> descendantObjects = new HashSet<>();
+    Set<Application> descendantObjects = new HashSet<>();
     for (String member : _members) {
       if (applications.containsKey(member)) {
-        descendantObjects.add(member);
+        descendantObjects.add(applications.get(member));
       } else if (applicationGroups.containsKey(member)) {
         descendantObjects.addAll(
             applicationGroups
                 .get(member)
                 .getDescendantObjects(applications, applicationGroups, alreadyTraversedGroups));
       } else if (ApplicationBuiltIn.getBuiltInApplication(member).isPresent()) {
-        descendantObjects.add(member);
+        descendantObjects.add(ApplicationBuiltIn.getBuiltInApplication(member).get());
       }
     }
     return descendantObjects;
@@ -49,7 +49,7 @@ public final class ApplicationGroup implements Serializable {
    * Returns all {@link Application applications} that are directly or indirectly contained in this
    * group. Accounts for circular group references.
    */
-  public Set<String> getDescendantObjects(
+  public Set<Application> getDescendantObjects(
       Map<String, Application> applications, Map<String, ApplicationGroup> applicationGroups) {
     return getDescendantObjects(applications, applicationGroups, new HashSet<>());
   }
