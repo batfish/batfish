@@ -78,6 +78,44 @@ public final class PaloAltoTraceElementCreators {
   }
 
   @VisibleForTesting
+  public static TraceElement matchApplicationGroupTraceElement(
+      String name, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched application-group ")
+        .add(
+            name,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.APPLICATION_GROUP.getDescription(),
+                computeObjectName(vsysName, name)))
+        .build();
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchApplicationObjectTraceElement(
+      String name, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched application object ")
+        .add(
+            name,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.APPLICATION.getDescription(),
+                computeObjectName(vsysName, name)))
+        .build();
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchBuiltInApplicationTraceElement(String name) {
+    return TraceElement.of(String.format("Matched built-in application %s", name));
+  }
+
+  @VisibleForTesting
+  public static TraceElement matchApplicationAnyTraceElement() {
+    return TraceElement.of("Matched application any");
+  }
+
+  @VisibleForTesting
   public static TraceElement matchNegatedAddressTraceElement() {
     return TraceElement.of("Matched negated address");
   }

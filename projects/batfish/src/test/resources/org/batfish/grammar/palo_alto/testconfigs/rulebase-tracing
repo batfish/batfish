@@ -28,7 +28,7 @@ set rulebase security rules RULE2 source [ 1.1.1.10/32 1.1.4.10/32 ]
 set rulebase security rules RULE2 source-user any
 set rulebase security rules RULE2 destination 1.1.1.10
 set rulebase security rules RULE2 service application-default
-set rulebase security rules RULE2 application app_group1
+set rulebase security rules RULE2 application [ app_group1 bgp ]
 set rulebase security rules RULE2 action allow
 
 set rulebase security rules RULE3 from any
