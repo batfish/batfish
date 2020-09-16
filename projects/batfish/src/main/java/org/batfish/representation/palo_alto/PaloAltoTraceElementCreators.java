@@ -72,7 +72,7 @@ public final class PaloAltoTraceElementCreators {
             name,
             new VendorStructureId(
                 filename,
-                PaloAltoStructureType.ADDRESS_OBJECT.getDescription(),
+                PaloAltoStructureType.ADDRESS_GROUP.getDescription(),
                 computeObjectName(vsysName, name)))
         .build();
   }
@@ -83,11 +83,6 @@ public final class PaloAltoTraceElementCreators {
   }
 
   @VisibleForTesting
-  public static TraceElement matchSourceAddressAnyTraceElement() {
-    return TraceElement.of("Matched source address any");
-  }
-
-  @VisibleForTesting
   public static TraceElement matchDestinationAddressTraceElement() {
     return TraceElement.of("Matched destination address");
   }
@@ -95,11 +90,6 @@ public final class PaloAltoTraceElementCreators {
   @VisibleForTesting
   public static TraceElement matchDestinationAddressNegatedTraceElement() {
     return TraceElement.of("Matched negated destination address");
-  }
-
-  @VisibleForTesting
-  public static TraceElement matchDestinationAddressAnyTraceElement() {
-    return TraceElement.of("Matched destination address any");
   }
 
   @VisibleForTesting

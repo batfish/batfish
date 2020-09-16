@@ -35,7 +35,8 @@ set rulebase security rules RULE3 from any
 set rulebase security rules RULE3 to any
 set rulebase security rules RULE3 source any
 set rulebase security rules RULE3 source-user any
-set rulebase security rules RULE3 destination any
+set rulebase security rules RULE3 destination 10.11.12.13
+set rulebase security rules RULE3 negate-destination yes
 set rulebase security rules RULE3 service any
 set rulebase security rules RULE3 application any
 set rulebase security rules RULE3 action allow

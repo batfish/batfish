@@ -983,7 +983,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             source ->
                 new MatchHeaderSpace(
                     HeaderSpace.builder().setSrcIps(ruleEndpointToIpSpace(source, vsys, w)).build(),
-                    ruleEndpointToTraceElement(source, vsys, filename)))
+                    getRuleEndpointTraceElement(source, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -995,7 +995,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             dest ->
                 new MatchHeaderSpace(
                     HeaderSpace.builder().setDstIps(ruleEndpointToIpSpace(dest, vsys, w)).build(),
-                    ruleEndpointToTraceElement(dest, vsys, filename)))
+                    getRuleEndpointTraceElement(dest, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -1030,21 +1030,25 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // 2. Match SRC IPs if specified.
     List<AclLineMatchExpr> srcExprs =
         aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
-    AclLineMatchExpr srcMatch = new OrMatchExpr(srcExprs, matchSourceAddressTraceElement());
-    if (rule.getNegateSource()) {
-      srcMatch = new NotMatchExpr(srcMatch, matchSourceAddressNegatedTraceElement());
+    if (!srcExprs.isEmpty()) {
+      AclLineMatchExpr srcMatch = new OrMatchExpr(srcExprs, matchSourceAddressTraceElement());
+      if (rule.getNegateSource()) {
+        srcMatch = new NotMatchExpr(srcMatch, matchSourceAddressNegatedTraceElement());
+      }
+      conjuncts.add(srcMatch);
     }
-    conjuncts.add(srcMatch);
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs if specified.
     List<AclLineMatchExpr> dstExprs =
         aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
-    AclLineMatchExpr dstMatch = new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement());
-    if (rule.getNegateSource()) {
-      dstMatch = new NotMatchExpr(dstMatch, matchDestinationAddressNegatedTraceElement());
+    if (!dstExprs.isEmpty()) {
+      AclLineMatchExpr dstMatch = new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement());
+      if (rule.getNegateDestination()) {
+        dstMatch = new NotMatchExpr(dstMatch, matchDestinationAddressNegatedTraceElement());
+      }
+      conjuncts.add(dstMatch);
     }
-    conjuncts.add(dstMatch);
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match services.
@@ -1241,10 +1245,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
-  /** Gets {@code TraceElement} for specified {@link RuleEndpoint} */
+  /**
+   * Gets the {@code TraceElement} corresponding to the specified {@link RuleEndpoint}. Returns
+   * {@code null} if the endpoint cannot be resolved.
+   */
   @Nullable
   @SuppressWarnings("fallthrough")
-  private TraceElement ruleEndpointToTraceElement(
+  private TraceElement getRuleEndpointTraceElement(
       RuleEndpoint endpoint, Vsys vsys, String filename) {
     String endpointValue = endpoint.getValue();
     String vsysName = vsys.getName();
@@ -1260,12 +1267,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     switch (vsys.getNamespaceType()) {
       case LEAF:
         if (_shared != null) {
-          return ruleEndpointToTraceElement(endpoint, _shared, filename);
+          return getRuleEndpointTraceElement(endpoint, _shared, filename);
         }
         // fall-through
       case SHARED:
         if (_panorama != null) {
-          return ruleEndpointToTraceElement(endpoint, _panorama, filename);
+          return getRuleEndpointTraceElement(endpoint, _panorama, filename);
         }
         // fall-through
       default:

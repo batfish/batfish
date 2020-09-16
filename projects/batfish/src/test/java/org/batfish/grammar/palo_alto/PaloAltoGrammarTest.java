@@ -84,6 +84,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressNegatedTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
@@ -3639,8 +3640,10 @@ public final class PaloAltoGrammarTest {
                   isTraceTree(
                       matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
                   isTraceTree(
-                      matchDestinationAddressTraceElement(),
-                      isTraceTree(matchAddressAnyTraceElement())),
+                      matchDestinationAddressNegatedTraceElement(),
+                      isTraceTree(
+                          matchDestinationAddressTraceElement(),
+                          isTraceTree(matchAddressValueTraceElement("10.11.12.13")))),
                   isTraceTree(matchServiceAnyTraceElement()))));
     }
   }
