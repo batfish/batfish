@@ -14,15 +14,15 @@ public class ApplicationGroupTest {
   @Test
   public void testGetDescendantObjectsBase() {
     ApplicationGroup ag = new ApplicationGroup("group");
-    Map<String, Application> applications =
-        ImmutableMap.of(
-            "a1", Application.builder("a1").build(), "a2", Application.builder("a2").build());
+    Application a1 = Application.builder("a1").build();
+    Application a2 = Application.builder("a2").build();
+    Map<String, Application> applications = ImmutableMap.of("a1", a1, "a2", a2);
 
     // only one of the address objects is a member
     ag.getMembers().add("a1");
     assertThat(
         ag.getDescendantObjects(applications, ImmutableMap.of(), new HashSet<>()),
-        equalTo(ImmutableSet.of("a1")));
+        equalTo(ImmutableSet.of(a1)));
   }
 
   @Test
@@ -32,11 +32,13 @@ public class ApplicationGroupTest {
 
     assertThat(
         ag.getDescendantObjects(ImmutableMap.of(), ImmutableMap.of(), new HashSet<>()),
-        equalTo(ImmutableSet.of(ApplicationBuiltIn.FTP.getName())));
+        equalTo(ImmutableSet.of(ApplicationBuiltIn.FTP)));
   }
 
   @Test
   public void testGetDescendantObjectsCircular() {
+    Application a1 = Application.builder("a1").build();
+    Application a2 = Application.builder("a2").build();
     Map<String, ApplicationGroup> applicationGroups =
         ImmutableMap.of(
             "parentGroup",
@@ -45,9 +47,7 @@ public class ApplicationGroupTest {
             new ApplicationGroup("childGroup"),
             "grandchildGroup",
             new ApplicationGroup("grandchildGroup"));
-    Map<String, Application> applications =
-        ImmutableMap.of(
-            "a1", Application.builder("a1").build(), "a2", Application.builder("a2").build());
+    Map<String, Application> applications = ImmutableMap.of("a1", a1, "a2", a2);
 
     // parent -> child -> {parent, grandChild}
     // grandChild -> {child, ad1}
@@ -62,7 +62,7 @@ public class ApplicationGroupTest {
         applicationGroups
             .get("parentGroup")
             .getDescendantObjects(applications, applicationGroups, new HashSet<>()),
-        equalTo(ImmutableSet.of("a1")));
+        equalTo(ImmutableSet.of(a1)));
   }
 
   @Test
@@ -75,15 +75,15 @@ public class ApplicationGroupTest {
 
   @Test
   public void testGetDescendantObjectsIndirect() {
+    Application a1 = Application.builder("a1").build();
+    Application a2 = Application.builder("a2").build();
     Map<String, ApplicationGroup> applicationGroups =
         ImmutableMap.of(
             "parentGroup",
             new ApplicationGroup("parentGroup"),
             "childGroup",
             new ApplicationGroup("childGroup"));
-    Map<String, Application> applications =
-        ImmutableMap.of(
-            "a1", Application.builder("a1").build(), "a2", Application.builder("a2").build());
+    Map<String, Application> applications = ImmutableMap.of("a1", a1, "a2", a2);
 
     applicationGroups.get("parentGroup").getMembers().add("childGroup");
     applicationGroups.get("childGroup").getMembers().add("a1");
@@ -92,6 +92,6 @@ public class ApplicationGroupTest {
         applicationGroups
             .get("parentGroup")
             .getDescendantObjects(applications, applicationGroups, new HashSet<>()),
-        equalTo(ImmutableSet.of("a1")));
+        equalTo(ImmutableSet.of(a1)));
   }
 }

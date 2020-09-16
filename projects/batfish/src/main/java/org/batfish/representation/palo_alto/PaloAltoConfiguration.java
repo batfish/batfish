@@ -25,6 +25,10 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationGroupTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationObjectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
@@ -66,13 +70,11 @@ import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -1120,41 +1122,67 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return Optional.of(new OrMatchExpr(serviceDisjuncts));
   }
 
-  private List<AclLineMatchExpr> matchServicesForApplications(SecurityRule rule, Vsys vsys) {
-    ImmutableList.Builder<AclLineMatchExpr> ret = ImmutableList.builder();
-    Queue<String> applications = new LinkedBlockingQueue<>(rule.getApplications());
-    while (!applications.isEmpty()) {
-      String name = applications.remove();
+  /**
+   * Create an {@link Optional} {@link AclLineMatchExpr} for the specified application/group name.
+   * If no corresponding application/group is found, then {@link Optional#empty()} is returned.
+   */
+  private Optional<AclLineMatchExpr> aclLineMatchExprForApplicationOrGroup(
+      String name, SecurityRule rule, Vsys vsys) {
+    String vsysName = vsys.getName();
 
-      // Assume all traffic matches some application under the "any" definition
-      if (name.equals(CATCHALL_APPLICATION_NAME)) {
-        return ImmutableList.of(TrueExpr.INSTANCE);
-      }
-      ApplicationGroup group = vsys.getApplicationGroups().get(name);
-      if (group != null) {
-        applications.addAll(
-            group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups()));
-        continue;
-      }
-      Application a = vsys.getApplications().get(name);
-      if (a != null) {
-        for (Service s : a.getServices()) {
-          ret.add(s.toMatchHeaderSpace(_w));
-        }
-        continue;
-      }
-      Optional<Application> builtIn = ApplicationBuiltIn.getBuiltInApplication(name);
-      if (builtIn.isPresent()) {
-        builtIn.get().getServices().forEach(s -> ret.add(s.toMatchHeaderSpace(_w)));
-        continue;
-      }
-      // Did not find in the right hierarchy, so stop and warn.
-      _w.redFlag(
-          String.format(
-              "Unable to identify application %s in vsys %s rule %s",
-              name, vsys.getName(), rule.getName()));
+    // Assume all traffic matches some application under the "any" definition
+    if (name.equals(CATCHALL_APPLICATION_NAME)) {
+      return Optional.of(new TrueExpr(matchApplicationAnyTraceElement()));
     }
-    return ret.build();
+
+    ApplicationGroup group = vsys.getApplicationGroups().get(name);
+    if (group != null) {
+      return Optional.of(
+          new OrMatchExpr(
+              group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
+                  .stream()
+                  // Don't add trace for children; we've already flattened intermediate app groups
+                  .map(a -> aclLineMatchExprForApplication(a, null))
+                  .collect(ImmutableList.toImmutableList()),
+              matchApplicationGroupTraceElement(name, vsysName, _filename)));
+    }
+
+    Application a = vsys.getApplications().get(name);
+    if (a != null) {
+      return Optional.of(
+          aclLineMatchExprForApplication(
+              a, matchApplicationObjectTraceElement(name, vsysName, _filename)));
+    }
+
+    Optional<Application> builtIn = ApplicationBuiltIn.getBuiltInApplication(name);
+    if (builtIn.isPresent()) {
+      return Optional.of(
+          aclLineMatchExprForApplication(builtIn.get(), matchBuiltInApplicationTraceElement(name)));
+    }
+    // Did not find in the right hierarchy, so stop and warn.
+    _w.redFlag(
+        String.format(
+            "Unable to identify application %s in vsys %s rule %s",
+            name, vsys.getName(), rule.getName()));
+    return Optional.empty();
+  }
+
+  /** Create an {@link AclLineMatchExpr} matching any services in the specified application. */
+  private AclLineMatchExpr aclLineMatchExprForApplication(
+      Application application, @Nullable TraceElement traceElement) {
+    return new OrMatchExpr(
+        application.getServices().stream()
+            .map(s -> s.toMatchHeaderSpace(_w))
+            .collect(ImmutableList.toImmutableList()),
+        traceElement);
+  }
+
+  private List<AclLineMatchExpr> matchServicesForApplications(SecurityRule rule, Vsys vsys) {
+    return rule.getApplications().stream()
+        .map(a -> aclLineMatchExprForApplicationOrGroup(a, rule, vsys))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .collect(ImmutableList.toImmutableList());
   }
 
   /** Converts interface address {@code String} to {@link IpSpace} */
