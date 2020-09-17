@@ -45,7 +45,6 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisProcess;
-import org.batfish.datamodel.isis.IsisTopology;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -175,10 +174,7 @@ public class IsisTest {
     return (IncrementalDataPlane)
         engine.computeDataPlane(
                 configurations,
-                TopologyContext.builder()
-                    .setLayer3Topology(topology)
-                    .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
-                    .build(),
+                TopologyContext.builder().setLayer3Topology(topology).build(),
                 Collections.emptySet())
             ._dataPlane;
   }
@@ -464,10 +460,7 @@ public class IsisTest {
         (IncrementalDataPlane)
             engine.computeDataPlane(
                     configurations,
-                    TopologyContext.builder()
-                        .setLayer3Topology(topology)
-                        .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
-                        .build(),
+                    TopologyContext.builder().setLayer3Topology(topology).build(),
                     Collections.emptySet())
                 ._dataPlane;
     return dp;
@@ -658,10 +651,7 @@ public class IsisTest {
     return (IncrementalDataPlane)
         engine.computeDataPlane(
                 configurations,
-                TopologyContext.builder()
-                    .setLayer3Topology(topology)
-                    .setIsisTopology(IsisTopology.initIsisTopology(configurations, topology))
-                    .build(),
+                TopologyContext.builder().setLayer3Topology(topology).build(),
                 Collections.emptySet())
             ._dataPlane;
   }
