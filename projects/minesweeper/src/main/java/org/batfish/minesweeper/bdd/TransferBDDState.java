@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
-import com.google.common.base.Preconditions;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.minesweeper.TransferParam;
@@ -20,7 +21,7 @@ public class TransferBDDState {
     // Eventually we may want to refactor things so the BDDRoute does not live in both
     // the TransferParam and the TransferResult, but it would require non-trivial updates
     // to the analysis.
-    Preconditions.checkArgument(
+    checkArgument(
         param.getData() == result.getReturnValue().getFirst(),
         "TransferParam and TransferReturn should contain the same BDDRoute object");
     _param = param;
