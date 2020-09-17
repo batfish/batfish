@@ -14,17 +14,18 @@ public class OrMatchExpr extends AclLineMatchExpr {
 
   private final List<AclLineMatchExpr> _disjuncts;
 
-  public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts) {
+  public OrMatchExpr(Iterable<? extends AclLineMatchExpr> disjuncts) {
     this(disjuncts, (TraceElement) null);
   }
 
-  public OrMatchExpr(Iterable<AclLineMatchExpr> disjuncts, @Nullable String traceElement) {
+  public OrMatchExpr(
+      Iterable<? extends AclLineMatchExpr> disjuncts, @Nullable String traceElement) {
     this(disjuncts, traceElement == null ? null : TraceElement.of(traceElement));
   }
 
   @JsonCreator
   public OrMatchExpr(
-      @JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts,
+      @JsonProperty(PROP_DISJUNCTS) Iterable<? extends AclLineMatchExpr> disjuncts,
       @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
     super(traceElement);
     _disjuncts = disjuncts != null ? ImmutableList.copyOf(disjuncts) : ImmutableList.of();

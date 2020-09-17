@@ -51,8 +51,6 @@ public class AclTracerTest {
   private static final String TEST_ACL = "test acl";
 
   private static final HeaderSpace TRUE_HEADERSPACE = HeaderSpace.builder().build();
-  private static final HeaderSpace FALSE_HEADERSPACE =
-      HeaderSpace.builder().setNotDstIps(UniverseIpSpace.INSTANCE).build();
 
   private static List<TraceTree> trace(IpAccessList acl) {
     return AclTracer.trace(
@@ -65,11 +63,11 @@ public class AclTracerTest {
   }
 
   private static AclLineMatchExpr trueExpr(String traceElement) {
-    return new MatchHeaderSpace(TRUE_HEADERSPACE, traceElement);
+    return new TrueExpr(TraceElement.of(traceElement));
   }
 
   private static AclLineMatchExpr falseExpr(String traceElement) {
-    return new MatchHeaderSpace(FALSE_HEADERSPACE, traceElement);
+    return new FalseExpr(TraceElement.of(traceElement));
   }
 
   @Test

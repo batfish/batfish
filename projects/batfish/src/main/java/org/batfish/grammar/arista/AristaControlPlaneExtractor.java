@@ -6859,7 +6859,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
     }
     r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    r.setOnlyClassfulRoutes(false);
   }
 
   @Override
