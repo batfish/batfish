@@ -1,0 +1,27 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_errdisable
+!
+errdisable detect cause arp-inspection
+errdisable detect cause link-flap
+errdisable detect cause multi-lane-intf
+errdisable detect cause xcvr-overheat
+no errdisable recovery cause arp-inspection
+no errdisable recovery cause bpduguard
+no errdisable recovery cause hitless-reload-down
+no errdisable recovery cause lacp-rate-limit
+no errdisable recovery cause link-flap
+no errdisable recovery cause loopprotectguard
+no errdisable recovery cause mlagdualprimary
+no errdisable recovery cause multi-lane-intf
+no errdisable recovery cause no-internal-vlan
+no errdisable recovery cause portchannelguard
+no errdisable recovery cause portsec
+no errdisable recovery cause speed-misconfigured
+no errdisable recovery cause stuck-queue
+no errdisable recovery cause tapagg
+no errdisable recovery cause uplink-failure-detection
+no errdisable recovery cause xcvr-overheat
+no errdisable recovery cause xcvr-unsupported
+errdisable recovery interval 600
+!

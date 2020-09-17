@@ -411,6 +411,19 @@ junos_application_set
   | JUNOS_SUN_RPC_YPSERV
 ;
 
+// The name of a JunOS structure. These are: letters, numbers, and hyphens, with spaces allowed
+// inside quotes.
+//
+// NOTE: we also added underscore, since this appears to be supported in practice.
+//
+// The length of names varies by structure term. E.g., term-name (Firewall Filter) is 64,
+// term-name (Simpler Filter) is 255.
+junos_name
+:
+  NAME
+  | DOUBLE_QUOTED_NAME
+;
+
 null_filler
 :
   ~( APPLY_GROUPS | NEWLINE )* apply_groups?

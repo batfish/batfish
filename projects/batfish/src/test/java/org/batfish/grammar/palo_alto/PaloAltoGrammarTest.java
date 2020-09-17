@@ -48,6 +48,7 @@ import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
 import static org.batfish.datamodel.matchers.StubSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isChainOfSingleChildren;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -78,7 +79,12 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUA
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
@@ -2036,13 +2042,23 @@ public final class PaloAltoGrammarTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
+
     assertThat(
         flowTrace,
         contains(
-            isChainOfSingleChildren(
+            isTraceTree(
                 exitIfaceTe,
-                intrazoneRejectRulesTe,
-                matchSecurityRuleTraceElement("DENY", vsysName, filename))));
+                isTraceTree(
+                    intrazoneRejectRulesTe,
+                    isTraceTree(
+                        matchSecurityRuleTraceElement("DENY", vsysName, filename),
+                        isTraceTree(
+                            matchSourceAddressTraceElement(),
+                            isTraceTree(matchAddressValueTraceElement("2.2.2.2/32"))),
+                        isTraceTree(
+                            matchDestinationAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(matchServiceAnyTraceElement()))))));
 
     // Flow matching PERMIT security rule should generate a trace pointing to that rule.
     flowTrace =
@@ -2053,13 +2069,23 @@ public final class PaloAltoGrammarTest {
             c.getIpAccessLists(),
             ImmutableMap.of(),
             ImmutableMap.of());
+
     assertThat(
         flowTrace,
         contains(
-            isChainOfSingleChildren(
+            isTraceTree(
                 exitIfaceTe,
-                intrazoneRulesTe,
-                matchSecurityRuleTraceElement("PERMIT", vsysName, filename))));
+                isTraceTree(
+                    intrazoneRulesTe,
+                    isTraceTree(
+                        matchSecurityRuleTraceElement("PERMIT", vsysName, filename),
+                        isTraceTree(
+                            matchSourceAddressTraceElement(),
+                            isTraceTree(matchAddressValueTraceElement("3.3.3.3/32"))),
+                        isTraceTree(
+                            matchDestinationAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(matchServiceAnyTraceElement()))))));
   }
 
   @Test

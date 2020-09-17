@@ -1,0 +1,14 @@
+hostname nxos-bgp-update-source-shutdown
+feature bgp
+
+interface Ethernet1
+  no switchport
+  shutdown
+  ip address 1.2.3.4/31
+
+router bgp 1
+  router-id 4.4.4.4
+  address-family ipv4 unicast
+  neighbor 1.2.3.5
+    remote-as 65000
+    address-family ipv4 unicast

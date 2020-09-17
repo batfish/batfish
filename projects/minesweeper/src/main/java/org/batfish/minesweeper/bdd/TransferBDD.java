@@ -678,7 +678,7 @@ public class TransferBDD {
        * statement is buffered, but it currently does not seem to ever use that information. So we
        * ignore it.
        */
-      return compute(bufStmt.getStatement(), new TransferBDDState(curP, result));
+      return compute(bufStmt.getStatement(), state);
     } else if (stmt instanceof PrependAsPath) {
       curP.debug("PrependAsPath");
       PrependAsPath pap = (PrependAsPath) stmt;
@@ -702,6 +702,8 @@ public class TransferBDD {
     } else {
       throw new BatfishException("TODO: statement transfer function: " + stmt);
     }
+    // make sure that the TransferParam is updated with the current BDDRoute
+    curP = curP.setData(result.getReturnValue().getFirst());
     return new TransferBDDState(curP, result);
   }
 

@@ -49,6 +49,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -681,6 +682,30 @@ public class TransferBDDTest {
         BDDInteger.makeFromValue(_anyRoute.getFactory(), 32, 50)
             .ite(_anyRoute.getProtocolHistory().value(Protocol.BGP), _anyRoute.getMed());
     assertEquals(expectedMed, outAnnouncements.getMed());
+  }
+
+  @Test
+  public void testBufferedStatement() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new BufferedStatement(new SetLocalPreference(new LiteralLong(42))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // the local preference is now 42
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
+    assertEquals(expected, outAnnouncements);
   }
 
   @Test

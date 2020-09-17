@@ -60113,6 +60113,96 @@
               },
               {
                 "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "srcIps" : {
+                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "ipWildcard" : "1.2.3.4"
+                        }
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched source-address 1.2.3.4"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "name" : "prefix-list",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "prefix-list",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_firewall",
+                        "structureName" : "blah prefix-list",
+                        "structureType" : "firewall filter term"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false,
+                        "srcIps" : {
+                          "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                          "ipWildcard" : "1.2.3.4"
+                        }
+                      },
+                      "traceElement" : {
+                        "fragments" : [
+                          {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched source-address 1.2.3.4"
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "name" : "some term",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "some term",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_firewall",
+                        "structureName" : "blah some term",
+                        "structureType" : "firewall filter term"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.TrueExpr"
@@ -60647,6 +60737,80 @@
                         {
                           "class" : "org.batfish.datamodel.TraceElement$TextFragment",
                           "text" : "Firewall filter term blorp"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                    "conjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "negate" : false,
+                          "srcIps" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "1.2.3.4"
+                          }
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched source-address 1.2.3.4"
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Firewall filter term prefix-list"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.packet_policy.If",
+                "trueStatements" : {
+                  "class" : "org.batfish.datamodel.packet_policy.PacketMatchExpr",
+                  "expression" : {
+                    "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                    "conjuncts" : [
+                      {
+                        "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                        "headerSpace" : {
+                          "negate" : false,
+                          "srcIps" : {
+                            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                            "ipWildcard" : "1.2.3.4"
+                          }
+                        },
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched source-address 1.2.3.4"
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Firewall filter term some term"
                         }
                       ]
                     }
