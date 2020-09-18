@@ -708,7 +708,7 @@ public class VirtualRouter implements Serializable {
         ribDeltas.entrySet().stream()
             .filter(e -> !e.getValue().isEmpty())
             .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().build()));
-    finalizeBgpRoutesAndQueueOutgoingMessages(deltas);
+    finalizeBgpRoutesAndBuildOutgoingDeltas(deltas);
   }
 
   /** Initialize RIP routes from the interface prefixes */
@@ -1624,8 +1624,7 @@ public class VirtualRouter implements Serializable {
    * @param stagingDeltas a map of RIB to corresponding delta. Keys are expected to contain {@link
    *     BgpRoutingProcess#_ebgpv4StagingRib} and {@link BgpRoutingProcess#_ibgpv4StagingRib}
    */
-  void finalizeBgpRoutesAndQueueOutgoingMessages(
-      Map<Bgpv4Rib, RibDelta<Bgpv4Route>> stagingDeltas) {
+  void finalizeBgpRoutesAndBuildOutgoingDeltas(Map<Bgpv4Rib, RibDelta<Bgpv4Route>> stagingDeltas) {
 
     if (_bgpRoutingProcess == null) {
       return;
@@ -1654,7 +1653,7 @@ public class VirtualRouter implements Serializable {
     _mainRibRouteDelta = mergeRibDeltas(_mainRibRouteDelta, _mainRibRouteDeltaBuilder.build());
   }
 
-  void endOfRound() {
+  void clearBgpOutgoingDeltas() {
     _bgpv4Delta = null;
     _ebgpDelta = null;
     _mainRibRouteDelta = null;

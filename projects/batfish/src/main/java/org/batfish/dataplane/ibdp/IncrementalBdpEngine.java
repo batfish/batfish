@@ -14,7 +14,6 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -504,28 +503,37 @@ class IncrementalBdpEngine {
     try (Scope innerScope = GlobalTracer.get().scopeManager().activate(propSpan)) {
       assert innerScope != null; // avoid unused warning
 
-      List<Entry<VirtualRouter, Map<Bgpv4Rib, RibDelta<Bgpv4Route>>>> routeDeltas =
+      /*
+      In a round, each VR will process BGP messages from its neighbors, adding them to the right
+      RIBs and building a RibDelta containing messages that will be sent to neighbors in the next
+      round (the "outgoing delta"). Processing messages from a neighbor requires reading from
+      their outgoing delta. We do this for all VRs in parallel, so we need to be careful not to
+      read from and write to the same delta simultaneously. We separate reading and writing into
+      two stages. In the first stage, all VRs read from their neighbors' deltas, and build
+      Runnables (thunks) to clear and then write to their own deltas. In the second stage, we
+      simply run these Runnables (also in parallel).
+      */
+      List<Runnable> finalizeBgpRoutesAndQueueOutgoingMessages =
           allNodes
               .values()
               .parallelStream()
               .flatMap(n -> n.getVirtualRouters().values().stream())
               .map(
                   vr -> {
+                    // Stage 1: read from all eighbors' queues.
                     Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
                         vr.processBgpMessages(bgpTopology, networkConfigurations, allNodes);
-                    return Maps.immutableEntry(vr, deltas);
+                    // return a runnable for stage 2.
+                    return (Runnable)
+                        () -> {
+                          vr.clearBgpOutgoingDeltas();
+                          vr.finalizeBgpRoutesAndBuildOutgoingDeltas(deltas);
+                        };
                   })
               .collect(Collectors.toList());
 
-      routeDeltas
-          .parallelStream()
-          .forEach(
-              entry -> {
-                VirtualRouter vr = entry.getKey();
-                Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas = entry.getValue();
-                vr.endOfRound();
-                vr.finalizeBgpRoutesAndQueueOutgoingMessages(deltas);
-              });
+      // Stage 2: update all the outgoing queues
+      finalizeBgpRoutesAndQueueOutgoingMessages.parallelStream().forEach(Runnable::run);
 
       // Merge BGP routes from BGP process into the main RIB
       allNodes
