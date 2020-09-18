@@ -352,6 +352,13 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON array", expectedType.getName()));
         }
         break;
+      case BGP_ROUTE_CONSTRAINTS:
+        if (!value.isObject() && !value.isNull()) {
+          throw new BatfishException(
+              String.format(
+                  "Not a valid BGP route constraints object: %s", expectedType.getName()));
+        }
+        break;
       case BGP_SESSION_COMPAT_STATUS_SPEC:
         if (!value.isTextual()) {
           throw new BatfishException(

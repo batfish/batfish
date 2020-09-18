@@ -1,0 +1,56 @@
+{
+    "class": "org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "policies": "${policies}",
+    "inputConstraints": "${inputConstraints}",
+    "action": "${action}",
+    "outputConstraints": "${outputConstraints}",
+    "instance": {
+        "description": "Finds route announcements for which a route policy has a particular behavior.",
+        "instanceName": "searchRoutePolicies",
+        "longDescription": "This question finds route announcements for which a route policy has a particular behavior.  The behaviors can be: that the policy permits the route (`permit`) or that it denies the route (`deny`).  Constraints can be imposed on the input route announcements of interest and, in the case of a `permit` action, also on the output route announcements of interest.  Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, a (possibly different) answer will be found for each policy.",
+        "orderedVariableNames": [
+            "nodes",
+            "policies",
+            "inputConstraints",
+            "action",
+            "outputConstraints"
+        ],
+        "tags": [
+            "routing"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Only examine policies on nodes matching this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "policies": {
+                "description": "Only consider policies that match this specifier",
+                "type": "string",
+                "optional": true,
+                "displayName": "Policies"
+            },
+            "inputConstraints": {
+                "description": "Constraints on the set of input BGP route announcements to consider",
+                "type": "bgpRouteConstraints",
+                "optional": true,
+                "displayName": "Input Constraints"
+            },
+            "action": {
+                "description": "The behavior to be evaluated. Specify exactly one of `permit` or `deny`.",
+                "type": "string",
+                "optional": true,
+                "displayName": "Action"
+            },
+            "outputConstraints": {
+                "description": "Constraints on the set of output BGP route announcements to consider",
+                "type": "bgpRouteConstraints",
+                "optional": true,
+                "displayName": "Output Constraints"
+            }
+        }
+    }
+}
