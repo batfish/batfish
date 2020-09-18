@@ -662,7 +662,7 @@ public final class Region implements Serializable {
   }
 
   @Nonnull
-  Map<String, NetworkAcl> getNetworkAcls() {
+  public Map<String, NetworkAcl> getNetworkAcls() {
     return _networkAcls;
   }
 
