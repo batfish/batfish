@@ -1110,7 +1110,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Prefer the v4 ACL over the generic ACL name.
     IpAccessList acl =
-        Optional.ofNullable(c.getAclNameV4() == null ? c.getAclName() : c.getAclName())
+        Optional.ofNullable(c.getAclNameV4() != null ? c.getAclNameV4() : c.getAclName())
             .map(_ipAccessLists::get)
             .orElse(null);
     if (acl != null) {
