@@ -2642,18 +2642,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                   .map(Prefix::toHostIpSpace)
                   .collect(ImmutableList.toImmutableList()));
 
-      IpSpace arpAddresses =
-          AclIpSpace.union(
-              allAddresses.stream()
-                  .map(ConcreteInterfaceAddress::getIp)
-                  .map(Ip::toIpSpace)
-                  .collect(ImmutableList.toImmutableList()));
       locationInfo.put(
           new InterfaceLinkLocation(_hostname, name),
           new LocationInfo(
               true,
-              addressSpace != null ? addressSpace : EmptyIpSpace.INSTANCE,
-              arpAddresses != null ? arpAddresses : EmptyIpSpace.INSTANCE));
+              firstNonNull(addressSpace, EmptyIpSpace.INSTANCE),
+              // Assume all addresses in associated subnets are ARP IPs
+              firstNonNull(addressSpace, EmptyIpSpace.INSTANCE)));
     }
     return locationInfo.build();
   }
