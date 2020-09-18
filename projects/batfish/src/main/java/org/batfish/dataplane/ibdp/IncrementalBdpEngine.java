@@ -466,20 +466,17 @@ class IncrementalBdpEngine {
     LOGGER.info("{}: Init for new BGP iteration", iterationLabel);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      allNodes.values().stream()
+      allNodes
+          .values()
+          .parallelStream()
           .forEach(
-              n ->
-                  n.getVirtualRouters()
-                      .values()
-                      .forEach(
-                          vr -> {
-                            // Iteration for one VR
-                            vr.bgpIteration(allNodes);
-                            // Merge results into main RIB, for all VRs
-                            n.getVirtualRouters()
-                                .values()
-                                .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
-                          }));
+              n -> {
+                // First init the iteration, then merge BGP routes into the main RIB. Do this in
+                // separate loops because route-leaking can send BGP routes between VRs, and we
+                // only want to do the merge once.
+                n.getVirtualRouters().values().forEach(vr -> vr.bgpIteration(allNodes));
+                n.getVirtualRouters().values().forEach(VirtualRouter::mergeBgpRoutesToMainRib);
+              });
     } finally {
       span.finish();
     }
