@@ -1248,7 +1248,6 @@ public class VirtualRouter implements Serializable {
         rg.getImportRibs()
             .forEach(
                 rib ->
-                    // TODO can use helper method here
                     nodes
                         .get(_c.getHostname())
                         .getVirtualRouters()
