@@ -202,11 +202,6 @@ public class VirtualRouter implements Serializable {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  // deltas for the current round. must be null between rounds?
-  private RibDelta<Bgpv4Route> _ebgpDelta = null;
-  private RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibBgpv4RouteDelta = null;
-  private RibDelta<Bgpv4Route> _bgpv4Delta = null;
-
   VirtualRouter(@Nonnull String name, @Nonnull Node node) {
     _node = node;
     _c = node.getConfiguration();
@@ -1412,7 +1407,8 @@ public class VirtualRouter implements Serializable {
     // Queue mainRib updates that were not introduced by BGP process (i.e., IGP routes)
     // Also, do not double-export main RIB routes
     Stream<RouteAdvertisement<Bgpv4Route>> mainRibExports =
-        _mainRibBgpv4RouteDelta
+        _bgpRoutingProcess
+            ._mainRibBgpv4RouteDelta
             .getActions()
             .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
             .map(
@@ -1443,14 +1439,15 @@ public class VirtualRouter implements Serializable {
      *    they are not active in the main RIB.
      */
     if (session.getAdvertiseExternal()) {
-      importDeltaToBuilder(bgpRibExports, _ebgpDelta, _name);
+      importDeltaToBuilder(bgpRibExports, _bgpRoutingProcess._ebgpDelta, _name);
     }
     if (session.getAdvertiseInactive()) {
-      importDeltaToBuilder(bgpRibExports, _bgpv4Delta, _name);
+      importDeltaToBuilder(bgpRibExports, _bgpRoutingProcess._bgpv4Delta, _name);
     } else {
       // Default behavior
       bgpRibExports.from(
-          _bgpv4Delta
+          _bgpRoutingProcess
+              ._bgpv4Delta
               .getActions()
               .map(
                   r ->
@@ -1468,7 +1465,7 @@ public class VirtualRouter implements Serializable {
        AND the combination of vendor-specific knobs, none of which are currently supported.
     */
     if (session.getAdditionalPaths()) {
-      importDeltaToBuilder(bgpRibExports, _bgpv4Delta, _name);
+      importDeltaToBuilder(bgpRibExports, _bgpRoutingProcess._bgpv4Delta, _name);
     }
 
     RibDelta<AnnotatedRoute<Bgpv4Route>> bgpRoutesToExport = bgpRibExports.build();
@@ -1639,16 +1636,20 @@ public class VirtualRouter implements Serializable {
     _mainRibRouteDeltaBuilder.from(RibDelta.importRibDelta(_mainRib, newBgpv4Delta, _name));
 
     // TODO this merge nonsense sucks
-    _bgpv4Delta = RibDelta.merge(_bgpv4Delta, newBgpv4Delta);
-    _ebgpDelta = RibDelta.merge(_ebgpDelta, ebgpDelta);
-    _mainRibBgpv4RouteDelta =
-        RibDelta.merge(_mainRibBgpv4RouteDelta, _mainRibRouteDeltaBuilder.build());
+    _bgpRoutingProcess._bgpv4Delta = RibDelta.merge(_bgpRoutingProcess._bgpv4Delta, newBgpv4Delta);
+    _bgpRoutingProcess._ebgpDelta = RibDelta.merge(_bgpRoutingProcess._ebgpDelta, ebgpDelta);
+    _bgpRoutingProcess._mainRibBgpv4RouteDelta =
+        RibDelta.merge(
+            _bgpRoutingProcess._mainRibBgpv4RouteDelta, _mainRibRouteDeltaBuilder.build());
   }
 
   void clearBgpOutgoingDeltas() {
-    _bgpv4Delta = null;
-    _ebgpDelta = null;
-    _mainRibBgpv4RouteDelta = null;
+    if (_bgpRoutingProcess == null) {
+      return;
+    }
+    _bgpRoutingProcess._bgpv4Delta = null;
+    _bgpRoutingProcess._ebgpDelta = null;
+    _bgpRoutingProcess._mainRibBgpv4RouteDelta = null;
   }
 
   /**
@@ -1749,21 +1750,21 @@ public class VirtualRouter implements Serializable {
      * Export routes by looking at main RIB and BGPv4 RIB
      */
     // TODO this merging nonsense sucks. Try to get some reasonable invariants
-    _ebgpDelta =
+    _bgpRoutingProcess._ebgpDelta =
         RibDelta.merge(
-            _ebgpDelta,
+            _bgpRoutingProcess._ebgpDelta,
             RibDelta.<Bgpv4Route>builder()
                 .add(_bgpRoutingProcess._ebgpv4Rib.getBestPathRoutes())
                 .build());
-    _bgpv4Delta =
+    _bgpRoutingProcess._bgpv4Delta =
         RibDelta.merge(
-            _bgpv4Delta,
+            _bgpRoutingProcess._bgpv4Delta,
             RibDelta.<Bgpv4Route>builder()
                 .add(_bgpRoutingProcess._bgpv4Rib.getTypedRoutes())
                 .build());
-    _mainRibBgpv4RouteDelta =
+    _bgpRoutingProcess._mainRibBgpv4RouteDelta =
         RibDelta.merge(
-            _mainRibBgpv4RouteDelta,
+            _bgpRoutingProcess._mainRibBgpv4RouteDelta,
             RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
                 .add(_mainRib.getTypedRoutes())
                 .build());
@@ -1887,7 +1888,6 @@ public class VirtualRouter implements Serializable {
             // RIB State
             Stream.of(_mainRib.getTypedRoutes()),
             // Exported routes
-            Stream.of(_ebgpDelta, _bgpv4Delta, _mainRibBgpv4RouteDelta),
             // Message queues
             Stream.of(_isisIncomingRoutes, _crossVrfIncomingRoutes)
                 .flatMap(m -> m.values().stream())

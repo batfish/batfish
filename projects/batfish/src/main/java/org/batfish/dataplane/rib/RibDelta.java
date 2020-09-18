@@ -5,7 +5,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +29,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> route type
  */
 @ParametersAreNonnullByDefault
-public final class RibDelta<R> implements Serializable {
+public final class RibDelta<R> {
 
   /** Sorted for deterministic iteration order */
   private final ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
