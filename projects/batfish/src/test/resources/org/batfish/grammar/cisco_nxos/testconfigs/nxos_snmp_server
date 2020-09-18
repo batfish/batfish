@@ -2,7 +2,11 @@
 !
 hostname nxos_snmp_server
 !
-
+ip access-list snmp_acl4
+  10 deny udp 1.2.3.4/32 any
+  20 permit udp 1.2.3.0/24 any eq snmp
+  30 permit udp 2.0.0.0/8 any eq snmp
+!
 snmp-server community SECRETcommunity1 group network-operator
 !
 snmp-server community SECRETcommunity2 group network-operator

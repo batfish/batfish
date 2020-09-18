@@ -6827,6 +6827,17 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(c.getSnmpTrapServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
     assertThat(c.getSnmpSourceInterface(), equalTo("mgmt0"));
+    Map<String, org.batfish.datamodel.SnmpCommunity> communities =
+        c.getDefaultVrf().getSnmpServer().getCommunities();
+    assertThat(communities, hasKeys("SECRETcommunity1", "SECRETcommunity2"));
+    assertThat(communities.get("SECRETcommunity1").getClientIps(), nullValue());
+    assertThat(
+        communities.get("SECRETcommunity2").getClientIps(),
+        equalTo(
+            AclIpSpace.rejecting(Ip.parse("1.2.3.4").toIpSpace())
+                .thenPermitting(Prefix.parse("1.2.3.0/24").toIpSpace())
+                .thenPermitting(Prefix.parse("2.0.0.0/8").toIpSpace())
+                .build()));
   }
 
   @Test
