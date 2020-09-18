@@ -640,6 +640,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vdcContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmp_communityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv4aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv6aclContext;
@@ -788,6 +790,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
+import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.SnmpServer;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
@@ -936,6 +939,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace PROTOCOL_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace RIP_PROCESS_ID_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace SNMP_COMMUNITY_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 32));
 
   @VisibleForTesting
   public static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
@@ -1266,6 +1271,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
   private Optional<String> _currentRouteMapName;
+
+  private SnmpCommunity _currentSnmpCommunity;
 
   @SuppressWarnings("unused")
   private SnmpServer _currentSnmpServer;
@@ -6004,12 +6011,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterSnmps_community(Snmps_communityContext ctx) {
+    Optional<String> name = toString(ctx, ctx.community);
+    // dummy for invalid name
+    _currentSnmpCommunity =
+        name.map(s -> _c.getSnmpCommunities().computeIfAbsent(s, SnmpCommunity::new))
+            .orElseGet(() -> new SnmpCommunity("dummy"));
+  }
+
+  @Override
+  public void exitSnmps_community(Snmps_communityContext ctx) {
+    _currentSnmpCommunity = null;
+  }
+
+  @Override
   public void exitSnmps_community_use_acl(Snmps_community_use_aclContext ctx) {
     Optional<String> name = toString(ctx, ctx.name);
     if (!name.isPresent()) {
       return;
     }
-    todo(ctx);
+    _currentSnmpCommunity.setAclName(name.get());
     _c.referenceStructure(
         IP_ACCESS_LIST_ABSTRACT_REF,
         name.get(),
@@ -6023,7 +6044,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!name.isPresent()) {
       return;
     }
-    todo(ctx);
+    _currentSnmpCommunity.setAclNameV4(name.get());
     _c.referenceStructure(
         IP_ACCESS_LIST,
         name.get(),
@@ -6037,7 +6058,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!name.isPresent()) {
       return;
     }
-    todo(ctx);
+    _currentSnmpCommunity.setAclNameV6(name.get());
     _c.referenceStructure(
         IPV6_ACCESS_LIST,
         name.get(),
@@ -7043,6 +7064,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         toStringWithLengthInSpace(messageCtx, ctx, RIP_PROCESS_ID_LENGTH_RANGE, "RIP process ID");
     // RIP process name is case-insensitive.
     return procName.map(name -> getPreferredName(name, ROUTER_RIP));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Snmp_communityContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, SNMP_COMMUNITY_LENGTH_RANGE, "SNMP community");
   }
 
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {

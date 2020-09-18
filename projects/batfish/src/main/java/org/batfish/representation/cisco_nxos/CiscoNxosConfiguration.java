@@ -414,6 +414,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private final @Nonnull Map<String, SnmpCommunity> _snmpCommunities;
   private final @Nonnull Map<String, SnmpServer> _snmpServers;
   private @Nullable String _snmpSourceInterface;
   private boolean _systemDefaultSwitchport;
@@ -444,6 +445,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _platform = NexusPlatform.UNKNOWN;
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
+    _snmpCommunities = new HashMap<>();
     _snmpServers = new HashMap<>();
     _tacacsServers = new HashMap<>();
     _vlans = new HashMap<>();
@@ -1432,6 +1434,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
+  }
+
+  public @Nonnull Map<String, SnmpCommunity> getSnmpCommunities() {
+    return _snmpCommunities;
   }
 
   public @Nonnull Map<String, SnmpServer> getSnmpServers() {
