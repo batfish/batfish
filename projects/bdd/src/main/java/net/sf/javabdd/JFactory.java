@@ -60,19 +60,6 @@ public final class JFactory extends BDDFactory {
   private static final boolean FLUSH_CACHE_ON_GC = true;
 
   /**
-   * If true, all BDDs will be created with a finalizer that attempts to free them if the user has
-   * not done so. This flag implies non-trivial runtime overhead but defers BDD garbage collection
-   * to Java, rather than manual user control of reference counting.
-   */
-  private static final boolean USE_FINALIZER = false;
-
-  /**
-   * When {@link #USE_FINALIZER} is true, setting this flag to true enables debug print messages
-   * whenever BDDs are freed by the finalizer instead of by the calling code.
-   */
-  private static final boolean DEBUG_FINALIZER = false;
-
-  /**
    * If set, assertions will be made on BDD internal computations. Used in developing the factory.
    */
   private static final boolean VERIFY_ASSERTIONS = false;
@@ -96,11 +83,7 @@ public final class JFactory extends BDDFactory {
 
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
-    if (USE_FINALIZER) {
-      return new BDDImplWithFinalizer(id);
-    } else {
-      return new BDDImpl(id);
-    }
+    return new BDDImpl(id);
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
@@ -404,24 +387,6 @@ public final class JFactory extends BDDFactory {
     public void free() {
       bdd_delref(_index);
       _index = INVALID_BDD;
-    }
-  }
-
-  private class BDDImplWithFinalizer extends BDDImpl {
-
-    BDDImplWithFinalizer(int id) {
-      super(id);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-      super.finalize();
-      if (USE_FINALIZER) {
-        if (DEBUG_FINALIZER && _index >= 0) {
-          LOGGER.error("BDD not freed! {}", System.identityHashCode(this));
-        }
-        free();
-      }
     }
   }
 
@@ -932,6 +897,9 @@ public final class JFactory extends BDDFactory {
   }
 
   private int bdd_orAll(int[] operands) {
+    if (applycache == null) {
+      applycache = BddCacheI_init(cachesize);
+    }
     if (multiopcache == null) {
       multiopcache = BddCacheMultiOp_init(cachesize);
     }

@@ -26,7 +26,11 @@ set firewall family inet filter blah term blorp from protocol pim
 set firewall family inet filter blah term blorp from source-address 2.4.6.8/30
 set firewall family inet filter blah term blorp from ip-source-address 2.4.6.9/32
 set firewall family inet filter blah term blorp from source-address 5.5.5.5/31 except
-# 
+# Term with keyword as name
+set firewall family inet filter blah term prefix-list from source-address 1.2.3.4
+# Term with spaces in name
+set firewall family inet filter blah term "some term" from source-address 1.2.3.4
+#
 # using decimals for icmp type and code
 set firewall family inet filter blah term blorp from icmp-type 1
 set firewall family inet filter blah term blorp from icmp-code 2

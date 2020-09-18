@@ -339,6 +339,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
+import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
@@ -6835,6 +6836,16 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(vc.getSnmpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
     assertThat(vc.getSnmpSourceInterface(), equalTo("mgmt0"));
+
+    assertThat(vc.getSnmpCommunities(), hasKeys("SECRETcommunity1", "SECRETcommunity2"));
+    SnmpCommunity c1 = vc.getSnmpCommunities().get("SECRETcommunity1");
+    assertThat(c1.getAclName(), nullValue());
+    assertThat(c1.getAclNameV4(), nullValue());
+    assertThat(c1.getAclNameV6(), nullValue());
+    SnmpCommunity c2 = vc.getSnmpCommunities().get("SECRETcommunity2");
+    assertThat(c2.getAclName(), equalTo("snmp_acl1"));
+    assertThat(c2.getAclNameV4(), equalTo("snmp_acl4"));
+    assertThat(c2.getAclNameV6(), equalTo("snmp_acl6"));
   }
 
   @Test
@@ -7174,6 +7185,12 @@ public final class CiscoNxosGrammarTest {
         bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.INTERFACE, "Ethernet1/1", 2));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf1", 2));
+  }
+
+  @Test
+  public void testVdcParsing() {
+    // don't throw
+    parseVendorConfig("nxos_vdc");
   }
 
   @Test

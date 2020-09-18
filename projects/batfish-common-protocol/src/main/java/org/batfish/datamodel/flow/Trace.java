@@ -28,7 +28,8 @@ public final class Trace {
 
   public Trace(FlowDisposition disposition, List<Hop> hops) {
     _disposition = disposition;
-    _hops = validateHops(hops);
+    assert validateHops(hops);
+    _hops = ImmutableList.copyOf(hops);
   }
 
   @JsonCreator
@@ -77,7 +78,7 @@ public final class Trace {
    */
   @Nonnull
   @VisibleForTesting
-  static List<Hop> validateHops(@Nonnull List<Hop> hops) {
+  static boolean validateHops(@Nonnull List<Hop> hops) {
     for (int i = 0; i < hops.size(); ++i) {
       Hop h = hops.get(i);
       List<Step<?>> steps = h.getSteps();
@@ -88,7 +89,7 @@ public final class Trace {
             "Hop %s/%s of trace does not begin with an %s: %s",
             i + 1,
             hops.size(),
-            EnterInputIfaceStep.class.getSimpleName(),
+            "EnterInputIfaceStep",
             h);
       }
       if (i < hops.size() - 1) {
@@ -98,10 +99,10 @@ public final class Trace {
             "Hop %s/%s of trace does not end with an %s: %s",
             i + 1,
             hops.size(),
-            ExitOutputIfaceStep.class.getSimpleName(),
+            "ExitOutputIfaceStep",
             h);
       }
     }
-    return ImmutableList.copyOf(hops);
+    return true;
   }
 }

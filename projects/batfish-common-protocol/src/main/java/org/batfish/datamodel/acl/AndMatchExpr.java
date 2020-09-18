@@ -14,19 +14,20 @@ public class AndMatchExpr extends AclLineMatchExpr {
 
   private final List<AclLineMatchExpr> _conjuncts;
 
-  public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts) {
+  public AndMatchExpr(Iterable<? extends AclLineMatchExpr> conjuncts) {
     this(conjuncts, (TraceElement) null);
   }
 
   @JsonCreator
   public AndMatchExpr(
-      @JsonProperty(PROP_CONJUNCTS) Iterable<AclLineMatchExpr> conjuncts,
+      @JsonProperty(PROP_CONJUNCTS) Iterable<? extends AclLineMatchExpr> conjuncts,
       @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
     super(traceElement);
     _conjuncts = conjuncts != null ? ImmutableList.copyOf(conjuncts) : ImmutableList.of();
   }
 
-  public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts, @Nullable String traceElement) {
+  public AndMatchExpr(
+      Iterable<? extends AclLineMatchExpr> conjuncts, @Nullable String traceElement) {
     this(conjuncts, traceElement == null ? null : TraceElement.of(traceElement));
   }
 

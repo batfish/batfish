@@ -89,9 +89,10 @@ public class TracerouteEngineImplContext {
               validateInputs(_configurations, flow);
               String ingressNodeName = flow.getIngressNode();
               String ingressInterfaceName = flow.getIngressInterface();
-              initialFlowTracer(
-                      this, ingressNodeName, ingressInterfaceName, flow, currentTraces::add)
+              DagTraceRecorder recorder = new DagTraceRecorder(flow);
+              initialFlowTracer(this, ingressNodeName, ingressInterfaceName, flow, recorder)
                   .processHop();
+              recorder.build().getTraces().forEach(currentTraces::add);
             });
     return new TreeMap<>(traces);
   }

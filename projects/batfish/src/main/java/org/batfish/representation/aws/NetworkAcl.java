@@ -35,7 +35,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static final class NetworkAclAssociation implements Serializable {
+  public static final class NetworkAclAssociation implements Serializable {
 
     @Nonnull private final String _subnetId;
 
@@ -46,7 +46,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
       return new NetworkAclAssociation(subnetId);
     }
 
-    NetworkAclAssociation(String subnetId) {
+    public NetworkAclAssociation(String subnetId) {
       _subnetId = subnetId;
     }
 
@@ -99,7 +99,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
     return new NetworkAcl(networkAclId, vpcId, associations, entries, isDefault);
   }
 
-  NetworkAcl(
+  public NetworkAcl(
       String networkAclId,
       String vpcId,
       List<NetworkAclAssociation> associations,

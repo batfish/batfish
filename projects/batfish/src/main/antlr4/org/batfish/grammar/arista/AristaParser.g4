@@ -5,6 +5,8 @@ Arista_common,
 Legacy_common,
 Arista_bgp,
 Arista_cvx,
+Arista_email,
+Arista_igmp,
 Arista_logging,
 Arista_mlag,
 Arista_vlan,
@@ -658,18 +660,6 @@ gpsec_null
    (
       AGE
       | DELETE_DYNAMIC_LEARN
-   ) null_rest_of_line
-;
-
-hardware_null
-:
-   NO?
-   (
-      IFACL
-      | QOS
-      | RBACL
-      | SPAN
-      | VACL
    ) null_rest_of_line
 ;
 
@@ -2206,6 +2196,26 @@ s_daemon
    )*
 ;
 
+s_default
+:
+  DEFAULT
+  (
+    default_ip
+    | sdef_hardware
+    | default_snmp_server
+  )
+;
+
+default_ip
+:
+  IP default_ip_igmp
+;
+
+sdef_hardware
+:
+  HARDWARE null_rest_of_line
+;
+
 s_dhcp
 :
    NO? DHCP null_rest_of_line
@@ -2330,6 +2340,11 @@ s_ephone_dn_template
    )*
 ;
 
+s_errdisable
+:
+  ERRDISABLE null_rest_of_line
+;
+
 s_event
 :
    NO? EVENT null_rest_of_line
@@ -2397,10 +2412,7 @@ s_guest_access_email
 
 s_hardware
 :
-   NO? HARDWARE null_rest_of_line
-   (
-      hardware_null
-   )*
+  HARDWARE null_rest_of_line
 ;
 
 s_hostname
@@ -2455,6 +2467,7 @@ s_ip
   IP
   (
     s_ip_domain_name
+    | s_ip_igmp
     | s_ip_name_server
     | s_ip_nbar
     | s_ip_probe
@@ -2721,8 +2734,21 @@ s_no
   NO
   (
     no_aaa
+    | no_errdisable
+    | no_ip
     | no_logging
+    | no_snmp_server
   )
+;
+
+no_errdisable
+:
+  ERRDISABLE null_rest_of_line
+;
+
+no_ip
+:
+  IP no_ip_igmp
 ;
 
 s_no_access_list_extended
@@ -3497,6 +3523,7 @@ stanza
    | s_ctl_file
    | s_cvx
    | s_daemon
+   | s_default
    | s_depi_class
    | s_depi_tunnel
    | s_dhcp
@@ -3507,10 +3534,12 @@ stanza
    | s_dot11
    | s_dspfarm
    | s_dynamic_access_policy_record
+   | s_email
    | s_enable
    | s_end
    | s_eos_mlag
    | s_ephone_dn_template
+   | s_errdisable
    | s_ethernet_services
    | s_event
    | s_event_handler

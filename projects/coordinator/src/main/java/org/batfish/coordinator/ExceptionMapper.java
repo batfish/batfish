@@ -6,6 +6,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.Provider;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Provider
 public final class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Exception> {
@@ -28,6 +30,9 @@ public final class ExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<Ex
 
     // INTERNAL SERVER ERROR with stack trace for all other exceptions
     String stackTrace = Throwables.getStackTraceAsString(exception);
+    LOGGER.error("Throwing 500 error", exception);
     return Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(stackTrace).build();
   }
+
+  private static final Logger LOGGER = LogManager.getLogger(ExceptionMapper.class);
 }

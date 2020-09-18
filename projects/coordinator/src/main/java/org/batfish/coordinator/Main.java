@@ -213,8 +213,7 @@ public class Main {
     ResourceConfig rcPool =
         new ResourceConfig(PoolMgrService.class)
             .register(new JettisonFeature())
-            .register(MultiPartFeature.class)
-            .register(CrossDomainFilter.class);
+            .register(MultiPartFeature.class);
     HttpServer server;
     if (_settings.getSslPoolDisable()) {
       URI poolMgrUri =
@@ -264,10 +263,7 @@ public class Main {
       List<Class<?>> features,
       int port,
       CompletableFuture<Integer> portFuture) {
-    ResourceConfig rcWork =
-        new ResourceConfig(serviceClass)
-            .register(ExceptionMapper.class)
-            .register(CrossDomainFilter.class);
+    ResourceConfig rcWork = new ResourceConfig(serviceClass).register(ExceptionMapper.class);
     if (_settings.getTracingEnable()) {
       _logger.infof("Registering feature %s", ServerTracingDynamicFeature.class.getSimpleName());
       rcWork.register(ServerTracingDynamicFeature.class);
