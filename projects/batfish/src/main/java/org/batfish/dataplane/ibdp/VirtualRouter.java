@@ -47,7 +47,6 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
-import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
@@ -1510,14 +1509,6 @@ public class VirtualRouter implements Serializable {
     return exportedAdvertisements;
   }
 
-  private static <R extends AbstractRouteDecorator> RibDelta<R> mergeRibDeltas(
-      @Nullable RibDelta<R> delta1, RibDelta<R> delta2) {
-    if (delta1 == null || delta1.isEmpty()) {
-      return delta2;
-    }
-    return RibDelta.<R>builder().from(delta1.getActions()).from(delta2.getActions()).build();
-  }
-
   private static BgpSessionProperties getBgpSessionProperties(
       BgpTopology bgpTopology, EdgeId edge) {
     // BGP topology edge guaranteed to exist since the session is established
@@ -1648,9 +1639,9 @@ public class VirtualRouter implements Serializable {
     _mainRibRouteDeltaBuilder.from(RibDelta.importRibDelta(_mainRib, newBgpv4Delta, _name));
 
     // TODO this merge nonsense sucks
-    _bgpv4Delta = mergeRibDeltas(_bgpv4Delta, newBgpv4Delta);
-    _ebgpDelta = mergeRibDeltas(_ebgpDelta, ebgpDelta);
-    _mainRibRouteDelta = mergeRibDeltas(_mainRibRouteDelta, _mainRibRouteDeltaBuilder.build());
+    _bgpv4Delta = RibDelta.merge(_bgpv4Delta, newBgpv4Delta);
+    _ebgpDelta = RibDelta.merge(_ebgpDelta, ebgpDelta);
+    _mainRibRouteDelta = RibDelta.merge(_mainRibRouteDelta, _mainRibRouteDeltaBuilder.build());
   }
 
   void clearBgpOutgoingDeltas() {
@@ -1758,19 +1749,19 @@ public class VirtualRouter implements Serializable {
      */
     // TODO this merging nonsense sucks. Try to get some reasonable invariants
     _ebgpDelta =
-        mergeRibDeltas(
+        RibDelta.merge(
             _ebgpDelta,
             RibDelta.<Bgpv4Route>builder()
                 .add(_bgpRoutingProcess._ebgpv4Rib.getBestPathRoutes())
                 .build());
     _bgpv4Delta =
-        mergeRibDeltas(
+        RibDelta.merge(
             _bgpv4Delta,
             RibDelta.<Bgpv4Route>builder()
                 .add(_bgpRoutingProcess._bgpv4Rib.getTypedRoutes())
                 .build());
     _mainRibRouteDelta =
-        mergeRibDeltas(
+        RibDelta.merge(
             _mainRibRouteDelta,
             RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
                 .add(_mainRib.getTypedRoutes())
