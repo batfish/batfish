@@ -106,7 +106,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  Subnet(
+  public Subnet(
       Prefix cidrBlock,
       String ownerId,
       String subnetArn,
