@@ -2093,17 +2093,16 @@ public class VirtualRouter implements Serializable {
 
   void redistribute(int numIterations) {
     // TODO: expand to processes other than OSPF
+    // use all main RIB routes in the first iteration and routes from delta main RIB
+    // from second iteration
+    RibDelta<AnnotatedRoute<AbstractRoute>> ribDelta =
+        numIterations == 1
+            ? RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+                .add(_mainRib.getTypedRoutes())
+                .build()
+            : _mainRibRouteDeltaBuilder.build();
     Streams.concat(_ospfProcesses.values().stream(), _eigrpProcesses.values().stream())
-        .forEach(
-            p ->
-                p.redistribute(
-                    // use all main RIB routes in the first iteration and routes from delta main RIB
-                    // from second iteration
-                    numIterations == 1
-                        ? RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-                            .add(_mainRib.getTypedRoutes())
-                            .build()
-                        : _mainRibRouteDeltaBuilder.build()));
+        .forEach(p -> p.redistribute(ribDelta));
     if (_vrf.getIsisProcess() != null) {
       _routesForIsisRedistribution.from(_mainRibRouteDeltaBuilder.build());
     }
