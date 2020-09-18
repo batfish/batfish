@@ -1743,8 +1743,26 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseEmail() {
+    parseVendorConfig("arista_email");
+    // don't crash.
+  }
+
+  @Test
   public void testParseErrdisable() {
     parseVendorConfig("arista_errdisable");
+    // don't crash.
+  }
+
+  @Test
+  public void testParseHardware() {
+    parseVendorConfig("arista_hardware");
+    // don't crash.
+  }
+
+  @Test
+  public void testParseIgmp() {
+    parseVendorConfig("arista_igmp");
     // don't crash.
   }
 

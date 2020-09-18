@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -25,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
+import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
@@ -32,6 +34,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
@@ -229,5 +232,23 @@ public class UtilsTest {
                     .setIpv4UnicastAddressFamily(
                         Ipv4UnicastAddressFamily.builder().setExportPolicy(policyName).build())
                     .build())));
+  }
+
+  @Test
+  public void testToIpProtocol() {
+    // Should convert "all traffic" to null
+    assertNull(Utils.toIpProtocol("-1"));
+    // Should convert tcp, udp and icmp correctly
+    assertThat(Utils.toIpProtocol("tcp"), equalTo(IpProtocol.TCP));
+    assertThat(Utils.toIpProtocol("udp"), equalTo(IpProtocol.UDP));
+    assertThat(Utils.toIpProtocol("icmp"), equalTo(IpProtocol.ICMP));
+    assertThat(Utils.toIpProtocol("icmpv6"), equalTo(IpProtocol.IPV6_ICMP));
+    // Should convert custom protocols from protocol numbers
+    assertThat(Utils.toIpProtocol("132"), equalTo(IpProtocol.SCTP));
+  }
+
+  @Test(expected = BatfishException.class)
+  public void testToIpProtocol_invalid() {
+    Utils.toIpProtocol("crap");
   }
 }

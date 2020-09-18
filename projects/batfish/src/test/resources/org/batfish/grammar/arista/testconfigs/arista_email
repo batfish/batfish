@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_email
+!
+email
+   no from-user
+   no server
+   no auth username
+   no auth password
+   no tls
+!

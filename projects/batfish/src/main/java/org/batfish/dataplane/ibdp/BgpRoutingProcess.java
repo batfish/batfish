@@ -491,7 +491,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Redistribute routes from {@code srcVrfName} into our VRF. */
   public void redistribute(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta, String srcVrfName) {
-    _mainRibRoutesToProcess.put(srcVrfName, mainRibDelta);
+    assert mainRibDelta != null; // unused
+    assert srcVrfName != null; // unused
+    assert _mainRibRoutesToProcess != null; // unused
+    // This is neither used nor cleared, so no-op for now.
+    // _mainRibRoutesToProcess.put(srcVrfName, mainRibDelta);
   }
 
   @Override

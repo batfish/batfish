@@ -3894,6 +3894,11 @@ FROM
    'from'
 ;
 
+FROM_USER
+:
+   'from-user'
+;
+
 FTP
 :
    'ftp'
@@ -10407,6 +10412,11 @@ TIME_ZONE
 TIMING
 :
    'timing'
+;
+
+TLS
+:
+   'tls'
 ;
 
 TLS_PROXY
