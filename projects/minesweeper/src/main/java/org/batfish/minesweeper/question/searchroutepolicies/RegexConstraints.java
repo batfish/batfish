@@ -1,9 +1,13 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -26,10 +30,11 @@ public class RegexConstraints {
   }
 
   @JsonCreator
-  public RegexConstraints(@Nonnull List<RegexConstraint> regexConstraints) {
-    _regexConstraints = regexConstraints;
+  public RegexConstraints(@Nullable List<RegexConstraint> regexConstraints) {
+    _regexConstraints = firstNonNull(regexConstraints, ImmutableList.of());
   }
 
+  @JsonValue
   public List<RegexConstraint> getRegexConstraints() {
     return _regexConstraints;
   }

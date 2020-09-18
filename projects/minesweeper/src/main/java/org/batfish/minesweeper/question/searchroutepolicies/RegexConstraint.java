@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,14 +17,15 @@ import org.batfish.common.BatfishException;
 @ParametersAreNonnullByDefault
 public class RegexConstraint {
 
+  private static final String PROP_REGEX = "regex";
+  private static final String PROP_NEGATED = "negated";
+
   @Nonnull private final String _regex;
   private final boolean _negated;
 
-  public RegexConstraint(@Nonnull String regex) {
-    this(regex, false);
-  }
-
-  public RegexConstraint(@Nonnull String regex, boolean negated) {
+  @JsonCreator
+  public RegexConstraint(
+      @JsonProperty(PROP_REGEX) String regex, @JsonProperty(PROP_NEGATED) boolean negated) {
     _regex = regex;
     _negated = negated;
   }
@@ -66,10 +68,12 @@ public class RegexConstraint {
     return new RegexConstraint(regex, negated);
   }
 
+  @JsonProperty(PROP_REGEX)
   public String getRegex() {
     return _regex;
   }
 
+  @JsonProperty(PROP_NEGATED)
   public boolean getNegated() {
     return _negated;
   }

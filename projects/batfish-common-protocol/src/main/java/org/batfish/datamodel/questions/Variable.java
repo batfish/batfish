@@ -31,6 +31,7 @@ public class Variable {
     BGP_PEER_PROPERTY_SPEC("bgpPeerPropertySpec", true),
     BGP_PROCESS_PROPERTY_SPEC("bgpProcessPropertySpec", true),
     BGP_ROUTES("bgpRoutes", false),
+    BGP_ROUTE_CONSTRAINTS("bgpRouteConstraints", false),
     BGP_SESSION_COMPAT_STATUS_SPEC("bgpSessionCompatStatusSpec", true),
     BGP_SESSION_STATUS_SPEC("bgpSessionStatusSpec", true),
     BGP_SESSION_TYPE_SPEC("bgpSessionTypeSpec", true),
