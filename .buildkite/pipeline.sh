@@ -93,7 +93,7 @@ cat <<EOF
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
-      - "bazel test --test_tag_filters=-pmd_test -- //..."
+      - "bazel test --test_output=errors --test_tag_filters=-pmd_test -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}
@@ -111,7 +111,7 @@ cat <<EOF
     command:
       - "python3 -m virtualenv .venv"
       - ". .venv/bin/activate"
-      - "bazel test --test_tag_filters=pmd_test -- //..."
+      - "bazel test --test_output=errors --test_tag_filters=pmd_test -- //..."
     plugins:
       - docker#${BATFISH_DOCKER_PLUGIN_VERSION}:
           image: ${BATFISH_DOCKER_CI_BASE_IMAGE}

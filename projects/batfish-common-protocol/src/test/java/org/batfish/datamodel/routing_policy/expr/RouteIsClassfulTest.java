@@ -34,7 +34,8 @@ public class RouteIsClassfulTest {
 
   @Test
   public void testRouteIsClassful() {
-    List<String> classful = Lists.newArrayList("16.0.0.0/8", "128.0.0.0/16", "192.168.1.0/24");
+    List<String> classful =
+        Lists.newArrayList("16.0.0.0/8", "128.0.0.0/16", "128.0.0.0/2", "192.168.1.0/24");
     for (String prefixStr : classful) {
       Prefix network = Prefix.parse(prefixStr);
       assertThat(network + " is classful", evaluateIsClassful(network), equalTo(true));

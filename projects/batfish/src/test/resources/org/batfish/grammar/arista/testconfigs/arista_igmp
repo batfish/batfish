@@ -1,0 +1,35 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_igmp
+!
+ip igmp snooping
+no ip igmp snooping report-flooding
+ip igmp snooping robustness-variable 2
+no ip igmp snooping restart query-interval
+ip igmp snooping interface-restart-query 2000
+ip igmp snooping immediate-leave
+default ip igmp snooping vlan 1
+default ip igmp snooping vlan 1 querier
+no ip igmp snooping vlan 1 querier address
+no ip igmp snooping vlan 1 querier query-interval
+no ip igmp snooping vlan 1 querier max-response-time
+no ip igmp snooping vlan 1 querier last-member-query-interval
+no ip igmp snooping vlan 1 querier last-member-query-count
+no ip igmp snooping vlan 1 querier startup-query-interval
+no ip igmp snooping vlan 1 querier startup-query-count
+no ip igmp snooping vlan 1 querier version
+no ip igmp snooping vlan 1 max-groups
+default ip igmp snooping vlan 1 immediate-leave
+no ip igmp snooping querier
+no ip igmp snooping querier address
+ip igmp snooping querier query-interval 125
+ip igmp snooping querier max-response-time 10
+ip igmp snooping querier last-member-query-interval 1
+no ip igmp snooping querier last-member-query-count
+no ip igmp snooping querier startup-query-interval
+no ip igmp snooping querier startup-query-count
+no ip igmp snooping querier version
+!
+no ip igmp snooping proxy
+default ip igmp snooping vlan 1 proxy
+!
