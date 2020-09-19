@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
@@ -38,14 +37,6 @@ public final class RibDelta<R> {
 
   private RibDelta(ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> actions) {
     _actions = actions;
-  }
-
-  public static <R extends AbstractRouteDecorator> RibDelta<R> merge(
-      @Nullable RibDelta<R> delta1, RibDelta<R> delta2) {
-    if (delta1 == null || delta1.isEmpty()) {
-      return delta2;
-    }
-    return RibDelta.<R>builder().from(delta1.getActions()).from(delta2.getActions()).build();
   }
 
   /**
