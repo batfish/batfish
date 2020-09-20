@@ -28,10 +28,8 @@ import org.batfish.minesweeper.CommunityVar;
 /**
  * Create a BDD from a {@link
  * org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr} expression, such that the
- * models of the BDD represent all and only the community sets that match the expression. A
- * community set {C1,....Cn} satisfies the BDD if AND(ap(C1),...,ap(Cn)) implies the BDD, where
- * ap(C) denotes the unique atomic predicate that the community C satisfies. This BDD is used as
- * part of symbolic route analysis of the {@link
+ * models of the BDD represent all and only the community sets that match the expression. This BDD
+ * is used as part of symbolic route analysis of the {@link
  * org.batfish.datamodel.routing_policy.communities.MatchCommunities} expression.
  */
 @ParametersAreNonnullByDefault

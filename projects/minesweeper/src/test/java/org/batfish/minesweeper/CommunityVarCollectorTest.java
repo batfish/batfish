@@ -22,7 +22,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Test of {@link CommunityVar} */
+/** Test of {@link CommunityVarCollector} */
 public class CommunityVarCollectorTest {
 
   private static final String HOSTNAME = "hostname";

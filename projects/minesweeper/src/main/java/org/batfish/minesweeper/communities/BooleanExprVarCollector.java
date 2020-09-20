@@ -41,6 +41,7 @@ import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.CommunityVarCollector;
 
+/** Collect all community literals and regexes in a {@link BooleanExpr}. */
 @ParametersAreNonnullByDefault
 public class BooleanExprVarCollector
     implements BooleanExprVisitor<Set<CommunityVar>, Configuration> {
