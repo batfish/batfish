@@ -38,6 +38,7 @@ public final class LinkLocalAddress extends InterfaceAddress {
     return _ip;
   }
 
+  @Override
   public Prefix getPrefix() {
     return PREFIX;
   }

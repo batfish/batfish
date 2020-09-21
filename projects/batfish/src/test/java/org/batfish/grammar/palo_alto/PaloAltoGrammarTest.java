@@ -103,6 +103,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
@@ -245,6 +246,9 @@ import org.batfish.representation.palo_alto.TemplateStack;
 import org.batfish.representation.palo_alto.VirtualRouter;
 import org.batfish.representation.palo_alto.Vsys;
 import org.batfish.representation.palo_alto.Zone;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1275,15 +1279,18 @@ public final class PaloAltoGrammarTest {
     Warnings warn = ccae.getWarnings().get(hostname);
     Warnings warnBadLoopback = ccae.getWarnings().get(hostnameBadLoopback);
 
-    // Should see two warnings:
+    // Should see a few warnings:
     // 1. About extant object, but address range can't be used for interface address
-    // 2. Interface not being associated w/ virtual-router, therefore being shutdown
+    // 2. Interfaces not being associated w/ virtual-router, therefore being shutdown
     assertThat(
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
         containsInAnyOrder(
             String.format(
                 "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
                 "ethernet1/3.11", NULL_VRF_NAME),
+            String.format(
+                "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3 data.",
+                "ethernet1/9", NULL_VRF_NAME),
             String.format(
                 "Could not convert %s AddressObject '%s' to ConcreteInterfaceAddress.",
                 AddressObject.Type.IP_RANGE, "ADDR3")));
@@ -1342,8 +1349,14 @@ public final class PaloAltoGrammarTest {
     String eth1_6 = "ethernet1/6";
     String eth1_7 = "ethernet1/7";
     String eth1_8 = "ethernet1/8";
+    String eth1_9 = "ethernet1/9";
     String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
+
+    Prefix prefixEth1_1 = Prefix.parse("1.1.1.1/24");
+    Prefix prefixEth1_5 = Prefix.parse("10.10.12.10/24");
+    Prefix prefixEth1_7 = Prefix.parse("10.10.11.10/32");
+
     Configuration c = parseConfig(hostname);
     Configuration cLoopbackRef = parseConfig(hostnameLoopbackRef);
     Configuration cLoopbackRefInvalid = parseConfig(hostnameLoopbackRefInvalid);
@@ -1352,8 +1365,8 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c.getAllInterfaces().keySet(),
         containsInAnyOrder(
-            eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_5, eth1_6, eth1_7, eth1_8, eth1_21,
-            loopback));
+            eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_5, eth1_6, eth1_7, eth1_8, eth1_9,
+            eth1_21, loopback));
     assertThat(cLoopbackRef.getAllInterfaces().keySet(), contains(loopback));
     assertThat(cLoopbackRefInvalid.getAllInterfaces().keySet(), contains(loopback));
     assertThat(cLoopbackRefInvalidRange.getAllInterfaces().keySet(), contains(loopback));
@@ -1432,6 +1445,30 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(eth1_3, hasInterfaceType(InterfaceType.PHYSICAL)));
     assertThat(c, hasInterface(eth1_3_11, hasInterfaceType(InterfaceType.LOGICAL)));
     assertThat(c, hasInterface(eth1_21, hasInterfaceType(InterfaceType.PHYSICAL)));
+
+    // Confirm start location info
+    Map<Location, LocationInfo> locationInfo = c.getLocationInfo();
+    assertThat(
+        locationInfo,
+        allOf(
+            hasEntry(
+                equalTo(new InterfaceLinkLocation(hostname, eth1_1)),
+                equalTo(
+                    new LocationInfo(
+                        true, prefixEth1_1.toHostIpSpace(), prefixEth1_1.toHostIpSpace()))),
+            hasEntry(
+                equalTo(new InterfaceLinkLocation(hostname, eth1_5)),
+                equalTo(
+                    new LocationInfo(
+                        true, prefixEth1_5.toHostIpSpace(), prefixEth1_5.toHostIpSpace()))),
+            hasEntry(
+                equalTo(new InterfaceLinkLocation(hostname, eth1_7)),
+                equalTo(
+                    new LocationInfo(
+                        true, prefixEth1_7.toHostIpSpace(), prefixEth1_7.toHostIpSpace()))),
+            // Interfaces not in zone/virtual router shouldn't have location info
+            // since they're disconnected
+            not(hasKey(equalTo(new InterfaceLinkLocation(hostname, eth1_9))))));
   }
 
   @Test

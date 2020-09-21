@@ -18,4 +18,6 @@ public abstract class InterfaceAddress implements Serializable, Comparable<Inter
       return LinkLocalAddress.parse(text);
     }
   }
+
+  public abstract Prefix getPrefix();
 }

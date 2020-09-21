@@ -1423,14 +1423,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .setOwner(_c)
             .setType(batfishInterfaceType(iface.getType(), parentType, _w));
 
-    Set<ConcreteInterfaceAddress> allAddresses =
-        iface.getAllAddresses().stream()
-            .map(
-                a ->
-                    interfaceAddressToConcreteInterfaceAddress(
-                        a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
-            .collect(Collectors.toSet());
-
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);
@@ -1454,7 +1446,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       } else {
         newIface.setAddress(interfaceAddress);
         newIface.setSecondaryAddresses(
-            Sets.difference(allAddresses, ImmutableSet.of(interfaceAddress)));
+            Sets.difference(
+                iface.getAllAddresses().stream()
+                    .map(
+                        a ->
+                            interfaceAddressToConcreteInterfaceAddress(
+                                a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
+                    .collect(Collectors.toSet()),
+                ImmutableSet.of(interfaceAddress)));
       }
     }
     newIface.setActive(iface.getActive());
@@ -2474,9 +2473,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
               .collect(ImmutableSet.toImmutableSet()));
     }
 
-    // Set location info for interfaces
-    _c.setLocationInfo(buildLocationInfo());
-
     // Vrf conversion uses interfaces, so must be done after interface exist in VI model
     for (VirtualRouter vr : _virtualRouters.values()) {
       _c.getVrfs().put(vr.getName(), toVrf(vr));
@@ -2532,6 +2528,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         }
       }
     }
+
+    // Set location info for interfaces
+    _c.setLocationInfo(buildLocationInfo());
+
     // Don't pollute VI model will null VRF unless we have to.
     if (oraphnedInterfaces > 0) {
       _c.getVrfs().put(nullVrf.getName(), nullVrf);
@@ -2623,32 +2623,31 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _c;
   }
 
+  /** Build {@link LocationInfo} map for the VI interfaces in this {@link Configuration}. */
   private Map<Location, LocationInfo> buildLocationInfo() {
     ImmutableMap.Builder<Location, LocationInfo> locationInfo = ImmutableMap.builder();
-    for (Interface iface : _interfaces.values()) {
-      String name = iface.getName();
-      Set<ConcreteInterfaceAddress> allAddresses =
-          iface.getAllAddresses().stream()
-              .map(
-                  a ->
-                      interfaceAddressToConcreteInterfaceAddress(
-                          a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
-              .collect(Collectors.toSet());
 
+    for (org.batfish.datamodel.Interface iface : _c.getAllInterfaces().values()) {
+      String name = iface.getName();
       IpSpace addressSpace =
           AclIpSpace.union(
-              allAddresses.stream()
-                  .map(ConcreteInterfaceAddress::getPrefix)
+              iface.getAllAddresses().stream()
+                  .map(org.batfish.datamodel.InterfaceAddress::getPrefix)
                   .map(Prefix::toHostIpSpace)
                   .collect(ImmutableList.toImmutableList()));
+
+      // Don't add location info for interfaces that are inactive or don't have addresses
+      if (addressSpace == null || !iface.getActive()) {
+        continue;
+      }
 
       locationInfo.put(
           new InterfaceLinkLocation(_hostname, name),
           new LocationInfo(
               true,
-              firstNonNull(addressSpace, EmptyIpSpace.INSTANCE),
+              addressSpace,
               // Assume all addresses in associated subnets are ARP IPs
-              firstNonNull(addressSpace, EmptyIpSpace.INSTANCE)));
+              addressSpace));
     }
     return locationInfo.build();
   }

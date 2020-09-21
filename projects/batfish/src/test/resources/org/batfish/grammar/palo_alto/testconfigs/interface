@@ -23,8 +23,11 @@ set network interface ethernet ethernet1/6 layer3 ip ADDR3
 set network interface ethernet ethernet1/7 layer3 ip 10.100.100.100
 # Valid object name, but address-groups cannot be used for interface addresses
 set network interface ethernet ethernet1/8 layer3 ip GRP1
+# Valid interface, but not in a zone or virtual router
+set network interface ethernet ethernet1/9 layer3 ip 10.10.9.10/24
 set network interface ethernet ethernet1/21 link-state down
 set network interface loopback ip 7.7.7.7/32
 set network interface loopback ip 7.7.7.8
 # Interfaces are not functionally active unless they are in a virtual-router
 set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/5 ethernet1/6 ethernet1/7 loopback ]
+set zone Z1 network layer3 [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/3.11 ethernet1/5 ethernet1/6 ethernet1/7 ]

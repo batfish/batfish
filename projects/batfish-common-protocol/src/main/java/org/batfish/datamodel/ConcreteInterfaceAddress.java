@@ -84,6 +84,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     return _networkBits;
   }
 
+  @Override
   @Nonnull
   public Prefix getPrefix() {
     return Prefix.create(_ip, _networkBits);
