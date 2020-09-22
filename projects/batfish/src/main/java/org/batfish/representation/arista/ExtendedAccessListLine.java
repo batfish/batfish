@@ -12,13 +12,9 @@ public class ExtendedAccessListLine implements Serializable {
   public static class Builder {
 
     private LineAction _action;
-
     private AccessListAddressSpecifier _dstAddressSpecifier;
-
     private String _name;
-
     private AccessListServiceSpecifier _serviceSpecifier;
-
     private AccessListAddressSpecifier _srcAddressSpecifier;
 
     private Builder() {}
@@ -57,15 +53,11 @@ public class ExtendedAccessListLine implements Serializable {
     return new Builder();
   }
 
-  private final LineAction _action;
-
-  private final AccessListAddressSpecifier _dstAddressSpecifier;
-
-  private final String _name;
-
-  private final AccessListServiceSpecifier _serviceSpecifier;
-
-  private final AccessListAddressSpecifier _srcAddressSpecifier;
+  private final @Nonnull LineAction _action;
+  private final @Nonnull AccessListAddressSpecifier _dstAddressSpecifier;
+  private final @Nonnull String _name;
+  private final @Nonnull AccessListServiceSpecifier _serviceSpecifier;
+  private final @Nonnull AccessListAddressSpecifier _srcAddressSpecifier;
 
   private ExtendedAccessListLine(Builder builder) {
     _action = requireNonNull(builder._action);
@@ -79,19 +71,19 @@ public class ExtendedAccessListLine implements Serializable {
     return _action;
   }
 
-  public AccessListAddressSpecifier getDestinationAddressSpecifier() {
+  public @Nonnull AccessListAddressSpecifier getDestinationAddressSpecifier() {
     return _dstAddressSpecifier;
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  public AccessListServiceSpecifier getServiceSpecifier() {
+  public @Nonnull AccessListServiceSpecifier getServiceSpecifier() {
     return _serviceSpecifier;
   }
 
-  public AccessListAddressSpecifier getSourceAddressSpecifier() {
+  public @Nonnull AccessListAddressSpecifier getSourceAddressSpecifier() {
     return _srcAddressSpecifier;
   }
 
@@ -99,7 +91,7 @@ public class ExtendedAccessListLine implements Serializable {
   public String toString() {
     return MoreObjects.toStringHelper(getClass())
         .add("action", _action)
-        .add("dstAddressSpecicier", _dstAddressSpecifier)
+        .add("dstAddressSpecifier", _dstAddressSpecifier)
         .add("name", _name)
         .add("serviceSpecifier", _serviceSpecifier)
         .add("srcAddressSpecifier", _srcAddressSpecifier)
