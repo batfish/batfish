@@ -2,6 +2,7 @@ package org.batfish.dataplane.ibdp;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -104,11 +106,11 @@ public class PrefixTracer implements Serializable {
   private final Map<Prefix, Set<Neighbor>> _sent;
 
   PrefixTracer() {
-    _originated = new HashSet<>();
-    _installed = new HashMap<>();
-    _sent = new HashMap<>();
-    _filteredOnImport = new HashMap<>();
-    _filteredOnExport = new HashMap<>();
+    _originated = Sets.newConcurrentHashSet();
+    _installed = new ConcurrentHashMap<>();
+    _sent = new ConcurrentHashMap<>();
+    _filteredOnImport = new ConcurrentHashMap<>();
+    _filteredOnExport = new ConcurrentHashMap<>();
   }
 
   /** Note that we considered given prefix for origination */
@@ -123,7 +125,7 @@ public class PrefixTracer implements Serializable {
       Ip neighborIp,
       String neighborVrf,
       @Nullable String exportPolicy) {
-    Set<Neighbor> set = _sent.computeIfAbsent(prefix, p -> new HashSet<>());
+    Set<Neighbor> set = _sent.computeIfAbsent(prefix, p -> Sets.newConcurrentHashSet());
     set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, exportPolicy));
   }
 
@@ -134,7 +136,7 @@ public class PrefixTracer implements Serializable {
       Ip neighborIp,
       String neighborVrf,
       @Nullable String importPolicy) {
-    Set<Neighbor> set = _installed.computeIfAbsent(prefix, p -> new HashSet<>());
+    Set<Neighbor> set = _installed.computeIfAbsent(prefix, p -> Sets.newConcurrentHashSet());
     set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, importPolicy));
   }
 
@@ -152,10 +154,12 @@ public class PrefixTracer implements Serializable {
       @Nullable String policyName,
       Direction direction) {
     if (direction == Direction.IN) {
-      Set<Neighbor> set = _filteredOnImport.computeIfAbsent(prefix, p -> new HashSet<>());
+      Set<Neighbor> set =
+          _filteredOnImport.computeIfAbsent(prefix, p -> Sets.newConcurrentHashSet());
       set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, policyName));
     } else if (direction == Direction.OUT) {
-      Set<Neighbor> set = _filteredOnExport.computeIfAbsent(prefix, p -> new HashSet<>());
+      Set<Neighbor> set =
+          _filteredOnExport.computeIfAbsent(prefix, p -> Sets.newConcurrentHashSet());
       set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, policyName));
     } else {
       throw new UnsupportedOperationException("Unknown filtering direction");
