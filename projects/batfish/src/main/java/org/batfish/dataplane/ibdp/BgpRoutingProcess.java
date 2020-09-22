@@ -124,9 +124,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull Bgpv4Rib _ibgpv4Rib;
 
   // outgoing RIB deltas for the current round.
-  RibDelta<Bgpv4Route> _ebgpDelta = null;
-  RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibBgpv4RouteDelta = null;
-  RibDelta<Bgpv4Route> _bgpv4Delta = null;
+  @Nonnull RibDelta<Bgpv4Route> _ebgpDelta = RibDelta.empty();
+  @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibBgpv4RouteDelta = RibDelta.empty();
+  @Nonnull RibDelta<Bgpv4Route> _bgpv4Delta = RibDelta.empty();
 
   /**
    * Helper RIB containing paths obtained with iBGP during current iteration. An Adj-RIB-in of sorts
@@ -511,6 +511,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     !_bgpv4IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         || !_evpnType5IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+        // Outgoing message deltas. We need to send these to neighbors.
+        || !_ebgpDelta.isEmpty()
+        || !_bgpv4Delta.isEmpty()
+        || !_mainRibBgpv4RouteDelta.isEmpty()
         // Delta builders
         || !_bgpv4DeltaBuilder.build().isEmpty()
         || !_evpnDeltaBuilder.build().isEmpty()

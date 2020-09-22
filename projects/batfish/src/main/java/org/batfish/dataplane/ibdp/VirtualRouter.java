@@ -1647,9 +1647,9 @@ public class VirtualRouter implements Serializable {
     if (_bgpRoutingProcess == null) {
       return;
     }
-    _bgpRoutingProcess._bgpv4Delta = null;
-    _bgpRoutingProcess._ebgpDelta = null;
-    _bgpRoutingProcess._mainRibBgpv4RouteDelta = null;
+    _bgpRoutingProcess._bgpv4Delta = RibDelta.empty();
+    _bgpRoutingProcess._ebgpDelta = RibDelta.empty();
+    _bgpRoutingProcess._mainRibBgpv4RouteDelta = RibDelta.empty();
   }
 
   /**
@@ -1715,8 +1715,9 @@ public class VirtualRouter implements Serializable {
     for (EdgeId edge : _bgpRoutingProcess._bgpv4IncomingRoutes.keySet()) {
       newBgpSessionEstablishedHook(edge, getBgpSessionProperties(bgpTopology, edge), allNodes, nc);
     }
-    _bgpRoutingProcess.redistribute(
-        RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build());
+    // TODO implement redistribution here and uncomment
+    // _bgpRoutingProcess.redistribute(
+    //   RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build());
   }
 
   /** Deal with a newly established BGP session. */
