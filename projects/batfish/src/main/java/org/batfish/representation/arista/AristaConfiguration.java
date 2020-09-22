@@ -66,9 +66,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
+import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -94,6 +102,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -102,6 +111,7 @@ import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -111,12 +121,14 @@ import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -175,6 +187,7 @@ import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class AristaConfiguration extends VendorConfiguration {
+  private static final Logger LOGGER = LogManager.getLogger(AristaConfiguration.class);
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
@@ -1923,6 +1936,57 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
   }
 
+  private void convertSnmp(Configuration c) {
+    c.setSnmpSourceInterface(_snmpSourceInterface);
+    // snmp server
+    if (_snmpServer != null) {
+      String snmpServerVrf = _snmpServer.getVrf();
+      c.getVrfs().get(snmpServerVrf).setSnmpServer(_snmpServer);
+      // SNMP communities
+      _snmpServer.getCommunities().values().forEach(this::convertSnmpCommunity);
+    }
+  }
+
+  private void convertSnmpCommunity(SnmpCommunity c) {
+    String aclName = c.getAccessList();
+    if (aclName == null) {
+      return;
+    }
+    StandardAccessList stdacl = _standardAccessLists.get(aclName);
+    if (stdacl != null) {
+      // Easy. Standard ACLs filter only on the source address.
+      AclIpSpace.Builder space = AclIpSpace.builder();
+      for (StandardAccessListLine line : stdacl.getLines()) {
+        space.thenAction(line.getAction(), line.getSrcAddressSpecifier().toIpSpace());
+      }
+      c.setClientIps(space.build());
+      return;
+    }
+    ExtendedAccessList extacl = _extendedAccessLists.get(aclName);
+    if (extacl != null) {
+      BDDPacket packet = new BDDPacket();
+      // We are only going to filter on service, which cannot reference interfaces, ACLs, or
+      // IpSpaces.
+      IpAccessListToBdd toBDD =
+          new MemoizedIpAccessListToBdd(
+              packet, BDDSourceManager.empty(packet), ImmutableMap.of(), ImmutableMap.of());
+      // SNMP: udp/161
+      AclLineMatchExpr matchesSnmp =
+          AclLineMatchExprs.and(
+              AclLineMatchExprs.matchIpProtocol(IpProtocol.UDP),
+              AclLineMatchExprs.matchDstPort(NamedPort.SNMP.number()));
+      BDD matchesServiceSnmp = toBDD.toBdd(matchesSnmp);
+      AclIpSpace.Builder space = AclIpSpace.builder();
+      for (ExtendedAccessListLine line : extacl.getLines()) {
+        BDD thisLineService = toBDD.toBdd(line.getServiceSpecifier().toAclLineMatchExpr());
+        if (thisLineService.andSat(matchesServiceSnmp)) {
+          space.thenAction(line.getAction(), line.getSourceAddressSpecifier().toIpSpace());
+        }
+      }
+      c.setClientIps(space.build());
+    }
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
@@ -1949,7 +2013,6 @@ public final class AristaConfiguration extends VendorConfiguration {
             .flatMap(map -> map.values().stream())
             .map(LoggingHost::getHost)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural())));
-    c.setSnmpSourceInterface(_snmpSourceInterface);
 
     // remove line login authentication lists if they don't exist
     for (Line line : _cf.getLines().values()) {
@@ -1978,11 +2041,8 @@ public final class AristaConfiguration extends VendorConfiguration {
       c.getVrfs().put(vrfName, new org.batfish.datamodel.Vrf(vrfName));
     }
 
-    // snmp server
-    if (_snmpServer != null) {
-      String snmpServerVrf = _snmpServer.getVrf();
-      c.getVrfs().get(snmpServerVrf).setSnmpServer(_snmpServer);
-    }
+    // convert SNMP information
+    convertSnmp(c);
 
     // convert as path access lists to vendor independent format
     for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {

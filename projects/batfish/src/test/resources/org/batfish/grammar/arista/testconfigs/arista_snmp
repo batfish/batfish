@@ -2,12 +2,24 @@
 !
 hostname arista_snmp
 !
+ip access-list standard SNMP_STD_ACCESS_LIST
+   no statistics per-entry
+   fragment-rules
+   10 deny 1.2.3.0/24
+   20 permit 1.0.0.0/8
+!
+ip access-list SNMP_EXT_ACCESS_LIST
+  10 deny udp 1.2.3.0/24 any eq snmp
+  20 permit tcp any any eq 443
+  30 permit udp 1.0.0.0/8 any eq snmp
+!
 no snmp-server engineID local
 no snmp-server chassis-id
 snmp-server contact me@company.com
 snmp-server location some-location
 snmp-server vrf default source-interface Loopback0
-snmp-server community COMMUNITY ro SNMP_ACCESS_LIST
+snmp-server community STD_COMMUNITY ro SNMP_STD_ACCESS_LIST
+snmp-server community EXT_COMMUNITY ro SNMP_EXT_ACCESS_LIST
 snmp-server host 10.1.2.3 vrf default traps version 2c FOO udp-port 162
 !
 default snmp-server enable traps

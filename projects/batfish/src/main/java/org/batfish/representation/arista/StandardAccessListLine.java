@@ -2,18 +2,18 @@ package org.batfish.representation.arista;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 
+@ParametersAreNonnullByDefault
 public class StandardAccessListLine implements Serializable {
 
-  private final LineAction _action;
-
-  private final String _name;
-
-  private final StandardAccessListServiceSpecifier _serviceSpecifier;
-
-  private final AccessListAddressSpecifier _srcAddressSpecifier;
+  private final @Nonnull LineAction _action;
+  private final @Nonnull String _name;
+  private final @Nonnull StandardAccessListServiceSpecifier _serviceSpecifier;
+  private final @Nonnull AccessListAddressSpecifier _srcAddressSpecifier;
 
   public StandardAccessListLine(
       LineAction action,
@@ -26,23 +26,23 @@ public class StandardAccessListLine implements Serializable {
     _srcAddressSpecifier = srcAddressSpecifier;
   }
 
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  public StandardAccessListServiceSpecifier getServiceSpecifier() {
+  public @Nonnull StandardAccessListServiceSpecifier getServiceSpecifier() {
     return _serviceSpecifier;
   }
 
-  public AccessListAddressSpecifier getSrcAddressSpecifier() {
+  public @Nonnull AccessListAddressSpecifier getSrcAddressSpecifier() {
     return _srcAddressSpecifier;
   }
 
-  public ExtendedAccessListLine toExtendedAccessListLine() {
+  public @Nonnull ExtendedAccessListLine toExtendedAccessListLine() {
     return ExtendedAccessListLine.builder()
         .setAction(_action)
         .setDstAddressSpecifier(new WildcardAddressSpecifier(IpWildcard.ANY))
