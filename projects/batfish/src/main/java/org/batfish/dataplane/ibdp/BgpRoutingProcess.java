@@ -122,6 +122,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull Bgpv4Rib _ebgpv4StagingRib;
   /** RIB containing paths obtained with iBGP, for IPv4 unicast */
   @Nonnull Bgpv4Rib _ibgpv4Rib;
+
+  // outgoing RIB deltas for the current round.
+  RibDelta<Bgpv4Route> _ebgpDelta = null;
+  RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibBgpv4RouteDelta = null;
+  RibDelta<Bgpv4Route> _bgpv4Delta = null;
+
   /**
    * Helper RIB containing paths obtained with iBGP during current iteration. An Adj-RIB-in of sorts
    * for IPv4 unicast
@@ -1067,6 +1073,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             // RIBs
             _bgpv4Rib.getTypedRoutes(),
             _evpnRib.getTypedRoutes(),
+            // Outgoing RIB deltas
+            _ebgpDelta,
+            _bgpv4Delta,
+            _mainRibBgpv4RouteDelta,
             // Message queues
             _bgpv4IncomingRoutes,
             _evpnType3IncomingRoutes,
