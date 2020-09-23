@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -103,31 +102,33 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   IpAccessList toAcl(Region region, boolean ingress, Warnings warnings) {
     List<AclLine> aclLines = toAclLines(region, ingress, warnings);
+    return IpAccessList.builder().setName(getViName(ingress)).setLines(aclLines).build();
+  }
+
+  /**
+   * Returns the name that will be assigned to the VI {@link IpAccessList} representing this
+   * security group's ingress or egress permissions.
+   */
+  public String getViName(boolean ingress) {
     // See note about naming on SecurityGroup#getGroupName.
-    return IpAccessList.builder()
-        .setName(
-            String.format(
-                "~%s~SECURITY-GROUP~%s~%s~", ingress ? INGRESS : EGRESS, _groupName, _groupId))
-        .setLines(aclLines)
-        .build();
+    return String.format(
+        "~%s~SECURITY-GROUP~%s~%s~", ingress ? INGRESS : EGRESS, _groupName, _groupId);
   }
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
   List<AclLine> toAclLines(Region region, boolean ingress, Warnings warnings) {
-    ImmutableList.Builder<AclLine> aclLines = ImmutableList.builder();
     List<IpPermissions> ipPerms = ingress ? _ipPermsIngress : _ipPermsEgress;
-    for (ListIterator<IpPermissions> it = ipPerms.listIterator(); it.hasNext(); ) {
-      int seq = it.nextIndex();
-      IpPermissions p = it.next();
-      aclLines.addAll(
-          p.toIpAccessListLines(
-              ingress,
-              region,
-              String.format(
-                  "%s - %s [%s] %s", _groupId, _groupName, ingress ? "ingress" : "egress", seq),
-              warnings));
-    }
-    return aclLines.build();
+    return ipPerms.stream()
+        .map(
+            rule ->
+                // NOTE: Keep VI ACL lines 1-to-1 with group's IpPermissions; do not filter
+                rule.toIpAccessListLine(
+                    ingress,
+                    region,
+                    String.format(
+                        "%s - %s [%s]", _groupId, _groupName, ingress ? "ingress" : "egress"),
+                    warnings))
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nullable
