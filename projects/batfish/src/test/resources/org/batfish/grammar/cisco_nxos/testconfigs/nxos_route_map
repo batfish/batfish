@@ -39,6 +39,9 @@ route-map empty_permit permit 10
 route-map empty_pbr_statistics pbr-statistics
 
 !!! Simple matches
+route-map match_as_number permit 10
+  match as-number 64496, 64498-64510, 3000000000
+
 route-map match_as_path permit 10
   match as-path as_path_access_list1
 

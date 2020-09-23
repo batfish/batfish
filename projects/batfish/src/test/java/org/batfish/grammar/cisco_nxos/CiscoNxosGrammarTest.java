@@ -178,6 +178,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
@@ -313,6 +314,7 @@ import org.batfish.representation.cisco_nxos.RedistributionPolicy;
 import org.batfish.representation.cisco_nxos.RouteDistinguisherOrAuto;
 import org.batfish.representation.cisco_nxos.RouteMap;
 import org.batfish.representation.cisco_nxos.RouteMapEntry;
+import org.batfish.representation.cisco_nxos.RouteMapMatchAsNumber;
 import org.batfish.representation.cisco_nxos.RouteMapMatchAsPath;
 import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
@@ -5794,6 +5796,7 @@ public final class CiscoNxosGrammarTest {
             "empty_deny",
             "empty_permit",
             "empty_pbr_statistics",
+            "match_as_number",
             "match_as_path",
             "match_community_standard",
             "match_community_expanded",
@@ -5876,6 +5879,11 @@ public final class CiscoNxosGrammarTest {
     }
 
     // matches
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_as_number");
+      // TODO
+      assertThat(rp, notNullValue());
+    }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_as_path");
       assertRoutingPolicyDeniesRoute(rp, base);
@@ -6278,6 +6286,7 @@ public final class CiscoNxosGrammarTest {
             "empty_deny",
             "empty_permit",
             "empty_pbr_statistics",
+            "match_as_number",
             "match_as_path",
             "match_community_standard",
             "match_community_expanded",
@@ -6347,6 +6356,23 @@ public final class CiscoNxosGrammarTest {
       RouteMap rm = vc.getRouteMaps().get("empty_pbr_statistics");
       assertThat(rm.getEntries(), anEmptyMap());
       assertTrue(rm.getPbrStatistics());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_as_number");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchAsNumber match = entry.getMatchAsNumber();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(
+          match.getAsns(),
+          equalTo(
+              LongSpace.builder()
+                  .including(64496L)
+                  .including(Range.closed(64498L, 64510L))
+                  .including(3000000000L)
+                  .build()));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_as_path");

@@ -272,6 +272,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_execContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asn_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
@@ -556,6 +557,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv4Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rip_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rm_continueContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
@@ -764,6 +766,7 @@ import org.batfish.representation.cisco_nxos.RemarkIpAccessListLine;
 import org.batfish.representation.cisco_nxos.RouteDistinguisherOrAuto;
 import org.batfish.representation.cisco_nxos.RouteMap;
 import org.batfish.representation.cisco_nxos.RouteMapEntry;
+import org.batfish.representation.cisco_nxos.RouteMapMatchAsNumber;
 import org.batfish.representation.cisco_nxos.RouteMapMatchAsPath;
 import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
@@ -810,6 +813,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     implements BatfishListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
+  private static final LongSpace BGP_ASN_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
       IntegerSpace.of(Range.closed(2, 255));
   private static final IntegerSpace BGP_INHERIT_RANGE = IntegerSpace.of(Range.closed(1, 65535));
@@ -5651,6 +5655,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRmm_as_number(Rmm_as_numberContext ctx) {
+    LongSpace asns = toBgpAsnRange(ctx, ctx.numbers);
+    if (asns != null) {
+      _currentRouteMapEntry.setMatchAsNumber(new RouteMapMatchAsNumber(asns));
+    }
+  }
+
+  @Override
   public void exitRmm_as_path(Rmm_as_pathContext ctx) {
     Optional<List<String>> optNames = toIpAsPathAccessListNames(ctx, ctx.names);
     if (!optNames.isPresent()) {
@@ -6549,6 +6561,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                     .orElse(null));
   }
 
+  private @Nullable LongSpace toBgpAsnRange(
+      ParserRuleContext messageCtx, Bgp_asn_rangeContext ctx) {
+    String rangeText = ctx.getText();
+    LongSpace value = LongSpace.parse(rangeText);
+    if (!BGP_ASN_RANGE.contains(value)) {
+      warn(
+          messageCtx,
+          String.format("Expected BGP ASNs in range %s, but got '%s'", BGP_ASN_RANGE, rangeText));
+      return null;
+    }
+    return value;
+  }
   /**
    * Helper for NX-OS integer space specifiers to convert to IntegerSpace if valid, or else {@link
    * Optional#empty}.
