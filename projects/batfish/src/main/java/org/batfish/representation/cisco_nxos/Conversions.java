@@ -38,6 +38,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -177,11 +178,6 @@ final class Conversions {
       return false;
     }
 
-    // No remote AS set.
-    if (neighbor.getRemoteAs() == null) {
-      w.redFlag("No remote-as configured for " + name);
-    }
-
     return true;
   }
 
@@ -294,6 +290,28 @@ final class Conversions {
     return null;
   }
 
+  /**
+   * Extracts the AS numbers from "match as-number" statements. See
+   * https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/bgp/match-as-number.html
+   */
+  private static @Nonnull LongSpace extractRouteMapAsns(RouteMap map) {
+    LongSpace asns = LongSpace.EMPTY;
+    // Iterate backwards to support permit/deny semantics properly.
+    for (RouteMapEntry entry : map.getEntries().descendingMap().values()) {
+      RouteMapMatchAsNumber matchAsn = entry.getMatchAsNumber();
+      if (matchAsn == null) {
+        continue;
+      }
+      // Note: other match clauses are documented ignored.
+      if (entry.getAction() == LineAction.PERMIT) {
+        asns = asns.union(entry.getMatchAsNumber().getAsns());
+      } else {
+        asns = asns.difference(entry.getMatchAsNumber().getAsns());
+      }
+    }
+    return asns;
+  }
+
   @Nonnull
   private static BgpPeerConfig toBgpNeighbor(
       Configuration c,
@@ -309,18 +327,30 @@ final class Conversions {
 
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
     if (dynamic) {
+      LongSpace remoteAsns;
+      if (neighbor.getRemoteAs() != null) {
+        remoteAsns = LongSpace.of(neighbor.getRemoteAs());
+      } else {
+        remoteAsns =
+            Optional.ofNullable(neighbor.getRemoteAsRouteMap())
+                .map(vsConfig.getRouteMaps()::get)
+                .map(Conversions::extractRouteMapAsns)
+                .orElse(LongSpace.EMPTY);
+      }
+      if (remoteAsns.isEmpty()) {
+        warnings.redFlag("No remote-as configured for " + getTextDesc(prefix, vrf));
+      }
       newNeighborBuilder =
-          BgpPassivePeerConfig.builder()
-              .setRemoteAsns(
-                  Optional.ofNullable(neighbor.getRemoteAs())
-                      .map(LongSpace::of)
-                      .orElse(LongSpace.EMPTY))
-              .setPeerPrefix(prefix);
+          BgpPassivePeerConfig.builder().setRemoteAsns(remoteAsns).setPeerPrefix(prefix);
     } else {
       newNeighborBuilder =
           BgpActivePeerConfig.builder()
               .setRemoteAs(neighbor.getRemoteAs())
               .setPeerAddress(prefix.getStartIp());
+      // No remote AS set.
+      if (neighbor.getRemoteAs() == null) {
+        warnings.redFlag("No remote-as configured for " + getTextDesc(prefix.getStartIp(), vrf));
+      }
     }
 
     newNeighborBuilder.setClusterId(

@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+feature bgp
+!
+hostname nxos-bgp-dynamic-route-map
+!
+route-map ASN_MAP permit 10
+  match as-number 1-20
+route-map ASN_MAP deny 20
+  match as-number 1-100
+route-map ASN_MAP permit 30
+  match as-number 70-120
+!
+router bgp 65000
+  neighbor 1.2.3.0/24 remote-as route-map ASN_MAP
+  address-family ipv4 unicast
+!
