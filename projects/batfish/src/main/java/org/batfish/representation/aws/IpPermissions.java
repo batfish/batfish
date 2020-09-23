@@ -433,8 +433,7 @@ public final class IpPermissions implements Serializable {
         /*
          TODO Should we set the trace element, either to null or something else? Currently it will
           be based on name, which results in trace elements like this:
-          "Matched line sgId - sgName [ingress] 4"
-          where 4 is the index of this rule in the ingress permissions.
+          "Matched line sgId - sgName [ingress]"
         */
         .setName(name)
         .build();

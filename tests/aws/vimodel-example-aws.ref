@@ -127,12 +127,12 @@
                     ]
                   }
                 },
-                "name" : "sg-3dfb3140 - default [egress] 0",
+                "name" : "sg-3dfb3140 - default [egress]",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line sg-3dfb3140 - default [egress] 0"
+                      "text" : "Matched line sg-3dfb3140 - default [egress]"
                     }
                   ]
                 }
@@ -207,12 +207,12 @@
                     ]
                   }
                 },
-                "name" : "sg-3dfb3140 - default [ingress] 0",
+                "name" : "sg-3dfb3140 - default [ingress]",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line sg-3dfb3140 - default [ingress] 0"
+                      "text" : "Matched line sg-3dfb3140 - default [ingress]"
                     }
                   ]
                 }
@@ -373,12 +373,12 @@
                     ]
                   }
                 },
-                "name" : "sg-3dfb3140 - default [egress] 0",
+                "name" : "sg-3dfb3140 - default [egress]",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line sg-3dfb3140 - default [egress] 0"
+                      "text" : "Matched line sg-3dfb3140 - default [egress]"
                     }
                   ]
                 }
@@ -453,12 +453,12 @@
                     ]
                   }
                 },
-                "name" : "sg-3dfb3140 - default [ingress] 0",
+                "name" : "sg-3dfb3140 - default [ingress]",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line sg-3dfb3140 - default [ingress] 0"
+                      "text" : "Matched line sg-3dfb3140 - default [ingress]"
                     }
                   ]
                 }
@@ -40023,12 +40023,12 @@
                     ]
                   }
                 },
-                "name" : "sg-55510831 - default [egress] 0",
+                "name" : "sg-55510831 - default [egress]",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line sg-55510831 - default [egress] 0"
+                      "text" : "Matched line sg-55510831 - default [egress]"
                     }
                   ]
                 }
@@ -40389,12 +40389,12 @@
                     }
                   ]
                 },
-                "name" : "sg-55510831 - default [ingress] 0",
+                "name" : "sg-55510831 - default [ingress]",
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line sg-55510831 - default [ingress] 0"
+                      "text" : "Matched line sg-55510831 - default [ingress]"
                     }
                   ]
                 }

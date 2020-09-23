@@ -270,7 +270,7 @@ public class SecurityGroupsTest {
     assertThat(
         w.getText(),
         allOf(
-            containsString("ICMP types invalid with code only [ingress] 0"),
+            containsString("ICMP types invalid with code only [ingress]"),
             containsString("unexpected for ICMP to have FromPort=-1 and ToPort=9")));
   }
 
@@ -499,7 +499,7 @@ public class SecurityGroupsTest {
         equalTo(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setName("sg-001 - sg-1 [ingress] 0")
+                    .setName("sg-001 - sg-1 [ingress]")
                     .setMatchCondition(
                         new AndMatchExpr(
                             ImmutableList.of(
