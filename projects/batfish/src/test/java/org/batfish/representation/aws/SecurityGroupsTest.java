@@ -500,6 +500,7 @@ public class SecurityGroupsTest {
             ImmutableList.of(
                 ExprAclLine.accepting()
                     .setName("sg-001 - sg-1 [ingress]")
+                    .setTraceElement(null)
                     .setMatchCondition(
                         new AndMatchExpr(
                             ImmutableList.of(

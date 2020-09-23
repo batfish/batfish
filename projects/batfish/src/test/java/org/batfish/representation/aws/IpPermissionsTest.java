@@ -1,7 +1,6 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
-import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
@@ -161,14 +160,12 @@ public class IpPermissionsTest {
     assertThat(
         Iterables.getOnlyElement(root),
         isTraceTree(
-            matchedByAclLine(lineName),
+            getTraceElementForRule(SG_DESC),
+            isTraceTree(traceElementForProtocol(TCP)),
+            isTraceTree(traceElementForDstPorts(22, 22)),
             isTraceTree(
-                getTraceElementForRule(SG_DESC),
-                isTraceTree(traceElementForProtocol(TCP)),
-                isTraceTree(traceElementForDstPorts(22, 22)),
-                isTraceTree(
-                    traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP),
-                    isTraceTree(traceElementEniPrivateIp("eni-123"))))));
+                traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP),
+                isTraceTree(traceElementEniPrivateIp("eni-123")))));
 
     Flow deniedFlow =
         Flow.builder()

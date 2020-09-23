@@ -430,11 +430,8 @@ public final class IpPermissions implements Serializable {
             collectPrefixLists(region, _prefixList), protocolAndPortExprs, ingress));
     return ExprAclLine.accepting()
         .setMatchCondition(or(aclLineExprs.build()))
-        /*
-         TODO Should we set the trace element, either to null or something else? Currently it will
-          be based on name, which results in trace elements like this:
-          "Matched line sgId - sgName [ingress]"
-        */
+        // TODO Should we set this trace element? If so, to what?
+        .setTraceElement(null)
         .setName(name)
         .build();
   }
