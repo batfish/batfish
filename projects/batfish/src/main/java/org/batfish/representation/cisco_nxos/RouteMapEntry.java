@@ -12,6 +12,7 @@ public final class RouteMapEntry implements Serializable {
 
   private @Nonnull LineAction _action;
   private @Nullable Integer _continue;
+  private @Nullable RouteMapMatchAsNumber _matchAsNumber;
   private @Nullable RouteMapMatchAsPath _matchAsPath;
   private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
@@ -47,6 +48,10 @@ public final class RouteMapEntry implements Serializable {
     return _continue;
   }
 
+  public @Nullable RouteMapMatchAsNumber getMatchAsNumber() {
+    return _matchAsNumber;
+  }
+
   public @Nullable RouteMapMatchAsPath getMatchAsPath() {
     return _matchAsPath;
   }
@@ -57,6 +62,7 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nonnull Stream<RouteMapMatch> getMatches() {
     return Stream.of(
+            _matchAsNumber,
             _matchAsPath,
             _matchCommunity,
             _matchInterface,
@@ -174,6 +180,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setContinue(@Nullable Integer continueNumber) {
     _continue = continueNumber;
+  }
+
+  public void setMatchAsNumber(@Nullable RouteMapMatchAsNumber matchAsNumber) {
+    _matchAsNumber = matchAsNumber;
   }
 
   public void setMatchAsPath(@Nullable RouteMapMatchAsPath matchAsPath) {

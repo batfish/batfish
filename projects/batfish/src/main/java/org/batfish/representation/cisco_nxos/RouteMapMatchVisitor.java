@@ -3,6 +3,8 @@ package org.batfish.representation.cisco_nxos;
 /** A visitor of {@link RouteMapMatch}. */
 public interface RouteMapMatchVisitor<T> {
 
+  T visitRouteMapMatchAsNumber(RouteMapMatchAsNumber routeMapMatchAsNumber);
+
   T visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath);
 
   T visitRouteMapMatchCommunity(RouteMapMatchCommunity routeMapMatchCommunity);
