@@ -3,7 +3,6 @@ package org.batfish.representation.aws;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.TCP;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
@@ -15,6 +14,7 @@ import static org.batfish.representation.aws.ElasticsearchDomain.getNodeName;
 import static org.batfish.representation.aws.Region.computeAntiSpoofingFilter;
 import static org.batfish.representation.aws.Region.eniEgressAclName;
 import static org.batfish.representation.aws.Region.eniIngressAclName;
+import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
@@ -58,6 +58,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vendor_family.AwsFamily;
@@ -220,41 +221,46 @@ public class ElasticsearchDomainTest {
         hasLines(
             isExprAclLineThat(
                 hasMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
-                        traceElementForAddress(
-                            "destination", "0.0.0.0/0", AddressType.CIDR_IP))))));
+                    new AndMatchExpr(
+                        ImmutableList.of(
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
+                                traceElementForAddress(
+                                    "destination", "0.0.0.0/0", AddressType.CIDR_IP))),
+                        getTraceElementForRule(null))))));
     assertThat(
         node0
             .getIpAccessLists()
             .get("~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~"),
         hasLines(
-            containsInAnyOrder(
-                isExprAclLineThat(
-                    hasMatchCondition(
-                        and(
-                            matchTcp,
-                            matchPorts(45, 50),
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setSrcIps(Ip.parse("1.2.3.4").toIpSpace())
-                                    .build(),
-                                traceElementForAddress(
-                                    "source", "1.2.3.4/32", AddressType.CIDR_IP))))),
-                isExprAclLineThat(
-                    hasMatchCondition(
-                        and(
-                            matchTcp,
-                            matchPorts(45, 50),
-                            or(
-                                traceTextForAddress(
-                                    "source", "Test-Instance-SG", AddressType.SECURITY_GROUP),
+            isExprAclLineThat(
+                hasMatchCondition(
+                    or(
+                        new AndMatchExpr(
+                            ImmutableList.of(
+                                matchTcp,
+                                matchPorts(45, 50),
                                 new MatchHeaderSpace(
                                     HeaderSpace.builder()
-                                        .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
+                                        .setSrcIps(Ip.parse("1.2.3.4").toIpSpace())
                                         .build(),
-                                    traceElementEniPrivateIp(
-                                        "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))))))));
+                                    traceElementForAddress(
+                                        "source", "1.2.3.4/32", AddressType.CIDR_IP))),
+                            getTraceElementForRule("Closed interval")),
+                        new AndMatchExpr(
+                            ImmutableList.of(
+                                matchTcp,
+                                matchPorts(45, 50),
+                                or(
+                                    traceTextForAddress(
+                                        "source", "Test-Instance-SG", AddressType.SECURITY_GROUP),
+                                    new MatchHeaderSpace(
+                                        HeaderSpace.builder()
+                                            .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
+                                            .build(),
+                                        traceElementEniPrivateIp(
+                                            "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))),
+                            getTraceElementForRule(null)))))));
     for (Interface iface : node0.getAllInterfaces().values()) {
       assertThat(iface.getIncomingFilter().getName(), equalTo(eniIngressAclName(iface.getName())));
       assertThat(iface.getOutgoingFilter().getName(), equalTo(eniEgressAclName(iface.getName())));
