@@ -1,19 +1,15 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
-import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
-import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
 import static org.batfish.representation.aws.Utils.traceElementEniPrivateIp;
 import static org.batfish.representation.aws.Utils.traceElementForAddress;
 import static org.batfish.representation.aws.Utils.traceElementForDstPorts;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -23,7 +19,6 @@ import com.google.common.collect.Iterables;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -35,6 +30,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclTracer;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.trace.TraceTree;
@@ -79,7 +75,7 @@ public class IpPermissionsTest {
   }
 
   @Test
-  public void userIdGroupsToAclLines() {
+  public void userIdGroupsToAclLineExprs() {
     IpPermissions ipPermissions =
         new IpPermissions(
             "tcp",
@@ -88,33 +84,27 @@ public class IpPermissionsTest {
             ImmutableList.of(),
             ImmutableList.of(),
             ImmutableList.of(new UserIdGroupPair(SG_ID, SG_DESC)));
-    List<ExprAclLine> lines =
-        ipPermissions.toIpAccessListLines(true, testRegion(), "acl line", new Warnings());
+    ExprAclLine line =
+        ipPermissions.toIpAccessListLine(true, testRegion(), "acl line", new Warnings());
 
     // check if source IPs are populated from all UserIpSpaces in the referred security group
+    OrMatchExpr matchIpSpaces =
+        new OrMatchExpr(
+            ImmutableList.of(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setSrcIps(Ip.parse("1.1.1.1").toIpSpace()).build(),
+                    traceElementEniPrivateIp(INSTANCE_1)),
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setSrcIps(Ip.parse("2.2.2.2").toIpSpace()).build(),
+                    traceElementEniPrivateIp(INSTANCE_2))),
+            traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP));
     assertThat(
-        Iterables.getOnlyElement(lines),
+        line,
         hasMatchCondition(
-            and(
-                matchTcp,
-                matchSSH,
-                new OrMatchExpr(
-                    ImmutableList.of(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setSrcIps(Ip.parse("1.1.1.1").toIpSpace())
-                                .build(),
-                            traceElementEniPrivateIp(INSTANCE_1)),
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setSrcIps(Ip.parse("2.2.2.2").toIpSpace())
-                                .build(),
-                            traceElementEniPrivateIp(INSTANCE_2))),
-                    traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP)))));
-    // check if rule description is populated from UserIdGroup description
-    assertThat(
-        Iterables.getOnlyElement(lines).getTraceElement(),
-        equalTo(getTraceElementForRule(SG_DESC)));
+            new AndMatchExpr(
+                ImmutableList.of(matchTcp, matchSSH, matchIpSpaces),
+                // rule description is populated from UserIdGroup description
+                getTraceElementForRule(SG_DESC))));
   }
 
   private static Region createTestRegion() {
@@ -152,14 +142,10 @@ public class IpPermissionsTest {
             ImmutableList.of(),
             ImmutableList.of(),
             ImmutableList.of(new UserIdGroupPair(SG_ID, SG_DESC)));
-    List<ExprAclLine> lines =
-        ipPermissions.toIpAccessListLines(true, createTestRegion(), "line", new Warnings());
-    IpAccessList aclList =
-        IpAccessList.builder()
-            // need to add to list<AclLine> because toIpAccessListLines return ExprAclLine
-            .setLines(ImmutableList.<AclLine>builder().addAll(lines).build())
-            .setName("lines")
-            .build();
+    String lineName = "lineName";
+    ExprAclLine line =
+        ipPermissions.toIpAccessListLine(true, createTestRegion(), lineName, new Warnings());
+    IpAccessList acl = IpAccessList.builder().setLines(line).setName("acl").build();
 
     Flow flow =
         Flow.builder()
@@ -170,25 +156,19 @@ public class IpPermissionsTest {
             .setIngressNode("c")
             .build();
     List<TraceTree> root =
-        AclTracer.trace(
-            aclList, flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+        AclTracer.trace(acl, flow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
 
     assertThat(
-        root,
-        contains(
-            allOf(
-                hasTraceElement(getTraceElementForRule(SG_DESC)),
-                hasChildren(
-                    containsInAnyOrder(
-                        hasTraceElement(traceElementForProtocol(TCP)),
-                        hasTraceElement(traceElementForDstPorts(22, 22)),
-                        allOf(
-                            hasTraceElement(
-                                traceElementForAddress(
-                                    "source", SG_NAME, AddressType.SECURITY_GROUP)),
-                            hasChildren(
-                                containsInAnyOrder(
-                                    hasTraceElement(traceElementEniPrivateIp("eni-123"))))))))));
+        Iterables.getOnlyElement(root),
+        isTraceTree(
+            matchedByAclLine(lineName),
+            isTraceTree(
+                getTraceElementForRule(SG_DESC),
+                isTraceTree(traceElementForProtocol(TCP)),
+                isTraceTree(traceElementForDstPorts(22, 22)),
+                isTraceTree(
+                    traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP),
+                    isTraceTree(traceElementEniPrivateIp("eni-123"))))));
 
     Flow deniedFlow =
         Flow.builder()
@@ -200,7 +180,7 @@ public class IpPermissionsTest {
             .build();
     root =
         AclTracer.trace(
-            aclList, deniedFlow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+            acl, deniedFlow, null, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
     assertThat(root, empty());
   }
 

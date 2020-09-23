@@ -119,8 +119,8 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     for (ListIterator<IpPermissions> it = ipPerms.listIterator(); it.hasNext(); ) {
       int seq = it.nextIndex();
       IpPermissions p = it.next();
-      aclLines.addAll(
-          p.toIpAccessListLines(
+      aclLines.add(
+          p.toIpAccessListLine(
               ingress,
               region,
               String.format(
