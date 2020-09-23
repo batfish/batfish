@@ -5881,8 +5881,7 @@ public final class CiscoNxosGrammarTest {
     // matches
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_as_number");
-      // TODO
-      assertThat(rp, notNullValue());
+      assertRoutingPolicyPermitsRoute(rp, base);
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_as_path");
