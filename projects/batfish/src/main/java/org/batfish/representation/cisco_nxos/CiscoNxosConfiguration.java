@@ -2761,6 +2761,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         new RouteMapMatchVisitor<BoolExpr>() {
 
           @Override
+          public BoolExpr visitRouteMapMatchAsNumber(RouteMapMatchAsNumber routeMapMatchAsNumber) {
+            // Not applicable to PBR.
+            return null;
+          }
+
+          @Override
           public BoolExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {
             // Not applicable to PBR
             return null;
@@ -2963,6 +2969,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull BooleanExpr toBooleanExpr(RouteMapMatch match) {
     return match.accept(
         new RouteMapMatchVisitor<BooleanExpr>() {
+
+          @Override
+          public BooleanExpr visitRouteMapMatchAsNumber(
+              RouteMapMatchAsNumber routeMapMatchAsNumber) {
+            // This clause is only used to identify a set of BGP peers to establish a session with,
+            // is ignored in "normal" route-map use.
+            return BooleanExprs.TRUE;
+          }
 
           @Override
           public BooleanExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {

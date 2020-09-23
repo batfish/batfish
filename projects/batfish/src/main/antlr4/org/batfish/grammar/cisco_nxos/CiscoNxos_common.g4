@@ -10,6 +10,30 @@ bgp_asn
   | high = uint16 PERIOD low = uint16
 ;
 
+// Like bgp_asn, but when it cannot be a 4-byte ASN a dotted ASN
+bgp_asn_simple
+:
+  // 1-4294967295
+  uint32
+;
+
+bgp_asn_range
+:
+  intervals += bgp_asn_interval
+  (
+    COMMA intervals += bgp_asn_interval
+  )*
+;
+
+bgp_asn_interval
+:
+  low = bgp_asn_simple
+  (
+    DASH high = bgp_asn_simple
+  )?
+;
+
+
 // Shared NX-OS syntax for route-target, redistribution, route leak, etc.
 both_export_import
 :

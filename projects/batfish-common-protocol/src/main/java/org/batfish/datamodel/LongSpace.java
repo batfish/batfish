@@ -99,6 +99,10 @@ public final class LongSpace extends NumberSpace<Long, LongSpace, LongSpace.Buil
     return builder().including(rangeSet).build();
   }
 
+  public static @Nonnull LongSpace parse(String s) {
+    return create(s);
+  }
+
   /** Create a new {@link LongSpace} containing the union of the given {@link Range ranges}. */
   public static @Nonnull LongSpace unionOf(Iterable<Range<Long>> ranges) {
     return builder().includingAllRanges(ranges).build();

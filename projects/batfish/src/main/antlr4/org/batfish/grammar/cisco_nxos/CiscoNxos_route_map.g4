@@ -48,7 +48,8 @@ rm_match
 :
   MATCH
   (
-    rmm_as_path
+    rmm_as_number
+    | rmm_as_path
     | rmm_community
     | rmm_interface
     | rmm_ip
@@ -59,6 +60,11 @@ rm_match
     | rmm_tag
     | rmm_vlan
   )
+;
+
+rmm_as_number
+:
+  AS_NUMBER numbers = bgp_asn_range NEWLINE
 ;
 
 rmm_as_path
