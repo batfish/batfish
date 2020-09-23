@@ -102,13 +102,17 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   IpAccessList toAcl(Region region, boolean ingress, Warnings warnings) {
     List<AclLine> aclLines = toAclLines(region, ingress, warnings);
+    return IpAccessList.builder().setName(getViName(ingress)).setLines(aclLines).build();
+  }
+
+  /**
+   * Returns the name that will be assigned to the VI {@link IpAccessList} representing this
+   * security group's ingress or egress permissions.
+   */
+  public String getViName(boolean ingress) {
     // See note about naming on SecurityGroup#getGroupName.
-    return IpAccessList.builder()
-        .setName(
-            String.format(
-                "~%s~SECURITY-GROUP~%s~%s~", ingress ? INGRESS : EGRESS, _groupName, _groupId))
-        .setLines(aclLines)
-        .build();
+    return String.format(
+        "~%s~SECURITY-GROUP~%s~%s~", ingress ? INGRESS : EGRESS, _groupName, _groupId);
   }
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
