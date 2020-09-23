@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
 import java.io.Serializable;
-import java.util.SortedMap;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
  */
 public final class RouteMap implements Serializable {
 
-  private final @Nonnull SortedMap<Integer, RouteMapEntry> _entries;
+  private final @Nonnull NavigableMap<Integer, RouteMapEntry> _entries;
   private final @Nonnull String _name;
   private boolean _pbrStatistics;
 
@@ -20,7 +20,7 @@ public final class RouteMap implements Serializable {
     _entries = new TreeMap<>();
   }
 
-  public @Nonnull SortedMap<Integer, RouteMapEntry> getEntries() {
+  public @Nonnull NavigableMap<Integer, RouteMapEntry> getEntries() {
     return _entries;
   }
 

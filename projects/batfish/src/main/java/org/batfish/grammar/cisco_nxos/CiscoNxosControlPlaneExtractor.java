@@ -3710,6 +3710,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.REMOTE_AS() != null && ctx.bgp_asn() != null) {
       long asn = toLong(ctx.bgp_asn());
       _currentBgpVrfNeighbor.setRemoteAs(asn);
+      _currentBgpVrfNeighbor.setRemoteAsRouteMap(null);
     }
 
     if (ctx.REMOTE_AS() != null && ctx.ROUTE_MAP() != null) {
@@ -3718,6 +3719,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         return;
       }
       String name = nameOrError.get();
+      _currentBgpVrfNeighbor.setRemoteAs(null);
       _currentBgpVrfNeighbor.setRemoteAsRouteMap(name);
       _c.referenceStructure(
           ROUTE_MAP, name, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, ctx.getStart().getLine());

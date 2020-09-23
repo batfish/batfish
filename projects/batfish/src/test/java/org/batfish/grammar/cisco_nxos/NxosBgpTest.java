@@ -12,7 +12,9 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -40,6 +42,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
@@ -79,6 +82,17 @@ public class NxosBgpTest {
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
+  }
+
+  @Test
+  public void testDynamicRouteMap() throws IOException {
+    Configuration c = parseConfig("nxos-bgp-dynamic-route-map");
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasPassiveNeighbor(
+                    Prefix.parse("1.2.3.0/24"), hasRemoteAs(LongSpace.parse("1-20,101-120"))))));
   }
 
   @Test
