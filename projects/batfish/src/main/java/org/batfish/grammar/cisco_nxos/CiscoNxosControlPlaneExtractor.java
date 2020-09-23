@@ -6573,6 +6573,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     return value;
   }
+
   /**
    * Helper for NX-OS integer space specifiers to convert to IntegerSpace if valid, or else {@link
    * Optional#empty}.
