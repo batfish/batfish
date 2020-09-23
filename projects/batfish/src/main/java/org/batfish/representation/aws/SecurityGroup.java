@@ -12,9 +12,9 @@ import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -114,20 +114,21 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
 
   /** Converts this security group's ingress or egress permission terms to List of AclLines */
   List<AclLine> toAclLines(Region region, boolean ingress, Warnings warnings) {
-    ImmutableList.Builder<AclLine> aclLines = ImmutableList.builder();
     List<IpPermissions> ipPerms = ingress ? _ipPermsIngress : _ipPermsEgress;
-    for (ListIterator<IpPermissions> it = ipPerms.listIterator(); it.hasNext(); ) {
-      int seq = it.nextIndex();
-      IpPermissions p = it.next();
-      aclLines.add(
-          p.toIpAccessListLine(
-              ingress,
-              region,
-              String.format(
-                  "%s - %s [%s] %s", _groupId, _groupName, ingress ? "ingress" : "egress", seq),
-              warnings));
-    }
-    return aclLines.build();
+    return IntStream.range(0, ipPerms.size())
+        .mapToObj(
+            i ->
+                // NOTE: Keep VI ACL lines 1-to-1 with group's IpPermissions; do not filter
+                ipPerms
+                    .get(i)
+                    .toIpAccessListLine(
+                        ingress,
+                        region,
+                        String.format(
+                            "%s - %s [%s] %s",
+                            _groupId, _groupName, ingress ? "ingress" : "egress", i),
+                        warnings))
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Nullable
