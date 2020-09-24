@@ -2583,7 +2583,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   j -> {
                     ParseVendorConfigurationResult result =
                         getOrParse(j, parseNetworkConfigsSpan.context(), _settings);
-                    batch.incrementAndGet();
+                    int done = batch.incrementAndGet();
+                    if (done % 100 == 0) {
+                      LOGGER.info(
+                          "Successfully parsed {}/{} configuration files", done, jobs.size());
+                    }
                     return result;
                   })
               .collect(ImmutableList.toImmutableList());
