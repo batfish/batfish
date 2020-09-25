@@ -1735,16 +1735,19 @@ public class WorkMgr extends AbstractCoordinator {
     Path hostConfigsPath = subDir.resolve(BfConsts.RELPATH_HOST_CONFIGS_DIR);
     Path networkConfigsPath = subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
     Path awsConfigsPath = subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR);
+    Path terraformConfigsPath = subDir.resolve(BfConsts.RELPATH_TERRAFORM_DIR);
     if (!Files.exists(hostConfigsPath)
         && !Files.exists(networkConfigsPath)
-        && !Files.exists(awsConfigsPath)) {
+        && !Files.exists(awsConfigsPath)
+        && !Files.exists(terraformConfigsPath)) {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
           String.format(
-              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir '%s', or hosts dir '%s' found. See %s for more details on how to package your snapshot for analysis.",
+              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir '%s', hosts dir '%s', or Terraform dir '%s' found. See %s for more details on how to package your snapshot for analysis.",
               srcDir.relativize(networkConfigsPath),
               srcDir.relativize(awsConfigsPath),
               srcDir.relativize(hostConfigsPath),
+              srcDir.relativize(terraformConfigsPath),
               SNAPSHOT_PACKAGING_INSTRUCTIONS_URL));
     }
   }

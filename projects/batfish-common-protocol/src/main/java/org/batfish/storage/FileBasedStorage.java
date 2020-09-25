@@ -16,6 +16,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -1882,6 +1883,15 @@ public class FileBasedStorage implements StorageProvider {
   public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> key.startsWith(BfConsts.RELPATH_AWS_CONFIGS_DIR));
+  }
+
+  @MustBeClosed
+  @Nonnull
+  @Override
+  public Stream<String> listInputTerraformConfigurationKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    return listSnapshotInputObjectKeys(snapshot)
+        .filter(key -> key.startsWith(BfConsts.RELPATH_TERRAFORM_DIR.concat(File.separator)));
   }
 
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {

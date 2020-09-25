@@ -963,6 +963,15 @@ public interface StorageProvider {
   Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
+   * Returns a list of snapshot input object keys corresponding to terraform configurations.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputTerraformConfigurationKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
    * Run implementation-specific garbage collection.
    *
    * <p>The caller guarantees that data last modified before the {@code expungeBeforeDate} is not

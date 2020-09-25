@@ -631,6 +631,13 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
+  @Nonnull
+  @Override
+  public Stream<String> listInputTerraformConfigurationKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   public void runGarbageCollection(Instant expungeBeforeDate) {}
 }
