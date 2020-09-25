@@ -266,6 +266,11 @@ public class FileBasedStorage implements StorageProvider {
   static final String ISP_CONFIGURATION_KEY =
       String.format("%s/%s", RELPATH_BATFISH_CONFIGS_DIR, RELPATH_ISP_CONFIG_FILE);
 
+  @VisibleForTesting
+  static boolean keyInDir(String key, String dirName) {
+    return key.startsWith(dirName + "/");
+  }
+
   @Override
   public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot) {
     try (InputStream inputStream =
@@ -1857,7 +1862,7 @@ public class FileBasedStorage implements StorageProvider {
   public Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
-        .filter(key -> key.startsWith(BfConsts.RELPATH_HOST_CONFIGS_DIR));
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_HOST_CONFIGS_DIR));
   }
 
   @MustBeClosed
@@ -1866,7 +1871,7 @@ public class FileBasedStorage implements StorageProvider {
   public Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
-        .filter(key -> key.startsWith(BfConsts.RELPATH_CONFIGURATIONS_DIR));
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_CONFIGURATIONS_DIR));
   }
 
   @MustBeClosed
@@ -1874,7 +1879,7 @@ public class FileBasedStorage implements StorageProvider {
   @Override
   public Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
-        .filter(key -> key.startsWith(RELPATH_AWS_ACCOUNTS_DIR));
+        .filter(key -> keyInDir(key, RELPATH_AWS_ACCOUNTS_DIR));
   }
 
   @MustBeClosed
@@ -1882,7 +1887,7 @@ public class FileBasedStorage implements StorageProvider {
   @Override
   public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
-        .filter(key -> key.startsWith(BfConsts.RELPATH_AWS_CONFIGS_DIR));
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_AWS_CONFIGS_DIR));
   }
 
   @MustBeClosed

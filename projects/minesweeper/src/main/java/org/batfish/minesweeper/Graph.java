@@ -1,7 +1,6 @@
 package org.batfish.minesweeper;
 
 import static java.util.stream.Collectors.toMap;
-import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -54,17 +53,15 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.datamodel.routing_policy.statement.AddCommunity;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.bdd.CommunityVarConverter;
 import org.batfish.minesweeper.collections.Table2;
+import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
 
 /**
  * A graph object representing the structure of the network. The graph is built potentially by
@@ -917,7 +914,7 @@ public class Graph {
    * additional AS-path regexes is also included, which is used to support user-specified AS-path
    * constraints for symbolic analysis.
    */
-  private Set<SymbolicAsPathRegex> findAllAsPathRegexes(Set<String> asPathRegexes) {
+  private Set<SymbolicAsPathRegex> findAllAsPathRegexes(@Nullable Set<String> asPathRegexes) {
     ImmutableSet.Builder<SymbolicAsPathRegex> builder = ImmutableSet.builder();
     for (String router : getRouters()) {
       builder.addAll(findAsPathRegexes(router));
@@ -1041,34 +1038,12 @@ public class Graph {
     Set<CommunityVar> comms = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
 
+    // walk through every statement of every route policy
     for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
-      AstVisitor v = new AstVisitor();
-      v.visit(
-          conf,
-          pol.getStatements(),
-          stmt -> {
-            if (stmt instanceof SetCommunity) {
-              SetCommunity sc = (SetCommunity) stmt;
-              comms.addAll(collectCommunityVars(conf, sc.getExpr()));
-            }
-            if (stmt instanceof AddCommunity) {
-              AddCommunity ac = (AddCommunity) stmt;
-              comms.addAll(collectCommunityVars(conf, ac.getExpr()));
-            }
-            if (stmt instanceof DeleteCommunity) {
-              DeleteCommunity dc = (DeleteCommunity) stmt;
-              comms.addAll(collectCommunityVars(conf, dc.getExpr()));
-            }
-          },
-          expr -> {
-            if (expr instanceof MatchCommunitySet) {
-              MatchCommunitySet m = (MatchCommunitySet) expr;
-              CommunitySetExpr ce = m.getExpr();
-              comms.addAll(collectCommunityVars(conf, ce));
-            }
-          });
+      for (Statement stmt : pol.getStatements()) {
+        comms.addAll(stmt.accept(new RoutePolicyStatementVarCollector(), conf));
+      }
     }
-
     return comms;
   }
 

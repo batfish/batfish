@@ -235,6 +235,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
+   * Create a BDD representing the constraint that the route announcement has at least one
+   * community.
+   *
+   * @return the bdd
+   */
+  public BDD anyCommunity() {
+    return factory.orAll(_communityAtomicPredicates);
+  }
+
+  /**
    * Not all assignments to the BDD variables that make up a BDDRoute represent valid routes. This
    * method produces constraints that well-formed routes must satisfy, represented as a BDD. It is
    * useful when the goal is to produce concrete example routes from a BDDRoute, for instance.
