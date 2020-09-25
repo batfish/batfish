@@ -32,6 +32,9 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -49,6 +52,8 @@ import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -89,6 +94,7 @@ import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.TransferParam;
 import org.batfish.minesweeper.TransferParam.CallContext;
+import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
@@ -105,22 +111,26 @@ public class TransferBDD {
    * simply need the map from each regex to its corresponding set of atomic predicates, each
    * represented by a unique integer.
    */
-  private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
+  private final Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
 
-  private Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
+  private final Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
-  private Configuration _conf;
+  private final Configuration _conf;
 
-  private Graph _graph;
+  private final Graph _graph;
 
   private Set<Prefix> _ignoredNetworks;
 
-  private List<Statement> _statements;
+  private final List<Statement> _statements;
 
   public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
     _graph = g;
     _conf = conf;
     _statements = statements;
+
+    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    _asPathRegexAtomicPredicates =
+        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
   }
 
   /*
@@ -179,7 +189,7 @@ public class TransferBDD {
   }
 
   // produce the union of all atomic predicates associated with any of the given symbolic regexes
-  private <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
+  <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
       Set<T> regexes, Map<T, Set<Integer>> apMap) {
     return regexes.stream()
         .flatMap(r -> apMap.get(r).stream())
@@ -372,6 +382,20 @@ public class TransferBDD {
       MatchCommunitySet mcs = (MatchCommunitySet) expr;
       BDD c = matchCommunitySet(p.indent(), _conf, mcs.getExpr(), p.getData());
       TransferReturn ret = new TransferReturn(p.getData(), c);
+      return fromExpr(ret);
+
+    } else if (expr instanceof MatchCommunities) {
+      p.debug("MatchCommunities");
+      MatchCommunities mc = (MatchCommunities) expr;
+      // we only handle the case where the expression being matched is just the input communities
+      if (!mc.getCommunitySetExpr().equals(InputCommunities.instance())) {
+        throw new BatfishException(
+            "Matching for communities other than the input communities is not supported: " + mc);
+      }
+      BDD mcPredicate =
+          mc.getCommunitySetMatchExpr()
+              .accept(new CommunitySetMatchExprToBDD(), new Arg(this, p.getData()));
+      TransferReturn ret = new TransferReturn(p.getData(), mcPredicate);
       return fromExpr(ret);
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
@@ -609,19 +633,33 @@ public class TransferBDD {
     } else if (stmt instanceof SetCommunity) {
       curP.debug("SetCommunity");
       SetCommunity sc = (SetCommunity) stmt;
-      Set<CommunityVar> comms = collectCommunityVars(_conf, sc.getExpr());
-      // set all atomic predicates associated with these communities to 1, and all other
-      // atomic predicates to zero, if this statement is reached
-      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
-      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-      for (int ap = 0; ap < commAPBDDs.length; ap++) {
-        curP.indent().debug("Value: " + ap);
-        BDD comm = commAPBDDs[ap];
-        BDD newValue =
-            ite(unreachable(result), comm, commAPs.contains(ap) ? factory.one() : factory.zero());
-        curP.indent().debug("New Value: " + newValue);
-        commAPBDDs[ap] = newValue;
+      CommunitySetExpr setExpr = sc.getExpr();
+      /**
+       * TODO: simply collecting all community variables in setExpr is not correct in general, since
+       * for example some of them may be negated in the expression. for now we only support setting
+       * literal communities. we should create a special visitor to gather the community atomic
+       * predicates that are being set.
+       */
+      if (!(setExpr instanceof LiteralCommunity || setExpr instanceof LiteralCommunitySet)) {
+        throw new BatfishException("Unhandled community expression in 'set community': " + setExpr);
       }
+      Set<CommunityVar> comms = collectCommunityVars(_conf, setExpr);
+      setCommunities(comms, curP, result);
+
+    } else if (stmt instanceof SetCommunities) {
+      curP.debug("SetCommunities");
+      SetCommunities sc = (SetCommunities) stmt;
+      org.batfish.datamodel.routing_policy.communities.CommunitySetExpr setExpr =
+          sc.getCommunitySetExpr();
+      /**
+       * TODO: the SetCommunitiesVarCollector does not support some kinds of expressions, such as
+       * set differences, for the same reason as described above regarding limitations of
+       * SetCommunity. again the right solution is to create a visitor to gather community atomic
+       * predicates. (note that SetCommunity and SetCommunities use two different data models for
+       * expressions, both named CommunitySetExpr but in different packages.)
+       */
+      Set<CommunityVar> comms = setExpr.accept(new SetCommunitiesVarCollector(), _conf);
+      setCommunities(comms, curP, result);
 
     } else if (stmt instanceof DeleteCommunity) {
       curP.debug("DeleteCommunity");
@@ -1034,7 +1072,7 @@ public class TransferBDD {
   /*
    * Return a BDD from a boolean
    */
-  private BDD mkBDD(boolean b) {
+  BDD mkBDD(boolean b) {
     return b ? factory.one() : factory.zero();
   }
 
@@ -1053,6 +1091,26 @@ public class TransferBDD {
       return x.getList().size();
     }
     throw new BatfishException("Error[prependLength]: unreachable");
+  }
+
+  /*
+   * A helper for route analysis of SetCommunity and SetCommunities.  Given a set of
+   * CommunityVars that are set by the statement, we update all community atomic predicates
+   * appropriately:  the ones corresponding to the given CommunityVars are set to 1, and
+   * the others are set to 0.
+   */
+  private void setCommunities(
+      Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result) {
+    Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+    for (int ap = 0; ap < commAPBDDs.length; ap++) {
+      curP.indent().debug("Value: " + ap);
+      BDD comm = commAPBDDs[ap];
+      BDD newValue =
+          ite(unreachable(result), comm, commAPs.contains(ap) ? factory.one() : factory.zero());
+      curP.indent().debug("New Value: " + newValue);
+      commAPBDDs[ap] = newValue;
+    }
   }
 
   /**
@@ -1120,9 +1178,6 @@ public class TransferBDD {
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
-    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    _asPathRegexAtomicPredicates =
-        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     BDDRoute o = new BDDRoute(_graph);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult result = compute(_statements, p);
@@ -1145,5 +1200,17 @@ public class TransferBDD {
       default:
         throw new BatfishException("Unexpected CommunityVar type: " + cvar.getType());
     }
+  }
+
+  public Map<CommunityVar, Set<Integer>> getCommunityAtomicPredicates() {
+    return _communityAtomicPredicates;
+  }
+
+  public Configuration getConfiguration() {
+    return _conf;
+  }
+
+  public Graph getGraph() {
+    return _graph;
   }
 }

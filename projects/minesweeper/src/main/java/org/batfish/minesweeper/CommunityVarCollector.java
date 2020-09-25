@@ -19,6 +19,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.visitors.VoidCommunitySetExprVisitor;
 import org.batfish.minesweeper.bdd.CommunityVarConverter;
 
+/** Collect up all community literals and regexes in a {@link CommunitySetExpr}. */
 public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
 
   public static @Nonnull Set<CommunityVar> collectCommunityVars(
