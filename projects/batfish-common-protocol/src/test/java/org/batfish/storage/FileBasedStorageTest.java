@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.storage.FileBasedStorage.GC_SKEW_ALLOWANCE;
 import static org.batfish.storage.FileBasedStorage.ISP_CONFIGURATION_KEY;
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
+import static org.batfish.storage.FileBasedStorage.keyInDir;
 import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -804,5 +805,11 @@ public final class FileBasedStorageTest {
         _storage.listSnapshotInputObjectKeys(new NetworkSnapshot(networkId, snapshotId))) {
       assertThat(keys.collect(ImmutableSet.toImmutableSet()), equalTo(ImmutableSet.of("k1", "k2")));
     }
+  }
+
+  @Test
+  public void testKeyInDir() {
+    assertTrue(keyInDir("configs/rtr.cfg", "configs"));
+    assertFalse(keyInDir("configs.ignore", "configs"));
   }
 }
