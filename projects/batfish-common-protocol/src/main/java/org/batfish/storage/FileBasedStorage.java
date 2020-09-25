@@ -16,7 +16,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -268,7 +267,7 @@ public class FileBasedStorage implements StorageProvider {
 
   @VisibleForTesting
   static boolean keyInDir(String key, String dirName) {
-    return key.startsWith(dirName.concat(File.separator));
+    return key.startsWith(dirName + "/");
   }
 
   @Override
