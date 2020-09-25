@@ -16,7 +16,6 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -1896,7 +1895,7 @@ public class FileBasedStorage implements StorageProvider {
   public Stream<String> listInputTerraformConfigurationKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
-        .filter(key -> key.startsWith(BfConsts.RELPATH_TERRAFORM_DIR.concat(File.separator)));
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_TERRAFORM_DIR));
   }
 
   private @Nonnull Path getParseVendorConfigurationAnswerElementPath(NetworkSnapshot snapshot) {
