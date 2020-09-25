@@ -30,7 +30,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   private final RibTree<R> _tree;
 
   /** Memoized set of all routes in this RIB */
-  @Nullable private Set<R> _allRoutes;
+  @Nullable private transient Set<R> _allRoutes;
 
   /**
    * Keep a (insert ordered) set of alternative routes. Used to update the RIB if best routes are
