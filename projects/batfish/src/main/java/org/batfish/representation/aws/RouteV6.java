@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -9,13 +10,20 @@ import org.batfish.datamodel.Prefix6;
 
 /** Representation of a IPv6 route in AWS */
 @ParametersAreNonnullByDefault
-final class RouteV6 extends Route {
+public final class RouteV6 extends Route {
 
   @Nonnull private final Prefix6 _destinationCidrBlock;
 
+  /** Deprecated constructor */
+  @VisibleForTesting
   RouteV6(
-      Prefix6 destinationCidrBlock, State state, @Nullable String target, TargetType targetType) {
-    super(state, target, targetType);
+      Prefix6 destinationCidrBlock, State state, @Nullable String targetId, TargetType targetType) {
+    super(state, new RouteTarget(targetId, targetType));
+    _destinationCidrBlock = destinationCidrBlock;
+  }
+
+  public RouteV6(Prefix6 destinationCidrBlock, State state, RouteTarget routeTarget) {
+    super(state, routeTarget);
     _destinationCidrBlock = destinationCidrBlock;
   }
 
@@ -35,13 +43,12 @@ final class RouteV6 extends Route {
     RouteV6 route = (RouteV6) o;
     return Objects.equals(_destinationCidrBlock, route._destinationCidrBlock)
         && _state == route._state
-        && Objects.equals(_target, route._target)
-        && _targetType == route._targetType;
+        && Objects.equals(_routeTarget, route._routeTarget);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_destinationCidrBlock, _state, _target, _targetType);
+    return Objects.hash(_destinationCidrBlock, _state, _routeTarget);
   }
 
   @Override

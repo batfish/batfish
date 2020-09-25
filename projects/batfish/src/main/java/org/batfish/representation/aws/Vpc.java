@@ -31,7 +31,7 @@ import org.batfish.datamodel.Vrf;
 /** Represents an AWS VPC https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-vpcs.html */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class Vpc implements AwsVpcEntity, Serializable {
+public final class Vpc implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
@@ -104,7 +104,8 @@ final class Vpc implements AwsVpcEntity, Serializable {
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)));
   }
 
-  Vpc(String ownerId, String vpcId, Set<Prefix> cidrBlockAssociations, Map<String, String> tags) {
+  public Vpc(
+      String ownerId, String vpcId, Set<Prefix> cidrBlockAssociations, Map<String, String> tags) {
     _ownerId = ownerId;
     _vpcId = vpcId;
     _cidrBlockAssociations = cidrBlockAssociations;

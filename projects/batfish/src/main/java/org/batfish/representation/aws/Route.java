@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,14 +27,14 @@ import org.batfish.datamodel.Prefix6;
 /** Representation of a route in AWS */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-abstract class Route implements Serializable {
+public abstract class Route implements Serializable {
 
-  enum State {
+  public enum State {
     ACTIVE,
     BLACKHOLE
   }
 
-  enum TargetType {
+  public enum TargetType {
     Gateway,
     Instance,
     NatGateway,
@@ -44,13 +45,90 @@ abstract class Route implements Serializable {
     Unknown
   }
 
+  /** A helper class that describes the target of a route */
+  public static class RouteTarget implements Serializable {
+    @Nonnull private final TargetType _targetType;
+    @Nullable private final String _targetId;
+
+    public static RouteTarget create(
+        @Nullable String transitGatewayId,
+        @Nullable String vpcPeeringConnectionId,
+        @Nullable String gatewayId,
+        @Nullable String natGatewayId,
+        @Nullable String networkInterfaceId,
+        @Nullable String instanceId,
+        State state) {
+      TargetType targetType;
+      @Nullable String targetId;
+      if (transitGatewayId != null) {
+        targetType = TargetType.TransitGateway;
+        targetId = transitGatewayId;
+      } else if (vpcPeeringConnectionId != null) {
+        targetType = TargetType.VpcPeeringConnection;
+        targetId = vpcPeeringConnectionId;
+      } else if (gatewayId != null) {
+        targetType = TargetType.Gateway;
+        targetId = gatewayId;
+      } else if (natGatewayId != null) {
+        targetType = TargetType.NatGateway;
+        targetId = natGatewayId;
+      } else if (networkInterfaceId != null) {
+        targetType = TargetType.NetworkInterface;
+        targetId = networkInterfaceId;
+      } else if (instanceId != null) {
+        // NOTE: so far in practice this branch is never reached after moving
+        // networkInterfaceId above it!
+        targetType = TargetType.Instance;
+        targetId = instanceId;
+      } else if (state == State.BLACKHOLE) {
+        targetType = TargetType.Unavailable;
+        targetId = null;
+      } else {
+        targetType = TargetType.Unknown;
+        targetId = null;
+      }
+      return new RouteTarget(targetId, targetType);
+    }
+
+    public RouteTarget(@Nullable String targetId, TargetType targetType) {
+      _targetType = targetType;
+      _targetId = targetId;
+    }
+
+    @Nonnull
+    public TargetType getTargetType() {
+      return _targetType;
+    }
+
+    @Nullable
+    public String getTargetId() {
+      return _targetId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof RouteTarget)) {
+        return false;
+      }
+      RouteTarget that = (RouteTarget) o;
+      return _targetType == that._targetType && Objects.equals(_targetId, that._targetId);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_targetType, _targetId);
+    }
+  }
+
   static final int DEFAULT_STATIC_ROUTE_ADMIN = 1;
 
   static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
   @Nonnull protected final State _state;
-  @Nullable protected final String _target;
-  @Nonnull protected final TargetType _targetType;
+  @Nonnull protected final RouteTarget _routeTarget;
 
   @JsonCreator
   private static Route create(
@@ -79,50 +157,28 @@ abstract class Route implements Serializable {
     checkArgument(stateStr != null, "State cannot be null for a route");
 
     State state = State.valueOf(stateStr.toUpperCase());
-    String target;
-    TargetType targetType;
-
-    if (transitGatewayId != null) {
-      targetType = TargetType.TransitGateway;
-      target = transitGatewayId;
-    } else if (vpcPeeringConnectionId != null) {
-      targetType = TargetType.VpcPeeringConnection;
-      target = vpcPeeringConnectionId;
-    } else if (gatewayId != null) {
-      targetType = TargetType.Gateway;
-      target = gatewayId;
-    } else if (natGatewayId != null) {
-      targetType = TargetType.NatGateway;
-      target = natGatewayId;
-    } else if (networkInterfaceId != null) {
-      targetType = TargetType.NetworkInterface;
-      target = networkInterfaceId;
-    } else if (instanceId != null) {
-      // NOTE: so far in practice this branch is never reached after moving
-      // networkInterfaceId above it!
-      targetType = TargetType.Instance;
-      target = instanceId;
-    } else if (state == State.BLACKHOLE) {
-      targetType = TargetType.Unavailable;
-      target = null;
-    } else {
-      targetType = TargetType.Unknown;
-      target = null;
-    }
+    RouteTarget routeTarget =
+        RouteTarget.create(
+            transitGatewayId,
+            vpcPeeringConnectionId,
+            gatewayId,
+            natGatewayId,
+            networkInterfaceId,
+            instanceId,
+            state);
 
     if (destinationCidrBlock != null) {
-      return new RouteV4(destinationCidrBlock, state, target, targetType);
+      return new RouteV4(destinationCidrBlock, state, routeTarget);
     } else if (destinationIpv6CidrBlock != null) {
-      return new RouteV6(destinationIpv6CidrBlock, state, target, targetType);
+      return new RouteV6(destinationIpv6CidrBlock, state, routeTarget);
     } else {
-      return new RoutePrefixListId(destinationPrefixListId, state, target, targetType);
+      return new RoutePrefixListId(destinationPrefixListId, state, routeTarget);
     }
   }
 
-  protected Route(State state, @Nullable String target, TargetType targetType) {
+  protected Route(State state, RouteTarget routeTarget) {
     _state = state;
-    _target = target;
-    _targetType = targetType;
+    _routeTarget = routeTarget;
   }
 
   @Nonnull
@@ -130,22 +186,27 @@ abstract class Route implements Serializable {
     return _state;
   }
 
-  @Nullable
-  public String getTarget() {
-    return _target;
+  @Nonnull
+  public RouteTarget getRouteTarget() {
+    return _routeTarget;
   }
 
   @Nonnull
   public TargetType getTargetType() {
-    return _targetType;
+    return _routeTarget.getTargetType();
+  }
+
+  @Nullable
+  public String getTarget() {
+    return _routeTarget.getTargetId();
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add("_state", _state)
-        .add("_target", _target)
-        .add("_targetType", _targetType)
+        .add("_targetId", _routeTarget.getTargetId())
+        .add("_targetType", _routeTarget.getTargetType())
         .toString();
   }
 }

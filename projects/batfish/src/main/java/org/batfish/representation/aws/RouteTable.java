@@ -16,11 +16,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Represents an AWS route table */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class RouteTable implements AwsVpcEntity, Serializable {
+public final class RouteTable implements AwsVpcEntity, Serializable {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
-  static class Association implements Serializable {
+  public static class Association implements Serializable {
 
     private final boolean _isMain;
     @Nullable private final String _subnetId;
@@ -33,7 +33,7 @@ final class RouteTable implements AwsVpcEntity, Serializable {
       return new Association(isMain, subnetId);
     }
 
-    Association(boolean isMain, @Nullable String subnetId) {
+    public Association(boolean isMain, @Nullable String subnetId) {
       _isMain = isMain;
       _subnetId = subnetId;
     }
@@ -87,7 +87,7 @@ final class RouteTable implements AwsVpcEntity, Serializable {
     return new RouteTable(routeTableId, vpcId, associations, routes);
   }
 
-  RouteTable(
+  public RouteTable(
       String routeTableId, String vpcId, List<Association> associations, List<Route> routes) {
     _routeTableId = routeTableId;
     _vpcId = vpcId;

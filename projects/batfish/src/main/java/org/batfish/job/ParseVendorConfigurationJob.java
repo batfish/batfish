@@ -56,6 +56,7 @@ import org.batfish.grammar.palo_alto.PaloAltoCombinedParser;
 import org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
+import org.batfish.representation.terraform.TerraformConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
@@ -244,6 +245,17 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             throw new BatfishException(
                 String.format(
                     "Failed to create host config from file: '%s', with error: %s",
+                    _filename, e.getMessage()),
+                e);
+          }
+
+        case TERRAFORM:
+          try {
+            return TerraformConfiguration.fromJson(_filename, _fileText, _warnings);
+          } catch (Exception e) {
+            throw new BatfishException(
+                String.format(
+                    "Failed to create terraform config from file: '%s', with error: %s",
                     _filename, e.getMessage()),
                 e);
           }

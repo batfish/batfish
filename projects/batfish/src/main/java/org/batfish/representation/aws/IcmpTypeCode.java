@@ -13,7 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Represents a port range for a network acl entry */
 @ParametersAreNonnullByDefault
-final class IcmpTypeCode implements Serializable {
+public final class IcmpTypeCode implements Serializable {
 
   private final int _code;
 
@@ -28,7 +28,7 @@ final class IcmpTypeCode implements Serializable {
     return new IcmpTypeCode(type, code);
   }
 
-  IcmpTypeCode(int type, int code) {
+  public IcmpTypeCode(int type, int code) {
     _code = code;
     _type = type;
   }

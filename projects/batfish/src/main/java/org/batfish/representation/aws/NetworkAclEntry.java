@@ -22,7 +22,7 @@ import org.batfish.datamodel.Prefix6;
 
 /** Represents a network ACL entry for AWS */
 @ParametersAreNonnullByDefault
-abstract class NetworkAclEntry implements Serializable {
+public abstract class NetworkAclEntry implements Serializable {
 
   protected final boolean _isAllow;
 

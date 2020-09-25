@@ -7,11 +7,11 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix6;
 
 /** Represents an IPv6 network ACL entry in AWS */
-final class NetworkAclEntryV6 extends NetworkAclEntry {
+public final class NetworkAclEntryV6 extends NetworkAclEntry {
 
   @Nonnull private final Prefix6 _cidrBlock;
 
-  NetworkAclEntryV6(
+  public NetworkAclEntryV6(
       Prefix6 prefix,
       boolean isAllow,
       boolean isEgress,

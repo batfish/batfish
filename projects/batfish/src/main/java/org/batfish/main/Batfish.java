@@ -2295,6 +2295,43 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return overlayConfigurations;
   }
 
+  /** Returns {@code true} iff Terraform configuration data is found. */
+  private boolean serializeTerraformConfigs(
+      NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+    _logger.info("\n*** READING TERRAFORM CONFIGS ***\n");
+
+    Map<String, VendorConfiguration> terraformConfigurations;
+    boolean found;
+    Span span = GlobalTracer.get().buildSpan("Parse Terraform configs").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
+      Map<String, String> terraformConfigurationData;
+      try (Stream<String> keys = _storage.listInputTerraformConfigurationKeys(snapshot)) {
+        terraformConfigurationData = readAllInputObjects(keys, snapshot);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+      found = !terraformConfigurationData.isEmpty();
+      terraformConfigurations =
+          parseVendorConfigurations(
+              snapshot, terraformConfigurationData, pvcae, ConfigurationFormat.TERRAFORM);
+    } finally {
+      span.finish();
+    }
+
+    _logger.info("\n*** SERIALIZING TERRAFORM CONFIGURATION STRUCTURES ***\n");
+    _logger.resetTimer();
+    _logger.debugf("Serializing Terraform");
+    try {
+      _storage.storeVendorConfigurations(terraformConfigurations, snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    _logger.debug("OK\n");
+    _logger.printElapsedTime();
+    return found;
+  }
+
   private Answer serializeIndependentConfigs(NetworkSnapshot snapshot) {
     Span span = GlobalTracer.get().buildSpan("serializeIndependentConfigs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -2752,6 +2789,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // look for AWS VPC configs in the `aws_configs/` subfolder of the upload.
     if (serializeAwsConfigs(snapshot, answerElement)) {
+      configsFound = true;
+    }
+
+    // look for AWS VPC configs in the `aws_configs/` subfolder of the upload.
+    if (serializeTerraformConfigs(snapshot, answerElement)) {
       configsFound = true;
     }
 

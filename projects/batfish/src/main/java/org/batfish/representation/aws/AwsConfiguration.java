@@ -118,7 +118,7 @@ public class AwsConfiguration extends VendorConfiguration {
     this(new HashMap<>());
   }
 
-  private AwsConfiguration(Map<String, Account> accounts) {
+  public AwsConfiguration(Map<String, Account> accounts) {
     _accounts = accounts;
   }
 

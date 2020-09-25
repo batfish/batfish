@@ -51,7 +51,7 @@ import org.batfish.datamodel.transformation.TransformationStep;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ParametersAreNonnullByDefault
-final class InternetGateway implements AwsVpcEntity, Serializable {
+public final class InternetGateway implements AwsVpcEntity, Serializable {
 
   /** Name of the export policy to backbone */
   static final String IGW_TO_BACKBONE_EXPORT_POLICY_NAME = "~igw~to~backbone~export~policy~";

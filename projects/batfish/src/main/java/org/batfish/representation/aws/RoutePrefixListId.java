@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -12,9 +13,16 @@ final class RoutePrefixListId extends Route {
 
   @Nonnull private final String _prefixListId;
 
+  /** Deprecated constructor */
+  @VisibleForTesting
   RoutePrefixListId(
-      String prefixListId, State state, @Nullable String target, TargetType targetType) {
-    super(state, target, targetType);
+      String prefixListId, State state, @Nullable String targetId, TargetType targetType) {
+    super(state, new RouteTarget(targetId, targetType));
+    _prefixListId = prefixListId;
+  }
+
+  RoutePrefixListId(String prefixListId, State state, RouteTarget routeTarget) {
+    super(state, routeTarget);
     _prefixListId = prefixListId;
   }
 
@@ -34,13 +42,12 @@ final class RoutePrefixListId extends Route {
     RoutePrefixListId route = (RoutePrefixListId) o;
     return Objects.equals(_prefixListId, route._prefixListId)
         && _state == route._state
-        && Objects.equals(_target, route._target)
-        && _targetType == route._targetType;
+        && Objects.equals(_routeTarget, route._routeTarget);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_prefixListId, _state, _target, _targetType);
+    return Objects.hash(_prefixListId, _state, _routeTarget);
   }
 
   @Override

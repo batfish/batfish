@@ -1,5 +1,6 @@
 package org.batfish.representation.aws;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -9,13 +10,20 @@ import org.batfish.datamodel.Prefix;
 
 /** Representation of an IPv4 route in AWS */
 @ParametersAreNonnullByDefault
-final class RouteV4 extends Route {
+public final class RouteV4 extends Route {
 
   @Nonnull private final Prefix _destinationCidrBlock;
 
+  /** Deprecated constructor */
+  @VisibleForTesting
   RouteV4(
       Prefix destinationCidrBlock, State state, @Nullable String target, TargetType targetType) {
-    super(state, target, targetType);
+    super(state, new RouteTarget(target, targetType));
+    _destinationCidrBlock = destinationCidrBlock;
+  }
+
+  public RouteV4(Prefix destinationCidrBlock, State state, RouteTarget routeTarget) {
+    super(state, routeTarget);
     _destinationCidrBlock = destinationCidrBlock;
   }
 
@@ -35,13 +43,12 @@ final class RouteV4 extends Route {
     RouteV4 route = (RouteV4) o;
     return Objects.equals(_destinationCidrBlock, route._destinationCidrBlock)
         && _state == route._state
-        && Objects.equals(_target, route._target)
-        && _targetType == route._targetType;
+        && Objects.equals(_routeTarget, route._routeTarget);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_destinationCidrBlock, _state, _target, _targetType);
+    return Objects.hash(_destinationCidrBlock, _state, _routeTarget);
   }
 
   @Override
