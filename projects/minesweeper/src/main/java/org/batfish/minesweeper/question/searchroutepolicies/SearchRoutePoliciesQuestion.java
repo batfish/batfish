@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,9 +20,11 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private static final String PROP_POLICIES = "policies";
   private static final String PROP_ACTION = "action";
 
-  private static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
+  @VisibleForTesting
+  static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
       BgpRouteConstraints.builder().build();
-  private static final Action DEFAULT_ACTION = Action.PERMIT;
+
+  @VisibleForTesting static final Action DEFAULT_ACTION = Action.PERMIT;
 
   @Nullable private final String _nodes;
   @Nullable private final String _policies;
