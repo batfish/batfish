@@ -19,6 +19,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpTieBreaker;
+import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
@@ -33,7 +34,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   /** Main RIB to use for IGP cost estimation */
-  @Nullable protected final AnnotatedRib<AbstractRoute> _mainRib;
+  @Nullable protected final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
   /** Tie breaker to use if all route attributes appear to be equal */
   @Nonnull protected final BgpTieBreaker _tieBreaker;
   /** Maximum number of paths to install. Unconstrained (infinite) if {@code null} */
@@ -57,7 +58,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   protected boolean _clusterListAsIgpCost;
 
   protected BgpRib(
-      @Nullable Rib mainRib,
+      @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
