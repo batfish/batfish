@@ -1,0 +1,4 @@
+load-questions questions/experimental
+
+# test searchRoutePolicies
+test -raw tests/questions/experimental/minesweeper-based/searchRoutePolicies.ref validate-template searchRoutePolicies nodes="nodes", policies="policies", inputConstraints={prefix=["1.1.1.0/24"]}, action="permit", outputConstraints={prefix=["2.2.2.0/24"]}
