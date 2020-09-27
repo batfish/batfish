@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.BgpRoute;
@@ -24,23 +25,21 @@ public final class TestRoutePoliciesQuestion extends Question {
   // Defaults are dummy values for now.
   private static final Direction DEFAULT_DIRECTION = Direction.IN;
   private static final List<BgpRoute> DEFAULT_INPUT_ROUTES = ImmutableList.of();
-  private static final String DEFAULT_NODE = "";
-  private static final String DEFAULT_POLICY = "";
 
-  private final Direction _direction;
-  private final String _nodes;
-  private final String _policies;
-  private final List<BgpRoute> _inputRoutes;
+  @Nonnull private final Direction _direction;
+  @Nullable private final String _nodes;
+  @Nullable private final String _policies;
+  @Nonnull private final List<BgpRoute> _inputRoutes;
 
   public TestRoutePoliciesQuestion() {
-    this(DEFAULT_DIRECTION, DEFAULT_INPUT_ROUTES, DEFAULT_NODE, DEFAULT_POLICY);
+    this(DEFAULT_DIRECTION, DEFAULT_INPUT_ROUTES, null, null);
   }
 
   public TestRoutePoliciesQuestion(
-      @JsonProperty(PROP_DIRECTION) Direction direction,
-      @JsonProperty(PROP_INPUT_ROUTES) List<BgpRoute> inputRoutes,
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_POLICIES) String policies) {
+      Direction direction,
+      List<BgpRoute> inputRoutes,
+      @Nullable String nodes,
+      @Nullable String policies) {
     _direction = direction;
     _nodes = nodes;
     _policies = policies;
@@ -55,8 +54,6 @@ public final class TestRoutePoliciesQuestion extends Question {
       @Nullable @JsonProperty(PROP_POLICIES) String policies) {
     checkNotNull(direction, "%s must not be null", PROP_DIRECTION);
     checkNotNull(inputRoute, "%s must not be null", PROP_INPUT_ROUTES);
-    checkNotNull(nodes, "%s must not be null", PROP_NODES);
-    checkNotNull(policies, "%s must not be null", PROP_POLICIES);
     return new TestRoutePoliciesQuestion(direction, inputRoute, nodes, policies);
   }
 
@@ -66,11 +63,13 @@ public final class TestRoutePoliciesQuestion extends Question {
     return false;
   }
 
+  @Nonnull
   @JsonProperty(PROP_DIRECTION)
   public Direction getDirection() {
     return _direction;
   }
 
+  @Nonnull
   @JsonProperty(PROP_INPUT_ROUTES)
   public List<BgpRoute> getInputRoutes() {
     return _inputRoutes;
@@ -83,11 +82,13 @@ public final class TestRoutePoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
+  @Nullable
   public String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_POLICIES)
+  @Nullable
   public String getPolicies() {
     return _policies;
   }

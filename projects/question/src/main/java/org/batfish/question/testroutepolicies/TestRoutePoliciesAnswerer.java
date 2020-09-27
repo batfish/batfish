@@ -61,10 +61,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
   public static final String COL_DIFF = "Difference";
 
-  private final Direction _direction;
-  private final List<Bgpv4Route> _inputRoutes;
-  private final String _nodes;
-  private final String _policies;
+  @Nonnull private final Direction _direction;
+  @Nonnull private final List<Bgpv4Route> _inputRoutes;
+  @Nullable private final String _nodes;
+  @Nullable private final String _policies;
 
   public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);

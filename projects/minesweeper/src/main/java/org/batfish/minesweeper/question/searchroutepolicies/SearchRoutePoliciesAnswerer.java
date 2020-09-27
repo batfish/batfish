@@ -91,8 +91,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
-  @Nonnull private final String _nodes;
-  @Nonnull private final String _policies;
+  @Nullable private final String _nodes;
+  @Nullable private final String _policies;
   @Nonnull private final Action _action;
 
   @Nonnull private final Set<String> _communityRegexes;
