@@ -576,7 +576,7 @@ public class VirtualRouterTest {
     vrs.values()
         .forEach(
             vr ->
-                vr.initForEgpComputation(
+                vr.initForEgpComputationWithNewTopology(
                     TopologyContext.builder()
                         .setBgpTopology(bgpTopology)
                         .setEigrpTopology(eigrpTopology)
@@ -601,7 +601,7 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)
-          .initForEgpComputation(
+          .initForEgpComputationWithNewTopology(
               TopologyContext.builder()
                   .setBgpTopology(bgpTopology2)
                   .setEigrpTopology(eigrpTopology)
