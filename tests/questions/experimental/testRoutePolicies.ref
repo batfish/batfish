@@ -70,15 +70,15 @@
       "nodes" : {
         "description" : "Only examine filters on nodes matching this specifier",
         "displayName" : "Nodes",
-        "optional" : false,
+        "optional" : true,
         "type" : "nodeSpec",
         "value" : "nodes"
       },
       "policies" : {
         "description" : "Only consider policies that match this specifier",
         "displayName" : "Policies",
-        "optional" : false,
-        "type" : "string",
+        "optional" : true,
+        "type" : "routingPolicySpec",
         "value" : "policies"
       }
     }
