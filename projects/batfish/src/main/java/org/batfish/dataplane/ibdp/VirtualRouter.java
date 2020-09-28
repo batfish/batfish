@@ -338,19 +338,26 @@ public class VirtualRouter implements Serializable {
   }
 
   /**
-   * Prepare for the EGP part of the computation
+   * Prepare for the EGP part of the computation. Handles updating routing processes given new
+   * topology information.
    *
    * @param topologyContext The various network topologies
    */
-  void initForEgpComputation(TopologyContext topologyContext) {
+  void initForEgpComputationWithNewTopology(TopologyContext topologyContext) {
     initQueuesAndDeltaBuilders(topologyContext);
-    // Handle BGP process state
-    if (_bgpRoutingProcess != null && !_bgpRoutingProcess.isInitialized()) {
-      _bgpRoutingProcess.initialize(_node);
-    }
     if (_bgpRoutingProcess != null) {
       // If the process exists, update the topology
       _bgpRoutingProcess.updateTopology(topologyContext.getBgpTopology());
+    }
+  }
+
+  /**
+   * Initialize for EGP computation. Handles any state that does <b>not</b> depend on neighbor
+   * relationships (i.e., purely local).
+   */
+  void initForEgpComputationBeforeTopologyLoop() {
+    if (_bgpRoutingProcess != null && !_bgpRoutingProcess.isInitialized()) {
+      _bgpRoutingProcess.initialize(_node);
     }
   }
 
