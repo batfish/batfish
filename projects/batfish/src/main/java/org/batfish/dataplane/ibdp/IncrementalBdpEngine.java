@@ -40,7 +40,6 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
@@ -429,11 +428,7 @@ class IncrementalBdpEngine {
       }
 
       computeIterationOfBgpRoutes(
-          iterationLabel,
-          allNodes,
-          topologyContext.getBgpTopology(),
-          networkConfigurations,
-          iteration);
+          iterationLabel, allNodes, topologyContext.getBgpTopology(), networkConfigurations);
 
       Span redistributeSpan =
           GlobalTracer.get().buildSpan(iterationLabel + ": Redistribute").start();
@@ -458,8 +453,7 @@ class IncrementalBdpEngine {
       String iterationLabel,
       Map<String, Node> allNodes,
       BgpTopology bgpTopology,
-      NetworkConfigurations networkConfigurations,
-      int iteration) {
+      NetworkConfigurations networkConfigurations) {
     Span span =
         GlobalTracer.get().buildSpan(iterationLabel + ": Init for new BGP iteration").start();
     LOGGER.info("{}: Init for new BGP iteration", iterationLabel);
@@ -543,28 +537,30 @@ class IncrementalBdpEngine {
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
       // Multi-VRF redistribution of BGP routes:
-      allNodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
-                  for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
-                    if (dstVr.getBgpRoutingProcess() == null) {
-                      continue;
-                    }
-                    dstVr
-                        .getBgpRoutingProcess()
-                        .redistribute(
-                            iteration > 1
-                                ? srcVr._mainRibRouteDeltaBuilder.build()
-                                : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-                                    .add(srcVr.getMainRib().getTypedRoutes())
-                                    .build(),
-                            srcVr.getName());
-                  }
-                }
-              });
+      // NOTE: this code is busted. Was only used for EVPN type 5 routes, support for which is
+      // utterly broken.
+      //      allNodes
+      //          .values()
+      //          .parallelStream()
+      //          .forEach(
+      //              n -> {
+      //                for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
+      //                  for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
+      //                    if (dstVr.getBgpRoutingProcess() == null) {
+      //                      continue;
+      //                    }
+      //                    dstVr
+      //                        .getBgpRoutingProcess()
+      //                        .redistribute(
+      //                            iteration > 1
+      //                                ? srcVr._mainRibRouteDeltaBuilder.build()
+      //                                : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+      //                                    .add(srcVr.getMainRib().getTypedRoutes())
+      //                                    .build(),
+      //                            srcVr.getName());
+      //                  }
+      //                }
+      //              });
     } finally {
       propSpan.finish();
     }
