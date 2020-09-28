@@ -3,15 +3,10 @@ package org.batfish.dataplane.rib;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Ordering;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -29,15 +24,14 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
  * @param <R> route type
  */
 @ParametersAreNonnullByDefault
-public final class RibDelta<R> {
+public final class RibDelta<R extends AbstractRouteDecorator> {
 
-  /** Sorted for deterministic iteration order */
-  private final ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> _actions;
+  private final List<RouteAdvertisement<R>> _actions;
 
-  private static final RibDelta<Object> EMPTY = new RibDelta<>(ImmutableSortedMap.of());
+  private static final RibDelta<AbstractRoute> EMPTY = new RibDelta<>(ImmutableList.of());
 
-  private RibDelta(ImmutableSortedMap<Prefix, List<RouteAdvertisement<R>>> actions) {
-    _actions = actions;
+  private RibDelta(List<RouteAdvertisement<R>> actions) {
+    _actions = ImmutableList.copyOf(actions);
   }
 
   public static <R extends AbstractRouteDecorator> RibDelta<R> merge(
@@ -54,18 +48,14 @@ public final class RibDelta<R> {
    * @return a set of {@link Prefix}
    */
   @Nonnull
-  public Set<Prefix> getPrefixes() {
-    return _actions.keySet();
+  public Stream<Prefix> getPrefixes() {
+    return _actions.stream().map(ra -> ra.getRoute().getNetwork()).distinct();
   }
 
   /** Return all the RIB actions that need to be applied (in order). */
   @Nonnull
   public Stream<RouteAdvertisement<R>> getActions() {
-    return _actions.values().stream().flatMap(List::stream);
-  }
-
-  private Map<Prefix, List<RouteAdvertisement<R>>> getActionMap() {
-    return _actions;
+    return _actions.stream();
   }
 
   /** Check whether this delta is empty (has no outstanding actions) */
@@ -87,7 +77,7 @@ public final class RibDelta<R> {
   /** Helper method: retrieves all routes affected by this delta. */
   @Nonnull
   public Stream<R> getRoutesStream() {
-    return _actions.values().stream().flatMap(List::stream).map(RouteAdvertisement::getRoute);
+    return _actions.stream().map(RouteAdvertisement::getRoute);
   }
 
   /**
@@ -116,16 +106,11 @@ public final class RibDelta<R> {
   @ParametersAreNonnullByDefault
   public static final class Builder<R extends AbstractRouteDecorator> {
 
-    private Map<Prefix, LinkedHashMap<R, RouteAdvertisement<R>>> _actions;
+    private LinkedHashMap<R, RouteAdvertisement<R>> _actions;
 
     /** Initialize a new RibDelta builder */
     private Builder() {
       _actions = new LinkedHashMap<>();
-    }
-
-    @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
-    private LinkedHashMap<R, RouteAdvertisement<R>> getAdvertisements(Prefix network) {
-      return _actions.computeIfAbsent(network, p -> new LinkedHashMap<>(8));
     }
 
     /**
@@ -134,12 +119,10 @@ public final class RibDelta<R> {
      * @param route Route that was added
      */
     public Builder<R> add(R route) {
-      LinkedHashMap<R, RouteAdvertisement<R>> advertisedRoutes =
-          getAdvertisements(route.getNetwork());
-      RouteAdvertisement<R> old = advertisedRoutes.put(route, new RouteAdvertisement<>(route));
+      RouteAdvertisement<R> old = _actions.put(route, new RouteAdvertisement<>(route));
       if (old != null && old.isWithdrawn()) {
         // In this same delta, we withdrew the route and are now re-advertising. Should be no-op.
-        advertisedRoutes.remove(route);
+        _actions.remove(route);
       }
       return this;
     }
@@ -160,14 +143,12 @@ public final class RibDelta<R> {
      * @param route that was removed
      */
     public Builder<R> remove(R route, Reason reason) {
-      LinkedHashMap<R, RouteAdvertisement<R>> advertisedRoutes =
-          getAdvertisements(route.getNetwork());
       RouteAdvertisement<R> old =
-          advertisedRoutes.put(
+          _actions.put(
               route, RouteAdvertisement.<R>builder().setRoute(route).setReason(reason).build());
       if (old != null && old.getReason() == Reason.ADD) {
         // In this same delta, we added the route and are now withdrawing. Instead, no-op.
-        advertisedRoutes.remove(route);
+        _actions.remove(route);
       }
       return this;
     }
@@ -198,13 +179,7 @@ public final class RibDelta<R> {
       if (isEmpty()) {
         return empty();
       }
-      return new RibDelta<>(
-          _actions.entrySet().stream()
-              .collect(
-                  ImmutableSortedMap.toImmutableSortedMap(
-                      Ordering.natural(),
-                      Entry::getKey,
-                      e -> ImmutableList.copyOf(e.getValue().values()))));
+      return new RibDelta<>(ImmutableList.copyOf(_actions.values()));
     }
 
     /** Process all added and removed routes from a given delta */
@@ -239,7 +214,7 @@ public final class RibDelta<R> {
   /** Return an empty RIB delta */
   @Nonnull
   @SuppressWarnings("unchecked") // Fully variant implementation, never stores any Ts
-  public static <T> RibDelta<T> empty() {
+  public static <T extends AbstractRouteDecorator> RibDelta<T> empty() {
     return (RibDelta<T>) EMPTY;
   }
 
@@ -312,20 +287,15 @@ public final class RibDelta<R> {
       return empty();
     }
     Builder<T> builder = RibDelta.builder();
-    delta
-        .getActionMap()
-        .forEach(
-            (prefix, actions) -> {
-              for (RouteAdvertisement<U> uRouteAdvertisement : actions) {
-                T tRoute = converter.apply(uRouteAdvertisement.getRoute());
-                if (uRouteAdvertisement.isWithdrawn()) {
-                  builder.from(
-                      importingRib.removeRouteGetDelta(tRoute, uRouteAdvertisement.getReason()));
-                } else {
-                  builder.from(importingRib.mergeRouteGetDelta(tRoute));
-                }
-              }
-            });
+    delta._actions.forEach(
+        (uRouteAdvertisement) -> {
+          T tRoute = converter.apply(uRouteAdvertisement.getRoute());
+          if (uRouteAdvertisement.isWithdrawn()) {
+            builder.from(importingRib.removeRouteGetDelta(tRoute, uRouteAdvertisement.getReason()));
+          } else {
+            builder.from(importingRib.mergeRouteGetDelta(tRoute));
+          }
+        });
     return builder.build();
   }
 
