@@ -121,6 +121,20 @@ class IncrementalBdpEngine {
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
       computeIgpDataPlane(nodes, initialTopologyContext, answerElement);
 
+      LOGGER.info("Initialize virtual routers before topology fixed point");
+      Span initializationSpan =
+          GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
+        assert innerScope != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(VirtualRouter::initForEgpComputationBeforeTopologyLoop);
+      } finally {
+        initializationSpan.finish();
+      }
+
       /*
        * Perform a fixed-point computation.
        */
@@ -716,16 +730,18 @@ class IncrementalBdpEngine {
       /*
        * Initialize all routers and their message queues (can be done as parallel as possible)
        */
-      LOGGER.info("Initialize virtual routers");
+      LOGGER.info("Initialize virtual routers with updated topologies");
       Span initializationSpan =
-          GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
+          GlobalTracer.get()
+              .buildSpan("Initialize virtual routers with updated topologies")
+              .start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
         assert innerScope != null; // avoid unused warning
         nodes
             .values()
             .parallelStream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(vr -> vr.initForEgpComputation(topologyContext));
+            .forEach(vr -> vr.initForEgpComputationWithNewTopology(topologyContext));
       } finally {
         initializationSpan.finish();
       }

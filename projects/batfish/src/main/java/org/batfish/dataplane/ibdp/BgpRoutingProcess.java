@@ -163,7 +163,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Delta builder for routes that must be propagated to the main RIB */
   @Nonnull private RibDelta.Builder<BgpRoute<?, ?>> _changeSet = RibDelta.builder();
 
-  /* Hacky way to not re-init the process across topology computations. Not a permanent solution */
+  /* Indicates whether this BGP process has been initialized. */
   private boolean _initialized = false;
 
   /**
