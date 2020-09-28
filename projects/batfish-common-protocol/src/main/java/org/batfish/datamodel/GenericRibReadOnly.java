@@ -5,6 +5,9 @@ import java.util.Set;
 
 public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Serializable {
 
+  /** Check whether a given route is present in the RIB */
+  boolean containsRoute(R route);
+
   /** Return set of {@link AbstractRoute abstract routes} this RIB contains. */
   Set<AbstractRoute> getRoutes();
 
@@ -37,4 +40,14 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
    * @return a set of routes that match the {@code address} given the constraint.
    */
   Set<R> longestPrefixMatch(Ip address, int maxPrefixLength);
+
+  /**
+   * Compare the preferability of one route with anther
+   *
+   * @param lhs 1st route with which to compare preference
+   * @param rhs 2nd route with which to compare preference
+   * @return -1 if lhs route is less preferable than rhs; 0 if lhs route and rhs are equally
+   *     preferable (i.e. for multipath routing); 1 if lhs route is strictly more preferred than rhs
+   */
+  int comparePreference(R lhs, R rhs);
 }

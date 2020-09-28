@@ -526,6 +526,11 @@ public class RoutesAnswererTest {
     }
 
     @Override
+    public boolean containsRoute(R route) {
+      return _routes.contains(route);
+    }
+
+    @Override
     public Set<AbstractRoute> getRoutes() {
       return _routes.stream()
           .map(AbstractRouteDecorator::getAbstractRoute)

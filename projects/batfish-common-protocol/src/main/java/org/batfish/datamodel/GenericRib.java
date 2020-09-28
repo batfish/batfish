@@ -3,14 +3,11 @@ package org.batfish.datamodel;
 public interface GenericRib<R extends AbstractRouteDecorator> extends GenericRibReadOnly<R> {
 
   /**
-   * Compare the preferability of one route with anther
+   * Add a route to this RIB.
    *
-   * @param lhs 1st route with which to compare preference
-   * @param rhs 2nd route with which to compare preference
-   * @return -1 if lhs route is less preferable than rhs; 0 if lhs route and rhs are equally
-   *     preferable (i.e. for multipath routing); 1 if lhs route is strictly more preferred than rhs
+   * @param route route to add
+   * @return true if the route was merged, or false if it was discarded (e.g., a better route
+   *     already exists)
    */
-  int comparePreference(R lhs, R rhs);
-
   boolean mergeRoute(R route);
 }
