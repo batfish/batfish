@@ -3,6 +3,7 @@ package org.batfish.common.util;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.math.IntMath;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -110,6 +111,25 @@ public final class CollectionUtil {
    */
   public static <T> Collector<T, ?, Integer> toUnorderedHashCode() {
     return Collectors.summingInt(Objects::hashCode);
+  }
+
+  /** Return the max values of the input collection according to the input comparator. */
+  public static <R> Collection<R> maxValues(Collection<R> values, Comparator<R> comparator) {
+    List<R> maxValues = new ArrayList<>();
+    for (R value : values) {
+      if (maxValues.isEmpty()) {
+        maxValues.add(value);
+        continue;
+      }
+      int cmp = comparator.compare(value, maxValues.get(0));
+      if (cmp == 0) {
+        maxValues.add(value);
+      } else if (cmp > 0) {
+        maxValues.clear();
+        maxValues.add(value);
+      }
+    }
+    return maxValues;
   }
 
   private CollectionUtil() {} // prevent instantiation

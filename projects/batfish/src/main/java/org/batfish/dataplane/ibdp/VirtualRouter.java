@@ -1761,21 +1761,14 @@ public class VirtualRouter implements Serializable {
     _bgpRoutingProcess._ebgpDelta =
         RibDelta.merge(
             _bgpRoutingProcess._ebgpDelta,
-            RibDelta.<Bgpv4Route>builder()
-                .add(_bgpRoutingProcess._ebgpv4Rib.getBestPathRoutes())
-                .build());
+            RibDelta.adding(_bgpRoutingProcess._ebgpv4Rib.getBestPathRoutes()));
     _bgpRoutingProcess._bgpv4Delta =
         RibDelta.merge(
             _bgpRoutingProcess._bgpv4Delta,
-            RibDelta.<Bgpv4Route>builder()
-                .add(_bgpRoutingProcess._bgpv4Rib.getTypedRoutes())
-                .build());
+            RibDelta.adding(_bgpRoutingProcess._bgpv4Rib.getTypedRoutes()));
     _bgpRoutingProcess._mainRibBgpv4RouteDelta =
         RibDelta.merge(
-            _bgpRoutingProcess._mainRibBgpv4RouteDelta,
-            RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-                .add(_mainRib.getTypedRoutes())
-                .build());
+            _bgpRoutingProcess._mainRibBgpv4RouteDelta, RibDelta.adding(_mainRib.getTypedRoutes()));
 
     /*
      * Export neighbor-specific generated routes, these routes skip global export policy
@@ -2088,9 +2081,7 @@ public class VirtualRouter implements Serializable {
     // from second iteration
     RibDelta<AnnotatedRoute<AbstractRoute>> ribDelta =
         numIterations == 1
-            ? RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-                .add(_mainRib.getTypedRoutes())
-                .build()
+            ? RibDelta.adding(_mainRib.getTypedRoutes())
             : _mainRibRouteDeltaBuilder.build();
     Streams.concat(_ospfProcesses.values().stream(), _eigrpProcesses.values().stream())
         .forEach(p -> p.redistribute(ribDelta));

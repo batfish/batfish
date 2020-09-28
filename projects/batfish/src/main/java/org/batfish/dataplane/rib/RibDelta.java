@@ -34,6 +34,32 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     _actions = ImmutableList.copyOf(actions);
   }
 
+  /**
+   * Create a new {@link RibDelta} advertising the input route with {@link Reason} {@link
+   * Reason#ADD}.
+   */
+  public static <R extends AbstractRouteDecorator> RibDelta<R> adding(R route) {
+    return new RibDelta<>(ImmutableList.of(RouteAdvertisement.adding(route)));
+  }
+
+  /**
+   * Create a new {@link RibDelta} advertising the input routes with {@link Reason} {@link
+   * Reason#ADD}.
+   */
+  public static <R extends AbstractRouteDecorator> RibDelta<R> adding(Collection<R> routes) {
+    return new RibDelta<>(
+        routes.stream().map(RouteAdvertisement::adding).collect(ImmutableList.toImmutableList()));
+  }
+
+  public static <R extends AbstractRouteDecorator> RibDelta<R> of(RouteAdvertisement<R> action) {
+    return new RibDelta<>(ImmutableList.of(action));
+  }
+
+  public static <R extends AbstractRouteDecorator> RibDelta<R> of(
+      Collection<RouteAdvertisement<R>> actions) {
+    return new RibDelta<>(ImmutableList.copyOf(actions));
+  }
+
   public static <R extends AbstractRouteDecorator> RibDelta<R> merge(
       @Nullable RibDelta<R> delta1, RibDelta<R> delta2) {
     if (delta1 == null || delta1.isEmpty()) {
