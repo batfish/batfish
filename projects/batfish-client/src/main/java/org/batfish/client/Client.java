@@ -2,6 +2,7 @@ package org.batfish.client;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
+import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -660,6 +661,14 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
+        break;
+      case ROUTING_POLICY_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        SpecifierFactories.getRoutingPolicySpecifierOrDefault(
+            value.textValue(), ALL_ROUTING_POLICIES);
         break;
       case ROUTING_PROTOCOL_SPEC:
         if (!value.isTextual()) {

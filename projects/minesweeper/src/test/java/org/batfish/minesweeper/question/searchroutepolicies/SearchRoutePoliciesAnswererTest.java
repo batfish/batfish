@@ -10,6 +10,9 @@ import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePo
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.COL_POLICY_NAME;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.toClosedRange;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.DENY;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_ACTION;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_ROUTE_CONSTRAINTS;
+import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -72,6 +75,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.hamcrest.Matchers;
@@ -172,6 +176,18 @@ public class SearchRoutePoliciesAnswererTest {
 
   private MatchCommunitySet matchNamedCommunity(String name) {
     return new MatchCommunitySet(new NamedCommunitySet(name));
+  }
+
+  /** Test that we handle potential nulls in question parameters */
+  @Test
+  public void testConstructorWithNullsInQuestion() {
+    SearchRoutePoliciesAnswerer answerer =
+        new SearchRoutePoliciesAnswerer(
+            new SearchRoutePoliciesQuestion(
+                DEFAULT_ROUTE_CONSTRAINTS, DEFAULT_ROUTE_CONSTRAINTS, null, null, DEFAULT_ACTION),
+            _batfish);
+    assertEquals(answerer.getNodeSpecifier(), AllNodesNodeSpecifier.INSTANCE);
+    assertEquals(answerer.getPolicySpecifier(), ALL_ROUTING_POLICIES);
   }
 
   @Test

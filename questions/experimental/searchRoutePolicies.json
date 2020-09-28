@@ -29,7 +29,7 @@
             },
             "policies": {
                 "description": "Only consider policies that match this specifier",
-                "type": "string",
+                "type": "routingPolicySpec",
                 "optional": true,
                 "displayName": "Policies"
             },
