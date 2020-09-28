@@ -66,13 +66,6 @@ public class AnswerMetadataUtilTest {
                                 ImmutableMap.of(Aggregation.MAX, value),
                                 issueColumnName,
                                 ImmutableMap.of(Aggregation.MAX, severity)))
-                        .setMajorIssueConfigs(
-                            ImmutableMap.of(
-                                major,
-                                new MajorIssueConfig(
-                                    major,
-                                    ImmutableMap.of(
-                                        minor, new MinorIssueConfig(minor, severity, null)))))
                         .setNumExcludedRows(1)
                         .setNumRows(1)
                         .build())
@@ -302,59 +295,5 @@ public class AnswerMetadataUtilTest {
 
     assertThat(
         AnswerMetadataUtil.computeEmptyColumns(table), equalTo(ImmutableSet.of(emptyColumn)));
-  }
-
-  @Test
-  public void testComputeMajorIssueTypesNoColumn() {
-    String columnName = "col";
-    String value = "foo";
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.STRING, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableMap.of()));
-  }
-
-  @Test
-  public void testComputeMajorIssueTypesNone() {
-    String columnName = "col";
-
-    TableMetadata tableMetadata =
-        new TableMetadata(
-            ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
-            new DisplayHints().getTextDesc());
-    TableAnswerElement table =
-        new TableAnswerElement(tableMetadata)
-            .addRow(Row.builder(tableMetadata.toColumnMap()).build());
-
-    assertThat(AnswerMetadataUtil.computeMajorIssueConfigs(table), equalTo(ImmutableMap.of()));
-  }
-
-  @Test
-  public void testComputeMajorIssueTypesSome() {
-    String columnName = "col";
-    String major = "major";
-    String minor = "minor";
-    int severity = 5;
-    Issue value = new Issue("a", severity, new Issue.Type(major, minor));
-
-    TableAnswerElement table =
-        new TableAnswerElement(
-                new TableMetadata(
-                    ImmutableList.of(new ColumnMetadata(columnName, Schema.ISSUE, "foobar")),
-                    new DisplayHints().getTextDesc()))
-            .addRow(Row.of(columnName, value));
-
-    assertThat(
-        AnswerMetadataUtil.computeMajorIssueConfigs(table),
-        equalTo(
-            ImmutableMap.of(
-                major,
-                new MajorIssueConfig(
-                    major, ImmutableMap.of(minor, new MinorIssueConfig(minor, severity, null))))));
   }
 }

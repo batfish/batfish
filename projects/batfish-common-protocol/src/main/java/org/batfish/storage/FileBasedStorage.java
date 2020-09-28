@@ -75,7 +75,6 @@ import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -89,11 +88,9 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -124,8 +121,6 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_FORK_REQUEST_FILE = "fork_request";
   private static final String RELPATH_ENV_TOPOLOGY_FILE = "env_topology";
   private static final String RELPATH_CONVERT_ANSWER_PATH = "convert_answer";
-  private static final String RELPATH_CONTAINER_SETTINGS_ISSUES = "issues";
-  private static final String RELPATH_CONTAINER_SETTINGS = "settings";
   private static final String RELPATH_ANSWERS_DIR = "answers";
   private static final String RELPATH_ANSWER_METADATA = "answer_metadata.json";
   private static final String RELPATH_ANSWER_JSON = "answer.json";
@@ -368,46 +363,6 @@ public class FileBasedStorage implements StorageProvider {
           String.format("Could not find work json for work ID: %s", workId));
     }
     return readFileToString(filePath, UTF_8);
-  }
-
-  @Override
-  public @Nullable MajorIssueConfig loadMajorIssueConfig(
-      NetworkId network, IssueSettingsId majorIssueType) {
-    Path path = getMajorIssueConfigDir(network, majorIssueType);
-
-    if (!Files.exists(path)) {
-      return null;
-    }
-
-    try {
-      return BatfishObjectMapper.mapper().readValue(path.toFile(), MajorIssueConfig.class);
-    } catch (IOException e) {
-      _logger.errorf(
-          "ERROR: Could not cast read file for major issue settings with ID %s in network %s: %s",
-          majorIssueType, network, Throwables.getStackTraceAsString(e));
-      return null;
-    }
-  }
-
-  @Override
-  public void storeMajorIssueConfig(
-      NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig)
-      throws IOException {
-    Path path = getMajorIssueConfigDir(network, majorIssueType);
-
-    if (Files.notExists(path)) {
-      Files.createDirectories(path.getParent());
-    }
-
-    writeStringToFile(
-        path, BatfishObjectMapper.mapper().writeValueAsString(majorIssueConfig), UTF_8);
-  }
-
-  private @Nonnull Path getQuestionSettingsPath(
-      NetworkId network, QuestionSettingsId questionSettingsId) {
-    return getNetworkSettingsDir(network)
-        .resolve(RELPATH_QUESTIONS_DIR)
-        .resolve(String.format("%s.json", questionSettingsId.getId()));
   }
 
   @Override
@@ -701,25 +656,8 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nullable String loadQuestionSettings(
-      NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
-    Path questionSettingsPath = getQuestionSettingsPath(networkId, questionSettingsId);
-    if (!Files.exists(questionSettingsPath)) {
-      return null;
-    }
-    return readFileToString(questionSettingsPath, UTF_8);
-  }
-
-  @Override
   public boolean checkNetworkExists(NetworkId network) {
     return Files.exists(getNetworkDir(network));
-  }
-
-  @Override
-  public void storeQuestionSettings(
-      String settings, NetworkId network, QuestionSettingsId questionSettingsId)
-      throws IOException {
-    writeStringToFile(getQuestionSettingsPath(network, questionSettingsId), settings, UTF_8);
   }
 
   @Override
@@ -1686,12 +1624,6 @@ public class FileBasedStorage implements StorageProvider {
     return getAnswersDir().resolve(answerId.getId());
   }
 
-  private @Nonnull Path getMajorIssueConfigDir(NetworkId network, IssueSettingsId majorIssueType) {
-    return getNetworkSettingsDir(network)
-        .resolve(RELPATH_CONTAINER_SETTINGS_ISSUES)
-        .resolve(majorIssueType + ".json");
-  }
-
   private @Nonnull Path getNetworkAnalysisDir(NetworkId network, AnalysisId analysis) {
     return getNetworkDir(network).resolve(RELPATH_ANALYSES_DIR).resolve(analysis.getId());
   }
@@ -1715,10 +1647,6 @@ public class FileBasedStorage implements StorageProvider {
   @Nonnull
   Path getOriginalDir(String key, NetworkId network) {
     return getOriginalsDir(network).resolve(toBase64(key));
-  }
-
-  private @Nonnull Path getNetworkSettingsDir(NetworkId network) {
-    return getNetworkDir(network).resolve(RELPATH_CONTAINER_SETTINGS);
   }
 
   private Path getNodeRolesDir() {

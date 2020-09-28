@@ -21,8 +21,6 @@ public class Metrics {
 
     private Set<String> _emptyColumns;
 
-    private Map<String, MajorIssueConfig> _majorIssueConfigs;
-
     private int _numExcludedRows;
 
     private int _numRows;
@@ -30,12 +28,10 @@ public class Metrics {
     private Builder() {
       _aggregations = ImmutableMap.of();
       _emptyColumns = ImmutableSet.of();
-      _majorIssueConfigs = ImmutableMap.of();
     }
 
     public @Nonnull Metrics build() {
-      return new Metrics(
-          _aggregations, _emptyColumns, _majorIssueConfigs, _numExcludedRows, _numRows);
+      return new Metrics(_aggregations, _emptyColumns, _numExcludedRows, _numRows);
     }
 
     public @Nonnull Builder setAggregations(
@@ -46,12 +42,6 @@ public class Metrics {
 
     public @Nonnull Builder setEmptyColumns(@Nonnull Set<String> emptyColumns) {
       _emptyColumns = ImmutableSet.copyOf(emptyColumns);
-      return this;
-    }
-
-    public @Nonnull Builder setMajorIssueConfigs(
-        @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs) {
-      _majorIssueConfigs = ImmutableMap.copyOf(majorIssueConfigs);
       return this;
     }
 
@@ -74,14 +64,11 @@ public class Metrics {
   private static @Nonnull Metrics create(
       @JsonProperty(BfConsts.PROP_AGGREGATIONS) Map<String, Map<Aggregation, Object>> aggregations,
       @JsonProperty(BfConsts.PROP_EMPTY_COLUMNS) Set<String> emptyColumns,
-      @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_CONFIGS)
-          Map<String, MajorIssueConfig> majorIssueConfigs,
       @JsonProperty(BfConsts.PROP_NUM_EXCLUDED_ROWS) int numExcludedRows,
       @JsonProperty(BfConsts.PROP_NUM_ROWS) int numRows) {
     return new Metrics(
         firstNonNull(aggregations, ImmutableMap.of()),
         firstNonNull(emptyColumns, ImmutableSet.of()),
-        firstNonNull(majorIssueConfigs, ImmutableMap.of()),
         numExcludedRows,
         numRows);
   }
@@ -90,8 +77,6 @@ public class Metrics {
 
   private final Set<String> _emptyColumns;
 
-  private final Map<String, MajorIssueConfig> _majorIssueConfigs;
-
   private final int _numExcludedRows;
 
   private final int _numRows;
@@ -99,12 +84,10 @@ public class Metrics {
   private Metrics(
       @Nonnull Map<String, Map<Aggregation, Object>> aggregations,
       @Nonnull Set<String> emptyColumns,
-      @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs,
       int numExcludedRows,
       int numRows) {
     _aggregations = aggregations;
     _emptyColumns = emptyColumns;
-    _majorIssueConfigs = majorIssueConfigs;
     _numExcludedRows = numExcludedRows;
     _numRows = numRows;
   }
@@ -120,7 +103,6 @@ public class Metrics {
     Metrics rhs = (Metrics) obj;
     return _aggregations.equals(rhs._aggregations)
         && _emptyColumns.equals(rhs._emptyColumns)
-        && _majorIssueConfigs.equals(rhs._majorIssueConfigs)
         && _numExcludedRows == rhs._numExcludedRows
         && _numRows == rhs._numRows;
   }
@@ -135,11 +117,6 @@ public class Metrics {
     return _emptyColumns;
   }
 
-  @JsonProperty(BfConsts.PROP_MAJOR_ISSUE_CONFIGS)
-  public Map<String, MajorIssueConfig> getMajorIssueConfigs() {
-    return _majorIssueConfigs;
-  }
-
   @JsonProperty(BfConsts.PROP_NUM_EXCLUDED_ROWS)
   public int getNumExcludedRows() {
     return _numExcludedRows;
@@ -152,8 +129,7 @@ public class Metrics {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _aggregations, _emptyColumns, _majorIssueConfigs, _numExcludedRows, _numRows);
+    return Objects.hash(_aggregations, _emptyColumns, _numExcludedRows, _numRows);
   }
 
   @Override
@@ -162,9 +138,6 @@ public class Metrics {
         .omitNullValues()
         .add(BfConsts.PROP_AGGREGATIONS, _aggregations)
         .add(BfConsts.PROP_EMPTY_COLUMNS, _emptyColumns)
-        .add(
-            BfConsts.PROP_MAJOR_ISSUE_CONFIGS,
-            !_majorIssueConfigs.isEmpty() ? _majorIssueConfigs : null)
         .add(BfConsts.PROP_NUM_EXCLUDED_ROWS, _numExcludedRows)
         .add(BfConsts.PROP_NUM_ROWS, _numRows)
         .toString();

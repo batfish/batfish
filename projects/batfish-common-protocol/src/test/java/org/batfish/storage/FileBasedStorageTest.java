@@ -64,18 +64,14 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.isp_configuration.IspFilter;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.specifier.InterfaceLocation;
 import org.junit.Before;
@@ -146,44 +142,6 @@ public final class FileBasedStorageTest {
 
     IspConfiguration readIspConfiguration = _storage.loadIspConfiguration(networkId, snapshotId);
     assertThat(ispConfiguration, equalTo(readIspConfiguration));
-  }
-
-  @Test
-  public void testMajorIssueConfigRoundTrip() throws IOException {
-    String majorIssue = "majorIssue";
-    IssueSettingsId issueSettingsId = new IssueSettingsId("issueSettingsId");
-    NetworkId network = new NetworkId("network");
-    MinorIssueConfig minorIssueConfig = new MinorIssueConfig("minorIssue", 100, "www.google.com");
-    MajorIssueConfig majorIssueConfig =
-        new MajorIssueConfig(majorIssue, ImmutableList.of(minorIssueConfig));
-
-    _storage.storeMajorIssueConfig(network, issueSettingsId, majorIssueConfig);
-    assertThat(_storage.loadMajorIssueConfig(network, issueSettingsId), equalTo(majorIssueConfig));
-  }
-
-  @Test
-  public void testLoadMissingMajorIssueConfig() {
-    IssueSettingsId majorIssue = new IssueSettingsId("majorIssue");
-    NetworkId network = new NetworkId("network");
-    assertThat(_storage.loadMajorIssueConfig(network, majorIssue), nullValue());
-  }
-
-  @Test
-  public void testStoreQuestionSettingsThenLoad() throws IOException {
-    NetworkId network = new NetworkId("network");
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
-    String settings = "{}";
-    _storage.storeQuestionSettings(settings, network, questionSettingsId);
-
-    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), equalTo(settings));
-  }
-
-  @Test
-  public void testLoadQuestionSettingsMissing() throws IOException {
-    NetworkId network = new NetworkId("network");
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("q1");
-
-    assertThat(_storage.loadQuestionSettings(network, questionSettingsId), nullValue());
   }
 
   @Test

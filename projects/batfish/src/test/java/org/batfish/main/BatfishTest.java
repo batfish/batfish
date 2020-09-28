@@ -37,7 +37,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -80,7 +79,6 @@ import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.TestIdResolver;
 import org.batfish.job.ParseVendorConfigurationResult;
 import org.batfish.storage.TestStorageProvider;
@@ -96,14 +94,6 @@ public class BatfishTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
-
-  private static final Question TEST_QUESTION =
-      new TestQuestion() {
-        @Override
-        public String getName() {
-          return "blah";
-        }
-      };
 
   @Test
   public void testAnswerBadQuestion() {
@@ -451,85 +441,6 @@ public class BatfishTest {
 
     // Tests that computing IP owners with such a bad interface does not crash.
     IpOwners.computeIpNodeOwners(configs, false);
-  }
-
-  @Test
-  public void testLoadQuestionSettingsPresent() {
-    String questionSettings = "{}";
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfish(
-            new TestStorageProvider() {
-              @Override
-              public String loadQuestionSettings(
-                  NetworkId network, QuestionSettingsId questionSettingsId) {
-                return questionSettings;
-              }
-            },
-            new TestIdResolver() {
-              @Override
-              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-                return true;
-              }
-
-              @Override
-              public Optional<QuestionSettingsId> getQuestionSettingsId(
-                  String questionClassId, NetworkId networkId) {
-                return Optional.of(new QuestionSettingsId("blah"));
-              }
-            });
-
-    assertThat(batfish.loadQuestionSettings(TEST_QUESTION), equalTo(questionSettings));
-  }
-
-  @Test
-  public void testLoadQuestionSettingsAbsent() {
-    Batfish batfish =
-        BatfishTestUtils.getBatfish(
-            new TestStorageProvider() {
-              @Override
-              public String loadQuestionSettings(
-                  NetworkId networkId, QuestionSettingsId questionSettingsId) {
-                return null;
-              }
-            },
-            new TestIdResolver() {
-              @Override
-              public Optional<QuestionSettingsId> getQuestionSettingsId(
-                  String questionClassId, NetworkId networkId) {
-                return Optional.empty();
-              }
-            });
-
-    assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
-  }
-
-  @Test
-  public void testLoadQuestionSettingsError() {
-    Batfish batfish =
-        BatfishTestUtils.getBatfish(
-            new TestStorageProvider() {
-              @Override
-              public String loadQuestionSettings(
-                  NetworkId networkId, QuestionSettingsId questionSettingsId) throws IOException {
-                throw new IOException("simulated error");
-              }
-            },
-            new TestIdResolver() {
-              @Override
-              public Optional<QuestionSettingsId> getQuestionSettingsId(
-                  String questionClassId, NetworkId networkId) {
-                return Optional.of(new QuestionSettingsId("foo"));
-              }
-
-              @Override
-              public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-                return true;
-              }
-            });
-
-    _thrown.expect(BatfishException.class);
-    assertThat(batfish.loadQuestionSettings(TEST_QUESTION), nullValue());
   }
 
   @Test

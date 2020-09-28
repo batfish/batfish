@@ -11,13 +11,8 @@ import static java.util.Comparator.nullsFirst;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toCollection;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Comparators;
@@ -26,7 +21,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.References;
 import io.opentracing.Scope;
@@ -49,7 +43,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -112,7 +105,6 @@ import org.batfish.datamodel.SnapshotMetadataEntry;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerMetadata;
-import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.answers.AutoCompleteUtils;
@@ -120,9 +112,6 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.InputValidationNotes;
 import org.batfish.datamodel.answers.InputValidationUtils;
 import org.batfish.datamodel.answers.Issue;
-import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.Metrics;
-import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -134,7 +123,6 @@ import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.table.ColumnMetadata;
-import org.batfish.datamodel.table.ExcludedRows;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
@@ -142,11 +130,9 @@ import org.batfish.datamodel.table.TableView;
 import org.batfish.datamodel.table.TableViewRow;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -928,33 +914,15 @@ public class WorkMgr extends AbstractCoordinator {
           network);
       referenceSnapshotId = referenceSnapshotIdOpt.get();
     }
-    QuestionSettingsId questionSettingsId =
-        getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
     NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
-    AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            questionSettingsId,
-            networkNodeRolesId,
-            referenceSnapshotId,
-            analysisId);
+    AnswerId answerId =
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId, networkNodeRolesId, referenceSnapshotId, analysisId);
     // No metadata means the question has not been answered
-    if (!_storage.hasAnswerMetadata(baseAnswerId)) {
+    if (!_storage.hasAnswerMetadata(answerId)) {
       return null;
     }
-    AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
-    AnswerId finalAnswerId =
-        computeFinalAnswerAndId(
-            baseAnswerMetadata,
-            networkId,
-            snapshotId,
-            questionId,
-            baseAnswerId,
-            referenceSnapshotId,
-            analysisId);
-    return _storage.loadAnswer(finalAnswerId);
+    return _storage.loadAnswer(answerId);
   }
 
   /**
@@ -975,127 +943,6 @@ public class WorkMgr extends AbstractCoordinator {
         snapshotName,
         networkName);
     return _workQueueMgr.getCompletedWork(networkId, snapshotIdOpt.get());
-  }
-
-  private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(
-      NetworkId networkId, QuestionId questionId, AnalysisId analysisId)
-      throws FileNotFoundException, IOException {
-    String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-    return getOrDefaultQuestionSettingsId(questionClassId, networkId);
-  }
-
-  private @Nonnull QuestionSettingsId getOrDefaultQuestionSettingsId(
-      String questionClassId, NetworkId networkId) {
-    return _idManager
-        .getQuestionSettingsId(questionClassId, networkId)
-        .orElse(QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID);
-  }
-
-  private @Nonnull AnswerId computeFinalAnswerAndId(
-      @Nonnull AnswerMetadata baseAnswerMetadata,
-      @Nonnull NetworkId networkId,
-      @Nonnull SnapshotId snapshotId,
-      @Nonnull QuestionId questionId,
-      @Nonnull AnswerId baseAnswerId,
-      @Nullable SnapshotId referenceSnapshotId,
-      @Nullable AnalysisId analysisId)
-      throws IOException {
-    Set<IssueSettingsId> issueSettingsIds =
-        getOrCreateIssueSettingsIds(networkId, baseAnswerMetadata);
-    AnswerId finalAnswerId = _idManager.getFinalAnswerId(baseAnswerId, issueSettingsIds);
-    if (!_storage.hasAnswerMetadata(finalAnswerId)) {
-      Metrics metrics = baseAnswerMetadata.getMetrics();
-      if (metrics == null) {
-        _storage.storeAnswer(_storage.loadAnswer(baseAnswerId), finalAnswerId);
-        _storage.storeAnswerMetadata(baseAnswerMetadata, finalAnswerId);
-      } else {
-        rebuildFinalAnswerAndMetadata(
-            metrics.getMajorIssueConfigs(),
-            networkId,
-            snapshotId,
-            questionId,
-            baseAnswerId,
-            finalAnswerId,
-            issueSettingsIds,
-            referenceSnapshotId,
-            analysisId);
-      }
-    }
-    return finalAnswerId;
-  }
-
-  private void rebuildFinalAnswerAndMetadata(
-      @Nonnull Map<String, MajorIssueConfig> baseAnswerMajorIssueConfigs,
-      @Nonnull NetworkId networkId,
-      @Nonnull SnapshotId snapshotId,
-      @Nonnull QuestionId questionId,
-      @Nonnull AnswerId baseAnswerId,
-      @Nonnull AnswerId finalAnswerId,
-      @Nonnull Set<IssueSettingsId> issueSettingsIds,
-      @Nullable SnapshotId referenceSnapshotId,
-      @Nullable AnalysisId analysisId)
-      throws IOException {
-    Map<String, MajorIssueConfig> combinedMajorIssueConfigs =
-        new HashMap<>(baseAnswerMajorIssueConfigs);
-    for (IssueSettingsId issueSettingsId : issueSettingsIds) {
-      MajorIssueConfig networkMajorIssueConfig =
-          _storage.loadMajorIssueConfig(networkId, issueSettingsId);
-      String majorIssueType = networkMajorIssueConfig.getMajorIssue();
-      MajorIssueConfig combinedMajorIssueConfig =
-          overlayMajorIssueConfig(
-              baseAnswerMajorIssueConfigs.get(majorIssueType), networkMajorIssueConfig);
-      combinedMajorIssueConfigs.put(majorIssueType, combinedMajorIssueConfig);
-    }
-    applyIssuesConfiguration(
-        combinedMajorIssueConfigs,
-        networkId,
-        snapshotId,
-        questionId,
-        baseAnswerId,
-        finalAnswerId,
-        referenceSnapshotId,
-        analysisId);
-  }
-
-  private MajorIssueConfig overlayMajorIssueConfig(
-      MajorIssueConfig baseMajorIssueConfig, MajorIssueConfig networkMajorIssueConfig) {
-    Map<String, MinorIssueConfig> networkMinorIssues =
-        networkMajorIssueConfig.getMinorIssueConfigsMap();
-    ImmutableList.Builder<MinorIssueConfig> combinedMinorIssues = ImmutableList.builder();
-    // note there is no need to address minor issues not mentioned in base answer
-    baseMajorIssueConfig
-        .getMinorIssueConfigsMap()
-        .forEach(
-            (minorIssueType, baseMinorIssueConfig) -> {
-              MinorIssueConfig networkMinorIssueConfig = networkMinorIssues.get(minorIssueType);
-              if (networkMinorIssueConfig == null) {
-                combinedMinorIssues.add(baseMinorIssueConfig);
-                return;
-              }
-              Integer networkSeverity = networkMinorIssueConfig.getSeverity();
-              Integer severity =
-                  networkSeverity != null ? networkSeverity : baseMinorIssueConfig.getSeverity();
-              String networkUrl = networkMinorIssueConfig.getUrl();
-              String url =
-                  networkUrl != null && !networkUrl.isEmpty()
-                      ? networkUrl
-                      : baseMinorIssueConfig.getUrl();
-              combinedMinorIssues.add(new MinorIssueConfig(minorIssueType, severity, url));
-            });
-    return new MajorIssueConfig(baseMajorIssueConfig.getMajorIssue(), combinedMinorIssues.build());
-  }
-
-  private Set<IssueSettingsId> getOrCreateIssueSettingsIds(
-      NetworkId networkId, AnswerMetadata baseAnswerMetadata) throws IOException {
-    Metrics metrics = baseAnswerMetadata.getMetrics();
-    if (metrics == null) {
-      return ImmutableSet.of();
-    }
-    ImmutableSet.Builder<IssueSettingsId> ids = ImmutableSet.builder();
-    for (String majorIssueType : metrics.getMajorIssueConfigs().keySet()) {
-      ids.add(getOrCreateIssueSettingsId(networkId, majorIssueType));
-    }
-    return ids.build();
   }
 
   public @Nonnull Map<String, String> getAnalysisAnswers(
@@ -1192,32 +1039,19 @@ public class WorkMgr extends AbstractCoordinator {
             network);
         referenceSnapshotId = referenceSnapshotIdOpt.get();
       }
-      QuestionSettingsId questionSettingsId =
-          getOrDefaultQuestionSettingsId(networkId, questionId, analysisId);
       NodeRolesId networkNodeRolesId = getOrDefaultNodeRolesId(networkId);
-      AnswerId baseAnswerId =
-          _idManager.getBaseAnswerId(
+      AnswerId answerId =
+          _idManager.getAnswerId(
               networkId,
               snapshotId,
               questionId,
-              questionSettingsId,
               networkNodeRolesId,
               referenceSnapshotId,
               analysisId);
-      if (!_storage.hasAnswerMetadata(baseAnswerId)) {
+      if (!_storage.hasAnswerMetadata(answerId)) {
         return AnswerMetadata.forStatus(AnswerStatus.NOTFOUND);
       }
-      AnswerMetadata baseAnswerMetadata = _storage.loadAnswerMetadata(baseAnswerId);
-      AnswerId finalAnswerId =
-          computeFinalAnswerAndId(
-              baseAnswerMetadata,
-              networkId,
-              snapshotId,
-              questionId,
-              baseAnswerId,
-              referenceSnapshotId,
-              analysisId);
-      return _storage.loadAnswerMetadata(finalAnswerId);
+      return _storage.loadAnswerMetadata(answerId);
     } catch (IOException e) {
       _logger.errorf(
           "Could not get answer metadata: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
@@ -1237,136 +1071,6 @@ public class WorkMgr extends AbstractCoordinator {
         .orElse(NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID);
   }
 
-  @VisibleForTesting
-  boolean answerIssueConfigMatchesConfiguredIssues(
-      MajorIssueConfig answerIssueConfig, Map<String, MajorIssueConfig> configuredMajorIssues) {
-    MajorIssueConfig configuredMajorIssue =
-        configuredMajorIssues.get(answerIssueConfig.getMajorIssue());
-    Map<String, MinorIssueConfig> answerMinorIssues = answerIssueConfig.getMinorIssueConfigsMap();
-    Map<String, MinorIssueConfig> configuredMinorIssues =
-        configuredMajorIssue.getMinorIssueConfigsMap();
-    return Sets.intersection(answerMinorIssues.keySet(), configuredMinorIssues.keySet()).stream()
-        .allMatch(minor -> answerMinorIssues.get(minor).equals(configuredMinorIssues.get(minor)));
-  }
-
-  @VisibleForTesting
-  void applyIssuesConfiguration(
-      @Nonnull Map<String, MajorIssueConfig> majorIssueConfigs,
-      @Nonnull NetworkId networkId,
-      @Nonnull SnapshotId snapshotId,
-      @Nonnull QuestionId questionId,
-      @Nonnull AnswerId baseAnswerId,
-      @Nonnull AnswerId finalAnswerId,
-      @Nullable SnapshotId referenceSnapshotId,
-      @Nullable AnalysisId analysisId)
-      throws JsonParseException, JsonMappingException, FileNotFoundException, IOException {
-    Answer oldAnswer =
-        BatfishObjectMapper.mapper()
-            .readValue(_storage.loadAnswer(baseAnswerId), new TypeReference<Answer>() {});
-    TableAnswerElement oldTable = (TableAnswerElement) oldAnswer.getAnswerElements().get(0);
-    TableMetadata tableMetadata = oldTable.getMetadata();
-    Set<String> issueColumns =
-        tableMetadata.getColumnMetadata().stream()
-            .filter(cm -> cm.getSchema().equals(Schema.ISSUE))
-            .map(ColumnMetadata::getName)
-            .collect(ImmutableSet.toImmutableSet());
-    // apply issue configuration to all rows and excluded rows, then collect them
-    ImmutableList.Builder<Row> allRows = ImmutableList.builder();
-    applyIssuesConfigurationToRows(oldTable.getRowsList(), issueColumns, majorIssueConfigs)
-        .forEach(allRows::add);
-    applyIssuesConfigurationToAllExcludedRows(
-            oldTable.getExcludedRows(), issueColumns, majorIssueConfigs)
-        .map(ExcludedRows::getRowsList)
-        .flatMap(Collection::stream)
-        .forEach(allRows::add);
-
-    // grab the question for its exclusions
-    String questionStr = _storage.loadQuestion(networkId, questionId, analysisId);
-    Question questionObj = Question.parseQuestion(questionStr);
-
-    // postprocess using question exclusions, collected rows
-    TableAnswerElement newTable = new TableAnswerElement(tableMetadata);
-    newTable.postProcessAnswer(questionObj, allRows.build());
-    Answer newAnswer = new Answer();
-
-    // Apply new info to answer
-    newAnswer.setStatus(AnswerStatus.SUCCESS);
-    newAnswer.setQuestion(questionObj);
-    newAnswer.setSummary(newTable.getSummary());
-    newAnswer.setAnswerElements(ImmutableList.of(newTable));
-
-    // Compute and store new answer and answer metadata
-    AnswerMetadata newAnswerMetadata = AnswerMetadataUtil.computeAnswerMetadata(newAnswer, _logger);
-    String answerStr = BatfishObjectMapper.writeString(newAnswer);
-    _storage.storeAnswer(answerStr, finalAnswerId);
-    _storage.storeAnswerMetadata(newAnswerMetadata, finalAnswerId);
-  }
-
-  private Stream<ExcludedRows> applyIssuesConfigurationToAllExcludedRows(
-      List<ExcludedRows> allExcludedRows,
-      Set<String> issueColumns,
-      Map<String, MajorIssueConfig> issueConfigs) {
-    return allExcludedRows.stream()
-        .map(
-            excludedRows ->
-                applyIssuesConfigurationToExcludedRows(excludedRows, issueColumns, issueConfigs));
-  }
-
-  private ExcludedRows applyIssuesConfigurationToExcludedRows(
-      ExcludedRows oldExcludedRows,
-      Set<String> issueColumns,
-      Map<String, MajorIssueConfig> issueConfigs) {
-    ExcludedRows newExcludedRows = new ExcludedRows(oldExcludedRows.getExclusionName());
-    applyIssuesConfigurationToRows(oldExcludedRows.getRowsList(), issueColumns, issueConfigs)
-        .forEach(newExcludedRows::addRow);
-    return newExcludedRows;
-  }
-
-  private Stream<Row> applyIssuesConfigurationToRows(
-      List<Row> rowsList, Set<String> issueColumns, Map<String, MajorIssueConfig> issueConfigs) {
-    return rowsList.stream()
-        .map(row -> applyRowIssuesConfiguration(row, issueColumns, issueConfigs));
-  }
-
-  @VisibleForTesting
-  @Nonnull
-  Row applyRowIssuesConfiguration(
-      Row oldRow, Set<String> issueColumns, Map<String, MajorIssueConfig> issueConfigs) {
-    Row.RowBuilder builder = Row.builder();
-    oldRow
-        .getColumnNames()
-        .forEach(
-            column -> {
-              if (!issueColumns.contains(column)) {
-                builder.put(column, oldRow.get(column));
-                return;
-              }
-              Issue oldIssue = oldRow.getIssue(column);
-              MajorIssueConfig config = issueConfigs.get(oldIssue.getType().getMajor());
-              Issue newIssue;
-              if (config == null) {
-                newIssue = oldIssue;
-              } else {
-                String minorIssue = oldIssue.getType().getMinor();
-                Optional<MinorIssueConfig> optionalMinorConfig =
-                    config.getMinorIssueConfig(minorIssue);
-                if (optionalMinorConfig.isPresent()) {
-                  MinorIssueConfig minorConfig = optionalMinorConfig.get();
-                  newIssue =
-                      new Issue(
-                          oldIssue.getExplanation(),
-                          minorConfig.getSeverity(),
-                          oldIssue.getType(),
-                          minorConfig.getUrl());
-                } else {
-                  newIssue = oldIssue;
-                }
-              }
-              builder.put(column, newIssue);
-            });
-    return builder.build();
-  }
-
   /** Return a {@link Container container} contains all snapshots directories inside it. */
   public Container getContainer(String networkName) {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
@@ -1384,22 +1088,6 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public Set<String> getNetworkNames() {
     return _idManager.listNetworks();
-  }
-
-  private IssueSettingsId getOrCreateIssueSettingsId(NetworkId networkId, String majorIssueType)
-      throws IOException {
-    Optional<IssueSettingsId> issueSettingsIdOpt =
-        _idManager.getIssueSettingsId(majorIssueType, networkId);
-    IssueSettingsId issueSettingsId;
-    if (!issueSettingsIdOpt.isPresent()) {
-      issueSettingsId = _idManager.generateIssueSettingsId();
-      _storage.storeMajorIssueConfig(
-          networkId, issueSettingsId, new MajorIssueConfig(majorIssueType, ImmutableList.of()));
-      _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
-    } else {
-      issueSettingsId = issueSettingsIdOpt.get();
-    }
-    return issueSettingsId;
   }
 
   /**
@@ -2203,17 +1891,6 @@ public class WorkMgr extends AbstractCoordinator {
     _storage.storeReferenceLibrary(referenceLibrary, networkId);
   }
 
-  /** Writes the {@code MajorIssueConfig} for the given network and major issue type. */
-  public void putMajorIssueConfig(String network, String majorIssueType, MajorIssueConfig config)
-      throws IOException {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    checkArgument(networkIdOpt.isPresent(), "Missing network: '%s'", network);
-    NetworkId networkId = networkIdOpt.get();
-    IssueSettingsId issueSettingsId = _idManager.generateIssueSettingsId();
-    _storage.storeMajorIssueConfig(networkId, issueSettingsId, config);
-    _idManager.assignIssueSettingsId(majorIssueType, networkId, issueSettingsId);
-  }
-
   public boolean queueWork(WorkItem workItem) {
     String network = requireNonNull(workItem.getNetwork());
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
@@ -2610,105 +2287,6 @@ public class WorkMgr extends AbstractCoordinator {
     } else {
       return comparing(Object::toString);
     }
-  }
-
-  /**
-   * Return the JSON-serialized settings for the specified question class for the specified network;
-   * or {@code null} if either no custom settings exist for the question or no value is present at
-   * the path produced from the sepcified components.
-   *
-   * @param network The name of the network
-   * @param questionClassId The ID of the class of questions whose settings are to be returned
-   * @param components The components to traverse from the root of the question settings to reach
-   *     the desired section or value
-   * @throws IOException if there is an error reading the settings
-   */
-  public @Nullable String getQuestionSettings(
-      String network, String questionClassId, List<String> components) throws IOException {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    checkArgument(networkIdOpt.isPresent(), "Missing network: '%s'", network);
-    NetworkId networkId = networkIdOpt.get();
-    Optional<QuestionSettingsId> questionSettingsIdOpt =
-        _idManager.getQuestionSettingsId(questionClassId, networkId);
-    if (!questionSettingsIdOpt.isPresent()) {
-      return null;
-    }
-    QuestionSettingsId questionSettingsId = questionSettingsIdOpt.get();
-    String questionSettings;
-    questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsId);
-    if (questionSettings == null) {
-      return null;
-    }
-    if (components.isEmpty()) {
-      return questionSettings;
-    }
-    JsonNode root = BatfishObjectMapper.mapper().readTree(questionSettings);
-    JsonNode current = root;
-    for (String component : components) {
-      if (!current.has(component)) {
-        return null;
-      }
-      current = current.get(component);
-    }
-    return BatfishObjectMapper.writeString(current);
-  }
-
-  /**
-   * Write the JSON settings for the specified question class for the specified network at the end
-   * of the path computed from the specified components. Any absent components will be created.
-   *
-   * @param network The name of the network
-   * @param questionClassId The ID of the question class
-   * @param components The components to traverse from the root of the question settings to reach
-   *     the desired section or value
-   * @param value The settings value to write at the end of the path
-   * @throws IOException if there is an error writing the settings
-   */
-  public synchronized void writeQuestionSettings(
-      String network, String questionClassId, List<String> components, JsonNode value)
-      throws IOException {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    checkArgument(networkIdOpt.isPresent(), "Missing network '%s', network", network);
-    NetworkId networkId = networkIdOpt.get();
-    String questionSettings;
-    Optional<QuestionSettingsId> questionSettingsIdOpt =
-        _idManager.getQuestionSettingsId(questionClassId, networkId);
-    if (questionSettingsIdOpt.isPresent()) {
-      questionSettings = _storage.loadQuestionSettings(networkId, questionSettingsIdOpt.get());
-    } else {
-      questionSettings = "{}";
-    }
-    JsonNodeFactory factory = BatfishObjectMapper.mapper().getNodeFactory();
-    JsonNode root;
-    if (!components.isEmpty()) {
-      root =
-          questionSettings != null
-              ? (ObjectNode) BatfishObjectMapper.mapper().readTree(questionSettings)
-              : new ObjectNode(factory);
-      ObjectNode current = (ObjectNode) root;
-      for (String component : components.subList(0, components.size() - 1)) {
-        if (!current.has(component)) {
-          current.set(component, new ObjectNode(factory));
-        }
-        current = (ObjectNode) current.get(component);
-      }
-      current.set(components.get(components.size() - 1), value);
-    } else {
-      root = value;
-    }
-    QuestionSettingsId questionSettingsId = _idManager.generateQuestionSettingsId();
-    _storage.storeQuestionSettings(
-        BatfishObjectMapper.writeString(root), networkId, questionSettingsId);
-    _idManager.assignQuestionSettingsId(questionClassId, networkId, questionSettingsId);
-  }
-
-  public MajorIssueConfig getMajorIssueConfig(String network, String majorIssueType)
-      throws IOException {
-    Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
-    checkArgument(networkIdOpt.isPresent(), "Missing network '%s', network", network);
-    NetworkId networkId = networkIdOpt.get();
-    return _storage.loadMajorIssueConfig(
-        networkId, getOrCreateIssueSettingsId(networkId, majorIssueType));
   }
 
   @VisibleForTesting

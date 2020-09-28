@@ -3,10 +3,8 @@ package org.batfish.coordinator.resources;
 import static java.util.Optional.ofNullable;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.hash.Hashing;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -18,11 +16,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.coordinator.id.IdManager;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 
 /**
@@ -41,20 +37,16 @@ public class LocalIdManager implements IdManager {
   }
 
   private final Map<NetworkId, Map<String, AnalysisId>> _analysisIds;
-  private final Map<NetworkId, Map<String, IssueSettingsId>> _issueSettingsIds;
   private final Map<String, NetworkId> _networkIds;
   private final Map<NetworkId, NodeRolesId> _networkNodeRolesIds;
   private final Map<NetworkId, Map<Optional<AnalysisId>, Map<String, QuestionId>>> _questionIds;
-  private final Map<NetworkId, Map<String, QuestionSettingsId>> _questionSettingsIds;
   private final Map<NetworkId, Map<String, SnapshotId>> _snapshotIds;
 
   public LocalIdManager() {
     _analysisIds = new HashMap<>();
-    _issueSettingsIds = new HashMap<>();
     _networkIds = new HashMap<>();
     _networkNodeRolesIds = new HashMap<>();
     _questionIds = new HashMap<>();
-    _questionSettingsIds = new HashMap<>();
     _snapshotIds = new HashMap<>();
   }
 
@@ -64,17 +56,6 @@ public class LocalIdManager implements IdManager {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     _analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).put(analysis, analysisId);
-  }
-
-  @Override
-  public void assignIssueSettingsId(
-      String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
-    if (!_networkIds.values().contains(networkId)) {
-      throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
-    }
-    _issueSettingsIds
-        .computeIfAbsent(networkId, n -> new HashMap<>())
-        .put(majorIssueType, issueSettingsId);
   }
 
   @Override
@@ -106,14 +87,6 @@ public class LocalIdManager implements IdManager {
         .computeIfAbsent(networkId, n -> new HashMap<>())
         .computeIfAbsent(ofNullable(analysisId), a -> new HashMap<>())
         .put(question, questionId);
-  }
-
-  @Override
-  public void assignQuestionSettingsId(
-      String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId) {
-    _questionSettingsIds
-        .computeIfAbsent(networkId, n -> new HashMap<>())
-        .put(questionClassId, questionSettingsId);
   }
 
   @Override
@@ -164,11 +137,6 @@ public class LocalIdManager implements IdManager {
   }
 
   @Override
-  public @Nonnull IssueSettingsId generateIssueSettingsId() {
-    return new IssueSettingsId(uuid());
-  }
-
-  @Override
   public @Nonnull NetworkId generateNetworkId() {
     return new NetworkId(uuid());
   }
@@ -181,11 +149,6 @@ public class LocalIdManager implements IdManager {
   @Override
   public @Nonnull QuestionId generateQuestionId() {
     return new QuestionId(uuid());
-  }
-
-  @Override
-  public @Nonnull QuestionSettingsId generateQuestionSettingsId() {
-    return new QuestionSettingsId(uuid());
   }
 
   @Override
@@ -202,11 +165,10 @@ public class LocalIdManager implements IdManager {
   }
 
   @Override
-  public AnswerId getBaseAnswerId(
+  public AnswerId getAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
-      QuestionSettingsId questionSettingsId,
       NodeRolesId networkNodeRolesId,
       SnapshotId referenceSnapshotId,
       AnalysisId analysisId) {
@@ -216,31 +178,10 @@ public class LocalIdManager implements IdManager {
                     networkId,
                     snapshotId,
                     questionId,
-                    questionSettingsId,
                     networkNodeRolesId,
                     ofNullable(referenceSnapshotId),
                     ofNullable(analysisId))
                 .toString()));
-  }
-
-  @Override
-  public AnswerId getFinalAnswerId(AnswerId baseAnswerId, Set<IssueSettingsId> issueSettingsIds) {
-    return new AnswerId(
-        hash(
-            ImmutableList.of(
-                    baseAnswerId,
-                    ImmutableSortedSet.copyOf(
-                        Comparator.comparing(IssueSettingsId::getId), issueSettingsIds))
-                .toString()));
-  }
-
-  @Override
-  public Optional<IssueSettingsId> getIssueSettingsId(String majorIssueType, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
-      return Optional.empty();
-    }
-    return ofNullable(
-        _issueSettingsIds.computeIfAbsent(networkId, n -> new HashMap<>()).get(majorIssueType));
   }
 
   @Override
@@ -273,16 +214,6 @@ public class LocalIdManager implements IdManager {
   }
 
   @Override
-  public Optional<QuestionSettingsId> getQuestionSettingsId(
-      String questionClassId, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
-      return Optional.empty();
-    }
-    return ofNullable(
-        _questionSettingsIds.computeIfAbsent(networkId, n -> new HashMap<>()).get(questionClassId));
-  }
-
-  @Override
   public Optional<SnapshotId> getSnapshotId(String snapshot, NetworkId networkId) {
     if (!_networkIds.values().contains(networkId)) {
       return Optional.empty();
@@ -301,16 +232,6 @@ public class LocalIdManager implements IdManager {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return _analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).containsKey(analysis);
-  }
-
-  @Override
-  public boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
-      throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
-    }
-    return _issueSettingsIds
-        .computeIfAbsent(networkId, n -> new HashMap<>())
-        .containsKey(majorIssueType);
   }
 
   @Override
@@ -338,16 +259,6 @@ public class LocalIdManager implements IdManager {
         .computeIfAbsent(networkId, n -> new HashMap<>())
         .computeIfAbsent(ofNullable(analysisId), a -> new HashMap<>())
         .containsKey(question);
-  }
-
-  @Override
-  public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
-      throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
-    }
-    return _questionSettingsIds
-        .computeIfAbsent(networkId, n -> new HashMap<>())
-        .containsKey(questionClassId);
   }
 
   @Override
