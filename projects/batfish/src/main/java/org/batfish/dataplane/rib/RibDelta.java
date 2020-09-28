@@ -4,9 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -133,7 +133,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
   @ParametersAreNonnullByDefault
   public static final class Builder<R extends AbstractRouteDecorator> {
 
-    private HashMap<R, RouteAdvertisement<R>> _actions;
+    private Map<R, RouteAdvertisement<R>> _actions;
 
     /** Initialize a new RibDelta builder */
     private Builder() {
