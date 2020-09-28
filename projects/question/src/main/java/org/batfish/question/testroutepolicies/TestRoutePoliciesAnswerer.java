@@ -13,6 +13,7 @@ import static org.batfish.datamodel.table.TableDiff.baseColumnName;
 import static org.batfish.datamodel.table.TableDiff.deltaColumnName;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;
@@ -61,10 +62,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
   public static final String COL_DIFF = "Difference";
 
-  private final Direction _direction;
-  private final List<Bgpv4Route> _inputRoutes;
-  private final String _nodes;
-  private final String _policies;
+  @Nonnull private final Direction _direction;
+  @Nonnull private final List<Bgpv4Route> _inputRoutes;
+  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
 
   public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -73,21 +74,19 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         question.getInputRoutes().stream()
             .map(TestRoutePoliciesAnswerer::toDataplaneBgpRoute)
             .collect(Collectors.toList());
-    _nodes = question.getNodes();
-    _policies = question.getPolicies();
+    _nodeSpecifier =
+        SpecifierFactories.getNodeSpecifierOrDefault(
+            question.getNodes(), AllNodesNodeSpecifier.INSTANCE);
+    _policySpecifier =
+        SpecifierFactories.getRoutingPolicySpecifierOrDefault(
+            question.getPolicies(), ALL_ROUTING_POLICIES);
   }
 
   private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
-    NodeSpecifier nodeSpec =
-        SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
-
-    RoutingPolicySpecifier policySpec =
-        SpecifierFactories.getRoutingPolicySpecifierOrDefault(_policies, ALL_ROUTING_POLICIES);
-
-    return nodeSpec.resolve(context).stream()
+    return _nodeSpecifier.resolve(context).stream()
         .flatMap(
             node ->
-                policySpec.resolve(node, context).stream()
+                _policySpecifier.resolve(node, context).stream()
                     .map(policy -> new RoutingPolicyId(node, policy.getName())))
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
@@ -330,5 +329,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(deltaColumnName(COL_OUTPUT_ROUTE), toQuestionsBgpRoute(deltaResult.getOutputRoute()))
         .put(COL_DIFF, routeDiffs)
         .build();
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  RoutingPolicySpecifier getPolicySpecifier() {
+    return _policySpecifier;
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  NodeSpecifier getNodeSpecifier() {
+    return _nodeSpecifier;
   }
 }

@@ -80,7 +80,7 @@
         "description" : "Only consider policies that match this specifier",
         "displayName" : "Policies",
         "optional" : true,
-        "type" : "string",
+        "type" : "routingPolicySpec",
         "value" : "policies"
       }
     }
