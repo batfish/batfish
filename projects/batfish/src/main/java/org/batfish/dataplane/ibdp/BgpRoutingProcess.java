@@ -46,6 +46,7 @@ import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
@@ -85,7 +86,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Name of our VRF */
   @Nonnull private final String _vrfName;
   /** Reference to the parent {@link VirtualRouter} main RIB (read-only). */
-  @Nonnull private final Rib _mainRib;
+  @Nonnull private final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
   /** Current BGP topology */
   @Nonnull private BgpTopology _topology;
   /** Metadata about propagated prefixes to/from neighbors */
