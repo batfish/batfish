@@ -39,7 +39,7 @@ import org.batfish.specifier.LocationInfo;
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   /** node -&gt; vrf -&gt; interface -&gt; ips accepted by that interface */
-  private Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
 
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
@@ -828,9 +828,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 route ->
                                     nextHopInterfaces
                                         .get(route)
-                                        .get(iface)
-                                        .keySet() // final next hop ips
-                                        .contains(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                                        .get(iface) // final next hop ips
+                                        .containsKey(Route.UNSET_ROUTE_NEXT_HOP_IP))
                             .collect(ImmutableSet.toImmutableSet());
                       });
                 });

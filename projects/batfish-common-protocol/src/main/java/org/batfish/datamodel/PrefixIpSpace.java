@@ -3,17 +3,33 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 @ParametersAreNonnullByDefault
 public final class PrefixIpSpace extends IpSpace {
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (12 bytes seems smallest possible entry (long + int), would be 12 MiB total).
+  private static final LoadingCache<Prefix, PrefixIpSpace> CACHE =
+      CacheBuilder.newBuilder()
+          .softValues()
+          .maximumSize(1 << 20)
+          .build(CacheLoader.from(PrefixIpSpace::new));
+
   private static final String PROP_PREFIX = "prefix";
 
   private final Prefix _prefix;
 
   @JsonCreator
-  PrefixIpSpace(@JsonProperty(PROP_PREFIX) Prefix prefix) {
+  static PrefixIpSpace create(@JsonProperty(PROP_PREFIX) Prefix prefix) {
+    return CACHE.getUnchecked(prefix);
+  }
+
+  private PrefixIpSpace(Prefix prefix) {
     _prefix = prefix;
   }
 
@@ -44,6 +60,6 @@ public final class PrefixIpSpace extends IpSpace {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add(PROP_PREFIX, _prefix).toString();
+    return MoreObjects.toStringHelper(PrefixIpSpace.class).add(PROP_PREFIX, _prefix).toString();
   }
 }
