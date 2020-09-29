@@ -835,7 +835,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 // Look at the entire main RIB if this session is new.
                 ? _mainRib.getTypedRoutes().stream().map(RibDelta::adding)
                 : _toRedistribute.values().stream())
-            .flatMap(RibDelta::getActions)
+            .flatMap(d -> d.getActions())
             .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
             .map(
                 adv -> {
