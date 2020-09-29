@@ -24,7 +24,6 @@ import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -37,11 +36,9 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -85,11 +82,6 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Override
-  public MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
   @Nullable
   @Override
   public SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
@@ -105,12 +97,6 @@ public class TestStorageProvider implements StorageProvider {
   @Nonnull
   @Override
   public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
-  public void storeMajorIssueConfig(
-      NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -141,20 +127,7 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public String loadQuestionSettings(NetworkId network, QuestionSettingsId questionSettingsId)
-      throws IOException {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
   public boolean checkNetworkExists(NetworkId network) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-  }
-
-  @Override
-  public void storeQuestionSettings(
-      String settings, NetworkId network, QuestionSettingsId questionSettingsId)
-      throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 

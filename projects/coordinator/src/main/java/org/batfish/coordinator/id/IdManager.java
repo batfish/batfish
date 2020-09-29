@@ -5,11 +5,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.IdResolver;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 
 /** Reader and writer for persistent mappings between object names and their IDs. */
@@ -18,10 +16,6 @@ public interface IdManager extends IdResolver {
 
   /** Assign {@code analysis} to {@code analysisId} under {@code networkId}. */
   void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId);
-
-  /** Assign {@code majorIssueType} to {@code issueSettingsId} under {@code networkId}. */
-  void assignIssueSettingsId(
-      String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId);
 
   /** Assign {@code network} to {@code networkId}. */
   void assignNetwork(String network, NetworkId networkId);
@@ -35,10 +29,6 @@ public interface IdManager extends IdResolver {
    */
   void assignQuestion(
       String question, NetworkId networkId, QuestionId questionId, @Nullable AnalysisId analysisId);
-
-  /** Assign {@code questionClassId} under {@code networkId} to {@code questionSettingsId}). */
-  void assignQuestionSettingsId(
-      String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId);
 
   /** Assign {@code snapshot} under {@code networkId} to {@code snapshotId}. */
   void assignSnapshot(String snapshot, NetworkId networkId, SnapshotId snapshotId);
@@ -72,10 +62,6 @@ public interface IdManager extends IdResolver {
   @Nonnull
   AnalysisId generateAnalysisId();
 
-  /** Generate a new {@link IssueSettingsId} suitable for assignment */
-  @Nonnull
-  IssueSettingsId generateIssueSettingsId();
-
   /** Generate a new {@link NetworkId} suitable for assignment */
   @Nonnull
   NetworkId generateNetworkId();
@@ -87,10 +73,6 @@ public interface IdManager extends IdResolver {
   /** Generate a new {@link QuestionId} suitable for assignment */
   @Nonnull
   QuestionId generateQuestionId();
-
-  /** Generate a new {@link QuestionSettingsId} suitable for assignment */
-  @Nonnull
-  QuestionSettingsId generateQuestionSettingsId();
 
   /** Generate a new {@link SnapshotId} suitable for assignment */
   @Nonnull

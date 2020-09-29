@@ -30,7 +30,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
-import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -227,11 +226,6 @@ public class IBatfishTestAdapter implements IBatfish {
   }
 
   @Override
-  public MajorIssueConfig getMajorIssueConfig(String majorIssue) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public BatfishLogger getLogger() {
     return null;
   }
@@ -377,11 +371,6 @@ public class IBatfishTestAdapter implements IBatfish {
   @Override
   public Set<Flow> bddMultipathConsistency(
       NetworkSnapshot snapshot, MultipathConsistencyParameters parameters) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public @Nullable String loadQuestionSettings(@Nonnull Question question) {
     throw new UnsupportedOperationException();
   }
 

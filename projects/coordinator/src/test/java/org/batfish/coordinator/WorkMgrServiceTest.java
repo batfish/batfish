@@ -1,7 +1,6 @@
 package org.batfish.coordinator;
 
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
-import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -217,11 +216,10 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
+            .getAnswerId(
                 _networkId,
                 _snapshotId,
                 questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
                 DEFAULT_NETWORK_NODE_ROLES_ID,
                 null,
                 analysisId);
@@ -455,11 +453,10 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
+            .getAnswerId(
                 _networkId,
                 _snapshotId,
                 questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
                 DEFAULT_NETWORK_NODE_ROLES_ID,
                 null,
                 analysisId);
@@ -536,11 +533,10 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
+            .getAnswerId(
                 _networkId,
                 _snapshotId,
                 questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
                 DEFAULT_NETWORK_NODE_ROLES_ID,
                 null,
                 analysisId);
@@ -617,11 +613,10 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
+            .getAnswerId(
                 _networkId,
                 _snapshotId,
                 questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
                 DEFAULT_NETWORK_NODE_ROLES_ID,
                 null,
                 analysisId);
@@ -693,11 +688,10 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(questionName, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
+            .getAnswerId(
                 _networkId,
                 _snapshotId,
                 questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
                 DEFAULT_NETWORK_NODE_ROLES_ID,
                 null,
                 analysisId);
@@ -743,14 +737,8 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(question, _networkId, null).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                null);
+            .getAnswerId(
+                _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
     Answer testAnswer = new Answer();
     testAnswer.setStatus(AnswerStatus.SUCCESS);
     testAnswer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
@@ -827,11 +815,10 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
+            .getAnswerId(
                 _networkId,
                 _snapshotId,
                 questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
                 DEFAULT_NETWORK_NODE_ROLES_ID,
                 null,
                 analysisId);
@@ -905,14 +892,8 @@ public class WorkMgrServiceTest {
     idm().assignQuestion(question, _networkId, questionId, null);
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                null);
+            .getAnswerId(
+                _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
     Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
     Main.getWorkMgr()
         .getStorage()
@@ -990,11 +971,10 @@ public class WorkMgrServiceTest {
     QuestionId questionId = idm().getQuestionId(question, _networkId, analysisId).get();
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
+            .getAnswerId(
                 _networkId,
                 _snapshotId,
                 questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
                 DEFAULT_NETWORK_NODE_ROLES_ID,
                 null,
                 analysisId);
@@ -1063,14 +1043,8 @@ public class WorkMgrServiceTest {
     idm().assignQuestion(question, _networkId, questionId, null);
     AnswerId answerId =
         idm()
-            .getBaseAnswerId(
-                _networkId,
-                _snapshotId,
-                questionId,
-                DEFAULT_QUESTION_SETTINGS_ID,
-                DEFAULT_NETWORK_NODE_ROLES_ID,
-                null,
-                null);
+            .getAnswerId(
+                _networkId, _snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
     Main.getWorkMgr().getStorage().storeAnswer(answer, answerId);
     Main.getWorkMgr()
         .getStorage()
