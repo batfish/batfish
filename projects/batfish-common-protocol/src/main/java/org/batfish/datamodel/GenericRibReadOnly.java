@@ -6,7 +6,7 @@ import java.util.Set;
 public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Serializable {
 
   /** Check whether a given route is present in the RIB */
-  boolean containsRoute(R route);
+  boolean containsRoute(AbstractRouteDecorator route);
 
   /** Return set of {@link AbstractRoute abstract routes} this RIB contains. */
   Set<AbstractRoute> getRoutes();
