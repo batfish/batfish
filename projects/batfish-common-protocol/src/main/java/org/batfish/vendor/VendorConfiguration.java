@@ -16,9 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -220,23 +218,24 @@ public abstract class VendorConfiguration implements Serializable {
       throws VendorConversionException;
 
   private void addStructureReference(
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
           referenceMap,
       StructureType structureType,
       String name,
       StructureUsage usage,
       int line) {
     String filename = getFilename();
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
+    SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>> byType =
         referenceMap.computeIfAbsent(filename, k -> new TreeMap<>());
     String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
+    SortedMap<String, SortedMap<String, IntegerSpace>> byName =
         byType.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedMap<String, SortedSet<Integer>> byUsage =
-        byName.computeIfAbsent(name, k -> new TreeMap<>());
+    SortedMap<String, IntegerSpace> byUsage = byName.computeIfAbsent(name, k -> new TreeMap<>());
     String usageStr = usage.getDescription();
-    SortedSet<Integer> lines = byUsage.computeIfAbsent(usageStr, k -> new TreeSet<>());
-    lines.add(line);
+    byUsage.compute(
+        usageStr,
+        (ignored, refs) ->
+            (refs == null ? IntegerSpace.of(line) : refs.toBuilder().including(line).build()));
   }
 
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
