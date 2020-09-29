@@ -5,7 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Range;
 import java.io.Serializable;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 
 public class DefinedStructureInfo implements Serializable {
@@ -38,6 +40,16 @@ public class DefinedStructureInfo implements Serializable {
   }
 
   public void addDefinitionLines(int... lines) {
+    _definitionLines = _definitionLines.toBuilder().including(lines).build();
+  }
+
+  public void addDefinitionLines(IntStream lines) {
+    IntegerSpace.Builder newLines = _definitionLines.toBuilder();
+    lines.forEach(newLines::including);
+    _definitionLines = newLines.build();
+  }
+
+  public void addDefinitionLines(Range<Integer> lines) {
     _definitionLines = _definitionLines.toBuilder().including(lines).build();
   }
 
