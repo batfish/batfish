@@ -28,7 +28,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   private final long _wildcardMask;
 
   private static final long ALL_BITS_MASKED = 0xFFFFFFFFL;
-  public static final IpWildcard ANY = new IpWildcard(Ip.ZERO, ALL_BITS_MASKED);
+  public static final IpWildcard ANY = ipWithWildcardMask(Ip.ZERO, ALL_BITS_MASKED);
 
   private static Ip parseAddress(String str) {
     if (str.contains(":")) {
@@ -83,7 +83,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   public static IpWildcard create(Prefix prefix) {
     int wildcardBits = Prefix.MAX_PREFIX_LENGTH - prefix.getPrefixLength();
     long wildcardMask = (1L << wildcardBits) - 1L;
-    return new IpWildcard(prefix.getStartIp(), wildcardMask);
+    return ipWithWildcardMask(prefix.getStartIp(), wildcardMask);
   }
 
   public static IpWildcard create(Ip ip) {
@@ -192,7 +192,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
 
   @Nonnull
   public IpWildcardIpSpace toIpSpace() {
-    return new IpWildcardIpSpace(this);
+    return IpWildcardIpSpace.create(this);
   }
 
   public Prefix toPrefix() {

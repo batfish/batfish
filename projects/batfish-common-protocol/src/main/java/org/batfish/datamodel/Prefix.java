@@ -199,7 +199,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     } else if (_prefixLength == MAX_PREFIX_LENGTH) {
       return _ip.toIpSpace();
     }
-    return new PrefixIpSpace(this);
+    return PrefixIpSpace.create(this);
   }
 
   /**
