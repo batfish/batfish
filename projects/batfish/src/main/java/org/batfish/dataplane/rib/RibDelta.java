@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -48,8 +47,12 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    * Reason#ADD}.
    */
   public static <R extends AbstractRouteDecorator> RibDelta<R> adding(Collection<R> routes) {
-    return new RibDelta<>(
-        routes.stream().map(RouteAdvertisement::adding).collect(ImmutableList.toImmutableList()));
+    ImmutableList.Builder<RouteAdvertisement<R>> builder =
+        ImmutableList.builderWithExpectedSize(routes.size());
+    for (R route : routes) {
+      builder.add(RouteAdvertisement.adding(route));
+    }
+    return new RibDelta<>(builder.build());
   }
 
   public static <R extends AbstractRouteDecorator> RibDelta<R> of(RouteAdvertisement<R> action) {
@@ -133,7 +136,8 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
   @ParametersAreNonnullByDefault
   public static final class Builder<R extends AbstractRouteDecorator> {
 
-    private Map<R, RouteAdvertisement<R>> _actions;
+    @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
+    private LinkedHashMap<R, RouteAdvertisement<R>> _actions;
 
     /** Initialize a new RibDelta builder */
     private Builder() {
