@@ -97,7 +97,9 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
                 Row.builder(COLUMN_METADATA_MAP)
                     .put(COL_STRUCTURE_TYPE, structType)
                     .put(COL_STRUCTURE_NAME, name)
-                    .put(COL_SOURCE_LINES, new FileLines(filename, info.getDefinitionLines()))
+                    .put(
+                        COL_SOURCE_LINES,
+                        new FileLines(filename, info.getDefinitionLines().enumerate()))
                     .build());
           }
         }

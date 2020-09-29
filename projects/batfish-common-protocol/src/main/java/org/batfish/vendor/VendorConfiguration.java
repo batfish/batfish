@@ -32,6 +32,7 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -252,8 +253,8 @@ public abstract class VendorConfiguration implements Serializable {
     SortedMap<String, DefinedStructureInfo> byName =
         _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
     DefinedStructureInfo info =
-        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), 0));
-    info.getDefinitionLines().add(line);
+        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(IntegerSpace.EMPTY, 0));
+    info.addDefinitionLines(line);
   }
 
   /**
