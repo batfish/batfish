@@ -52,6 +52,18 @@ public final class RouteAdvertisement<T> {
     _reason = Reason.ADD;
   }
 
+  public static <T> RouteAdvertisement<T> adding(T route) {
+    return new RouteAdvertisement<>(route, Reason.ADD);
+  }
+
+  public static <T> RouteAdvertisement<T> replacing(T route) {
+    return new RouteAdvertisement<>(route, Reason.REPLACE);
+  }
+
+  public static <T> RouteAdvertisement<T> withdrawing(T route) {
+    return new RouteAdvertisement<>(route, Reason.WITHDRAW);
+  }
+
   /** Get the underlying route that's being advertised (or withdrawn) */
   @Nonnull
   public T getRoute() {
