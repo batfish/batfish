@@ -2571,6 +2571,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         jobs =
             makeParseVendorConfigurationsJobs(
                 snapshot, keyedConfigText, ConfigurationFormat.UNKNOWN);
+        // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
+        Collections.shuffle(jobs);
       } finally {
         makeJobsSpan.finish();
       }
