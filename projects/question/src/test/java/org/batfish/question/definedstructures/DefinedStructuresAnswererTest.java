@@ -21,6 +21,7 @@ import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.Schema;
@@ -40,17 +41,17 @@ public class DefinedStructuresAnswererTest {
                   "type1",
                   ImmutableSortedMap.of(
                       "name1",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(1), 1),
+                      new DefinedStructureInfo(IntegerSpace.of(1), 1),
                       "name2",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(2), 1))),
+                      new DefinedStructureInfo(IntegerSpace.of(2), 1))),
               "file2",
               ImmutableSortedMap.of(
                   "type1",
                   ImmutableSortedMap.of(
                       "name2",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(1), 1),
+                      new DefinedStructureInfo(IntegerSpace.of(1), 1),
                       "name3",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(2), 1))));
+                      new DefinedStructureInfo(IntegerSpace.of(2), 1))));
 
   // Hostname -> Files that make up that host.
   private static final Multimap<String, String> FILE_MAP =
