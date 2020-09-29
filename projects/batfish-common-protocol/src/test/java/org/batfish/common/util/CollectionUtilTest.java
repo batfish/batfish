@@ -1,9 +1,11 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CollectionUtil.maxValues;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.common.util.CollectionUtil.toUnorderedHashCode;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
@@ -15,6 +17,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -68,5 +72,12 @@ public class CollectionUtilTest {
     assertThat(
         toMap(m, Function.identity(), x -> x.equals("a") ? 0 : 1),
         equalTo(ImmutableMap.of("a", 0, "b", 1)));
+  }
+
+  @Test
+  public void testMaxValues() {
+    Comparator<String> longest = Comparator.comparing(String::length);
+    List<String> strings = ImmutableList.of("a", "abc", "ab", "efg", "");
+    assertThat(maxValues(strings, longest), contains("abc", "efg"));
   }
 }
