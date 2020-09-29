@@ -257,7 +257,8 @@ public abstract class VendorConfiguration implements Serializable {
                 return collectLines((RuleContext) child, parser);
               }
               return IntStream.empty();
-            });
+            })
+        .distinct();
   }
 
   /**
