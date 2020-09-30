@@ -15,7 +15,6 @@ public class MockDataPlane implements DataPlane {
 
   public static class Builder {
     @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
-    @Nonnull private Map<String, Configuration> _configurations;
     @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
     @Nonnull private Map<String, Map<String, Fib>> _fibs;
     @Nullable private ForwardingAnalysis _forwardingAnalysis;
@@ -27,7 +26,6 @@ public class MockDataPlane implements DataPlane {
 
     private Builder() {
       _bgpRoutes = HashBasedTable.create();
-      _configurations = ImmutableMap.of();
       _evpnRoutes = HashBasedTable.create();
       _fibs = ImmutableMap.of();
       _ribs = ImmutableSortedMap.of();
@@ -40,11 +38,6 @@ public class MockDataPlane implements DataPlane {
 
     public Builder setBgpRoutes(@Nonnull Table<String, String, Set<Bgpv4Route>> bgpRoutes) {
       _bgpRoutes = bgpRoutes;
-      return this;
-    }
-
-    public Builder setConfigs(Map<String, Configuration> configs) {
-      _configurations = configs;
       return this;
     }
 
@@ -80,7 +73,6 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
-  @Nonnull private final Map<String, Configuration> _configurations;
   @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
   @Nullable private final ForwardingAnalysis _forwardingAnalysis;
@@ -93,7 +85,6 @@ public class MockDataPlane implements DataPlane {
 
   private MockDataPlane(Builder builder) {
     _bgpRoutes = builder._bgpRoutes;
-    _configurations = builder._configurations;
     _evpnRoutes = builder._evpnRoutes;
     _fibs = builder._fibs;
     _forwardingAnalysis = builder._forwardingAnalysis;
@@ -129,12 +120,6 @@ public class MockDataPlane implements DataPlane {
   @Override
   public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
     return _ribs;
-  }
-
-  @Nonnull
-  @Override
-  public Map<String, Configuration> getConfigurations() {
-    return _configurations;
   }
 
   @Override

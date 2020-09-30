@@ -162,7 +162,6 @@ public final class VxlanVniPropertiesAnswererTest {
 
     @Override
     public DataPlane loadDataPlane(NetworkSnapshot snapshot) {
-      SortedMap<String, Configuration> configs = loadConfigurations(snapshot);
       HashBasedTable<String, String, Set<Layer2Vni>> vnis = HashBasedTable.create();
       vnis.put(
           "hostname",
@@ -195,7 +194,7 @@ public final class VxlanVniPropertiesAnswererTest {
                   .setUdpPort(1234)
                   .setBumTransportMethod(BumTransportMethod.MULTICAST_GROUP)
                   .build()));
-      return MockDataPlane.builder().setConfigs(configs).setVniSettings(vnis).build();
+      return MockDataPlane.builder().setVniSettings(vnis).build();
     }
 
     @Override

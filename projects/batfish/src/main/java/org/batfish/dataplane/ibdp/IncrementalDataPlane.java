@@ -51,15 +51,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     }
   }
 
-  private final class ConfigurationsSupplier
-      implements Serializable, Supplier<Map<String, Configuration>> {
-
-    @Override
-    public Map<String, Configuration> get() {
-      return computeConfigurations();
-    }
-  }
-
   private final class FibsSupplier
       implements Serializable, Supplier<Map<String, Map<String, Fib>>> {
 
@@ -81,9 +72,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   public static Builder builder() {
     return new Builder();
   }
-
-  private final Supplier<Map<String, Configuration>> _configurations =
-      Suppliers.memoize(new ConfigurationsSupplier());
 
   private final Supplier<Map<String, Map<String, Fib>>> _fibs =
       Suppliers.memoize(new FibsSupplier());
@@ -127,7 +115,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   private ForwardingAnalysis computeForwardingAnalysis() {
-    Map<String, Configuration> configs = getConfigurations();
+    Map<String, Configuration> configs = computeConfigurations();
     return new ForwardingAnalysisImpl(
         configs, getFibs(), _layer3Topology, computeLocationInfo(configs));
   }
@@ -193,11 +181,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
       }
     }
     return result;
-  }
-
-  @Override
-  public Map<String, Configuration> getConfigurations() {
-    return _configurations.get();
   }
 
   @Override

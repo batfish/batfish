@@ -158,7 +158,7 @@ class IncrementalBdpEngine {
 
           TracerouteEngine trEngCurrentL3Topogy =
               new TracerouteEngineImpl(
-                  partialDataplane, currentTopologyContext.getLayer3Topology());
+                  partialDataplane, currentTopologyContext.getLayer3Topology(), configurations);
 
           // Update topologies
           LOGGER.info("Updating dynamic topologies");
@@ -215,7 +215,7 @@ class IncrementalBdpEngine {
                   ipVrfOwners,
                   false,
                   true,
-                  new TracerouteEngineImpl(partialDataplane, newLayer3Topology),
+                  new TracerouteEngineImpl(partialDataplane, newLayer3Topology, configurations),
                   initialTopologyContext.getLayer2Topology().orElse(null));
           TopologyContext newTopologyContext =
               currentTopologyContext
