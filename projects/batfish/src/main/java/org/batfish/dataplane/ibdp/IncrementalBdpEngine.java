@@ -473,31 +473,6 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
-      // Multi-VRF redistribution of BGP routes:
-      // NOTE: this code is busted. Was only used for EVPN type 5 routes, support for which is
-      // utterly broken.
-      //      allNodes
-      //          .values()
-      //          .parallelStream()
-      //          .forEach(
-      //              n -> {
-      //                for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
-      //                  for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
-      //                    if (dstVr.getBgpRoutingProcess() == null) {
-      //                      continue;
-      //                    }
-      //                    dstVr
-      //                        .getBgpRoutingProcess()
-      //                        .redistribute(
-      //                            iteration > 1
-      //                                ? srcVr._mainRibRouteDeltaBuilder.build()
-      //                                : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-      //                                    .add(srcVr.getMainRib().getTypedRoutes())
-      //                                    .build(),
-      //                            srcVr.getName());
-      //                  }
-      //                }
-      //              });
     } finally {
       propSpan.finish();
     }
