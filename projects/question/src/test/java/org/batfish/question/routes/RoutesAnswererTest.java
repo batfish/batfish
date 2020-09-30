@@ -526,7 +526,7 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public boolean containsRoute(R route) {
+    public boolean containsRoute(AbstractRouteDecorator route) {
       return _routes.contains(route);
     }
 
