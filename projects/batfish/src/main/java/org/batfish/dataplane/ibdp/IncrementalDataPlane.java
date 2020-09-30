@@ -152,25 +152,4 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                 Entry::getKey,
                 vrfEntry -> vrfEntry.getValue().getPrefixTracer().summarize()));
   }
-
-  /**
-   * LEGACY METHOD. For use in legacy tests only.
-   *
-   * <p>Retrieve the {@link PrefixTracer} for each {@link VirtualRouter} after dataplane
-   * computation. Map structure: Hostname -&gt; VRF name -&gt; prefix tracer.
-   */
-  SortedMap<String, SortedMap<String, PrefixTracer>> getPrefixTracingInfo() {
-    /*
-     * Iterate over nodes, then virtual routers, and extract prefix tracer from each.
-     * Sort hostnames and VRF names
-     */
-    return toImmutableSortedMap(
-        _nodes,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableSortedMap(
-                nodeEntry.getValue().getVirtualRouters(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().getPrefixTracer()));
-  }
 }
