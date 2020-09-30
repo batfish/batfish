@@ -28,7 +28,7 @@
   "instance" : {
     "description" : "Finds route announcements for which a route policy has a particular behavior.",
     "instanceName" : "qname",
-    "longDescription" : "This question finds route announcements for which a route policy has a particular behavior.  The behaviors can be: that the policy permits the route (`permit`) or that it denies the route (`deny`).  Constraints can be imposed on the input route announcements of interest and, in the case of a `permit` action, also on the output route announcements of interest.  Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, a (possibly different) answer will be found for each policy.",
+    "longDescription" : "This question finds route announcements for which a route policy has a particular behavior. The behaviors can be: that the policy permits the route (`permit`) or that it denies the route (`deny`). Constraints can be imposed on the input route announcements of interest and, in the case of a `permit` action, also on the output route announcements of interest. Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, a (possibly different) answer will be found for each policy. This question currently supports common forms of matching on prefixes, communities, and AS-paths, as well as common forms of setting communities, the local preference, and the metric. It does not support other routing policy constructs. The question throws an exception if a route policy uses an unsupported construct.",
     "orderedVariableNames" : [
       "nodes",
       "policies",
