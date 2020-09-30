@@ -223,6 +223,11 @@ public abstract class NumberSpace<
     return _rangeset.asRanges();
   }
 
+  /** This space as an immutabke {@link RangeSet}. */
+  public final RangeSet<T> getRangeSet() {
+    return ImmutableRangeSet.copyOf(_rangeset);
+  }
+
   protected abstract S getThis();
 
   /** Intersect two number spaces together. */

@@ -269,7 +269,7 @@ public abstract class VendorConfiguration implements Serializable {
     String type = structureType.getDescription();
     SortedMap<String, DefinedStructureInfo> byName =
         _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
-    return byName.computeIfAbsent(name, k -> new DefinedStructureInfo(IntegerSpace.EMPTY, 0));
+    return byName.computeIfAbsent(name, k -> new DefinedStructureInfo());
   }
 
   /**
