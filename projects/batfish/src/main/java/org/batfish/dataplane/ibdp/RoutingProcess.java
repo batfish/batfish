@@ -61,8 +61,10 @@ public interface RoutingProcess<T, R extends AbstractRouteDecorator> {
   void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta);
 
   /**
-   * Returns true if any outstanding computation remains (e.g., unprocessed messages or non-empty
-   * {@link RibDelta deltas}
+   * Returns true if any outstanding computation remains based on the internal state (e.g.,
+   * unprocessed messages or non-empty {@link RibDelta deltas}, etc).
+   *
+   * <p>Parent virtual router will call this method as the last thing in each routing iteration
    */
   boolean isDirty();
 }

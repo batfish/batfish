@@ -395,7 +395,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
-    //    assert _bgpv4DeltaBuilder.isEmpty();
     // Reinitialize delta builders
     _evpnDeltaBuilder = RibDelta.builder();
 
@@ -534,8 +533,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param allNodes map of all network nodes
    */
   private void processBgpMessages(NetworkConfigurations nc, Map<String, Node> allNodes) {
-    //    assert _bgpv4DeltaBuilder.isEmpty();
-
     // Process IPv4 unicast messages
     processBgpV4UnicastMessages(_topology, nc, allNodes);
 
@@ -650,8 +647,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   void processBgpV4UnicastMessages(
       BgpTopology bgpTopology, NetworkConfigurations nc, Map<String, Node> nodes) {
-    //    assert _bgpv4DeltaBuilder.isEmpty();
-
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
     Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltaBuilders = new IdentityHashMap<>();
     ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
