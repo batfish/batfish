@@ -11,14 +11,15 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
 /** Keeps data about which prefixes where advertised to neighboring routers */
 public class PrefixTracer implements Serializable {
-
   static final String SENT = "sent";
   static final String FILTERED_OUT = "filtered_out";
   static final String FILTERED_IN = "filtered_in";
@@ -95,25 +96,32 @@ public class PrefixTracer implements Serializable {
   }
 
   private final Map<Prefix, Set<Neighbor>> _filteredOnImport;
-
   private final Map<Prefix, Set<Neighbor>> _filteredOnExport;
-
   private final Set<Prefix> _originated;
-
   private final Map<Prefix, Set<Neighbor>> _installed;
-
   private final Map<Prefix, Set<Neighbor>> _sent;
 
+  /** Which prefixes should be traced. */
+  private final PrefixSpace _prefixesToTrace;
+
   PrefixTracer() {
+    this(DEFAULT_PREFIXES_TO_TRACE);
+  }
+
+  PrefixTracer(@Nonnull PrefixSpace prefixesToTrace) {
     _originated = Sets.newConcurrentHashSet();
     _installed = new ConcurrentHashMap<>();
     _sent = new ConcurrentHashMap<>();
     _filteredOnImport = new ConcurrentHashMap<>();
     _filteredOnExport = new ConcurrentHashMap<>();
+    _prefixesToTrace = prefixesToTrace;
   }
 
   /** Note that we considered given prefix for origination */
   void originated(Prefix prefix) {
+    if (!_prefixesToTrace.containsPrefix(prefix)) {
+      return;
+    }
     _originated.add(prefix);
   }
 
@@ -124,6 +132,9 @@ public class PrefixTracer implements Serializable {
       Ip neighborIp,
       String neighborVrf,
       @Nullable String exportPolicy) {
+    if (!_prefixesToTrace.containsPrefix(prefix)) {
+      return;
+    }
     Set<Neighbor> set = _sent.computeIfAbsent(prefix, p -> Sets.newConcurrentHashSet());
     set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, exportPolicy));
   }
@@ -135,6 +146,9 @@ public class PrefixTracer implements Serializable {
       Ip neighborIp,
       String neighborVrf,
       @Nullable String importPolicy) {
+    if (!_prefixesToTrace.containsPrefix(prefix)) {
+      return;
+    }
     Set<Neighbor> set = _installed.computeIfAbsent(prefix, p -> Sets.newConcurrentHashSet());
     set.add(new Neighbor(neighborHostname, neighborIp, neighborVrf, importPolicy));
   }
@@ -152,6 +166,9 @@ public class PrefixTracer implements Serializable {
       String neighborVrf,
       @Nullable String policyName,
       Direction direction) {
+    if (!_prefixesToTrace.containsPrefix(prefix)) {
+      return;
+    }
     if (direction == Direction.IN) {
       Set<Neighbor> set =
           _filteredOnImport.computeIfAbsent(prefix, p -> Sets.newConcurrentHashSet());
@@ -234,4 +251,7 @@ public class PrefixTracer implements Serializable {
                         .add(neighbor.getHostname())));
     return result;
   }
+
+  // If not explicitly provided, this is the space of prefixes that will be traced.
+  private static final PrefixSpace DEFAULT_PREFIXES_TO_TRACE = new PrefixSpace(); // none.
 }
