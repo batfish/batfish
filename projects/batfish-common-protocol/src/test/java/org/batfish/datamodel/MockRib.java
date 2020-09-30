@@ -72,7 +72,7 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
   }
 
   @Override
-  public boolean containsRoute(AnnotatedRoute<AbstractRoute> route) {
+  public boolean containsRoute(AbstractRouteDecorator route) {
     return _routes.contains(route);
   }
 

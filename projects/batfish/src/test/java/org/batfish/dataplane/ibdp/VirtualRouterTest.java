@@ -768,6 +768,7 @@ public class VirtualRouterTest {
     for (AnnotatedRoute<AbstractRoute> r : annotatedRoutes) {
       vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes.getMainRib().mergeRouteGetDelta(r));
     }
+    vrWithRoutes.endOfEgpRound();
 
     // Run initial leaking (i.e. what would happen at beginning of
     // computeNonMonotonicPortionOfDataPlane()); all routes should leak from vrWithRoutes' main RIB

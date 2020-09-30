@@ -126,8 +126,14 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  public final boolean containsRoute(R route) {
-    return _tree.containsRoute(route);
+  @SuppressWarnings("unchecked")
+  public final boolean containsRoute(AbstractRouteDecorator route) {
+    // TODO: FIX this casting bullshit
+    try {
+      return _tree.containsRoute((R) route);
+    } catch (ClassCastException e) {
+      return false;
+    }
   }
 
   @Override
