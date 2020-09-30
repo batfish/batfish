@@ -24,7 +24,7 @@ public class PrefixTracer implements Serializable {
   static final String FILTERED_IN = "filtered_in";
   static final String RECEIVED = "received";
 
-  public class Neighbor implements Serializable {
+  public static final class Neighbor implements Serializable {
 
     private final String _hostname;
     private final Ip _ip;
@@ -68,14 +68,13 @@ public class PrefixTracer implements Serializable {
     public boolean equals(Object o) {
       if (this == o) {
         return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
+      } else if (!(o instanceof Neighbor)) {
         return false;
       }
       Neighbor neighbor = (Neighbor) o;
-      return Objects.equals(_hostname, neighbor._hostname)
-          && Objects.equals(_ip, neighbor._ip)
-          && Objects.equals(_vrfName, neighbor._vrfName)
+      return _hostname.equals(neighbor._hostname)
+          && _ip.equals(neighbor._ip)
+          && _vrfName.equals(neighbor._vrfName)
           && Objects.equals(_routingPolicy, neighbor._routingPolicy);
     }
 
