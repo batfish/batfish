@@ -118,12 +118,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   @Nonnull @VisibleForTesting
   SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
-  /**
-   * Incoming EVPN type 5 advertisements into this router from each BGP neighbor that speaks EVPN
-   * address family
-   */
-  @Nonnull
-  private SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType5Route>>> _evpnType5IncomingRoutes;
 
   // RIBs and RIB delta builders
   /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
@@ -182,9 +176,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Mapping of routes to be redistributed. Maps source VRF to a set of routes to process */
   @Nonnull private Map<String, RibDelta<? extends AnnotatedRoute<AbstractRoute>>> _toRedistribute;
 
-  @Nonnull private BgpDelta<EvpnType5Route> _type5RoutesToSendForEveryone;
-  @Nonnull private Map<EdgeId, BgpDelta<EvpnType5Route>> _type5RoutesToSendPerNeighbor;
-
   /** Set of edges (sessions) that came up since previous topology update */
   private Set<EdgeId> _edgesWentUp = ImmutableSet.of();
   /**
@@ -220,7 +211,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Message queues start out empty
     _bgpv4Edges = ImmutableSortedSet.of();
     _evpnType3IncomingRoutes = ImmutableSortedMap.of();
-    _evpnType5IncomingRoutes = ImmutableSortedMap.of();
 
     // Initialize all RIBs
     BgpTieBreaker bestPathTieBreaker =
@@ -263,6 +253,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
     _evpnType3Rib =
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+    /*
+     TODO: type5 RIBs are currently unused. Correct implementation blocked on having local bgp
+       ribs
+    */
     _ebgpType5EvpnRib =
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
     _ibgpType5EvpnRib =
@@ -273,8 +267,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
     _evpnInitializationDelta = RibDelta.empty();
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
-    _type5RoutesToSendForEveryone = BgpDelta.empty();
-    _type5RoutesToSendPerNeighbor = new HashMap<>(0);
     assert _rtVrfMapping != null; // Avoid unused warning
   }
 
@@ -319,10 +311,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _evpnType3IncomingRoutes =
         getEdgeIdStream(graph, BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
-    _evpnType5IncomingRoutes =
-        getEdgeIdStream(graph, BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
-            .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
-    assert _evpnType3IncomingRoutes.keySet().equals(_evpnType5IncomingRoutes.keySet());
   }
 
   /**
@@ -416,37 +404,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     */
     sendOutRoutesToNewEdges(_edgesWentUp, allNodes, nc);
 
-    // See computeType5DeltaFromMainRibRoutes for why this madness is needed
-    // If we have main RIB routes to process (from any VRF) and we have EVPN neighbors, then
-    // we make new type 5 routes and send them out
-    // TODO Everything is broken about type 5 routes
-    //    if (!_mainRibRoutesToProcess.isEmpty() && !_evpnType5IncomingRoutes.isEmpty()) {
-    //      for (String vrfName : _mainRibRoutesToProcess.keySet()) {
-    //        computeType5DeltaFromMainRibRoutes(vrfName, _mainRibRoutesToProcess.get(vrfName), nc);
-    //      }
-    //      _mainRibRoutesToProcess = new HashMap<>(1);
-    //    }
-    //    if (!_type5RoutesToSendForEveryone.isEmpty()) {
-    //      sendOutEvpnType5Routes(_type5RoutesToSendForEveryone, nc, allNodes);
-    //    }
-    //    _type5RoutesToSendForEveryone = BgpDelta.empty();
-    //    if (!_type5RoutesToSendPerNeighbor.isEmpty()) {
-    //      _type5RoutesToSendPerNeighbor
-    //          .keySet()
-    //          .forEach(
-    //              edge -> {
-    //                BgpPeerConfigId remoteConfigId = edge.tail();
-    //                BgpSessionProperties session = getSessionProperties(_topology, edge);
-    //                getNeighborBgpProcess(remoteConfigId, allNodes)
-    //                    .enqueueEvpnType5Routes(
-    //                        // Make sure to reverse the edge
-    //                        edge.reverse(),
-    //                        getEvpnTransformedRouteStream(
-    //                            edge, _type5RoutesToSendPerNeighbor.get(edge), nc, allNodes,
-    // session));
-    //              });
-    //      _type5RoutesToSendPerNeighbor = new HashMap<>(0);
-    //    }
     processBgpMessages(nc, allNodes);
 
     // Clear new edges.
@@ -506,7 +463,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return
     // Message queues
     !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
-        || !_evpnType5IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         // Outgoing message deltas. We need to send these to neighbors.
         // The reason we look at PREV values is because
         // endOfRound has been called BEFORE the isDirty check and we've already switched over.
@@ -517,10 +473,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         || !_bgpv4DeltaBuilder.isEmpty()
         || !_evpnDeltaBuilder.isEmpty()
         // Initialization state
-        || !_evpnInitializationDelta.isEmpty()
-        // Intermediate state
-        || !_type5RoutesToSendForEveryone.isEmpty()
-        || !_type5RoutesToSendPerNeighbor.isEmpty();
+        || !_evpnInitializationDelta.isEmpty();
   }
 
   /**
@@ -540,18 +493,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta)));
     _toMainRib.from(
         importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta)));
-
-    // TODO Type 5 routes currently broken
-
-    //    DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc, allNodes);
-    //    sendOutEvpnType5Routes(type5Delta._toAdvertise, nc, allNodes);
-    //    // Merge EVPN routes into EVPN RIB and prepare for merging into main RIB
-    //    _changeSet.from(
-    //        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib,
-    // type5Delta._toMerge._ebgpDelta)));
-    //    _changeSet.from(
-    //        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib,
-    // type5Delta._toMerge._ibgpDelta)));
   }
 
   /** Initialize the EVPN RIBs based on EVPN address family config */
@@ -1078,21 +1019,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return deltaPair;
   }
 
-  /** Process incoming EVPN type 5 messages, across all neighbors */
-  private DeltaPair<EvpnType5Route> processEvpnType5Messages(
-      NetworkConfigurations nc, Map<String, Node> allNodes) {
-    DeltaPair<EvpnType5Route> deltaPair = DeltaPair.empty();
-    for (Entry<EdgeId, Queue<RouteAdvertisement<EvpnType5Route>>> entry :
-        _evpnType5IncomingRoutes.entrySet()) {
-      EdgeId edge = entry.getKey();
-      Queue<RouteAdvertisement<EvpnType5Route>> queue = entry.getValue();
-      deltaPair =
-          deltaPair.union(
-              processEvpnMessagesFromNeighbor(edge, queue, nc, allNodes, EvpnType5Route.class));
-    }
-    return deltaPair;
-  }
-
   /** Process all incoming EVPN messages for a given session, identified by {@code edge} */
   private <B extends EvpnRoute.Builder<B, R>, R extends EvpnRoute<B, R>>
       DeltaPair<R> processEvpnMessagesFromNeighbor(
@@ -1201,23 +1127,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               BgpSessionProperties session = getSessionProperties(_topology, edge);
               getNeighborBgpProcess(remoteConfigId, allNodes)
                   .enqueueEvpnType3Routes(
-                      // Make sure to reverse the edge
-                      edge.reverse(),
-                      getEvpnTransformedRouteStream(edge, evpnDelta, nc, allNodes, session));
-            });
-  }
-
-  /** Send out EVPN type 5 routes to our neighbors */
-  private void sendOutEvpnType5Routes(
-      BgpDelta<EvpnType5Route> evpnDelta, NetworkConfigurations nc, Map<String, Node> allNodes) {
-    _evpnType5IncomingRoutes
-        .keySet()
-        .forEach(
-            edge -> {
-              BgpPeerConfigId remoteConfigId = edge.tail();
-              BgpSessionProperties session = getSessionProperties(_topology, edge);
-              getNeighborBgpProcess(remoteConfigId, allNodes)
-                  .enqueueEvpnType5Routes(
                       // Make sure to reverse the edge
                       edge.reverse(),
                       getEvpnTransformedRouteStream(edge, evpnDelta, nc, allNodes, session));
@@ -1667,31 +1576,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return delta;
   }
 
-  /**
-   * Convert a BGP v4 route to a EVPN type 5 route. Resets most original attributes of the route,
-   * since
-   */
-  private static EvpnType5Route toEvpnType5Route(
-      Bgpv4Route route, RouteDistinguisher rd, ExtendedCommunity rt) {
-    return EvpnType5Route.builder()
-        .setNetwork(route.getNetwork())
-        .setAdmin(route.getAdministrativeCost())
-        // Intentionally skip AS-path and communities -- we are generating a new route
-        .addCommunity(rt) // add route target
-        .setLocalPreference(route.getLocalPreference())
-        .setMetric(route.getMetric())
-        .setNextHopInterface(route.getNextHopInterface())
-        .setNextHopIp(route.getNextHopIp())
-        .setOriginatorIp(route.getNextHopIp())
-        .setOriginType(route.getOriginType())
-        .setProtocol(route.getProtocol())
-        .setReceivedFromIp(route.getReceivedFromIp())
-        .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
-        .setRouteDistinguisher(rd)
-        .setSrcProtocol(route.getSrcProtocol())
-        .build();
-  }
-
   @Nonnull
   private static BgpSessionProperties getSessionProperties(BgpTopology bgpTopology, EdgeId edge) {
     Optional<BgpSessionProperties> session =
@@ -1713,13 +1597,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _bgpv4DeltaPrev,
             // Message queues
             _evpnType3IncomingRoutes,
-            _evpnType5IncomingRoutes,
             // Delta builders
             _bgpv4DeltaBuilder.build(),
-            _evpnDeltaBuilder.build(),
-            // intermediate state
-            _type5RoutesToSendForEveryone,
-            _type5RoutesToSendPerNeighbor)
+            _evpnDeltaBuilder.build())
         .collect(toOrderedHashCode());
   }
 
@@ -1767,18 +1647,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private void enqueueEvpnType3Routes(
       @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<EvpnType3Route>> routes) {
     Queue<RouteAdvertisement<EvpnType3Route>> q = _evpnType3IncomingRoutes.get(edgeId);
-    assert q != null; // Invariant of the session being up
-    routes.forEach(q::add);
-  }
-
-  /**
-   * Message passing method between BGP processes. Take a collection of BGP {@link
-   * RouteAdvertisement}s and puts them onto a local queue corresponding to the session between
-   * given neighbors.
-   */
-  private void enqueueEvpnType5Routes(
-      @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<EvpnType5Route>> routes) {
-    Queue<RouteAdvertisement<EvpnType5Route>> q = _evpnType5IncomingRoutes.get(edgeId);
     assert q != null; // Invariant of the session being up
     routes.forEach(q::add);
   }

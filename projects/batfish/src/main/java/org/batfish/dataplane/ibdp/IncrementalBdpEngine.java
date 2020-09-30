@@ -82,7 +82,7 @@ class IncrementalBdpEngine {
       assert scope != null; // avoid unused warning
 
       _bfLogger.resetTimer();
-      IncrementalDataPlane.Builder dpBuilder = IncrementalDataPlane.builder();
+      PartialDataplane.Builder dpBuilder = PartialDataplane.builder();
       _bfLogger.info("\nComputing Data Plane using iBDP\n");
 
       // TODO: switch to topologies and owners from TopologyProvider
@@ -147,7 +147,7 @@ class IncrementalBdpEngine {
 
           // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
           computeFibs(nodes);
-          IncrementalDataPlane partialDataplane =
+          PartialDataplane partialDataplane =
               dpBuilder
                   .setNodes(nodes)
                   .setLayer3Topology(currentTopologyContext.getLayer3Topology())
@@ -262,7 +262,7 @@ class IncrementalBdpEngine {
               .setLayer3Topology(currentTopologyContext.getLayer3Topology())
               .build();
       _bfLogger.printElapsedTime();
-      return new ComputeDataPlaneResult(answerElement, finalDataplane, currentTopologyContext);
+      return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
     } finally {
       span.finish();
     }
@@ -473,31 +473,6 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
-      // Multi-VRF redistribution of BGP routes:
-      // NOTE: this code is busted. Was only used for EVPN type 5 routes, support for which is
-      // utterly broken.
-      //      allNodes
-      //          .values()
-      //          .parallelStream()
-      //          .forEach(
-      //              n -> {
-      //                for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
-      //                  for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
-      //                    if (dstVr.getBgpRoutingProcess() == null) {
-      //                      continue;
-      //                    }
-      //                    dstVr
-      //                        .getBgpRoutingProcess()
-      //                        .redistribute(
-      //                            iteration > 1
-      //                                ? srcVr._mainRibRouteDeltaBuilder.build()
-      //                                : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-      //                                    .add(srcVr.getMainRib().getTypedRoutes())
-      //                                    .build(),
-      //                            srcVr.getName());
-      //                  }
-      //                }
-      //              });
     } finally {
       propSpan.finish();
     }
@@ -868,13 +843,13 @@ class IncrementalBdpEngine {
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return toImmutableSortedMap(
-        dp.getNodes(),
+        dp.getRibs(),
         Entry::getKey,
         nodeEntry ->
             toImmutableSortedMap(
-                nodeEntry.getValue().getVirtualRouters(),
+                nodeEntry.getValue(),
                 Entry::getKey,
-                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
+                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getRoutes())));
   }
 
   /**

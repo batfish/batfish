@@ -114,8 +114,9 @@ public class IsisTest {
    *
    * @param r1Level1Passive Whether to make IS-IS passive on level 1 of r1's interface to r2
    * @param r1Level2Passive Whether to make IS-IS passive on level 2 of r1's interface to r2
+   * @return
    */
-  private IncrementalDataPlane setUpPassiveIsis(boolean r1Level1Passive, boolean r1Level2Passive) {
+  private IbdpResult setUpPassiveIsis(boolean r1Level1Passive, boolean r1Level2Passive) {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -171,19 +172,18 @@ public class IsisTest {
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
-    return (IncrementalDataPlane)
+    return (IbdpResult)
         engine.computeDataPlane(
-                configurations,
-                TopologyContext.builder().setLayer3Topology(topology).build(),
-                Collections.emptySet())
-            ._dataPlane;
+            configurations,
+            TopologyContext.builder().setLayer3Topology(topology).build(),
+            Collections.emptySet());
   }
 
   @Test
   public void testIsisPassiveL1() {
     // Test with passive level 1 on r1. Should see each other's loopback addresses in L2 RIB, but
     // not L1, and both should have routes to the other's loopback with ISIS_L2 protocol.
-    IncrementalDataPlane dp = setUpPassiveIsis(true, false);
+    IbdpResult dp = setUpPassiveIsis(true, false);
     Prefix r1LoopbackPrefix = R1_LOOPBACK_IP.toPrefix();
     Prefix r2LoopbackPrefix = R2_LOOPBACK_IP.toPrefix();
 
@@ -233,7 +233,7 @@ public class IsisTest {
 
     // Both nodes have an L2 route to the other's loopback
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
-        IncrementalBdpEngine.getRoutes(dp);
+        IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);
     assertRoute(routes, ISIS_L2, R1, r2LoopbackPrefix, 10L);
     assertRoute(routes, ISIS_L2, R2, r1LoopbackPrefix, 10L);
   }
@@ -242,7 +242,7 @@ public class IsisTest {
   public void testIsisPassiveL2() {
     // Test with passive level 2 on r1. Should see each other's loopback addresses in L1 RIB, but
     // not L2, and both should have routes to the other's loopback with ISIS_L1 protocol.
-    IncrementalDataPlane dp = setUpPassiveIsis(false, true);
+    IbdpResult dp = setUpPassiveIsis(false, true);
     Prefix r1LoopbackPrefix = R1_LOOPBACK_IP.toPrefix();
     Prefix r2LoopbackPrefix = R2_LOOPBACK_IP.toPrefix();
 
@@ -289,7 +289,7 @@ public class IsisTest {
 
     // Both nodes have an L1 route to the other's loopback
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
-        IncrementalBdpEngine.getRoutes(dp);
+        IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);
     assertRoute(routes, ISIS_L1, R1, r2LoopbackPrefix, 10L);
     assertRoute(routes, ISIS_L1, R2, r1LoopbackPrefix, 10L);
   }
@@ -303,7 +303,7 @@ public class IsisTest {
    R1 and R2 are L2 only, R4 and R5 are L1 only. R3 interfaces to R1 and R2 are L2 only, to R4 and
    R5 are L1 only.
    */
-  private IncrementalDataPlane computeDataPlane() {
+  private IbdpResult computeDataPlane() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -456,21 +456,18 @@ public class IsisTest {
             new IncrementalDataPlaneSettings(),
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
-    IncrementalDataPlane dp =
-        (IncrementalDataPlane)
-            engine.computeDataPlane(
-                    configurations,
-                    TopologyContext.builder().setLayer3Topology(topology).build(),
-                    Collections.emptySet())
-                ._dataPlane;
-    return dp;
+    return (IbdpResult)
+        engine.computeDataPlane(
+            configurations,
+            TopologyContext.builder().setLayer3Topology(topology).build(),
+            Collections.emptySet());
   }
 
   @Test
   public void testL1AndL2Routes() {
-    IncrementalDataPlane dp = computeDataPlane();
+    IbdpResult dp = computeDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
-        IncrementalBdpEngine.getRoutes(dp);
+        IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);
 
     // R1 is directly connected to R2 and R3, can reach R4 and R5 through R3
     assertNoRoute(routes, R1, Prefix.ZERO);
@@ -713,9 +710,9 @@ public class IsisTest {
   @Ignore("https://github.com/batfish/batfish/issues/1703")
   @Test
   public void testLeakedRoutes() {
-    IncrementalDataPlane dp = computeDataPlane();
+    IbdpResult dp = computeDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
-        IncrementalBdpEngine.getRoutes(dp);
+        IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);
 
     assertInterAreaRoute(routes, R4, R1_LOOPBACK_IP.toPrefix(), 148L);
     assertInterAreaRoute(routes, R4, R1_R2_PREFIX, 158L);
@@ -733,9 +730,9 @@ public class IsisTest {
   @Ignore("https://github.com/batfish/batfish/issues/1703")
   @Test
   public void testRedistributedRoutes() {
-    IncrementalDataPlane dp = computeDataPlane();
+    IbdpResult dp = computeDataPlane();
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routes =
-        IncrementalBdpEngine.getRoutes(dp);
+        IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp._dataPlane);
 
     assertRoute(routes, ISIS_L2, R1, Prefix.parse("10.3.3.100/32"), 10L);
     assertRoute(routes, ISIS_L2, R2, Prefix.parse("10.3.3.100/32"), 10L);
