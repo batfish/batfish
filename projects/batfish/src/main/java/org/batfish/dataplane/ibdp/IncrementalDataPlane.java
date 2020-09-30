@@ -115,15 +115,10 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private final SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       _prefixTracerSummary;
 
-  // TODO: remove this once some tests are updated
-  @Nonnull transient Map<String, Node> _nodes;
-
   private IncrementalDataPlane(Builder builder) {
     checkArgument(builder._nodes != null, "Dataplane must have nodes to be constructed");
     checkArgument(builder._layer3Topology != null, "Dataplane must have an L3 topology set");
 
-    // TODO: this field is a temporary workaround
-    _nodes = builder._nodes;
     Map<String, Node> nodes = builder._nodes;
     Map<String, Configuration> configs = DataplaneUtil.computeConfigurations(nodes);
     // Order of initialization matters:
