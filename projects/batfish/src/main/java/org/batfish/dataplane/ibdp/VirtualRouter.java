@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Streams;
 import com.google.common.graph.Network;
-import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -98,44 +97,43 @@ import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 
-public class VirtualRouter implements Serializable {
+public class VirtualRouter {
 
   /** The BGP routing process. {@code null} if BGP is not configured for this VRF */
-  @Nullable transient BgpRoutingProcess _bgpRoutingProcess;
+  @Nullable BgpRoutingProcess _bgpRoutingProcess;
 
   /** Parent configuration for this virtual router */
   @Nonnull private final Configuration _c;
 
   /** The RIB containing connected routes */
-  private transient ConnectedRib _connectedRib;
+  private ConnectedRib _connectedRib;
 
   /**
    * Queues containing routes that are coming in from other VRFs (as a result of explicitly
    * configured leaking or applied RIB groups).
    */
-  private transient SortedMap<
-          CrossVrfEdgeId, Queue<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>>>
+  private SortedMap<CrossVrfEdgeId, Queue<RouteAdvertisement<AnnotatedRoute<AbstractRoute>>>>
       _crossVrfIncomingRoutes;
 
   /**
    * The independent RIB contains connected and static routes, which are unaffected by BDP
    * iterations (hence, independent).
    */
-  transient Rib _independentRib;
+  Rib _independentRib;
 
   /** Incoming messages into this router from each IS-IS circuit */
-  transient SortedMap<IsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
+  SortedMap<IsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
 
   /** Routes in main RIB to redistribute into IS-IS */
-  transient RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _routesForIsisRedistribution;
+  RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _routesForIsisRedistribution;
 
-  transient IsisLevelRib _isisL1Rib;
-  transient IsisLevelRib _isisL2Rib;
-  private transient IsisLevelRib _isisL1StagingRib;
-  private transient IsisLevelRib _isisL2StagingRib;
-  private transient IsisRib _isisRib;
-  transient KernelRib _kernelRib;
-  transient LocalRib _localRib;
+  IsisLevelRib _isisL1Rib;
+  IsisLevelRib _isisL2Rib;
+  private IsisLevelRib _isisL1StagingRib;
+  private IsisLevelRib _isisL2StagingRib;
+  private IsisRib _isisRib;
+  KernelRib _kernelRib;
+  LocalRib _localRib;
 
   /** The default main RIB, contains routes from different protocol RIBs */
   private final Rib _mainRib;
@@ -144,39 +142,38 @@ public class VirtualRouter implements Serializable {
   private final Map<String, Rib> _mainRibs;
 
   /** Keeps track of changes to the main RIB in the current iteration. */
-  @VisibleForTesting
-  transient RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
+  @VisibleForTesting RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
 
   /**
    * All of the routes that were merged/withdraws for the main RIB in this the previous iteration
    * Will inform redistribution/VRF leaking in current round.
    */
-  transient RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDeltaPrevRound;
+  RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDeltaPrevRound;
 
   /** The VRF name for this virtual router */
   @Nonnull private final String _name;
   /** Parent {@link Node} on which this virtual router resides */
   @Nonnull private final Node _node;
 
-  private transient Map<String, OspfRoutingProcess> _ospfProcesses;
+  private Map<String, OspfRoutingProcess> _ospfProcesses;
 
-  transient RipInternalRib _ripInternalRib;
-  transient RipInternalRib _ripInternalStagingRib;
-  transient RipRib _ripRib;
-  transient StaticRib _staticUnconditionalRib;
-  transient StaticRib _staticNextHopRib;
+  RipInternalRib _ripInternalRib;
+  RipInternalRib _ripInternalStagingRib;
+  RipRib _ripRib;
+  StaticRib _staticUnconditionalRib;
+  StaticRib _staticNextHopRib;
 
   /** FIB (forwarding information base) built from the main RIB */
   private Fib _fib;
 
   /** RIB containing generated routes */
-  private transient Rib _generatedRib;
+  private Rib _generatedRib;
 
   /** Metadata about propagated prefixes to/from neighbors */
   @Nonnull private PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
-  @VisibleForTesting transient ImmutableMap<Long, EigrpRoutingProcess> _eigrpProcesses;
+  @VisibleForTesting ImmutableMap<Long, EigrpRoutingProcess> _eigrpProcesses;
 
   /**
    * Layer 2 VNI settings that are updated dynamically as the dataplane is being computed (e.g.,
