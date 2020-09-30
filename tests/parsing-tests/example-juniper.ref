@@ -10675,136 +10675,73 @@
         "configs/as1border1.cfg" : {
           "bgp group" : {
             "as1" : {
-              "definitionLines" : [
-                10,
-                11,
-                12,
-                13,
-                14
-              ],
+              "definitionLines" : "10-14",
               "numReferrers" : 1
             },
             "as2" : {
-              "definitionLines" : [
-                15,
-                16,
-                17,
-                18,
-                19
-              ],
+              "definitionLines" : "15-19",
               "numReferrers" : 1
             },
             "bad-ebgp" : {
-              "definitionLines" : [
-                24,
-                25,
-                26,
-                27
-              ],
+              "definitionLines" : "24-27",
               "numReferrers" : 1
             },
             "xanadu" : {
-              "definitionLines" : [
-                20,
-                21,
-                22,
-                23
-              ],
+              "definitionLines" : "20-23",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "fe-0/0/0" : {
-              "definitionLines" : [
-                4,
-                5
-              ],
+              "definitionLines" : "4-5",
               "numReferrers" : 2
             },
             "fe-0/0/0.0" : {
-              "definitionLines" : [
-                4
-              ],
+              "definitionLines" : "4",
               "numReferrers" : 2
             },
             "fe-0/0/0.1" : {
-              "definitionLines" : [
-                5
-              ],
+              "definitionLines" : "5",
               "numReferrers" : 1
             },
             "lo0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 1
             },
             "lo0.0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 2
             }
           },
           "policy-statement" : {
             "as1_to_as1" : {
-              "definitionLines" : [
-                30,
-                31,
-                32,
-                33
-              ],
+              "definitionLines" : "30-33",
               "numReferrers" : 1
             },
             "as1_to_as2" : {
-              "definitionLines" : [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ],
+              "definitionLines" : "34-41",
               "numReferrers" : 1
             },
             "as2_to_as1" : {
-              "definitionLines" : [
-                42,
-                43,
-                44
-              ],
+              "definitionLines" : "42-44",
               "numReferrers" : 1
             },
             "match_original_prefixes" : {
-              "definitionLines" : [
-                45,
-                46
-              ],
+              "definitionLines" : "45-46",
               "numReferrers" : 2
             },
             "ospf-redistribute-connected" : {
-              "definitionLines" : [
-                28,
-                29
-              ],
+              "definitionLines" : "28-29",
               "numReferrers" : 1
             }
           },
           "prefix-list" : {
             "as3_prefixes" : {
-              "definitionLines" : [
-                49,
-                50
-              ],
+              "definitionLines" : "49-50",
               "numReferrers" : 1
             },
             "original_prefixes" : {
-              "definitionLines" : [
-                47,
-                48
-              ],
+              "definitionLines" : "47-48",
               "numReferrers" : 3
             }
           }
@@ -10812,155 +10749,81 @@
         "configs/as1border2.cfg" : {
           "bgp group" : {
             "as1" : {
-              "definitionLines" : [
-                11,
-                12,
-                13,
-                14,
-                15
-              ],
+              "definitionLines" : "11-15",
               "numReferrers" : 1
             },
             "as3" : {
-              "definitionLines" : [
-                16,
-                17,
-                18,
-                19,
-                20
-              ],
+              "definitionLines" : "16-20",
               "numReferrers" : 1
             },
             "as4" : {
-              "definitionLines" : [
-                21,
-                22,
-                23,
-                24,
-                25
-              ],
+              "definitionLines" : "21-25",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "fe-0/0/0" : {
-              "definitionLines" : [
-                4,
-                5,
-                6
-              ],
+              "definitionLines" : "4-6",
               "numReferrers" : 3
             },
             "fe-0/0/0.0" : {
-              "definitionLines" : [
-                4
-              ],
+              "definitionLines" : "4",
               "numReferrers" : 2
             },
             "fe-0/0/0.1" : {
-              "definitionLines" : [
-                5
-              ],
+              "definitionLines" : "5",
               "numReferrers" : 1
             },
             "fe-0/0/0.2" : {
-              "definitionLines" : [
-                6
-              ],
+              "definitionLines" : "6",
               "numReferrers" : 1
             },
             "lo0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 1
             },
             "lo0.0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 2
             }
           },
           "policy-statement" : {
             "as1_to_as1" : {
-              "definitionLines" : [
-                28,
-                29,
-                30,
-                31
-              ],
+              "definitionLines" : "28-31",
               "numReferrers" : 1
             },
             "as1_to_as3" : {
-              "definitionLines" : [
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39
-              ],
+              "definitionLines" : "32-39",
               "numReferrers" : 1
             },
             "as1_to_as4" : {
-              "definitionLines" : [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49
-              ],
+              "definitionLines" : "43-49",
               "numReferrers" : 1
             },
             "as3_to_as1" : {
-              "definitionLines" : [
-                40,
-                41,
-                42
-              ],
+              "definitionLines" : "40-42",
               "numReferrers" : 1
             },
             "as4_to_as1" : {
-              "definitionLines" : [
-                50,
-                51,
-                52,
-                53
-              ],
+              "definitionLines" : "50-53",
               "numReferrers" : 1
             },
             "ospf-redistribute-connected" : {
-              "definitionLines" : [
-                26,
-                27
-              ],
+              "definitionLines" : "26-27",
               "numReferrers" : 1
             }
           },
           "prefix-list" : {
             "as2_prefixes" : {
-              "definitionLines" : [
-                56,
-                57
-              ],
+              "definitionLines" : "56-57",
               "numReferrers" : 1
             },
             "as4_prefixes" : {
-              "definitionLines" : [
-                58
-              ],
+              "definitionLines" : "58",
               "numReferrers" : 1
             },
             "original_prefixes" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 3
             }
           }
@@ -10968,36 +10831,21 @@
         "configs/as1core1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                72
-              ],
+              "definitionLines" : "72",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                54,
-                55,
-                56,
-                57
-              ],
+              "definitionLines" : "54-57",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                59,
-                60,
-                61,
-                62
-              ],
+              "definitionLines" : "59-62",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                51,
-                52
-              ],
+              "definitionLines" : "51-52",
               "numReferrers" : 3
             }
           }
@@ -11005,162 +10853,89 @@
         "configs/as2border1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                81
-              ],
+              "definitionLines" : "81",
               "numReferrers" : 1
             },
             "as2" : {
-              "definitionLines" : [
-                83
-              ],
+              "definitionLines" : "83",
               "numReferrers" : 2
             },
             "as3" : {
-              "definitionLines" : [
-                85
-              ],
+              "definitionLines" : "85",
               "numReferrers" : 0
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                115
-              ],
+              "definitionLines" : "115",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                116
-              ],
+              "definitionLines" : "116",
               "numReferrers" : 0
             },
             "as3_community" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                130,
-                131
-              ],
+              "definitionLines" : "130-131",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                132,
-                133
-              ],
+              "definitionLines" : "132-133",
               "numReferrers" : 2
             },
             "103" : {
-              "definitionLines" : [
-                134,
-                135
-              ],
+              "definitionLines" : "134-135",
               "numReferrers" : 1
             },
             "BLOCK_SPOOF_IN" : {
-              "definitionLines" : [
-                122,
-                123,
-                124
-              ],
+              "definitionLines" : "122-124",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58,
-                59
-              ],
+              "definitionLines" : "55-59",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                61,
-                62,
-                63,
-                64
-              ],
+              "definitionLines" : "61-64",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                66,
-                67,
-                68,
-                69
-              ],
+              "definitionLines" : "66-69",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 3
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                128,
-                129
-              ],
+              "definitionLines" : "128-129",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as2" : {
-              "definitionLines" : [
-                147,
-                148,
-                149
-              ],
+              "definitionLines" : "147-149",
               "numReferrers" : 1
             },
             "as2_to_as1" : {
-              "definitionLines" : [
-                137,
-                138,
-                139,
-                140,
-                142,
-                143,
-                144,
-                145
-              ],
+              "definitionLines" : "137-140,142-145",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                151,
-                152,
-                153,
-                154,
-                156,
-                157,
-                158,
-                159
-              ],
+              "definitionLines" : "151-154,156-159",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                161,
-                162,
-                163
-              ],
+              "definitionLines" : "161-163",
               "numReferrers" : 1
             }
           }
@@ -11168,164 +10943,89 @@
         "configs/as2border2.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                81
-              ],
+              "definitionLines" : "81",
               "numReferrers" : 0
             },
             "as2" : {
-              "definitionLines" : [
-                83
-              ],
+              "definitionLines" : "83",
               "numReferrers" : 2
             },
             "as3" : {
-              "definitionLines" : [
-                85
-              ],
+              "definitionLines" : "85",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                115
-              ],
+              "definitionLines" : "115",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                116
-              ],
+              "definitionLines" : "116",
               "numReferrers" : 0
             },
             "as3_community" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                129,
-                130
-              ],
+              "definitionLines" : "129-130",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                131,
-                132
-              ],
+              "definitionLines" : "131-132",
               "numReferrers" : 2
             },
             "103" : {
-              "definitionLines" : [
-                133,
-                134
-              ],
+              "definitionLines" : "133-134",
               "numReferrers" : 1
             },
             "BLOCK_SPOOF_IN" : {
-              "definitionLines" : [
-                122,
-                123,
-                124
-              ],
+              "definitionLines" : "122-124",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58,
-                59
-              ],
+              "definitionLines" : "55-59",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                61,
-                62,
-                63,
-                64
-              ],
+              "definitionLines" : "61-64",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                66,
-                67,
-                68,
-                69
-              ],
+              "definitionLines" : "66-69",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 3
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                127,
-                128
-              ],
+              "definitionLines" : "127-128",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as2" : {
-              "definitionLines" : [
-                146,
-                147,
-                148,
-                149
-              ],
+              "definitionLines" : "146-149",
               "numReferrers" : 1
             },
             "as2_to_as1" : {
-              "definitionLines" : [
-                136,
-                137,
-                138,
-                139,
-                141,
-                142,
-                143,
-                144
-              ],
+              "definitionLines" : "136-139,141-144",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                151,
-                152,
-                153,
-                154,
-                156,
-                157,
-                158,
-                159
-              ],
+              "definitionLines" : "151-154,156-159",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                161,
-                162,
-                163,
-                164
-              ],
+              "definitionLines" : "161-164",
               "numReferrers" : 1
             }
           }
@@ -11333,66 +11033,35 @@
         "configs/as2core1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                87
-              ],
+              "definitionLines" : "87",
               "numReferrers" : 4
             }
           },
           "extended ipv4 access-list" : {
             "blocktelnet" : {
-              "definitionLines" : [
-                118,
-                119,
-                120
-              ],
+              "definitionLines" : "118-120",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70,
-                71
-              ],
+              "definitionLines" : "67-71",
               "numReferrers" : 1
             },
             "FastEthernet2/0" : {
-              "definitionLines" : [
-                73,
-                74,
-                75,
-                76,
-                77
-              ],
+              "definitionLines" : "73-77",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 5
             }
           }
@@ -11400,54 +11069,29 @@
         "configs/as2core2.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                85
-              ],
+              "definitionLines" : "85",
               "numReferrers" : 4
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70
-              ],
+              "definitionLines" : "67-70",
               "numReferrers" : 1
             },
             "FastEthernet2/0" : {
-              "definitionLines" : [
-                72,
-                73,
-                74,
-                75
-              ],
+              "definitionLines" : "72-75",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 5
             }
           }
@@ -11455,108 +11099,59 @@
         "configs/as2dept1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                70
-              ],
+              "definitionLines" : "70",
               "numReferrers" : 2
             }
           },
           "expanded community-list" : {
             "as2_community" : {
-              "definitionLines" : [
-                92
-              ],
+              "definitionLines" : "92",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "102" : {
-              "definitionLines" : [
-                109
-              ],
+              "definitionLines" : "109",
               "numReferrers" : 1
             },
             "105" : {
-              "definitionLines" : [
-                110,
-                111,
-                112,
-                113
-              ],
+              "definitionLines" : "110-113",
               "numReferrers" : 0
             },
             "RESTRICT_HOST_TRAFFIC_IN" : {
-              "definitionLines" : [
-                102,
-                103,
-                104,
-                105
-              ],
+              "definitionLines" : "102-105",
               "numReferrers" : 1
             },
             "RESTRICT_HOST_TRAFFIC_OUT" : {
-              "definitionLines" : [
-                97,
-                98,
-                99,
-                100
-              ],
+              "definitionLines" : "97-100",
               "numReferrers" : 0
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                51,
-                52,
-                53,
-                54
-              ],
+              "definitionLines" : "51-54",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                56,
-                57,
-                58,
-                59
-              ],
+              "definitionLines" : "56-59",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                61,
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "61-65",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                48,
-                49
-              ],
+              "definitionLines" : "48-49",
               "numReferrers" : 1
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "definitionLines" : [
-                120,
-                121,
-                122
-              ],
+              "definitionLines" : "120-122",
               "numReferrers" : 1
             },
             "dept_to_as2" : {
-              "definitionLines" : [
-                115,
-                116,
-                117,
-                118
-              ],
+              "definitionLines" : "115-118",
               "numReferrers" : 1
             }
           }
@@ -11564,95 +11159,55 @@
         "configs/as2dist1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                82
-              ],
+              "definitionLines" : "82",
               "numReferrers" : 2
             },
             "dept" : {
-              "definitionLines" : [
-                84
-              ],
+              "definitionLines" : "84",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "dept_community" : {
-              "definitionLines" : [
-                110
-              ],
+              "definitionLines" : "110",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "102" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 0
             },
             "105" : {
-              "definitionLines" : [
-                118,
-                119,
-                120,
-                121
-              ],
+              "definitionLines" : "118-121",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70
-              ],
+              "definitionLines" : "67-70",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 3
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "definitionLines" : [
-                123,
-                124,
-                125,
-                126
-              ],
+              "definitionLines" : "123-126",
               "numReferrers" : 1
             },
             "dept_to_as2" : {
-              "definitionLines" : [
-                128,
-                129,
-                130
-              ],
+              "definitionLines" : "128-130",
               "numReferrers" : 1
             }
           }
@@ -11660,95 +11215,55 @@
         "configs/as2dist2.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                82
-              ],
+              "definitionLines" : "82",
               "numReferrers" : 2
             },
             "dept" : {
-              "definitionLines" : [
-                84
-              ],
+              "definitionLines" : "84",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "dept_community" : {
-              "definitionLines" : [
-                110
-              ],
+              "definitionLines" : "110",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "102" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 0
             },
             "105" : {
-              "definitionLines" : [
-                118,
-                119,
-                120,
-                121
-              ],
+              "definitionLines" : "118-121",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70
-              ],
+              "definitionLines" : "67-70",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 3
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "definitionLines" : [
-                123,
-                124,
-                125,
-                126
-              ],
+              "definitionLines" : "123-126",
               "numReferrers" : 1
             },
             "dept_to_as2" : {
-              "definitionLines" : [
-                128,
-                129,
-                130
-              ],
+              "definitionLines" : "128-130",
               "numReferrers" : 1
             }
           }
@@ -11756,29 +11271,15 @@
         "configs/as2host1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65,
-                66
-              ],
+              "definitionLines" : "62-66",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 1
             }
           }
@@ -11786,144 +11287,81 @@
         "configs/as3border1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                74
-              ],
+              "definitionLines" : "74",
               "numReferrers" : 0
             },
             "as2" : {
-              "definitionLines" : [
-                76
-              ],
+              "definitionLines" : "76",
               "numReferrers" : 1
             },
             "as3" : {
-              "definitionLines" : [
-                78
-              ],
+              "definitionLines" : "78",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                106
-              ],
+              "definitionLines" : "106",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                107
-              ],
+              "definitionLines" : "107",
               "numReferrers" : 1
             },
             "as3_community" : {
-              "definitionLines" : [
-                108
-              ],
+              "definitionLines" : "108",
               "numReferrers" : 0
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                116,
-                117
-              ],
+              "definitionLines" : "116-117",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                118,
-                119
-              ],
+              "definitionLines" : "118-119",
               "numReferrers" : 1
             },
             "103" : {
-              "definitionLines" : [
-                120,
-                121
-              ],
+              "definitionLines" : "120-121",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58
-              ],
+              "definitionLines" : "55-58",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                60,
-                61,
-                62,
-                63
-              ],
+              "definitionLines" : "60-63",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                114,
-                115
-              ],
+              "definitionLines" : "114-115",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as3" : {
-              "definitionLines" : [
-                133,
-                134,
-                135
-              ],
+              "definitionLines" : "133-135",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                147,
-                148,
-                149
-              ],
+              "definitionLines" : "147-149",
               "numReferrers" : 1
             },
             "as3_to_as1" : {
-              "definitionLines" : [
-                123,
-                124,
-                125,
-                126,
-                128,
-                129,
-                130,
-                131
-              ],
+              "definitionLines" : "123-126,128-131",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                137,
-                138,
-                139,
-                140,
-                142,
-                143,
-                144,
-                145
-              ],
+              "definitionLines" : "137-140,142-145",
               "numReferrers" : 1
             }
           }
@@ -11931,144 +11369,81 @@
         "configs/as3border2.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                75
-              ],
+              "definitionLines" : "75",
               "numReferrers" : 1
             },
             "as2" : {
-              "definitionLines" : [
-                77
-              ],
+              "definitionLines" : "77",
               "numReferrers" : 0
             },
             "as3" : {
-              "definitionLines" : [
-                79
-              ],
+              "definitionLines" : "79",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                107
-              ],
+              "definitionLines" : "107",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                108
-              ],
+              "definitionLines" : "108",
               "numReferrers" : 1
             },
             "as3_community" : {
-              "definitionLines" : [
-                109
-              ],
+              "definitionLines" : "109",
               "numReferrers" : 0
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                117,
-                118
-              ],
+              "definitionLines" : "117-118",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                119,
-                120
-              ],
+              "definitionLines" : "119-120",
               "numReferrers" : 1
             },
             "103" : {
-              "definitionLines" : [
-                121,
-                122
-              ],
+              "definitionLines" : "121-122",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58
-              ],
+              "definitionLines" : "55-58",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                60,
-                61,
-                62,
-                63
-              ],
+              "definitionLines" : "60-63",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                115,
-                116
-              ],
+              "definitionLines" : "115-116",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as3" : {
-              "definitionLines" : [
-                134,
-                135,
-                136
-              ],
+              "definitionLines" : "134-136",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                148,
-                149,
-                150
-              ],
+              "definitionLines" : "148-150",
               "numReferrers" : 1
             },
             "as3_to_as1" : {
-              "definitionLines" : [
-                124,
-                125,
-                126,
-                127,
-                129,
-                130,
-                131,
-                132
-              ],
+              "definitionLines" : "124-127,129-132",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                138,
-                139,
-                140,
-                141,
-                143,
-                144,
-                145,
-                146
-              ],
+              "definitionLines" : "138-141,143-146",
               "numReferrers" : 1
             }
           }
@@ -12076,50 +11451,29 @@
         "configs/as3core1.cfg" : {
           "bgp peer-group" : {
             "as3" : {
-              "definitionLines" : [
-                81
-              ],
+              "definitionLines" : "81",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                58,
-                59,
-                60,
-                61
-              ],
+              "definitionLines" : "58-61",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                63,
-                64,
-                65,
-                66
-              ],
+              "definitionLines" : "63-66",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                68,
-                69
-              ],
+              "definitionLines" : "68-69",
               "numReferrers" : 1
             },
             "FastEthernet1/1" : {
-              "definitionLines" : [
-                71,
-                72
-              ],
+              "definitionLines" : "71-72",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                55,
-                56
-              ],
+              "definitionLines" : "55-56",
               "numReferrers" : 3
             }
           }
@@ -12173,971 +11527,603 @@
         "configs/as1border1.cfg" : {
           "bgp group" : {
             "as1" : {
-              "bgp group neighbor" : [
-                14
-              ]
+              "bgp group neighbor" : "14"
             },
             "as2" : {
-              "bgp group neighbor" : [
-                19
-              ]
+              "bgp group neighbor" : "19"
             },
             "bad-ebgp" : {
-              "bgp group neighbor" : [
-                27
-              ]
+              "bgp group neighbor" : "27"
             },
             "xanadu" : {
-              "bgp group neighbor" : [
-                23
-              ]
+              "bgp group neighbor" : "23"
             }
           },
           "interface" : {
             "fe-0/0/0" : {
-              "interface" : [
-                4,
-                5
-              ]
+              "interface" : "4-5"
             },
             "fe-0/0/0.0" : {
-              "interface" : [
-                4
-              ],
-              "ospf area interface" : [
-                7
-              ]
+              "interface" : "4",
+              "ospf area interface" : "7"
             },
             "fe-0/0/0.1" : {
-              "interface" : [
-                5
-              ]
+              "interface" : "5"
             },
             "lo0" : {
-              "interface" : [
-                3
-              ]
+              "interface" : "3"
             },
             "lo0.0" : {
-              "interface" : [
-                3
-              ],
-              "ospf area interface" : [
-                6
-              ]
+              "interface" : "3",
+              "ospf area interface" : "6"
             }
           },
           "policy-statement" : {
             "as1_to_as1" : {
-              "bgp export policy-statement" : [
-                13
-              ]
+              "bgp export policy-statement" : "13"
             },
             "as1_to_as2" : {
-              "bgp export policy-statement" : [
-                17
-              ]
+              "bgp export policy-statement" : "17"
             },
             "as2_to_as1" : {
-              "bgp import policy-statement" : [
-                18
-              ]
+              "bgp import policy-statement" : "18"
             },
             "match_original_prefixes" : {
-              "bgp export policy-statement" : [
-                22,
-                26
-              ]
+              "bgp export policy-statement" : "22,26"
             },
             "ospf-redistribute-connected" : {
-              "ospf export policy-statement" : [
-                8
-              ]
+              "ospf export policy-statement" : "8"
             }
           },
           "prefix-list" : {
             "as3_prefixes" : {
-              "policy-statement prefix-list" : [
-                38
-              ]
+              "policy-statement prefix-list" : "38"
             },
             "original_prefixes" : {
-              "policy-statement prefix-list" : [
-                32,
-                34,
-                45
-              ]
+              "policy-statement prefix-list" : "32,34,45"
             }
           }
         },
         "configs/as1border2.cfg" : {
           "bgp group" : {
             "as1" : {
-              "bgp group neighbor" : [
-                15
-              ]
+              "bgp group neighbor" : "15"
             },
             "as3" : {
-              "bgp group neighbor" : [
-                20
-              ]
+              "bgp group neighbor" : "20"
             },
             "as4" : {
-              "bgp group neighbor" : [
-                25
-              ]
+              "bgp group neighbor" : "25"
             }
           },
           "interface" : {
             "fe-0/0/0" : {
-              "interface" : [
-                4,
-                5,
-                6
-              ]
+              "interface" : "4-6"
             },
             "fe-0/0/0.0" : {
-              "interface" : [
-                4
-              ],
-              "ospf area interface" : [
-                8
-              ]
+              "interface" : "4",
+              "ospf area interface" : "8"
             },
             "fe-0/0/0.1" : {
-              "interface" : [
-                5
-              ]
+              "interface" : "5"
             },
             "fe-0/0/0.2" : {
-              "interface" : [
-                6
-              ]
+              "interface" : "6"
             },
             "lo0" : {
-              "interface" : [
-                3
-              ]
+              "interface" : "3"
             },
             "lo0.0" : {
-              "interface" : [
-                3
-              ],
-              "ospf area interface" : [
-                7
-              ]
+              "interface" : "3",
+              "ospf area interface" : "7"
             }
           },
           "policy-statement" : {
             "as1_to_as1" : {
-              "bgp export policy-statement" : [
-                14
-              ]
+              "bgp export policy-statement" : "14"
             },
             "as1_to_as3" : {
-              "bgp export policy-statement" : [
-                18
-              ]
+              "bgp export policy-statement" : "18"
             },
             "as1_to_as4" : {
-              "bgp export policy-statement" : [
-                23
-              ]
+              "bgp export policy-statement" : "23"
             },
             "as3_to_as1" : {
-              "bgp import policy-statement" : [
-                19
-              ]
+              "bgp import policy-statement" : "19"
             },
             "as4_to_as1" : {
-              "bgp import policy-statement" : [
-                24
-              ]
+              "bgp import policy-statement" : "24"
             },
             "ospf-redistribute-connected" : {
-              "ospf export policy-statement" : [
-                9
-              ]
+              "ospf export policy-statement" : "9"
             }
           },
           "prefix-list" : {
             "as2_prefixes" : {
-              "policy-statement prefix-list" : [
-                36
-              ]
+              "policy-statement prefix-list" : "36"
             },
             "as4_prefixes" : {
-              "policy-statement prefix-list-filter" : [
-                51
-              ]
+              "policy-statement prefix-list-filter" : "51"
             },
             "original_prefixes" : {
-              "policy-statement prefix-list" : [
-                30,
-                32,
-                43
-              ]
+              "policy-statement prefix-list" : "30,32,43"
             }
           }
         },
         "configs/as1core1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "bgp neighbor peer-group" : [
-                74,
-                76
-              ]
+              "bgp neighbor peer-group" : "74,76"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                54
-              ]
+              "interface" : "54"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                59
-              ]
+              "interface" : "59"
             },
             "Loopback0" : {
-              "interface" : [
-                51
-              ],
-              "update-source interface" : [
-                75,
-                77
-              ]
+              "interface" : "51",
+              "update-source interface" : "75,77"
             }
           }
         },
         "configs/as2border1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "bgp neighbor peer-group" : [
-                91
-              ]
+              "bgp neighbor peer-group" : "91"
             },
             "as2" : {
-              "bgp neighbor peer-group" : [
-                87,
-                88
-              ]
+              "bgp neighbor peer-group" : "87-88"
             }
           },
           "community-list" : {
             "as1_community" : {
-              "route-map match community-list" : [
-                148
-              ]
+              "route-map match community-list" : "148"
             },
             "as3_community" : {
-              "route-map match community-list" : [
-                162
-              ]
+              "route-map match community-list" : "162"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                55
-              ]
+              "interface" : "55"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                61
-              ]
+              "interface" : "61"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                66
-              ]
+              "interface" : "66"
             },
             "Loopback0" : {
-              "interface" : [
-                52
-              ],
-              "update-source interface" : [
-                89,
-                90
-              ]
+              "interface" : "52",
+              "update-source interface" : "89-90"
             }
           },
           "ipv4 acl" : {
             "101" : {
-              "route-map match ipv4 access-list" : [
-                152
-              ]
+              "route-map match ipv4 access-list" : "152"
             },
             "102" : {
-              "route-map match ipv4 access-list" : [
-                138,
-                157
-              ]
+              "route-map match ipv4 access-list" : "138,157"
             },
             "103" : {
-              "route-map match ipv4 access-list" : [
-                143
-              ]
+              "route-map match ipv4 access-list" : "143"
             },
             "BLOCK_SPOOF_IN" : {
-              "interface incoming ip access-list" : [
-                57
-              ]
+              "interface incoming ip access-list" : "57"
             }
           },
           "route-map" : {
             "as1_to_as2" : {
-              "bgp inbound route-map" : [
-                100
-              ]
+              "bgp inbound route-map" : "100"
             },
             "as2_to_as1" : {
-              "bgp outbound route-map" : [
-                99
-              ]
+              "bgp outbound route-map" : "99"
             },
             "as2_to_as3" : {
-              "bgp outbound route-map" : [
-                101
-              ]
+              "bgp outbound route-map" : "101"
             },
             "as3_to_as2" : {
-              "bgp inbound route-map" : [
-                102
-              ]
+              "bgp inbound route-map" : "102"
             }
           }
         },
         "configs/as2border2.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "bgp neighbor peer-group" : [
-                87,
-                88
-              ]
+              "bgp neighbor peer-group" : "87-88"
             },
             "as3" : {
-              "bgp neighbor peer-group" : [
-                91
-              ]
+              "bgp neighbor peer-group" : "91"
             }
           },
           "community-list" : {
             "as1_community" : {
-              "route-map match community-list" : [
-                147
-              ]
+              "route-map match community-list" : "147"
             },
             "as3_community" : {
-              "route-map match community-list" : [
-                162
-              ]
+              "route-map match community-list" : "162"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                55
-              ]
+              "interface" : "55"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                61
-              ]
+              "interface" : "61"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                66
-              ]
+              "interface" : "66"
             },
             "Loopback0" : {
-              "interface" : [
-                52
-              ],
-              "update-source interface" : [
-                89,
-                90
-              ]
+              "interface" : "52",
+              "update-source interface" : "89-90"
             }
           },
           "ipv4 acl" : {
             "101" : {
-              "route-map match ipv4 access-list" : [
-                152
-              ]
+              "route-map match ipv4 access-list" : "152"
             },
             "102" : {
-              "route-map match ipv4 access-list" : [
-                137,
-                157
-              ]
+              "route-map match ipv4 access-list" : "137,157"
             },
             "103" : {
-              "route-map match ipv4 access-list" : [
-                142
-              ]
+              "route-map match ipv4 access-list" : "142"
             },
             "BLOCK_SPOOF_IN" : {
-              "interface incoming ip access-list" : [
-                57
-              ]
+              "interface incoming ip access-list" : "57"
             }
           },
           "route-map" : {
             "as1_to_as2" : {
-              "bgp inbound route-map" : [
-                100
-              ]
+              "bgp inbound route-map" : "100"
             },
             "as2_to_as1" : {
-              "bgp outbound route-map" : [
-                99
-              ]
+              "bgp outbound route-map" : "99"
             },
             "as2_to_as3" : {
-              "bgp outbound route-map" : [
-                101
-              ]
+              "bgp outbound route-map" : "101"
             },
             "as3_to_as2" : {
-              "bgp inbound route-map" : [
-                102
-              ]
+              "bgp inbound route-map" : "102"
             }
           }
         },
         "configs/as2core1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "bgp neighbor peer-group" : [
-                89,
-                91,
-                93,
-                95
-              ]
+              "bgp neighbor peer-group" : "89,91,93,95"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                57
-              ]
+              "interface" : "57"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                62
-              ]
+              "interface" : "62"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                67
-              ]
+              "interface" : "67"
             },
             "FastEthernet2/0" : {
-              "interface" : [
-                73
-              ]
+              "interface" : "73"
             },
             "Loopback0" : {
-              "interface" : [
-                54
-              ],
-              "update-source interface" : [
-                90,
-                92,
-                94,
-                96
-              ]
+              "interface" : "54",
+              "update-source interface" : "90,92,94,96"
             }
           },
           "ipv4 acl" : {
             "blocktelnet" : {
-              "interface incoming ip access-list" : [
-                69,
-                75
-              ]
+              "interface incoming ip access-list" : "69,75"
             }
           }
         },
         "configs/as2core2.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "bgp neighbor peer-group" : [
-                88,
-                90,
-                92,
-                94
-              ]
+              "bgp neighbor peer-group" : "88,90,92,94"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                57
-              ]
+              "interface" : "57"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                62
-              ]
+              "interface" : "62"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                67
-              ]
+              "interface" : "67"
             },
             "FastEthernet2/0" : {
-              "interface" : [
-                72
-              ]
+              "interface" : "72"
             },
             "Loopback0" : {
-              "interface" : [
-                54
-              ],
-              "update-source interface" : [
-                89,
-                91,
-                93,
-                95
-              ]
+              "interface" : "54",
+              "update-source interface" : "89,91,93,95"
             }
           },
           "route-map" : {
             "filter-bogons" : {
-              "bgp inbound route-map" : [
-                87
-              ]
+              "bgp inbound route-map" : "87"
             }
           }
         },
         "configs/as2dept1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "bgp neighbor peer-group" : [
-                72,
-                73
-              ]
+              "bgp neighbor peer-group" : "72-73"
             }
           },
           "community-list" : {
             "as2_community" : {
-              "route-map match community-list" : [
-                121
-              ]
+              "route-map match community-list" : "121"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                51
-              ]
+              "interface" : "51"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                56
-              ]
+              "interface" : "56"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                61
-              ]
+              "interface" : "61"
             },
             "Loopback0" : {
-              "interface" : [
-                48
-              ]
+              "interface" : "48"
             }
           },
           "ipv4 acl" : {
             "102" : {
-              "route-map match ipv4 access-list" : [
-                116
-              ]
+              "route-map match ipv4 access-list" : "116"
             },
             "RESTRICT_HOST_TRAFFIC_IN" : {
-              "interface incoming ip access-list" : [
-                63
-              ]
+              "interface incoming ip access-list" : "63"
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "bgp inbound route-map" : [
-                78
-              ]
+              "bgp inbound route-map" : "78"
             },
             "dept_to_as2" : {
-              "bgp outbound route-map" : [
-                79
-              ]
+              "bgp outbound route-map" : "79"
             }
           }
         },
         "configs/as2dist1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "bgp neighbor peer-group" : [
-                86,
-                88
-              ]
+              "bgp neighbor peer-group" : "86,88"
             },
             "dept" : {
-              "bgp neighbor peer-group" : [
-                90
-              ]
+              "bgp neighbor peer-group" : "90"
             }
           },
           "community-list" : {
             "dept_community" : {
-              "route-map match community-list" : [
-                129
-              ]
+              "route-map match community-list" : "129"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                57
-              ]
+              "interface" : "57"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                62
-              ]
+              "interface" : "62"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                67
-              ]
+              "interface" : "67"
             },
             "Loopback0" : {
-              "interface" : [
-                54
-              ],
-              "update-source interface" : [
-                87,
-                89
-              ]
+              "interface" : "54",
+              "update-source interface" : "87,89"
             }
           },
           "ipv4 acl" : {
             "105" : {
-              "route-map match ipv4 access-list" : [
-                124
-              ]
+              "route-map match ipv4 access-list" : "124"
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "bgp outbound route-map" : [
-                96
-              ]
+              "bgp outbound route-map" : "96"
             },
             "dept_to_as2" : {
-              "bgp inbound route-map" : [
-                97
-              ]
+              "bgp inbound route-map" : "97"
             }
           }
         },
         "configs/as2dist2.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "bgp neighbor peer-group" : [
-                86,
-                88
-              ]
+              "bgp neighbor peer-group" : "86,88"
             },
             "dept" : {
-              "bgp neighbor peer-group" : [
-                90
-              ]
+              "bgp neighbor peer-group" : "90"
             }
           },
           "community-list" : {
             "dept_community" : {
-              "route-map match community-list" : [
-                129
-              ]
+              "route-map match community-list" : "129"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                57
-              ]
+              "interface" : "57"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                62
-              ]
+              "interface" : "62"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                67
-              ]
+              "interface" : "67"
             },
             "Loopback0" : {
-              "interface" : [
-                54
-              ],
-              "update-source interface" : [
-                87,
-                89
-              ]
+              "interface" : "54",
+              "update-source interface" : "87,89"
             }
           },
           "ipv4 acl" : {
             "105" : {
-              "route-map match ipv4 access-list" : [
-                124
-              ]
+              "route-map match ipv4 access-list" : "124"
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "bgp outbound route-map" : [
-                96
-              ]
+              "bgp outbound route-map" : "96"
             },
             "dept_to_as2" : {
-              "bgp inbound route-map" : [
-                97
-              ]
+              "bgp inbound route-map" : "97"
             }
           }
         },
         "configs/as2host1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                57
-              ]
+              "interface" : "57"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                62
-              ]
+              "interface" : "62"
             },
             "Loopback0" : {
-              "interface" : [
-                54
-              ]
+              "interface" : "54"
             }
           }
         },
         "configs/as3border1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "bgp neighbor peer-group" : [
-                82
-              ]
+              "bgp neighbor peer-group" : "82"
             },
             "as3" : {
-              "bgp neighbor peer-group" : [
-                80
-              ]
+              "bgp neighbor peer-group" : "80"
             }
           },
           "community-list" : {
             "as1_community" : {
-              "route-map match community-list" : [
-                134
-              ]
+              "route-map match community-list" : "134"
             },
             "as2_community" : {
-              "route-map match community-list" : [
-                148
-              ]
+              "route-map match community-list" : "148"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                55
-              ]
+              "interface" : "55"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                60
-              ]
+              "interface" : "60"
             },
             "Loopback0" : {
-              "interface" : [
-                52
-              ],
-              "update-source interface" : [
-                81
-              ]
+              "interface" : "52",
+              "update-source interface" : "81"
             }
           },
           "ipv4 acl" : {
             "101" : {
-              "route-map match ipv4 access-list" : [
-                138
-              ]
+              "route-map match ipv4 access-list" : "138"
             },
             "102" : {
-              "route-map match ipv4 access-list" : [
-                124
-              ]
+              "route-map match ipv4 access-list" : "124"
             },
             "103" : {
-              "route-map match ipv4 access-list" : [
-                129,
-                143
-              ]
+              "route-map match ipv4 access-list" : "129,143"
             }
           },
           "route-map" : {
             "as1_to_as3" : {
-              "bgp inbound route-map" : [
-                90
-              ]
+              "bgp inbound route-map" : "90"
             },
             "as2_to_as3" : {
-              "bgp inbound route-map" : [
-                92
-              ]
+              "bgp inbound route-map" : "92"
             },
             "as3_to_as1" : {
-              "bgp outbound route-map" : [
-                89
-              ]
+              "bgp outbound route-map" : "89"
             },
             "as3_to_as2" : {
-              "bgp outbound route-map" : [
-                91
-              ]
+              "bgp outbound route-map" : "91"
             }
           }
         },
         "configs/as3border2.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "bgp neighbor peer-group" : [
-                83
-              ]
+              "bgp neighbor peer-group" : "83"
             },
             "as3" : {
-              "bgp neighbor peer-group" : [
-                81
-              ]
+              "bgp neighbor peer-group" : "81"
             }
           },
           "community-list" : {
             "as1_community" : {
-              "route-map match community-list" : [
-                135
-              ]
+              "route-map match community-list" : "135"
             },
             "as2_community" : {
-              "route-map match community-list" : [
-                149
-              ]
+              "route-map match community-list" : "149"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                55
-              ]
+              "interface" : "55"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                60
-              ]
+              "interface" : "60"
             },
             "Loopback0" : {
-              "interface" : [
-                52
-              ],
-              "update-source interface" : [
-                82
-              ]
+              "interface" : "52",
+              "update-source interface" : "82"
             }
           },
           "ipv4 acl" : {
             "101" : {
-              "route-map match ipv4 access-list" : [
-                139
-              ]
+              "route-map match ipv4 access-list" : "139"
             },
             "102" : {
-              "route-map match ipv4 access-list" : [
-                125
-              ]
+              "route-map match ipv4 access-list" : "125"
             },
             "103" : {
-              "route-map match ipv4 access-list" : [
-                130,
-                144
-              ]
+              "route-map match ipv4 access-list" : "130,144"
             }
           },
           "route-map" : {
             "as1_to_as3" : {
-              "bgp inbound route-map" : [
-                91
-              ]
+              "bgp inbound route-map" : "91"
             },
             "as2_to_as3" : {
-              "bgp inbound route-map" : [
-                93
-              ]
+              "bgp inbound route-map" : "93"
             },
             "as3_to_as1" : {
-              "bgp outbound route-map" : [
-                90
-              ]
+              "bgp outbound route-map" : "90"
             },
             "as3_to_as2" : {
-              "bgp outbound route-map" : [
-                92
-              ]
+              "bgp outbound route-map" : "92"
             }
           }
         },
         "configs/as3core1.cfg" : {
           "bgp peer-group" : {
             "as3" : {
-              "bgp neighbor peer-group" : [
-                83,
-                85
-              ]
+              "bgp neighbor peer-group" : "83,85"
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "interface" : [
-                58
-              ]
+              "interface" : "58"
             },
             "FastEthernet0/1" : {
-              "interface" : [
-                63
-              ]
+              "interface" : "63"
             },
             "FastEthernet1/0" : {
-              "interface" : [
-                68
-              ]
+              "interface" : "68"
             },
             "FastEthernet1/1" : {
-              "interface" : [
-                71
-              ]
+              "interface" : "71"
             },
             "Loopback0" : {
-              "interface" : [
-                55
-              ],
-              "update-source interface" : [
-                84,
-                86
-              ]
+              "interface" : "55",
+              "update-source interface" : "84,86"
             }
           }
         }
@@ -13146,9 +12132,7 @@
         "configs/as2core2.cfg" : {
           "route-map" : {
             "filter-bogons" : {
-              "bgp inbound route-map" : [
-                87
-              ]
+              "bgp inbound route-map" : "87"
             }
           }
         }

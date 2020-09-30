@@ -19,6 +19,7 @@ import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.FileLines;
@@ -43,9 +44,9 @@ public class UnusedStructuresAnswererTest {
                   "t",
                   ImmutableSortedMap.of(
                       "n",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(1), 0),
+                      new DefinedStructureInfo(IntegerSpace.of(1), 0),
                       "n2",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(2), 1))));
+                      new DefinedStructureInfo(IntegerSpace.of(2), 1))));
   private static final Row BASIC_ROW =
       Row.of(
           COL_STRUCTURE_TYPE,
@@ -74,9 +75,9 @@ public class UnusedStructuresAnswererTest {
                 "t",
                 ImmutableSortedMap.of(
                     "n",
-                    new DefinedStructureInfo(ImmutableSortedSet.of(1), 0),
+                    new DefinedStructureInfo(IntegerSpace.of(1), 0),
                     "n2",
-                    new DefinedStructureInfo(ImmutableSortedSet.of(2, 3), 0))));
+                    new DefinedStructureInfo(IntegerSpace.builder().including(2, 3).build(), 0))));
 
     List<Row> expected =
         ImmutableList.of(

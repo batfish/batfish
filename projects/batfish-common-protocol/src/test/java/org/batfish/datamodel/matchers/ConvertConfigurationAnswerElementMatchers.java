@@ -2,11 +2,11 @@ package org.batfish.datamodel.matchers;
 
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
@@ -162,7 +162,8 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type, _structureName));
         return false;
       }
-      if (!_subMatcher.matches(byStructureName.get(_structureName).getDefinitionLines())) {
+      if (!_subMatcher.matches(
+          byStructureName.get(_structureName).getDefinitionLines().enumerate())) {
         mismatchDescription.appendText(
             String.format(
                 "File '%s' has no defined structure of type '%s' named '%s' matching definition lines '%s'",
@@ -201,14 +202,14 @@ final class ConvertConfigurationAnswerElementMatchers {
     @Override
     protected boolean matchesSafely(
         ConvertConfigurationAnswerElement item, Description mismatchDescription) {
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
           byFile = item.getUndefinedReferences();
       if (!byFile.containsKey(_filename)) {
         mismatchDescription.appendText(
             String.format("File '%s' has no undefined references", _filename));
         return false;
       }
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
+      SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>> byType =
           byFile.get(_filename);
       if (!byType.containsKey(_type)) {
         mismatchDescription.appendText(
@@ -217,7 +218,7 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type));
         return false;
       }
-      SortedMap<String, SortedMap<String, SortedSet<Integer>>> byStructureName = byType.get(_type);
+      SortedMap<String, SortedMap<String, IntegerSpace>> byStructureName = byType.get(_type);
       if (!byStructureName.containsKey(_structureName)) {
         mismatchDescription.appendText(
             String.format(
@@ -263,14 +264,14 @@ final class ConvertConfigurationAnswerElementMatchers {
     @Override
     protected boolean matchesSafely(
         ConvertConfigurationAnswerElement item, Description mismatchDescription) {
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
           byFile = item.getUndefinedReferences();
       if (!byFile.containsKey(_filename)) {
         mismatchDescription.appendText(
             String.format("File '%s' has no undefined references", _filename));
         return false;
       }
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
+      SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>> byType =
           byFile.get(_filename);
       if (!byType.containsKey(_type)) {
         mismatchDescription.appendText(
@@ -279,7 +280,7 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type));
         return false;
       }
-      SortedMap<String, SortedMap<String, SortedSet<Integer>>> byStructureName = byType.get(_type);
+      SortedMap<String, SortedMap<String, IntegerSpace>> byStructureName = byType.get(_type);
       if (!byStructureName.containsKey(_structureName)) {
         mismatchDescription.appendText(
             String.format(
@@ -287,7 +288,7 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type, _structureName));
         return false;
       }
-      SortedMap<String, SortedSet<Integer>> byUsage = byStructureName.get(_structureName);
+      SortedMap<String, IntegerSpace> byUsage = byStructureName.get(_structureName);
       if (!byUsage.containsKey(_usage)) {
         mismatchDescription.appendText(
             String.format(
@@ -338,21 +339,21 @@ final class ConvertConfigurationAnswerElementMatchers {
     @Override
     protected boolean matchesSafely(
         ConvertConfigurationAnswerElement item, Description mismatchDescription) {
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
           byFile = item.getUndefinedReferences();
       if (!byFile.containsKey(_filename)) {
         mismatchDescription.appendText(
             String.format("File '%s' has no undefined references", _filename));
         return false;
       }
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
+      SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>> byType =
           byFile.get(_filename);
       if (!byType.containsKey(_type)) {
         mismatchDescription.appendText(
             String.format("File '%s' has no undefined reference of type '%s'", _filename, _type));
         return false;
       }
-      SortedMap<String, SortedMap<String, SortedSet<Integer>>> byStructureName = byType.get(_type);
+      SortedMap<String, SortedMap<String, IntegerSpace>> byStructureName = byType.get(_type);
       if (!byStructureName.containsKey(_structureName)) {
         mismatchDescription.appendText(
             String.format(
@@ -360,7 +361,7 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type, _structureName));
         return false;
       }
-      SortedMap<String, SortedSet<Integer>> byUsage = byStructureName.get(_structureName);
+      SortedMap<String, IntegerSpace> byUsage = byStructureName.get(_structureName);
       if (!byUsage.containsKey(_usage)) {
         mismatchDescription.appendText(
             String.format(
@@ -369,7 +370,7 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type, _structureName, _usage));
         return false;
       }
-      if (!_subMatcher.matches(byUsage.get(_usage))) {
+      if (!_subMatcher.matches(byUsage.get(_usage).enumerate())) {
         mismatchDescription.appendText(
             String.format(
                 "File '%s' has no undefined reference of type '%s' named '%s' of usage '%s' matching reference lines '%s'",
