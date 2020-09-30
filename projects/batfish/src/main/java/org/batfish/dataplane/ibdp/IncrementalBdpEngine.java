@@ -262,7 +262,7 @@ class IncrementalBdpEngine {
               .setLayer3Topology(currentTopologyContext.getLayer3Topology())
               .build();
       _bfLogger.printElapsedTime();
-      return new ComputeDataPlaneResult(answerElement, finalDataplane, currentTopologyContext);
+      return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
     } finally {
       span.finish();
     }

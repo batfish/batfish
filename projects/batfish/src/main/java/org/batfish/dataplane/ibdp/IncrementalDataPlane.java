@@ -153,12 +153,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                 vrfEntry -> vrfEntry.getValue().getPrefixTracer().summarize()));
   }
 
-  /** LEGACY METHOD. For use in legacy tests only. */
-  @Nonnull
-  Map<String, Node> getNodes() {
-    return _nodes;
-  }
-
   /**
    * LEGACY METHOD. For use in legacy tests only.
    *
