@@ -25,7 +25,6 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Partial dataplane to be used during dataplane computation. Should not be used outside of the
@@ -54,25 +53,24 @@ public final class PartialDataplane implements DataPlane {
   @Nonnull
   @Override
   public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
-
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException();
   }
 
   @Override
   @Nonnull
   public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary() {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException();
   }
 
   //////////
