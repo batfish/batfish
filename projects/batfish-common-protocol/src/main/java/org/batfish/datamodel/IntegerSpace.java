@@ -11,6 +11,7 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -69,7 +70,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
 
   /** Return an ordered set of integers described by this space. */
   @Override
-  public @Nonnull Set<Integer> enumerate() {
+  public @Nonnull SortedSet<Integer> enumerate() {
     return ImmutableRangeSet.copyOf(_rangeset).asSet(DiscreteDomain.integers());
   }
 
