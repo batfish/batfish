@@ -39,18 +39,10 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
     ComputeDataPlaneResult answer =
         _engine.computeDataPlane(configurations, topologyContext, externalAdverts);
-    double averageRoutes =
-        ((IncrementalDataPlane) answer._dataPlane)
-            .getNodes().values().stream()
-                .flatMap(n -> n.getVirtualRouters().values().stream())
-                .mapToInt(vr -> vr.getMainRib().getTypedRoutes().size())
-                .average()
-                .orElse(0.00d);
     _logger.infof(
-        "Generated data-plane for snapshot:%s; iterations:%s, avg entries per node:%.2f\n",
+        "Generated data-plane for snapshot:%s; iterations:%s",
         snapshot.getSnapshot(),
-        ((IncrementalBdpAnswerElement) answer._answerElement).getDependentRoutesIterations(),
-        averageRoutes);
+        ((IncrementalBdpAnswerElement) answer._answerElement).getDependentRoutesIterations());
     return answer;
   }
 
