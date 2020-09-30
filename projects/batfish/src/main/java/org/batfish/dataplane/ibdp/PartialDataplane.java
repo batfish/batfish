@@ -1,13 +1,13 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.dataplane.ibdp.DataplaneUtil.computeConfigurations;
+import static org.batfish.dataplane.ibdp.DataplaneUtil.computeFibs;
+import static org.batfish.dataplane.ibdp.DataplaneUtil.computeForwardingAnalysis;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Table;
-import java.io.Serializable;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -26,9 +26,13 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 
-/** Dataplane computation result of incremental dataplane engine */
+/**
+ * Partial dataplane to be used during dataplane computation. Should not be used outside of the
+ * engine. Does not implement full dataplane, only FIBs and Forwarding analysis, to enable
+ * traceroutes within dataplane computation engine.
+ */
 @ParametersAreNonnullByDefault
-public final class IncrementalDataPlane implements Serializable, DataPlane {
+public final class PartialDataplane implements DataPlane {
 
   @Override
   public Map<String, Map<String, Fib>> getFibs() {
@@ -49,24 +53,24 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Nonnull
   @Override
   public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
-    return _bgpRoutes;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   @Nonnull
   public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
-    return _evpnRoutes;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary() {
-    return _prefixTracerSummary;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs() {
-    return _ribs;
+    throw new UnsupportedOperationException();
   }
 
   //////////
@@ -88,8 +92,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
       return this;
     }
 
-    public IncrementalDataPlane build() {
-      return new IncrementalDataPlane(this);
+    public PartialDataplane build() {
+      return new PartialDataplane(this);
     }
   }
 
@@ -101,50 +105,18 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   // Private implementation
   /////////////////////////
 
-  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
   @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
-  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
   @Nonnull private final Table<String, String, Set<Layer2Vni>> _vniSettings;
 
-  @Nonnull
-  private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
-      _ribs;
-
-  @Nonnull
-  private final SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
-      _prefixTracerSummary;
-
-  private IncrementalDataPlane(Builder builder) {
+  private PartialDataplane(Builder builder) {
     checkArgument(builder._nodes != null, "Dataplane must have nodes to be constructed");
     checkArgument(builder._layer3Topology != null, "Dataplane must have an L3 topology set");
 
     Map<String, Node> nodes = builder._nodes;
-    Map<String, Configuration> configs = DataplaneUtil.computeConfigurations(nodes);
-    // Order of initialization matters:
-    _bgpRoutes = DataplaneUtil.computeBgpRoutes(nodes);
-    _evpnRoutes = DataplaneUtil.computeEvpnRoutes(nodes);
-    _ribs = DataplaneUtil.computeRibs(nodes);
-    _fibs = DataplaneUtil.computeFibs(nodes);
-    _forwardingAnalysis =
-        DataplaneUtil.computeForwardingAnalysis(_fibs, configs, builder._layer3Topology);
-    _prefixTracerSummary = computePrefixTracingInfo(nodes);
+    Map<String, Configuration> configs = computeConfigurations(nodes);
+    _fibs = computeFibs(nodes);
+    _forwardingAnalysis = computeForwardingAnalysis(_fibs, configs, builder._layer3Topology);
     _vniSettings = DataplaneUtil.computeVniSettings(nodes);
-  }
-
-  private static SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
-      computePrefixTracingInfo(Map<String, Node> nodes) {
-    /*
-     * Iterate over nodes, then virtual routers, and extract prefix tracer from each.
-     * Sort hostnames and VRF names
-     */
-    return toImmutableSortedMap(
-        nodes,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableSortedMap(
-                nodeEntry.getValue().getVirtualRouters(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().getPrefixTracer().summarize()));
   }
 }
