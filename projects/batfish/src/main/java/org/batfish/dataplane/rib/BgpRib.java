@@ -141,8 +141,10 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   @Override
   public RibDelta<R> mergeRouteGetDelta(R route) {
     RibDelta<R> delta = super.mergeRouteGetDelta(route);
-    _logicalArrivalTime.put(route, _logicalClock);
-    _logicalClock++;
+    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
+      _logicalArrivalTime.put(route, _logicalClock);
+      _logicalClock++;
+    }
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
     }
@@ -159,7 +161,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
           .getActions()
           .forEach(
               a -> {
-                if (a.isWithdrawn()) {
+                if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER && a.isWithdrawn()) {
                   _logicalArrivalTime.remove(a.getRoute());
                 }
               });
