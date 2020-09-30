@@ -504,7 +504,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -538,7 +538,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -572,7 +572,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -608,7 +608,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -644,7 +644,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   /**

@@ -124,7 +124,8 @@ public class TracerouteEngineTest {
 
     // Compute flow traces
     SortedMap<Flow, List<Trace>> traces =
-        new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
+        new TracerouteEngineImpl(
+                dp, batfish.getTopologyProvider().getLayer3Topology(snapshot), configs)
             .computeTraces(ImmutableSet.of(flow1, flow2), false);
 
     assertThat(traces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
@@ -174,7 +175,8 @@ public class TracerouteEngineTest {
             .setDstIp(parse("10.0.0.2"))
             .build();
     List<Trace> traces =
-        new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
+        new TracerouteEngineImpl(
+                dp, batfish.getTopologyProvider().getLayer3Topology(snapshot), configurations)
             .computeTraces(ImmutableSet.of(flow), false)
             .get(flow);
 
@@ -350,15 +352,15 @@ public class TracerouteEngineTest {
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c1 = cb.build();
-    Batfish batfish =
-        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c1.getHostname(), c1), _tempFolder);
+    ImmutableSortedMap<String, Configuration> configs = ImmutableSortedMap.of(c1.getHostname(), c1);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
 
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage("Node missingNode is not in the network");
-    new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot))
+    new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot), configs)
         .computeTraces(ImmutableSet.of(builder().setIngressNode("missingNode").build()), false);
   }
 

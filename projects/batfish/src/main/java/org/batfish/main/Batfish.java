@@ -1757,7 +1757,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot) {
     return new TracerouteEngineImpl(
-        loadDataPlane(snapshot), _topologyProvider.getLayer3Topology(snapshot));
+        loadDataPlane(snapshot),
+        _topologyProvider.getLayer3Topology(snapshot),
+        loadConfigurations(snapshot));
   }
 
   /** Function that processes an interface blacklist across all configurations */
