@@ -15,8 +15,6 @@ public interface DataPlane extends Serializable {
   /** Return routes in the EVPN RIB on each node/VRF */
   Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes();
 
-  Map<String, Configuration> getConfigurations();
-
   /** Return a {@link Fib} for each node/VRF */
   Map<String, Map<String, Fib>> getFibs();
 
