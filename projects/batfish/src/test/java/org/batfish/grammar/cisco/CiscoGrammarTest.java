@@ -4257,6 +4257,15 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfPrefixPriority() throws IOException {
+    String hostname = "ios-ospf-prefix-priority";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers("configs/" + hostname, ROUTE_MAP, "OSPF-MAP", 1));
+  }
+
+  @Test
   public void testTransformsetToIpsecphase2Proposal() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
     assertThat(
