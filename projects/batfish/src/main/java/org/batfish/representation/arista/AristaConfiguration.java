@@ -2367,32 +2367,27 @@ public final class AristaConfiguration extends VendorConfiguration {
         });
 
     /*
-     * Another pass over interfaces to push final settings to VI interfaces and issue final warnings
-     * (e.g. has OSPF settings but no associated OSPF process)
+     * Another pass over interfaces to push final settings to VI interfaces.
+     * (e.g. has OSPF settings but no associated OSPF process, common in show run all)
      */
     _interfaces.forEach(
         (ifaceName, vsIface) -> {
           org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
           if (iface == null) {
             // Should never get here
-          } else {
-            // Conversion of interface OSPF settings usually occurs per area
-            // If the iface does not have an area, then need warn and convert settings here instead
-            if (iface.getOspfAreaName() == null) {
-              // Not part of an OSPF area
-              if (vsIface.getOspfArea() != null
-                  || vsIface.getOspfCost() != null
-                  || vsIface.getOspfPassive() != null
-                  || vsIface.getOspfNetworkType() != null
-                  || vsIface.getOspfDeadInterval() != null
-                  || vsIface.getOspfHelloInterval() != null) {
-                _w.redFlag(
-                    "Interface: '"
-                        + ifaceName
-                        + "' contains OSPF settings, but there is no corresponding OSPF area (or process)");
-                finalizeInterfaceOspfSettings(iface, vsIface, null, null);
-              }
-            }
+            return;
+          } else if (iface.getOspfAreaName() != null) {
+            // Already configured
+            return;
+          }
+          // Not part of an OSPF area, but has settings
+          if (vsIface.getOspfArea() != null
+              || vsIface.getOspfCost() != null
+              || vsIface.getOspfPassive() != null
+              || vsIface.getOspfNetworkType() != null
+              || vsIface.getOspfDeadInterval() != null
+              || vsIface.getOspfHelloInterval() != null) {
+            finalizeInterfaceOspfSettings(iface, vsIface, null, null);
           }
         });
 
