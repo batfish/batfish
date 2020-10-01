@@ -584,7 +584,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       span.finish();
     }
 
-    LOGGER.info("Answering question {}", question.getInstance().getInstanceName());
+    LOGGER.info("Answering question {}", question.getClass().getSimpleName());
     if (GlobalTracer.get().scopeManager().activeSpan() != null) {
       Span activeSpan = GlobalTracer.get().scopeManager().activeSpan();
       activeSpan
