@@ -1,0 +1,9 @@
+!
+hostname ospf-prefix-priority
+! test for https://github.com/batfish/batfish/issues/6238
+!
+router ospf 1
+ router-id 1.1.1.1
+ prefix-priority high route-map OSPF-MAP
+!
+route-map OSPF-MAP permit 10

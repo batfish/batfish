@@ -7229,6 +7229,11 @@ LOTUSNOTES
    'lotusnotes'
 ;
 
+LOW
+:
+   'low'
+;
+
 LPD
 :
    'lpd'
@@ -9960,6 +9965,11 @@ PREFIX_LIST
        pushMode(M_Name);
      }
    }
+;
+
+PREFIX_PRIORITY
+:
+   'prefix-priority'
 ;
 
 PREFIX_SET
