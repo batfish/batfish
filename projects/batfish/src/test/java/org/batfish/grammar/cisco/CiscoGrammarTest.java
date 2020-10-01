@@ -4563,6 +4563,15 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testCiscoOspfPrefixPriority() throws IOException {
+    String hostname = "ospf-prefix-priority";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers("configs/" + hostname, ROUTE_MAP, "OSPF-MAP", 1));
+  }
+
+  @Test
   public void testParsingRecovery() throws IOException {
     String testrigName = "parsing-recovery";
     String hostname = "ios-recovery";

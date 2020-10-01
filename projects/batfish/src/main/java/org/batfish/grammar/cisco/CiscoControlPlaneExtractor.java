@@ -204,6 +204,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBU
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_PREFIX_PRIORITY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
@@ -806,6 +807,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interface_defaultContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_prefix_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_bgp_ciscoContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_eigrpContext;
@@ -7779,6 +7781,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
      * We assume no others does this ridiculous thing. TODO: verify more vendors.
      */
     return format != CISCO_IOS;
+  }
+
+  @Override
+  public void exitRo_prefix_priority(Ro_prefix_priorityContext ctx) {
+    // prefix priority is a feature to help speed up OSPF computation
+    // we don't need to implement it but we do need to track references
+    if (ctx.map != null) {
+      String map = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_PREFIX_PRIORITY_MAP, ctx.map.getLine());
+    }
   }
 
   @Override

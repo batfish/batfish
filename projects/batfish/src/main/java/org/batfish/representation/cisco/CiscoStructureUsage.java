@@ -155,6 +155,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT("router ospf distribute-list prefix out"),
   OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN("router ospf distribute-list route-map in"),
   OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT("router ospf distribute-list route-map out"),
+  OSPF_PREFIX_PRIORITY_MAP("ospf prefix-priority route-map"),
   OSPF_REDISTRIBUTE_BGP_MAP("ospf redistribute bgp route-map"),
   OSPF_REDISTRIBUTE_CONNECTED_MAP("ospf redistribute connected route-map"),
   OSPF_REDISTRIBUTE_EIGRP_MAP("ospf redistribute eigrp route-map"),
