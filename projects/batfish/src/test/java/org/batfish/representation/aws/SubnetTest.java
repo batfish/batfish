@@ -526,6 +526,110 @@ public class SubnetTest {
             ImmutableSet.of(toStaticRoute(route.getDestinationCidrBlock(), NULL_INTERFACE_NAME))));
   }
 
+  /** Tests route processing for a NAT gateway that is inside the subnet */
+  @Test
+  public void testProcessRouteNatGatewayInSubnet() {
+    Vpc vpc = getTestVpc("vpc");
+    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+
+    Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId());
+    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
+
+    NatGateway ngw =
+        new NatGateway(
+            "ngw",
+            subnet.getId(),
+            vpc.getId(),
+            ImmutableList.of(
+                new NatGatewayAddress(
+                    "allocation", "eni", Ip.parse("10.10.10.2"), Ip.parse("2.2.2.2"))),
+            ImmutableMap.of());
+
+    Region region =
+        Region.builder("region").setNatGateways(ImmutableMap.of(ngw.getId(), ngw)).build();
+
+    RouteV4 route =
+        new RouteV4(
+            Prefix.parse("192.168.0.0/16"), State.ACTIVE, ngw.getId(), TargetType.NatGateway);
+
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+
+    subnet.processRoute(
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
+
+    assertThat(
+        subnetCfg.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.of(
+                StaticRoute.builder()
+                    .setNetwork(route.getDestinationCidrBlock())
+                    .setNextHopInterface(instancesInterfaceName(subnet.getId()))
+                    .setNextHopIp(ngw.getPrivateIp())
+                    .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                    .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                    .build())));
+  }
+
+  /** Tests route processing for a NAT gateway that is outside the subnet */
+  @Test
+  public void testProcessRouteNatGatewayOutsideSubnet() {
+    Vpc vpc = getTestVpc("vpc");
+    Configuration vpcCfg = Utils.newAwsConfiguration(vpc.getId(), "awstest");
+
+    Subnet subnet = getTestSubnet(Prefix.parse("10.10.10.0/24"), "subnet", vpc.getId());
+    Configuration subnetCfg = Utils.newAwsConfiguration(subnet.getId(), "awstest");
+
+    NatGateway ngw =
+        new NatGateway(
+            "ngw",
+            "otherSubnet",
+            vpc.getId(),
+            ImmutableList.of(
+                new NatGatewayAddress(
+                    "allocation", "eni", Ip.parse("10.10.10.2"), Ip.parse("2.2.2.2"))),
+            ImmutableMap.of());
+
+    Region region =
+        Region.builder("region").setNatGateways(ImmutableMap.of(ngw.getId(), ngw)).build();
+
+    RouteV4 route =
+        new RouteV4(
+            Prefix.parse("192.168.0.0/16"), State.ACTIVE, ngw.getId(), TargetType.NatGateway);
+
+    ConvertedConfiguration awsConfiguration = new ConvertedConfiguration();
+
+    vpcCfg
+        .getVrfs()
+        .put(
+            vrfNameForLink(ngw.getId()),
+            Vrf.builder().setOwner(vpcCfg).setName(vrfNameForLink(ngw.getId())).build());
+    connect(
+        awsConfiguration,
+        subnetCfg,
+        DEFAULT_VRF_NAME,
+        vpcCfg,
+        vrfNameForLink(ngw.getId()),
+        vrfNameForLink(ngw.getId()));
+
+    subnet.processRoute(
+        subnetCfg, region, route, vpcCfg, ImmutableList.of(), awsConfiguration, new Warnings());
+
+    assertThat(
+        subnetCfg.getDefaultVrf().getStaticRoutes(),
+        equalTo(
+            ImmutableSortedSet.of(
+                StaticRoute.builder()
+                    .setNetwork(route.getDestinationCidrBlock())
+                    .setNextHopInterface(interfaceNameToRemote(vpcCfg, vrfNameForLink(ngw.getId())))
+                    .setNextHopIp(
+                        getInterfaceLinkLocalIp(
+                            vpcCfg,
+                            Utils.interfaceNameToRemote(subnetCfg, vrfNameForLink(ngw.getId()))))
+                    .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
+                    .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
+                    .build())));
+  }
+
   /** Test that all prefixes of the prefix list are inserted as destinations */
   @Test
   public void testProcessRoutePrefixList() {
