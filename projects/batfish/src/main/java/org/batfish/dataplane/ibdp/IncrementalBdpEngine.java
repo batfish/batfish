@@ -82,7 +82,6 @@ class IncrementalBdpEngine {
       assert scope != null; // avoid unused warning
 
       _bfLogger.resetTimer();
-      PartialDataplane.Builder dpBuilder = PartialDataplane.builder();
       _bfLogger.info("\nComputing Data Plane using iBDP\n");
 
       // TODO: switch to topologies and owners from TopologyProvider
@@ -148,7 +147,7 @@ class IncrementalBdpEngine {
           // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
           computeFibs(nodes);
           PartialDataplane partialDataplane =
-              dpBuilder
+              PartialDataplane.builder()
                   .setNodes(nodes)
                   .setLayer3Topology(currentTopologyContext.getLayer3Topology())
                   .build();
