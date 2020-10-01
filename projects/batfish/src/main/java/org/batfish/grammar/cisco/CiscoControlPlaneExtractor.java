@@ -7663,11 +7663,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String filterName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     if (ctx.IN() != null) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx.getParent()),
-          _parser,
-          "Inbound distribute-list is not supported for EIGRP");
+      warn(ctx.getParent(), "Inbound distribute-list is not supported for EIGRP");
       _configuration.referenceStructure(
           IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
       if (ifaceName != null) {
@@ -7679,11 +7675,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(
         IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
     if (ifaceName == null) {
-      _w.addWarning(
-          ctx,
-          getFullText(ctx.getParent()),
-          _parser,
-          "Global distribute-list not supported for EIGRP");
+      warn(ctx.getParent(), "Global distribute-list not supported for EIGRP");
       return;
     }
     _configuration.referenceStructure(
@@ -7699,11 +7691,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    _w.addWarning(
-        ctx,
-        getFullText(ctx.getParent()),
-        _parser,
-        "Prefix lists in distribute-list are not supported for EIGRP");
+    warn(ctx.getParent(), "Prefix lists in distribute-list are not supported for EIGRP");
     _configuration.referenceStructure(
         PREFIX_LIST,
         ctx.name.getText(),
@@ -7726,11 +7714,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    _w.addWarning(
-        ctx,
-        getFullText(ctx.getParent()),
-        _parser,
-        "Gateways in distribute-list are not supported for EIGRP");
+    warn(ctx.getParent(), "Gateways in distribute-list are not supported for EIGRP");
     _configuration.referenceStructure(
         PREFIX_LIST,
         ctx.name.getText(),
@@ -7744,11 +7728,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    _w.addWarning(
-        ctx,
-        getFullText(ctx.getParent()),
-        _parser,
-        "Route maps in distribute-list are not supported for EIGRP");
+    warn(ctx.getParent(), "Route maps in distribute-list are not supported for EIGRP");
     _configuration.referenceStructure(
         ROUTE_MAP,
         ctx.name.getText(),
