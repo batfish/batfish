@@ -2799,6 +2799,14 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "2", 2));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 3));
 
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_IN", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_OUT", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_IN", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_OUT", 2));
+
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_IN", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_OUT", 1));
+
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
 
@@ -2810,6 +2818,20 @@ public final class CiscoGrammarTest {
         pvcae,
         hasParseWarning(
             filename, containsString("Global distribute-list not supported for EIGRP")));
+
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename,
+            containsString("Prefix lists in distribute-list are not supported for EIGRP")));
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Gateways in distribute-list are not supported for EIGRP")));
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Route maps in distribute-list are not supported for EIGRP")));
   }
 
   @Test

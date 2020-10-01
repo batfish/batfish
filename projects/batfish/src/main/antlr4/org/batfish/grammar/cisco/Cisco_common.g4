@@ -634,7 +634,7 @@ variable_community_name
 
 variable_distribute_list
 :
-  ~( NEWLINE | IN | OUT )+
+  ~( NEWLINE | GATEWAY | IN | OUT | PREFIX | ROUTE_MAP )+
 ;
 
 variable_hostname

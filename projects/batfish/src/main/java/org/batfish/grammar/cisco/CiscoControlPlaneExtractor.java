@@ -129,6 +129,12 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.DOMAIN_LOOKUP
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_AF_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
@@ -762,7 +768,6 @@ import org.batfish.grammar.cisco.CiscoParser.RangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
-import org.batfish.grammar.cisco.CiscoParser.Re_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
@@ -787,6 +792,10 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_ospfv3_bgp_tailContext
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_rip_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_aclContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_gatewayContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_prefixContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ren_address_familyContext;
@@ -7644,7 +7653,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRe_distribute_list(Re_distribute_listContext ctx) {
+  public void exitRedl_acl(Redl_aclContext ctx) {
     if (_currentEigrpProcess == null) {
       warn(ctx, "No EIGRP process available");
       return;
@@ -7655,7 +7664,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int line = ctx.name.getStart().getLine();
     if (ctx.IN() != null) {
       _w.addWarning(
-          ctx, getFullText(ctx), _parser, "Inbound distribute-list is not supported for EIGRP");
+          ctx,
+          getFullText(ctx.getParent()),
+          _parser,
+          "Inbound distribute-list is not supported for EIGRP");
       _configuration.referenceStructure(
           IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
       if (ifaceName != null) {
@@ -7668,7 +7680,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
     if (ifaceName == null) {
       _w.addWarning(
-          ctx, getFullText(ctx), _parser, "Global distribute-list not supported for EIGRP");
+          ctx,
+          getFullText(ctx.getParent()),
+          _parser,
+          "Global distribute-list not supported for EIGRP");
       return;
     }
     _configuration.referenceStructure(
@@ -7676,6 +7691,69 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentEigrpProcess
         .getOutboundInterfaceDistributeLists()
         .put(ifaceName, new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST));
+  }
+
+  @Override
+  public void exitRedl_prefix(Redl_prefixContext ctx) {
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    _w.addWarning(
+        ctx,
+        getFullText(ctx.getParent()),
+        _parser,
+        "Prefix lists in distribute-list are not supported for EIGRP");
+    _configuration.referenceStructure(
+        PREFIX_LIST,
+        ctx.name.getText(),
+        ctx.IN() == null
+            ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
+            : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        ctx.name.getStart().getLine());
+    if (ctx.gwname != null) {
+      _configuration.referenceStructure(
+          PREFIX_LIST,
+          ctx.gwname.getText(),
+          ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+          ctx.gwname.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRedl_gateway(Redl_gatewayContext ctx) {
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    _w.addWarning(
+        ctx,
+        getFullText(ctx.getParent()),
+        _parser,
+        "Gateways in distribute-list are not supported for EIGRP");
+    _configuration.referenceStructure(
+        PREFIX_LIST,
+        ctx.name.getText(),
+        ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+        ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitRedl_route_map(Redl_route_mapContext ctx) {
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    _w.addWarning(
+        ctx,
+        getFullText(ctx.getParent()),
+        _parser,
+        "Route maps in distribute-list are not supported for EIGRP");
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        ctx.name.getText(),
+        ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        ctx.name.getStart().getLine());
   }
 
   @Override
