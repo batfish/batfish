@@ -21,6 +21,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -109,11 +110,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Route dependency tracker for BGP IPv4 aggregate routes */
   @Nonnull
   RouteDependencyTracker<Bgpv4Route, AbstractRoute> _bgpAggDeps = new RouteDependencyTracker<>();
-  /**
-   * Incoming messages into this router from each BGP neighbor that speaks IPv4 unicast address
-   * family
-   */
-  @Nonnull SortedMap<EdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> _bgpv4IncomingRoutes;
+  /** All BGP neighbor that speaks IPv4 unicast address family that we know of */
+  @Nonnull ImmutableSortedSet<EdgeId> _bgpv4Edges;
   /**
    * Incoming EVPN type 3 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
@@ -206,13 +204,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _process = process;
     _c = configuration;
     _vrfName = vrfName;
-    // TODO: really need to have a read-only RIB interface for safety
     _mainRib = mainRib;
     _topology = topology;
     _prefixTracer = prefixTracer;
 
     // Message queues start out empty
-    _bgpv4IncomingRoutes = ImmutableSortedMap.of();
+    _bgpv4Edges = ImmutableSortedSet.of();
     _evpnType3IncomingRoutes = ImmutableSortedMap.of();
 
     // Initialize all RIBs
@@ -307,9 +304,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private void initBgpQueues(BgpTopology bgpTopology) {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> graph = bgpTopology.getGraph();
     // Create incoming message queues for sessions that exchange IPv4 unicast info
-    _bgpv4IncomingRoutes =
+    _bgpv4Edges =
         getEdgeIdStream(graph, BgpPeerConfig::getIpv4UnicastAddressFamily, Type.IPV4_UNICAST)
-            .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     // Create incoming message queues for sessions that exchange EVPN info
     _evpnType3IncomingRoutes =
         getEdgeIdStream(graph, BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
@@ -465,8 +462,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   public boolean isDirty() {
     return
     // Message queues
-    !_bgpv4IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
-        || !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+    !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         // Outgoing message deltas. We need to send these to neighbors.
         // The reason we look at PREV values is because
         // endOfRound has been called BEFORE the isDirty check and we've already switched over.
@@ -595,7 +591,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     ribDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
 
     // Process updates from each neighbor
-    for (EdgeId edgeId : _bgpv4IncomingRoutes.keySet()) {
+    for (EdgeId edgeId : _bgpv4Edges) {
       pullV4UnicastMessages(
           bgpTopology, nc, nodes, ribDeltaBuilders, edgeId, _edgesWentUp.contains(edgeId));
     }
@@ -625,9 +621,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Map<Bgpv4Rib, Builder<Bgpv4Route>> ribDeltas,
       EdgeId edgeId,
       boolean isNewSession) {
-    // Grab the queue containing all messages from remoteBgpPeerConfig
-    Queue<RouteAdvertisement<Bgpv4Route>> queue = _bgpv4IncomingRoutes.get(edgeId);
-    assert queue != null;
 
     // Setup helper vars
     BgpPeerConfigId remoteConfigId = edgeId.tail();
@@ -652,10 +645,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             .iterator();
 
     // Process all routes from neighbor
-    while (exportedRoutes.hasNext() || queue.peek() != null) {
-      // consume exported routes before reading from the queue
-      RouteAdvertisement<Bgpv4Route> remoteRouteAdvert =
-          exportedRoutes.hasNext() ? exportedRoutes.next() : queue.remove();
+    while (exportedRoutes.hasNext()) {
+      // consume exported routes
+      RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.next();
       Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
 
       LOGGER.debug("{} Processing bgpv4 route {}", _c.getHostname(), remoteRoute);
@@ -1604,7 +1596,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _ebgpv4DeltaPrev,
             _bgpv4DeltaPrev,
             // Message queues
-            _bgpv4IncomingRoutes,
             _evpnType3IncomingRoutes,
             // Delta builders
             _bgpv4DeltaBuilder.build(),
