@@ -584,6 +584,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       span.finish();
     }
 
+    LOGGER.info("Answering question {}", question.getClass().getSimpleName());
     if (GlobalTracer.get().scopeManager().activeSpan() != null) {
       Span activeSpan = GlobalTracer.get().scopeManager().activeSpan();
       activeSpan
@@ -634,10 +635,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     answer.setQuestion(question);
 
     if (exception == null) {
+      LOGGER.info("Question answered successfully");
       // success
       answer.setStatus(AnswerStatus.SUCCESS);
       answer.addAnswerElement(answerElement);
     } else {
+      LOGGER.warn("Question execution failed", exception);
       // failure
       answer.setStatus(AnswerStatus.FAILURE);
       answer.addAnswerElement(exception.getBatfishStackTrace());
