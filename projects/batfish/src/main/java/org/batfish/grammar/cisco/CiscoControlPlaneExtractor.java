@@ -127,6 +127,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_GROUP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_AF_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
@@ -7646,16 +7647,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    if (ctx.iname == null) {
+    @Nullable
+    String ifaceName = ctx.iname == null ? null : getCanonicalInterfaceName(ctx.iname.getText());
+    String filterName = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    if (ctx.IN() != null) {
+      _w.addWarning(
+          ctx, getFullText(ctx), _parser, "Inbound distribute-list is not supported for EIGRP");
+      _configuration.referenceStructure(
+          IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
+      if (ifaceName != null) {
+        _configuration.referenceStructure(
+            INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
+      }
+      return;
+    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
+    if (ifaceName == null) {
       _w.addWarning(
           ctx, getFullText(ctx), _parser, "Global distribute-list not supported for EIGRP");
       return;
     }
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    String filterName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
     _currentEigrpProcess
