@@ -16,11 +16,11 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.FileLines;
@@ -36,12 +36,14 @@ import org.junit.Test;
 public class UndefinedReferencesAnswererTest {
 
   private static final SortedMap<
-          String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
+          String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       BASIC_UNDEFINED_REFS_MAP =
           ImmutableSortedMap.of(
               "f",
               ImmutableSortedMap.of(
-                  "t", ImmutableSortedMap.of("n", ImmutableSortedMap.of("c", IntegerSpace.of(1)))));
+                  "t",
+                  ImmutableSortedMap.of(
+                      "n", ImmutableSortedMap.of("c", ImmutableSortedSet.of(1)))));
   private static final Row BASIC_ROW =
       Row.of(
           COL_FILENAME,
@@ -67,16 +69,17 @@ public class UndefinedReferencesAnswererTest {
 
   @Test
   public void testProcessMultipleEntries() {
-    Map<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>> refsMap =
-        ImmutableMap.of(
-            "f",
-            ImmutableSortedMap.of(
-                "t",
-                ImmutableSortedMap.of("n", ImmutableSortedMap.of("c", IntegerSpace.of(1))),
-                "t2",
+    Map<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        refsMap =
+            ImmutableMap.of(
+                "f",
                 ImmutableSortedMap.of(
-                    "n2",
-                    ImmutableSortedMap.of("c2", IntegerSpace.builder().including(2, 3).build()))));
+                    "t",
+                    ImmutableSortedMap.of(
+                        "n", ImmutableSortedMap.of("c", ImmutableSortedSet.of(1))),
+                    "t2",
+                    ImmutableSortedMap.of(
+                        "n2", ImmutableSortedMap.of("c2", ImmutableSortedSet.of(2, 3)))));
 
     List<Row> expected =
         ImmutableList.of(

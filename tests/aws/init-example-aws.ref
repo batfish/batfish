@@ -232,116 +232,183 @@
       "configs/lhr-border-02.cfg" : {
         "bgp peer-group" : {
           "FW" : {
-            "bgp neighbor peer-group" : "200,202"
+            "bgp neighbor peer-group" : [
+              200,
+              202
+            ]
           }
         },
         "crypto ipsec profile" : {
           "ipsec-vpn-ba2e34a8-0" : {
-            "interface TunnelX tunnel protection ipsec profile" : "114"
+            "interface TunnelX tunnel protection ipsec profile" : [
+              114
+            ]
           },
           "ipsec-vpn-ba2e34a8-1" : {
-            "interface TunnelX tunnel protection ipsec profile" : "122"
+            "interface TunnelX tunnel protection ipsec profile" : [
+              122
+            ]
           }
         },
         "crypto ipsec transform-set" : {
           "ipsec-prop-vpn-ba2e34a8-0" : {
-            "ipsec profile set transform-set" : "93"
+            "ipsec profile set transform-set" : [
+              93
+            ]
           },
           "ipsec-prop-vpn-ba2e34a8-1" : {
-            "ipsec profile set transform-set" : "97"
+            "ipsec profile set transform-set" : [
+              97
+            ]
           }
         },
         "crypto isakmp policy" : {
           "200" : {
-            "isakmp policy" : "62"
+            "isakmp policy" : [
+              62
+            ]
           },
           "201" : {
-            "isakmp policy" : "68"
+            "isakmp policy" : [
+              68
+            ]
           }
         },
         "crypto isakmp profile" : {
           "isakmp-vpn-ba2e34a8-0" : {
-            "isakmp profile" : "74"
+            "isakmp profile" : [
+              74
+            ]
           },
           "isakmp-vpn-ba2e34a8-1" : {
-            "isakmp profile" : "78"
+            "isakmp profile" : [
+              78
+            ]
           }
         },
         "crypto keyring" : {
           "keyring-vpn-ba2e34a8-0" : {
-            "isakmp profile keyring" : "75"
+            "isakmp profile keyring" : [
+              75
+            ]
           },
           "keyring-vpn-ba2e34a8-1" : {
-            "isakmp profile keyring" : "79"
+            "isakmp profile keyring" : [
+              79
+            ]
           }
         },
         "interface" : {
           "Ethernet0/0" : {
-            "interface" : "124"
+            "interface" : [
+              124
+            ]
           },
           "Ethernet1/0" : {
-            "interface" : "136"
+            "interface" : [
+              136
+            ]
           },
           "Ethernet1/1" : {
-            "interface" : "142"
+            "interface" : [
+              142
+            ]
           },
           "Ethernet1/2" : {
-            "interface" : "148"
+            "interface" : [
+              148
+            ]
           },
           "Ethernet1/3" : {
-            "interface" : "152"
+            "interface" : [
+              152
+            ]
           },
           "Ethernet1/4" : {
-            "interface" : "159"
+            "interface" : [
+              159
+            ]
           },
           "Ethernet1/5" : {
-            "interface" : "164"
+            "interface" : [
+              164
+            ]
           },
           "Ethernet1/6" : {
-            "interface" : "169"
+            "interface" : [
+              169
+            ]
           },
           "Ethernet1/7" : {
-            "interface" : "174"
+            "interface" : [
+              174
+            ]
           },
           "GigabitEthernet0/0" : {
-            "interface" : "129"
+            "interface" : [
+              129
+            ]
           },
           "GigabitEthernet2/0" : {
-            "interface" : "179"
+            "interface" : [
+              179
+            ]
           },
           "Loopback0" : {
-            "interface" : "105",
-            "update-source interface" : "205"
+            "interface" : [
+              105
+            ],
+            "update-source interface" : [
+              205
+            ]
           },
           "Null0" : {
-            "ip route next-hop interface" : "236"
+            "ip route next-hop interface" : [
+              236
+            ]
           },
           "Tunnel1" : {
-            "interface" : "108"
+            "interface" : [
+              108
+            ]
           },
           "Tunnel2" : {
-            "interface" : "116"
+            "interface" : [
+              116
+            ]
           }
         },
         "ipv4 acl" : {
           "LIMIT_PEER" : {
-            "interface incoming ip access-list" : "155"
+            "interface incoming ip access-list" : [
+              155
+            ]
           },
           "MATCH_ALL_BGP" : {
-            "route-map match ipv4 access-list" : "258"
+            "route-map match ipv4 access-list" : [
+              258
+            ]
           }
         },
         "ipv4 prefix-list" : {
           "PROTECT_LOOPBACK" : {
-            "route-map match ipv4 prefix-list" : "252"
+            "route-map match ipv4 prefix-list" : [
+              252
+            ]
           }
         },
         "route-map" : {
           "PROTECT_LOOPBACK" : {
-            "bgp inbound route-map" : "217,223,227"
+            "bgp inbound route-map" : [
+              217,
+              223,
+              227
+            ]
           },
           "SET_LOCAL_PREF" : {
-            "bgp inbound route-map" : "214"
+            "bgp inbound route-map" : [
+              214
+            ]
           }
         }
       }
