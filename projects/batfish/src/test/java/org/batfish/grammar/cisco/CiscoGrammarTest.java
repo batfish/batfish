@@ -61,6 +61,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPostTransformationIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPreTransformationOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
@@ -341,6 +342,7 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.community.Community;
@@ -2782,6 +2784,32 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 
     assertThat(c.getRouteFilterLists(), hasKey("2"));
+  }
+
+  @Test
+  public void testIosEigrpDistributeListRefsAndWarnings() throws IOException {
+    String hostname = "ios-eigrp-distribute-list-refs-and-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 2));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "2", 2));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 3));
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Inbound distribute-list is not supported for EIGRP")));
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Global distribute-list not supported for EIGRP")));
   }
 
   @Test
