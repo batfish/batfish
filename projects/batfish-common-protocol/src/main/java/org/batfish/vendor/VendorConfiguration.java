@@ -17,7 +17,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,7 +34,6 @@ import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -220,24 +221,22 @@ public abstract class VendorConfiguration implements Serializable {
       throws VendorConversionException;
 
   private void addStructureReference(
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
           referenceMap,
       StructureType structureType,
       String name,
       StructureUsage usage,
       int line) {
     String filename = getFilename();
-    SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>> byType =
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
         referenceMap.computeIfAbsent(filename, k -> new TreeMap<>());
     String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, IntegerSpace>> byName =
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
         byType.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedMap<String, IntegerSpace> byUsage = byName.computeIfAbsent(name, k -> new TreeMap<>());
+    SortedMap<String, SortedSet<Integer>> byUsage =
+        byName.computeIfAbsent(name, k -> new TreeMap<>());
     String usageStr = usage.getDescription();
-    byUsage.compute(
-        usageStr,
-        (ignored, refs) ->
-            (refs == null ? IntegerSpace.of(line) : refs.toBuilder().including(line).build()));
+    byUsage.computeIfAbsent(usageStr, ignored -> new TreeSet<>()).add(line);
   }
 
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {

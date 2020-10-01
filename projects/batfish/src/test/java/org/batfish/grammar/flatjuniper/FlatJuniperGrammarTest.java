@@ -189,6 +189,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -1251,7 +1252,7 @@ public final class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
 

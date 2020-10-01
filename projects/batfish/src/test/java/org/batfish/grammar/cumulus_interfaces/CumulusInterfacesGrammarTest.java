@@ -79,8 +79,7 @@ public class CumulusInterfacesGrammarTest {
         .get(FILENAME)
         .get(type.getDescription())
         .get(name)
-        .get(usage.getDescription())
-        .enumerate();
+        .get(usage.getDescription());
   }
 
   private static CumulusInterfacesConfiguration parse(String input) {

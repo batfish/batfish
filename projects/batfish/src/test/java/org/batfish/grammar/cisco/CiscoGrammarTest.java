@@ -254,6 +254,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -679,7 +680,7 @@ public final class CiscoGrammarTest {
                 .build(),
             _folder);
 
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences =
             batfish
                 .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
@@ -687,10 +688,10 @@ public final class CiscoGrammarTest {
 
     // only mac_acl_udef and ip_acl_udef should be undefined references
     assertThat(undefinedReferences, hasKey(filename));
-    SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>> byHost =
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byHost =
         undefinedReferences.get(filename);
     assertThat(byHost, hasKey(ACCESS_LIST.getDescription()));
-    SortedMap<String, SortedMap<String, IntegerSpace>> byType =
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
         byHost.get(ACCESS_LIST.getDescription());
 
     assertThat(byType.keySet(), hasSize(2));
