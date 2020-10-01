@@ -4,8 +4,8 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 
-import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -64,7 +64,7 @@ public class DataplaneUtil {
 
   @Nonnull
   static Table<String, String, Set<Bgpv4Route>> computeBgpRoutes(Map<String, Node> nodes) {
-    Table<String, String, Set<Bgpv4Route>> table = HashBasedTable.create();
+    ImmutableTable.Builder<String, String, Set<Bgpv4Route>> table = ImmutableTable.builder();
 
     nodes.forEach(
         (hostname, node) ->
@@ -73,12 +73,12 @@ public class DataplaneUtil {
                     (vrfName, vr) -> {
                       table.put(hostname, vrfName, vr.getBgpRoutes());
                     }));
-    return table;
+    return table.build();
   }
 
   @Nonnull
   static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes(Map<String, Node> nodes) {
-    Table<String, String, Set<EvpnRoute<?, ?>>> table = HashBasedTable.create();
+    ImmutableTable.Builder<String, String, Set<EvpnRoute<?, ?>>> table = ImmutableTable.builder();
     nodes.forEach(
         (hostname, node) ->
             node.getVirtualRouters()
@@ -86,18 +86,18 @@ public class DataplaneUtil {
                     (vrfName, vr) -> {
                       table.put(hostname, vrfName, vr.getEvpnRoutes());
                     }));
-    return table;
+    return table.build();
   }
 
   @Nonnull
   static Table<String, String, Set<Layer2Vni>> computeVniSettings(Map<String, Node> nodes) {
-    Table<String, String, Set<Layer2Vni>> result = HashBasedTable.create();
+    ImmutableTable.Builder<String, String, Set<Layer2Vni>> result = ImmutableTable.builder();
     for (Node node : nodes.values()) {
       for (Entry<String, VirtualRouter> vr : node.getVirtualRouters().entrySet()) {
         result.put(
             node.getConfiguration().getHostname(), vr.getKey(), vr.getValue().getLayer2Vnis());
       }
     }
-    return result;
+    return result.build();
   }
 }
