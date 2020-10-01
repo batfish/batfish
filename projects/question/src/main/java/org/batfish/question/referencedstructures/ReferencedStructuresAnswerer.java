@@ -79,7 +79,7 @@ public class ReferencedStructuresAnswerer extends Answerer {
                                         COL_CONTEXT,
                                         context,
                                         COL_SOURCE_LINES,
-                                        new FileLines(filename, lineNums.enumerate())));
+                                        new FileLines(filename, lineNums)));
                               });
                         });
                   });

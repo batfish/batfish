@@ -235,59 +235,85 @@
         "configs/r1.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "interface" : "7"
+              "interface" : [
+                7
+              ]
             },
             "Ethernet1" : {
-              "interface" : "4"
+              "interface" : [
+                4
+              ]
             },
             "Ethernet2" : {
-              "interface" : "1"
+              "interface" : [
+                1
+              ]
             }
           }
         },
         "configs/r2.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "interface" : "7"
+              "interface" : [
+                7
+              ]
             },
             "Ethernet1" : {
-              "interface" : "4"
+              "interface" : [
+                4
+              ]
             },
             "Ethernet2" : {
-              "interface" : "1"
+              "interface" : [
+                1
+              ]
             }
           }
         },
         "configs/r3.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "interface" : "7"
+              "interface" : [
+                7
+              ]
             },
             "Ethernet1" : {
-              "interface" : "4"
+              "interface" : [
+                4
+              ]
             },
             "Ethernet2" : {
-              "interface" : "1"
+              "interface" : [
+                1
+              ]
             }
           }
         },
         "configs/z1-firewall.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "interface" : "4"
+              "interface" : [
+                4
+              ]
             },
             "Ethernet1" : {
-              "interface" : "1"
+              "interface" : [
+                1
+              ]
             }
           }
         },
         "configs/z2-firewall.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "interface" : "4"
+              "interface" : [
+                4
+              ]
             },
             "Ethernet1" : {
-              "interface" : "1"
+              "interface" : [
+                1
+              ]
             }
           }
         }

@@ -22,7 +22,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.questions.Question;
@@ -67,7 +66,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
               .collect(Collectors.toSet());
 
       Multiset<Row> rows = LinkedHashMultiset.create();
-      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>>
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
           undefinedReferences =
               _batfish
                   .loadConvertConfigurationAnswerElementOrReparse(snapshot)
@@ -84,17 +83,18 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
     @VisibleForTesting
     // Entry is: filename -> struct type -> struct name -> context -> line nums
     public static List<Row> processEntryToRows(
-        Entry<String, SortedMap<String, SortedMap<String, SortedMap<String, IntegerSpace>>>> e) {
+        Entry<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+            e) {
       List<Row> rows = new ArrayList<>();
       String filename = e.getKey();
-      for (Entry<String, SortedMap<String, SortedMap<String, IntegerSpace>>> e1 :
+      for (Entry<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> e1 :
           e.getValue().entrySet()) {
         String structType = e1.getKey();
-        for (Entry<String, SortedMap<String, IntegerSpace>> e2 : e1.getValue().entrySet()) {
+        for (Entry<String, SortedMap<String, SortedSet<Integer>>> e2 : e1.getValue().entrySet()) {
           String name = e2.getKey();
-          for (Entry<String, IntegerSpace> e3 : e2.getValue().entrySet()) {
+          for (Entry<String, SortedSet<Integer>> e3 : e2.getValue().entrySet()) {
             String context = e3.getKey();
-            SortedSet<Integer> lineNums = e3.getValue().enumerate();
+            SortedSet<Integer> lineNums = e3.getValue();
             rows.add(
                 Row.of(
                     COL_FILENAME,

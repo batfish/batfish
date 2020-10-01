@@ -151,8 +151,7 @@ public class CumulusFrrGrammarTest {
         .get(FILENAME)
         .get(type.getDescription())
         .get(name)
-        .get(usage.getDescription())
-        .enumerate();
+        .get(usage.getDescription());
   }
 
   private static void parse(String src) {
