@@ -52,7 +52,7 @@ public final class InterfaceLocation implements Location {
 
   @Override
   public int hashCode() {
-    return 31 * _interfaceName.hashCode() + _nodeName.hashCode();
+    return 31 * 31 * getClass().hashCode() + 31 * _interfaceName.hashCode() + _nodeName.hashCode();
   }
 
   @Override
