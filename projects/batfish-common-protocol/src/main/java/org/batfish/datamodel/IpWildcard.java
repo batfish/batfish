@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
@@ -221,5 +222,10 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
     long canonicalIp = inputIp & (ALL_BITS_MASKED ^ wildcardMask);
     _ip = (canonicalIp == inputIp) ? address : Ip.create(canonicalIp);
     _wildcardMask = wildcardMask;
+  }
+
+  /** Cache after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.getUnchecked(this);
   }
 }

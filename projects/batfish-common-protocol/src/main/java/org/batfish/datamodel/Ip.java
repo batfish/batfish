@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -243,5 +244,10 @@ public class Ip implements Comparable<Ip>, Serializable {
 
   public Prefix toPrefix() {
     return Prefix.create(this, Prefix.MAX_PREFIX_LENGTH);
+  }
+
+  /** Cache after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.getUnchecked(this);
   }
 }
