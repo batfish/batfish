@@ -111,7 +111,7 @@ public class BDDReachabilityAnalysis {
     return ImmutableMap.copyOf(reverseReachableStates);
   }
 
-  Map<StateExpr, BDD> computeForwardReachableStates() {
+  public Map<StateExpr, BDD> computeForwardReachableStates() {
     Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysis.computeForwardReachableStates")
