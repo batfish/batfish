@@ -37,12 +37,13 @@ re_default_metric
 
 re_distribute_list
 :
-   DISTRIBUTE_LIST name = variable_distribute_list
+   DISTRIBUTE_LIST
    (
-      IN
-      | OUT
+      redl_acl
+      | redl_gateway
+      | redl_prefix
+      | redl_route_map
    )
-   (iname = interface_name_unstructured)? NEWLINE
 ;
 
 re_eigrp_null
@@ -342,6 +343,47 @@ rec_null
       | TRAFFIC_SHARE
       | VARIANCE
    ) null_rest_of_line
+;
+
+redl_acl
+:
+   name = variable_distribute_list
+   (
+      IN
+      | OUT
+   )
+   (iname = interface_name_unstructured)? NEWLINE
+;
+
+redl_gateway
+:
+   GATEWAY name = variable_distribute_list
+   (
+      IN
+      | OUT
+   )
+   NEWLINE
+;
+
+redl_prefix
+:
+   PREFIX name = variable_distribute_list
+   ( GATEWAY gwname = variable_distribute_list)?
+   (
+      IN
+      | OUT
+   )
+   NEWLINE
+;
+
+redl_route_map
+:
+   ROUTE_MAP name = variable_distribute_list
+   (
+      IN
+      | OUT
+   )
+   NEWLINE
 ;
 
 ren_address_family
