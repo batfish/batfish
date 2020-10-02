@@ -29,7 +29,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -65,12 +64,10 @@ class IncrementalBdpEngine {
   private static final int MAX_TOPOLOGY_ITERATIONS = 10;
 
   private int _numIterations;
-  private final BatfishLogger _bfLogger;
   private final IncrementalDataPlaneSettings _settings;
 
-  IncrementalBdpEngine(IncrementalDataPlaneSettings settings, BatfishLogger logger) {
+  IncrementalBdpEngine(IncrementalDataPlaneSettings settings) {
     _settings = settings;
-    _bfLogger = logger;
   }
 
   ComputeDataPlaneResult computeDataPlane(
@@ -81,8 +78,7 @@ class IncrementalBdpEngine {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
-      _bfLogger.resetTimer();
-      _bfLogger.info("\nComputing Data Plane using iBDP\n");
+      LOGGER.info("Computing Data Plane using iBDP");
 
       // TODO: switch to topologies and owners from TopologyProvider
       Map<Ip, Map<String, Set<String>>> ipVrfOwners = new IpOwners(configurations).getIpVrfOwners();
@@ -260,7 +256,6 @@ class IncrementalBdpEngine {
               .setNodes(nodes)
               .setLayer3Topology(currentTopologyContext.getLayer3Topology())
               .build();
-      _bfLogger.printElapsedTime();
       return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
     } finally {
       span.finish();
@@ -742,9 +737,10 @@ class IncrementalBdpEngine {
           } else {
             // If oscillation detected, switch to a more restrictive schedule
             if (currentSchedule != Schedule.NODE_SERIALIZED) {
-              _bfLogger.debugf(
-                  "Switching to a more restrictive schedule %s, iteration %d\n",
-                  Schedule.NODE_SERIALIZED, _numIterations);
+              LOGGER.debug(
+                  "Switching to a more restrictive schedule {}, iteration {}",
+                  Schedule.NODE_SERIALIZED,
+                  _numIterations);
               currentSchedule = Schedule.NODE_SERIALIZED;
             } else {
               return true; // Found an oscillation

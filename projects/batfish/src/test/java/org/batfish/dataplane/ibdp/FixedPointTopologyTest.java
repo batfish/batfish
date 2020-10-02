@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
@@ -184,10 +183,7 @@ public final class FixedPointTopologyTest {
   @Test
   public void testFixedPointVxlanTopology() {
     Map<String, Configuration> configs = generateVxlanConfigs();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     TopologyContext callerTopologyContext = getCallerTopologyContext(configs);
 
     // Initially there should be no VXLAN tunnel
@@ -373,10 +369,7 @@ public final class FixedPointTopologyTest {
             .setIpsecTopology(getIpsecTopology(false))
             .setLayer3Topology(layer3Topology)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
@@ -403,10 +396,7 @@ public final class FixedPointTopologyTest {
             .setIpsecTopology(getIpsecTopology(false))
             .setLayer3Topology(layer3Topology)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
@@ -432,10 +422,7 @@ public final class FixedPointTopologyTest {
             .setIpsecTopology(getIpsecTopology(false))
             .setLayer3Topology(layer3Topology)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
@@ -476,10 +463,7 @@ public final class FixedPointTopologyTest {
             .setIpsecTopology(getIpsecTopology(true))
             .setLayer3Topology(layer3Topology)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
 
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(configurations, topologyContext, ImmutableSet.of());
