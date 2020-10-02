@@ -6,6 +6,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.io.ObjectStreamException;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpWildcardIpSpace extends IpSpace {
@@ -58,5 +59,10 @@ public class IpWildcardIpSpace extends IpSpace {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).add(PROP_IP_WILDCARD, _ipWildcard).toString();
+  }
+
+  /** Cache after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.getUnchecked(_ipWildcard);
   }
 }
