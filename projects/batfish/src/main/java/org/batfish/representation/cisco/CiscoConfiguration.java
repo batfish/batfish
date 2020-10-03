@@ -3578,7 +3578,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
+        CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP,
+        CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP);
 
     // Cable
     markConcreteStructure(

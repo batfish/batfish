@@ -240,6 +240,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   WCCP_GROUP_LIST("ip wccp group-list"),
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
   WCCP_SERVICE_LIST("ip wccp service-list"),
+  VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP("vrf definition address-family export map"),
   VXLAN_SOURCE_INTERFACE("vxlan source-interface"),
   VXLAN_SELF_REF("vxlan"),
   ZONE_PAIR_DESTINATION_ZONE("zone-pair security destination"),

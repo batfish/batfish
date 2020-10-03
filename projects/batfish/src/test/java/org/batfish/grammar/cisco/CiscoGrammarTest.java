@@ -3417,6 +3417,25 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosVrfdAddressFamilyExportMap() throws IOException {
+    String hostname = "ios-vrfd-address-family-export-map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP", 2));
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Export maps for VRFs are not currently supported")));
+  }
+
+  @Test
   public void testIosZoneSecurity() throws IOException {
     String hostname = "ios-zone-security";
     String filename = "configs/" + hostname;
