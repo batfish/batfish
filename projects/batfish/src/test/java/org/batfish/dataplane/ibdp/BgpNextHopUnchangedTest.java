@@ -184,7 +184,22 @@ public class BgpNextHopUnchangedTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Vrf r3Vrf = _nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(r3).setOwner(r3).build();
-    _nf.interfaceBuilder().setName("r3_r2").setAddress(_r3Addr1).setVrf(r3Vrf).setOwner(r3).build();
+    Interface i3 =
+        _nf.interfaceBuilder()
+            .setName("r3_r2")
+            .setAddress(_r3Addr1)
+            .setVrf(r3Vrf)
+            .setOwner(r3)
+            .build();
+    // Static route required, otherwise IBGP routes from r1 won't be accepted (no reach. to nexthop
+    // ip)
+    r3Vrf.setStaticRoutes(
+        ImmutableSortedSet.of(
+            StaticRoute.builder()
+                .setNetwork(_r1Addr1.getPrefix())
+                .setAdmin(1)
+                .setNextHopInterface(i3.getName())
+                .build()));
     BgpProcess bgpProcessR3 = _bgpProcessBuilder.setRouterId(_routerId3).setVrf(r3Vrf).build();
     _nf.bgpNeighborBuilder()
         .setLocalIp(_r3Addr1.getIp())
