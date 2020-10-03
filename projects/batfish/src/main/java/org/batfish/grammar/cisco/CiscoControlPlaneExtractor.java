@@ -143,6 +143,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_STUB_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
@@ -769,6 +770,7 @@ import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_router_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
@@ -6716,6 +6718,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentEigrpProcess.setRouterId(routerId);
     } else {
       _currentEigrpProcess.setRouterId(null);
+    }
+  }
+
+  @Override
+  public void exitRe_eigrp_stub(Re_eigrp_stubContext ctx) {
+    // In process context
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    warn(ctx, "EIGRP stub is not currently supported");
+    if (ctx.map != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, ctx.map.getText(), EIGRP_STUB_LEAK_MAP, ctx.map.getStart().getLine());
     }
   }
 

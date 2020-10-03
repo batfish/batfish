@@ -3561,6 +3561,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
+        CiscoStructureUsage.EIGRP_STUB_LEAK_MAP,
         CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP,
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,

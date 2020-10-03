@@ -25,6 +25,7 @@ re_classic_tail
    | re_passive_interface_default
    | re_passive_interface
    | re_redistribute
+   | re_eigrp_stub
 ;
 
 re_default_metric
@@ -54,7 +55,6 @@ re_eigrp_null
       | EVENT_LOG_SIZE
       | LOG_NEIGHBOR_CHANGES
       | LOG_NEIGHBOR_WARNINGS
-      | STUB
    ) null_rest_of_line
 ;
 
@@ -169,6 +169,19 @@ re_redistribute_static
    (
       METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
+   )* NEWLINE
+;
+
+re_eigrp_stub
+:
+   EIGRP STUB
+   (
+      RECEIVE_ONLY
+      | CONNECTED
+      | STATIC
+      | SUMMARY
+      | REDISTRIBUTED
+      | LEAK_MAP map = variable
    )* NEWLINE
 ;
 
@@ -312,6 +325,7 @@ rec_address_family_tail
    | re_passive_interface_default
    | re_passive_interface
    | re_redistribute
+   | re_eigrp_stub
    | rec_address_family_null
    | rec_metric_weights
 ;
@@ -424,6 +438,7 @@ ren_address_family_tail
    | re_network
    | re_passive_interface_default
    | re_passive_interface
+   | re_eigrp_stub
    | reaf_interface_default
    | reaf_interface
    | reaf_topology

@@ -1,0 +1,14 @@
+!
+hostname ios-eigrp-stub
+!
+route-map RT_MAP permit 10
+!
+router eigrp 3
+  eigrp stub
+  eigrp stub leak-map RT_MAP
+  eigrp stub connected leak-map RT_MAP
+  eigrp stub connected leak-map RT_MAP summary
+  eigrp stub redistributed
+  eigrp stub receive-only
+  eigrp stub static
+!
