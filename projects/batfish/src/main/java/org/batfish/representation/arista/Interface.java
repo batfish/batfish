@@ -1,5 +1,6 @@
 package org.batfish.representation.arista;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -76,7 +77,7 @@ public class Interface implements Serializable {
 
   @Nullable private IntegerSpace _allowedVlans;
 
-  private List<AristaDynamicSourceNat> _aristaNats;
+  private @Nullable List<AristaDynamicSourceNat> _aristaNats;
 
   private boolean _autoState;
 
@@ -102,7 +103,7 @@ public class Interface implements Serializable {
 
   private @Nullable Boolean _localProxyArp;
 
-  private final @Nonnull Set<String> _memberInterfaces;
+  private @Nonnull Set<String> _memberInterfaces;
 
   @Nullable private Integer _mlagId;
 
@@ -581,5 +582,16 @@ public class Interface implements Serializable {
 
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+  }
+
+  public void finalizeBuilderObjects() {
+    if (_aristaNats != null) {
+      _aristaNats = ImmutableList.copyOf(_aristaNats);
+    }
+    _declaredNames = ImmutableSortedSet.copyOf(_declaredNames);
+    _dhcpRelayAddresses = ImmutableSortedSet.copyOf(_dhcpRelayAddresses);
+    _memberInterfaces = ImmutableSet.copyOf(_memberInterfaces);
+    _secondaryAddresses = ImmutableSet.copyOf(_secondaryAddresses);
+    _vlanTrunkGroups = ImmutableSet.copyOf(_vlanTrunkGroups);
   }
 }

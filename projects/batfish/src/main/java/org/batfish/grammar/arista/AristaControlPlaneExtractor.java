@@ -8748,4 +8748,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
   }
+
+  @Override
+  public void doneParsing() {
+    _configuration.finalizeBuilderObjects();
+  }
 }

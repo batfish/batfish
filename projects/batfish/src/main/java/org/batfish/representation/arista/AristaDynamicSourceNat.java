@@ -32,7 +32,7 @@ public final class AristaDynamicSourceNat implements Serializable {
   }
 
   public Optional<Transformation> toTransformation(
-      Ip interfaceIp, Map<String, NatPool> natPools, Transformation orElse) {
+      Ip interfaceIp, Map<String, NatPool> natPools, @Nullable Transformation orElse) {
     NatPool natPool =
         _overload ? new NatPool(interfaceIp, interfaceIp) : natPools.get(_natPoolName);
     if (natPool == null) {

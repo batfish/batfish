@@ -309,8 +309,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
     String mapName = map.getName();
-    String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
-    return clausePolicyName;
+    return "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
   }
 
   static String toJavaRegex(String ciscoRegex) {
@@ -321,99 +320,55 @@ public final class AristaConfiguration extends VendorConfiguration {
       withoutQuotes = ciscoRegex;
     }
     String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
-    return output;
+    return withoutQuotes.replaceAll("_", underscoreReplacement);
   }
 
   @Nullable private AristaBgpProcess _aristaBgp;
 
-  private final Map<String, IpAsPathAccessList> _asPathAccessLists;
-
+  private @Nonnull Map<String, IpAsPathAccessList> _asPathAccessLists;
   private final CiscoFamily _cf;
-
-  private final Map<String, CryptoMapSet> _cryptoMapSets;
-
-  private final Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
-
-  private final List<Ip> _dhcpRelayServers;
-
-  private NavigableSet<String> _dnsServers;
-
+  private @Nonnull Map<String, CryptoMapSet> _cryptoMapSets;
+  private @Nonnull Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
+  private @Nonnull List<Ip> _dhcpRelayServers;
+  private @Nonnull NavigableSet<String> _dnsServers;
   private String _dnsSourceInterface;
-
   private String _domainName;
-
-  private Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
-
+  private @Nonnull Map<String, VlanTrunkGroup> _eosVlanTrunkGroups;
   private AristaEosVxlan _eosVxlan;
-
   @Nullable private MlagConfiguration _eosMlagConfiguration;
-
-  private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
-
-  private final Map<String, ExtendedAccessList> _extendedAccessLists;
-
-  private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
-
+  private @Nonnull Map<String, ExpandedCommunityList> _expandedCommunityLists;
+  private @Nonnull Map<String, ExtendedAccessList> _extendedAccessLists;
+  private @Nonnull Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
   private String _hostname;
-
-  private final Map<String, InspectClassMap> _inspectClassMaps;
-
-  private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
-
-  private final Map<String, Interface> _interfaces;
-
-  private final Map<String, IpsecProfile> _ipsecProfiles;
-
-  private final Map<String, IpsecTransformSet> _ipsecTransformSets;
-
-  private final List<IsakmpKey> _isakmpKeys;
-
-  private final Map<Integer, IsakmpPolicy> _isakmpPolicies;
-
-  private final Map<String, IsakmpProfile> _isakmpProfiles;
-
-  private final Map<String, Keyring> _keyrings;
-
-  private final Map<String, MacAccessList> _macAccessLists;
-
-  private final @Nonnull Map<String, NatPool> _natPools;
-
-  private final Map<String, IntegerSpace> _namedVlans;
-
+  private @Nonnull Map<String, InspectClassMap> _inspectClassMaps;
+  private @Nonnull Map<String, InspectPolicyMap> _inspectPolicyMaps;
+  private @Nonnull Map<String, Interface> _interfaces;
+  private @Nonnull Map<String, IpsecProfile> _ipsecProfiles;
+  private @Nonnull Map<String, IpsecTransformSet> _ipsecTransformSets;
+  private @Nonnull List<IsakmpKey> _isakmpKeys;
+  private @Nonnull Map<Integer, IsakmpPolicy> _isakmpPolicies;
+  private @Nonnull Map<String, IsakmpProfile> _isakmpProfiles;
+  private @Nonnull Map<String, Keyring> _keyrings;
+  private @Nonnull Map<String, MacAccessList> _macAccessLists;
+  private @Nonnull Map<String, NatPool> _natPools;
+  private @Nonnull Map<String, IntegerSpace> _namedVlans;
   private String _ntpSourceInterface;
-
-  private final Map<String, AristaBgpPeerFilter> _peerFilters;
-
-  private final Map<String, Prefix6List> _prefix6Lists;
-
-  private final Map<String, PrefixList> _prefixLists;
-
-  private final Map<String, RouteMap> _routeMaps;
-
+  private @Nonnull Map<String, AristaBgpPeerFilter> _peerFilters;
+  private @Nonnull Map<String, Prefix6List> _prefix6Lists;
+  private @Nonnull Map<String, PrefixList> _prefixLists;
+  private @Nonnull Map<String, RouteMap> _routeMaps;
   private SnmpServer _snmpServer;
-
   private String _snmpSourceInterface;
-
   private boolean _spanningTreePortfastDefault;
-
-  private final Map<String, StandardAccessList> _standardAccessLists;
-
-  private final Map<String, StandardCommunityList> _standardCommunityLists;
-
-  private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
-
-  private NavigableSet<String> _tacacsServers;
-
+  private @Nonnull Map<String, StandardAccessList> _standardAccessLists;
+  private @Nonnull Map<String, StandardCommunityList> _standardCommunityLists;
+  private @Nonnull Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
+  private @Nonnull NavigableSet<String> _tacacsServers;
   private String _tacacsSourceInterface;
-
   private ConfigurationFormat _vendor;
-
-  private final Map<String, Vrf> _vrfs;
-
-  private final SortedMap<String, VrrpInterface> _vrrpGroups;
-
-  private final Map<String, TrackMethod> _trackingGroups;
+  private @Nonnull Map<String, Vrf> _vrfs;
+  private @Nonnull SortedMap<String, VrrpInterface> _vrrpGroups;
+  private @Nonnull Map<String, TrackMethod> _trackingGroups;
 
   public AristaConfiguration() {
     _asPathAccessLists = new TreeMap<>();
@@ -535,7 +490,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     _aristaBgp = aristaBgp;
   }
 
-  public Map<String, IpAsPathAccessList> getAsPathAccessLists() {
+  public @Nonnull Map<String, IpAsPathAccessList> getAsPathAccessLists() {
     return _asPathAccessLists;
   }
 
@@ -543,19 +498,19 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _cf;
   }
 
-  public Map<String, CryptoMapSet> getCryptoMapSets() {
+  public @Nonnull Map<String, CryptoMapSet> getCryptoMapSets() {
     return _cryptoMapSets;
   }
 
-  public Map<String, NamedRsaPubKey> getCryptoNamedRsaPubKeys() {
+  public @Nonnull Map<String, NamedRsaPubKey> getCryptoNamedRsaPubKeys() {
     return _cryptoNamedRsaPubKeys;
   }
 
-  public List<Ip> getDhcpRelayServers() {
+  public @Nonnull List<Ip> getDhcpRelayServers() {
     return _dhcpRelayServers;
   }
 
-  public NavigableSet<String> getDnsServers() {
+  public @Nonnull NavigableSet<String> getDnsServers() {
     return _dnsServers;
   }
 
@@ -563,8 +518,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _dnsSourceInterface;
   }
 
-  @Nonnull
-  public Map<String, VlanTrunkGroup> getEosVlanTrunkGroups() {
+  public @Nonnull Map<String, VlanTrunkGroup> getEosVlanTrunkGroups() {
     return _eosVlanTrunkGroups;
   }
 
@@ -572,20 +526,19 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _eosVxlan;
   }
 
-  @Nullable
-  public MlagConfiguration getEosMlagConfiguration() {
+  public @Nullable MlagConfiguration getEosMlagConfiguration() {
     return _eosMlagConfiguration;
   }
 
-  public Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
+  public @Nonnull Map<String, ExpandedCommunityList> getExpandedCommunityLists() {
     return _expandedCommunityLists;
   }
 
-  public Map<String, ExtendedAccessList> getExtendedAcls() {
+  public @Nonnull Map<String, ExtendedAccessList> getExtendedAcls() {
     return _extendedAccessLists;
   }
 
-  public Map<String, ExtendedIpv6AccessList> getExtendedIpv6Acls() {
+  public @Nonnull Map<String, ExtendedIpv6AccessList> getExtendedIpv6Acls() {
     return _extendedIpv6AccessLists;
   }
 
@@ -594,35 +547,35 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  public Map<String, Interface> getInterfaces() {
+  public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
 
-  public Map<String, IpsecProfile> getIpsecProfiles() {
+  public @Nonnull Map<String, IpsecProfile> getIpsecProfiles() {
     return _ipsecProfiles;
   }
 
-  public Map<String, IpsecTransformSet> getIpsecTransformSets() {
+  public @Nonnull Map<String, IpsecTransformSet> getIpsecTransformSets() {
     return _ipsecTransformSets;
   }
 
-  public List<IsakmpKey> getIsakmpKeys() {
+  public @Nonnull List<IsakmpKey> getIsakmpKeys() {
     return _isakmpKeys;
   }
 
-  public Map<Integer, IsakmpPolicy> getIsakmpPolicies() {
+  public @Nonnull Map<Integer, IsakmpPolicy> getIsakmpPolicies() {
     return _isakmpPolicies;
   }
 
-  public Map<String, IsakmpProfile> getIsakmpProfiles() {
+  public @Nonnull Map<String, IsakmpProfile> getIsakmpProfiles() {
     return _isakmpProfiles;
   }
 
-  public Map<String, Keyring> getKeyrings() {
+  public @Nonnull Map<String, Keyring> getKeyrings() {
     return _keyrings;
   }
 
-  public Map<String, MacAccessList> getMacAccessLists() {
+  public @Nonnull Map<String, MacAccessList> getMacAccessLists() {
     return _macAccessLists;
   }
 
@@ -630,7 +583,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _natPools;
   }
 
-  public Map<String, IntegerSpace> getNamedVlans() {
+  public @Nonnull Map<String, IntegerSpace> getNamedVlans() {
     return _namedVlans;
   }
 
@@ -638,19 +591,19 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _ntpSourceInterface;
   }
 
-  public Map<String, AristaBgpPeerFilter> getPeerFilters() {
+  public @Nonnull Map<String, AristaBgpPeerFilter> getPeerFilters() {
     return _peerFilters;
   }
 
-  public Map<String, Prefix6List> getPrefix6Lists() {
+  public @Nonnull Map<String, Prefix6List> getPrefix6Lists() {
     return _prefix6Lists;
   }
 
-  public Map<String, PrefixList> getPrefixLists() {
+  public @Nonnull Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
   }
 
-  public Map<String, RouteMap> getRouteMaps() {
+  public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
 
@@ -666,19 +619,19 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _spanningTreePortfastDefault;
   }
 
-  public Map<String, StandardAccessList> getStandardAcls() {
+  public @Nonnull Map<String, StandardAccessList> getStandardAcls() {
     return _standardAccessLists;
   }
 
-  public Map<String, StandardCommunityList> getStandardCommunityLists() {
+  public @Nonnull Map<String, StandardCommunityList> getStandardCommunityLists() {
     return _standardCommunityLists;
   }
 
-  public Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
+  public @Nonnull Map<String, StandardIpv6AccessList> getStandardIpv6Acls() {
     return _standardIpv6AccessLists;
   }
 
-  public NavigableSet<String> getTacacsServers() {
+  public @Nonnull NavigableSet<String> getTacacsServers() {
     return _tacacsServers;
   }
 
@@ -690,11 +643,11 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _vendor;
   }
 
-  public Map<String, Vrf> getVrfs() {
+  public @Nonnull Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
 
-  public SortedMap<String, VrrpInterface> getVrrpGroups() {
+  public @Nonnull SortedMap<String, VrrpInterface> getVrrpGroups() {
     return _vrrpGroups;
   }
 
@@ -1139,7 +1092,6 @@ public final class AristaConfiguration extends VendorConfiguration {
       newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }
     String vrfName = iface.getVrf();
-    Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(!iface.getShutdown());
     newIface.setChannelGroup(iface.getChannelGroup());
@@ -1175,7 +1127,8 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     boolean level1 = false;
     boolean level2 = false;
-    IsisProcess isisProcess = vrf.getIsisProcess();
+    IsisProcess isisProcess =
+        Optional.ofNullable(_vrfs.get(vrfName)).map(Vrf::getIsisProcess).orElse(null);
     if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
         case LEVEL_1:
@@ -2864,15 +2817,58 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
   }
 
+  @Nonnull
   public Map<String, InspectClassMap> getInspectClassMaps() {
     return _inspectClassMaps;
   }
 
+  @Nonnull
   public Map<String, InspectPolicyMap> getInspectPolicyMaps() {
     return _inspectPolicyMaps;
   }
 
+  @Nonnull
   public Map<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;
+  }
+
+  public void finalizeBuilderObjects() {
+    _asPathAccessLists = ImmutableMap.copyOf(_asPathAccessLists);
+    _cryptoMapSets = ImmutableMap.copyOf(_cryptoMapSets);
+    _cryptoNamedRsaPubKeys = ImmutableMap.copyOf(_cryptoNamedRsaPubKeys);
+    _dhcpRelayServers = ImmutableList.copyOf(_dhcpRelayServers);
+    _dnsServers = ImmutableSortedSet.copyOf(_dnsServers);
+    _eosVlanTrunkGroups = ImmutableMap.copyOf(_eosVlanTrunkGroups);
+    _expandedCommunityLists = ImmutableMap.copyOf(_expandedCommunityLists);
+    _extendedAccessLists = ImmutableMap.copyOf(_extendedAccessLists);
+    _extendedIpv6AccessLists = ImmutableMap.copyOf(_extendedIpv6AccessLists);
+    _inspectClassMaps = ImmutableMap.copyOf(_inspectClassMaps);
+    _inspectPolicyMaps = ImmutableMap.copyOf(_inspectPolicyMaps);
+    _interfaces = ImmutableMap.copyOf(_interfaces);
+    _ipsecProfiles = ImmutableMap.copyOf(_ipsecProfiles);
+    _ipsecTransformSets = ImmutableMap.copyOf(_ipsecTransformSets);
+    _isakmpKeys = ImmutableList.copyOf(_isakmpKeys);
+    _isakmpPolicies = ImmutableMap.copyOf(_isakmpPolicies);
+    _isakmpProfiles = ImmutableMap.copyOf(_isakmpProfiles);
+    _keyrings = ImmutableMap.copyOf(_keyrings);
+    _macAccessLists = ImmutableMap.copyOf(_macAccessLists);
+    _namedVlans = ImmutableMap.copyOf(_namedVlans);
+    _natPools = ImmutableMap.copyOf(_natPools);
+    _peerFilters = ImmutableMap.copyOf(_peerFilters);
+    _prefix6Lists = ImmutableMap.copyOf(_prefix6Lists);
+    _prefixLists = ImmutableMap.copyOf(_prefixLists);
+    _routeMaps = ImmutableMap.copyOf(_routeMaps);
+    _standardAccessLists = ImmutableMap.copyOf(_standardAccessLists);
+    _standardCommunityLists = ImmutableMap.copyOf(_standardCommunityLists);
+    _standardIpv6AccessLists = ImmutableMap.copyOf(_standardIpv6AccessLists);
+    _tacacsServers = ImmutableSortedSet.copyOf(_tacacsServers);
+    _trackingGroups = ImmutableMap.copyOf(_trackingGroups);
+    _vrfs = ImmutableMap.copyOf(_vrfs);
+    _vrrpGroups = ImmutableSortedMap.copyOf(_vrrpGroups);
+    // Now finalize major VS structures
+    _interfaces
+        .values()
+        .forEach(org.batfish.representation.arista.Interface::finalizeBuilderObjects);
+    // todo: more?
   }
 }
