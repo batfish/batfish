@@ -1878,7 +1878,7 @@ vrfd_af_export
       MULTICAST
       | UNICAST
    )?
-   ( pfx_limit = DEC )?
+   ( prefix_limit = DEC )?
    MAP name = variable
    NEWLINE
 ;
