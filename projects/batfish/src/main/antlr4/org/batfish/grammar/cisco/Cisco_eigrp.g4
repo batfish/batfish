@@ -90,7 +90,7 @@ rees_null
       | STATIC
       | SUMMARY
       | REDISTRIBUTED
-   )+
+   )
 ;
 
 rees_leak_map
