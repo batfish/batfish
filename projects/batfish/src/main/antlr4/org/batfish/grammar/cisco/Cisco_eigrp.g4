@@ -15,7 +15,7 @@ re_classic
 re_classic_tail
 :
    re_distribute_list
-   | re_eigrp_null
+   | re_eigrp
    | re_eigrp_router_id
    | rec_address_family
    | rec_metric_weights
@@ -25,7 +25,6 @@ re_classic_tail
    | re_passive_interface_default
    | re_passive_interface
    | re_redistribute
-   | re_eigrp_stub
 ;
 
 re_default_metric
@@ -47,9 +46,17 @@ re_distribute_list
    )
 ;
 
+re_eigrp
+:
+   EIGRP
+   (
+      re_eigrp_null
+      | re_eigrp_stub
+   )
+;
+
 re_eigrp_null
 :
-   NO? EIGRP
    (
       DEFAULT_ROUTE_TAG
       | EVENT_LOG_SIZE
@@ -64,6 +71,31 @@ re_eigrp_router_id
       EIGRP ROUTER_ID id = IP_ADDRESS
       | NO EIGRP ROUTER_ID
    ) NEWLINE
+;
+
+re_eigrp_stub
+:
+   STUB
+   (
+      rees_leak_map
+      | rees_null
+   )* NEWLINE
+;
+
+rees_null
+:
+   (
+      RECEIVE_ONLY
+      | CONNECTED
+      | STATIC
+      | SUMMARY
+      | REDISTRIBUTED
+   )+
+;
+
+rees_leak_map
+:
+  LEAK_MAP map = variable
 ;
 
 re_named
@@ -169,19 +201,6 @@ re_redistribute_static
    (
       METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
-   )* NEWLINE
-;
-
-re_eigrp_stub
-:
-   EIGRP STUB
-   (
-      RECEIVE_ONLY
-      | CONNECTED
-      | STATIC
-      | SUMMARY
-      | REDISTRIBUTED
-      | LEAK_MAP map = variable
    )* NEWLINE
 ;
 
@@ -319,13 +338,12 @@ rec_address_family_tail
 :
    re_autonomous_system
    | re_default_metric
-   | re_eigrp_null
+   | re_eigrp
    | re_eigrp_router_id
    | re_network
    | re_passive_interface_default
    | re_passive_interface
    | re_redistribute
-   | re_eigrp_stub
    | rec_address_family_null
    | rec_metric_weights
 ;
@@ -434,11 +452,11 @@ ren_address_family_null
 ren_address_family_tail
 :
    re_eigrp_null
+   | re_eigrp
    | re_eigrp_router_id
    | re_network
    | re_passive_interface_default
    | re_passive_interface
-   | re_eigrp_stub
    | reaf_interface_default
    | reaf_interface
    | reaf_topology
@@ -480,7 +498,7 @@ ren_service_family_null
 
 ren_service_family_tail
 :
-   re_eigrp_null
+   re_eigrp
    | re_eigrp_router_id
    | ren_metric_weights
    | ren_service_family_null

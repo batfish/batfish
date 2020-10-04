@@ -798,6 +798,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redl_aclContext;
 import org.batfish.grammar.cisco.CiscoParser.Redl_gatewayContext;
 import org.batfish.grammar.cisco.CiscoParser.Redl_prefixContext;
 import org.batfish.grammar.cisco.CiscoParser.Redl_route_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Rees_leak_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ren_address_familyContext;
@@ -6498,8 +6499,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (VariableContext name : ctx.name_list) {
       names.add(name.getText());
       _configuration.referenceStructure(
-          AS_PATH_ACCESS_LIST, name.getText(),
-          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST, name.getStart().getLine());
+          AS_PATH_ACCESS_LIST,
+          name.getText(),
+          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST,
+          name.getStart().getLine());
     }
     RouteMapMatchAsPathAccessListLine line = new RouteMapMatchAsPathAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
@@ -6526,8 +6529,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Variable_access_listContext v : ctx.name_list) {
       names.add(v.getText());
       _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, v.getText(),
-          ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
+          IPV4_ACCESS_LIST, v.getText(), ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
     }
     RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
@@ -6728,7 +6730,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    warn(ctx, "EIGRP stub is not currently supported");
+    warn(ctx.getParent(), "EIGRP stub is not currently supported");
+  }
+
+  @Override
+  public void exitRees_leak_map(Rees_leak_mapContext ctx) {
     if (ctx.map != null) {
       _configuration.referenceStructure(
           ROUTE_MAP, ctx.map.getText(), EIGRP_STUB_LEAK_MAP, ctx.map.getStart().getLine());
@@ -7221,9 +7227,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!_no && ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, name,
-          PIM_RP_ADDRESS_ACL, line);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_ADDRESS_ACL, line);
     }
   }
 
