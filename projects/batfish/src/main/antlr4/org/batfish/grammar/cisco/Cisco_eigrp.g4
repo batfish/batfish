@@ -451,8 +451,7 @@ ren_address_family_null
 
 ren_address_family_tail
 :
-   re_eigrp_null
-   | re_eigrp
+   re_eigrp
    | re_eigrp_router_id
    | re_network
    | re_passive_interface_default
