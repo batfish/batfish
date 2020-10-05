@@ -79262,7 +79262,7 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
               "definitionLines" : "168-170",
-              "numReferrers" : 0
+              "numReferrers" : 3
             },
             "IPSEC_AES_256" : {
               "definitionLines" : "171",
@@ -89372,6 +89372,30 @@
             }
           }
         },
+        "configs/aruba_crypto" : {
+          "crypto ipsec transform-set" : {
+            "\"" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            },
+            "bar" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            },
+            "baz" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            },
+            "foo" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            }
+          }
+        },
         "configs/asa_acl" : {
           "object-group network" : {
             "drawbridge_hosts" : {
@@ -89781,6 +89805,63 @@
         },
         "configs/cisco_crypto" : {
           "crypto ipsec transform-set" : {
+            "ESP-3DES-MD5-trans" : {
+              "crypto dynamic-map transform-set" : [
+                101
+              ]
+            },
+            "ESP-3DES-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                101,
+                105,
+                111
+              ]
+            },
+            "ESP-3DES-SHA-TRANS" : {
+              "crypto dynamic-map transform-set" : [
+                101
+              ]
+            },
+            "ESP-AES-128-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-128-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-192-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-192-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-256-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-256-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-DES-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-DES-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
                 227
