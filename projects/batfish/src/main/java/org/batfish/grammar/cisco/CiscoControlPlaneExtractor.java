@@ -273,6 +273,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REA
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_LIST;
@@ -985,6 +986,7 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfc_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_vniContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_exportContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
@@ -9213,6 +9215,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     popPeer();
+  }
+
+  @Override
+  public void exitVrfd_af_export(Vrfd_af_exportContext ctx) {
+    warn(ctx, "Export maps for VRFs are not currently supported");
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        ctx.name.getText(),
+        VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP,
+        ctx.getStart().getLine());
   }
 
   @Override
