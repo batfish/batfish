@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -47,19 +46,12 @@ import org.junit.Test;
 public class RouteReflectionTest {
 
   private static final Prefix AS1_PREFIX = Prefix.parse("1.0.0.0/8");
-
   private static final Prefix AS3_PREFIX = Prefix.parse("3.0.0.0/8");
-
   private static final int EDGE_PREFIX_LENGTH = 24;
-
   private static final String EDGE1_NAME = "edge1";
-
   private static final String EDGE2_NAME = "edge2";
-
   private static final String RR_NAME = "rr";
-
   private static final String RR1_NAME = "rr1";
-
   private static final String RR2_NAME = "rr2";
 
   private static <T extends AbstractRoute> void assertIbgpRoute(
@@ -84,21 +76,13 @@ public class RouteReflectionTest {
   }
 
   private BgpAdvertisement.Builder _ab;
-
   private Configuration.Builder _cb;
-
   private RoutingPolicy.Builder _defaultExportPolicyBuilder;
-
   private Interface.Builder _ib;
-
   private BgpActivePeerConfig.Builder _nb;
-
   private NetworkFactory _nf;
-
   private RoutingPolicy.Builder _nullExportPolicyBuilder;
-
   private BgpProcess.Builder _pb;
-
   private Vrf.Builder _vb;
 
   /*
@@ -128,7 +112,8 @@ public class RouteReflectionTest {
     StaticRoute.Builder sb = StaticRoute.builder().setAdministrativeCost(1);
     vEdge1.setStaticRoutes(
         ImmutableSortedSet.of(
-            sb.setNextHopIp(rrEdge1IfaceIp).setNetwork(rrLoopbackIp.toPrefix()).build()));
+            sb.setNextHopIp(rrEdge1IfaceIp).setNetwork(rrLoopbackIp.toPrefix()).build(),
+            sb.setNextHopIp(rrEdge1IfaceIp).setNetwork(as3PeeringIp.toPrefix()).build()));
     BgpProcess edge1Proc = _pb.setRouterId(edge1LoopbackIp).setVrf(vEdge1).build();
     RoutingPolicy edge1EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge1).build();
     _nb.setBgpProcess(edge1Proc)
@@ -160,7 +145,9 @@ public class RouteReflectionTest {
     vRr.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(edge1IbgpIfaceIp).setNetwork(edge1LoopbackIp.toPrefix()).build(),
-            sb.setNextHopIp(edge2IbgpIfaceIp).setNetwork(edge2LoopbackIp.toPrefix()).build()));
+            sb.setNextHopIp(edge2IbgpIfaceIp).setNetwork(edge2LoopbackIp.toPrefix()).build(),
+            sb.setNextHopIp(edge1IbgpIfaceIp).setNetwork(as1PeeringIp.toPrefix()).build(),
+            sb.setNextHopIp(edge2IbgpIfaceIp).setNetwork(as3PeeringIp.toPrefix()).build()));
     BgpProcess rrProc = _pb.setRouterId(rrLoopbackIp).setVrf(vRr).build();
     RoutingPolicy rrExportPolicy = _defaultExportPolicyBuilder.setOwner(rr).build();
     Builder ipv4AfBuilder =
@@ -192,7 +179,8 @@ public class RouteReflectionTest {
     _ib.setAddress(ConcreteInterfaceAddress.create(edge2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     vEdge2.setStaticRoutes(
         ImmutableSortedSet.of(
-            sb.setNextHopIp(rrEdge2IfaceIp).setNetwork(rrLoopbackIp.toPrefix()).build()));
+            sb.setNextHopIp(rrEdge2IfaceIp).setNetwork(rrLoopbackIp.toPrefix()).build(),
+            sb.setNextHopIp(rrEdge2IfaceIp).setNetwork(as1PeeringIp.toPrefix()).build()));
     BgpProcess edge2Proc = _pb.setRouterId(edge2LoopbackIp).setVrf(vEdge2).build();
     RoutingPolicy edge2EbgpExportPolicy = _nullExportPolicyBuilder.setOwner(edge2).build();
     _nb.setBgpProcess(edge2Proc)
@@ -217,10 +205,7 @@ public class RouteReflectionTest {
             .put(rr.getHostname(), rr)
             .put(edge2.getHostname(), edge2)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
@@ -300,7 +285,8 @@ public class RouteReflectionTest {
     vRr1.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(edge1IbgpIfaceIp).setNetwork(edge1LoopbackIp.toPrefix()).build(),
-            sb.setNextHopIp(rr2IbgpIfaceIp).setNetwork(rr2LoopbackIp.toPrefix()).build()));
+            sb.setNextHopIp(rr2IbgpIfaceIp).setNetwork(rr2LoopbackIp.toPrefix()).build(),
+            sb.setNextHopIp(rr2IbgpIfaceIp).setNetwork(as1PeeringIp.toPrefix()).build()));
     BgpProcess rr1Proc = _pb.setRouterId(rr1LoopbackIp).setVrf(vRr1).build();
     RoutingPolicy rr1ExportPolicy = _defaultExportPolicyBuilder.setOwner(rr1).build();
     _nb.setBgpProcess(rr1Proc)
@@ -326,7 +312,8 @@ public class RouteReflectionTest {
     _ib.setAddress(ConcreteInterfaceAddress.create(rr2IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
     vRr2.setStaticRoutes(
         ImmutableSortedSet.of(
-            sb.setNextHopIp(rr1Rr2IfaceIp).setNetwork(rr1LoopbackIp.toPrefix()).build()));
+            sb.setNextHopIp(rr1Rr2IfaceIp).setNetwork(rr1LoopbackIp.toPrefix()).build(),
+            sb.setNextHopIp(rr1Rr2IfaceIp).setNetwork(as1PeeringIp.toPrefix()).build()));
     BgpProcess rr2Proc = _pb.setRouterId(rr2LoopbackIp).setVrf(vRr2).build();
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(rr2).build();
 
@@ -348,10 +335,7 @@ public class RouteReflectionTest {
             .put(rr1.getHostname(), rr1)
             .put(rr2.getHostname(), rr2)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)

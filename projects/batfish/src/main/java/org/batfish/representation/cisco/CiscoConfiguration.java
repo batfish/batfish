@@ -3528,94 +3528,25 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
     // mark references to route-maps
-    markConcreteStructure(
-        CiscoStructureType.ROUTE_MAP,
-        CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP,
-        CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-        CiscoStructureUsage.BGP_AGGREGATE_MATCH_MAP,
-        CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
-        CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP,
-        CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
-        CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP,
-        CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
-        CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
-        CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_ATTACHED_HOST_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_DYNAMIC_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP,
-        CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
-        CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
-        CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
-        CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP,
-        CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
-        CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
-        CiscoStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
-        CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
-        CiscoStructureUsage.OSPF_PREFIX_PRIORITY_MAP,
-        CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
-        CiscoStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
+    markConcreteStructure(CiscoStructureType.ROUTE_MAP);
 
     // Cable
-    markConcreteStructure(
-        CiscoStructureType.DEPI_CLASS, CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
-    markConcreteStructure(
-        CiscoStructureType.DEPI_TUNNEL,
-        CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL,
-        CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
-    markConcreteStructure(
-        CiscoStructureType.DOCSIS_POLICY, CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
-    markConcreteStructure(
-        CiscoStructureType.DOCSIS_POLICY_RULE,
-        CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
+    markConcreteStructure(CiscoStructureType.DEPI_CLASS);
+    markConcreteStructure(CiscoStructureType.DEPI_TUNNEL);
+    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY);
+    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY_RULE);
     markConcreteStructure(
         CiscoStructureType.SERVICE_CLASS, CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
     // L2tp
-    markConcreteStructure(
-        CiscoStructureType.L2TP_CLASS, CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
+    markConcreteStructure(CiscoStructureType.L2TP_CLASS);
 
     // Crypto, Isakmp, and IPSec
-    markConcreteStructure(
-        CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET);
-    markConcreteStructure(
-        CiscoStructureType.ISAKMP_PROFILE,
-        CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE,
-        CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
-    markConcreteStructure(
-        CiscoStructureType.ISAKMP_POLICY, CiscoStructureUsage.ISAKMP_POLICY_SELF_REF);
-    markConcreteStructure(
-        CiscoStructureType.IPSEC_PROFILE, CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
-    markConcreteStructure(
-        CiscoStructureType.IPSEC_TRANSFORM_SET,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
-        CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
+    markConcreteStructure(CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET);
+    markConcreteStructure(CiscoStructureType.ISAKMP_PROFILE);
+    markConcreteStructure(CiscoStructureType.ISAKMP_POLICY);
+    markConcreteStructure(CiscoStructureType.IPSEC_PROFILE);
+    markConcreteStructure(CiscoStructureType.IPSEC_TRANSFORM_SET);
     markConcreteStructure(CiscoStructureType.KEYRING, CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
     markConcreteStructure(
         CiscoStructureType.NAMED_RSA_PUB_KEY, CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);

@@ -21091,25 +21091,28 @@
             "              mtu = DEC:'5')",
             "            NEWLINE:'\\n'))",
             "        (re_classic_tail",
-            "          (re_eigrp_null",
+            "          (re_eigrp",
             "            EIGRP:'eigrp'",
-            "            EVENT_LOG_SIZE:'event-log-size'",
-            "            (null_rest_of_line",
-            "              DEC:'5000010'",
-            "              NEWLINE:'\\n')))",
+            "            (re_eigrp_null",
+            "              EVENT_LOG_SIZE:'event-log-size'",
+            "              (null_rest_of_line",
+            "                DEC:'5000010'",
+            "                NEWLINE:'\\n'))))",
             "        (re_classic_tail",
-            "          (re_eigrp_null",
+            "          (re_eigrp",
             "            EIGRP:'eigrp'",
-            "            LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'",
-            "            (null_rest_of_line",
-            "              NEWLINE:'\\n')))",
+            "            (re_eigrp_null",
+            "              LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'",
+            "              (null_rest_of_line",
+            "                NEWLINE:'\\n'))))",
             "        (re_classic_tail",
-            "          (re_eigrp_null",
+            "          (re_eigrp",
             "            EIGRP:'eigrp'",
-            "            LOG_NEIGHBOR_WARNINGS:'log-neighbor-warnings'",
-            "            (null_rest_of_line",
-            "              DEC:'300'",
-            "              NEWLINE:'\\n')))",
+            "            (re_eigrp_null",
+            "              LOG_NEIGHBOR_WARNINGS:'log-neighbor-warnings'",
+            "              (null_rest_of_line",
+            "                DEC:'300'",
+            "                NEWLINE:'\\n'))))",
             "        (re_classic_tail",
             "          (re_eigrp_router_id",
             "            EIGRP:'eigrp'",
@@ -22002,12 +22005,13 @@
             "                EXIT_AF_INTERFACE:'exit-af-interface'",
             "                NEWLINE:'\\n'))",
             "            (ren_address_family_tail",
-            "              (re_eigrp_null",
+            "              (re_eigrp",
             "                EIGRP:'eigrp'",
-            "                DEFAULT_ROUTE_TAG:'default-route-tag'",
-            "                (null_rest_of_line",
-            "                  DEC:'2'",
-            "                  NEWLINE:'\\n')))",
+            "                (re_eigrp_null",
+            "                  DEFAULT_ROUTE_TAG:'default-route-tag'",
+            "                  (null_rest_of_line",
+            "                    DEC:'2'",
+            "                    NEWLINE:'\\n'))))",
             "            (ren_address_family_tail",
             "              (ren_address_family_null",
             "                METRIC:'metric'",
@@ -22138,11 +22142,12 @@
             "            asnum = DEC:'3'",
             "            NEWLINE:'\\n'",
             "            (ren_service_family_tail",
-            "              (re_eigrp_null",
+            "              (re_eigrp",
             "                EIGRP:'eigrp'",
-            "                LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'",
-            "                (null_rest_of_line",
-            "                  NEWLINE:'\\n')))",
+            "                (re_eigrp_null",
+            "                  LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'",
+            "                  (null_rest_of_line",
+            "                    NEWLINE:'\\n'))))",
             "            (ren_service_family_tail",
             "              (ren_metric_weights",
             "                METRIC:'metric'",
@@ -79257,7 +79262,7 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
               "definitionLines" : "168-170",
-              "numReferrers" : 0
+              "numReferrers" : 3
             },
             "IPSEC_AES_256" : {
               "definitionLines" : "171",
@@ -89413,6 +89418,30 @@
             }
           }
         },
+        "configs/aruba_crypto" : {
+          "crypto ipsec transform-set" : {
+            "\"" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            },
+            "bar" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            },
+            "baz" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            },
+            "foo" : {
+              "crypto dynamic-map transform-set" : [
+                5
+              ]
+            }
+          }
+        },
         "configs/asa_acl" : {
           "object-group network" : {
             "drawbridge_hosts" : {
@@ -89822,6 +89851,63 @@
         },
         "configs/cisco_crypto" : {
           "crypto ipsec transform-set" : {
+            "ESP-3DES-MD5-trans" : {
+              "crypto dynamic-map transform-set" : [
+                101
+              ]
+            },
+            "ESP-3DES-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                101,
+                105,
+                111
+              ]
+            },
+            "ESP-3DES-SHA-TRANS" : {
+              "crypto dynamic-map transform-set" : [
+                101
+              ]
+            },
+            "ESP-AES-128-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-128-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-192-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-192-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-256-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-AES-256-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-DES-MD5" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
+            "ESP-DES-SHA" : {
+              "crypto dynamic-map transform-set" : [
+                105
+              ]
+            },
             "bleep" : {
               "crypto map ipsec-isakmp transform-set" : [
                 227

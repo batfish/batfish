@@ -143,6 +143,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_STUB_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
@@ -272,6 +273,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REA
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_LIST;
@@ -769,6 +771,7 @@ import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_router_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
@@ -796,6 +799,7 @@ import org.batfish.grammar.cisco.CiscoParser.Redl_aclContext;
 import org.batfish.grammar.cisco.CiscoParser.Redl_gatewayContext;
 import org.batfish.grammar.cisco.CiscoParser.Redl_prefixContext;
 import org.batfish.grammar.cisco.CiscoParser.Redl_route_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Rees_leak_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ren_address_familyContext;
@@ -982,6 +986,7 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfc_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_vniContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_exportContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
@@ -6496,8 +6501,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (VariableContext name : ctx.name_list) {
       names.add(name.getText());
       _configuration.referenceStructure(
-          AS_PATH_ACCESS_LIST, name.getText(),
-          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST, name.getStart().getLine());
+          AS_PATH_ACCESS_LIST,
+          name.getText(),
+          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST,
+          name.getStart().getLine());
     }
     RouteMapMatchAsPathAccessListLine line = new RouteMapMatchAsPathAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
@@ -6524,8 +6531,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Variable_access_listContext v : ctx.name_list) {
       names.add(v.getText());
       _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, v.getText(),
-          ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
+          IPV4_ACCESS_LIST, v.getText(), ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
     }
     RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
@@ -6716,6 +6722,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentEigrpProcess.setRouterId(routerId);
     } else {
       _currentEigrpProcess.setRouterId(null);
+    }
+  }
+
+  @Override
+  public void exitRe_eigrp_stub(Re_eigrp_stubContext ctx) {
+    // In process context
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    warn(ctx.getParent(), "EIGRP stub is not currently supported");
+  }
+
+  @Override
+  public void exitRees_leak_map(Rees_leak_mapContext ctx) {
+    if (ctx.map != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, ctx.map.getText(), EIGRP_STUB_LEAK_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -7205,9 +7229,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!_no && ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, name,
-          PIM_RP_ADDRESS_ACL, line);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_ADDRESS_ACL, line);
     }
   }
 
@@ -9193,6 +9215,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     popPeer();
+  }
+
+  @Override
+  public void exitVrfd_af_export(Vrfd_af_exportContext ctx) {
+    warn(ctx, "Export maps for VRFs are not currently supported");
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        ctx.name.getText(),
+        VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP,
+        ctx.getStart().getLine());
   }
 
   @Override

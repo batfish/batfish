@@ -2875,6 +2875,23 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpStub() throws IOException {
+    String hostname = "ios-eigrp-stub";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP", 3));
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae, hasParseWarning(filename, containsString("EIGRP stub is not currently supported")));
+  }
+
+  @Test
   public void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
@@ -3414,6 +3431,25 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
     assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
     assertThat(ccae, hasUndefinedReference(filename, TRACK, "3"));
+  }
+
+  @Test
+  public void testIosVrfdAddressFamilyExportMap() throws IOException {
+    String hostname = "ios-vrfd-address-family-export-map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP", 2));
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Export maps for VRFs are not currently supported")));
   }
 
   @Test
