@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -217,10 +216,7 @@ public class RouteReflectionTest {
             .put(rr.getHostname(), rr)
             .put(edge2.getHostname(), edge2)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
@@ -348,10 +344,7 @@ public class RouteReflectionTest {
             .put(rr1.getHostname(), rr1)
             .put(rr2.getHostname(), rr2)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
         (IncrementalDataPlane)

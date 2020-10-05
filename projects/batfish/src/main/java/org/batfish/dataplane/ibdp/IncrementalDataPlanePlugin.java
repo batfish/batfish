@@ -50,8 +50,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   protected void dataPlanePluginInitialize() {
     _engine =
         new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(_batfish.getSettingsConfiguration()),
-            _batfish.getLogger());
+            new IncrementalDataPlaneSettings(_batfish.getSettingsConfiguration()));
   }
 
   @Override

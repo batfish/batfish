@@ -32,7 +32,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
@@ -365,8 +364,7 @@ public class IncrementalDataPlanePluginTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             // TODO: parametrize settings with different schedules
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+            new IncrementalDataPlaneSettings());
     Topology topology = new Topology(Collections.emptySortedSet());
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(
@@ -399,10 +397,7 @@ public class IncrementalDataPlanePluginTest {
             .build();
     vrf.getStaticRoutes().add(sr);
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(configs, TopologyContext.builder().build(), Collections.emptySet());
 
