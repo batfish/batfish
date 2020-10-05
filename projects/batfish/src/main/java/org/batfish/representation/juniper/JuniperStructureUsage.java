@@ -46,6 +46,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   OSPF_EXPORT_POLICY("ospf export policy-statement"),
   POLICY_STATEMENT_FROM_AS_PATH("policy-statement from as-path"),
   POLICY_STATEMENT_FROM_AS_PATH_GROUP("policy-statement from as-path-group"),
+  POLICY_STATEMENT_FROM_COMMUNITY("policy-statement from community"),
   POLICY_STATEMENT_FROM_INSTANCE("policy-statement from instance"),
   POLICY_STATEMENT_FROM_INTERFACE("policy-statement from interface"),
   POLICY_STATEMENT_POLICY("policy-statement policy"),

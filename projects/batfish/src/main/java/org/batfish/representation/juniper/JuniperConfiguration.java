@@ -3435,6 +3435,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.BGP_ALLOW,
         JuniperStructureUsage.BGP_NEIGHBOR);
     markConcreteStructure(
+        JuniperStructureType.COMMUNITY, JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY);
+    markConcreteStructure(
         JuniperStructureType.FIREWALL_FILTER,
         JuniperStructureUsage.INTERFACE_FILTER,
         JuniperStructureUsage.INTERFACE_INCOMING_FILTER,

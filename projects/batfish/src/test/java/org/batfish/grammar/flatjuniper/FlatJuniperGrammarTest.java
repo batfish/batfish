@@ -140,6 +140,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
@@ -148,6 +149,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATI
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -3745,6 +3747,34 @@ public final class FlatJuniperGrammarTest {
         ccae,
         hasUndefinedReferenceWithReferenceLines(
             filename, INTERFACE, "et-0/0/0.0", OSPF_AREA_INTERFACE, containsInAnyOrder(6, 17)));
+  }
+
+  /** Test definition and reference tracking for named communities. */
+  @Test
+  public void testJuniperCommunityReference() throws IOException {
+    String hostname = "juniper-community-reference";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // definitions
+    assertThat(
+        ccae, hasDefinedStructureWithDefinitionLines(filename, COMMUNITY, "COMM1", contains(4)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, COMMUNITY, "COMM2", containsInAnyOrder(5, 6)));
+
+    // defined references
+    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "COMM1", 1));
+    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "COMM2", 0));
+
+    // undefined references
+    assertThat(
+        ccae,
+        hasUndefinedReferenceWithReferenceLines(
+            filename, COMMUNITY, "COMM3", POLICY_STATEMENT_FROM_COMMUNITY, contains(9)));
   }
 
   @Test
