@@ -10507,6 +10507,11 @@ RECEIVE
    'receive'
 ;
 
+RECEIVE_ONLY
+:
+   'receive-only'
+;
+
 RECEIVE_WINDOW
 :
    'receive-window'
@@ -10575,6 +10580,11 @@ REDISTRIBUTE
 REDISTRIBUTE_INTERNAL
 :
    'redistribute-internal'
+;
+
+REDISTRIBUTED
+:
+   'redistributed'
 ;
 
 REDISTRIBUTED_PREFIXES
@@ -12587,6 +12597,11 @@ SUBSCRIBER
 SUCCESS
 :
    'success'
+;
+
+SUMMARY
+:
+   'summary'
 ;
 
 SUMMARY_ADDRESS
