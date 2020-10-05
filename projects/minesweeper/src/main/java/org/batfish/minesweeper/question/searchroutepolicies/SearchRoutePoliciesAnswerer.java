@@ -39,7 +39,6 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
@@ -305,15 +304,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  private Map<String, List<RoutingPolicyId>> resolvePolicies(SpecifierContext context) {
-    return _nodeSpecifier.resolve(context).stream()
-        .flatMap(
-            node ->
-                _policySpecifier.resolve(node, context).stream()
-                    .map(policy -> new RoutingPolicyId(node, policy.getName())))
-        .collect(Collectors.groupingBy(RoutingPolicyId::getNode));
-  }
-
   private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
     BDDFactory factory = r.getPrefix().getFactory();
     if (space.isEmpty()) {
@@ -461,7 +451,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return constraintsToResult(intersection, outputRoute, policy, g);
   }
 
-  private Stream<Result> searchPoliciesForNode(String node, Stream<RoutingPolicy> policies) {
+  private Stream<Result> searchPoliciesForNode(String node, Set<RoutingPolicy> policies) {
     Graph g =
         new Graph(
             _batfish,
@@ -473,7 +463,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes);
 
-    return policies
+    return policies.stream()
         .map(policy -> searchPolicy(policy, g))
         .filter(Optional::isPresent)
         .map(Optional::get);
@@ -482,28 +472,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
-    Map<String, List<RoutingPolicyId>> policiesPerNode = resolvePolicies(context);
     Multiset<Row> rows =
-        policiesPerNode.entrySet().stream()
-            .flatMap(
-                entry ->
-                    searchPoliciesForNode(
-                        entry.getKey(),
-                        getPoliciesForNode(entry.getKey(), context, entry.getValue())))
+        _nodeSpecifier.resolve(context).stream()
+            .flatMap(node -> searchPoliciesForNode(node, _policySpecifier.resolve(node, context)))
             .map(SearchRoutePoliciesAnswerer::toRow)
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
     answerElement.postProcessAnswer(_question, rows);
     return answerElement;
-  }
-
-  @Nonnull
-  private Stream<RoutingPolicy> getPoliciesForNode(
-      String node, SpecifierContext context, List<RoutingPolicyId> policyIds) {
-    Map<String, Configuration> configs = context.getConfigs();
-    Map<String, RoutingPolicy> policies = configs.get(node).getRoutingPolicies();
-    return policyIds.stream().map(policyId -> policies.get(policyId.getPolicy()));
   }
 
   @Nullable
