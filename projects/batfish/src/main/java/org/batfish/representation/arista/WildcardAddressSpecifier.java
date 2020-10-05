@@ -1,19 +1,18 @@
 package org.batfish.representation.arista;
 
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 
 public class WildcardAddressSpecifier implements AccessListAddressSpecifier {
 
-  private final IpWildcard _ipWildcard;
+  private final @Nonnull IpWildcard _ipWildcard;
 
-  public IpWildcard getIpWildcard() {
+  public @Nonnull IpWildcard getIpWildcard() {
     return _ipWildcard;
   }
 
-  public WildcardAddressSpecifier(IpWildcard ipWildcard) {
+  public WildcardAddressSpecifier(@Nonnull IpWildcard ipWildcard) {
     _ipWildcard = ipWildcard;
   }
 
@@ -21,22 +20,20 @@ public class WildcardAddressSpecifier implements AccessListAddressSpecifier {
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof WildcardAddressSpecifier)) {
+    } else if (!(o instanceof WildcardAddressSpecifier)) {
       return false;
     }
     WildcardAddressSpecifier that = (WildcardAddressSpecifier) o;
-    return Objects.equals(_ipWildcard, that._ipWildcard);
+    return _ipWildcard.equals(that._ipWildcard);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_ipWildcard);
+    return _ipWildcard.hashCode();
   }
 
   @Override
-  @Nonnull
-  public IpSpace toIpSpace() {
+  public @Nonnull IpSpace toIpSpace() {
     return _ipWildcard.toIpSpace();
   }
 }

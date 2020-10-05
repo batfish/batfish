@@ -2,4 +2,66 @@
 !
 hostname arista_snmp
 !
+ip access-list standard SNMP_STD_ACCESS_LIST
+   no statistics per-entry
+   fragment-rules
+   10 deny 1.2.3.0/24
+   20 permit 1.0.0.0/8
+!
+ip access-list SNMP_EXT_ACCESS_LIST
+  10 deny udp 1.2.3.0/24 any eq snmp
+  20 permit tcp any any eq 443
+  30 permit udp 1.0.0.0/8 any eq snmp
+!
+no snmp-server engineID local
+no snmp-server chassis-id
+snmp-server contact me@company.com
+snmp-server location some-location
+snmp-server vrf default source-interface Loopback0
+snmp-server community STD_COMMUNITY ro SNMP_STD_ACCESS_LIST
+snmp-server community EXT_COMMUNITY ro SNMP_EXT_ACCESS_LIST
 snmp-server host 10.1.2.3 vrf default traps version 2c FOO udp-port 162
+!
+default snmp-server enable traps
+default snmp-server enable traps bgp
+default snmp-server enable traps bgp arista-backward-transition
+default snmp-server enable traps bgp arista-established
+default snmp-server enable traps bgp backward-transition
+default snmp-server enable traps bgp established
+default snmp-server enable traps capacity
+default snmp-server enable traps capacity arista-hardware-utilization-alert
+default snmp-server enable traps entity
+default snmp-server enable traps entity arista-ent-sensor-alarm
+default snmp-server enable traps entity ent-config-change
+default snmp-server enable traps entity ent-state-oper-disabled
+default snmp-server enable traps entity ent-state-oper-enabled
+default snmp-server enable traps lldp
+default snmp-server enable traps lldp rem-tables-change
+default snmp-server enable traps mpls-ldp
+default snmp-server enable traps mpls-ldp mpls-ldp-session-down
+default snmp-server enable traps mpls-ldp mpls-ldp-session-up
+default snmp-server enable traps msdp
+default snmp-server enable traps msdp backward-transition
+default snmp-server enable traps msdp established
+default snmp-server enable traps ospf
+default snmp-server enable traps ospf if-auth-failure
+default snmp-server enable traps ospf if-config-error
+default snmp-server enable traps ospf if-state-change
+default snmp-server enable traps ospf nbr-state-change
+default snmp-server enable traps pim
+default snmp-server enable traps pim neighbor-loss
+default snmp-server enable traps snmp
+default snmp-server enable traps snmp authentication
+default snmp-server enable traps snmp link-down
+default snmp-server enable traps snmp link-up
+default snmp-server enable traps snmpConfigManEvent
+default snmp-server enable traps snmpConfigManEvent arista-config-man-event
+default snmp-server enable traps switchover
+default snmp-server enable traps switchover arista-redundancy-switch-over-notif
+default snmp-server enable traps test
+default snmp-server enable traps test arista-test-notification
+default snmp-server enable traps vrrp
+default snmp-server enable traps vrrp trap-new-master
+snmp-server vrf default
+snmp-server qos dscp 0
+!

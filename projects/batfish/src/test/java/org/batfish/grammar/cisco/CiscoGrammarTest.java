@@ -61,6 +61,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPostTransformationIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPreTransformationOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
@@ -341,6 +342,7 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.community.Community;
@@ -2785,6 +2787,54 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosEigrpDistributeListRefsAndWarnings() throws IOException {
+    String hostname = "ios-eigrp-distribute-list-refs-and-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 2));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "2", 2));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 3));
+
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_IN", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_OUT", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_IN", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_OUT", 2));
+
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_IN", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_OUT", 1));
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Inbound distribute-list is not supported for EIGRP")));
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Global distribute-list not supported for EIGRP")));
+
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename,
+            containsString("Prefix lists in distribute-list are not supported for EIGRP")));
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Gateways in distribute-list are not supported for EIGRP")));
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Route maps in distribute-list are not supported for EIGRP")));
+  }
+
+  @Test
   public void testIosEigrpNeighborConfigs() throws IOException {
     Configuration c = parseConfig("ios-eigrp-classic");
 
@@ -2822,6 +2872,23 @@ public final class CiscoGrammarTest {
                         .setVrfName("default")
                         .setIp(Ip.parse("10.0.2.1"))
                         .build())));
+  }
+
+  @Test
+  public void testIosEigrpStub() throws IOException {
+    String hostname = "ios-eigrp-stub";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP", 3));
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae, hasParseWarning(filename, containsString("EIGRP stub is not currently supported")));
   }
 
   @Test
@@ -3364,6 +3431,25 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
     assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
     assertThat(ccae, hasUndefinedReference(filename, TRACK, "3"));
+  }
+
+  @Test
+  public void testIosVrfdAddressFamilyExportMap() throws IOException {
+    String hostname = "ios-vrfd-address-family-export-map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP", 2));
+
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            filename, containsString("Export maps for VRFs are not currently supported")));
   }
 
   @Test
@@ -4226,6 +4312,15 @@ public final class CiscoGrammarTest {
     assertThat(ifaces.get(iface3Name).getOspfProcess(), equalTo("2"));
     // Should not infer an OSPF process for the interface not overlapping with an OSPF network
     assertThat(ifaces.get(iface4Name).getOspfProcess(), nullValue());
+  }
+
+  @Test
+  public void testIosOspfPrefixPriority() throws IOException {
+    String hostname = "ios-ospf-prefix-priority";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers("configs/" + hostname, ROUTE_MAP, "OSPF-MAP", 1));
   }
 
   @Test

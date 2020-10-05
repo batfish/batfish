@@ -96,10 +96,8 @@ public class BgpRoutingProcessTest {
   public void testInitRibsEmpty() {
     // iBGP
     assertThat(_routingProcess._ibgpv4Rib.getRoutes(), empty());
-    assertThat(_routingProcess._ibgpv4StagingRib.getRoutes(), empty());
     // eBGP
     assertThat(_routingProcess._ebgpv4Rib.getRoutes(), empty());
-    assertThat(_routingProcess._ebgpv4StagingRib.getRoutes(), empty());
     // Combined bgp
     assertThat(_routingProcess._bgpv4Rib.getRoutes(), empty());
   }

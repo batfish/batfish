@@ -16,6 +16,7 @@ import com.google.common.collect.Sets;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +37,10 @@ import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 
 /** Implementation of {@link ForwardingAnalysis}. */
-public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
+public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Serializable {
 
   /** node -&gt; vrf -&gt; interface -&gt; ips accepted by that interface */
-  private Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
+  private final Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
 
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
@@ -828,9 +829,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                 route ->
                                     nextHopInterfaces
                                         .get(route)
-                                        .get(iface)
-                                        .keySet() // final next hop ips
-                                        .contains(Route.UNSET_ROUTE_NEXT_HOP_IP))
+                                        .get(iface) // final next hop ips
+                                        .containsKey(Route.UNSET_ROUTE_NEXT_HOP_IP))
                             .collect(ImmutableSet.toImmutableSet());
                       });
                 });

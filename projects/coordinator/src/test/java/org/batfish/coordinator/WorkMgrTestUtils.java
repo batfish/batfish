@@ -1,7 +1,6 @@
 package org.batfish.coordinator;
 
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
-import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -187,11 +186,10 @@ public final class WorkMgrTestUtils {
               ? null
               : idManager.getSnapshotId(referenceSnapshot, networkId).get();
       AnswerId answerId =
-          idManager.getBaseAnswerId(
+          idManager.getAnswerId(
               networkId,
               snapshotId,
               questionId,
-              DEFAULT_QUESTION_SETTINGS_ID,
               DEFAULT_NETWORK_NODE_ROLES_ID,
               referenceSnapshotId,
               analysisId);

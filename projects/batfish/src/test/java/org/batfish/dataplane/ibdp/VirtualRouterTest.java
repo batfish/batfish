@@ -576,7 +576,7 @@ public class VirtualRouterTest {
     vrs.values()
         .forEach(
             vr ->
-                vr.initForEgpComputation(
+                vr.initForEgpComputationWithNewTopology(
                     TopologyContext.builder()
                         .setBgpTopology(bgpTopology)
                         .setEigrpTopology(eigrpTopology)
@@ -588,7 +588,7 @@ public class VirtualRouterTest {
     vrs.values()
         .forEach(
             vr -> {
-              assertThat(vr._bgpRoutingProcess._bgpv4IncomingRoutes, anEmptyMap());
+              assertThat(vr._bgpRoutingProcess._bgpv4Edges, empty());
               vr._eigrpProcesses
                   .values()
                   .forEach(process -> assertThat(process._incomingExternalRoutes, anEmptyMap()));
@@ -601,7 +601,7 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(DEFAULT_VRF_NAME)
-          .initForEgpComputation(
+          .initForEgpComputationWithNewTopology(
               TopologyContext.builder()
                   .setBgpTopology(bgpTopology2)
                   .setEigrpTopology(eigrpTopology)
@@ -612,8 +612,8 @@ public class VirtualRouterTest {
     vrs.values()
         .forEach(
             vr -> {
-              assertThat(vr._bgpRoutingProcess._bgpv4IncomingRoutes, is(notNullValue()));
-              assertThat(vr._bgpRoutingProcess._bgpv4IncomingRoutes.values(), hasSize(1));
+              assertThat(vr._bgpRoutingProcess._bgpv4Edges, is(notNullValue()));
+              assertThat(vr._bgpRoutingProcess._bgpv4Edges, hasSize(1));
             });
   }
 
@@ -768,6 +768,7 @@ public class VirtualRouterTest {
     for (AnnotatedRoute<AbstractRoute> r : annotatedRoutes) {
       vrWithRoutes._mainRibRouteDeltaBuilder.from(vrWithRoutes.getMainRib().mergeRouteGetDelta(r));
     }
+    vrWithRoutes.endOfEgpRound();
 
     // Run initial leaking (i.e. what would happen at beginning of
     // computeNonMonotonicPortionOfDataPlane()); all routes should leak from vrWithRoutes' main RIB

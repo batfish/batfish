@@ -226,10 +226,10 @@ public class ForwardingAnalysisImplTest {
             vrf2.getName(),
             ImmutableMap.of(i2.getName(), ipsRoutedOutI2, i3.getName(), ipsRoutedOutI3));
 
-    i1.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.1")));
-    i2.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.2")));
-    i3.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.3")));
-    i4.setAdditionalArpIps(new IpIpSpace(Ip.parse("10.10.10.4")));
+    i1.setAdditionalArpIps(IpIpSpace.create(Ip.parse("10.10.10.1")));
+    i2.setAdditionalArpIps(IpIpSpace.create(Ip.parse("10.10.10.2")));
+    i3.setAdditionalArpIps(IpIpSpace.create(Ip.parse("10.10.10.3")));
+    i4.setAdditionalArpIps(IpIpSpace.create(Ip.parse("10.10.10.4")));
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
@@ -967,7 +967,7 @@ public class ForwardingAnalysisImplTest {
     String v2 = "v2";
     String i1 = "i1";
     ConnectedRoute r1 = new ConnectedRoute(P1, i1);
-    final MockFib mockFib =
+    MockFib mockFib =
         MockFib.builder()
             .setFibEntries(
                 ImmutableMap.of(

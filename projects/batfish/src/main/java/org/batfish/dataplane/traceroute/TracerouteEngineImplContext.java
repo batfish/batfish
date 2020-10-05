@@ -45,7 +45,6 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
  */
 public class TracerouteEngineImplContext {
   private final Map<String, Configuration> _configurations;
-  private final DataPlane _dataPlane;
   private final Multimap<NodeInterfacePair, FirewallSessionTraceInfo> _sessionsByIngressInterface;
   private final Map<String, Multimap<String, FirewallSessionTraceInfo>> _sessionsByOriginatingVrf;
   private final Map<String, Map<String, Fib>> _fibs;
@@ -60,13 +59,13 @@ public class TracerouteEngineImplContext {
       Set<FirewallSessionTraceInfo> sessions,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreFilters) {
-    _configurations = dataPlane.getConfigurations();
-    _dataPlane = dataPlane;
+      boolean ignoreFilters,
+      Map<String, Configuration> configurations) {
+    _configurations = configurations;
     _flows = flows;
     _fibs = fibs;
     _ignoreFilters = ignoreFilters;
-    _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
+    _forwardingAnalysis = dataPlane.getForwardingAnalysis();
     _sessionsByIngressInterface = buildSessionsByIngressInterface(sessions);
     _sessionsByOriginatingVrf = buildSessionsByOriginatingVrf(sessions);
     _topology = topology;

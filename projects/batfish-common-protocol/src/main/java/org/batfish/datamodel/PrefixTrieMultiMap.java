@@ -142,8 +142,8 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
         return false;
       }
       Node<?> that = (Node<?>) o;
-      return Objects.equals(_prefix, that._prefix)
-          && Objects.equals(_elements, that._elements)
+      return _prefix.equals(that._prefix)
+          && _elements.equals(that._elements)
           && Objects.equals(_left, that._left)
           && Objects.equals(_right, that._right);
     }

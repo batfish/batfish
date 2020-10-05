@@ -20,8 +20,6 @@ import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 /**
  * Collect the set of community variables that should be set to true during the symbolic route
  * analysis of a {@link org.batfish.datamodel.routing_policy.communities.SetCommunities} statement.
- * To handle arbitrary CommunitySetExprs we will likely need to generalize this to keep track of
- * CommunityVars that should be set as well as those that should not be set.
  */
 @ParametersAreNonnullByDefault
 public class SetCommunitiesVarCollector

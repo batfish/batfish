@@ -162,7 +162,8 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type, _structureName));
         return false;
       }
-      if (!_subMatcher.matches(byStructureName.get(_structureName).getDefinitionLines())) {
+      if (!_subMatcher.matches(
+          byStructureName.get(_structureName).getDefinitionLines().enumerate())) {
         mismatchDescription.appendText(
             String.format(
                 "File '%s' has no defined structure of type '%s' named '%s' matching definition lines '%s'",

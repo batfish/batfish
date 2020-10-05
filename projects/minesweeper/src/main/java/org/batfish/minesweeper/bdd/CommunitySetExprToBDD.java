@@ -18,6 +18,11 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 
+/**
+ * Create a BDD from a {@link CommunitySetExpr}, such that the models of the BDD represent all and
+ * only elements of the CommunitySetExpr. This BDD is used as part of symbolic route analysis of the
+ * {@link org.batfish.datamodel.routing_policy.communities.MatchCommunities} expression.
+ */
 @ParametersAreNonnullByDefault
 public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> {
   @Override

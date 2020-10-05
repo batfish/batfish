@@ -88,8 +88,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
-  @Nonnull private final String _nodes;
-  @Nonnull private final String _policies;
+  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
   @Nonnull private final Action _action;
 
   @Nonnull private final Set<String> _communityRegexes;
@@ -99,8 +99,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     super(question, batfish);
     _inputConstraints = question.getInputConstraints();
     _outputConstraints = question.getOutputConstraints();
-    _nodes = question.getNodes();
-    _policies = question.getPolicies();
+    _nodeSpecifier =
+        SpecifierFactories.getNodeSpecifierOrDefault(
+            question.getNodes(), AllNodesNodeSpecifier.INSTANCE);
+    _policySpecifier =
+        SpecifierFactories.getRoutingPolicySpecifierOrDefault(
+            question.getPolicies(), ALL_ROUTING_POLICIES);
     _action = question.getAction();
 
     // in the future, it may improve performance to combine all input community regexes
@@ -302,16 +306,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   private Map<String, List<RoutingPolicyId>> resolvePolicies(SpecifierContext context) {
-    NodeSpecifier nodeSpec =
-        SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
-
-    RoutingPolicySpecifier policySpec =
-        SpecifierFactories.getRoutingPolicySpecifierOrDefault(_policies, ALL_ROUTING_POLICIES);
-
-    return nodeSpec.resolve(context).stream()
+    return _nodeSpecifier.resolve(context).stream()
         .flatMap(
             node ->
-                policySpec.resolve(node, context).stream()
+                _policySpecifier.resolve(node, context).stream()
                     .map(policy -> new RoutingPolicyId(node, policy.getName())))
         .collect(Collectors.groupingBy(RoutingPolicyId::getNode));
   }
@@ -567,5 +565,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             COL_DIFF,
             action == PERMIT ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
         .build();
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  NodeSpecifier getNodeSpecifier() {
+    return _nodeSpecifier;
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  RoutingPolicySpecifier getPolicySpecifier() {
+    return _policySpecifier;
   }
 }

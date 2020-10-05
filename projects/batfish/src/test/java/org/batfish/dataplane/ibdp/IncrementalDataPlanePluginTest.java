@@ -114,11 +114,18 @@ public class IncrementalDataPlanePluginTest {
   @Test(timeout = 5000)
   public void testComputeFixedPoint() throws IOException {
     SortedMap<String, Configuration> configurations = new TreeMap<>();
-    // creating configurations with no vrfs
-    configurations.put(
-        "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
-    configurations.put(
-        "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
+    Configuration h1 =
+        BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0");
+    configurations.put(h1.getHostname(), h1);
+    Vrf vrf1 = Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(h1).build();
+    h1.getAllInterfaces().get("eth0").setVrf(vrf1);
+
+    Configuration h2 =
+        BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0");
+    configurations.put(h2.getHostname(), h2);
+    Vrf vrf2 = Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(h2).build();
+    h2.getAllInterfaces().get("e0").setVrf(vrf2);
+
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
@@ -504,7 +511,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -538,7 +545,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -572,7 +579,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -608,7 +615,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -644,7 +651,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   /**

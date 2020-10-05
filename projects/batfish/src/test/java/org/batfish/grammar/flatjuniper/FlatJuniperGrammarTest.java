@@ -66,6 +66,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpI
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -203,6 +204,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -256,6 +258,7 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -2686,6 +2689,11 @@ public final class FlatJuniperGrammarTest {
     // Expecting an Interface in TRUNK mode with VLANs 6
     assertThat(c, hasInterface("ge-0/3/0.1", hasSwitchPortMode(SwitchportMode.TRUNK)));
     assertThat(c, hasInterface("ge-0/3/0.1", hasAllowedVlans(IntegerSpace.of(6))));
+
+    // Expecting interface with encapsulation VLAN set to 1
+    assertThat(c, hasInterface("ge-0/4/0.1", hasEncapsulationVlan(1)));
+    // Setting vlan-id on unit 0 is not allowed
+    assertThat(c, hasInterface("ge-0/4/0.0", hasEncapsulationVlan(nullValue())));
   }
 
   @Test
@@ -4888,6 +4896,21 @@ public final class FlatJuniperGrammarTest {
     Zone untrust = zones.get("untrust");
     assertThat(untrust.getFromZonePolicies().keySet(), hasSize(1));
     assertThat(untrust.getToZonePolicies().keySet(), hasSize(0));
+  }
+
+  @Test
+  public void testSnmpClientIps() {
+    Configuration c = parseConfig("snmp");
+    Map<String, SnmpCommunity> communities = c.getDefaultVrf().getSnmpServer().getCommunities();
+    {
+      assertThat(communities, hasKey("COMM1"));
+      SnmpCommunity comm = communities.get("COMM1");
+      assertThat(
+          comm.getClientIps(),
+          equalTo(
+              AclIpSpace.union(
+                  Prefix.parse("1.2.3.4/31").toIpSpace(), Prefix.parse("10.0.0.0/8").toIpSpace())));
+    }
   }
 
   @Test

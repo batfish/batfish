@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Range;
 import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
@@ -19,6 +20,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -234,8 +236,7 @@ public abstract class VendorConfiguration implements Serializable {
     SortedMap<String, SortedSet<Integer>> byUsage =
         byName.computeIfAbsent(name, k -> new TreeMap<>());
     String usageStr = usage.getDescription();
-    SortedSet<Integer> lines = byUsage.computeIfAbsent(usageStr, k -> new TreeSet<>());
-    lines.add(line);
+    byUsage.computeIfAbsent(usageStr, ignored -> new TreeSet<>()).add(line);
   }
 
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
@@ -243,17 +244,39 @@ public abstract class VendorConfiguration implements Serializable {
         _answerElement.getUndefinedReferences(), structureType, name, usage, line);
   }
 
+  /* Recursively process children to find all relevant definition lines for the specified context */
+  private static IntStream collectLines(RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
+    return IntStream.range(0, ctx.getChildCount())
+        .flatMap(
+            i -> {
+              ParseTree child = ctx.getChild(i);
+              if (child instanceof TerminalNode) {
+                return IntStream.of(parser.getLine(((TerminalNode) child).getSymbol()));
+              } else if (child instanceof RuleContext) {
+                return collectLines((RuleContext) child, parser);
+              }
+              return IntStream.empty();
+            })
+        .distinct();
+  }
+
+  /**
+   * Gets the {@link DefinedStructureInfo} for the specified structure {@code name} and {@code
+   * structureType}, initializing if necessary.
+   */
+  private DefinedStructureInfo getStructureInfo(StructureType structureType, String name) {
+    String type = structureType.getDescription();
+    SortedMap<String, DefinedStructureInfo> byName =
+        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
+    return byName.computeIfAbsent(name, k -> new DefinedStructureInfo());
+  }
+
   /**
    * Updates structure definitions to include the specified structure {@code name} and {@code
    * structureType} and initializes the number of referrers.
    */
   public void defineSingleLineStructure(StructureType structureType, String name, int line) {
-    String type = structureType.getDescription();
-    SortedMap<String, DefinedStructureInfo> byName =
-        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
-    DefinedStructureInfo info =
-        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), 0));
-    info.getDefinitionLines().add(line);
+    getStructureInfo(structureType, name).addDefinitionLines(line);
   }
 
   /**
@@ -267,15 +290,7 @@ public abstract class VendorConfiguration implements Serializable {
    */
   public void defineFlattenedStructure(
       StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
-    /* Recursively process children to find all relevant definition lines for the specified context */
-    for (int i = 0; i < ctx.getChildCount(); i++) {
-      ParseTree child = ctx.getChild(i);
-      if (child instanceof TerminalNode) {
-        defineSingleLineStructure(type, name, parser.getLine(((TerminalNode) child).getSymbol()));
-      } else if (child instanceof RuleContext) {
-        defineFlattenedStructure(type, name, (RuleContext) child, parser);
-      }
-    }
+    getStructureInfo(type, name).addDefinitionLines(collectLines(ctx, parser));
   }
 
   /**
@@ -286,9 +301,8 @@ public abstract class VendorConfiguration implements Serializable {
    * RuleContext, BatfishCombinedParser)}.
    */
   public void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
-      defineSingleLineStructure(type, name, i);
-    }
+    getStructureInfo(type, name)
+        .addDefinitionLines(Range.closed(ctx.getStart().getLine(), ctx.getStop().getLine()));
   }
 
   /**

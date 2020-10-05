@@ -33,7 +33,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.CommunityVarCollector;
 
-/** Collect up all community literals and regexes mentioned in the given statement. */
+/** Collect all community literals and regexes in a route-policy {@link Statement}. */
 @ParametersAreNonnullByDefault
 public class RoutePolicyStatementVarCollector
     implements StatementVisitor<Set<CommunityVar>, Configuration> {

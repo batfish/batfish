@@ -612,8 +612,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'forward')",
+            "                name = (junos_name",
+            "                  NAME:'forward'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -634,8 +634,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'forward')",
+            "                name = (junos_name",
+            "                  NAME:'forward'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -656,8 +656,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -679,8 +679,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -701,8 +701,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -724,8 +724,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -749,8 +749,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -772,8 +772,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -794,8 +794,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -817,8 +817,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -842,8 +842,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -865,8 +865,8 @@
             "                text = VARIABLE:'as1_to_as2')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -887,8 +887,8 @@
             "                text = VARIABLE:'as2_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -910,8 +910,8 @@
             "                text = VARIABLE:'as2_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -933,8 +933,8 @@
             "                text = VARIABLE:'as2_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -955,8 +955,8 @@
             "                text = VARIABLE:'match_original_prefixes')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -978,8 +978,8 @@
             "                text = VARIABLE:'match_original_prefixes')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1605,8 +1605,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'forward')",
+            "                name = (junos_name",
+            "                  NAME:'forward'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -1627,8 +1627,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'forward')",
+            "                name = (junos_name",
+            "                  NAME:'forward'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1649,8 +1649,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -1672,8 +1672,8 @@
             "                text = VARIABLE:'as1_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1694,8 +1694,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -1717,8 +1717,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1742,8 +1742,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1765,8 +1765,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1787,8 +1787,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -1810,8 +1810,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1835,8 +1835,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1858,8 +1858,8 @@
             "                text = VARIABLE:'as1_to_as3')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1880,8 +1880,8 @@
             "                text = VARIABLE:'as3_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -1903,8 +1903,8 @@
             "                text = VARIABLE:'as3_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1926,8 +1926,8 @@
             "                text = VARIABLE:'as3_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1948,8 +1948,8 @@
             "                text = VARIABLE:'as1_to_as4')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -1971,8 +1971,8 @@
             "                text = VARIABLE:'as1_to_as4')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -1996,8 +1996,8 @@
             "                text = VARIABLE:'as1_to_as4')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -2019,8 +2019,8 @@
             "                text = VARIABLE:'as1_to_as4')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'originate')",
+            "                name = (junos_name",
+            "                  NAME:'originate'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -2041,8 +2041,8 @@
             "                text = VARIABLE:'as1_to_as4')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -2066,8 +2066,8 @@
             "                text = VARIABLE:'as1_to_as4')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -2089,8 +2089,8 @@
             "                text = VARIABLE:'as1_to_as4')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = VARIABLE:'as3')",
+            "                name = (junos_name",
+            "                  NAME:'as3'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -2111,8 +2111,8 @@
             "                text = VARIABLE:'as4_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -2134,8 +2134,8 @@
             "                text = VARIABLE:'as4_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'",
@@ -2159,8 +2159,8 @@
             "                text = VARIABLE:'as4_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -2182,8 +2182,8 @@
             "                text = VARIABLE:'as4_to_as1')",
             "              (pops_term",
             "                TERM:'term'",
-            "                name = (variable",
-            "                  text = DEC:'1')",
+            "                name = (junos_name",
+            "                  NAME:'1'  <== mode:M_Name)",
             "                (pops_common",
             "                  (pops_then",
             "                    THEN:'then'",
@@ -10675,136 +10675,73 @@
         "configs/as1border1.cfg" : {
           "bgp group" : {
             "as1" : {
-              "definitionLines" : [
-                10,
-                11,
-                12,
-                13,
-                14
-              ],
+              "definitionLines" : "10-14",
               "numReferrers" : 1
             },
             "as2" : {
-              "definitionLines" : [
-                15,
-                16,
-                17,
-                18,
-                19
-              ],
+              "definitionLines" : "15-19",
               "numReferrers" : 1
             },
             "bad-ebgp" : {
-              "definitionLines" : [
-                24,
-                25,
-                26,
-                27
-              ],
+              "definitionLines" : "24-27",
               "numReferrers" : 1
             },
             "xanadu" : {
-              "definitionLines" : [
-                20,
-                21,
-                22,
-                23
-              ],
+              "definitionLines" : "20-23",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "fe-0/0/0" : {
-              "definitionLines" : [
-                4,
-                5
-              ],
+              "definitionLines" : "4-5",
               "numReferrers" : 2
             },
             "fe-0/0/0.0" : {
-              "definitionLines" : [
-                4
-              ],
+              "definitionLines" : "4",
               "numReferrers" : 2
             },
             "fe-0/0/0.1" : {
-              "definitionLines" : [
-                5
-              ],
+              "definitionLines" : "5",
               "numReferrers" : 1
             },
             "lo0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 1
             },
             "lo0.0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 2
             }
           },
           "policy-statement" : {
             "as1_to_as1" : {
-              "definitionLines" : [
-                30,
-                31,
-                32,
-                33
-              ],
+              "definitionLines" : "30-33",
               "numReferrers" : 1
             },
             "as1_to_as2" : {
-              "definitionLines" : [
-                34,
-                35,
-                36,
-                37,
-                38,
-                39,
-                40,
-                41
-              ],
+              "definitionLines" : "34-41",
               "numReferrers" : 1
             },
             "as2_to_as1" : {
-              "definitionLines" : [
-                42,
-                43,
-                44
-              ],
+              "definitionLines" : "42-44",
               "numReferrers" : 1
             },
             "match_original_prefixes" : {
-              "definitionLines" : [
-                45,
-                46
-              ],
+              "definitionLines" : "45-46",
               "numReferrers" : 2
             },
             "ospf-redistribute-connected" : {
-              "definitionLines" : [
-                28,
-                29
-              ],
+              "definitionLines" : "28-29",
               "numReferrers" : 1
             }
           },
           "prefix-list" : {
             "as3_prefixes" : {
-              "definitionLines" : [
-                49,
-                50
-              ],
+              "definitionLines" : "49-50",
               "numReferrers" : 1
             },
             "original_prefixes" : {
-              "definitionLines" : [
-                47,
-                48
-              ],
+              "definitionLines" : "47-48",
               "numReferrers" : 3
             }
           }
@@ -10812,155 +10749,81 @@
         "configs/as1border2.cfg" : {
           "bgp group" : {
             "as1" : {
-              "definitionLines" : [
-                11,
-                12,
-                13,
-                14,
-                15
-              ],
+              "definitionLines" : "11-15",
               "numReferrers" : 1
             },
             "as3" : {
-              "definitionLines" : [
-                16,
-                17,
-                18,
-                19,
-                20
-              ],
+              "definitionLines" : "16-20",
               "numReferrers" : 1
             },
             "as4" : {
-              "definitionLines" : [
-                21,
-                22,
-                23,
-                24,
-                25
-              ],
+              "definitionLines" : "21-25",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "fe-0/0/0" : {
-              "definitionLines" : [
-                4,
-                5,
-                6
-              ],
+              "definitionLines" : "4-6",
               "numReferrers" : 3
             },
             "fe-0/0/0.0" : {
-              "definitionLines" : [
-                4
-              ],
+              "definitionLines" : "4",
               "numReferrers" : 2
             },
             "fe-0/0/0.1" : {
-              "definitionLines" : [
-                5
-              ],
+              "definitionLines" : "5",
               "numReferrers" : 1
             },
             "fe-0/0/0.2" : {
-              "definitionLines" : [
-                6
-              ],
+              "definitionLines" : "6",
               "numReferrers" : 1
             },
             "lo0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 1
             },
             "lo0.0" : {
-              "definitionLines" : [
-                3
-              ],
+              "definitionLines" : "3",
               "numReferrers" : 2
             }
           },
           "policy-statement" : {
             "as1_to_as1" : {
-              "definitionLines" : [
-                28,
-                29,
-                30,
-                31
-              ],
+              "definitionLines" : "28-31",
               "numReferrers" : 1
             },
             "as1_to_as3" : {
-              "definitionLines" : [
-                32,
-                33,
-                34,
-                35,
-                36,
-                37,
-                38,
-                39
-              ],
+              "definitionLines" : "32-39",
               "numReferrers" : 1
             },
             "as1_to_as4" : {
-              "definitionLines" : [
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49
-              ],
+              "definitionLines" : "43-49",
               "numReferrers" : 1
             },
             "as3_to_as1" : {
-              "definitionLines" : [
-                40,
-                41,
-                42
-              ],
+              "definitionLines" : "40-42",
               "numReferrers" : 1
             },
             "as4_to_as1" : {
-              "definitionLines" : [
-                50,
-                51,
-                52,
-                53
-              ],
+              "definitionLines" : "50-53",
               "numReferrers" : 1
             },
             "ospf-redistribute-connected" : {
-              "definitionLines" : [
-                26,
-                27
-              ],
+              "definitionLines" : "26-27",
               "numReferrers" : 1
             }
           },
           "prefix-list" : {
             "as2_prefixes" : {
-              "definitionLines" : [
-                56,
-                57
-              ],
+              "definitionLines" : "56-57",
               "numReferrers" : 1
             },
             "as4_prefixes" : {
-              "definitionLines" : [
-                58
-              ],
+              "definitionLines" : "58",
               "numReferrers" : 1
             },
             "original_prefixes" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 3
             }
           }
@@ -10968,36 +10831,21 @@
         "configs/as1core1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                72
-              ],
+              "definitionLines" : "72",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                54,
-                55,
-                56,
-                57
-              ],
+              "definitionLines" : "54-57",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                59,
-                60,
-                61,
-                62
-              ],
+              "definitionLines" : "59-62",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                51,
-                52
-              ],
+              "definitionLines" : "51-52",
               "numReferrers" : 3
             }
           }
@@ -11005,162 +10853,89 @@
         "configs/as2border1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                81
-              ],
+              "definitionLines" : "81",
               "numReferrers" : 1
             },
             "as2" : {
-              "definitionLines" : [
-                83
-              ],
+              "definitionLines" : "83",
               "numReferrers" : 2
             },
             "as3" : {
-              "definitionLines" : [
-                85
-              ],
+              "definitionLines" : "85",
               "numReferrers" : 0
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                115
-              ],
+              "definitionLines" : "115",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                116
-              ],
+              "definitionLines" : "116",
               "numReferrers" : 0
             },
             "as3_community" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                130,
-                131
-              ],
+              "definitionLines" : "130-131",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                132,
-                133
-              ],
+              "definitionLines" : "132-133",
               "numReferrers" : 2
             },
             "103" : {
-              "definitionLines" : [
-                134,
-                135
-              ],
+              "definitionLines" : "134-135",
               "numReferrers" : 1
             },
             "BLOCK_SPOOF_IN" : {
-              "definitionLines" : [
-                122,
-                123,
-                124
-              ],
+              "definitionLines" : "122-124",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58,
-                59
-              ],
+              "definitionLines" : "55-59",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                61,
-                62,
-                63,
-                64
-              ],
+              "definitionLines" : "61-64",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                66,
-                67,
-                68,
-                69
-              ],
+              "definitionLines" : "66-69",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 3
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                128,
-                129
-              ],
+              "definitionLines" : "128-129",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as2" : {
-              "definitionLines" : [
-                147,
-                148,
-                149
-              ],
+              "definitionLines" : "147-149",
               "numReferrers" : 1
             },
             "as2_to_as1" : {
-              "definitionLines" : [
-                137,
-                138,
-                139,
-                140,
-                142,
-                143,
-                144,
-                145
-              ],
+              "definitionLines" : "137-140,142-145",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                151,
-                152,
-                153,
-                154,
-                156,
-                157,
-                158,
-                159
-              ],
+              "definitionLines" : "151-154,156-159",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                161,
-                162,
-                163
-              ],
+              "definitionLines" : "161-163",
               "numReferrers" : 1
             }
           }
@@ -11168,164 +10943,89 @@
         "configs/as2border2.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                81
-              ],
+              "definitionLines" : "81",
               "numReferrers" : 0
             },
             "as2" : {
-              "definitionLines" : [
-                83
-              ],
+              "definitionLines" : "83",
               "numReferrers" : 2
             },
             "as3" : {
-              "definitionLines" : [
-                85
-              ],
+              "definitionLines" : "85",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                115
-              ],
+              "definitionLines" : "115",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                116
-              ],
+              "definitionLines" : "116",
               "numReferrers" : 0
             },
             "as3_community" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                129,
-                130
-              ],
+              "definitionLines" : "129-130",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                131,
-                132
-              ],
+              "definitionLines" : "131-132",
               "numReferrers" : 2
             },
             "103" : {
-              "definitionLines" : [
-                133,
-                134
-              ],
+              "definitionLines" : "133-134",
               "numReferrers" : 1
             },
             "BLOCK_SPOOF_IN" : {
-              "definitionLines" : [
-                122,
-                123,
-                124
-              ],
+              "definitionLines" : "122-124",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58,
-                59
-              ],
+              "definitionLines" : "55-59",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                61,
-                62,
-                63,
-                64
-              ],
+              "definitionLines" : "61-64",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                66,
-                67,
-                68,
-                69
-              ],
+              "definitionLines" : "66-69",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 3
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                127,
-                128
-              ],
+              "definitionLines" : "127-128",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as2" : {
-              "definitionLines" : [
-                146,
-                147,
-                148,
-                149
-              ],
+              "definitionLines" : "146-149",
               "numReferrers" : 1
             },
             "as2_to_as1" : {
-              "definitionLines" : [
-                136,
-                137,
-                138,
-                139,
-                141,
-                142,
-                143,
-                144
-              ],
+              "definitionLines" : "136-139,141-144",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                151,
-                152,
-                153,
-                154,
-                156,
-                157,
-                158,
-                159
-              ],
+              "definitionLines" : "151-154,156-159",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                161,
-                162,
-                163,
-                164
-              ],
+              "definitionLines" : "161-164",
               "numReferrers" : 1
             }
           }
@@ -11333,66 +11033,35 @@
         "configs/as2core1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                87
-              ],
+              "definitionLines" : "87",
               "numReferrers" : 4
             }
           },
           "extended ipv4 access-list" : {
             "blocktelnet" : {
-              "definitionLines" : [
-                118,
-                119,
-                120
-              ],
+              "definitionLines" : "118-120",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70,
-                71
-              ],
+              "definitionLines" : "67-71",
               "numReferrers" : 1
             },
             "FastEthernet2/0" : {
-              "definitionLines" : [
-                73,
-                74,
-                75,
-                76,
-                77
-              ],
+              "definitionLines" : "73-77",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 5
             }
           }
@@ -11400,54 +11069,29 @@
         "configs/as2core2.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                85
-              ],
+              "definitionLines" : "85",
               "numReferrers" : 4
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70
-              ],
+              "definitionLines" : "67-70",
               "numReferrers" : 1
             },
             "FastEthernet2/0" : {
-              "definitionLines" : [
-                72,
-                73,
-                74,
-                75
-              ],
+              "definitionLines" : "72-75",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 5
             }
           }
@@ -11455,108 +11099,59 @@
         "configs/as2dept1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                70
-              ],
+              "definitionLines" : "70",
               "numReferrers" : 2
             }
           },
           "expanded community-list" : {
             "as2_community" : {
-              "definitionLines" : [
-                92
-              ],
+              "definitionLines" : "92",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "102" : {
-              "definitionLines" : [
-                109
-              ],
+              "definitionLines" : "109",
               "numReferrers" : 1
             },
             "105" : {
-              "definitionLines" : [
-                110,
-                111,
-                112,
-                113
-              ],
+              "definitionLines" : "110-113",
               "numReferrers" : 0
             },
             "RESTRICT_HOST_TRAFFIC_IN" : {
-              "definitionLines" : [
-                102,
-                103,
-                104,
-                105
-              ],
+              "definitionLines" : "102-105",
               "numReferrers" : 1
             },
             "RESTRICT_HOST_TRAFFIC_OUT" : {
-              "definitionLines" : [
-                97,
-                98,
-                99,
-                100
-              ],
+              "definitionLines" : "97-100",
               "numReferrers" : 0
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                51,
-                52,
-                53,
-                54
-              ],
+              "definitionLines" : "51-54",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                56,
-                57,
-                58,
-                59
-              ],
+              "definitionLines" : "56-59",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                61,
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "61-65",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                48,
-                49
-              ],
+              "definitionLines" : "48-49",
               "numReferrers" : 1
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "definitionLines" : [
-                120,
-                121,
-                122
-              ],
+              "definitionLines" : "120-122",
               "numReferrers" : 1
             },
             "dept_to_as2" : {
-              "definitionLines" : [
-                115,
-                116,
-                117,
-                118
-              ],
+              "definitionLines" : "115-118",
               "numReferrers" : 1
             }
           }
@@ -11564,95 +11159,55 @@
         "configs/as2dist1.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                82
-              ],
+              "definitionLines" : "82",
               "numReferrers" : 2
             },
             "dept" : {
-              "definitionLines" : [
-                84
-              ],
+              "definitionLines" : "84",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "dept_community" : {
-              "definitionLines" : [
-                110
-              ],
+              "definitionLines" : "110",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "102" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 0
             },
             "105" : {
-              "definitionLines" : [
-                118,
-                119,
-                120,
-                121
-              ],
+              "definitionLines" : "118-121",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70
-              ],
+              "definitionLines" : "67-70",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 3
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "definitionLines" : [
-                123,
-                124,
-                125,
-                126
-              ],
+              "definitionLines" : "123-126",
               "numReferrers" : 1
             },
             "dept_to_as2" : {
-              "definitionLines" : [
-                128,
-                129,
-                130
-              ],
+              "definitionLines" : "128-130",
               "numReferrers" : 1
             }
           }
@@ -11660,95 +11215,55 @@
         "configs/as2dist2.cfg" : {
           "bgp peer-group" : {
             "as2" : {
-              "definitionLines" : [
-                82
-              ],
+              "definitionLines" : "82",
               "numReferrers" : 2
             },
             "dept" : {
-              "definitionLines" : [
-                84
-              ],
+              "definitionLines" : "84",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "dept_community" : {
-              "definitionLines" : [
-                110
-              ],
+              "definitionLines" : "110",
               "numReferrers" : 1
             }
           },
           "extended ipv4 access-list" : {
             "102" : {
-              "definitionLines" : [
-                117
-              ],
+              "definitionLines" : "117",
               "numReferrers" : 0
             },
             "105" : {
-              "definitionLines" : [
-                118,
-                119,
-                120,
-                121
-              ],
+              "definitionLines" : "118-121",
               "numReferrers" : 1
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65
-              ],
+              "definitionLines" : "62-65",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                67,
-                68,
-                69,
-                70
-              ],
+              "definitionLines" : "67-70",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 3
             }
           },
           "route-map" : {
             "as2_to_dept" : {
-              "definitionLines" : [
-                123,
-                124,
-                125,
-                126
-              ],
+              "definitionLines" : "123-126",
               "numReferrers" : 1
             },
             "dept_to_as2" : {
-              "definitionLines" : [
-                128,
-                129,
-                130
-              ],
+              "definitionLines" : "128-130",
               "numReferrers" : 1
             }
           }
@@ -11756,29 +11271,15 @@
         "configs/as2host1.cfg" : {
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                57,
-                58,
-                59,
-                60
-              ],
+              "definitionLines" : "57-60",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                62,
-                63,
-                64,
-                65,
-                66
-              ],
+              "definitionLines" : "62-66",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                54,
-                55
-              ],
+              "definitionLines" : "54-55",
               "numReferrers" : 1
             }
           }
@@ -11786,144 +11287,81 @@
         "configs/as3border1.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                74
-              ],
+              "definitionLines" : "74",
               "numReferrers" : 0
             },
             "as2" : {
-              "definitionLines" : [
-                76
-              ],
+              "definitionLines" : "76",
               "numReferrers" : 1
             },
             "as3" : {
-              "definitionLines" : [
-                78
-              ],
+              "definitionLines" : "78",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                106
-              ],
+              "definitionLines" : "106",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                107
-              ],
+              "definitionLines" : "107",
               "numReferrers" : 1
             },
             "as3_community" : {
-              "definitionLines" : [
-                108
-              ],
+              "definitionLines" : "108",
               "numReferrers" : 0
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                116,
-                117
-              ],
+              "definitionLines" : "116-117",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                118,
-                119
-              ],
+              "definitionLines" : "118-119",
               "numReferrers" : 1
             },
             "103" : {
-              "definitionLines" : [
-                120,
-                121
-              ],
+              "definitionLines" : "120-121",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58
-              ],
+              "definitionLines" : "55-58",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                60,
-                61,
-                62,
-                63
-              ],
+              "definitionLines" : "60-63",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                114,
-                115
-              ],
+              "definitionLines" : "114-115",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as3" : {
-              "definitionLines" : [
-                133,
-                134,
-                135
-              ],
+              "definitionLines" : "133-135",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                147,
-                148,
-                149
-              ],
+              "definitionLines" : "147-149",
               "numReferrers" : 1
             },
             "as3_to_as1" : {
-              "definitionLines" : [
-                123,
-                124,
-                125,
-                126,
-                128,
-                129,
-                130,
-                131
-              ],
+              "definitionLines" : "123-126,128-131",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                137,
-                138,
-                139,
-                140,
-                142,
-                143,
-                144,
-                145
-              ],
+              "definitionLines" : "137-140,142-145",
               "numReferrers" : 1
             }
           }
@@ -11931,144 +11369,81 @@
         "configs/as3border2.cfg" : {
           "bgp peer-group" : {
             "as1" : {
-              "definitionLines" : [
-                75
-              ],
+              "definitionLines" : "75",
               "numReferrers" : 1
             },
             "as2" : {
-              "definitionLines" : [
-                77
-              ],
+              "definitionLines" : "77",
               "numReferrers" : 0
             },
             "as3" : {
-              "definitionLines" : [
-                79
-              ],
+              "definitionLines" : "79",
               "numReferrers" : 1
             }
           },
           "expanded community-list" : {
             "as1_community" : {
-              "definitionLines" : [
-                107
-              ],
+              "definitionLines" : "107",
               "numReferrers" : 1
             },
             "as2_community" : {
-              "definitionLines" : [
-                108
-              ],
+              "definitionLines" : "108",
               "numReferrers" : 1
             },
             "as3_community" : {
-              "definitionLines" : [
-                109
-              ],
+              "definitionLines" : "109",
               "numReferrers" : 0
             }
           },
           "extended ipv4 access-list" : {
             "101" : {
-              "definitionLines" : [
-                117,
-                118
-              ],
+              "definitionLines" : "117-118",
               "numReferrers" : 1
             },
             "102" : {
-              "definitionLines" : [
-                119,
-                120
-              ],
+              "definitionLines" : "119-120",
               "numReferrers" : 1
             },
             "103" : {
-              "definitionLines" : [
-                121,
-                122
-              ],
+              "definitionLines" : "121-122",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                55,
-                56,
-                57,
-                58
-              ],
+              "definitionLines" : "55-58",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                60,
-                61,
-                62,
-                63
-              ],
+              "definitionLines" : "60-63",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                52,
-                53
-              ],
+              "definitionLines" : "52-53",
               "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
-              "definitionLines" : [
-                115,
-                116
-              ],
+              "definitionLines" : "115-116",
               "numReferrers" : 0
             }
           },
           "route-map" : {
             "as1_to_as3" : {
-              "definitionLines" : [
-                134,
-                135,
-                136
-              ],
+              "definitionLines" : "134-136",
               "numReferrers" : 1
             },
             "as2_to_as3" : {
-              "definitionLines" : [
-                148,
-                149,
-                150
-              ],
+              "definitionLines" : "148-150",
               "numReferrers" : 1
             },
             "as3_to_as1" : {
-              "definitionLines" : [
-                124,
-                125,
-                126,
-                127,
-                129,
-                130,
-                131,
-                132
-              ],
+              "definitionLines" : "124-127,129-132",
               "numReferrers" : 1
             },
             "as3_to_as2" : {
-              "definitionLines" : [
-                138,
-                139,
-                140,
-                141,
-                143,
-                144,
-                145,
-                146
-              ],
+              "definitionLines" : "138-141,143-146",
               "numReferrers" : 1
             }
           }
@@ -12076,50 +11451,29 @@
         "configs/as3core1.cfg" : {
           "bgp peer-group" : {
             "as3" : {
-              "definitionLines" : [
-                81
-              ],
+              "definitionLines" : "81",
               "numReferrers" : 2
             }
           },
           "interface" : {
             "FastEthernet0/0" : {
-              "definitionLines" : [
-                58,
-                59,
-                60,
-                61
-              ],
+              "definitionLines" : "58-61",
               "numReferrers" : 1
             },
             "FastEthernet0/1" : {
-              "definitionLines" : [
-                63,
-                64,
-                65,
-                66
-              ],
+              "definitionLines" : "63-66",
               "numReferrers" : 1
             },
             "FastEthernet1/0" : {
-              "definitionLines" : [
-                68,
-                69
-              ],
+              "definitionLines" : "68-69",
               "numReferrers" : 1
             },
             "FastEthernet1/1" : {
-              "definitionLines" : [
-                71,
-                72
-              ],
+              "definitionLines" : "71-72",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : [
-                55,
-                56
-              ],
+              "definitionLines" : "55-56",
               "numReferrers" : 3
             }
           }

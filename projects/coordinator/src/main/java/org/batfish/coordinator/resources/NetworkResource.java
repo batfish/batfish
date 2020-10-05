@@ -8,7 +8,6 @@ import static org.batfish.common.CoordConstsV2.RSC_NODE_ROLES;
 import static org.batfish.common.CoordConstsV2.RSC_OBJECTS;
 import static org.batfish.common.CoordConstsV2.RSC_QUESTIONS;
 import static org.batfish.common.CoordConstsV2.RSC_REFERENCE_LIBRARY;
-import static org.batfish.common.CoordConstsV2.RSC_SETTINGS;
 import static org.batfish.common.CoordConstsV2.RSC_SNAPSHOTS;
 import static org.batfish.common.CoordConstsV2.RSC_WORK;
 
@@ -85,12 +84,6 @@ public class NetworkResource {
   @Path(RSC_REFERENCE_LIBRARY)
   public ReferenceLibraryResource getReferenceLibraryResource() {
     return new ReferenceLibraryResource(_name);
-  }
-
-  /** Relocate the request to {@link NetworkSettingsResource}. */
-  @Path(RSC_SETTINGS)
-  public NetworkSettingsResource getSettingsResource() {
-    return new NetworkSettingsResource(_name);
   }
 
   /** Delete a specified network with name: {@link #_name}. */

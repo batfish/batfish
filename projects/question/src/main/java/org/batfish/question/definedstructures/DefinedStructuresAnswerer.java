@@ -81,7 +81,10 @@ public class DefinedStructuresAnswerer extends Answerer {
                           }
                           DefinedStructureRow row =
                               new DefinedStructureRow(
-                                  filename, structType, structName, info.getDefinitionLines());
+                                  filename,
+                                  structType,
+                                  structName,
+                                  info.getDefinitionLines().enumerate());
                           structures.add(toRow(row));
                         });
                   });

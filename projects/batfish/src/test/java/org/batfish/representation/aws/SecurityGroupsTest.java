@@ -4,7 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SECURITY_GROUPS;
@@ -15,8 +15,8 @@ import static org.batfish.representation.aws.Utils.traceElementForIcmpCode;
 import static org.batfish.representation.aws.Utils.traceElementForIcmpType;
 import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -45,6 +45,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
@@ -152,65 +153,109 @@ public class SecurityGroupsTest {
   @Test
   public void testSinglePort() {
     SecurityGroup sg = _securityGroups.get(0);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
-        line, isExprAclLineThat(hasMatchCondition(and(matchTcp, matchPorts(22, 22), matchIp))));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchPorts(22, 22), matchIp),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testBeginningHalfOpenInterval() {
     SecurityGroup sg = _securityGroups.get(1);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
-        line, isExprAclLineThat(hasMatchCondition(and(matchTcp, matchPorts(0, 22), matchIp))));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchPorts(0, 22), matchIp),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testEndHalfOpenInterval() {
     SecurityGroup sg = _securityGroups.get(2);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
         line,
-        isExprAclLineThat(hasMatchCondition(and(matchTcp, matchPorts(65530, 65535), matchIp))));
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchPorts(65530, 65535), matchIp),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testFullInterval() {
     SecurityGroup sg = _securityGroups.get(3);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
-    assertThat(line, isExprAclLineThat(hasMatchCondition(and(matchTcp, matchIp))));
+    assertThat(
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchIp), getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testIcmpType() {
     SecurityGroup sg = _securityGroups.get(9);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
         line,
         isExprAclLineThat(
             hasMatchCondition(
-                and(
-                    matchIcmp,
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setIcmpTypes(8).build(), traceElementForIcmpType(8)),
-                    matchUniverse))));
+                new AndMatchExpr(
+                    ImmutableList.of(
+                        matchIcmp,
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setIcmpTypes(8).build(),
+                            traceElementForIcmpType(8)),
+                        matchUniverse),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testIcmpTypeAndCode() {
     SecurityGroup sg = _securityGroups.get(10);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
         line,
         isExprAclLineThat(
             hasMatchCondition(
-                and(
-                    matchIcmp,
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setIcmpTypes(8).build(), traceElementForIcmpType(8)),
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setIcmpCodes(9).build(), traceElementForIcmpCode(9)),
-                    matchUniverse))));
+                new AndMatchExpr(
+                    ImmutableList.of(
+                        matchIcmp,
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setIcmpTypes(8).build(),
+                            traceElementForIcmpType(8)),
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setIcmpCodes(9).build(),
+                            traceElementForIcmpCode(9)),
+                        matchUniverse),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
@@ -218,65 +263,113 @@ public class SecurityGroupsTest {
     SecurityGroup sg = _securityGroups.get(11);
     List<AclLine> inboundRules = sg.toAclLines(_region, true, _warnings);
 
-    assertThat(inboundRules, empty());
+    // Should still see a VI ACL line for this rule because we want a 1-to-1 mapping of rules:lines
+    assertThat(inboundRules, contains(isExprAclLineThat(hasMatchCondition(FALSE))));
     assertThat(_warnings.getRedFlagWarnings(), hasSize(1));
     Warning w = Iterables.getOnlyElement(_warnings.getRedFlagWarnings());
     assertThat(
         w.getText(),
         allOf(
-            containsString("ICMP types invalid with code only [ingress] 0"),
+            containsString("ICMP types invalid with code only [ingress]"),
             containsString("unexpected for ICMP to have FromPort=-1 and ToPort=9")));
   }
 
   @Test
   public void testAllTrafficAllowed() {
     SecurityGroup sg = _securityGroups.get(4);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
-    assertThat(line, isExprAclLineThat(hasMatchCondition(matchUniverse)));
+    assertThat(
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchUniverse), getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testClosedInterval() {
     SecurityGroup sg = _securityGroups.get(5);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
-        line, isExprAclLineThat(hasMatchCondition(and(matchTcp, matchPorts(45, 50), matchIp))));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchPorts(45, 50), matchIp),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testInvalidStartInterval() {
     SecurityGroup sg = _securityGroups.get(6);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
-        line, isExprAclLineThat(hasMatchCondition(and(matchTcp, matchPorts(0, 50), matchIp))));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchPorts(0, 50), matchIp),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testInvalidEndInterval() {
     SecurityGroup sg = _securityGroups.get(7);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
-        line, isExprAclLineThat(hasMatchCondition(and(matchTcp, matchPorts(30, 65535), matchIp))));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchPorts(30, 65535), matchIp),
+                    getTraceElementForRule(rangeDesc)))));
   }
 
   @Test
   public void testStatefulTcpRules() {
     SecurityGroup sg = _securityGroups.get(8);
+    String rangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsIngress()).getIpRanges())
+            .getDescription();
     AclLine line = Iterables.getOnlyElement(sg.toAclLines(_region, true, _warnings));
     assertThat(
-        line, isExprAclLineThat(hasMatchCondition(and(matchTcp, matchPorts(22, 22), matchIp))));
+        line,
+        isExprAclLineThat(
+            hasMatchCondition(
+                new AndMatchExpr(
+                    ImmutableList.of(matchTcp, matchPorts(22, 22), matchIp),
+                    getTraceElementForRule(rangeDesc)))));
+    String outRangeDesc =
+        Iterables.getOnlyElement(Iterables.getOnlyElement(sg.getIpPermsEgress()).getIpRanges())
+            .getDescription();
     AclLine outline = Iterables.getOnlyElement(sg.toAclLines(_region, false, _warnings));
     assertThat(
         outline,
         isExprAclLineThat(
             hasMatchCondition(
-                and(
-                    matchTcp,
-                    matchPorts(80, 80),
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setDstIps(Ip.parse("5.6.7.8").toIpSpace()).build(),
-                        traceElementForAddress(
-                            "destination", "5.6.7.8/32", AddressType.CIDR_IP))))));
+                new AndMatchExpr(
+                    ImmutableList.of(
+                        matchTcp,
+                        matchPorts(80, 80),
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder()
+                                .setDstIps(Ip.parse("5.6.7.8").toIpSpace())
+                                .build(),
+                            traceElementForAddress(
+                                "destination", "5.6.7.8/32", AddressType.CIDR_IP))),
+                    getTraceElementForRule(outRangeDesc)))));
   }
 
   @Test
@@ -385,6 +478,7 @@ public class SecurityGroupsTest {
 
   @Test
   public void testToAclLines() {
+    String rangeDesc = "IP range description";
     SecurityGroup sg =
         new SecurityGroup(
             "sg-001",
@@ -395,7 +489,7 @@ public class SecurityGroupsTest {
                     "tcp",
                     22,
                     22,
-                    ImmutableList.of(new IpRange(Prefix.parse("2.2.2.0/24"))),
+                    ImmutableList.of(new IpRange(rangeDesc, Prefix.parse("2.2.2.0/24"))),
                     ImmutableList.of(),
                     ImmutableList.of())),
             "vpc");
@@ -405,18 +499,20 @@ public class SecurityGroupsTest {
         equalTo(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setName("sg-001 - sg-1 [ingress] 0")
+                    .setName("sg-001 - sg-1 [ingress]")
+                    .setTraceElement(null)
                     .setMatchCondition(
-                        and(
-                            matchTcp,
-                            matchPorts(22, 22),
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setSrcIps(Prefix.parse("2.2.2.0/24").toIpSpace())
-                                    .build(),
-                                traceElementForAddress(
-                                    "source", "2.2.2.0/24", AddressType.CIDR_IP))))
-                    .setTraceElement(getTraceElementForRule(null))
+                        new AndMatchExpr(
+                            ImmutableList.of(
+                                matchTcp,
+                                matchPorts(22, 22),
+                                new MatchHeaderSpace(
+                                    HeaderSpace.builder()
+                                        .setSrcIps(Prefix.parse("2.2.2.0/24").toIpSpace())
+                                        .build(),
+                                    traceElementForAddress(
+                                        "source", "2.2.2.0/24", AddressType.CIDR_IP))),
+                            getTraceElementForRule(rangeDesc)))
                     .build())));
   }
 }

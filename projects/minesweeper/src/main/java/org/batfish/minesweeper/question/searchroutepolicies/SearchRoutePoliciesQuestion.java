@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -19,14 +20,14 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private static final String PROP_POLICIES = "policies";
   private static final String PROP_ACTION = "action";
 
-  private static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
+  @VisibleForTesting
+  static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
       BgpRouteConstraints.builder().build();
-  private static final String DEFAULT_NODES = "";
-  private static final String DEFAULT_POLICIES = "";
-  private static final Action DEFAULT_ACTION = Action.PERMIT;
 
-  @Nonnull private final String _nodes;
-  @Nonnull private final String _policies;
+  @VisibleForTesting static final Action DEFAULT_ACTION = Action.PERMIT;
+
+  @Nullable private final String _nodes;
+  @Nullable private final String _policies;
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
   @Nonnull private final Action _action;
@@ -37,20 +38,15 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   public SearchRoutePoliciesQuestion() {
-    this(
-        DEFAULT_ROUTE_CONSTRAINTS,
-        DEFAULT_ROUTE_CONSTRAINTS,
-        DEFAULT_NODES,
-        DEFAULT_POLICIES,
-        DEFAULT_ACTION);
+    this(DEFAULT_ROUTE_CONSTRAINTS, DEFAULT_ROUTE_CONSTRAINTS, null, null, DEFAULT_ACTION);
   }
 
   public SearchRoutePoliciesQuestion(
-      @JsonProperty(PROP_INPUT_CONSTRAINTS) BgpRouteConstraints inputConstraints,
-      @JsonProperty(PROP_OUTPUT_CONSTRAINTS) BgpRouteConstraints outputConstraints,
-      @JsonProperty(PROP_NODES) String nodes,
-      @JsonProperty(PROP_POLICIES) String policies,
-      @JsonProperty(PROP_ACTION) Action action) {
+      BgpRouteConstraints inputConstraints,
+      BgpRouteConstraints outputConstraints,
+      @Nullable String nodes,
+      @Nullable String policies,
+      Action action) {
     _nodes = nodes;
     _policies = policies;
     _inputConstraints = inputConstraints;
@@ -68,8 +64,8 @@ public final class SearchRoutePoliciesQuestion extends Question {
     return new SearchRoutePoliciesQuestion(
         firstNonNull(inputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
         firstNonNull(outputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
-        firstNonNull(nodes, DEFAULT_NODES),
-        firstNonNull(policies, DEFAULT_POLICIES),
+        nodes,
+        policies,
         firstNonNull(action, DEFAULT_ACTION));
   }
 
@@ -98,14 +94,14 @@ public final class SearchRoutePoliciesQuestion extends Question {
     return "searchRoutePolicies";
   }
 
+  @Nullable
   @JsonProperty(PROP_NODES)
-  @Nonnull
   public String getNodes() {
     return _nodes;
   }
 
+  @Nullable
   @JsonProperty(PROP_POLICIES)
-  @Nonnull
   public String getPolicies() {
     return _policies;
   }

@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.BumTransportMethod.MULTICAST_GROUP;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
@@ -90,6 +91,7 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
@@ -414,6 +416,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private transient Multimap<String, String> _portChannelMembers;
   private @Nonnull IntegerSpace _reservedVlanRange;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
+  private final @Nonnull Map<String, SnmpCommunity> _snmpCommunities;
   private final @Nonnull Map<String, SnmpServer> _snmpServers;
   private @Nullable String _snmpSourceInterface;
   private boolean _systemDefaultSwitchport;
@@ -444,6 +447,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _platform = NexusPlatform.UNKNOWN;
     _reservedVlanRange = DEFAULT_RESERVED_VLAN_RANGE;
     _routeMaps = new HashMap<>();
+    _snmpCommunities = new HashMap<>();
     _snmpServers = new HashMap<>();
     _tacacsServers = new HashMap<>();
     _vlans = new HashMap<>();
@@ -1099,12 +1103,75 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .forEach(packetPolicy -> _c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy));
   }
 
-  private void convertSnmpServers() {
-    _c.setSnmpTrapServers(ImmutableSortedSet.copyOf(_snmpServers.keySet()));
+  private org.batfish.datamodel.SnmpCommunity convertSnmpCommunity(SnmpCommunity c) {
+    org.batfish.datamodel.SnmpCommunity ret =
+        new org.batfish.datamodel.SnmpCommunity(c.getCommunity());
+    // Compute the SNMP client IpSpace.
+
+    // Prefer the v4 ACL over the generic ACL name.
+    IpAccessList acl =
+        Optional.ofNullable(c.getAclNameV4() != null ? c.getAclNameV4() : c.getAclName())
+            .map(_ipAccessLists::get)
+            .orElse(null);
+    if (acl != null) {
+      AclIpSpace.Builder permittedSpace = AclIpSpace.builder();
+      for (IpAccessListLine line : acl.getLines().values()) {
+        if (line instanceof RemarkIpAccessListLine) {
+          continue;
+        }
+        assert line instanceof ActionIpAccessListLine;
+        ActionIpAccessListLine l = (ActionIpAccessListLine) line;
+        if (lineMatchesSnmp(l)) {
+          permittedSpace.thenAction(l.getAction(), toIpSpace(l.getSrcAddressSpec()));
+        }
+      }
+      ret.setClientIps(permittedSpace.build());
+    }
+    return ret;
   }
 
-  private void convertSnmpSourceInterface() {
+  private boolean lineMatchesSnmp(ActionIpAccessListLine line) {
+    @Nullable IpProtocol protocol = line.getProtocol();
+    if (protocol == null) {
+      // this is an "any" ip protocol line. Matches UDP and cannot have l4 criteria.
+      return true;
+    } else if (protocol != UDP) {
+      // this does not match UDP
+      return false;
+    }
+
+    Layer4Options layer4Options = line.getL4Options();
+    if (layer4Options == null) {
+      // no l4 filtering
+      return true;
+    } else if (!(layer4Options instanceof UdpOptions)) {
+      // should not happen, but :shrug:
+      return false;
+    }
+
+    UdpOptions udpOptions = (UdpOptions) layer4Options;
+    if (udpOptions.getDstPortSpec() == null) {
+      return true;
+    }
+
+    final int snmpUdpPort = 161;
+    return toPorts(udpOptions.getDstPortSpec())
+        .map(ports -> ports.contains(snmpUdpPort))
+        .orElse(false);
+  }
+
+  private void convertSnmp() {
+    _c.setSnmpTrapServers(ImmutableSortedSet.copyOf(_snmpServers.keySet()));
     _c.setSnmpSourceInterface(_snmpSourceInterface);
+    // NX-OS only stores communities at the device level. Use the default VRF for this.
+    org.batfish.datamodel.SnmpServer viServer = new org.batfish.datamodel.SnmpServer();
+    _c.getDefaultVrf().setSnmpServer(viServer);
+    ImmutableSortedMap.Builder<String, org.batfish.datamodel.SnmpCommunity> viCommunities =
+        ImmutableSortedMap.naturalOrder();
+    for (SnmpCommunity c : _snmpCommunities.values()) {
+      viCommunities.put(c.getCommunity(), convertSnmpCommunity(c));
+    }
+    viServer.setCommunities(viCommunities.build());
   }
 
   private void convertStaticRoutes() {
@@ -1432,6 +1499,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
+  }
+
+  public @Nonnull Map<String, SnmpCommunity> getSnmpCommunities() {
+    return _snmpCommunities;
   }
 
   public @Nonnull Map<String, SnmpServer> getSnmpServers() {
@@ -2690,6 +2761,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         new RouteMapMatchVisitor<BoolExpr>() {
 
           @Override
+          public BoolExpr visitRouteMapMatchAsNumber(RouteMapMatchAsNumber routeMapMatchAsNumber) {
+            // Not applicable to PBR.
+            return null;
+          }
+
+          @Override
           public BoolExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {
             // Not applicable to PBR
             return null;
@@ -2892,6 +2969,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private @Nonnull BooleanExpr toBooleanExpr(RouteMapMatch match) {
     return match.accept(
         new RouteMapMatchVisitor<BooleanExpr>() {
+
+          @Override
+          public BooleanExpr visitRouteMapMatchAsNumber(
+              RouteMapMatchAsNumber routeMapMatchAsNumber) {
+            // This clause is only used to identify a set of BGP peers to establish a session with,
+            // is ignored in "normal" route-map use.
+            return BooleanExprs.TRUE;
+          }
 
           @Override
           public BooleanExpr visitRouteMapMatchAsPath(RouteMapMatchAsPath routeMapMatchAsPath) {
@@ -3233,8 +3318,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertLoggingSourceInterface();
     convertNtpServers();
     convertNtpSourceInterface();
-    convertSnmpServers();
-    convertSnmpSourceInterface();
+    convertSnmp();
     convertTacacsServers();
     convertTacacsSourceInterface();
     convertRouteMaps();

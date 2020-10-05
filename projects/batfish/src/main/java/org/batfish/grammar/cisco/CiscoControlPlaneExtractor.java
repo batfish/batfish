@@ -127,7 +127,14 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_GROUP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_AF_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
@@ -136,6 +143,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTR
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.EIGRP_STUB_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
@@ -204,6 +212,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBU
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_PREFIX_PRIORITY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
@@ -264,6 +273,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REA
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_LIST;
@@ -760,8 +770,8 @@ import org.batfish.grammar.cisco.CiscoParser.RangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_classicContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_default_metricContext;
-import org.batfish.grammar.cisco.CiscoParser.Re_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_router_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_eigrp_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_passive_interface_defaultContext;
@@ -785,6 +795,11 @@ import org.batfish.grammar.cisco.CiscoParser.Redistribute_ospfv3_bgp_tailContext
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_rip_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_static_is_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_aclContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_gatewayContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_prefixContext;
+import org.batfish.grammar.cisco.CiscoParser.Redl_route_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Rees_leak_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ren_address_familyContext;
@@ -806,6 +821,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interface_defaultContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_prefix_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_bgp_ciscoContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_connectedContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_eigrpContext;
@@ -970,6 +986,7 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfc_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfc_vniContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_exportContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
@@ -6484,8 +6501,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (VariableContext name : ctx.name_list) {
       names.add(name.getText());
       _configuration.referenceStructure(
-          AS_PATH_ACCESS_LIST, name.getText(),
-          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST, name.getStart().getLine());
+          AS_PATH_ACCESS_LIST,
+          name.getText(),
+          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST,
+          name.getStart().getLine());
     }
     RouteMapMatchAsPathAccessListLine line = new RouteMapMatchAsPathAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
@@ -6512,8 +6531,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Variable_access_listContext v : ctx.name_list) {
       names.add(v.getText());
       _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, v.getText(),
-          ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
+          IPV4_ACCESS_LIST, v.getText(), ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
     }
     RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
@@ -6704,6 +6722,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentEigrpProcess.setRouterId(routerId);
     } else {
       _currentEigrpProcess.setRouterId(null);
+    }
+  }
+
+  @Override
+  public void exitRe_eigrp_stub(Re_eigrp_stubContext ctx) {
+    // In process context
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    warn(ctx.getParent(), "EIGRP stub is not currently supported");
+  }
+
+  @Override
+  public void exitRees_leak_map(Rees_leak_mapContext ctx) {
+    if (ctx.map != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, ctx.map.getText(), EIGRP_STUB_LEAK_MAP, ctx.map.getStart().getLine());
     }
   }
 
@@ -7193,9 +7229,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!_no && ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, name,
-          PIM_RP_ADDRESS_ACL, line);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_ADDRESS_ACL, line);
     }
   }
 
@@ -7641,26 +7675,87 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRe_distribute_list(Re_distribute_listContext ctx) {
+  public void exitRedl_acl(Redl_aclContext ctx) {
     if (_currentEigrpProcess == null) {
       warn(ctx, "No EIGRP process available");
       return;
     }
-    if (ctx.iname == null) {
-      _w.addWarning(
-          ctx, getFullText(ctx), _parser, "Global distribute-list not supported for EIGRP");
-      return;
-    }
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
+    @Nullable
+    String ifaceName = ctx.iname == null ? null : getCanonicalInterfaceName(ctx.iname.getText());
     String filterName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
+    if (ctx.IN() != null) {
+      warn(ctx.getParent(), "Inbound distribute-list is not supported for EIGRP");
+      _configuration.referenceStructure(
+          IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
+      if (ifaceName != null) {
+        _configuration.referenceStructure(
+            INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
+      }
+      return;
+    }
     _configuration.referenceStructure(
         IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
+    if (ifaceName == null) {
+      warn(ctx.getParent(), "Global distribute-list not supported for EIGRP");
+      return;
+    }
     _configuration.referenceStructure(
         INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
     _currentEigrpProcess
         .getOutboundInterfaceDistributeLists()
         .put(ifaceName, new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST));
+  }
+
+  @Override
+  public void exitRedl_prefix(Redl_prefixContext ctx) {
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    warn(ctx.getParent(), "Prefix lists in distribute-list are not supported for EIGRP");
+    _configuration.referenceStructure(
+        PREFIX_LIST,
+        ctx.name.getText(),
+        ctx.IN() == null
+            ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
+            : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        ctx.name.getStart().getLine());
+    if (ctx.gwname != null) {
+      _configuration.referenceStructure(
+          PREFIX_LIST,
+          ctx.gwname.getText(),
+          ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+          ctx.gwname.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitRedl_gateway(Redl_gatewayContext ctx) {
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    warn(ctx.getParent(), "Gateways in distribute-list are not supported for EIGRP");
+    _configuration.referenceStructure(
+        PREFIX_LIST,
+        ctx.name.getText(),
+        ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+        ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitRedl_route_map(Redl_route_mapContext ctx) {
+    if (_currentEigrpProcess == null) {
+      warn(ctx, "No EIGRP process available");
+      return;
+    }
+    warn(ctx.getParent(), "Route maps in distribute-list are not supported for EIGRP");
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        ctx.name.getText(),
+        ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        ctx.name.getStart().getLine());
   }
 
   @Override
@@ -7779,6 +7874,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
      * We assume no others does this ridiculous thing. TODO: verify more vendors.
      */
     return format != CISCO_IOS;
+  }
+
+  @Override
+  public void exitRo_prefix_priority(Ro_prefix_priorityContext ctx) {
+    // prefix priority is a feature to help speed up OSPF computation
+    // we don't need to implement it but we do need to track references
+    if (ctx.map != null) {
+      String map = ctx.map.getText();
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, OSPF_PREFIX_PRIORITY_MAP, ctx.map.getLine());
+    }
   }
 
   @Override
@@ -9109,6 +9215,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitVrf_block_rb_stanza(Vrf_block_rb_stanzaContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     popPeer();
+  }
+
+  @Override
+  public void exitVrfd_af_export(Vrfd_af_exportContext ctx) {
+    warn(ctx, "Export maps for VRFs are not currently supported");
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        ctx.name.getText(),
+        VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP,
+        ctx.getStart().getLine());
   }
 
   @Override

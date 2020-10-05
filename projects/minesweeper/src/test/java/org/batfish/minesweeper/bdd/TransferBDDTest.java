@@ -8,10 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
@@ -37,21 +39,21 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
-import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
+import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -62,6 +64,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
+import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -94,8 +97,6 @@ public class TransferBDDTest {
   private BDDRoute _anyRoute;
 
   private static final String COMMUNITY_NAME = "community";
-
-  private static final String COMMUNITY_SET_NAME = "communitySet";
 
   private static final String AS_PATH_NAME = "asPathName";
 
@@ -699,6 +700,30 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testBufferedStatement() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new BufferedStatement(new SetLocalPreference(new LiteralLong(42))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // the local preference is now 42
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
+    assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
   public void testMatchAsPath() {
     _baseConfig.setAsPathAccessLists(
         ImmutableMap.of(
@@ -969,7 +994,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetCommunityExprSet() {
+  public void testSetCommunities() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
@@ -996,35 +1021,29 @@ public class TransferBDDTest {
         _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     Set<Integer> aps3040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("30:40")));
     Set<Integer> aps4040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("40:40")));
-    for (int i = 0; i < _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
+    for (int i = 0; i < _g.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
 
-      // each atomic predicate for community 30:40 has the 1 BDD; all others have the 0 BDD
+      // each atomic predicate for 30:40 or 40:40 has the 1 BDD; all others have the 0 BDD
       assertEquals(
           aps3040.contains(i) || aps4040.contains(i)
               ? outAnnouncements.getFactory().one()
               : outAnnouncements.getFactory().zero(),
           outAnnouncements.getCommunityAtomicPredicates()[i]);
     }
-    // each atomic predicate for community 40:40 has the 1 BDD
-    for (int ap :
-        _g.getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("40:40")))) {
-      assertEquals(
-          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
-    }
   }
 
   @Test
-  public void testSetLiteralCommunitySet() {
+  public void testMatchCommunities() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
-                new SetCommunities(
-                    new LiteralCommunitySet(
-                        CommunitySet.of(
-                            StandardCommunity.parse("30:40"), StandardCommunity.parse("40:40")))))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(),
+                        new HasCommunity(
+                            new StandardCommunityHighMatch(
+                                new IntComparison(IntComparator.EQ, new LiteralInt(30))))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
@@ -1033,135 +1052,37 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    // the policy is applicable to all announcements
-    assertTrue(acceptedAnnouncements.isOne());
+    BDDRoute anyRoute = new BDDRoute(_g);
+    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
 
-    Map<CommunityVar, Set<Integer>> regexAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    Set<Integer> aps3040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("30:40")));
-    Set<Integer> aps4040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("40:40")));
-    for (int i = 0; i < _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
+    // get the atomic predicates that correspond to ^30:
+    Set<Integer> ap30 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from("^30:"));
 
-      // each atomic predicate for community 30:40 has the 1 BDD; all others have the 0 BDD
-      assertEquals(
-          aps3040.contains(i) || aps4040.contains(i)
-              ? outAnnouncements.getFactory().one()
-              : outAnnouncements.getFactory().zero(),
-          outAnnouncements.getCommunityAtomicPredicates()[i]);
-    }
-    // each atomic predicate for community 40:40 has the 1 BDD
-    for (int ap :
-        _g.getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("40:40")))) {
-      assertEquals(
-          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
-    }
+    BDD expectedBDD =
+        BDDRoute.factory.orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
+    assertEquals(expectedBDD, acceptedAnnouncements);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test
-  public void testSetNamedCommunitySet() {
-    _baseConfig.setCommunitySets(
-        ImmutableMap.of(
-            COMMUNITY_SET_NAME,
-            CommunitySet.of(StandardCommunity.parse("30:40"), StandardCommunity.parse("40:40"))));
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(new SetCommunities(new CommunitySetReference(COMMUNITY_SET_NAME)))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
-            .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
-
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
-
-    // the policy is applicable to all announcements
-    assertTrue(acceptedAnnouncements.isOne());
-
-    Map<CommunityVar, Set<Integer>> regexAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    Set<Integer> aps3040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("30:40")));
-    Set<Integer> aps4040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("40:40")));
-    for (int i = 0; i < _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
-
-      // each atomic predicate for community 30:40 has the 1 BDD; all others have the 0 BDD
-      assertEquals(
-          aps3040.contains(i) || aps4040.contains(i)
-              ? outAnnouncements.getFactory().one()
-              : outAnnouncements.getFactory().zero(),
-          outAnnouncements.getCommunityAtomicPredicates()[i]);
-    }
-    // each atomic predicate for community 40:40 has the 1 BDD
-    for (int ap :
-        _g.getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("40:40")))) {
-      assertEquals(
-          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
-    }
-  }
-
-  @Test
-  public void testSetNamedCommunityExprSet() {
-    _baseConfig.setCommunitySetExprs(
-        ImmutableMap.of(
-            COMMUNITY_SET_NAME,
-            new LiteralCommunitySet(
-                CommunitySet.of(
-                    StandardCommunity.parse("30:40"), StandardCommunity.parse("40:40")))));
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(new SetCommunities(new CommunitySetExprReference(COMMUNITY_SET_NAME)))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
-            .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
-
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
-
-    // the policy is applicable to all announcements
-    assertTrue(acceptedAnnouncements.isOne());
-
-    Map<CommunityVar, Set<Integer>> regexAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    Set<Integer> aps3040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("30:40")));
-    Set<Integer> aps4040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("40:40")));
-    for (int i = 0; i < _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
-
-      // each atomic predicate for community 30:40 has the 1 BDD; all others have the 0 BDD
-      assertEquals(
-          aps3040.contains(i) || aps4040.contains(i)
-              ? outAnnouncements.getFactory().one()
-              : outAnnouncements.getFactory().zero(),
-          outAnnouncements.getCommunityAtomicPredicates()[i]);
-    }
-    // each atomic predicate for community 40:40 has the 1 BDD
-    for (int ap :
-        _g.getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("40:40")))) {
-      assertEquals(
-          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
-    }
-  }
-
-  @Test
-  public void testSetCommunitySetUnion() {
+  public void testMatchCommunityInHalves() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(
-                new SetCommunities(
-                    CommunitySetUnion.of(
-                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("30:40"))),
-                        new CommunityExprsSet(
-                            ImmutableSet.of(
-                                new StandardCommunityHighLowExprs(
-                                    new LiteralInt(40), new LiteralInt(40)))))))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(),
+                        new HasCommunity(
+                            new CommunityMatchAll(
+                                ImmutableList.of(
+                                    new StandardCommunityHighMatch(
+                                        new IntComparison(IntComparator.EQ, new LiteralInt(30))),
+                                    new StandardCommunityLowMatch(
+                                        new IntComparison(
+                                            IntComparator.EQ, new LiteralInt(20))))))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     _g = new Graph(_batfish, _batfish.getSnapshot(), true);
 
@@ -1170,65 +1091,23 @@ public class TransferBDDTest {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outAnnouncements = result.getFirst();
 
-    // the policy is applicable to all announcements
-    assertTrue(acceptedAnnouncements.isOne());
+    BDDRoute anyRoute = new BDDRoute(_g);
+    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
 
-    Map<CommunityVar, Set<Integer>> regexAPs =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    Set<Integer> aps3040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("30:40")));
-    Set<Integer> aps4040 = regexAPs.get(CommunityVar.from(StandardCommunity.parse("40:40")));
-    for (int i = 0; i < _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
+    // only the APs that belong to both ^30: and :20$ should be allowed
+    Set<Integer> ap30 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from("^30:"));
+    Set<Integer> ap20 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(":20$"));
 
-      // each atomic predicate for community 30:40 has the 1 BDD; all others have the 0 BDD
-      assertEquals(
-          aps3040.contains(i) || aps4040.contains(i)
-              ? outAnnouncements.getFactory().one()
-              : outAnnouncements.getFactory().zero(),
-          outAnnouncements.getCommunityAtomicPredicates()[i]);
-    }
-    // each atomic predicate for community 40:40 has the 1 BDD
-    for (int ap :
-        _g.getCommunityAtomicPredicates()
-            .getRegexAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("40:40")))) {
-      assertEquals(
-          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
-    }
-  }
+    Set<Integer> intersection = new HashSet<>(ap30);
+    intersection.retainAll(ap20);
 
-  /**
-   * We support CommunitySetDifference for the special case when the set being differenced is empty.
-   * This is necessary to handle the translation of IOS XR community sets, which includes (at least
-   * in some cases) an initial difference of {@link InputCommunities} with {@link
-   * AllStandardCommunities}. Currently we don't support non-empty InputCommunities or arbitrary
-   * community set differences.
-   */
-  @Test
-  public void testSetEmptyCommunitySetDifference() {
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(
-                new SetCommunities(
-                    new CommunitySetDifference(
-                        InputCommunities.instance(), AllStandardCommunities.instance())))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
-            .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot(), true);
+    BDD expectedBDD =
+        BDDRoute.factory.orAll(intersection.stream().map(i -> aps[i]).collect(Collectors.toList()));
+    assertEquals(expectedBDD, acceptedAnnouncements);
 
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
-
-    // the policy is applicable to all announcements
-    assertTrue(acceptedAnnouncements.isOne());
-
-    for (int i = 0; i < _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(); i++) {
-      // all atomic predicates should have the value zero, since the set of communities being
-      // set is empty
-      assertEquals(
-          outAnnouncements.getFactory().zero(), outAnnouncements.getCommunityAtomicPredicates()[i]);
-    }
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
   }
 
   @Test

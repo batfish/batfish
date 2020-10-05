@@ -15,7 +15,7 @@ re_classic
 re_classic_tail
 :
    re_distribute_list
-   | re_eigrp_null
+   | re_eigrp
    | re_eigrp_router_id
    | rec_address_family
    | rec_metric_weights
@@ -37,18 +37,31 @@ re_default_metric
 
 re_distribute_list
 :
-   DISTRIBUTE_LIST name = variable_distribute_list OUT (iname = interface_name_unstructured)? NEWLINE
+   DISTRIBUTE_LIST
+   (
+      redl_acl
+      | redl_gateway
+      | redl_prefix
+      | redl_route_map
+   )
+;
+
+re_eigrp
+:
+   EIGRP
+   (
+      re_eigrp_null
+      | re_eigrp_stub
+   )
 ;
 
 re_eigrp_null
 :
-   NO? EIGRP
    (
       DEFAULT_ROUTE_TAG
       | EVENT_LOG_SIZE
       | LOG_NEIGHBOR_CHANGES
       | LOG_NEIGHBOR_WARNINGS
-      | STUB
    ) null_rest_of_line
 ;
 
@@ -58,6 +71,31 @@ re_eigrp_router_id
       EIGRP ROUTER_ID id = IP_ADDRESS
       | NO EIGRP ROUTER_ID
    ) NEWLINE
+;
+
+re_eigrp_stub
+:
+   STUB
+   (
+      rees_leak_map
+      | rees_null
+   )* NEWLINE
+;
+
+rees_null
+:
+   (
+      RECEIVE_ONLY
+      | CONNECTED
+      | STATIC
+      | SUMMARY
+      | REDISTRIBUTED
+   )
+;
+
+rees_leak_map
+:
+  LEAK_MAP map = variable
 ;
 
 re_named
@@ -300,7 +338,7 @@ rec_address_family_tail
 :
    re_autonomous_system
    | re_default_metric
-   | re_eigrp_null
+   | re_eigrp
    | re_eigrp_router_id
    | re_network
    | re_passive_interface_default
@@ -339,6 +377,47 @@ rec_null
    ) null_rest_of_line
 ;
 
+redl_acl
+:
+   name = variable_distribute_list
+   (
+      IN
+      | OUT
+   )
+   (iname = interface_name_unstructured)? NEWLINE
+;
+
+redl_gateway
+:
+   GATEWAY name = variable_distribute_list
+   (
+      IN
+      | OUT
+   )
+   NEWLINE
+;
+
+redl_prefix
+:
+   PREFIX name = variable_distribute_list
+   ( GATEWAY gwname = variable_distribute_list)?
+   (
+      IN
+      | OUT
+   )
+   NEWLINE
+;
+
+redl_route_map
+:
+   ROUTE_MAP name = variable_distribute_list
+   (
+      IN
+      | OUT
+   )
+   NEWLINE
+;
+
 ren_address_family
 :
    ADDRESS_FAMILY
@@ -372,7 +451,7 @@ ren_address_family_null
 
 ren_address_family_tail
 :
-   re_eigrp_null
+   re_eigrp
    | re_eigrp_router_id
    | re_network
    | re_passive_interface_default
@@ -418,7 +497,7 @@ ren_service_family_null
 
 ren_service_family_tail
 :
-   re_eigrp_null
+   re_eigrp
    | re_eigrp_router_id
    | ren_metric_weights
    | ren_service_family_null

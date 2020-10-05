@@ -1361,6 +1361,11 @@ BUFFERED
    'buffered'
 ;
 
+BUG_ALERT
+:
+   'bug-alert'
+;
+
 BUNDLE
 :
    'bundle'
@@ -2176,6 +2181,11 @@ DEAD_INTERVAL
 DEADTIME
 :
    'deadtime'
+;
+
+DEBUG
+:
+   'debug'
 ;
 
 DEBUG_TRACE
@@ -3246,6 +3256,11 @@ EQ
    'eq'
 ;
 
+ERRDISABLE
+:
+   'errdisable'
+;
+
 ERROR
 :
    'error'
@@ -3266,14 +3281,19 @@ ERROR_RATE_THRESHOLD
    'error-rate-threshold'
 ;
 
+ERROR_PASSTHRU
+:
+   'error-passthru'
+;
+
 ERROR_RECOVERY
 :
    'error-recovery'
 ;
 
-ERROR_PASSTHRU
+ERROR_REPORTING
 :
-   'error-passthru'
+   'error-reporting'
 ;
 
 ERRORS
@@ -3874,6 +3894,11 @@ FROM
    'from'
 ;
 
+FROM_USER
+:
+   'from-user'
+;
+
 FTP
 :
    'ftp'
@@ -3987,6 +4012,11 @@ GODI
 GRACEFUL
 :
    'graceful'
+;
+
+GRACE_PERIOD
+:
+   'grace-period'
 ;
 
 GRACEFUL_RESTART
@@ -4377,6 +4407,11 @@ HOTSPOT
 HP_ALARM_MGR
 :
    'hp-alarm-mgr'
+;
+
+HSC
+:
+   'hsc'
 ;
 
 HT_SSID_PROFILE
@@ -5535,6 +5570,21 @@ LOG_ADJACENCY_CHANGES
    'log-adjacency-changes'
 ;
 
+LOG_CONSOLE
+:
+   'log-console'
+;
+
+LOG_FILE
+:
+   'log-file'
+;
+
+LOG_SYSLOG
+:
+   'log-syslog'
+;
+
 LOG_ENABLE
 :
    'log-enable'
@@ -6471,6 +6521,11 @@ NAME
    'name' -> pushMode ( M_Name )
 ;
 
+NAME_RESOLUTION
+:
+   'name-resolution'
+;
+
 NAME_SERVER
 :
    'name-server'
@@ -7026,6 +7081,11 @@ OPENFLOW
    'openflow'
 ;
 
+OPENSTACK
+:
+   'openstack'
+;
+
 OPENVPN
 :
    'openvpn'
@@ -7164,6 +7224,11 @@ OVERLOAD_CONTROL
 OVERRIDE
 :
    'override'
+;
+
+OVSDB_SHUTDOWN
+:
+   'ovsdb-shutdown'
 ;
 
 OWNER
@@ -7454,6 +7519,11 @@ PERMIT
 PERMIT_HOSTDOWN
 :
    'permit-hostdown'
+;
+
+PERSIST_DATABASE
+:
+   'persist-database'
 ;
 
 PFC
@@ -8514,6 +8584,12 @@ RESULT_TYPE
 RESUME
 :
    'resume'
+;
+
+
+RESYNC_PERIOD
+:
+   'resync-period'
 ;
 
 RETAIN
@@ -10336,6 +10412,11 @@ TIME_ZONE
 TIMING
 :
    'timing'
+;
+
+TLS
+:
+   'tls'
 ;
 
 TLS_PROXY

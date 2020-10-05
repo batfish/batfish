@@ -786,7 +786,7 @@ public class CumulusFrrGrammarTest {
     _frr.getVrfs().put("NAME", new Vrf("NAME"));
     parse("vrf NAME\n exit-vrf\n");
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
+        getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines().enumerate(),
         contains(1, 2));
   }
 
@@ -846,7 +846,9 @@ public class CumulusFrrGrammarTest {
     assertThat(entry2.getAction(), equalTo(LineAction.DENY));
 
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.ROUTE_MAP, name).getDefinitionLines(),
+        getDefinedStructureInfo(CumulusStructureType.ROUTE_MAP, name)
+            .getDefinitionLines()
+            .enumerate(),
         equalTo(ImmutableSet.of(1, 2)));
   }
 
@@ -1155,7 +1157,7 @@ public class CumulusFrrGrammarTest {
     // Check that the AS-path access list definition was registered
     DefinedStructureInfo definedStructureInfo =
         getDefinedStructureInfo(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name);
-    assertThat(definedStructureInfo.getDefinitionLines(), contains(1, 2));
+    assertThat(definedStructureInfo.getDefinitionLines().enumerate(), contains(1, 2));
   }
 
   @Test

@@ -34,6 +34,12 @@ import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtended
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 
+/**
+ * Create a BDD from a {@link CommunityMatchExpr} expression, such that the models of the BDD
+ * represent all and only communities that match the expression. This BDD is used as part of
+ * symbolic route analysis of the {@link
+ * org.batfish.datamodel.routing_policy.communities.MatchCommunities} expression.
+ */
 @ParametersAreNonnullByDefault
 public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, Arg> {
   @Override
@@ -115,7 +121,11 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitCommunityNot(CommunityNot communityNot, Arg arg) {
-    return communityNot.getExpr().accept(this, arg).not();
+    BDD toBeNegated = communityNot.getExpr().accept(this, arg);
+    // to negate a predicate on a single community, we diff it from a predicate representing
+    // any community. simply negating toBeNegated is not sufficient because it would allow a model
+    // where all atomic predicates are false, which doesn't correspond to any concrete communities.
+    return arg.getBDDRoute().anyCommunity().diffWith(toBeNegated);
   }
 
   @Override

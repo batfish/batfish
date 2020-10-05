@@ -38,9 +38,7 @@ import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
@@ -58,7 +56,6 @@ import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
-import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.version.BatfishVersion;
 
@@ -85,7 +82,6 @@ class IncrementalBdpEngine {
       assert scope != null; // avoid unused warning
 
       _bfLogger.resetTimer();
-      IncrementalDataPlane.Builder dpBuilder = IncrementalDataPlane.builder();
       _bfLogger.info("\nComputing Data Plane using iBDP\n");
 
       // TODO: switch to topologies and owners from TopologyProvider
@@ -120,6 +116,21 @@ class IncrementalBdpEngine {
       // TODO: eventually, IGP needs to be part of fixed-point below, because tunnels.
       computeIgpDataPlane(nodes, initialTopologyContext, answerElement);
 
+      LOGGER.info("Initialize virtual routers before topology fixed point");
+      Span initializationSpan =
+          GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
+      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
+        assert innerScope != null; // avoid unused warning
+        nodes
+            .values()
+            .parallelStream()
+            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .forEach(
+                vr -> vr.initForEgpComputationBeforeTopologyLoop(externalAdverts, ipVrfOwners));
+      } finally {
+        initializationSpan.finish();
+      }
+
       /*
        * Perform a fixed-point computation.
        */
@@ -135,15 +146,15 @@ class IncrementalBdpEngine {
 
           // Force re-init of partial dataplane. Re-inits forwarding analysis, etc.
           computeFibs(nodes);
-          IncrementalDataPlane partialDataplane =
-              dpBuilder
+          PartialDataplane partialDataplane =
+              PartialDataplane.builder()
                   .setNodes(nodes)
                   .setLayer3Topology(currentTopologyContext.getLayer3Topology())
                   .build();
 
           TracerouteEngine trEngCurrentL3Topogy =
               new TracerouteEngineImpl(
-                  partialDataplane, currentTopologyContext.getLayer3Topology());
+                  partialDataplane, currentTopologyContext.getLayer3Topology(), configurations);
 
           // Update topologies
           LOGGER.info("Updating dynamic topologies");
@@ -200,7 +211,7 @@ class IncrementalBdpEngine {
                   ipVrfOwners,
                   false,
                   true,
-                  new TracerouteEngineImpl(partialDataplane, newLayer3Topology),
+                  new TracerouteEngineImpl(partialDataplane, newLayer3Topology, configurations),
                   initialTopologyContext.getLayer2Topology().orElse(null));
           TopologyContext newTopologyContext =
               currentTopologyContext
@@ -216,12 +227,7 @@ class IncrementalBdpEngine {
 
           boolean isOscillating =
               computeNonMonotonicPortionOfDataPlane(
-                  nodes,
-                  externalAdverts,
-                  answerElement,
-                  newTopologyContext,
-                  networkConfigurations,
-                  ipVrfOwners);
+                  nodes, answerElement, newTopologyContext, networkConfigurations);
           if (isOscillating) {
             // If we are oscillating here, network has no stable solution.
             LOGGER.error("Network has no stable solution");
@@ -255,7 +261,7 @@ class IncrementalBdpEngine {
               .setLayer3Topology(currentTopologyContext.getLayer3Topology())
               .build();
       _bfLogger.printElapsedTime();
-      return new ComputeDataPlaneResult(answerElement, finalDataplane, currentTopologyContext);
+      return new IbdpResult(answerElement, finalDataplane, currentTopologyContext, nodes);
     } finally {
       span.finish();
     }
@@ -274,14 +280,11 @@ class IncrementalBdpEngine {
    * @param nodes nodes that are participating in the computation
    * @param iterationLabel iteration label (for stats tracking)
    * @param allNodes all nodes in the network (for correct neighbor referencing)
-   * @param topologyContext the various network topologies
    */
   private static void computeDependentRoutesIteration(
       Map<String, Node> nodes,
-      int numIterations,
       String iterationLabel,
       Map<String, Node> allNodes,
-      TopologyContext topologyContext,
       NetworkConfigurations networkConfigurations,
       int iteration) {
     Span overallSpan =
@@ -289,20 +292,6 @@ class IncrementalBdpEngine {
     LOGGER.info("{}: Compute dependent routes", iterationLabel);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(overallSpan)) {
       assert scope != null; // avoid unused warning
-      Span depRoutesspan =
-          GlobalTracer.get().buildSpan(iterationLabel + ": Init dependent routes").start();
-      LOGGER.info("{}: Init dependent routes", iterationLabel);
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(depRoutesspan)) {
-        assert innerScope != null; // avoid unused warning
-        // (Re)initialization of dependent route calculation
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().parallelStream())
-            .forEach(VirtualRouter::reinitForNewIteration);
-      } finally {
-        depRoutesspan.finish();
-      }
 
       // Static nextHopIp routes
       Span nhIpSpan =
@@ -426,27 +415,8 @@ class IncrementalBdpEngine {
         span.finish();
       }
 
-      computeIterationOfBgpRoutes(
-          nodes,
-          iterationLabel,
-          allNodes,
-          topologyContext.getBgpTopology(),
-          networkConfigurations,
-          iteration);
+      computeIterationOfBgpRoutes(iterationLabel, allNodes, nodes);
 
-      Span redistributeSpan =
-          GlobalTracer.get().buildSpan(iterationLabel + ": Redistribute").start();
-      LOGGER.info("{}: Redistribute", iterationLabel);
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(redistributeSpan)) {
-        assert innerScope != null; // avoid unused warning
-        nodes.values().stream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(virtualRouter -> virtualRouter.redistribute(numIterations));
-      } finally {
-        redistributeSpan.finish();
-      }
-
-      queueRoutesForCrossVrfLeaking(nodes, iterationLabel);
       leakAcrossVrfs(nodes, iterationLabel);
     } finally {
       overallSpan.finish();
@@ -454,31 +424,20 @@ class IncrementalBdpEngine {
   }
 
   private static void computeIterationOfBgpRoutes(
-      Map<String, Node> nodes,
-      String iterationLabel,
-      Map<String, Node> allNodes,
-      BgpTopology bgpTopology,
-      NetworkConfigurations networkConfigurations,
-      int iteration) {
+      String iterationLabel, Map<String, Node> allNodes, Map<String, Node> nodes) {
     Span span =
         GlobalTracer.get().buildSpan(iterationLabel + ": Init for new BGP iteration").start();
     LOGGER.info("{}: Init for new BGP iteration", iterationLabel);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      nodes.values().stream()
+      nodes
+          .values()
+          .parallelStream()
           .forEach(
-              n ->
-                  n.getVirtualRouters()
-                      .values()
-                      .forEach(
-                          vr -> {
-                            // Iteration for one VR
-                            vr.bgpIteration(allNodes);
-                            // Merge results into main RIB, for all VRs
-                            n.getVirtualRouters()
-                                .values()
-                                .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
-                          }));
+              n -> {
+                // Execute one round of bgp route propagation
+                n.getVirtualRouters().values().forEach(vr -> vr.bgpIteration(allNodes));
+              });
     } finally {
       span.finish();
     }
@@ -502,19 +461,9 @@ class IncrementalBdpEngine {
     Span propSpan =
         GlobalTracer.get().buildSpan(iterationLabel + ": Propagate BGP v4 routes").start();
     LOGGER.info("{}: Propagate BGP v4 routes", iterationLabel);
+
     try (Scope innerScope = GlobalTracer.get().scopeManager().activate(propSpan)) {
       assert innerScope != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
-          .forEach(
-              vr -> {
-                Map<Bgpv4Rib, RibDelta<Bgpv4Route>> deltas =
-                    vr.processBgpMessages(bgpTopology, networkConfigurations, nodes);
-                vr.finalizeBgpRoutesAndQueueOutgoingMessages(
-                    deltas, allNodes, bgpTopology, networkConfigurations);
-              });
 
       // Merge BGP routes from BGP process into the main RIB
       nodes
@@ -523,41 +472,14 @@ class IncrementalBdpEngine {
           .flatMap(n -> n.getVirtualRouters().values().stream())
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
-      // Multi-VRF redistribution of BGP routes:
-      nodes
-          .values()
-          .parallelStream()
-          .forEach(
-              n -> {
-                for (VirtualRouter srcVr : n.getVirtualRouters().values()) {
-                  for (VirtualRouter dstVr : n.getVirtualRouters().values()) {
-                    if (dstVr.getBgpRoutingProcess() == null) {
-                      continue;
-                    }
-                    dstVr
-                        .getBgpRoutingProcess()
-                        .redistribute(
-                            iteration > 1
-                                ? srcVr._mainRibRouteDeltaBuilder.build()
-                                : RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
-                                    .add(srcVr.getMainRib().getTypedRoutes())
-                                    .build(),
-                            srcVr.getName());
-                  }
-                }
-              });
     } finally {
       propSpan.finish();
     }
   }
 
-  private static void queueRoutesForCrossVrfLeaking(
-      Map<String, Node> nodes, String iterationLabel) {
-    Span span =
-        GlobalTracer.get()
-            .buildSpan(iterationLabel + ": Queueing routes to leak across VRFs")
-            .start();
-    LOGGER.info("{}: Queueing routes to leak across VRFs", iterationLabel);
+  private static void queueRoutesForCrossVrfLeaking(Map<String, Node> nodes) {
+    Span span = GlobalTracer.get().buildSpan("Queueing routes to leak across VRFs").start();
+    LOGGER.info("Queueing routes to leak across VRFs");
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
@@ -679,20 +601,16 @@ class IncrementalBdpEngine {
    * Compute the EGP portion of the route exchange. Must be called after IGP routing has converged.
    *
    * @param nodes A dictionary of configuration-wrapping Bdp nodes keyed by name
-   * @param externalAdverts the set of external BGP advertisements
    * @param ae The output answer element in which to store a report of the computation. Also
    *     contains the current recovery iteration.
    * @param topologyContext The various network topologies
-   * @param ipVrfOwners The ip owner mapping
    * @return true iff the computation is oscillating
    */
   private boolean computeNonMonotonicPortionOfDataPlane(
       SortedMap<String, Node> nodes,
-      Set<BgpAdvertisement> externalAdverts,
       IncrementalBdpAnswerElement ae,
       TopologyContext topologyContext,
-      NetworkConfigurations networkConfigurations,
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+      NetworkConfigurations networkConfigurations) {
     LOGGER.info("Compute EGP");
     Span span = GlobalTracer.get().buildSpan("Compute EGP").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -701,52 +619,20 @@ class IncrementalBdpEngine {
       /*
        * Initialize all routers and their message queues (can be done as parallel as possible)
        */
-      LOGGER.info("Initialize virtual routers");
+      LOGGER.info("Initialize virtual routers with updated topologies");
       Span initializationSpan =
-          GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
+          GlobalTracer.get()
+              .buildSpan("Initialize virtual routers with updated topologies")
+              .start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
         assert innerScope != null; // avoid unused warning
         nodes
             .values()
             .parallelStream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(vr -> vr.initForEgpComputation(topologyContext));
+            .forEach(vr -> vr.initForEgpComputationWithNewTopology(topologyContext));
       } finally {
         initializationSpan.finish();
-      }
-
-      LOGGER.info("Queue initial cross-VRF leaking");
-      Span crossVrfLeakingSpan =
-          GlobalTracer.get().buildSpan("Queue initial cross-VRF leaking").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(crossVrfLeakingSpan)) {
-        assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(VirtualRouter::initCrossVrfImports);
-      } finally {
-        crossVrfLeakingSpan.finish();
-      }
-
-      LOGGER.info("Queue initial BGP messages");
-      Span bgpInitialSpan = GlobalTracer.get().buildSpan("Queue initial bgp messages").start();
-      try (Scope innerScope = GlobalTracer.get().scopeManager().activate(bgpInitialSpan)) {
-        assert innerScope != null; // avoid unused warning
-        // Queue initial outgoing messages
-        BgpTopology bgpTopology = topologyContext.getBgpTopology();
-        nodes
-            .values()
-            .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
-            .forEach(
-                vr -> {
-                  vr.processExternalBgpAdvertisements(
-                      externalAdverts, ipVrfOwners, nodes, bgpTopology, networkConfigurations);
-                  vr.queueInitialBgpMessages(bgpTopology, nodes, networkConfigurations);
-                });
-      } finally {
-        bgpInitialSpan.finish();
       }
 
       /*
@@ -779,6 +665,46 @@ class IncrementalBdpEngine {
             computeScheduleSpan.finish();
           }
 
+          // (Re)initialization of dependent route calculation
+          //  Since this is a local step, coloring not required.
+
+          LOGGER.info("Re-Init for new route iteration");
+          Span depRoutesspan =
+              GlobalTracer.get().buildSpan("Re-Init for new route iteration").start();
+
+          try (Scope reiinitscope = GlobalTracer.get().scopeManager().activate(depRoutesspan)) {
+            assert reiinitscope != null; // avoid unused warning
+
+            nodes
+                .values()
+                .parallelStream()
+                .flatMap(n -> n.getVirtualRouters().values().parallelStream())
+                .forEach(VirtualRouter::reinitForNewIteration);
+          } finally {
+            depRoutesspan.finish();
+          }
+
+          /*
+          Redistribution: take all the routes merged into the main RIB during previous iteration
+          and offer them to each routing process.
+
+          This must be called before any `executeIteration` calls on any routing process.
+          Since this is a local step, coloring not required.
+          */
+          Span redistributeSpan = GlobalTracer.get().buildSpan("Redistribute").start();
+          LOGGER.info("Redistribute");
+          try (Scope redistscope = GlobalTracer.get().scopeManager().activate(redistributeSpan)) {
+            assert redistscope != null; // avoid unused warning
+            nodes.values().stream()
+                .flatMap(n -> n.getVirtualRouters().values().stream())
+                .forEach(VirtualRouter::redistribute);
+
+            // Handle cross-VRF leaking here too.
+            queueRoutesForCrossVrfLeaking(nodes);
+          } finally {
+            redistributeSpan.finish();
+          }
+
           // compute dependent routes for each allowable set of nodes until we cover all nodes
           int nodeSet = 0;
           while (schedule.hasNext()) {
@@ -786,15 +712,17 @@ class IncrementalBdpEngine {
             String iterationlabel =
                 String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
             computeDependentRoutesIteration(
-                iterationNodes,
-                _numIterations,
-                iterationlabel,
-                nodes,
-                topologyContext,
-                networkConfigurations,
-                _numIterations);
+                iterationNodes, iterationlabel, nodes, networkConfigurations, _numIterations);
             ++nodeSet;
           }
+
+          // Tell each VR that a route computation round has ended.
+          // This must be the last thing called on a VR in a routing round.
+          nodes
+              .values()
+              .parallelStream()
+              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .forEach(VirtualRouter::endOfEgpRound);
 
           /*
            * Perform various bookkeeping at the end of the iteration:
@@ -914,13 +842,13 @@ class IncrementalBdpEngine {
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return toImmutableSortedMap(
-        dp.getNodes(),
+        dp.getRibs(),
         Entry::getKey,
         nodeEntry ->
             toImmutableSortedMap(
-                nodeEntry.getValue().getVirtualRouters(),
+                nodeEntry.getValue(),
                 Entry::getKey,
-                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
+                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getRoutes())));
   }
 
   /**

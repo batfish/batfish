@@ -13,12 +13,14 @@ options {
 tokens {
    ACK,
    BANG,
+   DOUBLE_QUOTED_NAME,
    DYNAMIC_DB,
    FIN,
    INTERFACE_NAME,
    INTERFACE_WILDCARD,
    ISO_ADDRESS,
    LITERAL_OR_REGEX_COMMUNITY,
+   NAME,
    PIPE,
    RST,
    SYN,
@@ -5729,7 +5731,7 @@ TELNET
 
 TERM
 :
-   'term'
+   'term' -> pushMode ( M_Name )
 ;
 
 TFTP
@@ -6721,6 +6723,26 @@ F_Letter
 ;
 
 fragment
+F_Name
+:
+  F_NameChar+
+;
+
+fragment
+F_NameQuoted
+:
+// Quotes, at least one char, does not end in space
+  '"' F_NameChar ((F_NameChar | ' ')* F_NameChar)? '"'
+;
+
+fragment
+F_NameChar
+:
+  [0-9A-Za-z_]
+  | '-'
+;
+
+fragment
 F_NewlineChar
 :
    [\r\n]
@@ -6849,7 +6871,7 @@ M_AsPath_PATH
 
 M_AsPath_TERM
 :
-   'term' -> type ( TERM ) , popMode
+   'term' -> type ( TERM ) , mode ( M_Name )
 ;
 
 M_AsPath_VARIABLE
@@ -7354,6 +7376,28 @@ M_Members_LITERAL_OR_REGEX_COMMUNITY
 M_Members_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_Name;
+
+M_Name_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_Name_NAME
+:
+  F_Name -> type ( NAME ) , popMode
+;
+
+M_Name_QUOTED_NAME
+:
+  F_NameQuoted -> type ( DOUBLE_QUOTED_NAME ), popMode
+;
+
+M_Name_WS
+:
+  F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
 mode M_PrefixListName;

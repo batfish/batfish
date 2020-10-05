@@ -1867,6 +1867,22 @@ null_af_multicast_tail
    NSF NEWLINE
 ;
 
+vrfd_af_export
+:
+   EXPORT
+   (
+      IPV4
+      | IPV6
+   )?
+   (
+      MULTICAST
+      | UNICAST
+   )?
+   ( prefix_limit = DEC )?
+   MAP name = variable
+   NEWLINE
+;
+
 vrfd_af_null
 :
    NO?
@@ -4655,7 +4671,8 @@ vrfd_address_family
       MAX_ROUTE DEC
    )? NEWLINE
    (
-      vrfd_af_null
+      vrfd_af_export
+      | vrfd_af_null
    )*
    (
       EXIT_ADDRESS_FAMILY NEWLINE

@@ -339,6 +339,16 @@ ro_passive_interface
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
+ro_prefix_priority
+:
+   NO? PREFIX_PRIORITY
+   (
+     HIGH
+     | LOW
+   )
+   ROUTE_MAP map = VARIABLE NEWLINE
+;
+
 ro_redistribute_bgp_cisco
 :
    REDISTRIBUTE BGP bgp_asn
@@ -678,6 +688,7 @@ s_router_ospf
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
+      | ro_prefix_priority
       | ro_redistribute_bgp_cisco
       | ro_redistribute_connected
       | ro_redistribute_eigrp

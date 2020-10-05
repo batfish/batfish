@@ -1,7 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.collect.ImmutableSortedMap;
-import java.io.Serializable;
 import java.util.Optional;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -10,7 +9,7 @@ import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.dataplane.rib.Rib;
 
 /** Dataplane-specific encapsulation of {@link Configuration} */
-public final class Node implements Serializable {
+public final class Node {
 
   private final Configuration _c;
 

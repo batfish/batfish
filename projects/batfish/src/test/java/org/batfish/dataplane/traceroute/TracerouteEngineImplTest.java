@@ -1346,12 +1346,13 @@ public class TracerouteEngineImplTest {
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(true, ImmutableSet.of(i2Name), null, null))
         .build();
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _tempFolder);
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, c);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    TracerouteEngineImpl te = new TracerouteEngineImpl(dp, Topology.EMPTY);
+    TracerouteEngineImpl te = new TracerouteEngineImpl(dp, Topology.EMPTY, configs);
     List<TraceAndReverseFlow> forwardTraces =
         te.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
 
@@ -1422,12 +1423,13 @@ public class TracerouteEngineImplTest {
                 .setNetwork(Prefix.ZERO)
                 .setNextVrf(vrf1.getName())
                 .build());
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _tempFolder);
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, c);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 
-    TracerouteEngineImpl te = new TracerouteEngineImpl(dp, Topology.EMPTY);
+    TracerouteEngineImpl te = new TracerouteEngineImpl(dp, Topology.EMPTY, configs);
     List<TraceAndReverseFlow> forwardTraces =
         te.computeTracesAndReverseFlows(ImmutableSet.of(flow), false).get(flow);
 

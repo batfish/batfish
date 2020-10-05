@@ -4926,7 +4926,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private AccessListAddressSpecifier toAccessListAddressSpecifier(Access_list_ip_rangeContext ctx) {
+  private @Nonnull AccessListAddressSpecifier toAccessListAddressSpecifier(
+      Access_list_ip_rangeContext ctx) {
     if (ctx.ip != null) {
       if (ctx.wildcard != null) {
         // IP and mask
@@ -6859,7 +6860,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
     }
     r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    r.setOnlyClassfulRoutes(false);
   }
 
   @Override
@@ -7624,7 +7624,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentStandardAcl.addLine(line);
   }
 
-  private StandardAccessListServiceSpecifier computeStandardAccessListServiceSpecifier(
+  private @Nonnull StandardAccessListServiceSpecifier computeStandardAccessListServiceSpecifier(
       Standard_access_list_tailContext ctx) {
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();

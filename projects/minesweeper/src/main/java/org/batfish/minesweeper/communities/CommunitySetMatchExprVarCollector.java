@@ -19,6 +19,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.minesweeper.CommunityVar;
 
+/** Collect all community literals and regexes in a {@link CommunitySetMatchExpr}. */
 @ParametersAreNonnullByDefault
 public class CommunitySetMatchExprVarCollector
     implements CommunitySetMatchExprVisitor<Set<CommunityVar>, Configuration> {
@@ -58,7 +59,7 @@ public class CommunitySetMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, Configuration arg) {
-    return ImmutableSet.of(CommunityVar.from(communitySetMatchRegex.getRegex()));
+    throw new UnsupportedOperationException("Community set regexes are not supported");
   }
 
   @Override

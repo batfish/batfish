@@ -37,6 +37,7 @@ import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 
+/** Collect all community literals and regexes in a {@link CommunityMatchExpr}. */
 @ParametersAreNonnullByDefault
 public class CommunityMatchExprVarCollector
     implements CommunityMatchExprVisitor<Set<CommunityVar>, Configuration> {

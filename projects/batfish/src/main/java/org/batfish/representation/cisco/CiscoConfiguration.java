@@ -260,6 +260,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("BDI", "BDI")
           .put("BRI", "BRI")
           .put("Bundle-Ether", "Bundle-Ethernet")
+          .put("Bundle-Ethernet", "Bundle-Ethernet")
           .put("BVI", "BVI")
           .put("Cable", "Cable")
           .put("cable-downstream", "cable-downstream")
@@ -281,6 +282,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("ge", "GigabitEthernet")
           .put("GMPLS", "GMPLS")
           .put("HundredGigE", "HundredGigabitEthernet")
+          .put("HundredGigabitEthernet", "HundredGigabitEthernet")
           .put("ip", "ip")
           .put("Group-Async", "Group-Async")
           .put("lo", "Loopback")
@@ -312,8 +314,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("tw", "TwoGigabitEthernet")
           .put("twe", "TwentyFiveGigE")
           .put("TwentyFiveGigE", "TwentyFiveGigE")
+          .put("TwentyFiveGigabitEthernet", "TwentyFiveGigE")
           .put("TwoGigabitEthernet", "TwoGigabitEthernet")
           .put("ve", "VirtualEthernet")
+          .put("VirtualEthernet", "VirtualEthernet")
           .put("Virtual-Template", "Virtual-Template")
           .put("Vlan", "Vlan")
           .put("Vxlan", "Vxlan")
@@ -3351,10 +3355,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setBgpProcess(newBgpProcess);
           }
         });
-
     /*
-     * Another pass over interfaces to push final settings to VI interfaces and issue final warnings
-     * (e.g. has OSPF settings but no associated OSPF process)
+     * Another pass over interfaces to push final settings to VI interfaces.
+     * (e.g. has OSPF settings but no associated OSPF process, common in show run all)
      */
     _interfaces.forEach(
         (key, vsIface) -> {
@@ -3363,24 +3366,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
           org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
           if (iface == null) {
             // Should never get here
-          } else {
-            // Conversion of interface OSPF settings usually occurs per area
-            // If the iface does not have an area, then need warn and convert settings here instead
-            if (iface.getOspfAreaName() == null) {
-              // Not part of an OSPF area
-              if (vsIface.getOspfArea() != null
-                  || vsIface.getOspfCost() != null
-                  || vsIface.getOspfPassive() != null
-                  || vsIface.getOspfNetworkType() != null
-                  || vsIface.getOspfDeadInterval() != null
-                  || vsIface.getOspfHelloInterval() != null) {
-                _w.redFlag(
-                    "Interface: '"
-                        + ifaceName
-                        + "' contains OSPF settings, but there is no corresponding OSPF area (or process)");
-                finalizeInterfaceOspfSettings(iface, vsIface, null, null);
-              }
-            }
+            return;
+          } else if (iface.getOspfAreaName() != null) {
+            // Already configured
+            return;
+          }
+          // Not part of an OSPF area, but has settings
+          if (vsIface.getOspfArea() != null
+              || vsIface.getOspfCost() != null
+              || vsIface.getOspfPassive() != null
+              || vsIface.getOspfNetworkType() != null
+              || vsIface.getOspfDeadInterval() != null
+              || vsIface.getOspfHelloInterval() != null) {
+            finalizeInterfaceOspfSettings(iface, vsIface, null, null);
           }
         });
 
@@ -3406,6 +3404,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
         CiscoStructureUsage.EIGRP_AF_INTERFACE,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
         CiscoStructureUsage.FAILOVER_LAN_INTERFACE,
         CiscoStructureUsage.FAILOVER_LINK_INTERFACE,
@@ -3482,6 +3482,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
         CiscoStructureUsage.CRYPTO_MAP_MATCH_ADDRESS,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
@@ -3510,6 +3512,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.PREFIX_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
@@ -3546,6 +3552,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
         CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP,
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP,
@@ -3553,6 +3561,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP,
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP,
         CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP,
+        CiscoStructureUsage.EIGRP_STUB_LEAK_MAP,
         CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP,
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
@@ -3565,11 +3574,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
+        CiscoStructureUsage.OSPF_PREFIX_PRIORITY_MAP,
         CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
         CiscoStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.RIP_REDISTRIBUTE_CONNECTED_MAP,
-        CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP);
+        CiscoStructureUsage.RIP_REDISTRIBUTE_STATIC_MAP,
+        CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP);
 
     // Cable
     markConcreteStructure(

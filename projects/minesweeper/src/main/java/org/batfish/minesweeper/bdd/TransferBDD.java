@@ -111,9 +111,9 @@ public class TransferBDD {
    * simply need the map from each regex to its corresponding set of atomic predicates, each
    * represented by a unique integer.
    */
-  private Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
+  private final Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
 
-  private Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
+  private final Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
   private final Configuration _conf;
 
@@ -127,6 +127,10 @@ public class TransferBDD {
     _graph = g;
     _conf = conf;
     _statements = statements;
+
+    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
+    _asPathRegexAtomicPredicates =
+        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
   }
 
   /*
@@ -629,12 +633,13 @@ public class TransferBDD {
     } else if (stmt instanceof SetCommunity) {
       curP.debug("SetCommunity");
       SetCommunity sc = (SetCommunity) stmt;
-      /**
-       * TODO: simply collecting all community variables in the expression is not correct in
-       * general, since for example some of them may be negated in the expression. for now we only
-       * support setting literal communities.
-       */
       CommunitySetExpr setExpr = sc.getExpr();
+      /**
+       * TODO: simply collecting all community variables in setExpr is not correct in general, since
+       * for example some of them may be negated in the expression. for now we only support setting
+       * literal communities. we should create a special visitor to gather the community atomic
+       * predicates that are being set.
+       */
       if (!(setExpr instanceof LiteralCommunity || setExpr instanceof LiteralCommunitySet)) {
         throw new BatfishException("Unhandled community expression in 'set community': " + setExpr);
       }
@@ -646,6 +651,13 @@ public class TransferBDD {
       SetCommunities sc = (SetCommunities) stmt;
       org.batfish.datamodel.routing_policy.communities.CommunitySetExpr setExpr =
           sc.getCommunitySetExpr();
+      /**
+       * TODO: the SetCommunitiesVarCollector does not support some kinds of expressions, such as
+       * set differences, for the same reason as described above regarding limitations of
+       * SetCommunity. again the right solution is to create a visitor to gather community atomic
+       * predicates. (note that SetCommunity and SetCommunities use two different data models for
+       * expressions, both named CommunitySetExpr but in different packages.)
+       */
       Set<CommunityVar> comms = setExpr.accept(new SetCommunitiesVarCollector(), _conf);
       setCommunities(comms, curP, result);
 
@@ -1166,9 +1178,6 @@ public class TransferBDD {
    */
   public TransferResult compute(@Nullable Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
-    _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
-    _asPathRegexAtomicPredicates =
-        _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
     BDDRoute o = new BDDRoute(_graph);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
     TransferResult result = compute(_statements, p);

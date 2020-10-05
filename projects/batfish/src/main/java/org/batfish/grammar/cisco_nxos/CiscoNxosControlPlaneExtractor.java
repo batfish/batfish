@@ -272,6 +272,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_execContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asnContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_asn_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Bgp_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Both_export_importContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Channel_idContext;
@@ -556,6 +557,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv4Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rip_instanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rm_continueContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_as_pathContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmm_interfaceContext;
@@ -638,7 +640,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_nveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_interface_regularContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_trackContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vdcContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.S_vrf_contextContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmp_communityContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv4aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv6aclContext;
@@ -673,6 +678,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vcaf4u_route_targetContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vcaf6u_route_targetContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vdc_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_vlanContext;
@@ -760,6 +766,7 @@ import org.batfish.representation.cisco_nxos.RemarkIpAccessListLine;
 import org.batfish.representation.cisco_nxos.RouteDistinguisherOrAuto;
 import org.batfish.representation.cisco_nxos.RouteMap;
 import org.batfish.representation.cisco_nxos.RouteMapEntry;
+import org.batfish.representation.cisco_nxos.RouteMapMatchAsNumber;
 import org.batfish.representation.cisco_nxos.RouteMapMatchAsPath;
 import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
@@ -786,6 +793,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
+import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.SnmpServer;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
@@ -805,6 +813,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     implements BatfishListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
+  private static final LongSpace BGP_ASN_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
       IntegerSpace.of(Range.closed(2, 255));
   private static final IntegerSpace BGP_INHERIT_RANGE = IntegerSpace.of(Range.closed(1, 65535));
@@ -934,6 +943,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace PROTOCOL_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace RIP_PROCESS_ID_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace SNMP_COMMUNITY_LENGTH_RANGE =
+      IntegerSpace.of(Range.closed(1, 32));
 
   @VisibleForTesting
   public static final IntegerSpace PACKET_LENGTH_RANGE = IntegerSpace.of(Range.closed(20, 9210));
@@ -961,6 +972,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @VisibleForTesting
   public static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
 
+  private static final IntegerSpace VDC_ID_RANGE = IntegerSpace.of(Range.closed(1, 4));
   private static final IntegerSpace VNI_RANGE = IntegerSpace.of(Range.closed(0, 16777214));
   private static final IntegerSpace VRF_NAME_LENGTH_RANGE = IntegerSpace.of(Range.closed(1, 32));
 
@@ -1263,6 +1275,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
   private Optional<String> _currentRouteMapName;
+
+  private SnmpCommunity _currentSnmpCommunity;
 
   @SuppressWarnings("unused")
   private SnmpServer _currentSnmpServer;
@@ -3696,6 +3710,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.REMOTE_AS() != null && ctx.bgp_asn() != null) {
       long asn = toLong(ctx.bgp_asn());
       _currentBgpVrfNeighbor.setRemoteAs(asn);
+      _currentBgpVrfNeighbor.setRemoteAsRouteMap(null);
     }
 
     if (ctx.REMOTE_AS() != null && ctx.ROUTE_MAP() != null) {
@@ -3704,6 +3719,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         return;
       }
       String name = nameOrError.get();
+      _currentBgpVrfNeighbor.setRemoteAs(null);
       _currentBgpVrfNeighbor.setRemoteAsRouteMap(name);
       _c.referenceStructure(
           ROUTE_MAP, name, BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP, ctx.getStart().getLine());
@@ -5641,6 +5657,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRmm_as_number(Rmm_as_numberContext ctx) {
+    LongSpace asns = toBgpAsnRange(ctx, ctx.numbers);
+    if (asns != null) {
+      _currentRouteMapEntry.setMatchAsNumber(new RouteMapMatchAsNumber(asns));
+    }
+  }
+
+  @Override
   public void exitRmm_as_path(Rmm_as_pathContext ctx) {
     Optional<List<String>> optNames = toIpAsPathAccessListNames(ctx, ctx.names);
     if (!optNames.isPresent()) {
@@ -5984,8 +6008,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitS_vdc(S_vdcContext ctx) {
+    Optional<Integer> maybeId = toInteger(ctx, ctx.id);
+    if (!maybeId.isPresent()) {
+      return;
+    }
+    int vdcId = maybeId.get();
+    if (vdcId != 1) {
+      warn(ctx, "Virtual device contexts are not yet supported");
+    }
+  }
+
+  @Override
   public void exitS_vrf_context(S_vrf_contextContext ctx) {
     _currentVrf = _c.getDefaultVrf();
+  }
+
+  @Override
+  public void enterSnmps_community(Snmps_communityContext ctx) {
+    Optional<String> name = toString(ctx, ctx.community);
+    // dummy for invalid name
+    _currentSnmpCommunity =
+        name.map(s -> _c.getSnmpCommunities().computeIfAbsent(s, SnmpCommunity::new))
+            .orElseGet(() -> new SnmpCommunity("dummy"));
+  }
+
+  @Override
+  public void exitSnmps_community(Snmps_communityContext ctx) {
+    _currentSnmpCommunity = null;
   }
 
   @Override
@@ -5994,7 +6044,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!name.isPresent()) {
       return;
     }
-    todo(ctx);
+    _currentSnmpCommunity.setAclName(name.get());
     _c.referenceStructure(
         IP_ACCESS_LIST_ABSTRACT_REF,
         name.get(),
@@ -6008,7 +6058,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!name.isPresent()) {
       return;
     }
-    todo(ctx);
+    _currentSnmpCommunity.setAclNameV4(name.get());
     _c.referenceStructure(
         IP_ACCESS_LIST,
         name.get(),
@@ -6022,7 +6072,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!name.isPresent()) {
       return;
     }
-    todo(ctx);
+    _currentSnmpCommunity.setAclNameV6(name.get());
     _c.referenceStructure(
         IPV6_ACCESS_LIST,
         name.get(),
@@ -6426,6 +6476,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Vdc_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VDC_ID_RANGE, "vdc id");
+  }
+
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Vni_numberContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, VNI_RANGE, "VNI");
@@ -6507,6 +6561,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
                         range,
                         UDP_PORT_RANGE)
                     .orElse(null));
+  }
+
+  private @Nullable LongSpace toBgpAsnRange(
+      ParserRuleContext messageCtx, Bgp_asn_rangeContext ctx) {
+    String rangeText = ctx.getText();
+    LongSpace value = LongSpace.parse(rangeText);
+    if (!BGP_ASN_RANGE.contains(value)) {
+      warn(
+          messageCtx,
+          String.format("Expected BGP ASNs in range %s, but got '%s'", BGP_ASN_RANGE, rangeText));
+      return null;
+    }
+    return value;
   }
 
   /**
@@ -7024,6 +7091,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         toStringWithLengthInSpace(messageCtx, ctx, RIP_PROCESS_ID_LENGTH_RANGE, "RIP process ID");
     // RIP process name is case-insensitive.
     return procName.map(name -> getPreferredName(name, ROUTER_RIP));
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Snmp_communityContext ctx) {
+    return toStringWithLengthInSpace(
+        messageCtx, ctx, SNMP_COMMUNITY_LENGTH_RANGE, "SNMP community");
   }
 
   private @Nullable String toString(ParserRuleContext messageCtx, Static_route_nameContext ctx) {

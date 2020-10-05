@@ -11,3 +11,41 @@ cvx
    no peer host
    no source-interface
    peer timeout 10
+   !
+   service bug-alert
+      no shutdown
+   !
+   service debug
+      no shutdown
+      interval 1
+   !
+   service hsc
+      shutdown
+      no ovsdb-shutdown
+      no error-reporting
+      vtep flood list type any
+      routing direct
+      no ssl profile
+      persist-database
+      log-console disabled
+      log-syslog disabled
+      log-file disabled
+   !
+   service mss
+      shutdown
+      vni range 1-16777214
+   !
+   service openstack
+      shutdown
+      grace-period 60
+      network type-driver vlan default
+      name-resolution interval 21600
+   !
+   service vxlan
+      shutdown
+      vtep mac-learning control-plane
+      resync-period 300
+      no flood vtep
+      no vni flood vtep
+      no arp reply relay vtep
+!

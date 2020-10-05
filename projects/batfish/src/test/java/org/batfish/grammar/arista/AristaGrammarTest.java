@@ -37,6 +37,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isSwitchport;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasId;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerAddress;
 import static org.batfish.datamodel.matchers.MlagMatchers.hasPeerInterface;
@@ -101,6 +102,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -122,6 +124,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -132,6 +135,8 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.SnmpCommunity;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -1743,6 +1748,30 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseEmail() {
+    parseVendorConfig("arista_email");
+    // don't crash.
+  }
+
+  @Test
+  public void testParseErrdisable() {
+    parseVendorConfig("arista_errdisable");
+    // don't crash.
+  }
+
+  @Test
+  public void testParseHardware() {
+    parseVendorConfig("arista_hardware");
+    // don't crash.
+  }
+
+  @Test
+  public void testParseIgmp() {
+    parseVendorConfig("arista_igmp");
+    // don't crash.
+  }
+
+  @Test
   public void testNatParse() {
     parseVendorConfig("arista_nat");
     // don't crash.
@@ -2323,6 +2352,22 @@ public class AristaGrammarTest {
   public void testSnmpExtraction() {
     Configuration config = parseConfig("arista_snmp");
     assertThat(config.getSnmpTrapServers(), containsInAnyOrder("10.1.2.3"));
+    SnmpServer server = config.getDefaultVrf().getSnmpServer();
+    assertThat(server.getCommunities(), hasKeys("STD_COMMUNITY", "EXT_COMMUNITY"));
+    SnmpCommunity std = server.getCommunities().get("STD_COMMUNITY");
+    assertThat(
+        std.getClientIps(),
+        equalTo(
+            AclIpSpace.rejecting(IpWildcard.parse("1.2.3.0/24").toIpSpace())
+                .thenPermitting(IpWildcard.parse("1.0.0.0/8").toIpSpace())
+                .build()));
+    SnmpCommunity ext = server.getCommunities().get("EXT_COMMUNITY");
+    assertThat(
+        ext.getClientIps(),
+        equalTo(
+            AclIpSpace.rejecting(IpWildcard.parse("1.2.3.0/24").toIpSpace())
+                .thenPermitting(IpWildcard.parse("1.0.0.0/8").toIpSpace())
+                .build()));
   }
 
   @Test

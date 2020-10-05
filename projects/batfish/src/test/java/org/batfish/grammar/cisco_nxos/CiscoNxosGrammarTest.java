@@ -178,6 +178,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
@@ -313,6 +314,7 @@ import org.batfish.representation.cisco_nxos.RedistributionPolicy;
 import org.batfish.representation.cisco_nxos.RouteDistinguisherOrAuto;
 import org.batfish.representation.cisco_nxos.RouteMap;
 import org.batfish.representation.cisco_nxos.RouteMapEntry;
+import org.batfish.representation.cisco_nxos.RouteMapMatchAsNumber;
 import org.batfish.representation.cisco_nxos.RouteMapMatchAsPath;
 import org.batfish.representation.cisco_nxos.RouteMapMatchCommunity;
 import org.batfish.representation.cisco_nxos.RouteMapMatchInterface;
@@ -339,6 +341,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
+import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
@@ -5793,6 +5796,7 @@ public final class CiscoNxosGrammarTest {
             "empty_deny",
             "empty_permit",
             "empty_pbr_statistics",
+            "match_as_number",
             "match_as_path",
             "match_community_standard",
             "match_community_expanded",
@@ -5875,6 +5879,10 @@ public final class CiscoNxosGrammarTest {
     }
 
     // matches
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_as_number");
+      assertRoutingPolicyPermitsRoute(rp, base);
+    }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_as_path");
       assertRoutingPolicyDeniesRoute(rp, base);
@@ -6277,6 +6285,7 @@ public final class CiscoNxosGrammarTest {
             "empty_deny",
             "empty_permit",
             "empty_pbr_statistics",
+            "match_as_number",
             "match_as_path",
             "match_community_standard",
             "match_community_expanded",
@@ -6346,6 +6355,23 @@ public final class CiscoNxosGrammarTest {
       RouteMap rm = vc.getRouteMaps().get("empty_pbr_statistics");
       assertThat(rm.getEntries(), anEmptyMap());
       assertTrue(rm.getPbrStatistics());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_as_number");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapMatchAsNumber match = entry.getMatchAsNumber();
+      assertThat(entry.getMatches().collect(onlyElement()), equalTo(match));
+      assertThat(
+          match.getAsns(),
+          equalTo(
+              LongSpace.builder()
+                  .including(64496L)
+                  .including(Range.closed(64498L, 64510L))
+                  .including(3000000000L)
+                  .build()));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("match_as_path");
@@ -6826,6 +6852,17 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(c.getSnmpTrapServers(), containsInAnyOrder("192.0.2.1", "192.0.2.2"));
     assertThat(c.getSnmpSourceInterface(), equalTo("mgmt0"));
+    Map<String, org.batfish.datamodel.SnmpCommunity> communities =
+        c.getDefaultVrf().getSnmpServer().getCommunities();
+    assertThat(communities, hasKeys("SECRETcommunity1", "SECRETcommunity2"));
+    assertThat(communities.get("SECRETcommunity1").getClientIps(), nullValue());
+    assertThat(
+        communities.get("SECRETcommunity2").getClientIps(),
+        equalTo(
+            AclIpSpace.rejecting(Ip.parse("1.2.3.4").toIpSpace())
+                .thenPermitting(Prefix.parse("1.2.3.0/24").toIpSpace())
+                .thenPermitting(Prefix.parse("2.0.0.0/8").toIpSpace())
+                .build()));
   }
 
   @Test
@@ -6835,6 +6872,16 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(vc.getSnmpServers(), hasKeys("192.0.2.1", "192.0.2.2"));
     assertThat(vc.getSnmpSourceInterface(), equalTo("mgmt0"));
+
+    assertThat(vc.getSnmpCommunities(), hasKeys("SECRETcommunity1", "SECRETcommunity2"));
+    SnmpCommunity c1 = vc.getSnmpCommunities().get("SECRETcommunity1");
+    assertThat(c1.getAclName(), nullValue());
+    assertThat(c1.getAclNameV4(), nullValue());
+    assertThat(c1.getAclNameV6(), nullValue());
+    SnmpCommunity c2 = vc.getSnmpCommunities().get("SECRETcommunity2");
+    assertThat(c2.getAclName(), equalTo("snmp_acl1"));
+    assertThat(c2.getAclNameV4(), equalTo("snmp_acl4"));
+    assertThat(c2.getAclNameV6(), equalTo("snmp_acl6"));
   }
 
   @Test
@@ -7174,6 +7221,12 @@ public final class CiscoNxosGrammarTest {
         bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.INTERFACE, "Ethernet1/1", 2));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.VRF, "vrf1", 2));
+  }
+
+  @Test
+  public void testVdcParsing() {
+    // don't throw
+    parseVendorConfig("nxos_vdc");
   }
 
   @Test
