@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -345,10 +344,7 @@ public class OspfTest {
             .put(c3.getHostname(), c3)
             .put(c4.getHostname(), c4)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =
@@ -585,10 +581,7 @@ public class OspfTest {
             .put(r5.getHostname(), r5)
             .put(r6.getHostname(), r6)
             .build();
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     OspfTopologyUtils.initNeighborConfigs(NetworkConfigurations.of(configurations));
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     IncrementalDataPlane dp =

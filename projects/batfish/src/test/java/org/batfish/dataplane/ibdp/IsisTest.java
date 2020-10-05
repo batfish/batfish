@@ -24,7 +24,6 @@ import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedMap;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -167,10 +166,7 @@ public class IsisTest {
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(r1.getHostname(), r1, r2.getHostname(), r2);
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IbdpResult)
         engine.computeDataPlane(
@@ -451,10 +447,7 @@ public class IsisTest {
             r4,
             r5.getHostname(),
             r5);
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IbdpResult)
         engine.computeDataPlane(
@@ -640,10 +633,7 @@ public class IsisTest {
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
             r1.getHostname(), r1, r2.getHostname(), r2, r3.getHostname(), r3, r4.getHostname(), r4);
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     Topology topology = TopologyUtil.synthesizeL3Topology(configurations);
     return (IncrementalDataPlane)
         engine.computeDataPlane(
