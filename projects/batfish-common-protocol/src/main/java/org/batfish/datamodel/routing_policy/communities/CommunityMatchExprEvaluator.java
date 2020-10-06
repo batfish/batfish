@@ -65,23 +65,13 @@ public final class CommunityMatchExprEvaluator
   @Override
   public @Nonnull Boolean visitCommunityMatchAll(
       CommunityMatchAll communityMatchAll, Community arg) {
-    for (CommunityMatchExpr expr : communityMatchAll.getExprs()) {
-      if (!expr.accept(this, arg)) {
-        return false;
-      }
-    }
-    return true;
+    return communityMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
   public @Nonnull Boolean visitCommunityMatchAny(
       CommunityMatchAny communityMatchAny, Community arg) {
-    for (CommunityMatchExpr expr : communityMatchAny.getExprs()) {
-      if (expr.accept(this, arg)) {
-        return true;
-      }
-    }
-    return false;
+    return communityMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this, arg));
   }
 
   @Override
