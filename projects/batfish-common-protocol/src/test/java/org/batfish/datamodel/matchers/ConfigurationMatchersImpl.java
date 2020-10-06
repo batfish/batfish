@@ -1,7 +1,6 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Map;
-import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -322,13 +321,13 @@ final class ConfigurationMatchersImpl {
   }
 
   static final class HasTrackingGroups
-      extends FeatureMatcher<Configuration, NavigableMap<String, TrackMethod>> {
-    HasTrackingGroups(@Nonnull Matcher<? super NavigableMap<String, TrackMethod>> subMatcher) {
+      extends FeatureMatcher<Configuration, Map<String, TrackMethod>> {
+    HasTrackingGroups(@Nonnull Matcher<? super Map<String, TrackMethod>> subMatcher) {
       super(subMatcher, "A Configuration with trackingGroups:", "trackingGroups");
     }
 
     @Override
-    protected NavigableMap<String, TrackMethod> featureValueOf(Configuration actual) {
+    protected Map<String, TrackMethod> featureValueOf(Configuration actual) {
       return actual.getTrackingGroups();
     }
   }
