@@ -246,11 +246,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
       SortedMap<String, Function<Configuration, NavigableSet<String>>> serverSetAccessors =
           new TreeMap<>();
-      serverSetAccessors.put("DnsServers", Configuration::getDnsServers);
-      serverSetAccessors.put("LoggingServers", Configuration::getLoggingServers);
-      serverSetAccessors.put("NtpServers", Configuration::getNtpServers);
-      serverSetAccessors.put("SnmpTrapServers", Configuration::getSnmpTrapServers);
-      serverSetAccessors.put("TacacsServers", Configuration::getTacacsServers);
+      serverSetAccessors.put("DnsServers", c -> ImmutableSortedSet.copyOf(c.getDnsServers()));
+      serverSetAccessors.put(
+          "LoggingServers", c -> ImmutableSortedSet.copyOf(c.getLoggingServers()));
+      serverSetAccessors.put("NtpServers", c -> ImmutableSortedSet.copyOf(c.getNtpServers()));
+      serverSetAccessors.put(
+          "SnmpTrapServers", c -> ImmutableSortedSet.copyOf(c.getSnmpTrapServers()));
+      serverSetAccessors.put("TacacsServers", c -> ImmutableSortedSet.copyOf(c.getTacacsServers()));
 
       if (serverSets.isEmpty()) {
         serverSets.addAll(serverSetAccessors.keySet());

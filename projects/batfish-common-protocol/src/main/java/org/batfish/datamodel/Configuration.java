@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Predicates.not;
@@ -19,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -144,6 +144,7 @@ public final class Configuration implements Serializable {
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
   private static final String PROP_DEVICE_MODEL = "deviceModel";
   private static final String PROP_DEVICE_TYPE = "deviceType";
+  private static final String PROP_DNS_SERVERS = "dnsServers";
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
   private static final String PROP_DOMAIN_NAME = "domainName";
   private static final String PROP_GENERATED_REFERENCE_BOOKS = "generatedReferenceBooks";
@@ -184,7 +185,7 @@ public final class Configuration implements Serializable {
 
   private Map<String, AsPathAccessList> _asPathAccessLists;
 
-  private NavigableMap<String, AuthenticationKeyChain> _authenticationKeyChains;
+  private Map<String, AuthenticationKeyChain> _authenticationKeyChains;
 
   private Map<String, CommunityList> _communityLists;
 
@@ -202,19 +203,19 @@ public final class Configuration implements Serializable {
   private DeviceModel _deviceModel;
   private DeviceType _deviceType;
 
-  private NavigableSet<String> _dnsServers;
+  private Set<String> _dnsServers;
 
   private String _dnsSourceInterface;
 
   private String _domainName;
 
-  private NavigableMap<String, ReferenceBook> _generatedReferenceBooks;
+  private Map<String, ReferenceBook> _generatedReferenceBooks;
 
-  private @Nonnull NavigableMap<String, IkePhase1Key> _ikePhase1keys;
+  private @Nonnull Map<String, IkePhase1Key> _ikePhase1keys;
 
-  private NavigableMap<String, IkePhase1Proposal> _ikePhase1Proposals;
+  private Map<String, IkePhase1Proposal> _ikePhase1Proposals;
 
-  private NavigableMap<String, IkePhase1Policy> _ikePhase1Policies;
+  private Map<String, IkePhase1Policy> _ikePhase1Policies;
 
   private Map<String, Interface> _interfaces;
 
@@ -224,21 +225,21 @@ public final class Configuration implements Serializable {
 
   private Map<String, IpSpace> _ipSpaces;
 
-  private NavigableMap<String, IpSpaceMetadata> _ipSpaceMetadata;
+  private Map<String, IpSpaceMetadata> _ipSpaceMetadata;
 
-  private NavigableMap<String, IpsecPeerConfig> _ipsecPeerConfigs;
+  private Map<String, IpsecPeerConfig> _ipsecPeerConfigs;
 
-  private NavigableMap<String, IpsecPhase2Policy> _ipsecPhase2Policies;
+  private Map<String, IpsecPhase2Policy> _ipsecPhase2Policies;
 
-  private NavigableMap<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
+  private Map<String, IpsecPhase2Proposal> _ipsecPhase2Proposals;
 
   private @Nullable Map<Location, LocationInfo> _locationInfo;
 
-  private NavigableSet<String> _loggingServers;
+  private Set<String> _loggingServers;
 
   private String _loggingSourceInterface;
 
-  private NavigableMap<String, Mlag> _mlags;
+  private Map<String, Mlag> _mlags;
 
   private final String _name;
   private @Nullable String _humanName;
@@ -246,11 +247,11 @@ public final class Configuration implements Serializable {
   /** Normal =&gt; Excluding extended and reserved vlans that should not be modified or deleted. */
   private SubRange _normalVlanRange;
 
-  private NavigableSet<String> _ntpServers;
+  private Set<String> _ntpServers;
 
   private String _ntpSourceInterface;
 
-  private NavigableMap<String, PacketPolicy> _packetPolicies;
+  private Map<String, PacketPolicy> _packetPolicies;
 
   private Map<String, Route6FilterList> _route6FilterLists;
 
@@ -260,19 +261,19 @@ public final class Configuration implements Serializable {
 
   private String _snmpSourceInterface;
 
-  private NavigableSet<String> _snmpTrapServers;
+  private Set<String> _snmpTrapServers;
 
-  private NavigableSet<String> _tacacsServers;
+  private Set<String> _tacacsServers;
 
   private String _tacacsSourceInterface;
 
-  private NavigableMap<String, TrackMethod> _trackingGroups;
+  private Map<String, TrackMethod> _trackingGroups;
 
   private VendorFamily _vendorFamily;
 
   private Map<String, Vrf> _vrfs;
 
-  private NavigableMap<String, Zone> _zones;
+  private Map<String, Zone> _zones;
 
   @JsonCreator
   private static Configuration makeConfiguration(
@@ -366,7 +367,7 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all authentication key chains for this node. */
   @JsonProperty(PROP_AUTHENTICATION_KEY_CHAINS)
-  public NavigableMap<String, AuthenticationKeyChain> getAuthenticationKeyChains() {
+  public Map<String, AuthenticationKeyChain> getAuthenticationKeyChains() {
     return _authenticationKeyChains;
   }
 
@@ -460,8 +461,13 @@ public final class Configuration implements Serializable {
     return _deviceType;
   }
 
-  public NavigableSet<String> getDnsServers() {
+  public Set<String> getDnsServers() {
     return _dnsServers;
+  }
+
+  @JsonProperty(PROP_DNS_SERVERS)
+  private Set<String> getDnsServersJson() {
+    return ImmutableSortedSet.copyOf(_dnsServers);
   }
 
   @JsonProperty(PROP_DNS_SOURCE_INTERFACE)
@@ -477,8 +483,13 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of Reference Books generated from device configurations (e.g., F5 Pools). */
   @JsonProperty(PROP_GENERATED_REFERENCE_BOOKS)
-  public NavigableMap<String, ReferenceBook> getGeneratedReferenceBooks() {
+  public Map<String, ReferenceBook> getGeneratedReferenceBooks() {
     return _generatedReferenceBooks;
+  }
+
+  @JsonProperty(PROP_GENERATED_REFERENCE_BOOKS)
+  public void setGeneratedReferenceBooks(Map<String, ReferenceBook> generatedReferenceBooks) {
+    _generatedReferenceBooks = generatedReferenceBooks;
   }
 
   /** Hostname of this node. */
@@ -495,19 +506,19 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all IKE phase1 keys for this node. */
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
-  public NavigableMap<String, IkePhase1Key> getIkePhase1Keys() {
+  public Map<String, IkePhase1Key> getIkePhase1Keys() {
     return _ikePhase1keys;
   }
 
   /** Dictionary of all IKE phase1 policies for this node. */
   @JsonProperty(PROP_IKE_PHASE1_POLICIES)
-  public NavigableMap<String, IkePhase1Policy> getIkePhase1Policies() {
+  public Map<String, IkePhase1Policy> getIkePhase1Policies() {
     return _ikePhase1Policies;
   }
 
   /** Dictionary of all IKE phase1 proposals for this node. */
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  public NavigableMap<String, IkePhase1Proposal> getIkePhase1Proposals() {
+  public Map<String, IkePhase1Proposal> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
   }
 
@@ -562,7 +573,7 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all IPSec peer configs for this node. */
   @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
-  public NavigableMap<String, IpsecPeerConfig> getIpsecPeerConfigs() {
+  public Map<String, IpsecPeerConfig> getIpsecPeerConfigs() {
     return _ipsecPeerConfigs;
   }
 
@@ -571,24 +582,24 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_IP_SPACES)
-  private NavigableMap<String, IpSpace> getIpSpacesJson() {
+  private Map<String, IpSpace> getIpSpacesJson() {
     return ImmutableSortedMap.copyOf(_ipSpaces);
   }
 
   @JsonProperty(PROP_IP_SPACE_METADATA)
-  public NavigableMap<String, IpSpaceMetadata> getIpSpaceMetadata() {
+  public Map<String, IpSpaceMetadata> getIpSpaceMetadata() {
     return _ipSpaceMetadata;
   }
 
   /** Dictionary of all IPSec phase 2 policies for this node. */
   @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
-  public NavigableMap<String, IpsecPhase2Policy> getIpsecPhase2Policies() {
+  public Map<String, IpsecPhase2Policy> getIpsecPhase2Policies() {
     return _ipsecPhase2Policies;
   }
 
   /** Dictionary of all IPSec phase 2 proposals for this node. */
   @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
-  public NavigableMap<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
+  public Map<String, IpsecPhase2Proposal> getIpsecPhase2Proposals() {
     return _ipsecPhase2Proposals;
   }
 
@@ -597,9 +608,13 @@ public final class Configuration implements Serializable {
     return _locationInfo;
   }
 
-  @JsonProperty(PROP_LOGGING_SERVERS)
-  public NavigableSet<String> getLoggingServers() {
+  public Set<String> getLoggingServers() {
     return _loggingServers;
+  }
+
+  @JsonProperty(PROP_LOGGING_SERVERS)
+  private Set<String> getLoggingServersJson() {
+    return ImmutableSortedSet.copyOf(_loggingServers);
   }
 
   @JsonProperty(PROP_LOGGING_SOURCE_INTERFACE)
@@ -609,7 +624,7 @@ public final class Configuration implements Serializable {
 
   @JsonProperty(PROP_MLAGS)
   @Nonnull
-  public NavigableMap<String, Mlag> getMlags() {
+  public Map<String, Mlag> getMlags() {
     return _mlags;
   }
 
@@ -618,9 +633,13 @@ public final class Configuration implements Serializable {
     return _normalVlanRange;
   }
 
-  @JsonProperty(PROP_NTP_SERVERS)
-  public NavigableSet<String> getNtpServers() {
+  public Set<String> getNtpServers() {
     return _ntpServers;
+  }
+
+  @JsonProperty(PROP_NTP_SERVERS)
+  private Set<String> getNtpServersJson() {
+    return ImmutableSortedSet.copyOf(_ntpServers);
   }
 
   @JsonProperty(PROP_NTP_SOURCE_INTERFACE)
@@ -670,14 +689,22 @@ public final class Configuration implements Serializable {
     return _snmpSourceInterface;
   }
 
-  @JsonProperty(PROP_SNMP_TRAP_SERVERS)
-  public NavigableSet<String> getSnmpTrapServers() {
+  public Set<String> getSnmpTrapServers() {
     return _snmpTrapServers;
   }
 
-  @JsonProperty(PROP_TACACS_SERVERS)
-  public NavigableSet<String> getTacacsServers() {
+  @JsonProperty(PROP_SNMP_TRAP_SERVERS)
+  private Set<String> getSnmpTrapServersJson() {
+    return ImmutableSortedSet.copyOf(_snmpTrapServers);
+  }
+
+  public Set<String> getTacacsServers() {
     return _tacacsServers;
+  }
+
+  @JsonProperty(PROP_TACACS_SERVERS)
+  private Set<String> getTacacsServersJson() {
+    return ImmutableSortedSet.copyOf(_tacacsServers);
   }
 
   @JsonProperty(PROP_TACACS_SOURCE_INTERFACE)
@@ -687,7 +714,7 @@ public final class Configuration implements Serializable {
 
   /** Mapping: trackingGroupID -&gt; trackMethod */
   @JsonProperty(PROP_TRACKING_GROUPS)
-  public @Nonnull NavigableMap<String, TrackMethod> getTrackingGroups() {
+  public @Nonnull Map<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;
   }
 
@@ -705,7 +732,7 @@ public final class Configuration implements Serializable {
 
   /** Dictionary of all firewall zones for this node. */
   @JsonProperty(PROP_ZONES)
-  public NavigableMap<String, Zone> getZones() {
+  public Map<String, Zone> getZones() {
     return _zones;
   }
 
@@ -716,7 +743,7 @@ public final class Configuration implements Serializable {
 
   @JsonProperty(PROP_AUTHENTICATION_KEY_CHAINS)
   public void setAuthenticationKeyChains(
-      NavigableMap<String, AuthenticationKeyChain> authenticationKeyChains) {
+      Map<String, AuthenticationKeyChain> authenticationKeyChains) {
     _authenticationKeyChains = authenticationKeyChains;
   }
 
@@ -764,7 +791,8 @@ public final class Configuration implements Serializable {
     _deviceType = deviceType;
   }
 
-  public void setDnsServers(NavigableSet<String> dnsServers) {
+  @JsonProperty(PROP_DNS_SERVERS)
+  public void setDnsServers(Set<String> dnsServers) {
     _dnsServers = dnsServers;
   }
 
@@ -784,18 +812,17 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_IKE_PHASE1_KEYS)
-  public void setIkePhase1Keys(@Nullable NavigableMap<String, IkePhase1Key> ikePhase1Keys) {
-    _ikePhase1keys =
-        ikePhase1Keys == null ? ImmutableSortedMap.of() : ImmutableSortedMap.copyOf(ikePhase1Keys);
+  public void setIkePhase1Keys(@Nullable Map<String, IkePhase1Key> ikePhase1Keys) {
+    _ikePhase1keys = firstNonNull(ikePhase1Keys, ImmutableMap.of());
   }
 
   @JsonProperty(PROP_IKE_PHASE1_POLICIES)
-  public void setIkePhase1Policies(NavigableMap<String, IkePhase1Policy> ikePhase1Policies) {
+  public void setIkePhase1Policies(Map<String, IkePhase1Policy> ikePhase1Policies) {
     _ikePhase1Policies = ikePhase1Policies;
   }
 
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  public void setIkePhase1Proposals(NavigableMap<String, IkePhase1Proposal> ikePhase1Proposals) {
+  public void setIkePhase1Proposals(Map<String, IkePhase1Proposal> ikePhase1Proposals) {
     _ikePhase1Proposals = ikePhase1Proposals;
   }
 
@@ -814,36 +841,31 @@ public final class Configuration implements Serializable {
     _ipAccessLists = ipAccessLists;
   }
 
+  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
+  public void setIpsecPeerConfigs(@Nullable Map<String, IpsecPeerConfig> ipsecPeerConfigs) {
+    _ipsecPeerConfigs =
+        ipsecPeerConfigs == null ? ImmutableMap.of() : ImmutableMap.copyOf(ipsecPeerConfigs);
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
+  public void setIpsecPhase2Policies(@Nullable Map<String, IpsecPhase2Policy> ipsecPhase2Policies) {
+    _ipsecPhase2Policies = firstNonNull(ipsecPhase2Policies, ImmutableMap.of());
+  }
+
+  @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
+  public void setIpsecPhase2Proposals(
+      @Nullable Map<String, IpsecPhase2Proposal> ipsecPhase2Proposals) {
+    _ipsecPhase2Proposals = firstNonNull(ipsecPhase2Proposals, ImmutableMap.of());
+  }
+
   @JsonProperty(PROP_IP_SPACES)
   public void setIpSpaces(Map<String, IpSpace> ipSpaces) {
     _ipSpaces = ipSpaces;
   }
 
-  @JsonProperty(PROP_IPSEC_PEER_CONFIGS)
-  public void setIpsecPeerConfigs(
-      @Nullable NavigableMap<String, IpsecPeerConfig> ipsecPeerConfigs) {
-    _ipsecPeerConfigs =
-        ipsecPeerConfigs == null
-            ? ImmutableSortedMap.of()
-            : ImmutableSortedMap.copyOf(ipsecPeerConfigs);
-  }
-
-  @JsonProperty(PROP_IPSEC_PHASE2_POLICIES)
-  public void setIpsecPhase2Policies(
-      @Nullable NavigableMap<String, IpsecPhase2Policy> ipsecPhase2Policies) {
-    _ipsecPhase2Policies =
-        ipsecPhase2Policies == null
-            ? ImmutableSortedMap.of()
-            : ImmutableSortedMap.copyOf(ipsecPhase2Policies);
-  }
-
-  @JsonProperty(PROP_IPSEC_PHASE2_PROPOSALS)
-  public void setIpsecPhase2Proposals(
-      @Nullable NavigableMap<String, IpsecPhase2Proposal> ipsecPhase2Proposals) {
-    _ipsecPhase2Proposals =
-        ipsecPhase2Proposals == null
-            ? ImmutableSortedMap.of()
-            : ImmutableSortedMap.copyOf(ipsecPhase2Proposals);
+  @JsonProperty(PROP_IP_SPACE_METADATA)
+  public void setIpSpaceMetadata(Map<String, IpSpaceMetadata> ipSpaceMetadata) {
+    _ipSpaceMetadata = ipSpaceMetadata;
   }
 
   /**
@@ -857,7 +879,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_LOGGING_SERVERS)
-  public void setLoggingServers(NavigableSet<String> loggingServers) {
+  public void setLoggingServers(Set<String> loggingServers) {
     _loggingServers = loggingServers;
   }
 
@@ -868,7 +890,7 @@ public final class Configuration implements Serializable {
 
   @JsonProperty(PROP_MLAGS)
   public void setMlags(Map<String, Mlag> mlags) {
-    _mlags = ImmutableSortedMap.copyOf(mlags);
+    _mlags = mlags;
   }
 
   @JsonIgnore
@@ -877,7 +899,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_NTP_SERVERS)
-  public void setNtpServers(NavigableSet<String> ntpServers) {
+  public void setNtpServers(Set<String> ntpServers) {
     _ntpServers = ntpServers;
   }
 
@@ -902,7 +924,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_PACKET_POLICIES)
-  public void setPacketPolicies(NavigableMap<String, PacketPolicy> packetPolicies) {
+  public void setPacketPolicies(Map<String, PacketPolicy> packetPolicies) {
     _packetPolicies = packetPolicies;
   }
 
@@ -912,12 +934,12 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_SNMP_TRAP_SERVERS)
-  public void setSnmpTrapServers(NavigableSet<String> snmpTrapServers) {
+  public void setSnmpTrapServers(Set<String> snmpTrapServers) {
     _snmpTrapServers = snmpTrapServers;
   }
 
   @JsonProperty(PROP_TACACS_SERVERS)
-  public void setTacacsServers(NavigableSet<String> tacacsServers) {
+  public void setTacacsServers(Set<String> tacacsServers) {
     _tacacsServers = tacacsServers;
   }
 
@@ -927,7 +949,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_TRACKING_GROUPS)
-  public void setTrackingGroups(@Nonnull NavigableMap<String, TrackMethod> trackingGroups) {
+  public void setTrackingGroups(@Nonnull Map<String, TrackMethod> trackingGroups) {
     _trackingGroups = trackingGroups;
   }
 
@@ -942,7 +964,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_ZONES)
-  public void setZones(NavigableMap<String, Zone> zones) {
+  public void setZones(Map<String, Zone> zones) {
     _zones = zones;
   }
 
