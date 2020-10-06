@@ -144,9 +144,9 @@ public final class CompletionMetadata implements Serializable {
    * Address books and groups do not belong here as they are network-wide. Leaving these properties
    * in place to be able to de-serialize old data. Should be removed at some point.
    */
-  @Deprecated private static final String PROP_ADDRESS_BOOKS = "addressBooks";
+  @Deprecated private static final String PROP_DEPRECATED_ADDRESS_BOOKS = "addressBooks";
 
-  @Deprecated private static final String PROP_ADDRESS_GROUPS = "addressGroups";
+  @Deprecated private static final String PROP_DEPRECATED_ADDRESS_GROUPS = "addressGroups";
   private static final String PROP_FILTER_NAMES = "filterNames";
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_IPS = "ips";
@@ -189,8 +189,8 @@ public final class CompletionMetadata implements Serializable {
 
   @JsonCreator
   private static @Nonnull CompletionMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_ADDRESS_BOOKS) Set<String> addressBooks,
-      @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) Set<String> addressGroups,
+      @Nullable @JsonProperty(PROP_DEPRECATED_ADDRESS_BOOKS) Set<String> unusedAddressBooks,
+      @Nullable @JsonProperty(PROP_DEPRECATED_ADDRESS_GROUPS) Set<String> unusedAddressGroups,
       @Nullable @JsonProperty(PROP_FILTER_NAMES) Set<String> filterNames,
       @Nullable @JsonProperty(PROP_INTERFACES) Set<NodeInterfacePair> interfaces,
       @Nullable @JsonProperty(PROP_IPS) Map<Ip, IpCompletionMetadata> ips,

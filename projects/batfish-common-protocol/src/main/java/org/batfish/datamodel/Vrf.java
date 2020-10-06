@@ -77,7 +77,7 @@ public class Vrf extends ComparableStructure<String> {
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
   private static final String PROP_DESCRIPTION = "description";
-  private static final String PROP_HAS_ORIGINATING_SESSIONS = "hasOriginatingSessions";
+  private static final String PROP_DEPRECATED_HAS_ORIGINATING_SESSIONS = "hasOriginatingSessions";
   private static final String PROP_FIREWALL_SESSION_VRF_INFO = "firewallSessionVrfInfo";
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
   private static final String PROP_CROSS_VRF_IMPORT_POLICY = "crossVrfImportPolicy";
@@ -167,7 +167,7 @@ public class Vrf extends ComparableStructure<String> {
    */
   @Deprecated
   @JsonIgnore
-  @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
+  @JsonProperty(PROP_DEPRECATED_HAS_ORIGINATING_SESSIONS)
   private boolean hasOriginatingSessions() {
     return false;
   }
@@ -295,8 +295,8 @@ public class Vrf extends ComparableStructure<String> {
 
   /** Preserved for backward compatibility. */
   @Deprecated
-  @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
-  private void setHasOriginatingSessions(boolean hasOriginatingSessions) {
+  @JsonProperty(PROP_DEPRECATED_HAS_ORIGINATING_SESSIONS)
+  private void setHasOriginatingSessions(boolean unusedHasOriginatingSessions) {
     _firewallSessionVrfInfo = new FirewallSessionVrfInfo(true);
   }
 

@@ -34,7 +34,7 @@ public final class BgpRoute {
   public static final String PROP_PROTOCOL = "protocol";
   public static final String PROP_SRC_PROTOCOL = "srcProtocol";
   public static final String PROP_WEIGHT = "weight";
-  public static final String PROP_CLASS = "class";
+  public static final String PROP_DEPRECATED_CLASS = "class";
 
   @Nonnull private final AsPath _asPath;
   @Nonnull private final SortedSet<Community> _communities;
@@ -87,7 +87,7 @@ public final class BgpRoute {
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_WEIGHT) int weight,
       // For backwards compatibility, does nothing
-      @Nullable @JsonProperty(PROP_CLASS) String clazz) {
+      @Nullable @JsonProperty(PROP_DEPRECATED_CLASS) String unusedClass) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
     checkArgument(originatorIp != null, "%s must be specified", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "%s must be specified", PROP_ORIGIN_TYPE);

@@ -34,7 +34,7 @@ public final class SearchFiltersQuestion extends Question {
   private static final String PROP_ACTION = "action";
 
   // Retained for backwards compatibility
-  private static final String PROP_GENERATE_EXPLANATIONS = "explain";
+  private static final String PROP_DEPRECATED_GENERATE_EXPLANATIONS = "explain";
 
   private static final PacketHeaderConstraints DEFAULT_HEADER_CONSTRAINTS =
       PacketHeaderConstraints.unconstrained();
@@ -55,7 +55,8 @@ public final class SearchFiltersQuestion extends Question {
   private static SearchFiltersQuestion create(
       @Nullable @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) Boolean complementHeaderSpace,
       @Nullable @JsonProperty(PROP_FILTERS) String filters,
-      @Nullable @JsonProperty(PROP_GENERATE_EXPLANATIONS) Boolean generateExplanations,
+      @Nullable @JsonProperty(PROP_DEPRECATED_GENERATE_EXPLANATIONS)
+          Boolean unusedGenerateExplanations,
       @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_START_LOCATION) String start,

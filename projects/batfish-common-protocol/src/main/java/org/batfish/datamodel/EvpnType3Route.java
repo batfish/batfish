@@ -197,7 +197,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
 
   // value of network is ignored during deserialization
   @JsonProperty(PROP_NETWORK)
-  private void setNetwork(@Nullable Prefix network) {}
+  private void setNetwork(@Nullable Prefix unusedNetwork) {}
 
   /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
 

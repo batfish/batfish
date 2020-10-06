@@ -618,7 +618,6 @@ public final class JFactory extends BDDFactory {
   private int[] bddnodes; /* All of the bdd nodes */
   private int bddfreepos; /* First free node */
   private int bddfreenum; /* Number of free nodes */
-  private int bddproduced; /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
   private int[] bddrefstack; /* Internal node reference stack */
   private int bddrefstacktop; /* Internal node reference stack top */
@@ -635,47 +634,35 @@ public final class JFactory extends BDDFactory {
   private int cachesize; /* Size of the operator caches */
   private long gbcclock; /* Clock ticks used in GBC */
 
-  private static final int BDD_MEMORY = -1; /* Out of memory */
-  private static final int BDD_VAR = -2; /* Unknown variable */
+  /** Unknown variable */
+  private static final int BDD_VAR = -2;
+  /** Variable value out of range (not in domain) */
   private static final int BDD_RANGE = -3;
-  /* Variable value out of range (not in domain) */
-  private static final int BDD_DEREF = -4;
-  /* Removing external reference to unknown node */
+  /** Called bdd_init() twice without bdd_done() */
   private static final int BDD_RUNNING = -5;
-  /* Called bdd_init() twice whithout bdd_done() */
-  private static final int BDD_FILE = -6; /* Some file operation failed */
-  private static final int BDD_FORMAT = -7; /* Incorrect file format */
-  private static final int BDD_ORDER = -8;
-  /* Vars. not in order for vector based functions */
-  private static final int BDD_BREAK = -9; /* User called break */
-  private static final int BDD_VARNUM = -10;
-  /* Different number of vars. for vector pair */
+  /** User called break */
+  private static final int BDD_BREAK = -9;
+  /** Tried to set max. number of nodes to be fewer than there already has been allocated */
   private static final int BDD_NODES = -11;
-  /* Tried to set max. number of nodes to be fewer */
-  /* than there already has been allocated */
-  private static final int BDD_OP = -12; /* Unknown operator */
-  private static final int BDD_VARSET = -13; /* Illegal variable set */
-  private static final int BDD_VARBLK = -14; /* Bad variable block operation */
+  /** Unknown operator */
+  private static final int BDD_OP = -12;
+  /** Illegal variable set */
+  private static final int BDD_VARSET = -13;
+  /** Trying to decrease the number of variables */
   private static final int BDD_DECVNUM = -15;
-  /* Trying to decrease the number of variables */
+
+  /** Replacing to already existing variables */
   private static final int BDD_REPLACE = -16;
-  /* Replacing to already existing variables */
+  /** Number of nodes reached user defined maximum */
   private static final int BDD_NODENUM = -17;
-  /* Number of nodes reached user defined maximum */
-  private static final int BDD_ILLBDD = -18; /* Illegal bdd argument */
-  private static final int BDD_SIZE = -19; /* Illegal size argument */
-
-  private static final int BVEC_SIZE = -20; /* Mismatch in bitvector size */
-  private static final int BVEC_SHIFT = -21;
-  /* Illegal shift-left/right parameter */
-  private static final int BVEC_DIVZERO = -22; /* Division by zero */
-
-  private static final int BDD_ERRNUM = 24;
+  /** Illegal bdd argument */
+  private static final int BDD_ILLBDD = -18;
+  /** Illegal size argument */
+  private static final int BDD_SIZE = -19;
 
   /* Strings for all error mesages */
   private static final String[] errorstrings = {
     "",
-    "Out of memory",
     "Unknown variable",
     "Value out of range",
     "Unknown BDD root dereferenced",
@@ -844,7 +831,7 @@ public final class JFactory extends BDDFactory {
     return PAIR(r, miscid);
   }
 
-  private static int APPEXHASH(int l, int r, int op) {
+  private static int APPEXHASH(int l, int r, int unusedOp) {
     return PAIR(l, r);
   }
 
@@ -3550,7 +3537,6 @@ public final class JFactory extends BDDFactory {
     res = bddfreepos;
     bddfreepos = NEXT(bddfreepos);
     bddfreenum--;
-    bddproduced++;
 
     SETLEVELANDMARK(res, level);
     SETLOW(res, low);
@@ -3694,8 +3680,7 @@ public final class JFactory extends BDDFactory {
   private static final int CACHEID_CONSTRAIN = 0x0;
   private static final int CACHEID_RESTRICT = 0x1;
   private static final int CACHEID_SATCOU = 0x2;
-  private static final int CACHEID_SATCOULN = 0x3;
-  private static final int CACHEID_PATHCOU = 0x4;
+  private static final int CACHEID_PATHCOU = 0x3;
 
   /* Hash value modifiers for replace/compose */
   private static final int CACHEID_REPLACE = 0x0;
@@ -4061,7 +4046,7 @@ public final class JFactory extends BDDFactory {
     }
   }
 
-  private void BddCache_clean_multiop(BddCache cache) {
+  private void BddCache_clean_multiop(BddCache unusedCache) {
     throw new UnsupportedOperationException("Clean is unimplemented for multiop cache.");
   }
 
@@ -4260,7 +4245,6 @@ public final class JFactory extends BDDFactory {
     bddnodesize = 0;
     bddmaxnodesize = 0;
     bddvarnum = 0;
-    bddproduced = 0;
 
     // err_handler = null;
     // gbc_handler = null;
@@ -4949,7 +4933,6 @@ public final class JFactory extends BDDFactory {
     res = bddfreepos;
     bddfreepos = NEXT(bddfreepos);
     levels[var].nodenum++;
-    bddproduced++;
     bddfreenum--;
 
     SETVARr(res, var);

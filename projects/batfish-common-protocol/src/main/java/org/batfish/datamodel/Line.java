@@ -163,7 +163,7 @@ public class Line extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_LINE_TYPE)
-  private void setLineType(String lineType) {
+  private void setLineType(String unusedLineType) {
     /* Ignore this -- it's only used by Jackson to ignore fields. */
   }
 

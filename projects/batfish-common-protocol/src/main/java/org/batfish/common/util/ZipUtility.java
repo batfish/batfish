@@ -124,14 +124,7 @@ public class ZipUtility {
   @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer
   private static void zipFolder(String srcFolder, OutputStream outputStream, Closer closer)
       throws Exception {
-    ZipOutputStream zip = null;
-    /*
-     * create the output stream to zip file result
-     */
-    zip = closer.register(new ZipOutputStream(outputStream));
-    /*
-     * add the folder to the zip
-     */
+    ZipOutputStream zip = closer.register(new ZipOutputStream(outputStream));
     addFolderToZip("", srcFolder, zip);
   }
 }

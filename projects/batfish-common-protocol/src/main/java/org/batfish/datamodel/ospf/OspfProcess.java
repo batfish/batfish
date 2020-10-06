@@ -620,5 +620,5 @@ public final class OspfProcess implements Serializable {
 
   @Deprecated
   @JsonProperty(PROP_NEIGHBORS)
-  private void setNeighborsDeprecated(JsonNode n) {}
+  private void setNeighborsDeprecated(JsonNode unused) {}
 }

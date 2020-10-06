@@ -52,8 +52,8 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   @JsonCreator
   private static KernelRoute create(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String unusedNextHopInterface,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) int unusedAdminCost,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create kernel route: missing %s", PROP_NETWORK);
     return new KernelRoute(network, tag);

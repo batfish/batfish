@@ -487,7 +487,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @JsonProperty(PROP_TCP_FLAGS_RST) int tcpFlagsRst,
       @JsonProperty(PROP_TCP_FLAGS_SYN) int tcpFlagsSyn,
       @JsonProperty(PROP_TCP_FLAGS_FIN) int tcpFlagsFin,
-      @JsonProperty(PROP_DEPRECATED_TAG) String tag,
+      @JsonProperty(PROP_DEPRECATED_TAG) String unusedTag,
       @JsonProperty(PROP_DEPRECATED_STATE) Object ignored) {
     return new Flow(
         requireNonNull(ingressNode, PROP_INGRESS_NODE + " must not be null"),

@@ -54,7 +54,7 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
     long elapsedTime;
     ParserRuleContext tree = null;
     _logger.infof("Processing: '%s'\n", _key);
-    BgpTablePlugin plugin = null;
+    BgpTablePlugin plugin;
     BgpTableFormat format = BgpTableFormatDetector.identifyBgpTableFormat(_objectText);
     switch (format) {
       case EMPTY:

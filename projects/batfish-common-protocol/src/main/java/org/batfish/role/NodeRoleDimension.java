@@ -99,8 +99,9 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    * @param name the name of the dimension
    * @param roles for backward-compatibility with an older format for node role dimensions, a list
    *     of node roles is accepted and each is converted into a role dimension mapping (see below)
-   * @param roleRegexes for backward-compatibility with an older format for node role dimensions, a
-   *     list of role regexes is accepted **but has no effect on the produced node role dimension**
+   * @param unusedRoleRegexes for backward-compatibility with an older format for node role
+   *     dimensions, a list of role regexes is accepted **but has no effect on the produced node
+   *     role dimension**
    * @param mappings a list of role dimension mappings, which specify how to identify role names for
    *     this dimension from node names
    * @return the new node role dimension
@@ -109,7 +110,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   private static @Nonnull NodeRoleDimension create(
       @Nullable @JsonProperty(PROP_NAME) String name,
       @Nullable @JsonProperty(PROP_ROLES) List<NodeRole> roles,
-      @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes,
+      @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> unusedRoleRegexes,
       @Nullable @JsonProperty(PROP_ROLE_DIMENSION_MAPPINGS) List<RoleDimensionMapping> mappings) {
     checkArgument(name != null, "Name of node role cannot be null");
     List<RoleDimensionMapping> rdMaps =

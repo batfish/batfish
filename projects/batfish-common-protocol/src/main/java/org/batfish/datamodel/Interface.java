@@ -717,7 +717,7 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  private static InterfaceType computeCumulusInterfaceType(String name) {
+  private static InterfaceType computeCumulusInterfaceType(String unusedName) {
     // TODO: fill this out
     return InterfaceType.UNKNOWN;
   }
