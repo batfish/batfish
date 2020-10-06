@@ -423,6 +423,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return result;
   }
 
+  /**
+   * Search a particular route policy for behaviors of interest.
+   *
+   * @param policy the routing policy
+   * @param g a Graph object providing information about the policy's owner configuration
+   * @return an optional result, if a behavior of interest was found
+   */
   private Optional<Result> searchPolicy(RoutingPolicy policy, Graph g) {
     TransferReturn result;
     try {
@@ -451,6 +458,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return constraintsToResult(intersection, outputRoute, policy, g);
   }
 
+  /**
+   * Search all of the route policies of a particular node for behaviors of interest.
+   *
+   * @param node the node
+   * @param policies all route policies in that node
+   * @return all results from analyzing those route policies
+   */
   private Stream<Result> searchPoliciesForNode(String node, Set<RoutingPolicy> policies) {
     Graph g =
         new Graph(
