@@ -80660,6 +80660,20 @@
               "numReferrers" : 3
             }
           },
+          "community" : {
+            "fabric" : {
+              "definitionLines" : "191",
+              "numReferrers" : 1
+            },
+            "vni-100" : {
+              "definitionLines" : "192",
+              "numReferrers" : 1
+            },
+            "vni-101" : {
+              "definitionLines" : "193",
+              "numReferrers" : 1
+            }
+          },
           "interface" : {
             "fxp0" : {
               "definitionLines" : "75-78",
@@ -81241,7 +81255,22 @@
             }
           }
         },
-        "configs/juniper_extended_community" : { },
+        "configs/juniper_extended_community" : {
+          "community" : {
+            "COMM_ALL" : {
+              "definitionLines" : "5",
+              "numReferrers" : 0
+            },
+            "COMM_NON_CUST" : {
+              "definitionLines" : "6",
+              "numReferrers" : 0
+            },
+            "COMM_REGEX" : {
+              "definitionLines" : "7",
+              "numReferrers" : 0
+            }
+          }
+        },
         "configs/juniper_firewall" : {
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
@@ -86611,6 +86640,23 @@
                 126,
                 129,
                 132
+              ]
+            }
+          },
+          "community" : {
+            "fabric" : {
+              "policy-statement from community" : [
+                171
+              ]
+            },
+            "vni-100" : {
+              "policy-statement from community" : [
+                176
+              ]
+            },
+            "vni-101" : {
+              "policy-statement from community" : [
+                180
               ]
             }
           },

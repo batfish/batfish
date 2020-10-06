@@ -1,0 +1,16 @@
+#
+set system host-name juniper-community-reference
+#
+set policy-options community MATCHED members 1
+set policy-options community UNUSED invert-match
+set policy-options community UNUSED members 2
+set policy-options community ADDED members 1
+set policy-options community DELETED members 1
+set policy-options community SET members 1
+#
+set policy-options policy-statement COMMUNITY_POLICY term T1 from community MATCHED
+set policy-options policy-statement COMMUNITY_POLICY term T1 from community UNDEFINED
+set policy-options policy-statement COMMUNITY_POLICY term T1 then community add ADDED
+set policy-options policy-statement COMMUNITY_POLICY term T1 then community delete DELETED
+set policy-options policy-statement COMMUNITY_POLICY term T1 then community set SET
+set policy-options policy-statement COMMUNITY_POLICY term T1 then accept
