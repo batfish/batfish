@@ -3,8 +3,6 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -24,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
@@ -155,20 +154,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             computeRoutesWithNextHopIpArpFalse(
                 nextHopInterfacesByNodeVrf, routesWithNextHop, someoneReplies);
 
-        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
-         * with next hop ip not owned by the snapshot devices and that gets no arp reply
-         */
-        Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-            routesWithUnownedNextHopIpArpFalse =
-                computeRoutesWithNextHopIpArpFalseFilter(
-                    routesWithNextHopIpArpFalse,
-                    route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
+        dstIpsWithUnownedNextHopIpArpFalse =
+            computeDstIpsWithNextHopIpArpFalseFilter(
+                matchingIps,
+                routesWithNextHopIpArpFalse,
+                route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
-        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
-         * with next hop ip owned by the snapshot devices and that gets no arp reply
-         */
-        Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithOwnedNextHopIpArpFalse =
-            computeRoutesWithNextHopIpArpFalseFilter(
+        dstIpsWithOwnedNextHopIpArpFalse =
+            computeDstIpsWithNextHopIpArpFalseFilter(
+                matchingIps,
                 routesWithNextHopIpArpFalse,
                 route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
@@ -226,12 +220,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             computeArpTrueEdgeNextHopIp(matchingIps, routesWithNextHopIpArpTrue);
 
         _arpTrueEdge = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
-
-        dstIpsWithUnownedNextHopIpArpFalse =
-            computeDstIpsWithUnownedNextHopIpArpFalse(
-                matchingIps, routesWithUnownedNextHopIpArpFalse);
-        dstIpsWithOwnedNextHopIpArpFalse =
-            computeDstIpsWithOwnedNextHopIpArpFalse(matchingIps, routesWithOwnedNextHopIpArpFalse);
       }
 
       // mapping: hostname -> interface -> ips on which we should assume some external device (not
@@ -719,9 +707,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     return fib.allEntries().stream()
         .filter(fibEntry -> fibEntry.getAction() instanceof FibNextVrf)
         .collect(
-            groupingBy(
+            Collectors.groupingBy(
                 fibEntry -> ((FibNextVrf) fibEntry.getAction()).getNextVrf(),
-                mapping(FibEntry::getTopLevelRoute, ImmutableSet.toImmutableSet())))
+                Collectors.mapping(FibEntry::getTopLevelRoute, ImmutableSet.toImmutableSet())))
         .entrySet()
         .stream()
         .collect(
@@ -780,9 +768,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   static IpSpace computeRouteMatchConditions(
       Set<AbstractRoute> routes, Map<Prefix, IpSpace> matchingIps) {
     // get the union of IpSpace that match one of the routes
+    return computeRouteMatchConditionsFilter(routes, matchingIps, r -> true);
+  }
+
+  @VisibleForTesting
+  static IpSpace computeRouteMatchConditionsFilter(
+      Set<AbstractRoute> routes,
+      Map<Prefix, IpSpace> matchingIps,
+      Predicate<AbstractRoute> routeFilter) {
+    // get the union of IpSpace that match one of the routes
     return firstNonNull(
         AclIpSpace.union(
             routes.stream()
+                .filter(routeFilter)
                 .map(AbstractRoute::getNetwork)
                 .distinct()
                 .map(matchingIps::get)
@@ -899,36 +897,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                       ((FibForward) fibEntry.getAction()).getInterfaceName(),
                                   Collectors.mapping(
                                       FibEntry::getTopLevelRoute, Collectors.toSet())))));
-    } finally {
-      span.finish();
-    }
-  }
-
-  private static Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-      computeRoutesWithNextHopIpArpFalseFilter(
-          Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse,
-          Function<AbstractRoute, Boolean> routeFilter) {
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseFilter")
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          routesWithNextHopIpArpFalse,
-          Entry::getKey /* hostname */,
-          routesWithNextHopByHostnameEntry ->
-              toImmutableMap(
-                  routesWithNextHopByHostnameEntry.getValue(),
-                  Entry::getKey /* vrf */,
-                  routesWithNextHopByVrfEntry ->
-                      toImmutableMap(
-                          routesWithNextHopByVrfEntry.getValue(),
-                          Entry::getKey /* outInterface */,
-                          routesWithNextHopByOutInterfaceEntry ->
-                              routesWithNextHopByOutInterfaceEntry.getValue().stream()
-                                  .filter(routeFilter::apply)
-                                  .collect(Collectors.toSet()))));
     } finally {
       span.finish();
     }
@@ -1485,18 +1453,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   private static Map<String, Map<String, Map<String, IpSpace>>>
-      computeDstIpsWithOwnedNextHopIpArpFalse(
+      computeDstIpsWithNextHopIpArpFalseFilter(
           Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-          Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-              routesWithOwnedNextHopIpArpFalse) {
+          Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse,
+          Predicate<AbstractRoute> routeFilter) {
     Span span =
         GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeDstIpsWithOwnedNextHopIpArpFalse")
+            .buildSpan("ForwardingAnalysisImpl.computeDstIpsWithNextHopIpArpFalseOwnedFilter")
             .start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return toImmutableMap(
-          routesWithOwnedNextHopIpArpFalse,
+          routesWithNextHopIpArpFalse,
           Entry::getKey,
           nodeEntry ->
               toImmutableMap(
@@ -1509,39 +1477,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                         vrfEntry.getValue(),
                         Entry::getKey,
                         ifaceEntry ->
-                            computeRouteMatchConditions(ifaceEntry.getValue(), vrfMatchingIps));
-                  }));
-    } finally {
-      span.finish();
-    }
-  }
-
-  private static Map<String, Map<String, Map<String, IpSpace>>>
-      computeDstIpsWithUnownedNextHopIpArpFalse(
-          Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-          Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-              routesWithUnownedNextHopIpArpFalse) {
-    Span span =
-        GlobalTracer.get()
-            .buildSpan("ForwardingAnalysisImpl.computeDstIpsWithUnownedNextHopIpArpFalse")
-            .start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          routesWithUnownedNextHopIpArpFalse,
-          Entry::getKey,
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey,
-                  vrfEntry -> {
-                    Map<Prefix, IpSpace> vrfMatchingIps =
-                        matchingIps.get(nodeEntry.getKey()).get(vrfEntry.getKey());
-                    return toImmutableMap(
-                        vrfEntry.getValue(),
-                        Entry::getKey,
-                        ifaceEntry ->
-                            computeRouteMatchConditions(ifaceEntry.getValue(), vrfMatchingIps));
+                            computeRouteMatchConditionsFilter(
+                                ifaceEntry.getValue(), vrfMatchingIps, routeFilter));
                   }));
     } finally {
       span.finish();
