@@ -3760,21 +3760,24 @@ public final class FlatJuniperGrammarTest {
 
     // definitions
     assertThat(
-        ccae, hasDefinedStructureWithDefinitionLines(filename, COMMUNITY, "COMM1", contains(4)));
+        ccae, hasDefinedStructureWithDefinitionLines(filename, COMMUNITY, "MATCHED", contains(4)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, COMMUNITY, "COMM2", containsInAnyOrder(5, 6)));
+            filename, COMMUNITY, "UNUSED", containsInAnyOrder(5, 6)));
 
     // defined references
-    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "COMM1", 1));
-    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "COMM2", 0));
+    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "MATCHED", 1));
+    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "UNUSED", 0));
+    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "ADDED", 1));
+    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "DELETED", 1));
+    assertThat(ccae, hasNumReferrers(filename, COMMUNITY, "SET", 1));
 
     // undefined references
     assertThat(
         ccae,
         hasUndefinedReferenceWithReferenceLines(
-            filename, COMMUNITY, "COMM3", POLICY_STATEMENT_FROM_COMMUNITY, contains(9)));
+            filename, COMMUNITY, "UNDEFINED", POLICY_STATEMENT_FROM_COMMUNITY, contains(12)));
   }
 
   @Test

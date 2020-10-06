@@ -10694,7 +10694,7 @@
           "community" : {
             "as1_to_as2_community" : {
               "definitionLines" : "51",
-              "numReferrers" : 0
+              "numReferrers" : 2
             },
             "as2_to_as1_community" : {
               "definitionLines" : "52",
@@ -10774,11 +10774,11 @@
           "community" : {
             "as1_to_as3_community" : {
               "definitionLines" : "59",
-              "numReferrers" : 0
+              "numReferrers" : 2
             },
             "as1_to_as4_community" : {
               "definitionLines" : "61",
-              "numReferrers" : 0
+              "numReferrers" : 2
             },
             "as3_to_as1_community" : {
               "definitionLines" : "60",
@@ -11576,6 +11576,12 @@
             }
           },
           "community" : {
+            "as1_to_as2_community" : {
+              "policy-statement then add community" : [
+                35,
+                39
+              ]
+            },
             "as2_to_as1_community" : {
               "policy-statement from community" : [
                 42
@@ -11678,6 +11684,18 @@
             }
           },
           "community" : {
+            "as1_to_as3_community" : {
+              "policy-statement then add community" : [
+                33,
+                37
+              ]
+            },
+            "as1_to_as4_community" : {
+              "policy-statement then add community" : [
+                44,
+                47
+              ]
+            },
             "as3_to_as1_community" : {
               "policy-statement from community" : [
                 40

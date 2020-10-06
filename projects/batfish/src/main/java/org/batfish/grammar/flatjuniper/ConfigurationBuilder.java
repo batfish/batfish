@@ -82,6 +82,9 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
@@ -4977,6 +4980,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsThenCommunityAdd then = new PsThenCommunityAdd(name, _configuration);
     _currentPsThens.add(then);
+    _configuration.referenceStructure(
+        COMMUNITY, name, POLICY_STATEMENT_THEN_ADD_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -4984,6 +4989,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsThenCommunityDelete then = new PsThenCommunityDelete(name);
     _currentPsThens.add(then);
+    _configuration.referenceStructure(
+        COMMUNITY, name, POLICY_STATEMENT_THEN_DELETE_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -4991,6 +4998,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsThenCommunitySet then = new PsThenCommunitySet(name, _configuration);
     _currentPsThens.add(then);
+    _configuration.referenceStructure(
+        COMMUNITY, name, POLICY_STATEMENT_THEN_SET_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
