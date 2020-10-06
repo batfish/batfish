@@ -10691,6 +10691,16 @@
               "numReferrers" : 1
             }
           },
+          "community" : {
+            "as1_to_as2_community" : {
+              "definitionLines" : "51",
+              "numReferrers" : 2
+            },
+            "as2_to_as1_community" : {
+              "definitionLines" : "52",
+              "numReferrers" : 1
+            }
+          },
           "interface" : {
             "fe-0/0/0" : {
               "definitionLines" : "4-5",
@@ -10758,6 +10768,24 @@
             },
             "as4" : {
               "definitionLines" : "21-25",
+              "numReferrers" : 1
+            }
+          },
+          "community" : {
+            "as1_to_as3_community" : {
+              "definitionLines" : "59",
+              "numReferrers" : 2
+            },
+            "as1_to_as4_community" : {
+              "definitionLines" : "61",
+              "numReferrers" : 2
+            },
+            "as3_to_as1_community" : {
+              "definitionLines" : "60",
+              "numReferrers" : 1
+            },
+            "as4_to_as1_community" : {
+              "definitionLines" : "62",
               "numReferrers" : 1
             }
           },
@@ -11547,6 +11575,19 @@
               ]
             }
           },
+          "community" : {
+            "as1_to_as2_community" : {
+              "policy-statement then add community" : [
+                35,
+                39
+              ]
+            },
+            "as2_to_as1_community" : {
+              "policy-statement from community" : [
+                42
+              ]
+            }
+          },
           "interface" : {
             "fe-0/0/0" : {
               "interface" : [
@@ -11639,6 +11680,30 @@
             "as4" : {
               "bgp group neighbor" : [
                 25
+              ]
+            }
+          },
+          "community" : {
+            "as1_to_as3_community" : {
+              "policy-statement then add community" : [
+                33,
+                37
+              ]
+            },
+            "as1_to_as4_community" : {
+              "policy-statement then add community" : [
+                44,
+                47
+              ]
+            },
+            "as3_to_as1_community" : {
+              "policy-statement from community" : [
+                40
+              ]
+            },
+            "as4_to_as1_community" : {
+              "policy-statement from community" : [
+                50
               ]
             }
           },
