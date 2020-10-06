@@ -114,6 +114,7 @@ public class NodeRolesData {
     _defaultDimension = defaultDimension;
     _roleMappings = roleMappings;
     _roleDimensionOrder = roleDimensionOrder;
+    _type = type;
   }
 
   @JsonCreator
