@@ -197,7 +197,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
     // post transformation filter on the interface to the subnet
     IpAccessList postTransformationFilter =
-        computePostTransformationIllegalPacketFilter(getPrivateIp(), subnet.getCidrBlock());
+        computePostTransformationIllegalPacketFilter(getPrivateIp());
     cfgNode.getIpAccessLists().put(postTransformationFilter.getName(), postTransformationFilter);
     ifaceToSubnet.setPostTransformationIncomingFilter(postTransformationFilter);
 
@@ -310,15 +310,16 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   }
 
   @VisibleForTesting
-  static IpAccessList computePostTransformationIllegalPacketFilter(
-      Ip privateIp, Prefix subnetPrefix) {
+  static IpAccessList computePostTransformationIllegalPacketFilter(Ip privateIp) {
     return IpAccessList.builder()
         .setName(ILLEGAL_PACKET_FILTER_NAME)
         .setLines(
             ExprAclLine.rejecting(
-                TraceElement.of("Denied packets from sources within the subnet"),
+                TraceElement.of("Denied packets where source IP is the NAT gateway's private IP"),
                 new MatchHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(subnetPrefix.toIpSpace()).build())),
+                    HeaderSpace.builder()
+                        .setSrcIps(ImmutableList.of(IpWildcard.create(privateIp)))
+                        .build())),
             ExprAclLine.rejecting(
                 TraceElement.of("Denied packets that did NOT match an active NAT session"),
                 new MatchHeaderSpace(
