@@ -233,8 +233,7 @@ public class NatGatewayTest {
   @Test
   public void testComputePostTransformationIllegalPacketFilter() {
     Ip privateIp = Ip.parse("10.10.10.10");
-    IpAccessList filter =
-        computePostTransformationIllegalPacketFilter(privateIp, Prefix.parse("10.10.10.0/24"));
+    IpAccessList filter = computePostTransformationIllegalPacketFilter(privateIp);
 
     // denied: it has the same ip has the nat
     assertThat(
