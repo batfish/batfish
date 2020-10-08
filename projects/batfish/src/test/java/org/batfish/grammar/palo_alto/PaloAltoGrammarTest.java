@@ -594,7 +594,8 @@ public final class PaloAltoGrammarTest {
                 "addr3",
                 "addr4",
                 "addr w spaces",
-                "addrBadRange")));
+                "addrBadRange1",
+                "addrBadRange2")));
 
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
@@ -618,10 +619,9 @@ public final class PaloAltoGrammarTest {
         equalTo(IpRange.range(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"))));
 
     // check that we create an empty range for bad ranges and warn the user
-    assertThat(addressObjects.get("addrBadRange").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
-    assertThat(
-        c.getWarnings().getParseWarnings(),
-        hasItem(hasComment("Ignored invalid IP address range")));
+    assertThat(addressObjects.get("addrBadRange1").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(addressObjects.get("addrBadRange2").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(c.getWarnings().getParseWarnings(), hasItem(hasComment("Invalid IP address range")));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
