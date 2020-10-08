@@ -614,9 +614,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // Ensures configurations are parsed and ready
     loadConfigurations(getSnapshot());
-    if (diff) {
-      loadConfigurations(getReferenceSnapshot());
-    }
+    // TODO: why doesn't this check diff and load diff configurations?
 
     Span initQuestionSpan = GlobalTracer.get().buildSpan("Init question env").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
