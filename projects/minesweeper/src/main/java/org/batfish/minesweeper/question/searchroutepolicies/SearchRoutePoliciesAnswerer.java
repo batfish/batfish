@@ -15,9 +15,7 @@ import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import java.util.Arrays;
@@ -25,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -42,7 +39,6 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
@@ -308,15 +304,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
-    return _nodeSpecifier.resolve(context).stream()
-        .flatMap(
-            node ->
-                _policySpecifier.resolve(node, context).stream()
-                    .map(policy -> new RoutingPolicyId(node, policy.getName())))
-        .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
-  }
-
   private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
     BDDFactory factory = r.getPrefix().getFactory();
     if (space.isEmpty()) {
@@ -436,18 +423,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return result;
   }
 
-  private Optional<Result> searchPolicy(RoutingPolicy policy) {
+  /**
+   * Search a particular route policy for behaviors of interest.
+   *
+   * @param policy the routing policy
+   * @param g a Graph object providing information about the policy's owner configuration
+   * @return an optional result, if a behavior of interest was found
+   */
+  private Optional<Result> searchPolicy(RoutingPolicy policy, Graph g) {
     TransferReturn result;
-    Graph g =
-        new Graph(
-            _batfish,
-            _batfish.getSnapshot(),
-            null,
-            ImmutableSet.of(policy.getOwner().getHostname()),
-            _communityRegexes.stream()
-                .map(RegexCommunitySet::new)
-                .collect(ImmutableSet.toImmutableSet()),
-            _asPathRegexes);
     try {
       TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
       result = tbdd.compute(ImmutableSet.of()).getReturnValue();
@@ -474,31 +458,43 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return constraintsToResult(intersection, outputRoute, policy, g);
   }
 
+  /**
+   * Search all of the route policies of a particular node for behaviors of interest.
+   *
+   * @param node the node
+   * @param policies all route policies in that node
+   * @return all results from analyzing those route policies
+   */
+  private Stream<Result> searchPoliciesForNode(String node, Set<RoutingPolicy> policies) {
+    Graph g =
+        new Graph(
+            _batfish,
+            _batfish.getSnapshot(),
+            null,
+            ImmutableSet.of(node),
+            _communityRegexes.stream()
+                .map(RegexCommunitySet::new)
+                .collect(ImmutableSet.toImmutableSet()),
+            _asPathRegexes);
+
+    return policies.stream()
+        .map(policy -> searchPolicy(policy, g))
+        .filter(Optional::isPresent)
+        .map(Optional::get);
+  }
+
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
-    SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
     Multiset<Row> rows =
-        getPolicies(context, policies)
-            .map(this::searchPolicy)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+        _nodeSpecifier.resolve(context).stream()
+            .flatMap(node -> searchPoliciesForNode(node, _policySpecifier.resolve(node, context)))
             .map(SearchRoutePoliciesAnswerer::toRow)
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
     answerElement.postProcessAnswer(_question, rows);
     return answerElement;
-  }
-
-  @Nonnull
-  private Stream<RoutingPolicy> getPolicies(
-      SpecifierContext context, SortedSet<RoutingPolicyId> policies) {
-    Map<String, Configuration> configs = context.getConfigs();
-    return policies.stream()
-        .map(
-            policyId ->
-                configs.get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy()));
   }
 
   @Nullable
