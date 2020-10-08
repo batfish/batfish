@@ -1,0 +1,24 @@
+set deviceconfig system hostname rulebase-rule-type
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/4 layer3 ip 1.1.4.1/24
+set zone z1 network layer3 [ ethernet1/1 ]
+set zone z2 network layer3 ethernet1/4
+
+set rulebase security rules RULE1 from z1
+set rulebase security rules RULE1 to z2
+set rulebase security rules RULE1 source any
+set rulebase security rules RULE1 destination any
+set rulebase security rules RULE1 rule-type interzone
+
+set rulebase security rules RULE2 from z1
+set rulebase security rules RULE2 to z2
+set rulebase security rules RULE2 source any
+set rulebase security rules RULE2 destination any
+set rulebase security rules RULE2 rule-type intrazone
+
+set rulebase security rules RULE3 from z1
+set rulebase security rules RULE3 to z2
+set rulebase security rules RULE3 source any
+set rulebase security rules RULE3 destination any
+set rulebase security rules RULE3 rule-type universal
+

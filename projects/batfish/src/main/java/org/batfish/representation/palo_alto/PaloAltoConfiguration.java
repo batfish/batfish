@@ -149,6 +149,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
@@ -613,20 +614,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
     List<AclLine> lines =
         rules.stream()
-            .filter(
-                e -> {
-                  SecurityRule rule = e.getKey();
-                  if (rule.getDisabled()) {
-                    return false;
-                  } else if (Sets.intersection(
-                          rule.getFrom(), ImmutableSet.of(fromZone.getName(), CATCHALL_ZONE_NAME))
-                      .isEmpty()) {
-                    return false;
-                  }
-                  return !Sets.intersection(
-                          rule.getTo(), ImmutableSet.of(toZone.getName(), CATCHALL_ZONE_NAME))
-                      .isEmpty();
-                })
+            .filter(e -> securityRuleApplies(fromZone.getName(), toZone.getName(), e.getKey()))
             .map(entry -> toIpAccessListLine(entry.getKey(), entry.getValue()))
             .collect(ImmutableList.toImmutableList());
     // Intrazone traffic is allowed by default.
@@ -645,6 +633,36 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Create a new ACL with a vsys-specific name.
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
+  }
+
+  @VisibleForTesting
+  static boolean securityRuleApplies(String fromZoneName, String toZoneName, SecurityRule rule) {
+    if (rule.getDisabled()) {
+      return false;
+    }
+    boolean fromZoneInRuleFrom =
+        !Sets.intersection(rule.getFrom(), ImmutableSet.of(fromZoneName, CATCHALL_ZONE_NAME))
+            .isEmpty();
+    boolean toZoneInRuleTo =
+        !Sets.intersection(rule.getTo(), ImmutableSet.of(toZoneName, CATCHALL_ZONE_NAME)).isEmpty();
+    // classic case without rule-type
+    if (rule.getRuleType() == null) {
+      return fromZoneInRuleFrom && toZoneInRuleTo;
+    }
+    // rule-type doc:
+    // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
+    if (rule.getRuleType() == RuleType.INTRAZONE) {
+      // destination zones ignored for intrazone rules
+      return fromZoneInRuleFrom && fromZoneName.equals(toZoneName);
+    } else if (rule.getRuleType() == RuleType.INTERZONE) {
+      return fromZoneInRuleFrom && toZoneInRuleTo && !fromZoneName.equals(toZoneName);
+    } else { // universal
+      // if from and to are the same zone, the rule applies if this zone is in the ruleFrom or
+      // ruleTo sets. otherwise, fromZone in ruleFrom and toZone in ruleTo
+      return fromZoneName.equals(toZoneName)
+          ? fromZoneInRuleFrom || toZoneInRuleTo
+          : fromZoneInRuleFrom && toZoneInRuleTo;
+    }
   }
 
   /**

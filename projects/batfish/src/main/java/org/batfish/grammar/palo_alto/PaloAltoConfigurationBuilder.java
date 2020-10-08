@@ -288,6 +288,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_rule_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
@@ -391,6 +392,7 @@ import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.Rulebase;
 import org.batfish.representation.palo_alto.SecurityRule;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.ServiceGroup;
@@ -2469,6 +2471,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentSecurityRule.setAction(LineAction.PERMIT);
     } else {
       _currentSecurityRule.setAction(LineAction.DENY);
+    }
+  }
+
+  @Override
+  public void exitSrs_rule_type(Srs_rule_typeContext ctx) {
+    if (ctx.INTERZONE() != null) {
+      _currentSecurityRule.setRuleType(RuleType.INTERZONE);
+    } else if (ctx.INTRAZONE() != null) {
+      _currentSecurityRule.setRuleType(RuleType.INTRAZONE);
+    } else if (ctx.UNIVERSAL() != null) {
+      _currentSecurityRule.setRuleType(RuleType.UNIVERSAL);
+    } else {
+      warn(ctx, "Unsupported security rule-type");
     }
   }
 

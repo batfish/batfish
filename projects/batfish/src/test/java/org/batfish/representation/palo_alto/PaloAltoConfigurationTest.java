@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejectsByDefault;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCallsFromExternal;
@@ -18,11 +19,14 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generat
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSgSgLines;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateSharedGatewayOutgoingFilter;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateVsysSharedGatewayCalls;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.securityRuleApplies;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -35,6 +39,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.junit.Before;
 import org.junit.Test;
@@ -622,5 +627,39 @@ public final class PaloAltoConfigurationTest {
 
     // no lines should be returned since externalToZone has no layer-3 zone
     assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
+  }
+
+  @Test
+  public void testSecurityRuleAppliesClassic() {
+    SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
+    rule.getFrom().addAll(ImmutableList.of("A"));
+    rule.getTo().addAll(ImmutableList.of(CATCHALL_ZONE_NAME));
+
+    assertTrue(securityRuleApplies("A", "B", rule));
+    assertFalse(securityRuleApplies("B", "A", rule));
+  }
+
+  @Test
+  public void testSecurityRuleAppliesRuleType() {
+    SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
+    rule.getFrom().addAll(ImmutableList.of("A", "B"));
+    rule.getTo().addAll(ImmutableList.of("C", "D"));
+
+    rule.setRuleType(RuleType.INTERZONE);
+    assertTrue(securityRuleApplies("A", "C", rule));
+    assertFalse(securityRuleApplies("A", "B", rule));
+    assertFalse(securityRuleApplies("C", "A", rule));
+
+    rule.setRuleType(RuleType.INTRAZONE);
+    assertTrue(securityRuleApplies("A", "A", rule));
+    assertFalse(securityRuleApplies("C", "C", rule));
+    assertFalse(securityRuleApplies("A", "C", rule));
+
+    rule.setRuleType(RuleType.UNIVERSAL);
+    assertTrue(securityRuleApplies("A", "A", rule));
+    assertTrue(securityRuleApplies("C", "C", rule));
+    assertTrue(securityRuleApplies("A", "C", rule));
+    assertFalse(securityRuleApplies("A", "B", rule));
+    assertFalse(securityRuleApplies("C", "A", rule));
   }
 }

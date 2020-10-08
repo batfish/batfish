@@ -237,6 +237,7 @@ import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.SecurityRule;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
@@ -2130,6 +2131,19 @@ public final class PaloAltoGrammarTest {
                   filter.getLines(),
                   contains(hasTraceElement(emptyZoneRejectTraceElement(vsysName, emptyZoneName))));
             });
+  }
+
+  @Test
+  public void testRulebaseRuleType() {
+    String hostname = "rulebase-rule-type";
+    PaloAltoConfiguration vendorConfig = parsePaloAltoConfig(hostname);
+
+    Map<String, SecurityRule> rules =
+        vendorConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
+
+    assertThat(rules.get("RULE1").getRuleType(), equalTo(RuleType.INTERZONE));
+    assertThat(rules.get("RULE2").getRuleType(), equalTo(RuleType.INTRAZONE));
+    assertThat(rules.get("RULE3").getRuleType(), equalTo(RuleType.UNIVERSAL));
   }
 
   @Test
