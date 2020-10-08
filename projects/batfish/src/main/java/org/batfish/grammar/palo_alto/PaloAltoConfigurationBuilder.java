@@ -1542,9 +1542,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     Ip lowIp = Ip.parse(ips[0]);
     Ip highIp = Ip.parse(ips[1]);
     if (lowIp.compareTo(highIp) > 0) {
-      warn(ctx, "Invalid IP address range. Will treat as empty");
-      // round about way to get an empty range
-      _currentAddressObject.setIpRange(Range.openClosed(lowIp, lowIp));
+      warn(ctx, "Ignored invalid IP address range");
     } else {
       _currentAddressObject.setIpRange(Range.closed(lowIp, highIp));
     }

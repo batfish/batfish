@@ -1,6 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
@@ -284,8 +285,9 @@ public final class PaloAltoGrammarTest {
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    Warnings parseWarnings = new Warnings();
     PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
+        new PaloAltoControlPlaneExtractor(src, parser, parseWarnings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
@@ -295,7 +297,7 @@ public final class PaloAltoGrammarTest {
     pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
     pac.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
-    pac.setWarnings(new Warnings());
+    pac.setWarnings(parseWarnings);
     return pac;
   }
 
@@ -585,7 +587,14 @@ public final class PaloAltoGrammarTest {
         vsys.getAddressObjects().keySet(),
         equalTo(
             ImmutableSet.of(
-                "4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4", "addr w spaces")));
+                "4.3.2.1",
+                "addr0",
+                "addr1",
+                "addr2",
+                "addr3",
+                "addr4",
+                "addr w spaces",
+                "addrBadRange")));
 
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
@@ -607,6 +616,12 @@ public final class PaloAltoGrammarTest {
     assertThat(
         addressObjects.get("addr3").getIpSpace(),
         equalTo(IpRange.range(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"))));
+
+    // check that we create an empty range for bad ranges and warn the user
+    assertThat(addressObjects.get("addrBadRange").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(
+        c.getWarnings().getParseWarnings(),
+        hasItem(hasComment("Ignored invalid IP address range")));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
