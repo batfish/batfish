@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.References;
@@ -123,20 +124,28 @@ import org.batfish.common.util.CompletionMetadataUtils;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
@@ -166,6 +175,7 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -735,8 +745,60 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Warnings.forLogger(settings.getLogger());
   }
 
+  private static final NetworkSnapshot DUMMY_SNAPSHOT =
+      new NetworkSnapshot(
+          new NetworkId("__BATFISH_DUMMY_NETWORK"), new SnapshotId("__BATFISH_DUMMY_SNAPSHOT"));
+  private static final DataPlane DUMMY_DATAPLANE =
+      new DataPlane() {
+        @Override
+        public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
+          return null;
+        }
+
+        @Override
+        public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+          return null;
+        }
+
+        @Override
+        public Map<String, Map<String, Fib>> getFibs() {
+          return null;
+        }
+
+        @Override
+        public ForwardingAnalysis getForwardingAnalysis() {
+          return null;
+        }
+
+        @Override
+        public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+            getRibs() {
+          return null;
+        }
+
+        @Override
+        public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+            getPrefixTracingInfoSummary() {
+          return null;
+        }
+
+        @Override
+        public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
+          return null;
+        }
+      };
+
   @Override
   public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
+    // If already present, invalidate a dataplane for this snapshot.
+    // (unlikely, only when devs force recomputation)
+    _cachedDataPlanes.invalidate(snapshot);
+
+    // Reserve space for the new dataplane in the in-memory cache by inserting and invalidating a
+    // dummy value.
+    _cachedDataPlanes.put(DUMMY_SNAPSHOT, DUMMY_DATAPLANE);
+    _cachedDataPlanes.invalidate(DUMMY_SNAPSHOT);
+
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(snapshot);
     saveDataPlane(snapshot, result);
     return result._answerElement;
@@ -1091,7 +1153,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!_storage.hasParseEnvironmentBgpTablesAnswerElement(snapshot)) {
         computeEnvironmentBgpTables(snapshot);
       }
-      if (dp) {
+      if (dp && _cachedDataPlanes.getIfPresent(snapshot) == null) {
         if (!_storage.hasDataPlane(snapshot)) {
           computeDataPlane(snapshot);
         }
