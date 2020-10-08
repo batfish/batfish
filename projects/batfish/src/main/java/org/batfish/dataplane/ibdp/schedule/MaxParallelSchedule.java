@@ -5,7 +5,8 @@ import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import org.batfish.dataplane.ibdp.Node;
 
-public class MaxParallelSchedule extends IbdpSchedule {
+/** Allows all nodes to exchange routes at the same time */
+public final class MaxParallelSchedule extends IbdpSchedule {
   protected boolean _hasNext = true;
 
   public MaxParallelSchedule(Map<String, Node> nodes) {

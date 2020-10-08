@@ -12,7 +12,7 @@ import org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule;
 import org.batfish.dataplane.ibdp.schedule.NodeColoredSchedule.Coloring;
 
 /** Settings for {@link IncrementalDataPlanePlugin} */
-public class IncrementalDataPlaneSettings {
+public final class IncrementalDataPlaneSettings {
 
   private Configuration _config;
 

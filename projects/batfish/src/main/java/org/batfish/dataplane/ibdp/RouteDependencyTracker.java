@@ -13,7 +13,7 @@ import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 @ParametersAreNonnullByDefault
-public class RouteDependencyTracker<
+public final class RouteDependencyTracker<
     R extends AbstractRouteDecorator, D extends AbstractRouteDecorator> {
 
   /** Map of routes to the set of routes they depend on */

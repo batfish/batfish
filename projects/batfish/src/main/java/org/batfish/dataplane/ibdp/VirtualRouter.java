@@ -97,7 +97,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 
-public class VirtualRouter {
+public final class VirtualRouter {
 
   /** The BGP routing process. {@code null} if BGP is not configured for this VRF */
   @Nullable BgpRoutingProcess _bgpRoutingProcess;
