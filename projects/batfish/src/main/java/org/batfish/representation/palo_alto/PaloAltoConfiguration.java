@@ -645,10 +645,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .isEmpty();
     boolean toZoneInRuleTo =
         !Sets.intersection(rule.getTo(), ImmutableSet.of(toZoneName, CATCHALL_ZONE_NAME)).isEmpty();
-    // classic case without rule-type
-    if (rule.getRuleType() == null) {
-      return fromZoneInRuleFrom && toZoneInRuleTo;
-    }
     // rule-type doc:
     // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
     if (rule.getRuleType() == RuleType.INTRAZONE) {
@@ -656,13 +652,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       return fromZoneInRuleFrom && fromZoneName.equals(toZoneName);
     } else if (rule.getRuleType() == RuleType.INTERZONE) {
       return fromZoneInRuleFrom && toZoneInRuleTo && !fromZoneName.equals(toZoneName);
-    } else { // universal
-      // if from and to are the same zone, the rule applies if this zone is in the ruleFrom or
-      // ruleTo sets. otherwise, fromZone in ruleFrom and toZone in ruleTo
-      return fromZoneName.equals(toZoneName)
-          ? fromZoneInRuleFrom || toZoneInRuleTo
-          : fromZoneInRuleFrom && toZoneInRuleTo;
     }
+    // default case -- universal or unspecified
+    return fromZoneInRuleFrom && toZoneInRuleTo;
   }
 
   /**

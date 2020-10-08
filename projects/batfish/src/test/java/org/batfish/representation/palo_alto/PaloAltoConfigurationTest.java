@@ -8,7 +8,6 @@ import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejectsByDefault;
-import static org.batfish.representation.palo_alto.PaloAltoConfiguration.CATCHALL_ZONE_NAME;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCallsFromExternal;
@@ -630,36 +629,28 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testSecurityRuleAppliesClassic() {
-    SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
-    rule.getFrom().addAll(ImmutableList.of("A"));
-    rule.getTo().addAll(ImmutableList.of(CATCHALL_ZONE_NAME));
-
-    assertTrue(securityRuleApplies("A", "B", rule));
-    assertFalse(securityRuleApplies("B", "A", rule));
-  }
-
-  @Test
   public void testSecurityRuleAppliesRuleType() {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
-    rule.getTo().addAll(ImmutableList.of("C", "D"));
+    rule.getTo().addAll(ImmutableList.of("C", "B"));
+
+    // default case -- covers universal
+    assertTrue(securityRuleApplies("A", "B", rule));
+    assertTrue(securityRuleApplies("A", "C", rule));
+    assertTrue(securityRuleApplies("B", "B", rule));
+    assertFalse(securityRuleApplies("A", "A", rule));
+    assertFalse(securityRuleApplies("C", "A", rule));
 
     rule.setRuleType(RuleType.INTERZONE);
     assertTrue(securityRuleApplies("A", "C", rule));
-    assertFalse(securityRuleApplies("A", "B", rule));
-    assertFalse(securityRuleApplies("C", "A", rule));
+    assertTrue(securityRuleApplies("A", "B", rule));
+    assertFalse(securityRuleApplies("A", "A", rule));
+    assertFalse(securityRuleApplies("B", "B", rule));
 
     rule.setRuleType(RuleType.INTRAZONE);
     assertTrue(securityRuleApplies("A", "A", rule));
-    assertFalse(securityRuleApplies("C", "C", rule));
-    assertFalse(securityRuleApplies("A", "C", rule));
-
-    rule.setRuleType(RuleType.UNIVERSAL);
-    assertTrue(securityRuleApplies("A", "A", rule));
-    assertTrue(securityRuleApplies("C", "C", rule));
-    assertTrue(securityRuleApplies("A", "C", rule));
+    assertTrue(securityRuleApplies("B", "B", rule));
     assertFalse(securityRuleApplies("A", "B", rule));
-    assertFalse(securityRuleApplies("C", "A", rule));
+    assertFalse(securityRuleApplies("C", "C", rule));
   }
 }
