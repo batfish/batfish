@@ -285,8 +285,9 @@ public final class PaloAltoGrammarTest {
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    Warnings parseWarnings = new Warnings();
     PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
+        new PaloAltoControlPlaneExtractor(src, parser, parseWarnings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
@@ -296,7 +297,7 @@ public final class PaloAltoGrammarTest {
     pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
     pac.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
-    pac.setWarnings(new Warnings());
+    pac.setWarnings(parseWarnings);
     return pac;
   }
 
