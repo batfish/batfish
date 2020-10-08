@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.communities;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** A visitor for evaluating a {@link CommunitySetMatchExpr} under a {@link CommunityContext}. */
 public final class CommunitySetMatchExprEvaluator
@@ -25,13 +26,23 @@ public final class CommunitySetMatchExprEvaluator
   @Override
   public @Nonnull Boolean visitCommunitySetMatchAll(
       CommunitySetMatchAll communitySetMatchAll, CommunitySet arg) {
-    return communitySetMatchAll.getExprs().stream().allMatch(expr -> expr.accept(this, arg));
+    for (CommunitySetMatchExpr expr : communitySetMatchAll.getExprs()) {
+      if (!expr.accept(this, arg)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
   public @Nonnull Boolean visitCommunitySetMatchAny(
       CommunitySetMatchAny communitySetMatchAny, CommunitySet arg) {
-    return communitySetMatchAny.getExprs().stream().anyMatch(expr -> expr.accept(this, arg));
+    for (CommunitySetMatchExpr expr : communitySetMatchAny.getExprs()) {
+      if (expr.accept(this, arg)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
@@ -62,8 +73,12 @@ public final class CommunitySetMatchExprEvaluator
 
   @Override
   public @Nonnull Boolean visitHasCommunity(HasCommunity hasCommunity, CommunitySet arg) {
-    return arg.getCommunities().stream()
-        .anyMatch(c -> hasCommunity.getExpr().accept(_ctx.getCommunityMatchExprEvaluator(), c));
+    for (Community c : arg.getCommunities()) {
+      if (hasCommunity.getExpr().accept(_ctx.getCommunityMatchExprEvaluator(), c)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private final @Nonnull CommunityContext _ctx;
