@@ -47,7 +47,12 @@ Getting started with Batfish is easy. Just pull and run the latest `allinone` Do
    
     docker run --name batfish -v batfish-data:/data -p 8888:8888 -p 9997:9997 -p 9996:9996 batfish/allinone
 
-The second command starts the Batfish service and maps the necessary TCP ports. 
+The second command starts the Batfish service and maps the necessary TCP ports.
+
+##### Advanced Docker configuration:
+The amount of memory available to Batfish is determined by the Docker configuration. You may wish to supply the [`--memory` command-line argument](https://docs.docker.com/config/containers/resource_constraints/#limit-a-containers-access-to-memory) to explicitly set this value.
+
+On Linux systems that run the OOM Killer, you may also wish to supply the `--oom-kill-disable` argument, which runs in conjunction with the `--memory` argument to prevent Linux from killing Batfish when there is memory pressure on the system.
 
 #### 2. Browse example notebooks (optional)
 
