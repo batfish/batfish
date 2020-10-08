@@ -89,25 +89,25 @@ public class Graph {
 
   public static final String BGP_COMMON_FILTER_LIST_NAME = "BGP_COMMON_EXPORT_POLICY";
   private static final String NULL_INTERFACE_NAME = "null_interface";
-  private IBatfish _batfish;
-  private Set<String> _routers;
-  private Map<String, Configuration> _configurations;
+  private final IBatfish _batfish;
+  private final Set<String> _routers;
+  private final Map<String, Configuration> _configurations;
   private final NetworkSnapshot _snapshot;
-  private Map<String, Set<Long>> _areaIds;
-  private Table2<String, String, List<StaticRoute>> _staticRoutes;
-  private Map<String, List<StaticRoute>> _nullStaticRoutes;
-  private Map<String, Set<String>> _neighbors;
-  private Map<String, List<GraphEdge>> _edgeMap;
-  private Set<GraphEdge> _allRealEdges;
-  private Set<GraphEdge> _allEdges;
-  private Map<GraphEdge, GraphEdge> _otherEnd;
-  private Map<GraphEdge, BgpActivePeerConfig> _ebgpNeighbors;
-  private Map<GraphEdge, BgpActivePeerConfig> _ibgpNeighbors;
-  private Map<String, String> _routeReflectorParent;
-  private Map<String, Set<String>> _routeReflectorClients;
-  private Map<String, Integer> _originatorId;
-  private Map<String, Integer> _domainMap;
-  private Map<Integer, Set<String>> _domainMapInverse;
+  private final Map<String, Set<Long>> _areaIds;
+  private final Table2<String, String, List<StaticRoute>> _staticRoutes;
+  private final Map<String, List<StaticRoute>> _nullStaticRoutes;
+  private final Map<String, Set<String>> _neighbors;
+  private final Map<String, List<GraphEdge>> _edgeMap;
+  private final Set<GraphEdge> _allRealEdges;
+  private final Set<GraphEdge> _allEdges;
+  private final Map<GraphEdge, GraphEdge> _otherEnd;
+  private final Map<GraphEdge, BgpActivePeerConfig> _ebgpNeighbors;
+  private final Map<GraphEdge, BgpActivePeerConfig> _ibgpNeighbors;
+  private final Map<String, String> _routeReflectorParent;
+  private final Map<String, Set<String>> _routeReflectorClients;
+  private final Map<String, Integer> _originatorId;
+  private final Map<String, Integer> _domainMap;
+  private final Map<Integer, Set<String>> _domainMapInverse;
 
   /**
    * The SMT- and BDD-based analyses (see the corresponding smt and bdd packages) handle communities
@@ -115,7 +115,7 @@ public class Graph {
    * diverge further. Hence we use this flag to build the appropriate Graph object for the given
    * analysis.
    */
-  private boolean _bddBasedAnalysis;
+  private final boolean _bddBasedAnalysis;
 
   /**
    * A graph with a static route with a dynamic next hop cannot be encoded to SMT, so some of the
@@ -123,27 +123,27 @@ public class Graph {
    */
   private boolean _hasStaticRouteWithDynamicNextHop;
 
-  private Set<CommunityVar> _allCommunities;
+  private final Set<CommunityVar> _allCommunities;
 
   /**
    * Keys are all REGEX vars, and values are lists of EXACT or OTHER vars. This field is only used
    * by the SMT-based analyses.
    */
-  private SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
+  private final SortedMap<CommunityVar, List<CommunityVar>> _communityDependencies;
 
-  private Map<String, String> _namedCommunities;
+  private final Map<String, String> _namedCommunities;
 
   /**
    * In order to track community literals and regexes in the BDD-based analysis, we compute a set of
    * "atomic predicates" for them.
    */
-  private RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
+  private final RegexAtomicPredicates<CommunityVar> _communityAtomicPredicates;
 
   /**
    * We also compute a set of atomic predicates for the AS-path regexes that appear in the given
    * configurations.
    */
-  private RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
+  private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
 
   /**
    * Create a graph, loading configurations from the given {@link IBatfish}.
@@ -226,13 +226,12 @@ public class Graph {
     _originatorId = new HashMap<>();
     _domainMap = new HashMap<>();
     _domainMapInverse = new HashMap<>();
-    _configurations = configs;
     _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
     _snapshot = snapshot;
     _bddBasedAnalysis = bddBasedAnalysis;
 
-    if (_configurations == null) {
+    if (configs == null) {
       // Since many functions that use the graph mutate the configurations, we must clone them
       // before that happens.
       // A simple way to do this is to create a deep clone of each entry using Java serialization.
@@ -244,6 +243,8 @@ public class Graph {
               .collect(toMap(Entry::getKey, entry -> SerializationUtils.clone(entry.getValue())));
 
       _configurations = clonedConfigs;
+    } else {
+      _configurations = configs;
     }
     _routers = _configurations.keySet();
 
@@ -280,8 +281,10 @@ public class Graph {
               .collect(ImmutableSet.toImmutableSet());
       _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
     } else {
+      _communityAtomicPredicates = null;
       initCommDependencies();
     }
+    _namedCommunities = new HashMap<>();
     initNamedCommunities();
     _asPathRegexAtomicPredicates =
         new RegexAtomicPredicates<>(
@@ -463,8 +466,6 @@ public class Graph {
       }
       routerIfaceMap.put(router, ifacePairs);
     }
-
-    _neighbors = new HashMap<>();
 
     for (Entry<String, Set<NodeInterfacePair>> entry : routerIfaceMap.entrySet()) {
       String router = entry.getKey();
@@ -974,7 +975,6 @@ public class Graph {
    * easier to provide intuitive counter examples.
    */
   private void initNamedCommunities() {
-    _namedCommunities = new HashMap<>();
     for (Configuration conf : getConfigurations().values()) {
       for (Entry<String, CommunityList> entry : conf.getCommunityLists().entrySet()) {
         String name = entry.getKey();
