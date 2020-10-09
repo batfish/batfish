@@ -123,6 +123,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -286,7 +287,7 @@ public final class PaloAltoGrammarTest {
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    Warnings parseWarnings = new Warnings();
+    Warnings parseWarnings = new Warnings(true, true, true);
     PaloAltoControlPlaneExtractor extractor =
         new PaloAltoControlPlaneExtractor(src, parser, parseWarnings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -2149,6 +2150,9 @@ public final class PaloAltoGrammarTest {
     assertThat(rules.get("DEFAULT").getRuleType(), nullValue());
 
     assertThat(rules, not(containsKey("BADINTRA")));
+    assertThat(
+        Iterables.getOnlyElement(vendorConfig.getWarnings().getRedFlagWarnings()).getText(),
+        containsString("Intrazone security rule BADINTRA is invalid"));
   }
 
   @Test
