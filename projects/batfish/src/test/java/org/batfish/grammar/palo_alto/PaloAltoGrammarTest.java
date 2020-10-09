@@ -1,6 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
@@ -586,7 +587,15 @@ public final class PaloAltoGrammarTest {
         vsys.getAddressObjects().keySet(),
         equalTo(
             ImmutableSet.of(
-                "4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4", "addr w spaces")));
+                "4.3.2.1",
+                "addr0",
+                "addr1",
+                "addr2",
+                "addr3",
+                "addr4",
+                "addr w spaces",
+                "addrBadRange1",
+                "addrBadRange2")));
 
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
@@ -608,6 +617,11 @@ public final class PaloAltoGrammarTest {
     assertThat(
         addressObjects.get("addr3").getIpSpace(),
         equalTo(IpRange.range(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"))));
+
+    // check that we create an empty range for bad ranges and warn the user
+    assertThat(addressObjects.get("addrBadRange1").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(addressObjects.get("addrBadRange2").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(c.getWarnings().getParseWarnings(), hasItem(hasComment("Invalid IP address range")));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
