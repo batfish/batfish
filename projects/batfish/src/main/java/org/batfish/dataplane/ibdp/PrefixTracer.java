@@ -19,7 +19,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
 /** Keeps data about which prefixes where advertised to neighboring routers */
-public class PrefixTracer implements Serializable {
+public final class PrefixTracer implements Serializable {
   static final String SENT = "sent";
   static final String FILTERED_OUT = "filtered_out";
   static final String FILTERED_IN = "filtered_in";
