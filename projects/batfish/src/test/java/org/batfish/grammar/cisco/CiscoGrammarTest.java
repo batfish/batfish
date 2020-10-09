@@ -249,7 +249,6 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -5658,10 +5657,7 @@ public final class CiscoGrammarTest {
     config.setAnswerElement(new ConvertConfigurationAnswerElement());
     config.toVendorIndependentConfigurations();
 
-    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
-
-    // CiscoAsaNats are comparable
-    Collections.sort(nats);
+    SortedSet<CiscoAsaNat> nats = ImmutableSortedSet.copyOf(config.getCiscoAsaNats());
 
     // Check that NATs are sorted by section
     assertThat(

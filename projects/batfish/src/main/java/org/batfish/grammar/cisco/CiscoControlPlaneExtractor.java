@@ -9299,6 +9299,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void doneParsing() {
+    _configuration.finalizeBuilderObjects();
+  }
+
+  @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
   }

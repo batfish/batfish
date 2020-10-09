@@ -335,9 +335,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   static final int MAX_ADMINISTRATIVE_COST = 32767;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
-
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
-
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
   public static String computeBgpDefaultRouteExportPolicyName(
@@ -422,144 +420,79 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return output;
   }
 
-  private final Map<String, IpAsPathAccessList> _asPathAccessLists;
-
+  private @Nonnull Map<String, IpAsPathAccessList> _asPathAccessLists;
   private final CiscoFamily _cf;
-
-  private final Map<String, CryptoMapSet> _cryptoMapSets;
-
-  private final Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
-
-  private final List<Ip> _dhcpRelayServers;
-
+  private @Nonnull Map<String, CryptoMapSet> _cryptoMapSets;
+  private @Nonnull Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
+  private @Nonnull List<Ip> _dhcpRelayServers;
   private NavigableSet<String> _dnsServers;
-
   private String _dnsSourceInterface;
-
   private String _domainName;
-
-  private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
-
-  private final Map<String, ExtendedAccessList> _extendedAccessLists;
-
-  private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
-
+  private @Nonnull Map<String, ExpandedCommunityList> _expandedCommunityLists;
+  private @Nonnull Map<String, ExtendedAccessList> _extendedAccessLists;
+  private @Nonnull Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
   private boolean _failover;
-
   private String _failoverCommunicationInterface;
-
   private String _failoverCommunicationInterfaceAlias;
-
-  private final Map<String, String> _failoverInterfaces;
-
-  private final Map<String, ConcreteInterfaceAddress> _failoverPrimaryAddresses;
-
+  private @Nonnull Map<String, String> _failoverInterfaces;
+  private @Nonnull Map<String, ConcreteInterfaceAddress> _failoverPrimaryAddresses;
   private boolean _failoverSecondary;
-
-  private final Map<String, ConcreteInterfaceAddress> _failoverStandbyAddresses;
-
+  private @Nonnull Map<String, ConcreteInterfaceAddress> _failoverStandbyAddresses;
   private String _failoverStatefulSignalingInterface;
-
   private String _failoverStatefulSignalingInterfaceAlias;
-
   private String _hostname;
-
-  private final Map<String, InspectClassMap> _inspectClassMaps;
-
-  private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
-
-  private final Map<String, Interface> _interfaces;
-
-  private final Map<String, IpsecProfile> _ipsecProfiles;
-
-  private final Map<String, IpsecTransformSet> _ipsecTransformSets;
-
-  private final List<IsakmpKey> _isakmpKeys;
-
-  private final Map<Integer, IsakmpPolicy> _isakmpPolicies;
-
-  private final Map<String, IsakmpProfile> _isakmpProfiles;
-
-  private final Map<String, Keyring> _keyrings;
-
-  private final Map<String, MacAccessList> _macAccessLists;
-
-  private final @Nonnull Map<String, NatPool> _natPools;
-
-  private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
-
-  private final Map<String, IntegerSpace> _namedVlans;
-
-  private final @Nonnull Set<String> _natInside;
-
-  private final Set<String> _natOutside;
-
-  private final List<CiscoAsaNat> _ciscoAsaNats;
-
-  private final List<CiscoIosNat> _ciscoIosNats;
-
-  private final Map<String, NetworkObjectGroup> _networkObjectGroups;
-
-  private final Map<String, NetworkObjectInfo> _networkObjectInfos;
-
-  private final Map<String, NetworkObject> _networkObjects;
-
+  private @Nonnull Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
+  private @Nonnull Map<String, InspectClassMap> _inspectClassMaps;
+  private @Nonnull Map<String, InspectPolicyMap> _inspectPolicyMaps;
+  private @Nonnull Map<String, Interface> _interfaces;
+  private @Nonnull Map<String, IpsecProfile> _ipsecProfiles;
+  private @Nonnull Map<String, IpsecTransformSet> _ipsecTransformSets;
+  private @Nonnull List<IsakmpKey> _isakmpKeys;
+  private @Nonnull Map<Integer, IsakmpPolicy> _isakmpPolicies;
+  private @Nonnull Map<String, IsakmpProfile> _isakmpProfiles;
+  private @Nonnull Map<String, Keyring> _keyrings;
+  private @Nonnull Map<String, MacAccessList> _macAccessLists;
+  private @Nonnull Map<String, NatPool> _natPools;
+  private @Nonnull Map<String, IntegerSpace> _namedVlans;
+  private @Nonnull Set<String> _natInside;
+  private @Nonnull Set<String> _natOutside;
+  private @Nonnull List<CiscoAsaNat> _ciscoAsaNats;
+  private @Nonnull List<CiscoIosNat> _ciscoIosNats;
+  private @Nonnull Map<String, NetworkObjectGroup> _networkObjectGroups;
+  private @Nonnull Map<String, NetworkObjectInfo> _networkObjectInfos;
+  private @Nonnull Map<String, NetworkObject> _networkObjects;
   private String _ntpSourceInterface;
+  private @Nonnull Map<String, ObjectGroup> _objectGroups;
+  private @Nonnull Map<String, Prefix6List> _prefix6Lists;
+  private @Nonnull Map<String, PrefixList> _prefixLists;
+  private @Nonnull Map<String, ProtocolObjectGroup> _protocolObjectGroups;
+  private @Nonnull Map<String, RouteMap> _routeMaps;
+  private boolean _sameSecurityTrafficInter;
+  private boolean _sameSecurityTrafficIntra;
+  private @Nonnull Map<String, ServiceObject> _serviceObjects;
+  private SnmpServer _snmpServer;
+  private String _snmpSourceInterface;
+  private boolean _spanningTreePortfastDefault;
+  private @Nonnull Map<String, StandardAccessList> _standardAccessLists;
+  private @Nonnull Map<String, StandardCommunityList> _standardCommunityLists;
+  private @Nonnull Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
+  private @Nonnull NavigableSet<String> _tacacsServers;
+  private String _tacacsSourceInterface;
+  private ConfigurationFormat _vendor;
+  private @Nonnull Map<String, Vrf> _vrfs;
+  private @Nonnull SortedMap<String, VrrpInterface> _vrrpGroups;
+  private @Nonnull Map<String, ServiceObjectGroup> _serviceObjectGroups;
+  private @Nonnull Map<String, Map<String, SecurityZonePair>> _securityZonePairs;
+  private @Nonnull Map<String, SecurityZone> _securityZones;
+  private @Nonnull Map<String, TrackMethod> _trackingGroups;
 
-  private final Map<String, ObjectGroup> _objectGroups;
-
-  private final Map<String, Prefix6List> _prefix6Lists;
-
-  private final Map<String, PrefixList> _prefixLists;
-
-  private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
-
-  private final Map<String, RouteMap> _routeMaps;
-
+  // Structures below this line are only used post-conversion
+  private transient Multimap<Integer, Interface> _interfacesBySecurityLevel;
   /**
    * Maps zone names to integers. Only includes zones that were created for security levels. In
    * effect, the reverse of computeSecurityLevelZoneName.
    */
-  private final Map<String, Integer> _securityLevels;
-
-  private boolean _sameSecurityTrafficInter;
-
-  private boolean _sameSecurityTrafficIntra;
-
-  private final Map<String, ServiceObject> _serviceObjects;
-
-  private SnmpServer _snmpServer;
-
-  private String _snmpSourceInterface;
-
-  private boolean _spanningTreePortfastDefault;
-
-  private final Map<String, StandardAccessList> _standardAccessLists;
-
-  private final Map<String, StandardCommunityList> _standardCommunityLists;
-
-  private final Map<String, StandardIpv6AccessList> _standardIpv6AccessLists;
-
-  private NavigableSet<String> _tacacsServers;
-
-  private String _tacacsSourceInterface;
-
-  private ConfigurationFormat _vendor;
-
-  private final Map<String, Vrf> _vrfs;
-
-  private final SortedMap<String, VrrpInterface> _vrrpGroups;
-
-  private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
-
-  private final Map<String, Map<String, SecurityZonePair>> _securityZonePairs;
-
-  private final Map<String, SecurityZone> _securityZones;
-
-  private final Map<String, TrackMethod> _trackingGroups;
-
-  // initialized when needed
-  private Multimap<Integer, Interface> _interfacesBySecurityLevel;
+  private transient Map<String, Integer> _securityLevels;
 
   public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
@@ -599,7 +532,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _prefix6Lists = new TreeMap<>();
     _protocolObjectGroups = new TreeMap<>();
     _routeMaps = new TreeMap<>();
-    _securityLevels = new TreeMap<>();
     _securityZonePairs = new TreeMap<>();
     _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
@@ -1655,7 +1587,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }
     String vrfName = iface.getVrf();
-    Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
+    Vrf vrf = _vrfs.getOrDefault(vrfName, new Vrf(vrfName));
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
     newIface.setChannelGroup(iface.getChannelGroup());
@@ -1832,8 +1764,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * Currently, only static NATs have both incoming and outgoing transformations
      */
 
-    List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
-    List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
+    List<CiscoAsaNat> ciscoAsaNats = _ciscoAsaNats;
+    List<CiscoIosNat> ciscoIosNats = _ciscoIosNats;
     int natTypes = (ciscoAsaNats.isEmpty() ? 0 : 1) + (ciscoIosNats.isEmpty() ? 0 : 1);
     if (natTypes > 1) {
       _w.redFlag("Multiple NAT types should not be present in same configuration.");
@@ -2952,7 +2884,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * Consolidate info about networkObjects
      * - Associate networkObjects with their Info
      * - Associate ASA Object NATs with their object (needed for sorting)
-     * - Removes ASA Object NATs that were created without a valid network object
      */
     _networkObjectInfos.forEach(
         (name, info) -> {
@@ -2960,25 +2891,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
             _networkObjects.get(name).setInfo(info);
           }
         });
-    _ciscoAsaNats.removeIf(
-        nat -> {
-          if (nat.getSection() != Section.OBJECT) {
-            return false;
-          }
-          String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
-          NetworkObject object = _networkObjects.get(objectName);
-          if (object == null) {
-            // Network object has a NAT but no addresses
-            _w.redFlag("Invalid reference for object NAT " + objectName + ".");
-            return true;
-          }
-          if (object.getStart() == null) {
-            // Unsupported network object type, already warned
-            return true;
-          }
-          nat.setRealSourceObject(object);
-          return false;
-        });
+    // Remove ASA Object NATs that were created without a valid network object
+    _ciscoAsaNats =
+        _ciscoAsaNats.stream()
+            .filter(
+                nat -> {
+                  if (nat.getSection() != Section.OBJECT) {
+                    return true;
+                  }
+                  String objectName =
+                      ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
+                  NetworkObject object = _networkObjects.get(objectName);
+                  if (object == null) {
+                    // Network object has a NAT but no addresses
+                    _w.redFlag("Invalid reference for object NAT " + objectName + ".");
+                    return false;
+                  }
+                  if (object.getStart() == null) {
+                    // Unsupported network object type, already warned
+                    return false;
+                  }
+                  nat.setRealSourceObject(object);
+                  return true;
+                })
+            .collect(ImmutableList.toImmutableList());
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
@@ -3094,6 +3030,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     MultimapBuilder.hashKeys().arrayListValues()::build));
 
     // create and populate zones based on ASA security levels
+    _securityLevels = new TreeMap<>();
     _interfacesBySecurityLevel.forEach(
         (level, iface) -> {
           String zoneName = computeASASecurityLevelZoneName(level);
@@ -4246,5 +4183,58 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;
+  }
+
+  public void finalizeBuilderObjects() {
+    _asPathAccessLists = ImmutableMap.copyOf(_asPathAccessLists);
+    _ciscoAsaNats = ImmutableList.copyOf(_ciscoAsaNats);
+    _ciscoIosNats = ImmutableList.copyOf(_ciscoIosNats);
+    _cryptoMapSets = ImmutableMap.copyOf(_cryptoMapSets);
+    _cryptoNamedRsaPubKeys = ImmutableMap.copyOf(_cryptoNamedRsaPubKeys);
+    _dhcpRelayServers = ImmutableList.copyOf(_dhcpRelayServers);
+    _dnsServers = ImmutableSortedSet.copyOf(_dnsServers);
+    _expandedCommunityLists = ImmutableMap.copyOf(_expandedCommunityLists);
+    _extendedAccessLists = ImmutableMap.copyOf(_extendedAccessLists);
+    _extendedIpv6AccessLists = ImmutableMap.copyOf(_extendedIpv6AccessLists);
+    _failoverInterfaces = ImmutableMap.copyOf(_failoverInterfaces);
+    _failoverPrimaryAddresses = ImmutableMap.copyOf(_failoverPrimaryAddresses);
+    _failoverStandbyAddresses = ImmutableMap.copyOf(_failoverStandbyAddresses);
+    _icmpTypeObjectGroups = ImmutableMap.copyOf(_icmpTypeObjectGroups);
+    _inspectClassMaps = ImmutableMap.copyOf(_inspectClassMaps);
+    _inspectPolicyMaps = ImmutableMap.copyOf(_inspectPolicyMaps);
+    _interfaces = ImmutableMap.copyOf(_interfaces);
+    _ipsecProfiles = ImmutableMap.copyOf(_ipsecProfiles);
+    _ipsecTransformSets = ImmutableMap.copyOf(_ipsecTransformSets);
+    _isakmpKeys = ImmutableList.copyOf(_isakmpKeys);
+    _isakmpPolicies = ImmutableMap.copyOf(_isakmpPolicies);
+    _isakmpProfiles = ImmutableMap.copyOf(_isakmpProfiles);
+    _keyrings = ImmutableMap.copyOf(_keyrings);
+    _macAccessLists = ImmutableMap.copyOf(_macAccessLists);
+    _namedVlans = ImmutableMap.copyOf(_namedVlans);
+    _natInside = ImmutableSet.copyOf(_natInside);
+    _natOutside = ImmutableSet.copyOf(_natOutside);
+    _natPools = ImmutableMap.copyOf(_natPools);
+    _networkObjectGroups = ImmutableMap.copyOf(_networkObjectGroups);
+    _networkObjectInfos = ImmutableMap.copyOf(_networkObjectInfos);
+    _networkObjects = ImmutableMap.copyOf(_networkObjects);
+    _objectGroups = ImmutableMap.copyOf(_objectGroups);
+    _prefix6Lists = ImmutableMap.copyOf(_prefix6Lists);
+    _prefixLists = ImmutableMap.copyOf(_prefixLists);
+    _protocolObjectGroups = ImmutableMap.copyOf(_protocolObjectGroups);
+    _routeMaps = ImmutableMap.copyOf(_routeMaps);
+    _securityZonePairs = ImmutableMap.copyOf(_securityZonePairs);
+    _securityZones = ImmutableMap.copyOf(_securityZones);
+    _serviceObjectGroups = ImmutableMap.copyOf(_serviceObjectGroups);
+    _serviceObjects = ImmutableMap.copyOf(_serviceObjects);
+    _standardAccessLists = ImmutableMap.copyOf(_standardAccessLists);
+    _standardCommunityLists = ImmutableMap.copyOf(_standardCommunityLists);
+    _standardIpv6AccessLists = ImmutableMap.copyOf(_standardIpv6AccessLists);
+    _tacacsServers = ImmutableSortedSet.copyOf(_tacacsServers);
+    _trackingGroups = ImmutableMap.copyOf(_trackingGroups);
+    _vrfs = ImmutableMap.copyOf(_vrfs);
+    _vrrpGroups = ImmutableSortedMap.copyOf(_vrrpGroups);
+    // Now finalize major VS structures
+    _interfaces.values().forEach(Interface::finalizeBuilderObjects);
+    // todo: more?
   }
 }

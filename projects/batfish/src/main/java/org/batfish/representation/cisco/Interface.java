@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -162,13 +164,13 @@ public class Interface implements Serializable {
 
   private String _description;
 
-  private SortedSet<Ip> _dhcpRelayAddresses;
+  private @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
 
   private boolean _dhcpRelayClient;
 
   private @Nullable Integer _encapsulationVlan;
 
-  private Map<Integer, HsrpGroup> _hsrpGroups;
+  private @Nonnull Map<Integer, HsrpGroup> _hsrpGroups;
 
   private String _hsrpVersion;
 
@@ -178,7 +180,7 @@ public class Interface implements Serializable {
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
-  private final @Nonnull Set<String> _memberInterfaces;
+  private @Nonnull Set<String> _memberInterfaces;
 
   @Nullable private Integer _mlagId;
 
@@ -214,7 +216,7 @@ public class Interface implements Serializable {
 
   private String _routingPolicy;
 
-  private Set<ConcreteInterfaceAddress> _secondaryAddresses;
+  private @Nonnull Set<ConcreteInterfaceAddress> _secondaryAddresses;
 
   private boolean _spanningTreePortfast;
 
@@ -232,7 +234,7 @@ public class Interface implements Serializable {
 
   private String _vrf;
 
-  private SortedSet<String> _declaredNames;
+  private @Nonnull SortedSet<String> _declaredNames;
 
   private String _securityZone;
 
@@ -695,7 +697,7 @@ public class Interface implements Serializable {
     _vrf = vrf;
   }
 
-  public SortedSet<String> getDeclaredNames() {
+  public @Nonnull SortedSet<String> getDeclaredNames() {
     return _declaredNames;
   }
 
@@ -713,5 +715,13 @@ public class Interface implements Serializable {
 
   public void setSecurityLevel(@Nullable Integer level) {
     _securityLevel = level;
+  }
+
+  void finalizeBuilderObjects() {
+    _declaredNames = ImmutableSortedSet.copyOf(_declaredNames);
+    _dhcpRelayAddresses = ImmutableSortedSet.copyOf(_dhcpRelayAddresses);
+    _hsrpGroups = ImmutableMap.copyOf(_hsrpGroups);
+    _memberInterfaces = ImmutableSet.copyOf(_memberInterfaces);
+    _secondaryAddresses = ImmutableSet.copyOf(_secondaryAddresses);
   }
 }
