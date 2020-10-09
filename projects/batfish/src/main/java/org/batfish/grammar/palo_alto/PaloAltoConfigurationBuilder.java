@@ -160,6 +160,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefix_listContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
@@ -1542,8 +1543,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    String[] ips = getText(ctx.ip_range()).split("-");
-    _currentAddressObject.setIpRange(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
+    toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
   }
 
   @Override
@@ -2918,6 +2918,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return Optional.empty();
     }
     return Optional.of(ip.getIp());
+  }
+
+  private @Nonnull Optional<Range<Ip>> toIpRange(Ip_rangeContext ctx) {
+    String[] ips = getText(ctx).split("-");
+    Ip lowIp = Ip.parse(ips[0]);
+    Ip highIp = Ip.parse(ips[1]);
+    if (lowIp.compareTo(highIp) >= 0) {
+      warn(ctx, "Invalid IP address range");
+      return Optional.empty();
+    }
+    return Optional.of(Range.closed(lowIp, highIp));
   }
 
   /////////////////////////////////////////
