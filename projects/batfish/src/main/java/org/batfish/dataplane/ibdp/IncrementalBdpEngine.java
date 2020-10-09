@@ -212,7 +212,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> vr.initForEgpComputationBeforeTopologyLoop(externalAdverts, ipVrfOwners));
       } finally {
@@ -323,7 +323,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::activateStaticRoutes);
       } finally {
         nhIpSpan.finish();
@@ -340,7 +340,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::recomputeGeneratedRoutes);
       } finally {
         genRoutesSpan.finish();
@@ -355,12 +355,12 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.eigrpIteration(allNodes));
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::mergeEigrpRoutesToMainRib);
       } finally {
         eigrpSpan.finish();
@@ -375,7 +375,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.initIsisExports(iteration, allNodes, networkConfigurations));
       } finally {
         isisSpan.finish();
@@ -399,7 +399,7 @@ final class IncrementalBdpEngine {
           nodes
               .values()
               .parallelStream()
-              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(
                   vr -> {
                     Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> p =
@@ -423,12 +423,12 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.ospfIteration(allNodes));
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
       } finally {
         span.finish();
@@ -455,7 +455,7 @@ final class IncrementalBdpEngine {
           .forEach(
               n -> {
                 // Execute one round of bgp route propagation
-                n.getVirtualRouters().values().forEach(vr -> vr.bgpIteration(allNodes));
+                n.getVirtualRouters().forEach(vr -> vr.bgpIteration(allNodes));
               });
     } finally {
       span.finish();
@@ -471,8 +471,7 @@ final class IncrementalBdpEngine {
       nodes
           .values()
           .parallelStream()
-          .forEach(
-              n -> n.getVirtualRouters().values().forEach(VirtualRouter::initBgpAggregateRoutes));
+          .forEach(n -> n.getVirtualRouters().forEach(VirtualRouter::initBgpAggregateRoutes));
     } finally {
       genSpan.finish();
     }
@@ -488,7 +487,7 @@ final class IncrementalBdpEngine {
       nodes
           .values()
           .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
     } finally {
@@ -505,7 +504,7 @@ final class IncrementalBdpEngine {
       nodes
           .values()
           .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::queueCrossVrfImports);
     } finally {
       span.finish();
@@ -521,7 +520,7 @@ final class IncrementalBdpEngine {
       nodes
           .values()
           .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::processCrossVrfRoutes);
     } finally {
       span.finish();
@@ -541,7 +540,7 @@ final class IncrementalBdpEngine {
       nodes
           .values()
           .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::computeFib);
     } finally {
       span.finish();
@@ -578,7 +577,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.initForIgpComputation(topologyContext));
       } finally {
         initializeSpan.finish();
@@ -599,7 +598,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> {
                   importRib(vr.getMainRib(), vr._independentRib);
@@ -648,7 +647,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.initForEgpComputationWithNewTopology(topologyContext));
       } finally {
         initializationSpan.finish();
@@ -697,7 +696,7 @@ final class IncrementalBdpEngine {
             nodes
                 .values()
                 .parallelStream()
-                .flatMap(n -> n.getVirtualRouters().values().parallelStream())
+                .flatMap(n -> n.getVirtualRouters().parallelStream())
                 .forEach(VirtualRouter::reinitForNewIteration);
           } finally {
             depRoutesspan.finish();
@@ -715,7 +714,7 @@ final class IncrementalBdpEngine {
           try (Scope redistscope = GlobalTracer.get().scopeManager().activate(redistributeSpan)) {
             assert redistscope != null; // avoid unused warning
             nodes.values().stream()
-                .flatMap(n -> n.getVirtualRouters().values().stream())
+                .flatMap(n -> n.getVirtualRouters().stream())
                 .forEach(VirtualRouter::redistribute);
 
             // Handle cross-VRF leaking here too.
@@ -740,7 +739,7 @@ final class IncrementalBdpEngine {
           nodes
               .values()
               .parallelStream()
-              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(VirtualRouter::endOfEgpRound);
 
           /*
@@ -792,7 +791,7 @@ final class IncrementalBdpEngine {
       return nodes
           .values()
           .parallelStream()
-          .flatMap(n -> n.getVirtualRouters().values().stream())
+          .flatMap(n -> n.getVirtualRouters().stream())
           .anyMatch(VirtualRouter::isDirty);
     } finally {
       span.finish();
@@ -814,7 +813,7 @@ final class IncrementalBdpEngine {
       return nodes
           .values()
           .parallelStream()
-          .flatMap(node -> node.getVirtualRouters().values().stream())
+          .flatMap(node -> node.getVirtualRouters().stream())
           .mapToInt(VirtualRouter::computeIterationHashCode)
           .sum();
     } finally {
@@ -830,21 +829,21 @@ final class IncrementalBdpEngine {
       assert scope != null; // avoid unused warning
       int numBgpBestPathRibRoutes =
           nodes.values().stream()
-              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .flatMap(n -> n.getVirtualRouters().stream())
               .mapToInt(VirtualRouter::getNumBgpBestPaths)
               .sum();
       ae.getBgpBestPathRibRoutesByIteration()
           .put(dependentRoutesIterations, numBgpBestPathRibRoutes);
       int numBgpMultipathRibRoutes =
           nodes.values().stream()
-              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .flatMap(n -> n.getVirtualRouters().stream())
               .mapToInt(VirtualRouter::getNumBgpPaths)
               .sum();
       ae.getBgpMultipathRibRoutesByIteration()
           .put(dependentRoutesIterations, numBgpMultipathRibRoutes);
       int numMainRibRoutes =
           nodes.values().stream()
-              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .flatMap(n -> n.getVirtualRouters().stream())
               .mapToInt(vr -> vr.getMainRib().getTypedRoutes().size())
               .sum();
       ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
@@ -904,20 +903,20 @@ final class IncrementalBdpEngine {
           scheduleNodes
               .values()
               .parallelStream()
-              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
 
           scheduleNodes
               .values()
               .parallelStream()
-              .flatMap(n -> n.getVirtualRouters().values().stream())
+              .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
         }
         dirty =
             allNodes
                 .values()
                 .parallelStream()
-                .flatMap(n -> n.getVirtualRouters().values().stream())
+                .flatMap(n -> n.getVirtualRouters().stream())
                 .flatMap(vr -> vr.getOspfProcesses().values().stream())
                 .anyMatch(OspfRoutingProcess::isDirty);
       } finally {
@@ -952,7 +951,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> {
                   if (vr.propagateRipInternalRoutes(nodes, topology)) {
@@ -972,7 +971,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::unstageRipInternalRoutes);
       } finally {
         unstageSpan.finish();
@@ -987,7 +986,7 @@ final class IncrementalBdpEngine {
         nodes
             .values()
             .parallelStream()
-            .flatMap(n -> n.getVirtualRouters().values().stream())
+            .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> {
                   importRib(vr._ripRib, vr._ripInternalRib);

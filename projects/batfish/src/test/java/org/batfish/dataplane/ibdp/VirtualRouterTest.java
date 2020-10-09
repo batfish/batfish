@@ -110,12 +110,12 @@ public class VirtualRouterTest {
 
   private static VirtualRouter makeF5VirtualRouter(String hostname) {
     Node n = TestUtils.makeF5Router(hostname);
-    return n.getVirtualRouters().get(DEFAULT_VRF_NAME);
+    return n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
   }
 
   private static VirtualRouter makeIosVirtualRouter(String hostname) {
     Node n = TestUtils.makeIosRouter(hostname);
-    return n.getVirtualRouters().get(DEFAULT_VRF_NAME);
+    return n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
   }
 
   private static Set<AbstractRoute> makeOneRouteOfEveryType() {
@@ -566,7 +566,7 @@ public class VirtualRouterTest {
 
     Map<String, VirtualRouter> vrs =
         nodes.values().stream()
-            .map(n -> n.getVirtualRouters().get(DEFAULT_VRF_NAME))
+            .map(n -> n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME))
             .collect(
                 ImmutableMap.toImmutableMap(
                     vr -> vr.getConfiguration().getHostname(), Function.identity()));
@@ -599,8 +599,7 @@ public class VirtualRouterTest {
     BgpTopology bgpTopology2 =
         initBgpTopology(configs, new IpOwners(configs).getIpVrfOwners(), false, null);
     for (Node n : nodes.values()) {
-      n.getVirtualRouters()
-          .get(DEFAULT_VRF_NAME)
+      n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME)
           .initForEgpComputationWithNewTopology(
               TopologyContext.builder()
                   .setBgpTopology(bgpTopology2)
@@ -663,7 +662,7 @@ public class VirtualRouterTest {
         ImmutableMap.of(c1.getHostname(), new Node(c1), c2.getHostname(), new Node(c2));
     Map<String, VirtualRouter> vrs =
         nodes.values().stream()
-            .map(n -> n.getVirtualRouters().get(DEFAULT_VRF_NAME))
+            .map(n -> n.getVirtualRouterOrThrow(DEFAULT_VRF_NAME))
             .collect(
                 ImmutableMap.toImmutableMap(
                     vr -> vr.getConfiguration().getHostname(), Function.identity()));
@@ -757,8 +756,8 @@ public class VirtualRouterTest {
 
     // Create a Node based on the configuration and get its VirtualRouters
     Node n = new Node(c);
-    VirtualRouter vrWithRoutes = n.getVirtualRouters().get(vrfWithRoutesName);
-    VirtualRouter emptyVr = n.getVirtualRouters().get(emptyVrfName);
+    VirtualRouter vrWithRoutes = n.getVirtualRouterOrThrow(vrfWithRoutesName);
+    VirtualRouter emptyVr = n.getVirtualRouterOrThrow(emptyVrfName);
 
     // Create routes of every type and inject them into vrWithRoutes' main RIB and main RIB delta
     Set<AnnotatedRoute<AbstractRoute>> annotatedRoutes =

@@ -531,7 +531,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               } else {
                 // Merge into our sibling VRF corresponding to the VNI
                 BgpRoutingProcess bgpRoutingProcess =
-                    n.getVirtualRouters().get(vniVrf.getName()).getBgpRoutingProcess();
+                    n.getVirtualRouter(vniVrf.getName())
+                        .map(VirtualRouter::getBgpRoutingProcess)
+                        .orElse(null);
                 checkArgument(
                     bgpRoutingProcess != null,
                     "Missing bgp process for vrf %s, node %s",
@@ -733,8 +735,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               rib ->
                   nodes
                       .get(_c.getHostname())
-                      .getVirtualRouters()
-                      .get(rib.getVrfName())
+                      .getVirtualRouterOrThrow(rib.getVrfName())
                       .enqueueCrossVrfRoutes(
                           new CrossVrfEdgeId(_vrfName, rib.getRibName()),
                           perNeighborDeltaForRibGroups.build().getActions(),
@@ -1658,8 +1659,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpRoutingProcess proc =
         allNodes
             .get(id.getHostname())
-            .getVirtualRouters()
-            .get(id.getVrfName())
+            .getVirtualRouterOrThrow(id.getVrfName())
             .getBgpRoutingProcess();
     assert proc != null; // Otherwise our computation is really wrong
     return proc;
@@ -1669,7 +1669,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   private BgpRoutingProcess getVrfProcess(String vrf, Map<String, Node> allNodes) {
     BgpRoutingProcess proc =
-        allNodes.get(_c.getHostname()).getVirtualRouters().get(vrf).getBgpRoutingProcess();
+        allNodes.get(_c.getHostname()).getVirtualRouterOrThrow(vrf).getBgpRoutingProcess();
     assert proc != null;
     return proc;
   }
