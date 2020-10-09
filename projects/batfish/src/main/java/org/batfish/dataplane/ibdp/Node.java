@@ -12,7 +12,6 @@ import org.batfish.dataplane.rib.Rib;
 public final class Node {
 
   private final Configuration _c;
-
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
   /**

@@ -24,8 +24,8 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 
-/** Utility functions to convert dataplane {@link Node} into other stuctures */
-public class DataplaneUtil {
+/** Utility functions to convert dataplane {@link Node} into other structures */
+public final class DataplaneUtil {
 
   static Map<String, Configuration> computeConfigurations(Map<String, Node> nodes) {
     return nodes.entrySet().stream()
@@ -100,4 +100,6 @@ public class DataplaneUtil {
     }
     return result.build();
   }
+
+  private DataplaneUtil() {}
 }

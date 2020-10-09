@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import org.batfish.dataplane.ibdp.Node;
 
 /** A dataplane computation schedule that allows processing of messages at one node at a time */
-public class NodeSerializedSchedule extends IbdpSchedule {
+public final class NodeSerializedSchedule extends IbdpSchedule {
 
   private UnmodifiableIterator<Entry<String, Node>> _nodeIterator;
 
