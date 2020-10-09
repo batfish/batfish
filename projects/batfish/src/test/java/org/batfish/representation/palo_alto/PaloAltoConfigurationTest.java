@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -628,29 +629,52 @@ public final class PaloAltoConfigurationTest {
     assertEquals(generateVsysSharedGatewayCalls(sharedGateway, vsys).count(), 0L);
   }
 
+  /** Covers universal and default case of no rule-type */
   @Test
-  public void testSecurityRuleAppliesRuleType() {
+  public void testSecurityRuleAppliesRuleTypeUniversal() {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
     rule.getTo().addAll(ImmutableList.of("C", "B"));
 
-    // default case -- covers universal
-    assertTrue(securityRuleApplies("A", "B", rule));
-    assertTrue(securityRuleApplies("A", "C", rule));
-    assertTrue(securityRuleApplies("B", "B", rule));
-    assertFalse(securityRuleApplies("A", "A", rule));
-    assertFalse(securityRuleApplies("C", "A", rule));
+    Warnings w = new Warnings();
 
+    assertTrue(securityRuleApplies("A", "B", rule, w));
+    assertTrue(securityRuleApplies("A", "C", rule, w));
+    assertTrue(securityRuleApplies("B", "B", rule, w));
+
+    assertFalse(securityRuleApplies("A", "A", rule, w));
+    assertFalse(securityRuleApplies("C", "A", rule, w));
+    assertFalse(securityRuleApplies("A", "D", rule, w));
+  }
+
+  @Test
+  public void testSecurityRuleAppliesRuleTypeInterzone() {
+    SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
+    rule.getFrom().addAll(ImmutableList.of("A", "B"));
+    rule.getTo().addAll(ImmutableList.of("C", "B"));
     rule.setRuleType(RuleType.INTERZONE);
-    assertTrue(securityRuleApplies("A", "C", rule));
-    assertTrue(securityRuleApplies("A", "B", rule));
-    assertFalse(securityRuleApplies("A", "A", rule));
-    assertFalse(securityRuleApplies("B", "B", rule));
 
+    Warnings w = new Warnings();
+
+    assertTrue(securityRuleApplies("A", "C", rule, w));
+    assertTrue(securityRuleApplies("A", "B", rule, w));
+
+    assertFalse(securityRuleApplies("A", "A", rule, w));
+    assertFalse(securityRuleApplies("B", "B", rule, w));
+    assertFalse(securityRuleApplies("A", "D", rule, w));
+  }
+
+  @Test
+  public void testSecurityRuleAppliesRuleTypeIntrazone() {
+    SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
+    rule.getFrom().addAll(ImmutableList.of("A", "B"));
+    rule.getTo().addAll(ImmutableList.of("A", "B"));
     rule.setRuleType(RuleType.INTRAZONE);
-    assertTrue(securityRuleApplies("A", "A", rule));
-    assertTrue(securityRuleApplies("B", "B", rule));
-    assertFalse(securityRuleApplies("A", "B", rule));
-    assertFalse(securityRuleApplies("C", "C", rule));
+
+    Warnings w = new Warnings();
+
+    assertTrue(securityRuleApplies("A", "A", rule, w));
+    assertFalse(securityRuleApplies("A", "B", rule, w));
+    assertFalse(securityRuleApplies("D", "D", rule, w));
   }
 }

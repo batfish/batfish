@@ -1,6 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.logging.log4j.ThreadContext.containsKey;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
@@ -2142,9 +2143,12 @@ public final class PaloAltoGrammarTest {
     Map<String, SecurityRule> rules =
         vendorConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
 
-    assertThat(rules.get("RULE1").getRuleType(), equalTo(RuleType.INTERZONE));
-    assertThat(rules.get("RULE2").getRuleType(), equalTo(RuleType.INTRAZONE));
-    assertThat(rules.get("RULE3").getRuleType(), equalTo(RuleType.UNIVERSAL));
+    assertThat(rules.get("INTER").getRuleType(), equalTo(RuleType.INTERZONE));
+    assertThat(rules.get("INTRA").getRuleType(), equalTo(RuleType.INTRAZONE));
+    assertThat(rules.get("UNIVERSAL").getRuleType(), equalTo(RuleType.UNIVERSAL));
+    assertThat(rules.get("DEFAULT").getRuleType(), nullValue());
+
+    assertThat(rules, not(containsKey("BADINTRA")));
   }
 
   @Test

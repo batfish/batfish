@@ -614,7 +614,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
     List<AclLine> lines =
         rules.stream()
-            .filter(e -> securityRuleApplies(fromZone.getName(), toZone.getName(), e.getKey()))
+            .filter(e -> securityRuleApplies(fromZone.getName(), toZone.getName(), e.getKey(), _w))
             .map(entry -> toIpAccessListLine(entry.getKey(), entry.getValue()))
             .collect(ImmutableList.toImmutableList());
     // Intrazone traffic is allowed by default.
@@ -636,7 +636,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  static boolean securityRuleApplies(String fromZoneName, String toZoneName, SecurityRule rule) {
+  static boolean securityRuleApplies(
+      String fromZoneName, String toZoneName, SecurityRule rule, Warnings warnings) {
     if (rule.getDisabled()) {
       return false;
     }
@@ -645,16 +646,27 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .isEmpty();
     boolean toZoneInRuleTo =
         !Sets.intersection(rule.getTo(), ImmutableSet.of(toZoneName, CATCHALL_ZONE_NAME)).isEmpty();
+
+    if (!fromZoneInRuleFrom || !toZoneInRuleTo) {
+      return false;
+    }
+
     // rule-type doc:
     // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
-    if (rule.getRuleType() == RuleType.INTRAZONE) {
-      // destination zones ignored for intrazone rules
-      return fromZoneInRuleFrom && fromZoneName.equals(toZoneName);
-    } else if (rule.getRuleType() == RuleType.INTERZONE) {
-      return fromZoneInRuleFrom && toZoneInRuleTo && !fromZoneName.equals(toZoneName);
+    switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
+      case INTRAZONE:
+        return fromZoneName.equals(toZoneName);
+      case INTERZONE:
+        return !fromZoneName.equals(toZoneName);
+      case UNIVERSAL:
+        return true;
+      default:
+        warnings.redFlag(
+            String.format(
+                "Skipped unhandled rule type '%s' from zone %s to %s",
+                rule.getRuleType(), fromZoneName, toZoneName));
+        return false;
     }
-    // default case -- universal or unspecified
-    return fromZoneInRuleFrom && toZoneInRuleTo;
   }
 
   /**
