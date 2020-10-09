@@ -12,5 +12,13 @@ import org.batfish.vendor.VendorConfiguration;
  */
 public interface ControlPlaneExtractor extends BatfishExtractor {
 
+  /**
+   * This function is called when Batfish will no longer provide any text to parse.
+   *
+   * <p>Implementors of {@link ControlPlaneExtractor} may override this function to cleanup or
+   * otherwise post-process their configuration before it is serialized and saved.
+   */
+  default void doneParsing() {}
+
   VendorConfiguration getVendorConfiguration();
 }

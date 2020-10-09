@@ -378,6 +378,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       postProcessSpan.finish();
     }
 
+    // Let the extractor perform any finalization actions it deems necessary.
+    extractor.doneParsing();
+
+    // Pull out the vendor configuration, set the last few properties, and go.
     VendorConfiguration vc = extractor.getVendorConfiguration();
     vc.setVendor(format);
     vc.setFilename(_filename);
