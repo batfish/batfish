@@ -286,7 +286,7 @@ public final class PaloAltoGrammarTest {
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    Warnings parseWarnings = new Warnings(true, true, true);
+    Warnings parseWarnings = new Warnings();
     PaloAltoControlPlaneExtractor extractor =
         new PaloAltoControlPlaneExtractor(src, parser, parseWarnings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
