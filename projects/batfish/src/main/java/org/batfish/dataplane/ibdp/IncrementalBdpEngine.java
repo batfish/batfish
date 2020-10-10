@@ -58,9 +58,14 @@ import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.version.BatfishVersion;
 
-class IncrementalBdpEngine {
+/** Computes the entire dataplane by executing a fixed-point computation. */
+final class IncrementalBdpEngine {
 
   private static final Logger LOGGER = LogManager.getLogger(IncrementalBdpEngine.class);
+  /**
+   * Maximum amount of topology iterations to do before deciding that the dataplane computation
+   * cannot converge (there is some sort of flap)
+   */
   private static final int MAX_TOPOLOGY_ITERATIONS = 10;
 
   private int _numIterations;
