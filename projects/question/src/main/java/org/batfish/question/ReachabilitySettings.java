@@ -38,8 +38,6 @@ public final class ReachabilitySettings {
 
     private NodeSpecifier _ingressNodes;
 
-    private int _maxChunkSize;
-
     private NodeSpecifier _nonTransitNodes;
 
     private NodeSpecifier _notFinalNodes;
@@ -49,8 +47,6 @@ public final class ReachabilitySettings {
     private Boolean _srcNatted;
 
     private NodeSpecifier _transitNodes;
-
-    private boolean _specialize = true;
 
     public ReachabilitySettings build() {
       return new ReachabilitySettings(this);
@@ -72,10 +68,6 @@ public final class ReachabilitySettings {
       return _ingressNodes;
     }
 
-    public int getMaxChunkSize() {
-      return _maxChunkSize;
-    }
-
     public NodeSpecifier getNonTransitNodes() {
       return _nonTransitNodes;
     }
@@ -86,10 +78,6 @@ public final class ReachabilitySettings {
 
     public NodeSpecifier getNotIngressNodes() {
       return _notIngressNodes;
-    }
-
-    public boolean getSpecialize() {
-      return _specialize;
     }
 
     public Boolean getSrcNatted() {
@@ -120,11 +108,6 @@ public final class ReachabilitySettings {
       return this;
     }
 
-    public Builder setMaxChunkSize(int maxChunkSize) {
-      _maxChunkSize = maxChunkSize;
-      return this;
-    }
-
     public Builder setNonTransitNodes(NodeSpecifier nonTransitNodes) {
       _nonTransitNodes = nonTransitNodes;
       return this;
@@ -142,11 +125,6 @@ public final class ReachabilitySettings {
 
     public Builder setSrcNatted(Boolean srcNatted) {
       _srcNatted = srcNatted;
-      return this;
-    }
-
-    public Builder setSpecialize(boolean specialize) {
-      _specialize = specialize;
       return this;
     }
 
@@ -175,8 +153,6 @@ public final class ReachabilitySettings {
 
   private final NodeSpecifier _ingressNodes;
 
-  private final int _maxChunkSize;
-
   private final NodeSpecifier _nonTransitNodes;
 
   private NodeSpecifier _notFinalNodes;
@@ -184,8 +160,6 @@ public final class ReachabilitySettings {
   private NodeSpecifier _notIngressNodes;
 
   private final Boolean _srcNatted;
-
-  private final boolean _specialize;
 
   private final NodeSpecifier _transitNodes;
 
@@ -196,10 +170,8 @@ public final class ReachabilitySettings {
     _ingressInterfaces = builder._ingressInterfaces;
     _ingressNodes = builder._ingressNodes;
     _notIngressNodes = builder._notIngressNodes;
-    _maxChunkSize = builder._maxChunkSize;
     _transitNodes = builder._transitNodes;
     _nonTransitNodes = builder._nonTransitNodes;
-    _specialize = builder._specialize;
     _actions = builder._actions;
     _srcNatted = builder._srcNatted;
   }
@@ -218,11 +190,9 @@ public final class ReachabilitySettings {
         && _finalNodes.equals(other._finalNodes)
         && _headerSpace.equals(other._headerSpace)
         && _ingressNodes.equals(other._ingressNodes)
-        && _maxChunkSize == other._maxChunkSize
         && _nonTransitNodes.equals(other._nonTransitNodes)
         && Objects.equals(_srcNatted, other._srcNatted)
-        && _transitNodes.equals(other._transitNodes)
-        && _specialize == other._specialize;
+        && _transitNodes.equals(other._transitNodes);
   }
 
   public SortedSet<FlowDisposition> getActions() {
@@ -245,10 +215,6 @@ public final class ReachabilitySettings {
     return _ingressNodes;
   }
 
-  public int getMaxChunkSize() {
-    return _maxChunkSize;
-  }
-
   public NodeSpecifier getNonTransitNodes() {
     return _nonTransitNodes;
   }
@@ -269,10 +235,6 @@ public final class ReachabilitySettings {
     return _transitNodes;
   }
 
-  public boolean getSpecialize() {
-    return _specialize;
-  }
-
   @Override
   public int hashCode() {
     return Objects.hash(
@@ -280,11 +242,9 @@ public final class ReachabilitySettings {
         _finalNodes,
         _headerSpace,
         _ingressNodes,
-        _maxChunkSize,
         _nonTransitNodes,
         _srcNatted,
-        _transitNodes,
-        _specialize);
+        _transitNodes);
   }
 
   private static IpSpaceSpecifier toIpSpaceSpecifier(IpSpace include, IpSpace exclude) {
@@ -355,13 +315,11 @@ public final class ReachabilitySettings {
         .setForbiddenTransitNodesSpecifier(
             firstNonNull(_nonTransitNodes, NoNodesNodeSpecifier.INSTANCE))
         .setHeaderSpace(headerSpace)
-        .setMaxChunkSize(_maxChunkSize)
         .setRequiredTransitNodesSpecifier(
             firstNonNull(_transitNodes, NoNodesNodeSpecifier.INSTANCE))
         .setSourceIpSpaceSpecifier(sourceIpSpaceSpecifier)
         .setSourceLocationSpecifier(sourceLocations)
         .setSrcNatted(SrcNattedConstraint.fromBoolean(_srcNatted))
-        .setSpecialize(_specialize)
         .build();
   }
 }
