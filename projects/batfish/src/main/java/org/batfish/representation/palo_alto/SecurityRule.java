@@ -48,7 +48,7 @@ public final class SecurityRule implements Serializable {
   // Applications
   @Nonnull private final SortedSet<String> _applications;
 
-  // Applications
+  // Rule type
   @Nullable private RuleType _ruleType;
 
   public SecurityRule(String name, Vsys vsys) {
