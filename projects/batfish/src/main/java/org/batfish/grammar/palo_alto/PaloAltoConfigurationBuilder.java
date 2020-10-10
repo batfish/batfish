@@ -74,9 +74,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -2481,7 +2479,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     if (ctx.INTERZONE() != null) {
       _currentSecurityRule.setRuleType(RuleType.INTERZONE);
     } else if (ctx.INTRAZONE() != null) {
-      _currentSecurityRule.setRuleType(RuleType.INTRAZONE);
+      if (_currentSecurityRule.getFrom().equals(_currentSecurityRule.getTo())) {
+        _currentSecurityRule.setRuleType(RuleType.INTRAZONE);
+      } else {
+        warn(ctx, "Intrazone security rule has different source and destination zones.");
+      }
     } else if (ctx.UNIVERSAL() != null) {
       _currentSecurityRule.setRuleType(RuleType.UNIVERSAL);
     } else {
@@ -2838,37 +2840,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   public PaloAltoConfiguration getConfiguration() {
-    _mainConfiguration
-        .getVirtualSystems()
-        .values()
-        .forEach(this::removeInvalidIntrazoneSecurityRules);
     return _mainConfiguration;
-  }
-
-  /** Remove intrazone rules that don't have identical From and To zones */
-  private void removeInvalidIntrazoneSecurityRules(Vsys vsys) {
-    if (_mainConfiguration.getPanorama() != null) {
-      removeInvalidIntrazoneSecurityRules(
-          _mainConfiguration.getPanorama().getPreRulebase().getSecurityRules());
-      removeInvalidIntrazoneSecurityRules(
-          _mainConfiguration.getPanorama().getPostRulebase().getSecurityRules());
-    }
-    removeInvalidIntrazoneSecurityRules(vsys.getRulebase().getSecurityRules());
-  }
-
-  private void removeInvalidIntrazoneSecurityRules(Map<String, SecurityRule> rules) {
-    Set<String> ruleNames = ImmutableSet.copyOf(rules.keySet());
-    ruleNames.forEach(
-        ruleName -> {
-          SecurityRule rule = rules.get(ruleName);
-          if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
-            _w.redFlag(
-                String.format(
-                    "Intrazone security rule %s is invalid because it has different From and To zones: %s vs %s",
-                    ruleName, rule.getFrom(), rule.getTo()));
-            rules.remove(ruleName);
-          }
-        });
   }
 
   /** Get or create Panorama vsys for current configuration. */

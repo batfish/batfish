@@ -491,7 +491,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllSecurityRules(vsys);
+      List<Map.Entry<SecurityRule, Vsys>> rules = getAllValidSecurityRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -671,10 +671,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
-   * Panorama.
+   * Panorama. Filters out invalid intrazone rules.
    */
   @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
-  private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
+  private List<Map.Entry<SecurityRule, Vsys>> getAllValidSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
             ? Stream.of()
@@ -689,7 +689,25 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         vsys.getRulebase().getSecurityRules().values().stream()
             .map(r -> new SimpleImmutableEntry<>(r, vsys));
 
-    return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
+    return Stream.concat(Stream.concat(pre, rules), post)
+        .filter(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Check if the intrazone security rule is valid, and log a warning if it is not. Returns true for
+   * non-intrazone rules.
+   */
+  @VisibleForTesting
+  static boolean checkIntrazoneValidityAndWarn(SecurityRule rule, Warnings w) {
+    if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
+      w.redFlag(
+          String.format(
+              "Invalid intrazone security rule: %s. It has different From and To zones: %s vs %s",
+              rule.getName(), rule.getFrom(), rule.getTo()));
+      return false;
+    }
+    return true;
   }
 
   /**

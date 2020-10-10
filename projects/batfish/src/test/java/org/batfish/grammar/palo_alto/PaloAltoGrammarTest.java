@@ -1,7 +1,6 @@
 package org.batfish.grammar.palo_alto;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.logging.log4j.ThreadContext.containsKey;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
@@ -124,7 +123,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -2163,10 +2161,11 @@ public final class PaloAltoGrammarTest {
     assertThat(rules.get("UNIVERSAL").getRuleType(), equalTo(RuleType.UNIVERSAL));
     assertThat(rules.get("DEFAULT").getRuleType(), nullValue());
 
-    assertThat(rules, not(containsKey("BADINTRA")));
+    // the intrazone line should have been rejected -- which leaves this rule as default
+    assertThat(rules.get("BADINTRA").getRuleType(), nullValue());
     assertThat(
-        Iterables.getOnlyElement(vendorConfig.getWarnings().getRedFlagWarnings()).getText(),
-        containsString("Intrazone security rule BADINTRA is invalid"));
+        vendorConfig.getWarnings().getParseWarnings(),
+        hasItem(hasComment("Intrazone security rule has different source and destination zones.")));
   }
 
   @Test
