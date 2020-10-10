@@ -1290,7 +1290,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Convert specified range string into an {@link Optional} {@link IpSpace}. If the range is not
-   * valid, {@link Optional#empty()} is returned.
+   * valid, {@link Optional#empty()} is returned. Assumes the supplied range string is a
+   * syntactically valid formatted range (should be guaranteed by the parser).
    */
   private Optional<IpSpace> rangeStringToIpSpace(String range) {
     String[] ips = range.split("-");
@@ -1304,7 +1305,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Convert specified range string into an {@link Optional} {@link Range}. If the range is not
-   * valid, {@link Optional#empty()} is returned.
+   * valid, {@link Optional#empty()} is returned. Assumes the supplied range string is a
+   * syntactically valid formatted range (should be guaranteed by the parser).
    */
   private Optional<Range<Ip>> rangeStringToRange(String range) {
     String[] ips = range.split("-");
