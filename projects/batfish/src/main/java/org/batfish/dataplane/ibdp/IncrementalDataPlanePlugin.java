@@ -13,7 +13,7 @@ import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 
 /** A batfish plugin that registers the Incremental Batfish Data Plane (ibdp) Engine. */
 @AutoService(Plugin.class)
-public class IncrementalDataPlanePlugin extends DataPlanePlugin {
+public final class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   public static final String PLUGIN_NAME = "ibdp";
 
