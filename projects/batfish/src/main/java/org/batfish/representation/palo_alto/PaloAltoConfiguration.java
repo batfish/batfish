@@ -703,7 +703,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
       w.redFlag(
           String.format(
-              "Invalid intrazone security rule: %s. It has different From and To zones: %s vs %s",
+              "Skipping invalid intrazone security rule: %s. It has different From and To zones: %s vs %s",
               rule.getName(), rule.getFrom(), rule.getTo()));
       return false;
     }

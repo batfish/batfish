@@ -2165,7 +2165,9 @@ public final class PaloAltoGrammarTest {
     assertThat(rules.get("BADINTRA").getRuleType(), nullValue());
     assertThat(
         vendorConfig.getWarnings().getParseWarnings(),
-        hasItem(hasComment("Intrazone security rule has different source and destination zones.")));
+        hasItem(
+            hasComment(
+                "Error: Cannot set 'rule-type intrazone' for security rule with different source and destination zones.")));
   }
 
   @Test

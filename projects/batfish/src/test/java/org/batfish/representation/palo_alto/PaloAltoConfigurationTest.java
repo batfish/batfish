@@ -700,6 +700,6 @@ public final class PaloAltoConfigurationTest {
     assertFalse(checkIntrazoneValidityAndWarn(rule, w));
     assertThat(
         Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
-        containsString("Invalid intrazone security rule"));
+        containsString("Skipping invalid intrazone security rule"));
   }
 }

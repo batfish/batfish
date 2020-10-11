@@ -2482,7 +2482,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       if (_currentSecurityRule.getFrom().equals(_currentSecurityRule.getTo())) {
         _currentSecurityRule.setRuleType(RuleType.INTRAZONE);
       } else {
-        warn(ctx, "Intrazone security rule has different source and destination zones.");
+        warn(
+            ctx,
+            "Error: Cannot set 'rule-type intrazone' for security rule with different source and destination zones.");
       }
     } else if (ctx.UNIVERSAL() != null) {
       _currentSecurityRule.setRuleType(RuleType.UNIVERSAL);
