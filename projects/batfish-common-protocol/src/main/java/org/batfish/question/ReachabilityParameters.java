@@ -47,8 +47,6 @@ public final class ReachabilityParameters {
 
     private boolean _invertSearch = false;
 
-    private int _maxChunkSize;
-
     private @Nonnull NodeSpecifier _requiredTransitNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
 
     private @Nonnull LocationSpecifier _sourceLocationSpecifier =
@@ -58,8 +56,6 @@ public final class ReachabilityParameters {
         InferFromLocationIpSpaceSpecifier.INSTANCE;
 
     private @Nonnull SrcNattedConstraint _srcNatted = SrcNattedConstraint.UNCONSTRAINED;
-
-    private boolean _specialize = true;
 
     public ReachabilityParameters build() {
       return new ReachabilityParameters(this);
@@ -117,11 +113,6 @@ public final class ReachabilityParameters {
       return this;
     }
 
-    public Builder setMaxChunkSize(int maxChunkSize) {
-      _maxChunkSize = maxChunkSize;
-      return this;
-    }
-
     public Builder setSrcNatted(SrcNattedConstraint srcNatted) {
       _srcNatted = srcNatted;
       return this;
@@ -129,11 +120,6 @@ public final class ReachabilityParameters {
 
     public Builder setRequiredTransitNodesSpecifier(NodeSpecifier transitNodesSpecifier) {
       _requiredTransitNodesSpecifier = transitNodesSpecifier;
-      return this;
-    }
-
-    public Builder setSpecialize(boolean specialize) {
-      _specialize = specialize;
       return this;
     }
   }
@@ -152,15 +138,11 @@ public final class ReachabilityParameters {
 
   private final boolean _invertSearch;
 
-  private final int _maxChunkSize;
-
   private final LocationSpecifier _sourceLocationSpecifier;
 
   private final IpSpaceSpecifier _sourceIpSpaceSpecifier;
 
   private final SrcNattedConstraint _sourceNatted;
-
-  private final boolean _specialize;
 
   private final @Nonnull NodeSpecifier _requiredTransitNodesSpecifier;
 
@@ -172,11 +154,9 @@ public final class ReachabilityParameters {
     _headerSpace = builder._headerSpace;
     _ignoreFilters = builder._ignoreFilters;
     _invertSearch = builder._invertSearch;
-    _maxChunkSize = builder._maxChunkSize;
     _sourceLocationSpecifier = builder._sourceLocationSpecifier;
     _sourceIpSpaceSpecifier = builder._sourceIpSpaceSpecifier;
     _sourceNatted = builder._srcNatted;
-    _specialize = builder._specialize;
     _requiredTransitNodesSpecifier = builder._requiredTransitNodesSpecifier;
   }
 
@@ -215,10 +195,6 @@ public final class ReachabilityParameters {
     return _invertSearch;
   }
 
-  public int getMaxChunkSize() {
-    return _maxChunkSize;
-  }
-
   public LocationSpecifier getSourceLocationSpecifier() {
     return _sourceLocationSpecifier;
   }
@@ -229,10 +205,6 @@ public final class ReachabilityParameters {
 
   public SrcNattedConstraint getSrcNatted() {
     return _sourceNatted;
-  }
-
-  public boolean getSpecialize() {
-    return _specialize;
   }
 
   @Nonnull

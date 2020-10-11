@@ -78,10 +78,8 @@ public final class ReachabilityParametersResolver {
         .setForbiddenTransitNodes(forbiddenTransitNodes)
         .setHeaderSpace(resolver.resolveHeaderSpace())
         .setIgnoreFilters(params.getIgnoreFilters())
-        .setMaxChunkSize(params.getMaxChunkSize())
         .setSourceIpSpaceAssignment(resolver.resolveSourceIpSpaceAssignment())
         .setSrcNatted(params.getSrcNatted())
-        .setSpecialize(params.getSpecialize())
         .setRequiredTransitNodes(requiredTransitNodes)
         .build();
   }

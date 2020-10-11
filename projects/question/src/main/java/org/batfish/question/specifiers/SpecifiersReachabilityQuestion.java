@@ -152,7 +152,6 @@ public final class SpecifiersReachabilityQuestion extends Question {
         .setRequiredTransitNodesSpecifier(pathConstraints.getTransitLocations())
         .setSourceLocationSpecifier(pathConstraints.getStartLocation())
         .setSourceIpSpaceSpecifier(getSourceIpSpaceSpecifier())
-        .setSpecialize(true)
         .build();
   }
 

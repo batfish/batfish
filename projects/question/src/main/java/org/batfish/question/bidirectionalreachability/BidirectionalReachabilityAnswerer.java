@@ -70,7 +70,6 @@ public final class BidirectionalReachabilityAnswerer extends Answerer {
             .setSourceIpSpaceSpecifier(
                 getIpSpaceSpecifierOrDefault(
                     _headerConstraints.getSrcIps(), InferFromLocationIpSpaceSpecifier.INSTANCE))
-            .setSpecialize(false)
             .build();
 
     BDDPacket bddPacket = new BDDPacket();
