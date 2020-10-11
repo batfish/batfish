@@ -149,6 +149,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
@@ -490,7 +491,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllSecurityRules(vsys);
+      List<Map.Entry<SecurityRule, Vsys>> rules = getAllValidSecurityRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -613,20 +614,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
     List<AclLine> lines =
         rules.stream()
-            .filter(
-                e -> {
-                  SecurityRule rule = e.getKey();
-                  if (rule.getDisabled()) {
-                    return false;
-                  } else if (Sets.intersection(
-                          rule.getFrom(), ImmutableSet.of(fromZone.getName(), CATCHALL_ZONE_NAME))
-                      .isEmpty()) {
-                    return false;
-                  }
-                  return !Sets.intersection(
-                          rule.getTo(), ImmutableSet.of(toZone.getName(), CATCHALL_ZONE_NAME))
-                      .isEmpty();
-                })
+            .filter(e -> securityRuleApplies(fromZone.getName(), toZone.getName(), e.getKey(), _w))
             .map(entry -> toIpAccessListLine(entry.getKey(), entry.getValue()))
             .collect(ImmutableList.toImmutableList());
     // Intrazone traffic is allowed by default.
@@ -647,12 +635,46 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
   }
 
+  @VisibleForTesting
+  static boolean securityRuleApplies(
+      String fromZoneName, String toZoneName, SecurityRule rule, Warnings warnings) {
+    if (rule.getDisabled()) {
+      return false;
+    }
+    boolean fromZoneInRuleFrom =
+        !Sets.intersection(rule.getFrom(), ImmutableSet.of(fromZoneName, CATCHALL_ZONE_NAME))
+            .isEmpty();
+    boolean toZoneInRuleTo =
+        !Sets.intersection(rule.getTo(), ImmutableSet.of(toZoneName, CATCHALL_ZONE_NAME)).isEmpty();
+
+    if (!fromZoneInRuleFrom || !toZoneInRuleTo) {
+      return false;
+    }
+
+    // rule-type doc:
+    // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
+    switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
+      case INTRAZONE:
+        return fromZoneName.equals(toZoneName);
+      case INTERZONE:
+        return !fromZoneName.equals(toZoneName);
+      case UNIVERSAL:
+        return true;
+      default:
+        warnings.redFlag(
+            String.format(
+                "Skipped unhandled rule type '%s' from zone %s to %s",
+                rule.getRuleType(), fromZoneName, toZoneName));
+        return false;
+    }
+  }
+
   /**
    * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
-   * Panorama.
+   * Panorama. Filters out invalid intrazone rules.
    */
   @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
-  private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
+  private List<Map.Entry<SecurityRule, Vsys>> getAllValidSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
             ? Stream.of()
@@ -667,7 +689,25 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         vsys.getRulebase().getSecurityRules().values().stream()
             .map(r -> new SimpleImmutableEntry<>(r, vsys));
 
-    return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
+    return Stream.concat(Stream.concat(pre, rules), post)
+        .filter(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Check if the intrazone security rule is valid, and log a warning if it is not. Returns true for
+   * non-intrazone rules.
+   */
+  @VisibleForTesting
+  static boolean checkIntrazoneValidityAndWarn(SecurityRule rule, Warnings w) {
+    if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
+      w.redFlag(
+          String.format(
+              "Skipping invalid intrazone security rule: %s. It has different From and To zones: %s vs %s",
+              rule.getName(), rule.getFrom(), rule.getTo()));
+      return false;
+    }
+    return true;
   }
 
   /**

@@ -14,6 +14,12 @@ import org.batfish.datamodel.LineAction;
 @ParametersAreNonnullByDefault
 public final class SecurityRule implements Serializable {
 
+  public enum RuleType {
+    INTERZONE,
+    INTRAZONE,
+    UNIVERSAL
+  }
+
   // Name of the rule
   @Nonnull private final String _name;
   // Action of the rule
@@ -41,6 +47,9 @@ public final class SecurityRule implements Serializable {
 
   // Applications
   @Nonnull private final SortedSet<String> _applications;
+
+  // Rule type
+  @Nullable private RuleType _ruleType;
 
   public SecurityRule(String name, Vsys vsys) {
     _action = LineAction.DENY;
@@ -127,6 +136,11 @@ public final class SecurityRule implements Serializable {
     return _vsys;
   }
 
+  @Nullable
+  public RuleType getRuleType() {
+    return _ruleType;
+  }
+
   public void setAction(LineAction action) {
     _action = action;
   }
@@ -137,5 +151,9 @@ public final class SecurityRule implements Serializable {
 
   public void setDisabled(boolean disabled) {
     _disabled = disabled;
+  }
+
+  public void setRuleType(@Nullable RuleType ruleType) {
+    _ruleType = ruleType;
   }
 }
