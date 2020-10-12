@@ -3,10 +3,13 @@ set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
 set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
 set zone z1 network layer3 ethernet1/1
 set zone z2 network layer3 ethernet1/2
+# Interfaces are not functionally active unless they are in a virtual-router
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
 
 set rulebase security rules RULE1 from any
 set rulebase security rules RULE1 to any
-set rulebase security rules RULE1 source 11.11.11.11-11.11.11.12
+# One valid and one invalid ip-range
+set rulebase security rules RULE1 source [ 11.11.11.11-11.11.11.12 11.11.11.13-11.11.11.12 ]
 set rulebase security rules RULE1 destination any
 set rulebase security rules RULE1 service any
 set rulebase security rules RULE1 application any

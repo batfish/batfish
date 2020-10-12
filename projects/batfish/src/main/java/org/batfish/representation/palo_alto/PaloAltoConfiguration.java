@@ -1312,8 +1312,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           case IP_PREFIX:
             return Prefix.parse(endpointValue).toIpSpace();
           case IP_RANGE:
-            String[] ips = endpointValue.split("-");
-            return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
+            Optional<IpSpace> ipSpace = rangeStringToIpSpace(endpointValue);
+            if (ipSpace.isPresent()) {
+              return ipSpace.get();
+            }
+            w.redFlag("Could not convert RuleEndpoint range to IpSpace: " + endpoint);
+            return EmptyIpSpace.INSTANCE;
           case REFERENCE:
             // Rely on undefined references to surface this issue (endpoint reference not defined)
             return EmptyIpSpace.INSTANCE;
@@ -1322,6 +1326,36 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             return EmptyIpSpace.INSTANCE;
         }
     }
+  }
+
+  /**
+   * Convert specified range string into an {@link Optional} {@link IpSpace}. If the range is not
+   * valid, {@link Optional#empty()} is returned. Assumes the supplied range string is a
+   * syntactically valid formatted range (should be guaranteed by the parser).
+   */
+  private Optional<IpSpace> rangeStringToIpSpace(String range) {
+    String[] ips = range.split("-");
+    Ip low = Ip.parse(ips[0]);
+    Ip high = Ip.parse(ips[1]);
+    if (low.compareTo(high) < 0) {
+      return Optional.of(IpRange.range(low, high));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Convert specified range string into an {@link Optional} {@link Range}. If the range is not
+   * valid, {@link Optional#empty()} is returned. Assumes the supplied range string is a
+   * syntactically valid formatted range (should be guaranteed by the parser).
+   */
+  private Optional<Range<Ip>> rangeStringToRange(String range) {
+    String[] ips = range.split("-");
+    Ip low = Ip.parse(ips[0]);
+    Ip high = Ip.parse(ips[1]);
+    if (low.compareTo(high) < 0) {
+      return Optional.of(Range.closed(low, high));
+    }
+    return Optional.empty();
   }
 
   /**
@@ -1409,8 +1443,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             Prefix prefix = Prefix.parse(endpointValue);
             return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
           case IP_RANGE:
-            String[] ips = endpointValue.split("-");
-            return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
+            Optional<Range<Ip>> range = rangeStringToRange(endpointValue);
+            if (range.isPresent()) {
+              return ImmutableRangeSet.of(range.get());
+            }
+            w.redFlag("Could not convert RuleEndpoint range to RangeSet: " + endpoint);
+            return ImmutableRangeSet.of();
           case REFERENCE:
             // Rely on undefined references to surface this issue (endpoint reference not defined)
             return ImmutableRangeSet.of();

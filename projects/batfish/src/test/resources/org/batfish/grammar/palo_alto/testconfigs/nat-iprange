@@ -1,0 +1,15 @@
+set deviceconfig system hostname nat-iprange
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+# Interfaces are not functionally active unless they are in a virtual-router
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+
+set rulebase nat rules RULE1 to z1
+set rulebase nat rules RULE1 from z2
+set rulebase nat rules RULE1 source any
+set rulebase nat rules RULE1 destination [ 10.0.1.1-10.0.1.2 ]
+# Invalid range
+set rulebase nat rules RULE1 source-translation dynamic-ip-and-port translated-address 192.168.1.101-192.168.1.1
+set rulebase nat rules RULE1 service service-http
