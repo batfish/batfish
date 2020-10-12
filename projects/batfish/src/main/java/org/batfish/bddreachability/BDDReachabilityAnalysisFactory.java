@@ -893,24 +893,21 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  private Stream<Edge> generateRules_PreInInterface_NodeDropAclIn() {
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreInInterface_NodeDropAclIn() {
     return getInterfaces()
         .filter(iface -> iface.getRoutingPolicyName() != null || iface.getIncomingFilter() != null)
         .map(
             i -> {
               String node = i.getOwner().getHostname();
               String iface = i.getName();
-              Transition denyTransition;
 
               // There are two ways to drop based on ACLs: incoming filter, or PBR.
-              // They are exclusive.
-              IpAccessList acl = i.getIncomingFilter();
-              if (acl != null) {
-                assert i.getRoutingPolicyName() == null;
-                denyTransition = constraint(ignorableAclDenyBDD(node, acl));
-              } else {
-                denyTransition = _convertedPacketPolicies.get(node).get(iface).getToDrop();
-              }
+              // PBR takes precedence (consistent with FlowTracer)
+              Transition denyTransition =
+                  i.getRoutingPolicyName() != null
+                      ? _convertedPacketPolicies.get(node).get(iface).getToDrop()
+                      : constraint(ignorableAclDenyBDD(node, i.getIncomingFilter()));
 
               return new Edge(
                   new PreInInterface(node, iface),
