@@ -3,10 +3,12 @@ package org.batfish.bddreachability;
 import static org.batfish.bddreachability.EdgeMatchers.edge;
 import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
+import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
 import static org.batfish.bddreachability.transition.Transitions.addOriginatingFromDeviceConstraint;
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
@@ -52,6 +54,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.io.IOException;
 import java.util.List;
@@ -1821,6 +1824,40 @@ public final class BDDReachabilityAnalysisFactoryTest {
         .build();
 
     return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+  }
+
+  /** Test that PBR takes precedence over incoming filter when both are present on an interface. */
+  @Test
+  public void testIncomingFilterVsPBR() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration n1 =
+        Configuration.builder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("n1")
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(n1).build();
+    PacketPolicy pbr = new PacketPolicy("pbr", ImmutableList.of(), new Return(Drop.instance()));
+    n1.setPacketPolicies(ImmutableMap.of(pbr.getName(), pbr));
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setVrf(vrf)
+            .setOwner(n1)
+            .setActive(true)
+            .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
+            .setIncomingFilter(nf.aclBuilder().setOwner(n1).setLines(ACCEPT_ALL).build())
+            .setRoutingPolicy(pbr.getName())
+            .build();
+    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(n1.getHostname(), n1);
+    BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
+    Edge edge =
+        Iterables.getOnlyElement(
+            factory.generateRules_PreInInterface_NodeDropAclIn().collect(Collectors.toList()));
+    assertThat(
+        edge,
+        edge(
+            new PreInInterface(n1.getHostname(), i1.getName()),
+            new NodeDropAclIn(n1.getHostname()),
+            equalTo(IDENTITY)));
   }
 
   @Test
