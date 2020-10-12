@@ -224,7 +224,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             bestPathTieBreaker,
             _process.getMultipathEbgp() ? null : 1,
             multiPathMatchMode,
-            false,
+            true,
             clusterListAsIgpCost);
     _ibgpv4Rib =
         new Bgpv4Rib(
@@ -232,7 +232,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             bestPathTieBreaker,
             _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
-            false,
+            true,
             clusterListAsIgpCost);
     _bgpv4Rib =
         new Bgpv4Rib(
@@ -240,7 +240,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             bestPathTieBreaker,
             _process.getMultipathEbgp() || _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
-            false,
+            true,
             clusterListAsIgpCost);
     _bgpv4DeltaBuilder = RibDelta.builder();
 
