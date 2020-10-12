@@ -2231,7 +2231,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseIprange() {
+  public void testRulebaseIprange() throws IOException {
     String hostname = "rulebase-iprange";
     Configuration c = parseConfig(hostname);
 
@@ -2241,12 +2241,43 @@ public final class PaloAltoGrammarTest {
     // rule1: 11.11.11.11 should be allowed but 11.11.11.13 shouldn't be
     Flow rule1Permitted = createFlow("11.11.11.11", "33.33.33.33");
     Flow rule1Denied = createFlow("11.11.11.13", "33.33.33.33");
-
     assertThat(
         c,
         hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(rule1Permitted, if2name, c))));
     assertThat(
         c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(rule1Denied, if2name, c))));
+
+    // Should have a warning about invalid ip range
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        contains(
+            String.format(
+                "Could not convert RuleEndpoint range to IpSpace: %s",
+                new RuleEndpoint(IP_RANGE, "11.11.11.13-11.11.11.12"))));
+  }
+
+  @Test
+  public void testNatIprange() throws IOException {
+    String hostname = "nat-iprange";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+
+    // Should have warnings about invalid ip range and empty pool
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        containsInAnyOrder(
+            "NAT rule RULE1 of VSYS vsys1 will not apply source translation because its source translation pool is empty",
+            String.format(
+                "Could not convert RuleEndpoint range to RangeSet: %s",
+                new RuleEndpoint(IP_RANGE, "192.168.1.101-192.168.1.1"))));
   }
 
   @Test
