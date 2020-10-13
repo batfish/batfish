@@ -20,9 +20,13 @@ def ref_tests(name, commands, allinone = None, extra_deps = None, **kwargs):
         srcs = [allinone, commands],
     )
 
-    # Ref tests are exclusive since running many in parallel kills the machine
+    # Reserve 4 cores for ref tests, to indicate they are more expensive than
+    # unit tests. This prevents killing laptop CPU but enables more parallelism
+    # than `exclusive`.
+    # NOTE: bazel messages will look like they are running 2*#cores tests in
+    # parallel, but this is not really happening.
     tags = kwargs.get("tags", [])
-    tags.append("exclusive")
+    tags.append("cpu:4")
 
     # Run the sh_test on the needed inputs.
     if extra_deps == None:
