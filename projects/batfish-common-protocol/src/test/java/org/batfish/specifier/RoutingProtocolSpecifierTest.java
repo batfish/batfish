@@ -2,10 +2,10 @@ package org.batfish.specifier;
 
 import static org.batfish.specifier.RoutingProtocolSpecifier.getContainedAtoms;
 import static org.batfish.specifier.RoutingProtocolSpecifier.getGroupings;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;

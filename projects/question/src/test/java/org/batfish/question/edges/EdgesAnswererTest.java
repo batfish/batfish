@@ -36,11 +36,11 @@ import static org.batfish.question.edges.EdgesAnswerer.layer2EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.layer3EdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.vxlanEdgeToRow;
 import static org.batfish.question.edges.EdgesAnswerer.vxlanEdgeToRows;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

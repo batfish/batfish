@@ -18,11 +18,11 @@ import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswe
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getActivePeerRow;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getPassivePeerRows;
 import static org.batfish.question.bgpsessionstatus.BgpSessionCompatibilityAnswerer.getUnnumberedPeerRow;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

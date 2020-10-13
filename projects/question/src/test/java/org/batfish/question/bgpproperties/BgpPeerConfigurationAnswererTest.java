@@ -17,8 +17,8 @@ import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.CO
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.COL_VRF;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.getColumnName;
 import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.getRemoteIp;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;

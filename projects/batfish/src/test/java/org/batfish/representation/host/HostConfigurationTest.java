@@ -2,8 +2,8 @@ package org.batfish.representation.host;
 
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.representation.host.HostConfiguration.toHostInterfaces;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.util.Map;

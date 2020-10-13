@@ -31,13 +31,13 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttributes;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;

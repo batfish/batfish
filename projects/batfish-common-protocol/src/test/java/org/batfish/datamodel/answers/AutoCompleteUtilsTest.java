@@ -36,10 +36,10 @@ import static org.batfish.datamodel.questions.NodePropertySpecifier.DNS_SOURCE_I
 import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREAS;
 import static org.batfish.datamodel.questions.OspfProcessPropertySpecifier.AREA_BORDER_ROUTER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

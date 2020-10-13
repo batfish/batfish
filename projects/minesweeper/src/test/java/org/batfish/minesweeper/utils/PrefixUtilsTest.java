@@ -2,8 +2,8 @@ package org.batfish.minesweeper.utils;
 
 import static org.batfish.minesweeper.utils.PrefixUtils.asNegativeIpWildcards;
 import static org.batfish.minesweeper.utils.PrefixUtils.asPositiveIpWildcards;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 

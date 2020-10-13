@@ -3,8 +3,8 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.SnapshotMetadata.PROP_CREATION_TIMESTAMP;
 import static org.batfish.datamodel.SnapshotMetadata.PROP_INITIALIZATION_METADATA;
 import static org.batfish.datamodel.SnapshotMetadata.PROP_PARENT_SNAPSHOT_ID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Instant;

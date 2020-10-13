@@ -3,8 +3,8 @@ package org.batfish.representation.juniper;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.juniper.NatRuleThenInterface.INSTANCE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import org.batfish.datamodel.Ip;

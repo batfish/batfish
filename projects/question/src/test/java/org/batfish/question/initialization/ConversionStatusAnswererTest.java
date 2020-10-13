@@ -2,8 +2,8 @@ package org.batfish.question.initialization;
 
 import static org.batfish.question.initialization.ConversionStatusAnswerer.COL_CONVERT_STATUS;
 import static org.batfish.question.initialization.ConversionStatusAnswerer.COL_NODE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;

@@ -42,6 +42,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilte
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -50,7 +51,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

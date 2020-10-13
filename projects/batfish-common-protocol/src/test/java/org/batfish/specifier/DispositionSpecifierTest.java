@@ -6,9 +6,9 @@ import static org.batfish.datamodel.FlowDisposition.INSUFFICIENT_INFO;
 import static org.batfish.specifier.DispositionSpecifier.FAILURE;
 import static org.batfish.specifier.DispositionSpecifier.FAILURE_SPECIFIER;
 import static org.batfish.specifier.DispositionSpecifier.SUCCESS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;

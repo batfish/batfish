@@ -1,8 +1,8 @@
 package org.batfish.datamodel.flow;
 
 import static org.batfish.datamodel.flow.FibLookup.INSTANCE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;

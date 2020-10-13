@@ -8,10 +8,10 @@ import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_SERVERS;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_VIRTUAL_ENDPOINT;
 import static org.batfish.question.f5_bigip.F5BigipVipConfigurationAnswerer.COL_VIRTUAL_NAME;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;

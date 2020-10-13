@@ -11,9 +11,9 @@ import static org.batfish.datamodel.questions.OspfInterfacePropertySpecifier.OSP
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_INTERFACE;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_PROCESS_ID;
 import static org.batfish.question.ospfinterface.OspfInterfaceConfigurationAnswerer.COL_VRF;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

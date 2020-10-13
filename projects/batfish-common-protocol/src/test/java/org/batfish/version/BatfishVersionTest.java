@@ -1,8 +1,8 @@
 package org.batfish.version;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsIterableContaining.hasItem;
-import static org.junit.Assert.assertThat;
 
 import java.util.ServiceLoader;
 import org.junit.Test;

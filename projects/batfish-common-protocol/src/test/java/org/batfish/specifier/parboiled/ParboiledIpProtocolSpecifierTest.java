@@ -1,8 +1,8 @@
 package org.batfish.specifier.parboiled;
 
 import static org.batfish.specifier.parboiled.ParboiledIpProtocolSpecifier.IP_PROTOCOLS_SET;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;

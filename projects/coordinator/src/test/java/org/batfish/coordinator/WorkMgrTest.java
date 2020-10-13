@@ -10,6 +10,7 @@ import static org.batfish.coordinator.WorkMgr.updateRuntimeData;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
 import static org.batfish.coordinator.WorkMgrTestUtils.setupQuestionAndAnswer;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -27,7 +28,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.io.FileMatchers.anExistingFile;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

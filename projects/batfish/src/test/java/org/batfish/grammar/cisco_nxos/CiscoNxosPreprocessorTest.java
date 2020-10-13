@@ -14,8 +14,8 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferMajorVer
 import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferMajorVersionFromVersion;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferPlatform;
 import static org.batfish.grammar.cisco_nxos.CiscoNxosPreprocessor.inferPlatformFromImage;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;

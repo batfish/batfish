@@ -3,10 +3,10 @@ package org.batfish.question.initialization;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateErrors;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateParseWarnings;
 import static org.batfish.question.initialization.IssueAggregation.aggregateDuplicateWarnings;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

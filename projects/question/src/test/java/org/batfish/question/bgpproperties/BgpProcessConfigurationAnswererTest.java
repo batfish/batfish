@@ -2,8 +2,8 @@ package org.batfish.question.bgpproperties;
 
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.CONFEDERATION_ID;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.CONFEDERATION_MEMBERS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;

@@ -5,10 +5,10 @@ import static org.batfish.datamodel.isis.IsisLevel.LEVEL_1_2;
 import static org.batfish.datamodel.isis.IsisLevel.LEVEL_2;
 import static org.batfish.datamodel.isis.IsisLevel.intersection;
 import static org.batfish.datamodel.isis.IsisLevel.union;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 

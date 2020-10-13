@@ -2,7 +2,7 @@ package org.batfish.representation.f5_bigip;
 
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.toAddressGroup;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

@@ -4,8 +4,8 @@ import static org.batfish.datamodel.answers.ParseStatus.FAILED;
 import static org.batfish.datamodel.answers.ParseStatus.PARTIALLY_UNRECOGNIZED;
 import static org.batfish.datamodel.answers.ParseStatus.PASSED;
 import static org.batfish.datamodel.answers.ParseStatus.UNKNOWN;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 

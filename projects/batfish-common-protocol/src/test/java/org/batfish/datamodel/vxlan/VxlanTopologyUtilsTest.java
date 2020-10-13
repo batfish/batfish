@@ -10,11 +10,11 @@ import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVniSettingsT
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.computeVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.prunedVxlanTopology;
 import static org.batfish.datamodel.vxlan.VxlanTopologyUtils.vxlanFlowDelivered;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.HashBasedTable;

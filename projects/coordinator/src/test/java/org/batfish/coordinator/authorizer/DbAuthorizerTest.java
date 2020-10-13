@@ -4,8 +4,8 @@ import static org.batfish.coordinator.authorizer.DbAuthorizer.COLUMN_APIKEY;
 import static org.batfish.coordinator.authorizer.DbAuthorizer.TABLE_CONTAINERS;
 import static org.batfish.coordinator.authorizer.DbAuthorizer.TABLE_PERMISSIONS;
 import static org.batfish.coordinator.authorizer.DbAuthorizer.TABLE_USERS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
 
 import java.nio.file.Paths;
 import java.sql.Connection;

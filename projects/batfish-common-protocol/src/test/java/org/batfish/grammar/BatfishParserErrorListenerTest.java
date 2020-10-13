@@ -2,8 +2,8 @@ package org.batfish.grammar;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.grammar.recovery.NonRecoveryCombinedParser;

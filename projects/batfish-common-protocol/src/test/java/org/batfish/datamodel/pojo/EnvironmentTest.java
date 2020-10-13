@@ -1,7 +1,7 @@
 package org.batfish.datamodel.pojo;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;

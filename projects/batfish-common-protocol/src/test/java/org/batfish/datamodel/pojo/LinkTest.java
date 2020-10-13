@@ -1,8 +1,8 @@
 package org.batfish.datamodel.pojo;
 
 import static org.batfish.datamodel.pojo.Link.interfaceTypesToLinkType;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;

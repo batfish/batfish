@@ -1,7 +1,7 @@
 package org.batfish.specifier.parboiled;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;

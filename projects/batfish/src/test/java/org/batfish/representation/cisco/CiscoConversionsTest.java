@@ -12,11 +12,11 @@ import static org.batfish.representation.cisco.CiscoConversions.sanityCheckDistr
 import static org.batfish.representation.cisco.CiscoConversions.sanityCheckEigrpDistributeList;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

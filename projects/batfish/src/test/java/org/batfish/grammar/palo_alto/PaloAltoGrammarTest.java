@@ -96,6 +96,7 @@ import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_PREFIX;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_RANGE;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.REFERENCE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
@@ -116,7 +117,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

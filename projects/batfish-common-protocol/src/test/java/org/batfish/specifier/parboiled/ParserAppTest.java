@@ -9,9 +9,9 @@ import static org.batfish.specifier.parboiled.Anchor.Type.APP_PORT_RANGE;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_TCP;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_UDP;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

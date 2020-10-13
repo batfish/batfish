@@ -3,8 +3,8 @@ package org.batfish.question.initialization;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_FILENAME;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_NODES;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_PARSE_STATUS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;

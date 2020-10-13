@@ -7,8 +7,8 @@ import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.SE
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.SET_PREFIX_INTERSECTION;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.SET_PREFIX_UNION;
 import static org.batfish.specifier.parboiled.ParboiledAutoCompleteSuggestion.completeDescriptionIfNeeded;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.specifier.parboiled.Anchor.Type;
 import org.junit.Test;

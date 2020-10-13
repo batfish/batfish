@@ -1,10 +1,10 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;

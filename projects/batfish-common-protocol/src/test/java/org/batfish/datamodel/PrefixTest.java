@@ -4,9 +4,9 @@ import static org.batfish.datamodel.Prefix.longestCommonPrefix;
 import static org.batfish.datamodel.Prefix.parse;
 import static org.batfish.datamodel.Prefix.strict;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDInteger;

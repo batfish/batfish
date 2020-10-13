@@ -2,8 +2,8 @@ package org.batfish.datamodel;
 
 import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.datamodel.FlowToBDD.flowHeadersToBdd;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;

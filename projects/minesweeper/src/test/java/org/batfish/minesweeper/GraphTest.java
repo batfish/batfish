@@ -1,11 +1,11 @@
 package org.batfish.minesweeper;
 
 import static org.batfish.minesweeper.Graph.generateIbgpNeighbors;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;

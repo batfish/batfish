@@ -3,9 +3,9 @@ package org.batfish.representation.aws;
 import static org.batfish.representation.aws.AwsPrefixes.SERVICE_AMAZON;
 import static org.batfish.representation.aws.AwsPrefixes.SERVICE_EC2;
 import static org.batfish.representation.aws.AwsPrefixes.getAwsServicesPrefixes;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

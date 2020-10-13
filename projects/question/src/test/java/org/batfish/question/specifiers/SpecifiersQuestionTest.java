@@ -1,8 +1,8 @@
 package org.batfish.question.specifiers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.question.specifiers.SpecifiersQuestion.QueryType;
 import org.batfish.specifier.AllFiltersFilterSpecifier;
