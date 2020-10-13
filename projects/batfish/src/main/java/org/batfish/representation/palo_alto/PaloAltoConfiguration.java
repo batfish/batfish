@@ -227,7 +227,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Temporary map for translating SecurityRules in each Vsys into their corresponding ExprAclLine.
    * Maps Vsys name to map of rule name to ExprAclLine.
    */
-  private transient Map<String, Map<String, ExprAclLine>> _securityRulesToExprAclLine;
+  private transient Map<String, Map<String, ExprAclLine>> _securityRuleToExprAclLine;
+
+  /**
+   * Temporary map for translating NatRules in each Vsys into their corresponding Transformation.
+   * Maps Vsys name to map of rule name to Transformation.
+   */
+  private transient Map<String, Map<String, Transformation>> _natRuleToTransformation;
 
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
@@ -481,22 +487,85 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
+   * Build map of converted nat rule for each Vsys. Returns map of Vsys name to map of NatRule name
+   * to corresponding Transformation.
+   */
+  private Map<String, Map<String, Transformation>> convertNatRules() {
+    Map<String, Map<String, Transformation>> vsysToRuleToTransformation = new HashMap<>();
+
+    Vsys panorama = this.getPanorama();
+    if (panorama != null) {
+      vsysToRuleToTransformation.put(panorama.getName(), convertVsysNatRules(panorama));
+    }
+
+    Vsys shared = this.getShared();
+    if (shared != null) {
+      vsysToRuleToTransformation.put(shared.getName(), convertVsysNatRules(shared));
+    }
+
+    for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
+      vsysToRuleToTransformation.put(entry.getKey(), convertVsysNatRules(entry.getValue()));
+    }
+
+    return vsysToRuleToTransformation;
+  }
+
+  /** Convert NatRules in specified Vsys into a map of rule name to Transformation. */
+  private Map<String, Transformation> convertVsysNatRules(Vsys vsys) {
+    Map<String, Transformation> ruleToTransformation = new HashMap<>();
+    addNatRulesToMap(vsys.getPreRulebase(), vsys, ruleToTransformation);
+    addNatRulesToMap(vsys.getRulebase(), vsys, ruleToTransformation);
+    addNatRulesToMap(vsys.getPostRulebase(), vsys, ruleToTransformation);
+    return ruleToTransformation;
+  }
+
+  /**
+   * Helper to add NatRules from specified Rulebase into specified map of rule name to
+   * Transformation.
+   */
+  private void addNatRulesToMap(
+      Rulebase rulebase, Vsys vsys, Map<String, Transformation> ruleToTransformation) {
+    for (Entry<String, NatRule> entry : rulebase.getNatRules().entrySet()) {
+      String name = entry.getKey();
+      NatRule rule = entry.getValue();
+      if (!rule.getDisabled() && !ruleToTransformation.containsKey(name)) {
+        convertRuleToTransformation(rule, vsys).ifPresent(t -> ruleToTransformation.put(name, t));
+      }
+    }
+  }
+
+  /**
+   * Get Transformation for specified NatRule in specified Vsys. If no Transformation is found
+   * {@link Optional#empty()} is returned instead.
+   */
+  private Optional<Transformation> getNatTransformation(String vsysName, String ruleName) {
+    Transformation transformation =
+        _natRuleToTransformation.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName);
+    return transformation == null ? Optional.empty() : Optional.of(transformation);
+  }
+
+  /**
    * Build map of converted security rule for each Vsys. Returns map of Vsys name to map of
    * SecurityRule name to corresponding ExprAclLine.
    */
   private Map<String, Map<String, ExprAclLine>> convertSecurityRules() {
-    Map<String, Map<String, ExprAclLine>> map = new HashMap<>();
+    Map<String, Map<String, ExprAclLine>> vsysToRuleToExprAclLine = new HashMap<>();
 
     Vsys panorama = this.getPanorama();
     if (panorama != null) {
-      map.put(panorama.getName(), convertVsysSecurityRules(panorama));
+      vsysToRuleToExprAclLine.put(panorama.getName(), convertVsysSecurityRules(panorama));
+    }
+
+    Vsys shared = this.getShared();
+    if (shared != null) {
+      vsysToRuleToExprAclLine.put(shared.getName(), convertVsysSecurityRules(shared));
     }
 
     for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
-      map.put(entry.getKey(), convertVsysSecurityRules(entry.getValue()));
+      vsysToRuleToExprAclLine.put(entry.getKey(), convertVsysSecurityRules(entry.getValue()));
     }
 
-    return map;
+    return vsysToRuleToExprAclLine;
   }
 
   /** Convert SecurityRules in specified Vsys into a map of rule name to ExprAclLine. */
@@ -516,8 +585,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Rulebase rulebase, Vsys vsys, Map<String, ExprAclLine> ruleToExprAclLine) {
     for (Entry<String, SecurityRule> entry : rulebase.getSecurityRules().entrySet()) {
       String name = entry.getKey();
-      if (!ruleToExprAclLine.containsKey(name)) {
-        ruleToExprAclLine.put(name, toIpAccessListLine(entry.getValue(), vsys));
+      SecurityRule rule = entry.getValue();
+      if (!rule.getDisabled() && !ruleToExprAclLine.containsKey(name)) {
+        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys));
       }
     }
   }
@@ -663,7 +733,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     List<AclLine> lines =
         rules.stream()
             .filter(e -> securityRuleApplies(fromZone.getName(), toZone.getName(), e.getKey(), _w))
-            .map(entry -> _securityRulesToExprAclLine.get(vsysName).get(entry.getKey().getName()))
+            .map(
+                entry ->
+                    _securityRuleToExprAclLine
+                        .get(entry.getValue().getName())
+                        .get(entry.getKey().getName()))
             .collect(ImmutableList.toImmutableList());
     // Intrazone traffic is allowed by default.
     if (fromZone == toZone) {
@@ -1770,7 +1844,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       // Actions to take when NAT rule is matched: transformation, FIB lookup, return
       ImmutableList.Builder<Statement> actionsIfMatched = ImmutableList.builder();
-      convertRuleToTransformation(rule, vsys)
+      getNatTransformation(vsys.getName(), rule.getName())
           .ifPresent(transform -> actionsIfMatched.add(new ApplyTransformation(transform)));
       actionsIfMatched.add(new Return(new FibLookup(IngressInterfaceVrf.instance())));
 
@@ -2560,8 +2634,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     convertNamespaces();
 
     // Convert rules before using them in Vsys / Interfaces conversion
-    _securityRulesToExprAclLine = convertSecurityRules();
-    // convertNatRules();
+    _securityRuleToExprAclLine = convertSecurityRules();
+    _natRuleToTransformation = convertNatRules();
 
     // Handle converting items within virtual systems
     convertVirtualSystems();
