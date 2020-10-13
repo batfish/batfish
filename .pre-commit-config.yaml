@@ -12,6 +12,7 @@ repos:
         entry: ./tools/fix_java_format.sh --diff
         language: script
         files: '\.java$'
+        pass_filenames: false  # this is a global check, only run it once
 -   repo: https://github.com/pre-commit/mirrors-isort
     rev: v4.3.21
     hooks:
