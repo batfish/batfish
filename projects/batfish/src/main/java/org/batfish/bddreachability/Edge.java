@@ -56,17 +56,17 @@ public final class Edge {
   }
 
   @Nonnull
-  StateExpr getPostState() {
+  public StateExpr getPostState() {
     return _postState;
   }
 
   @Nonnull
-  StateExpr getPreState() {
+  public StateExpr getPreState() {
     return _preState;
   }
 
   @Nonnull
-  Transition getTransition() {
+  public Transition getTransition() {
     return _transition;
   }
 
