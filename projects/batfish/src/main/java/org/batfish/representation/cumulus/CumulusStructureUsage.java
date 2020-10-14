@@ -11,6 +11,7 @@ public enum CumulusStructureUsage implements StructureUsage {
   BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_IN("bgp ipv4 unicast neighbor route-map in"),
   BGP_IPV4_UNICAST_NEIGHBOR_ROUTE_MAP_OUT("bgp ipv4 unicast neighbor route-map out"),
   BGP_NEIGHBOR_INTERFACE("bgp neighbor interface"),
+  BGP_NETWORK("bgp network"),
   BGP_VRF("bgp vrf"),
   BOND_SELF_REFERENCE("bond self-reference"),
   BOND_SLAVE("bond slave"),
