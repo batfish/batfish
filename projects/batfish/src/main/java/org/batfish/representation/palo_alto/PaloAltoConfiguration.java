@@ -224,14 +224,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private final SortedMap<String, Vsys> _virtualSystems;
 
   /**
-   * Temporary map for translating SecurityRules in each Vsys into their corresponding ExprAclLine.
-   * Maps Vsys name to map of rule name to ExprAclLine.
+   * Temporary map for translating SecurityRules in each Vsys into their corresponding ExprAclLine,
+   * used in conversion. Maps Vsys name to map of rule name to ExprAclLine.
    */
   private transient Map<String, Map<String, ExprAclLine>> _securityRuleToExprAclLine;
 
   /**
-   * Temporary map for translating NatRules in each Vsys into their corresponding Transformation.
-   * Maps Vsys name to map of rule name to Transformation.
+   * Temporary map for translating NatRules in each Vsys into their corresponding Transformation,
+   * used in conversion. Maps Vsys name to map of rule name to Transformation.
    */
   private transient Map<String, Map<String, Transformation>> _natRuleToTransformation;
 
@@ -497,44 +497,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Map<String, Transformation> panoramaRules =
         panorama == null ? ImmutableMap.of() : convertVsysNatRules(panorama);
 
-    Vsys shared = this.getShared();
-    Map<String, Transformation> sharedRules =
-        shared == null ? ImmutableMap.of() : convertVsysNatRules(shared);
-
     for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
       Map<String, Transformation> ruleToTransformation = new HashMap<>();
       Map<String, Transformation> vsysRules = convertVsysNatRules(entry.getValue());
       String vsysName = entry.getKey();
 
       // Combine all relevant rules for this Vsys
-      ruleToTransformation.putAll(sharedRules);
       ruleToTransformation.putAll(panoramaRules);
       ruleToTransformation.putAll(vsysRules);
       vsysToRuleToTransformation.put(vsysName, ruleToTransformation);
-
-      // Warn about overlapping rule names
-      for (String ruleName : vsysRules.keySet()) {
-        if (sharedRules.containsKey(ruleName)) {
-          _w.redFlag(
-              String.format(
-                  "Duplicate nat rule name %s used in vsys %s and in shared vsys, ignoring shared rule.",
-                  ruleName, vsysName));
-        }
-        if (panoramaRules.containsKey(ruleName)) {
-          _w.redFlag(
-              String.format(
-                  "Duplicate nat rule name %s used in vsys %s and in Panorama vsys, ignoring Panorama rule.",
-                  ruleName, vsysName));
-        }
-      }
-      for (String ruleName : sharedRules.keySet()) {
-        if (panoramaRules.containsKey(ruleName)) {
-          _w.redFlag(
-              String.format(
-                  "Duplicate nat rule name %s used in Panorama vsys and in shared vsys, ignoring shared rule.",
-                  ruleName));
-        }
-      }
     }
 
     return vsysToRuleToTransformation;
@@ -585,44 +556,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Map<String, ExprAclLine> panoramaRules =
         panorama == null ? ImmutableMap.of() : convertVsysSecurityRules(panorama);
 
-    Vsys shared = this.getShared();
-    Map<String, ExprAclLine> sharedRules =
-        shared == null ? ImmutableMap.of() : convertVsysSecurityRules(shared);
-
     for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
       Map<String, ExprAclLine> ruleToExprAclLine = new HashMap<>();
       Map<String, ExprAclLine> vsysRules = convertVsysSecurityRules(entry.getValue());
       String vsysName = entry.getKey();
 
       // Combine all relevant rules for this Vsys
-      ruleToExprAclLine.putAll(sharedRules);
       ruleToExprAclLine.putAll(panoramaRules);
       ruleToExprAclLine.putAll(vsysRules);
       vsysToRuleToExprAclLine.put(vsysName, ruleToExprAclLine);
-
-      // Warn about overlapping rule names
-      for (String ruleName : vsysRules.keySet()) {
-        if (sharedRules.containsKey(ruleName)) {
-          _w.redFlag(
-              String.format(
-                  "Duplicate rule name %s used in vsys %s and in shared vsys, ignoring shared rule.",
-                  ruleName, vsysName));
-        }
-        if (panoramaRules.containsKey(ruleName)) {
-          _w.redFlag(
-              String.format(
-                  "Duplicate rule name %s used in vsys %s and in Panorama vsys, ignoring Panorama rule.",
-                  ruleName, vsysName));
-        }
-      }
-      for (String ruleName : sharedRules.keySet()) {
-        if (panoramaRules.containsKey(ruleName)) {
-          _w.redFlag(
-              String.format(
-                  "Duplicate rule name %s used in Panorama vsys and in shared vsys, ignoring shared rule.",
-                  ruleName));
-        }
-      }
     }
 
     return vsysToRuleToExprAclLine;

@@ -2266,14 +2266,14 @@ public final class PaloAltoGrammarTest {
     String hostname = "rulebase-warning";
     Configuration c = parseConfig(hostname);
 
-    // Should have a warning about invalid ip ranges and empty translation pool
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
     Warnings warn = ccae.getWarnings().get(hostname);
 
-    // Confirm we have one warning for each, *no duplicates*
+    // Should have a warning about invalid ip ranges and empty translation pool
+    // Confirm we have only one warning for each, *no duplicates*
     assertThat(
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toList()),
         containsInAnyOrder(
