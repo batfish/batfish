@@ -762,9 +762,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Stream<RouteAdvertisement<Bgpv4Route>> mainRibExports =
         (isNewSession
                 // Look at the entire main RIB if this session is new.
-                ? _mainRib.getTypedRoutes().stream().map(RibDelta::adding)
-                : _toRedistribute.values().stream())
-            .flatMap(d -> d.getActions())
+                ? _mainRib.getTypedRoutes().stream().map(RouteAdvertisement::adding)
+                : _toRedistribute.values().stream().flatMap(RibDelta::getActions))
             .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
             .map(
                 adv -> {
