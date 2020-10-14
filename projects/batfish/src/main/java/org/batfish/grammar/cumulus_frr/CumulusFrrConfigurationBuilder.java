@@ -16,6 +16,7 @@ import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_NETWORK;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
@@ -439,10 +440,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafi_network(Sbafi_networkContext ctx) {
-    _currentBgpVrf
-        .getIpv4Unicast()
-        .getNetworks()
-        .computeIfAbsent(Prefix.parse(ctx.IP_PREFIX().getText()), BgpNetwork::new);
+    @Nullable String routeMap = null;
+    if (ctx.rm != null) {
+      routeMap = getFullText(ctx.rm);
+      _c.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
+    }
+    Prefix prefix = toPrefix(ctx.network);
+    _currentBgpVrf.getIpv4Unicast().getNetworks().put(prefix, new BgpNetwork(prefix, routeMap));
   }
 
   @Override
@@ -561,7 +565,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSb_network(Sb_networkContext ctx) {
-    _currentBgpVrf.addNetwork(toPrefix(ctx.prefix()));
+    @Nullable String routeMap = null;
+    if (ctx.rm != null) {
+      routeMap = getFullText(ctx.rm);
+      _c.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
+    }
+    Prefix prefix = toPrefix(ctx.network);
+    _currentBgpVrf.addNetwork(new BgpNetwork(prefix, routeMap));
   }
 
   @Override

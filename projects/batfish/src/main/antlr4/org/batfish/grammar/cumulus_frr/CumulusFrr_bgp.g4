@@ -166,7 +166,7 @@ sbafi_maximum_paths
 
 sbafi_network
 :
-  NETWORK IP_PREFIX NEWLINE
+  NETWORK network = prefix (ROUTE_MAP rm = route_map_name)? NEWLINE
 ;
 
 sbafi_redistribute
@@ -284,7 +284,7 @@ sbnp_local_as
 
 sb_network
 :
-  NETWORK prefix NEWLINE
+  NETWORK network = prefix (ROUTE_MAP rm = route_map_name)? NEWLINE
 ;
 
 sbafi_neighbor
