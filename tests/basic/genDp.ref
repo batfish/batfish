@@ -11,8 +11,7 @@
         "6" : 74,
         "7" : 76,
         "8" : 76,
-        "9" : 76,
-        "10" : 76
+        "9" : 76
       },
       "bgpMultipathRibRoutesByIteration" : {
         "1" : 24,
@@ -23,10 +22,9 @@
         "6" : 118,
         "7" : 120,
         "8" : 120,
-        "9" : 120,
-        "10" : 120
+        "9" : 120
       },
-      "dependentRoutesIterations" : 10,
+      "dependentRoutesIterations" : 9,
       "mainRibRoutesByIteration" : {
         "1" : 209,
         "2" : 265,
@@ -36,8 +34,7 @@
         "6" : 337,
         "7" : 339,
         "8" : 339,
-        "9" : 339,
-        "10" : 339
+        "9" : 339
       },
       "ospfInternalIterations" : 3,
       "version" : "0.36.0",
