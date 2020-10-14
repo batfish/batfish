@@ -144,7 +144,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
         nodeEntry ->
             toImmutableSortedMap(
                 nodeEntry.getValue().getVirtualRouters(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().getPrefixTracer().summarize()));
+                VirtualRouter::getName,
+                vr -> vr.getPrefixTracer().summarize()));
   }
 }

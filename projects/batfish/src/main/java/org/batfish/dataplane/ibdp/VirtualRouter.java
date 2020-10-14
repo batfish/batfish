@@ -40,7 +40,6 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -220,13 +219,13 @@ public final class VirtualRouter {
     // TODO: also handle non-default RIBs
     // https://github.com/batfish/batfish/issues/3050
     _crossVrfIncomingRoutes =
-        _node.getVirtualRouters().keySet().stream()
-            .filter(n -> !_name.equals(n))
+        _node.getVirtualRouters().stream()
+            .filter(vr -> !_name.equals(vr.getName()))
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
                     Ordering.natural(),
-                    vrfName -> new CrossVrfEdgeId(vrfName, RibId.DEFAULT_RIB_NAME),
-                    v -> new ConcurrentLinkedQueue<>()));
+                    vr -> new CrossVrfEdgeId(vr.getName(), RibId.DEFAULT_RIB_NAME),
+                    vr -> new ConcurrentLinkedQueue<>()));
   }
 
   /**
@@ -246,13 +245,6 @@ public final class VirtualRouter {
               RouteAdvertisement<R> sanitized = (RouteAdvertisement<R>) r.sanitizeForExport();
               queue.add(sanitized);
             });
-  }
-
-  /** Lookup the VirtualRouter owner of a remote BGP neighbor. */
-  @Nullable
-  private static VirtualRouter getRemoteBgpNeighborVR(
-      @Nonnull BgpPeerConfigId bgpId, @Nonnull Map<String, Node> allNodes) {
-    return allNodes.get(bgpId.getHostname()).getVirtualRouters().get(bgpId.getVrfName());
   }
 
   /**
@@ -383,7 +375,7 @@ public final class VirtualRouter {
       return;
     }
     for (String vrfToImport : _vrf.getCrossVrfImportVrfs()) {
-      VirtualRouter exportingVR = _node.getVirtualRouters().get(vrfToImport);
+      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(vrfToImport);
       CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
@@ -957,7 +949,7 @@ public final class VirtualRouter {
           neighbor.getConfiguration().getAllInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
-          nodes.get(neighborName).getVirtualRouters().get(neighborVrfName);
+          nodes.get(neighborName).getVirtualRouterOrThrow(neighborVrfName);
 
       if (connectingInterface.getRipEnabled()
           && !connectingInterface.getRipPassive()
@@ -1026,8 +1018,7 @@ public final class VirtualRouter {
       VirtualRouter remoteVr =
           allNodes
               .get(edge.getNode1().getNode())
-              .getVirtualRouters()
-              .get(edge.getNode1().getInterface(nc).getVrfName());
+              .getVirtualRouterOrThrow(edge.getNode1().getInterface(nc).getVrfName());
       Queue<RouteAdvertisement<IsisRoute>> queue = remoteVr._isisIncomingRoutes.get(edge.reverse());
       IsisLevel circuitType = edge.getCircuitType();
       if (circuitType.includes(IsisLevel.LEVEL_1) && activeLevels.includes(IsisLevel.LEVEL_1)) {
@@ -1265,7 +1256,7 @@ public final class VirtualRouter {
       return;
     }
     for (String vrfToImport : _vrf.getCrossVrfImportVrfs()) {
-      VirtualRouter exportingVR = _node.getVirtualRouters().get(vrfToImport);
+      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(vrfToImport);
       CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,

@@ -1,14 +1,17 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.dataplane.rib.Rib;
 
 /** Dataplane-specific encapsulation of {@link Configuration} */
+@ParametersAreNonnullByDefault
 public final class Node {
 
   private final Configuration _c;
@@ -36,22 +39,39 @@ public final class Node {
     return _c;
   }
 
-  /**
-   * Return the virtual routers at this node
-   *
-   * @return Set of {@link VirtualRouter}s, keyed by VRF name
-   */
+  /** Return the list of virtual routers at this node */
   @Nonnull
-  SortedMap<String, VirtualRouter> getVirtualRouters() {
-    return _virtualRouters;
+  Collection<VirtualRouter> getVirtualRouters() {
+    return _virtualRouters.values();
   }
 
+  /** Return a virtual router with a given name, if it exists */
+  @Nonnull
+  Optional<VirtualRouter> getVirtualRouter(String vrfName) {
+    return Optional.ofNullable(_virtualRouters.get(vrfName));
+  }
+
+  /**
+   * Return a virtual router with a given name, if it exists, or throw
+   *
+   * @throws IllegalStateException if the virtual router does not exist.
+   */
+  @Nonnull
+  VirtualRouter getVirtualRouterOrThrow(String vrfName) {
+    return getVirtualRouter(vrfName)
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    String.format(
+                        "Cannot find VirtualRouter %s on node %s", vrfName, _c.getHostname())));
+  }
+
+  /** Return a specific main RIB */
   @Nonnull
   Optional<Rib> getRib(RibId ribId) {
     if (!_c.getHostname().equals(ribId.getHostname())) {
       return Optional.empty();
     }
-    VirtualRouter vr = _virtualRouters.get(ribId.getVrfName());
-    return vr == null ? Optional.empty() : vr.getRib(ribId);
+    return getVirtualRouter(ribId.getVrfName()).map(vr -> vr.getRib(ribId)).get();
   }
 }
