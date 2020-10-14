@@ -23,7 +23,7 @@ policy {
     pre-rulebase {
       nat {
         rules {
-          DEST_NAT_NAME {
+          DEST_NAT_PANORAMA_PRE {
             destination-translation {
               translated-address SERVER_NEW_ADDR1;
             }
@@ -39,7 +39,7 @@ policy {
     post-rulebase {
       nat {
         rules {
-          DEST_NAT_NEVER_REACHED {
+          DEST_NAT_NEVER_REACHED_POST {
             destination-translation {
               translated-address BOGUS_ADDR;
             }
@@ -48,7 +48,7 @@ policy {
             source SOURCE_ADDR2;
             destination any;
           }
-          DEST_NAT_NAME {
+          DEST_NAT_PANORAMA_POST {
             destination-translation {
               translated-address SERVER_NEW_ADDR3;
             }

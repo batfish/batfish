@@ -23,7 +23,7 @@ policy {
     pre-rulebase {
       nat {
         rules {
-          SOURCE_NAT_NAME {
+          SOURCE_NAT_PANORAMA_PRE {
             source-translation {
               dynamic-ip-and-port {
                 translated-address PAN_PRE_NEW_ADDR;
@@ -40,7 +40,7 @@ policy {
     post-rulebase {
       nat {
         rules {
-          SOURCE_NAT_NAME {
+          SOURCE_NAT_PANORAMA_POST {
             source-translation {
               dynamic-ip-and-port {
                 translated-address PAN_POST_NEW_ADDR;
