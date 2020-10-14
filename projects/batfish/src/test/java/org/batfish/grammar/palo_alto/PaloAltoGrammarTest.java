@@ -2264,7 +2264,6 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testRulebaseWarning() throws IOException {
     String hostname = "rulebase-warning";
-    Configuration c = parseConfig(hostname);
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
