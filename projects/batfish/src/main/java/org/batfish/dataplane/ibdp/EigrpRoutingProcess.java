@@ -605,9 +605,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   private static EigrpRoutingProcess getNeighborEigrpProcess(
       Map<String, Node> allNodes, EigrpEdge edge, long asn) {
     return Optional.ofNullable(allNodes.get(edge.getNode1().getHostname()))
-        .map(Node::getVirtualRouters)
-        .map(vrs -> vrs.get(edge.getNode1().getVrf()))
-        .map(vrf -> vrf.getEigrpProcess(asn))
+        .map(n -> n.getVirtualRouterOrThrow(edge.getNode1().getVrf()))
+        .map(vr -> vr.getEigrpProcess(asn))
         .orElseThrow(
             () -> new IllegalStateException("Cannot find EigrpProcess for " + edge.getNode1()));
   }

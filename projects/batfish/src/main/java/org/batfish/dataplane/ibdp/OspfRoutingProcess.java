@@ -429,8 +429,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       OspfNeighborConfigId ospfNeighborId, Map<String, Node> allNodes) {
     return allNodes
         .get(ospfNeighborId.getHostname())
-        .getVirtualRouters()
-        .get(ospfNeighborId.getVrfName())
+        .getVirtualRouterOrThrow(ospfNeighborId.getVrfName())
         .getOspfProcesses()
         .get(ospfNeighborId.getProcName());
   }

@@ -39,8 +39,8 @@ public final class DataplaneUtil {
         nodeEntry ->
             toImmutableMap(
                 nodeEntry.getValue().getVirtualRouters(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().getFib()));
+                VirtualRouter::getName,
+                VirtualRouter::getFib));
   }
 
   static ForwardingAnalysis computeForwardingAnalysis(
@@ -58,8 +58,8 @@ public final class DataplaneUtil {
         nodeEntry ->
             toImmutableSortedMap(
                 nodeEntry.getValue().getVirtualRouters(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().getMainRib()));
+                VirtualRouter::getName,
+                VirtualRouter::getMainRib));
   }
 
   @Nonnull
@@ -70,8 +70,8 @@ public final class DataplaneUtil {
         (hostname, node) ->
             node.getVirtualRouters()
                 .forEach(
-                    (vrfName, vr) -> {
-                      table.put(hostname, vrfName, vr.getBgpRoutes());
+                    vr -> {
+                      table.put(hostname, vr.getName(), vr.getBgpRoutes());
                     }));
     return table.build();
   }
@@ -83,8 +83,8 @@ public final class DataplaneUtil {
         (hostname, node) ->
             node.getVirtualRouters()
                 .forEach(
-                    (vrfName, vr) -> {
-                      table.put(hostname, vrfName, vr.getEvpnRoutes());
+                    vr -> {
+                      table.put(hostname, vr.getName(), vr.getEvpnRoutes());
                     }));
     return table.build();
   }
@@ -93,9 +93,8 @@ public final class DataplaneUtil {
   static Table<String, String, Set<Layer2Vni>> computeVniSettings(Map<String, Node> nodes) {
     ImmutableTable.Builder<String, String, Set<Layer2Vni>> result = ImmutableTable.builder();
     for (Node node : nodes.values()) {
-      for (Entry<String, VirtualRouter> vr : node.getVirtualRouters().entrySet()) {
-        result.put(
-            node.getConfiguration().getHostname(), vr.getKey(), vr.getValue().getLayer2Vnis());
+      for (VirtualRouter vr : node.getVirtualRouters()) {
+        result.put(node.getConfiguration().getHostname(), vr.getName(), vr.getLayer2Vnis());
       }
     }
     return result.build();
