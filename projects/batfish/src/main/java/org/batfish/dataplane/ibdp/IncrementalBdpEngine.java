@@ -274,7 +274,6 @@ final class IncrementalBdpEngine {
       // Generate the answers from the computation, compute final FIBs
       // TODO: Properly finalize topologies, IpOwners, etc.
       LOGGER.info("Finalizing dataplane");
-      computeFibs(nodes);
       answerElement.setVersion(BatfishVersion.getVersionStatic());
       IncrementalDataPlane finalDataplane =
           IncrementalDataPlane.builder()
