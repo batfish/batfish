@@ -999,26 +999,29 @@ public final class CumulusConversions {
             });
 
     // create origination prefilter from listed advertised networks
-    Sets.union(bgpVrf.getNetworks().keySet(), bgpIpv4UnicastAddressFamily.getNetworks().keySet())
+    Iterables.concat(
+            bgpVrf.getNetworks().values(), bgpIpv4UnicastAddressFamily.getNetworks().values())
         .forEach(
-            prefix -> {
-              BooleanExpr weExpr = BooleanExprs.TRUE;
-              BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
-              Conjunction exportNetworkConditions = new Conjunction();
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(),
-                          new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-              /*
-              Don't need to explicitly exclude BGP and iBGP routes here because those routes will
-              already be matched earlier in exportConditions (which are disjuncts).
-               */
-              exportNetworkConditions
-                  .getConjuncts()
-                  .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
-              exportNetworkConditions.getConjuncts().add(we);
+            network -> {
+              @Nullable String routeMapName = network.getRouteMap();
+              Conjunction exportNetworkConditions =
+                  new Conjunction(
+                      ImmutableList.of(
+                          /* Match network prefix */
+                          new MatchPrefixSet(
+                              DestinationNetwork.instance(),
+                              new ExplicitPrefixSet(
+                                  new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))),
+                          /*
+                          Don't need to explicitly exclude BGP and iBGP routes here because those routes will
+                          already be matched earlier in exportConditions (which are disjuncts).
+                           */
+                          new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
+                          bgpRedistributeWithEnvironmentExpr(
+                              routeMapName != null && routeMaps.containsKey(routeMapName)
+                                  ? new CallExpr(routeMapName)
+                                  : BooleanExprs.TRUE,
+                              OriginType.IGP)));
               exportConditions.add(exportNetworkConditions);
             });
     return exportConditions;
