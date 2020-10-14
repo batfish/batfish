@@ -215,6 +215,19 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastNetworkWithRouteMap() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "network 1.2.3.4/24 route-map FOO",
+        "exit-address-family");
+    Prefix prefix = Prefix.parse("1.2.3.4/24");
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().get(prefix),
+        equalTo(new BgpNetwork(prefix, "FOO")));
+  }
+
+  @Test
   public void testBgpAddressFamilyIpv4UnicastRedistributeConnected() {
     parseLines(
         "router bgp 1",
@@ -1318,6 +1331,15 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _config.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network))));
+  }
+
+  @Test
+  public void testBgpNetworkWithRouteMap() {
+    Prefix network = Prefix.parse("10.0.0.0/8");
+    parseLines("router bgp 10000", "network 10.0.0.0/8 route-map FOO");
+    assertThat(
+        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        equalTo(ImmutableMap.of(network, new BgpNetwork(network, "FOO"))));
   }
 
   @Test

@@ -137,11 +137,11 @@ public class BgpVrf implements Serializable {
     return _networks;
   }
 
-  public void addNetwork(Prefix network) {
+  public void addNetwork(BgpNetwork network) {
     _networks =
         ImmutableMap.<Prefix, BgpNetwork>builder()
             .putAll(_networks)
-            .put(network, new BgpNetwork(network))
+            .put(network.getNetwork(), network)
             .build();
   }
 

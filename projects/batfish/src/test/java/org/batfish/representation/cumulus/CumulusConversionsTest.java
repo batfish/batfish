@@ -541,7 +541,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(new BgpNetwork(prefix));
 
     // the method under test
     org.batfish.datamodel.BgpProcess viBgp =
@@ -581,7 +581,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(new BgpNetwork(prefix));
     vrf.setDefaultIpv4Unicast(false);
 
     // the method under test
