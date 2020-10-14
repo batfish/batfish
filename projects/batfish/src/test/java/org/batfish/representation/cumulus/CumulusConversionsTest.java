@@ -115,6 +115,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -541,7 +542,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(new BgpNetwork(prefix));
 
     // the method under test
     org.batfish.datamodel.BgpProcess viBgp =
@@ -557,6 +558,51 @@ public final class CumulusConversionsTest {
             .getRoutingPolicies()
             .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+  }
+
+  /** Test that networks statement routemaps are processed in VI. */
+  @Test
+  public void testToBgpProcess_vrfLevelNetworks_withRouteMap() {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+    String networkRouteMapName = "NETWORK_RM";
+    StandardCommunity community = StandardCommunity.of(1);
+    RoutingPolicy.builder()
+        .setName(networkRouteMapName)
+        .setOwner(viConfig)
+        .setStatements(
+            ImmutableList.of(
+                new SetCommunity(new LiteralCommunity(community)), ExitAccept.toStaticStatement()))
+        .build();
+    // setup VS model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    BgpProcess bgpProcess = new BgpProcess();
+    vsConfig.setBgpProcess(bgpProcess);
+    vsConfig.setConfiguration(viConfig);
+    // Note that content of route map does not matter in VS land, only in VI land
+    vsConfig.getRouteMaps().put(networkRouteMapName, new RouteMap(networkRouteMapName));
+
+    // setup BgpVrf
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    vrf.setRouterId(Ip.parse("1.1.1.1"));
+    vrf.addNetwork(new BgpNetwork(prefix, networkRouteMapName));
+
+    // the method under test. In charge of creating peer export policies.
+    toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+
+    // the prefix is allowed to leave
+    AbstractRoute route = new ConnectedRoute(prefix, "dummy");
+    Builder builder = Bgpv4Route.builder();
+    assertTrue(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .process(route, builder.setNetwork(route.getNetwork()), Direction.OUT));
+    assertThat(builder.getCommunities(), contains(community));
   }
 
   /**
@@ -581,7 +627,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(new BgpNetwork(prefix));
     vrf.setDefaultIpv4Unicast(false);
 
     // the method under test
