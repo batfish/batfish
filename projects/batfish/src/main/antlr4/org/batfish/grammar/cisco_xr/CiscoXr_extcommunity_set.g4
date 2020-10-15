@@ -13,26 +13,32 @@ s_extcommunity_set
 
 extcommunity_set_rt
 :
-  RT name = variable NEWLINE extcommunity_set_rt_elem_list END_SET NEWLINE
+  RT name = variable NEWLINE
+  lines = extcommunity_set_rt_elem_lines
+  END_SET NEWLINE
 ;
 
-extcommunity_set_rt_elem_list
+// The lines can be:
+// * empty (handled in "Comments only")
+// * comments, anywhere
+// * one or more communities
+//
+// If there are more than one community, every community but the last one
+// has a comma at the end of the line. But comments may be intermixed.
+extcommunity_set_rt_elem_lines
 :
-// no elements
-
-   |
-   (
-      (
-         (
-            elems += extcommunity_set_rt_elem COMMA
-         )
-         | hash_comment
-      ) NEWLINE
-   )*
-   (
-      elems += extcommunity_set_rt_elem
-      | hash_comment
-   ) NEWLINE
+  // Comments only
+  (hash_comment NEWLINE)*
+  |
+  // One or more communities, with comments mixed in
+  (
+    // leading comments or not-last elements
+    ((hash_comment | elems += extcommunity_set_rt_elem COMMA) NEWLINE)*
+    // last element
+    elems += extcommunity_set_rt_elem NEWLINE
+    // trailing comments
+    (hash_comment NEWLINE)*
+  )
 ;
 
 extcommunity_set_rt_elem
