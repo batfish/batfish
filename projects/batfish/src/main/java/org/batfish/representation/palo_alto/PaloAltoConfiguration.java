@@ -1241,7 +1241,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  /** Convert specified firewall rule into an {@link ExprAclLine}. */
+  /**
+   * Convert specified firewall rule into an {@link ExprAclLine}. This should only be called once
+   * per rule, during initial conversion (i.e. during {@code convertSecurityRules}).
+   */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
   //   However, services are a bit complicated when `service application-default` is used. In that
@@ -1860,7 +1863,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Build and return a list of all {@link BoolExpr}s describing the header space matching the
-   * specified {@link NatRule}.
+   * specified {@link NatRule}. This should only be called once per rule, during initial conversion
+   * (i.e. during {@code convertNatRules}).
    */
   private List<BoolExpr> buildNatRuleHeaderSpaceBoolExprs(NatRule rule, Vsys vsys) {
     ImmutableList.Builder<BoolExpr> boolExprs = ImmutableList.builder();
@@ -1915,7 +1919,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Converts the given {@link NatRule} to a {@link Transformation} with a TRUE guard. There is no
    * need for a nontrivial guard because all transformations are applied in PBR, and the rule's
    * match conditions are converted to a {@link BoolExpr} condition on the packet policy line that
-   * applies the transformation.
+   * applies the transformation. This should only be called once per rule, during initial conversion
+   * (i.e. during {@code convertNatRules}).
    */
   private Optional<Transformation> convertRuleToTransformation(NatRule rule, Vsys vsys) {
     List<TransformationStep> transformationSteps =
