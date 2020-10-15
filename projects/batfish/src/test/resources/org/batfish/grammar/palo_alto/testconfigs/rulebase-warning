@@ -1,4 +1,6 @@
 set deviceconfig system hostname rulebase-warning
+# Intentionally using two interfaces and two zones in order to apply the same rules multiple times
+# This allows us to confirm rule warnings are only generated once per rule, not once per use
 set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
 set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
 set zone z1 network layer3 ethernet1/1

@@ -540,9 +540,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * {@link Optional#empty()} is returned instead.
    */
   private Optional<Transformation> getNatTransformation(String vsysName, String ruleName) {
-    Transformation transformation =
-        _natRuleToTransformation.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName);
-    return transformation == null ? Optional.empty() : Optional.of(transformation);
+    return Optional.ofNullable(
+        _natRuleToTransformation.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName));
   }
 
   /**
