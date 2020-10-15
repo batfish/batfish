@@ -2276,9 +2276,14 @@ public final class PaloAltoGrammarTest {
     assertThat(
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toList()),
         containsInAnyOrder(
+            // Security rule warning
             String.format(
                 "Could not convert RuleEndpoint range to IpSpace: %s",
                 new RuleEndpoint(IP_RANGE, "11.11.11.13-11.11.11.12")),
+            // NAT rule warnings
+            String.format(
+                "Could not convert RuleEndpoint range to IpSpace: %s",
+                new RuleEndpoint(IP_RANGE, "10.0.2.11-10.0.2.1")),
             String.format(
                 "Could not convert RuleEndpoint range to RangeSet: %s",
                 new RuleEndpoint(IP_RANGE, "192.168.1.101-192.168.1.1")),

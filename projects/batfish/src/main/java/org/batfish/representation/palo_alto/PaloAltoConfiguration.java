@@ -235,6 +235,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    */
   private transient Map<String, Map<String, Transformation>> _natRuleToTransformation;
 
+  /**
+   * Temporary map for translating NatRules in each Vsys into their corresponding HeaderSpace
+   * BoolExprs, used in conversion. Maps Vsys name to map of rule name to List of BoolExpr.
+   */
+  private transient Map<String, Map<String, List<BoolExpr>>> _natRuleToHeaderSpaceBoolExprs;
+
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
     _deviceGroups = new TreeMap<>();
@@ -487,36 +493,84 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Build map of converted nat rule for each Vsys. Returns map of Vsys name to map of NatRule name
-   * to corresponding Transformation.
+   * Build map of converted nat rule for each Vsys. Populates transient maps of Vsys name->NatRule
+   * name->Transformation and List of HeaderSpace BoolExprs.
    */
-  private Map<String, Map<String, Transformation>> convertNatRules() {
+  private void convertNatRules() {
     Map<String, Map<String, Transformation>> vsysToRuleToTransformation = new HashMap<>();
+    Map<String, Map<String, List<BoolExpr>>> vsysToRuleToBoolExprs = new HashMap<>();
 
     Vsys panorama = this.getPanorama();
-    Map<String, Transformation> panoramaRules =
-        panorama == null ? ImmutableMap.of() : convertVsysNatRules(panorama);
+    Map<String, Transformation> panoramaTransformations =
+        panorama == null ? ImmutableMap.of() : convertVsysNatRulesToTransformation(panorama);
+    Map<String, List<BoolExpr>> panoramaHeaderSpaceBoolExprs =
+        panorama == null ? ImmutableMap.of() : convertVsysNatRulesToHeaderSpaceBoolExprs(panorama);
 
     for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
-      Map<String, Transformation> ruleToTransformation = new HashMap<>();
-      Map<String, Transformation> vsysRules = convertVsysNatRules(entry.getValue());
       String vsysName = entry.getKey();
 
+      // Transformations
+      Map<String, Transformation> ruleToTransformation = new HashMap<>();
+      Map<String, Transformation> vsysTransformations =
+          convertVsysNatRulesToTransformation(entry.getValue());
       // Combine all relevant rules for this Vsys
-      ruleToTransformation.putAll(panoramaRules);
-      ruleToTransformation.putAll(vsysRules);
+      ruleToTransformation.putAll(panoramaTransformations);
+      ruleToTransformation.putAll(vsysTransformations);
       vsysToRuleToTransformation.put(vsysName, ruleToTransformation);
+
+      // HeaderSpace BoolExprs
+      Map<String, List<BoolExpr>> ruleToHeaderSpaceBoolExpr = new HashMap<>();
+      Map<String, List<BoolExpr>> vsysHeaderSpaceBoolExprs =
+          convertVsysNatRulesToHeaderSpaceBoolExprs(entry.getValue());
+      // Combine all relevant rules for this Vsys
+      ruleToHeaderSpaceBoolExpr.putAll(panoramaHeaderSpaceBoolExprs);
+      ruleToHeaderSpaceBoolExpr.putAll(vsysHeaderSpaceBoolExprs);
+      vsysToRuleToBoolExprs.put(vsysName, ruleToHeaderSpaceBoolExpr);
     }
 
-    return vsysToRuleToTransformation;
+    _natRuleToHeaderSpaceBoolExprs = vsysToRuleToBoolExprs;
+    _natRuleToTransformation = vsysToRuleToTransformation;
   }
 
   /** Convert NatRules in specified Vsys into a map of rule name to Transformation. */
-  private Map<String, Transformation> convertVsysNatRules(Vsys vsys) {
+  private Map<String, List<BoolExpr>> convertVsysNatRulesToHeaderSpaceBoolExprs(Vsys vsys) {
+    Map<String, List<BoolExpr>> ruleToBoolExprs = new HashMap<>();
+    addNatRulesToHeaderSpaceBoolExprsMap(vsys.getPreRulebase(), vsys, ruleToBoolExprs);
+    addNatRulesToHeaderSpaceBoolExprsMap(vsys.getRulebase(), vsys, ruleToBoolExprs);
+    addNatRulesToHeaderSpaceBoolExprsMap(vsys.getPostRulebase(), vsys, ruleToBoolExprs);
+    return ruleToBoolExprs;
+  }
+
+  /**
+   * Helper to add NatRules from specified Rulebase into specified map of rule name to List of
+   * HeaderSpace BoolExprs.
+   */
+  private void addNatRulesToHeaderSpaceBoolExprsMap(
+      Rulebase rulebase, Vsys vsys, Map<String, List<BoolExpr>> ruleToHeaderSpaceBoolExprs) {
+    for (Entry<String, NatRule> entry : rulebase.getNatRules().entrySet()) {
+      String name = entry.getKey();
+      NatRule rule = entry.getValue();
+      if (!rule.getDisabled() && !ruleToHeaderSpaceBoolExprs.containsKey(name)) {
+        ruleToHeaderSpaceBoolExprs.put(name, buildNatRuleHeaderSpaceBoolExprs(rule, vsys));
+      }
+    }
+  }
+
+  /**
+   * Get List of HeaderSpace BoolExprs for specified NatRule in specified Vsys. If no HeaderSpace
+   * BoolExprs are found {@link Optional#empty()} is returned instead.
+   */
+  private Optional<List<BoolExpr>> getNatHeaderSpaceBoolExprs(String vsysName, String ruleName) {
+    return Optional.ofNullable(
+        _natRuleToHeaderSpaceBoolExprs.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName));
+  }
+
+  /** Convert NatRules in specified Vsys into a map of rule name to Transformation. */
+  private Map<String, Transformation> convertVsysNatRulesToTransformation(Vsys vsys) {
     Map<String, Transformation> ruleToTransformation = new HashMap<>();
-    addNatRulesToMap(vsys.getPreRulebase(), vsys, ruleToTransformation);
-    addNatRulesToMap(vsys.getRulebase(), vsys, ruleToTransformation);
-    addNatRulesToMap(vsys.getPostRulebase(), vsys, ruleToTransformation);
+    addNatRulesToTransformationMap(vsys.getPreRulebase(), vsys, ruleToTransformation);
+    addNatRulesToTransformationMap(vsys.getRulebase(), vsys, ruleToTransformation);
+    addNatRulesToTransformationMap(vsys.getPostRulebase(), vsys, ruleToTransformation);
     return ruleToTransformation;
   }
 
@@ -524,7 +578,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Helper to add NatRules from specified Rulebase into specified map of rule name to
    * Transformation.
    */
-  private void addNatRulesToMap(
+  private void addNatRulesToTransformationMap(
       Rulebase rulebase, Vsys vsys, Map<String, Transformation> ruleToTransformation) {
     for (Entry<String, NatRule> entry : rulebase.getNatRules().entrySet()) {
       String name = entry.getKey();
@@ -545,10 +599,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Build map of converted security rule for each Vsys. Returns map of Vsys name to map of
-   * SecurityRule name to corresponding ExprAclLine.
+   * Build map of converted security rule for each Vsys. Populates transient map of Vsys name to map
+   * of SecurityRule name to corresponding ExprAclLine.
    */
-  private Map<String, Map<String, ExprAclLine>> convertSecurityRules() {
+  private void convertSecurityRules() {
     Map<String, Map<String, ExprAclLine>> vsysToRuleToExprAclLine = new HashMap<>();
 
     Vsys panorama = this.getPanorama();
@@ -566,7 +620,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       vsysToRuleToExprAclLine.put(vsysName, ruleToExprAclLine);
     }
 
-    return vsysToRuleToExprAclLine;
+    _securityRuleToExprAclLine = vsysToRuleToExprAclLine;
   }
 
   /** Convert SecurityRules in specified Vsys into a map of rule name to ExprAclLine. */
@@ -1802,10 +1856,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Get a list of all {@link BoolExpr}s describing the header space matching the specified {@link
-   * NatRule}.
+   * Build and return a list of all {@link BoolExpr}s describing the header space matching the
+   * specified {@link NatRule}.
    */
-  private List<BoolExpr> getNatRuleHeaderSpaceBoolExprs(NatRule rule, Vsys vsys) {
+  private List<BoolExpr> buildNatRuleHeaderSpaceBoolExprs(NatRule rule, Vsys vsys) {
     ImmutableList.Builder<BoolExpr> boolExprs = ImmutableList.builder();
     HeaderSpace.Builder headerSpace = HeaderSpace.builder();
 
@@ -1833,7 +1887,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       ImmutableList.Builder<BoolExpr> conditions = ImmutableList.builder();
       // Conditions under which to apply this NAT rule
-      conditions.addAll(getNatRuleHeaderSpaceBoolExprs(rule, vsys));
+      getNatHeaderSpaceBoolExprs(vsys.getName(), rule.getName()).ifPresent(conditions::addAll);
       // Only apply NAT if flow is exiting an interface in the to-zone
       conditions.add(
           new FibLookupOutgoingInterfaceIsOneOf(
@@ -2631,8 +2685,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     convertNamespaces();
 
     // Convert rules before using them in Vsys / Interfaces conversion
-    _securityRuleToExprAclLine = convertSecurityRules();
-    _natRuleToTransformation = convertNatRules();
+    convertSecurityRules();
+    convertNatRules();
 
     // Handle converting items within virtual systems
     convertVirtualSystems();
