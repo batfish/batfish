@@ -468,6 +468,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_16Con
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_32Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_as_dot_colonContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_colonContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_linesContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_ipv6_access_list_tailContext;
@@ -1205,6 +1206,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
+  private ExtcommunitySetRt _currentExtcommunitySetRt;
+
   private List<Interface> _currentInterfaces;
 
   private Ipv4AccessList _currentIpv4Acl;
@@ -1850,16 +1853,24 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void enterExtcommunity_set_rt(Extcommunity_set_rtContext ctx) {
     String name = ctx.name.getText();
     _configuration.defineStructure(EXTCOMMUNITY_SET_RT, name, ctx);
-    _configuration
-        .getExtcommunitySetRts()
-        .computeIfAbsent(
-            name,
-            n ->
-                new ExtcommunitySetRt(
-                    ctx.extcommunity_set_rt_elem_list().elems.stream()
-                        .map(this::toExtcommunitySetRtElemExpr)
-                        .filter(Objects::nonNull)
-                        .collect(ImmutableList.toImmutableList())));
+    _currentExtcommunitySetRt =
+        _configuration.getExtcommunitySetRts().computeIfAbsent(name, n -> new ExtcommunitySetRt());
+  }
+
+  @Override
+  public void exitExtcommunity_set_rt(Extcommunity_set_rtContext ctx) {
+    _currentExtcommunitySetRt = null;
+  }
+
+  @Override
+  public void exitExtcommunity_set_rt_elem_lines(Extcommunity_set_rt_elem_linesContext ctx) {
+    for (Extcommunity_set_rt_elemContext elem : ctx.elems) {
+      @Nullable ExtcommunitySetRtElem rtElem = toExtcommunitySetRtElemExpr(elem);
+      if (rtElem == null) {
+        continue;
+      }
+      _currentExtcommunitySetRt.addElement(rtElem);
+    }
   }
 
   @Override
