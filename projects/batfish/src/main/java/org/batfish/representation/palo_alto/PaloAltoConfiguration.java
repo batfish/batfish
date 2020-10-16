@@ -518,7 +518,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // Combine all relevant rules for this Vsys
       ruleToTransformation.putAll(panoramaTransformations);
       ruleToTransformation.putAll(vsysTransformations);
-      vsysToRuleToTransformation.put(vsysName, ruleToTransformation);
+      vsysToRuleToTransformation.put(vsysName, ImmutableMap.copyOf(ruleToTransformation));
 
       // HeaderSpace BoolExprs
       Map<String, List<BoolExpr>> ruleToHeaderSpaceBoolExpr = new HashMap<>();
