@@ -1,0 +1,27 @@
+set deviceconfig system hostname rulebase-warning
+# Intentionally using two interfaces and two zones in order to apply the same rules multiple times
+# This allows us to confirm rule warnings are only generated once per rule, not once per use
+set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 1.1.2.1/24
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+# Interfaces are not functionally active unless they are in a virtual-router
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+
+set rulebase security rules RULE1 from any
+set rulebase security rules RULE1 to any
+# One valid and one invalid ip-range
+set rulebase security rules RULE1 source [ 11.11.11.11-11.11.11.12 11.11.11.13-11.11.11.12 ]
+set rulebase security rules RULE1 destination any
+set rulebase security rules RULE1 service any
+set rulebase security rules RULE1 application any
+set rulebase security rules RULE1 action allow
+
+set rulebase nat rules NATRULE1 to z1
+set rulebase nat rules NATRULE1 from any
+set rulebase nat rules NATRULE1 source any
+# One invalid ip-range
+set rulebase nat rules NATRULE1 destination [ 10.0.1.1 10.0.2.11-10.0.2.1 ]
+# Invalid range
+set rulebase nat rules NATRULE1 source-translation dynamic-ip-and-port translated-address 192.168.1.101-192.168.1.1
+set rulebase nat rules NATRULE1 service service-http

@@ -2262,6 +2262,35 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testRulebaseWarning() throws IOException {
+    String hostname = "rulebase-warning";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+
+    // Should have a warning about invalid ip ranges and empty translation pool
+    // Confirm we have only one warning for each, *no duplicates*
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toList()),
+        containsInAnyOrder(
+            // Security rule warning
+            String.format(
+                "Could not convert RuleEndpoint range to IpSpace: %s",
+                new RuleEndpoint(IP_RANGE, "11.11.11.13-11.11.11.12")),
+            // NAT rule warnings
+            String.format(
+                "Could not convert RuleEndpoint range to IpSpace: %s",
+                new RuleEndpoint(IP_RANGE, "10.0.2.11-10.0.2.1")),
+            String.format(
+                "Could not convert RuleEndpoint range to RangeSet: %s",
+                new RuleEndpoint(IP_RANGE, "192.168.1.101-192.168.1.1")),
+            "NAT rule NATRULE1 of VSYS vsys1 will not apply source translation because its source translation pool is empty"));
+  }
+
+  @Test
   public void testNatIprange() throws IOException {
     String hostname = "nat-iprange";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
