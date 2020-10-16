@@ -23628,6 +23628,8 @@
                 "asn" : 5,
                 "eigrpMode" : "CLASSIC",
                 "exportPolicy" : "~EIGRP_EXPORT_POLICY:default:5~",
+                "externalAdminCost" : 170,
+                "internalAdminCost" : 90,
                 "routerId" : "100.1.1.1"
               }
             }

@@ -68,9 +68,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   /** Our AS number */
   private final long _asn;
 
-  private final int _defaultExternalAdminCost;
-  private final int _defaultInternalAdminCost;
-
   // RIBs and RIB deltas
 
   /** Helper RIB containing EIGRP external paths */
@@ -109,10 +106,6 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   EigrpRoutingProcess(final EigrpProcess process, final String vrfName, final Configuration c) {
     _process = process;
     _asn = process.getAsn();
-    _defaultExternalAdminCost =
-        RoutingProtocol.EIGRP_EX.getDefaultAdministrativeCost(c.getConfigurationFormat());
-    _defaultInternalAdminCost =
-        RoutingProtocol.EIGRP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     _externalRib = new EigrpExternalRib();
     _internalRib = new EigrpInternalRib();
     _rib = new EigrpRib();
@@ -309,7 +302,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       EigrpMetric newMetric = connectingInterfaceMetric.add(route.getEigrpMetric());
       EigrpInternalRoute transformedRoute =
           EigrpInternalRoute.builder()
-              .setAdmin(_defaultInternalAdminCost)
+              .setAdmin(_process.getInternalAdminCost())
               .setEigrpMetric(newMetric)
               .setNetwork(route.getNetwork())
               .setNextHopIp(nextHopIp)
@@ -328,7 +321,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     // TODO: simplify all this later. Copied from old code
     RibDelta.Builder<EigrpExternalRoute> deltaBuilder = RibDelta.builder();
     EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
-    routeBuilder.setAdmin(_defaultExternalAdminCost).setProcessAsn(_asn);
+    routeBuilder.setAdmin(_process.getExternalAdminCost()).setProcessAsn(_asn);
 
     _incomingExternalRoutes.forEach(
         (edge, queue) -> {
@@ -535,7 +528,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     if (!exportPolicy.process(potentialExportRoute, outputRouteBuilder, _process, Direction.OUT)) {
       return null;
     }
-    outputRouteBuilder.setAdmin(_defaultExternalAdminCost);
+    outputRouteBuilder.setAdmin(_process.getExternalAdminCost());
     if (unannotatedPotentialRoute instanceof EigrpExternalRoute) {
       EigrpExternalRoute externalRoute = (EigrpExternalRoute) unannotatedPotentialRoute;
       outputRouteBuilder.setDestinationAsn(externalRoute.getDestinationAsn());
