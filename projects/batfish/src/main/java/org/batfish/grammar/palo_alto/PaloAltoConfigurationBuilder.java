@@ -1847,7 +1847,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitVr_ecmp_enable(Vr_ecmp_enableContext ctx) {
-    if (ctx.NO() != null) {
+    if (!toBoolean(ctx.yes_or_no())) {
       warn(ctx, "Disabling of ECMP for IGP is not supported");
     }
   }

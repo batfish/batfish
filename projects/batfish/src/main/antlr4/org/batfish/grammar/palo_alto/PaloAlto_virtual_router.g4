@@ -101,7 +101,7 @@ vr_ecmp
 
 vr_ecmp_enable
 :
-    ENABLE (YES | NO)
+    ENABLE yes_or_no
 ;
 
 vr_interface
