@@ -3655,6 +3655,6 @@ public final class PaloAltoGrammarTest {
   public void testVirtualRouterEcmp() {
     String hostname = "virtual-router-ecmp";
     // Do not crash (i.e., no warnings generated)
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    parsePaloAltoConfig(hostname);
   }
 }
