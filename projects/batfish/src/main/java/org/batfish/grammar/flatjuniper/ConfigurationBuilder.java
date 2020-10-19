@@ -3217,7 +3217,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       case INLINED:
         _w.redFlag(
             String.format(
-                "Not attaching the address book %s to zone %s because an inline address book is defined",
+                "Not attaching the address book %s to zone %s because an inline address book is"
+                    + " defined",
                 _currentAddressBook.getName(), zone.getName()));
         break;
       default:
@@ -3450,7 +3451,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       case ATTACHED:
         _w.redFlag(
             String.format(
-                "Ignoring attached address book %s to zone %s because an inline address book is defined",
+                "Ignoring attached address book %s to zone %s because an inline address book is"
+                    + " defined",
                 _currentZone.getAddressBook().getName(), _currentZone.getName()));
         _currentAddressBook =
             _currentZone.initInlinedAddressBook(_currentLogicalSystem.getGlobalAddressBook());
@@ -3632,8 +3634,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
-        oldHeaderSpace
-            .toBuilder()
+        oldHeaderSpace.toBuilder()
             .setDstPorts(
                 ImmutableSet.<SubRange>builder()
                     .addAll(oldHeaderSpace.getDstPorts())
@@ -3647,8 +3648,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
-        oldHeaderSpace
-            .toBuilder()
+        oldHeaderSpace.toBuilder()
             .setIpProtocols(
                 ImmutableSet.<IpProtocol>builder()
                     .addAll(oldHeaderSpace.getIpProtocols())
@@ -3665,8 +3665,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
-        oldHeaderSpace
-            .toBuilder()
+        oldHeaderSpace.toBuilder()
             .setSrcPorts(
                 ImmutableSet.<SubRange>builder()
                     .addAll(oldHeaderSpace.getSrcPorts())

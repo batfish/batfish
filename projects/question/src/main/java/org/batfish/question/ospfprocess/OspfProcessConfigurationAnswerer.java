@@ -165,7 +165,8 @@ public final class OspfProcessConfigurationAnswerer extends Answerer {
       } catch (ClassCastException e) {
         throw new BatfishException(
             String.format(
-                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for OSPF process '%s->%s-%s': %s",
+                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s'"
+                    + " for OSPF process '%s->%s-%s': %s",
                 propertyDescriptor.getGetter().apply(ospfProcess),
                 propertyDescriptor.getSchema(),
                 property,

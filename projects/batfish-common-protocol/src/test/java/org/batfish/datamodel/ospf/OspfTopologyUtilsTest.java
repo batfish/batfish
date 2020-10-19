@@ -407,7 +407,8 @@ public class OspfTopologyUtilsTest {
   }
 
   @Ignore(
-      "Frame/packet MTU support not fully there, currently we optimistically leave OSPF sessions up")
+      "Frame/packet MTU support not fully there, currently we optimistically leave OSPF sessions"
+          + " up")
   @Test
   public void testGetSessionStatusMtuMismatch() {
     NetworkConfigurations configs =

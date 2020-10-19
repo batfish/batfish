@@ -882,8 +882,7 @@ public final class VirtualRouter {
             long incrementalMetric =
                 firstNonNull(isisLevelSettings.getCost(), IsisRoute.DEFAULT_METRIC);
             IsisRoute newRoute =
-                neighborRoute
-                    .toBuilder()
+                neighborRoute.toBuilder()
                     .setAdmin(adminCost)
                     .setLevel(routeLevel)
                     .setMetric(incrementalMetric + neighborRoute.getMetric())

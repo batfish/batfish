@@ -105,7 +105,8 @@ public class NodePropertySpecifier extends PropertySpecifier {
                       + Arrays.stream(LineAction.values())
                           .map(Object::toString)
                           .collect(Collectors.joining(", "))
-                      + ") for traffic that traverses firewall zones (null for non-firewall nodes)"))
+                      + ") for traffic that traverses firewall zones (null for non-firewall"
+                      + " nodes)"))
           .put(
               DEFAULT_INBOUND_ACTION,
               new PropertyDescriptor<>(

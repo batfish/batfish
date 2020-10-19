@@ -20,7 +20,8 @@ public final class RemoveOutgoingInterfaceConstraints implements Transition {
     // methods will return ONE and ZERO respectively for trivial managers.
     checkArgument(
         !mgr.isTrivial(),
-        "RemoveOutgoingInterfaceConstraints for a trivial BDDOutgoingOriginalFlowFilterManager. Use Identity instead");
+        "RemoveOutgoingInterfaceConstraints for a trivial BDDOutgoingOriginalFlowFilterManager."
+            + " Use Identity instead");
     _mgr = mgr;
   }
 

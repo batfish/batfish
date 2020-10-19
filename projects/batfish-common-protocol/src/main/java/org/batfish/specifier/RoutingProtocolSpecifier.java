@@ -212,7 +212,8 @@ public class RoutingProtocolSpecifier {
             text,
             Grammar.ROUTING_PROTOCOL_SPECIFIER,
             new ConstantEnumSetSpecifier<>(getAllProtocolKeys()))
-        .resolve().stream()
+        .resolve()
+        .stream()
         .map(MAP::get)
         .filter(Objects::nonNull)
         .flatMap(Set::stream)

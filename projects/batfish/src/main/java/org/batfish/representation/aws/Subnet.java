@@ -615,7 +615,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
           if (attachment == null) {
             warnings.redFlag(
                 String.format(
-                    "Transit gateway VPC attachment between %s and %s not found. Needed for route: %s",
+                    "Transit gateway VPC attachment between %s and %s not found. Needed for route:"
+                        + " %s",
                     _vpcId, route.getTarget(), route));
             return;
           }

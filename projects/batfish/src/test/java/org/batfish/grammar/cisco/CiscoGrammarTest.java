@@ -4089,7 +4089,8 @@ public final class CiscoGrammarTest {
         hasRedFlagWarning(
             hostname,
             containsString(
-                "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no ip-address")));
+                "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no"
+                    + " ip-address")));
   }
 
   @Test

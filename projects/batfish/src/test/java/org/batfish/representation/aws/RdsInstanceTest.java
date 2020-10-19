@@ -196,7 +196,8 @@ public class RdsInstanceTest {
                                             .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
                                             .build(),
                                         traceElementEniPrivateIp(
-                                            "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test host)")))),
+                                            "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test"
+                                                + " host)")))),
                             getTraceElementForRule(null)))))));
     for (Interface iface : testRds.getAllInterfaces().values()) {
       assertThat(iface.getIncomingFilter().getName(), equalTo(eniIngressAclName(iface.getName())));

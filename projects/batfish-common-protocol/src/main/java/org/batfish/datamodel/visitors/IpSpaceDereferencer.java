@@ -118,7 +118,8 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
       // This is a reference to an already-referenced IP space. Line is in a cycle.
       throw new CircularReferenceException(
           String.format(
-              "Cannot dereference IpSpaceReference to IP space %s because it is a circular reference.",
+              "Cannot dereference IpSpaceReference to IP space %s because it is a circular"
+                  + " reference.",
               name));
     }
     IpSpace referenced = _namedIpSpaces.get(name);
@@ -126,7 +127,8 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
       // This reference is to an undefined IP space.
       throw new UndefinedReferenceException(
           String.format(
-              "Cannot dereference IpSpaceReference to IP space %s because there is no such IP space.",
+              "Cannot dereference IpSpaceReference to IP space %s because there is no such IP"
+                  + " space.",
               name));
     }
     // Current IpSpace references another valid and as yet unreferenced IP space. Visit that.

@@ -183,7 +183,8 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
               .count();
       checkArgument(
           count == 1L,
-          "There must be exactly 1 action of type 'forward', 'fixed-response', or 'redirect'. Found %s",
+          "There must be exactly 1 action of type 'forward', 'fixed-response', or 'redirect'."
+              + " Found %s",
           count);
 
       // The final action to be performed must be a forward or a fixed-response action

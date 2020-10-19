@@ -219,7 +219,8 @@ public class WorkMgr extends AbstractCoordinator {
           metadata = getSnapshotMetadata(network, snapshot);
         } catch (IOException e) {
           _logger.debugf(
-              "computeExpungeBeforeDate: Failed to read snapshot metadata for network '%s', snapshot '%s': %s",
+              "computeExpungeBeforeDate: Failed to read snapshot metadata for network '%s',"
+                  + " snapshot '%s': %s",
               network, snapshot, Throwables.getStackTraceAsString(e));
           continue;
         }
@@ -857,7 +858,8 @@ public class WorkMgr extends AbstractCoordinator {
     } catch (IOException e) {
       String message =
           String.format(
-              "Could not get answer: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
+              "Could not get answer: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s,"
+                  + " analysis=%s: %s",
               network,
               snapshot,
               question,
@@ -1054,7 +1056,8 @@ public class WorkMgr extends AbstractCoordinator {
       return _storage.loadAnswerMetadata(answerId);
     } catch (IOException e) {
       _logger.errorf(
-          "Could not get answer metadata: network=%s, snapshot=%s, question=%s, referenceSnapshot=%s, analysis=%s: %s",
+          "Could not get answer metadata: network=%s, snapshot=%s, question=%s,"
+              + " referenceSnapshot=%s, analysis=%s: %s",
           network,
           snapshot,
           question,
@@ -1429,7 +1432,9 @@ public class WorkMgr extends AbstractCoordinator {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
           String.format(
-              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir '%s', or hosts dir '%s' found. See %s for more details on how to package your snapshot for analysis.",
+              "Unexpected packaging of snapshot. No networks configs dir '%s', AWS configs dir"
+                  + " '%s', or hosts dir '%s' found. See %s for more details on how to package"
+                  + " your snapshot for analysis.",
               srcDir.relativize(networkConfigsPath),
               srcDir.relativize(awsConfigsPath),
               srcDir.relativize(hostConfigsPath),
@@ -1454,7 +1459,8 @@ public class WorkMgr extends AbstractCoordinator {
     if (srcDirEntries.size() != 1 || !Files.isDirectory(srcDirEntries.iterator().next())) {
       throw new BatfishException(
           String.format(
-              "Unexpected packaging of snapshot. There should be just one top-level folder.  See %s for more details on how to package your snapshot for analysis.",
+              "Unexpected packaging of snapshot. There should be just one top-level folder.  See"
+                  + " %s for more details on how to package your snapshot for analysis.",
               SNAPSHOT_PACKAGING_INSTRUCTIONS_URL));
     }
     return srcDirEntries.iterator().next();
@@ -1610,8 +1616,7 @@ public class WorkMgr extends AbstractCoordinator {
       }
     }
     SnapshotRuntimeData updatedRuntimeData =
-        runtimeData
-            .toBuilder()
+        runtimeData.toBuilder()
             .setInterfacesLineDown(deactivateIfaces)
             .setInterfacesLineUp(restoreIfaces)
             .build();

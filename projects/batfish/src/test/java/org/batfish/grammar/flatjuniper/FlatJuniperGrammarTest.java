@@ -3105,7 +3105,8 @@ public final class FlatJuniperGrammarTest {
                                                             .toIpSpace())
                                                     .build(),
                                                 TraceElement.of(
-                                                    "Matched destination-address 1.2.3.4/255.0.255.0")),
+                                                    "Matched destination-address"
+                                                        + " 1.2.3.4/255.0.255.0")),
                                             new MatchHeaderSpace(
                                                 HeaderSpace.builder()
                                                     .setDstIps(

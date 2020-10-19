@@ -1761,7 +1761,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         && iface.getShutdown() == null) {
       _w.redFlag(
           String.format(
-              "Non-switchport interface %s missing explicit (no) shutdown, so setting administratively active arbitrarily",
+              "Non-switchport interface %s missing explicit (no) shutdown, so setting"
+                  + " administratively active arbitrarily",
               ifaceName));
     }
 
@@ -1869,7 +1870,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       if (runtimeSpeed != null && !speed.equals(runtimeSpeed)) {
         _w.redFlag(
             String.format(
-                "Interface %s:%s has configured speed %.0f bps but runtime data shows speed %.0f bps. Configured value will be used.",
+                "Interface %s:%s has configured speed %.0f bps but runtime data shows speed %.0f"
+                    + " bps. Configured value will be used.",
                 getHostname(), ifaceName, speed, runtimeSpeed));
       }
     } else if (runtimeSpeed != null) {
@@ -1885,7 +1887,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       if (runtimeBandwidth != null && !finalBandwidth.equals(runtimeBandwidth)) {
         _w.redFlag(
             String.format(
-                "Interface %s:%s has configured bandwidth %.0f bps but runtime data shows bandwidth %.0f bps. Configured value will be used.",
+                "Interface %s:%s has configured bandwidth %.0f bps but runtime data shows"
+                    + " bandwidth %.0f bps. Configured value will be used.",
                 getHostname(), ifaceName, finalBandwidth, runtimeBandwidth));
       }
     } else if (speedMbps != null) {
@@ -2956,12 +2959,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .collect(ImmutableList.toImmutableList());
     if (trueStatements.size() > 1) {
       _w.redFlag(
-          "Multiple set statements are not allowed in a single route map statement. Choosing the first one");
+          "Multiple set statements are not allowed in a single route map statement. Choosing the"
+              + " first one");
       trueStatements = ImmutableList.of(trueStatements.get(0));
     }
     if (guardBoolExprs.size() > 1) {
       _w.redFlag(
-          "Multiple match conditions are not allowed in a single route map statement. Choosing the first one");
+          "Multiple match conditions are not allowed in a single route map statement. Choosing the"
+              + " first one");
     }
     return new org.batfish.datamodel.packet_policy.If(guardBoolExprs.get(0), trueStatements);
   }

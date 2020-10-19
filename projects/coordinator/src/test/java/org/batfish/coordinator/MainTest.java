@@ -56,7 +56,8 @@ public class MainTest {
         questionTemplates,
         IsMapContaining.hasEntry(
             DUPLICATE_TEMPLATE_NAME,
-            "{\"instance\":{\"instanceName\":\"duplicate_template\",\"description\":\"test question description\"}}"));
+            "{\"instance\":{\"instanceName\":\"duplicate_template\",\"description\":\"test"
+                + " question description\"}}"));
   }
 
   @Test
@@ -82,7 +83,8 @@ public class MainTest {
         questionTemplates,
         IsMapContaining.hasEntry(
             DUPLICATE_TEMPLATE_NAME,
-            "{\"instance\":{\"instanceName\":\"DUPLICATE_TEMPLATE\",\"description\":\"test question description\"}}"));
+            "{\"instance\":{\"instanceName\":\"DUPLICATE_TEMPLATE\",\"description\":\"test"
+                + " question description\"}}"));
   }
 
   @Test
@@ -109,7 +111,8 @@ public class MainTest {
             IsMapContaining.hasEntry(DUPLICATE_TEMPLATE_NAME, "template_body"),
             IsMapContaining.hasEntry(
                 NEW_TEMPLATE_NAME,
-                "{\"instance\":{\"instanceName\":\"new_template\",\"description\":\"test question description\"}}")));
+                "{\"instance\":{\"instanceName\":\"new_template\",\"description\":\"test question"
+                    + " description\"}}")));
   }
 
   @Test
@@ -143,10 +146,12 @@ public class MainTest {
         allOf(
             IsMapContaining.hasEntry(
                 "testquestion1",
-                "{\"instance\":{\"instanceName\":\"testQuestion1\",\"description\":\"test question one description\"}}"),
+                "{\"instance\":{\"instanceName\":\"testQuestion1\",\"description\":\"test question"
+                    + " one description\"}}"),
             IsMapContaining.hasEntry(
                 "testquestion2",
-                "{\"instance\":{\"instanceName\":\"testQuestion2\",\"description\":\"test question two description\"}}")));
+                "{\"instance\":{\"instanceName\":\"testQuestion2\",\"description\":\"test question"
+                    + " two description\"}}")));
   }
 
   @Test
@@ -174,6 +179,7 @@ public class MainTest {
         questionTemplates,
         IsMapContaining.hasEntry(
             "testquestion",
-            "{\"instance\":{\"instanceName\":\"testQuestion\",\"description\":\"test question description\"}}"));
+            "{\"instance\":{\"instanceName\":\"testQuestion\",\"description\":\"test question"
+                + " description\"}}"));
   }
 }

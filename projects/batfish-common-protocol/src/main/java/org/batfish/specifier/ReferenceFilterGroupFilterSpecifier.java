@@ -58,7 +58,8 @@ public final class ReferenceFilterGroupFilterSpecifier implements FilterSpecifie
         .flatMap(
             f ->
                 SpecifierFactories.getFilterSpecifierOrDefault(f, NoFiltersFilterSpecifier.INSTANCE)
-                    .resolve(node, ctxt).stream())
+                    .resolve(node, ctxt)
+                    .stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 }

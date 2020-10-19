@@ -1623,7 +1623,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(
           ctx,
           String.format(
-              "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define expanded community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }
@@ -1670,7 +1671,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(
           ctx,
           String.format(
-              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define standard community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }
@@ -3096,7 +3098,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
         warn(
             ctx,
-            "Cannot enable ingress replication bgp under VNI without host-reachability protocol bgp");
+            "Cannot enable ingress replication bgp under VNI without host-reachability protocol"
+                + " bgp");
         return;
       }
       _currentNveVnis.forEach(
@@ -3106,7 +3109,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       if (_currentNves.stream().anyMatch(nve -> nve.getHostReachabilityProtocol() != null)) {
         warn(
             ctx,
-            "Cannot enable ingress replication static under VNI without unset host-reachability protocol");
+            "Cannot enable ingress replication static under VNI without unset host-reachability"
+                + " protocol");
         return;
       }
       _currentNveVnis.forEach(
@@ -3154,7 +3158,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
       warn(
           ctx,
-          "Cannot configure Ingress replication protocol BGP for nve without host reachability protocol bgp.");
+          "Cannot configure Ingress replication protocol BGP for nve without host reachability"
+              + " protocol bgp.");
       return;
     }
     _currentNves.forEach(
@@ -3195,7 +3200,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         warn(
             ctx,
             String.format(
-                "Cannot create object-group '%s' of type ip address because an object-group of a different type already exists with that name.",
+                "Cannot create object-group '%s' of type ip address because an object-group of a"
+                    + " different type already exists with that name.",
                 name));
         _currentObjectGroupIpAddress = new ObjectGroupIpAddress("dummy");
         return;
@@ -5065,7 +5071,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         warn(
             ctx,
             String.format(
-                "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s'",
+                "Cannot set channel-group because interface '%s' has settings that do not conform"
+                    + " to those of interface '%s'",
                 incompatibleInterface.get().getName(), referenceIface.getName()));
         return;
       }
@@ -5437,7 +5444,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             vni -> vni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC)) {
       warn(
           ctx,
-          "Please remove ingress replication static under VNIs before configuring host reachability bgp.");
+          "Please remove ingress replication static under VNIs before configuring host"
+              + " reachability bgp.");
       return;
     }
     _currentNves.forEach(nve -> nve.setHostReachabilityProtocol(HostReachabilityProtocol.BGP));

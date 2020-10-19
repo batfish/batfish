@@ -366,7 +366,8 @@ class CounterExample {
                   new FlowTrace(
                       FlowDisposition.INSUFFICIENT_INFO,
                       hops,
-                      "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK - Minesweeper has insufficient information to decide");
+                      "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK - Minesweeper has insufficient"
+                          + " information to decide");
               return new Tuple<>(flow, flowTrace);
             }
           }
@@ -408,7 +409,8 @@ class CounterExample {
               new FlowTrace(
                   FlowDisposition.INSUFFICIENT_INFO,
                   hops,
-                  "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK - Minesweeper has insufficient information to decide");
+                  "NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK - Minesweeper has insufficient"
+                      + " information to decide");
           return new Tuple<>(flow, flowTrace);
         }
         FlowTrace flowTrace = new FlowTrace(FlowDisposition.NO_ROUTE, hops, "NO_ROUTE");

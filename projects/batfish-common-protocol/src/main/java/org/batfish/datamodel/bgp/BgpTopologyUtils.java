@@ -514,7 +514,8 @@ public final class BgpTopologyUtils {
                             ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
                             traceAndReverseFlow.getNewFirewallSessions(),
                             false)
-                        .get(traceAndReverseFlow.getReverseFlow()).stream())
+                        .get(traceAndReverseFlow.getReverseFlow())
+                        .stream())
             .collect(ImmutableList.toImmutableList());
 
     boolean successful =

@@ -142,7 +142,8 @@ public class BgpProcessConfigurationAnswerer extends Answerer {
                           } catch (ClassCastException e) {
                             throw new BatfishException(
                                 String.format(
-                                    "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for BGP process '%s->%s-%s': %s",
+                                    "Type mismatch between property value ('%s') and Schema ('%s')"
+                                        + " for property '%s' for BGP process '%s->%s-%s': %s",
                                     propertyDescriptor.getGetter().apply(bgpProcess),
                                     propertyDescriptor.getSchema(),
                                     property,

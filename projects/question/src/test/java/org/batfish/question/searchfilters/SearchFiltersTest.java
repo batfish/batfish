@@ -217,8 +217,7 @@ public final class SearchFiltersTest {
   @Test
   public void testPermittedFlows_headerSpace() {
     SearchFiltersParameters.Builder paramsBuilder =
-        DEFAULT_PARAMS
-            .toBuilder()
+        DEFAULT_PARAMS.toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(IP0.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE));
 
@@ -449,8 +448,7 @@ public final class SearchFiltersTest {
   @Test
   public void testSourceInterfaceParameter() {
     SearchFiltersParameters params =
-        DEFAULT_PARAMS
-            .toBuilder()
+        DEFAULT_PARAMS.toBuilder()
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE1))
             .build();
 
@@ -471,8 +469,7 @@ public final class SearchFiltersTest {
   public void testDstIpConstraint_ACCEPT_ALL() {
     Ip constraintIp = Ip.parse("21.21.21.21");
     SearchFiltersParameters params =
-        DEFAULT_PARAMS
-            .toBuilder()
+        DEFAULT_PARAMS.toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .build();
@@ -487,8 +484,7 @@ public final class SearchFiltersTest {
   public void testSrcIpConstraint_ACCEPT_ALL() {
     Ip constraintIp = Ip.parse("21.21.21.21");
     SearchFiltersParameters params =
-        DEFAULT_PARAMS
-            .toBuilder()
+        DEFAULT_PARAMS.toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(constraintIp.toIpSpace()))
             .build();
@@ -506,8 +502,7 @@ public final class SearchFiltersTest {
     hs.setDstPorts(ImmutableList.of(SubRange.singleton(2222)));
     hs.setIpProtocols(ImmutableList.of(IpProtocol.TCP));
     SearchFiltersParameters params =
-        DEFAULT_PARAMS
-            .toBuilder()
+        DEFAULT_PARAMS.toBuilder()
             .setDestinationIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setSourceIpSpaceSpecifier(new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
             .setHeaderSpaceExpr(match(hs))

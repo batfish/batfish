@@ -450,9 +450,7 @@ public class FileBasedStorage implements StorageProvider {
     deleteDirectory(outputDir);
     mkdirs(outputDir);
 
-    configurations
-        .entrySet()
-        .parallelStream()
+    configurations.entrySet().parallelStream()
         .forEach(
             e -> {
               Path currentOutputPath = outputDir.resolve(e.getKey());
@@ -521,9 +519,7 @@ public class FileBasedStorage implements StorageProvider {
             String.format("Deserializing objects of type '%s' from files", outputClassName),
             namesByPath.size());
     return new TreeMap<>(
-        namesByPath
-            .entrySet()
-            .parallelStream()
+        namesByPath.entrySet().parallelStream()
             .collect(
                 Collectors.toMap(
                     Entry::getValue,
@@ -573,9 +569,7 @@ public class FileBasedStorage implements StorageProvider {
     String className = objectsByPath.values().iterator().next().getClass().getName();
     AtomicInteger serializeCompleted =
         _newBatch.apply(String.format("Serializing '%s' instances to disk", className), size);
-    objectsByPath
-        .entrySet()
-        .parallelStream()
+    objectsByPath.entrySet().parallelStream()
         .forEach(
             entry -> {
               Path outputPath = entry.getKey();

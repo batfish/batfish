@@ -275,8 +275,10 @@ public class CiscoConversions {
             .count()
         > 1) {
       w.redFlag(
-          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for incoming BGP routes."
-              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list/distribute-list) for incoming BGP routes. When this"
+              + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
+              + " configured.");
     }
 
     // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
@@ -354,8 +356,10 @@ public class CiscoConversions {
             .count()
         > 1) {
       w.redFlag(
-          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for outgoing BGP routes."
-              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list/distribute-list) for outgoing BGP routes. When this"
+              + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
+              + " configured.");
     }
     if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
       peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
@@ -1292,7 +1296,8 @@ public class CiscoConversions {
           .getWarnings()
           .redFlag(
               String.format(
-                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are supported in dist-lists by Batfish",
+                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are"
+                      + " supported in dist-lists by Batfish",
                   vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
       return false;
     } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
@@ -1301,7 +1306,8 @@ public class CiscoConversions {
           .getWarnings()
           .redFlag(
               String.format(
-                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this dist-list will allow everything",
+                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this"
+                      + " dist-list will allow everything",
                   vrfName, ospfProcessId));
       return false;
     }
@@ -1378,7 +1384,8 @@ public class CiscoConversions {
       if (ospfSettings == null) {
         w.redFlag(
             String.format(
-                "Cannot attach inbound distribute list policy '%s' to interface '%s' not configured for OSPF.",
+                "Cannot attach inbound distribute list policy '%s' to interface '%s' not"
+                    + " configured for OSPF.",
                 ifaceName, iface.getName()));
       } else {
         ospfSettings.setInboundDistributeListPolicy(policyName);
@@ -1468,7 +1475,8 @@ public class CiscoConversions {
           .getWarnings()
           .redFlag(
               String.format(
-                  "distribute-list refers an undefined access-list `%s`, it will not filter anything",
+                  "distribute-list refers an undefined access-list `%s`, it will not filter"
+                      + " anything",
                   distributeList.getFilterName()));
       return false;
     }
@@ -1499,11 +1507,10 @@ public class CiscoConversions {
       match =
           new MatchHeaderSpace(
               ((MatchHeaderSpace) matchService)
-                  .getHeaderspace()
-                  .toBuilder()
-                  .setSrcIps(srcIpSpace)
-                  .setDstIps(dstIpSpace)
-                  .build());
+                  .getHeaderspace().toBuilder()
+                      .setSrcIps(srcIpSpace)
+                      .setDstIps(dstIpSpace)
+                      .build());
     } else {
       match =
           new AndMatchExpr(

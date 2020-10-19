@@ -1056,7 +1056,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         || _failoverStatefulSignalingInterface == null
         || _failoverStatefulSignalingInterfaceAlias == null) {
       _w.redFlag(
-          "Unable to process failover configuration: one of failover communication or stateful signaling interfaces is unset");
+          "Unable to process failover configuration: one of failover communication or stateful"
+              + " signaling interfaces is unset");
       return;
     }
 
@@ -1072,7 +1073,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (sigIface == null) {
       _w.redFlag(
           String.format(
-              "Unable to process failover configuration: stateful signaling interface %s is not present",
+              "Unable to process failover configuration: stateful signaling interface %s is not"
+                  + " present",
               _failoverStatefulSignalingInterface));
       return;
     }
@@ -3385,8 +3387,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences.getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
-            .getOrDefault("Null0", ImmutableSortedMap.of()).entrySet().stream()
+        _structureReferences
+            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+            .getOrDefault("Null0", ImmutableSortedMap.of())
+            .entrySet()
+            .stream()
             .flatMap(e -> e.getValue().stream())
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
@@ -3912,7 +3917,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                             ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
                     .setName(
                         String.format(
-                            "Allow traffic received on interface in zone '%s' permitted by policy-map: '%s'",
+                            "Allow traffic received on interface in zone '%s' permitted by"
+                                + " policy-map: '%s'",
                             srcZoneName, inspectPolicyMapName))
                     .build()))
         .setSourceName(zonePair.getName())

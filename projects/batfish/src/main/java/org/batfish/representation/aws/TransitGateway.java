@@ -437,7 +437,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
                     && table.getGatewayId().equals(attachment.getGatewayId()) // this TGW's table
                     && region.getTransitGatewayPropagations().containsKey(table.getId())
                     // propagations of the table contain the VPC
-                    && region.getTransitGatewayPropagations().get(table.getId()).getPropagations()
+                    && region
+                        .getTransitGatewayPropagations()
+                        .get(table.getId())
+                        .getPropagations()
                         .stream()
                         .anyMatch(
                             propagation ->
@@ -550,7 +553,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     } else {
       return Optional.of(
           String.format(
-              "Unsupported VPN attachment configuration for %s. Association route table = %s. Propagation route tables = %s",
+              "Unsupported VPN attachment configuration for %s. Association route table = %s."
+                  + " Propagation route tables = %s",
               vpnConnection.getId(), associatedRoutingTableId, propagatedRoutingTableIds));
     }
   }
@@ -741,7 +745,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           if (vpcCfg == null) {
             warnings.redFlag(
                 String.format(
-                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC configuration was not found",
+                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC"
+                        + " configuration was not found",
                     route.getDestinationCidrBlock(),
                     routeTableId,
                     tgwCfg.getHostname(),
@@ -752,7 +757,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           if (!vpcCfg.getAllInterfaces().containsKey(ifaceNameOnVpc)) {
             warnings.redFlag(
                 String.format(
-                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC is not propagating to that table",
+                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC"
+                        + " is not propagating to that table",
                     route.getDestinationCidrBlock(),
                     routeTableId,
                     tgwCfg.getHostname(),

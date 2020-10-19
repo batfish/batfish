@@ -166,7 +166,8 @@ final class ConvertConfigurationAnswerElementMatchers {
           byStructureName.get(_structureName).getDefinitionLines().enumerate())) {
         mismatchDescription.appendText(
             String.format(
-                "File '%s' has no defined structure of type '%s' named '%s' matching definition lines '%s'",
+                "File '%s' has no defined structure of type '%s' named '%s' matching definition"
+                    + " lines '%s'",
                 _filename, _type, _structureName, _subMatcher));
         return false;
       }
@@ -373,7 +374,8 @@ final class ConvertConfigurationAnswerElementMatchers {
       if (!_subMatcher.matches(byUsage.get(_usage))) {
         mismatchDescription.appendText(
             String.format(
-                "File '%s' has no undefined reference of type '%s' named '%s' of usage '%s' matching reference lines '%s'",
+                "File '%s' has no undefined reference of type '%s' named '%s' of usage '%s'"
+                    + " matching reference lines '%s'",
                 _filename, _type, _structureName, _usage, _subMatcher));
         return false;
       }

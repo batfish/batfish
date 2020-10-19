@@ -211,7 +211,8 @@ class IpsecSessionStatusAnswerer extends Answerer {
     List<ColumnMetadata> columnMetadata = getColumnMetadata();
     String textDesc =
         String.format(
-            " IPSec peering session between initiator ${%s} with interface {%s} and IP ${%s} and responder ${%s} with interface {%s} and IP ${%s}s has status ${%s}.",
+            " IPSec peering session between initiator ${%s} with interface {%s} and IP ${%s} and"
+                + " responder ${%s} with interface {%s} and IP ${%s}s has status ${%s}.",
             COL_INITIATOR,
             COL_INIT_INTERFACE,
             COL_INIT_IP,

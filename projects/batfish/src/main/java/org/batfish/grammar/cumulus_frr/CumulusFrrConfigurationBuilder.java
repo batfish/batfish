@@ -618,7 +618,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           warn(
               ctx,
               String.format(
-                  "vrf %s of interface %s does not match previously-defined vrf %s in interfaces file",
+                  "vrf %s of interface %s does not match previously-defined vrf %s in interfaces"
+                      + " file",
                   vrfName, name, interfacesInterface.getVrf()));
           _currentInterface = new FrrInterface("dummy", "dummy");
           return;
@@ -1262,7 +1263,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       warn(
           ctx,
           String.format(
-              "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define expanded community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }
@@ -1289,7 +1291,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       warn(
           ctx,
           String.format(
-              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define standard community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }

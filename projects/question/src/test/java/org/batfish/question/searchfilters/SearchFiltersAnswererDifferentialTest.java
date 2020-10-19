@@ -185,8 +185,7 @@ public class SearchFiltersAnswererDifferentialTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     NetworkSnapshot reference = batfish.getReferenceSnapshot();
     SearchFiltersParameters params =
-        DEFAULT_PARAMS
-            .toBuilder()
+        DEFAULT_PARAMS.toBuilder()
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE1))
             .build();
 
@@ -201,8 +200,7 @@ public class SearchFiltersAnswererDifferentialTest {
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
     params =
-        DEFAULT_PARAMS
-            .toBuilder()
+        DEFAULT_PARAMS.toBuilder()
             .setStartLocationSpecifier(new NameRegexInterfaceLinkLocationSpecifier(IFACE2))
             .build();
 

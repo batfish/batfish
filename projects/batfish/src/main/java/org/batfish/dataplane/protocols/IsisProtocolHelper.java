@@ -34,8 +34,7 @@ public class IsisProtocolHelper {
       return Optional.empty();
     }
     return Optional.of(
-        route
-            .toBuilder()
+        route.toBuilder()
             .setAdmin(l2Admin)
             .setLevel(IsisLevel.LEVEL_2)
             .setProtocol(l2Protocol)

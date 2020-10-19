@@ -207,7 +207,8 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       } catch (ClassCastException e) {
         throw new BatfishException(
             String.format(
-                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for BGP peer '%s->%s-%s': %s",
+                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s'"
+                    + " for BGP peer '%s->%s-%s': %s",
                 propertyDescriptor.getGetter().apply(peer),
                 propertyDescriptor.getSchema(),
                 property,
