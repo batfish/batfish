@@ -765,8 +765,9 @@ public class Client extends AbstractClient implements IClient {
         break;
       case interactive:
         System.err.println(
-            "This is not a supported client for Batfish. Please use pybatfish following the "
-                + "instructions in the README: https://github.com/batfish/batfish/#how-do-i-get-started");
+            "This is not a supported client for Batfish. Please use pybatfish following the"
+                + " instructions in the README:"
+                + " https://github.com/batfish/batfish/#how-do-i-get-started");
         try {
           _reader =
               LineReaderBuilder.builder()
@@ -1365,7 +1366,8 @@ public class Client extends AbstractClient implements IClient {
     if (_currTestrig == null) {
       _logger.errorf("Active snapshot is not set.\n");
       _logger.errorf(
-          "Specify snapshot on command line (-%s <snapshotdir>) or use command (%s <snapshotdir>)\n",
+          "Specify snapshot on command line (-%s <snapshotdir>) or use command (%s"
+              + " <snapshotdir>)\n",
           Settings.ARG_SNAPSHOT_DIR, Command.INIT_SNAPSHOT.commandName());
       return false;
     }

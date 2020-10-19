@@ -104,23 +104,15 @@ public class BatfishTest {
               @Override
               public String loadQuestion(
                   NetworkId network, QuestionId analysis, AnalysisId question) {
-                return "{"
-                    + "\"differential\": false,"
-                    + "\"instance\": {"
-                    + "\"description\": \"Outputs cases where undefined structures (e.g., ACL, routemaps) "
-                    + "are referenced.\","
-                    + "\"instanceName\": \"undefinedReferences\","
-                    + "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
-                    + "serious consequences with some vendors.\","
-                    + "\"tags\": [\"default\"],"
-                    + "\"variables\": {\"nodeRegex\": {"
-                    + "\"description\": \"Only check nodes whose name matches this regex\","
-                    + "\"type\": \"javaRegex\","
-                    + "\"value\": \".*\""
-                    + "}}"
-                    + "},"
-                    + "\"nodeRegex\": \"${nodeRegex}\""
-                    + "}";
+                return "{\"differential\": false,\"instance\": {\"description\": \"Outputs cases"
+                    + " where undefined structures (e.g., ACL, routemaps) are"
+                    + " referenced.\",\"instanceName\":"
+                    + " \"undefinedReferences\",\"longDescription\": \"Such occurrences"
+                    + " indicate configuration errors and can haveserious consequences with"
+                    + " some vendors.\",\"tags\": [\"default\"],\"variables\":"
+                    + " {\"nodeRegex\": {\"description\": \"Only check nodes whose name"
+                    + " matches this regex\",\"type\": \"javaRegex\",\"value\": \".*\"}}"
+                    + "},\"nodeRegex\": \"${nodeRegex}\"}";
               }
             },
             new TestIdResolver());

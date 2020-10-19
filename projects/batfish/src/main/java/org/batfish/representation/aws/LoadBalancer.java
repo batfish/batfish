@@ -275,7 +275,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     if (loadBalancerAttributes == null) {
       warnings.redFlag(
           String.format(
-              "Attributes not found for load balancer %s (%s). Assuming that cross zone load balancing is disabled.",
+              "Attributes not found for load balancer %s (%s). Assuming that cross zone load"
+                  + " balancing is disabled.",
               _name, _arn));
     }
     boolean crossZoneLoadBalancing =
@@ -420,7 +421,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     } catch (Exception e) {
       warnings.redFlag(
           String.format(
-              "Failed to compute listener transformation for listener %s of load balancer %s (%s): %s",
+              "Failed to compute listener transformation for listener %s of load balancer %s (%s):"
+                  + " %s",
               listener, _arn, _name, Throwables.getStackTraceAsString(e)));
       return null;
     }

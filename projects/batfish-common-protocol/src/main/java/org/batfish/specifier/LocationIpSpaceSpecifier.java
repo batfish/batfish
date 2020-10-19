@@ -57,7 +57,9 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
   public static IpSpace computeIpSpace(Set<Location> locations, SpecifierContext ctxt) {
     return firstNonNull(
         AclIpSpace.union(
-            InferFromLocationIpSpaceSpecifier.INSTANCE.resolve(locations, ctxt).getEntries()
+            InferFromLocationIpSpaceSpecifier.INSTANCE
+                .resolve(locations, ctxt)
+                .getEntries()
                 .stream()
                 .map(Entry::getIpSpace)
                 .collect(Collectors.toList())),

@@ -79,8 +79,7 @@ public class TracerouteEngineImplContext {
    */
   public SortedMap<Flow, List<TraceAndReverseFlow>> buildTracesAndReturnFlows() {
     Map<Flow, List<TraceAndReverseFlow>> traces = new ConcurrentHashMap<>();
-    _flows
-        .parallelStream()
+    _flows.parallelStream()
         .forEach(
             flow -> {
               List<TraceAndReverseFlow> currentTraces =
@@ -183,8 +182,12 @@ public class TracerouteEngineImplContext {
    */
   @Nonnull
   Optional<String> interfaceAcceptingIp(String node, String vrf, Ip ip) {
-    return _forwardingAnalysis.getAcceptsIps().getOrDefault(node, ImmutableMap.of())
-        .getOrDefault(vrf, ImmutableMap.of()).entrySet().stream()
+    return _forwardingAnalysis
+        .getAcceptsIps()
+        .getOrDefault(node, ImmutableMap.of())
+        .getOrDefault(vrf, ImmutableMap.of())
+        .entrySet()
+        .stream()
         .filter(e -> e.getValue().containsIp(ip, ImmutableMap.of()))
         .map(Entry::getKey)
         .findAny(); // Should be zero or one.

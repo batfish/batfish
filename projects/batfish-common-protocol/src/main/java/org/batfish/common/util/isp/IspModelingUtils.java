@@ -464,7 +464,8 @@ public final class IspModelingUtils {
       if (validRemoteBgpPeerConfigs.isEmpty()) {
         warnings.redFlag(
             String.format(
-                "ISP Modeling: Cannot find any valid eBGP configurations for interface %s on node %s",
+                "ISP Modeling: Cannot find any valid eBGP configurations for interface %s on node"
+                    + " %s",
                 remoteIfaceName, remoteCfg.getHostname()));
         continue;
       }

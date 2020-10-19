@@ -272,8 +272,7 @@ public class PaloAltoNatTest {
         hitsVsysNatRule.toBuilder().setSrcIp(vsysNatNewAddr).setSrcPort(newSrcPort).build());
     assertEquals(
         getTransformedFlow(hitPostRulebaseRule),
-        hitsPostRulebaseNatRule
-            .toBuilder()
+        hitsPostRulebaseNatRule.toBuilder()
             .setSrcIp(panPostNewAddr)
             .setSrcPort(newSrcPort)
             .build());
@@ -479,8 +478,7 @@ public class PaloAltoNatTest {
 
     assertEquals(
         getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesSrcAndDstTranslationRule))),
-        matchesSrcAndDstTranslationRule
-            .toBuilder()
+        matchesSrcAndDstTranslationRule.toBuilder()
             .setSrcIp(newSrcIp)
             .setSrcPort(newSrcPort)
             .setDstIp(newDstIp)
@@ -575,8 +573,7 @@ public class PaloAltoNatTest {
     // Flow that matches src and dst translation rule (with non-empty pools) should be transformed
     assertEquals(
         getTransformedFlow(Iterables.getOnlyElement(traces.get(matchesSrcAndDstTranslationRule))),
-        matchesSrcAndDstTranslationRule
-            .toBuilder()
+        matchesSrcAndDstTranslationRule.toBuilder()
             .setSrcIp(newSrcIp)
             .setSrcPort(newSrcPort)
             .setDstIp(newDstIp)

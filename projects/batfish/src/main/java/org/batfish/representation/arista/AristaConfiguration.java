@@ -2453,8 +2453,11 @@ public final class AristaConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences.getOrDefault(AristaStructureType.INTERFACE, ImmutableSortedMap.of())
-            .getOrDefault("Null0", ImmutableSortedMap.of()).entrySet().stream()
+        _structureReferences
+            .getOrDefault(AristaStructureType.INTERFACE, ImmutableSortedMap.of())
+            .getOrDefault("Null0", ImmutableSortedMap.of())
+            .entrySet()
+            .stream()
             .flatMap(e -> e.getValue().stream())
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {

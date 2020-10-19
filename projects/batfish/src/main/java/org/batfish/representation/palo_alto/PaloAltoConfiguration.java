@@ -777,8 +777,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .setName(crossZoneFilterName)
           .setLines(
               ImmutableList.of(
-                  ExprAclLine.REJECT_ALL
-                      .toBuilder()
+                  ExprAclLine.REJECT_ALL.toBuilder()
                       .setName("No interfaces in zone")
                       .setTraceElement(
                           emptyZoneRejectTraceElement(
@@ -879,7 +878,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
       w.redFlag(
           String.format(
-              "Skipping invalid intrazone security rule: %s. It has different From and To zones: %s vs %s",
+              "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
+                  + " %s vs %s",
               rule.getName(), rule.getFrom(), rule.getTo()));
       return false;
     }
@@ -1358,7 +1358,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (group != null) {
       return Optional.of(
           new OrMatchExpr(
-              group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
+              group
+                  .getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
                   .stream()
                   // Don't add trace for children; we've already flattened intermediate app groups
                   .map(a -> aclLineMatchExprForApplication(a, null))
@@ -1951,7 +1952,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // TODO: Check real behavior in this scenario
       _w.redFlag(
           String.format(
-              "NAT rule %s of VSYS %s will not apply source translation because its source translation pool is empty",
+              "NAT rule %s of VSYS %s will not apply source translation because its source"
+                  + " translation pool is empty",
               rule.getName(), vsys.getName()));
       return ImmutableList.of();
     }
@@ -1977,7 +1979,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // TODO: Check real behavior in this scenario
       _w.redFlag(
           String.format(
-              "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
+              "NAT rule %s of VSYS %s will not apply destination translation because its"
+                  + " destination translation pool is empty",
               rule.getName(), vsys.getName()));
       return Optional.empty();
     }
@@ -2050,7 +2053,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       if (localAs != peerAs) {
         _w.redFlag(
             String.format(
-                "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing it",
+                "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing"
+                    + " it",
                 peer.getName(), peerAs, localAs));
         peerAs = localAs;
       }
@@ -2597,7 +2601,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // already be associated with another device-group (should not happen)
                             _w.redFlag(
                                 String.format(
-                                    "Managed device '%s' cannot be associated with more than one device-group. Ignoring association with device-group '%s'.",
+                                    "Managed device '%s' cannot be associated with more than one"
+                                        + " device-group. Ignoring association with device-group"
+                                        + " '%s'.",
                                     deviceId, deviceGroupEntry.getKey()));
                           } else {
                             PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
@@ -2619,7 +2625,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           if (managedConfigurations.containsKey(deviceId)) {
                             _w.redFlag(
                                 String.format(
-                                    "Associating vsys on a managed device with different device-groups is not yet supported. Ignoring association with device-group '%s' for managed device '%s'.",
+                                    "Associating vsys on a managed device with different"
+                                        + " device-groups is not yet supported. Ignoring"
+                                        + " association with device-group '%s' for managed device"
+                                        + " '%s'.",
                                     deviceGroupEntry.getKey(), deviceId));
                             return;
                           }
@@ -2782,7 +2791,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           if (warn) {
             _w.redFlag(
                 String.format(
-                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3 data.",
+                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3"
+                        + " data.",
                     iface.getName(), nullVrf.getName()));
           }
         }

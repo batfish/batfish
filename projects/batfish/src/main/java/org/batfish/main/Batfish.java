@@ -501,7 +501,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     _idResolver.getQuestionId(questionName, containerName, analysisName);
                 checkArgument(
                     questionIdOpt.isPresent(),
-                    "Question '%s' for analysis '%s' for network '%s' was deleted in the middle of this operation",
+                    "Question '%s' for analysis '%s' for network '%s' was deleted in the middle of"
+                        + " this operation",
                     questionName,
                     containerName,
                     analysisName);
@@ -2430,7 +2431,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!commonNodes.isEmpty()) {
       internetWarnings.redFlag(
           String.format(
-              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
+              "Cannot add internet and ISP nodes because nodes with the following names already"
+                  + " exist in the snapshot: %s",
               commonNodes));
       return;
     }

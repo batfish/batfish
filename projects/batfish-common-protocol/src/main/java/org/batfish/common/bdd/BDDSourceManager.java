@@ -279,7 +279,8 @@ public final class BDDSourceManager {
     if (!_activeButUnreferenced.isEmpty()) {
       checkState(
           isTrivial() || _activeButUnreferencedRepresentative != null,
-          "nontrivial source manager with active-but-unreferenced sources must have a representative");
+          "nontrivial source manager with active-but-unreferenced sources must have a"
+              + " representative");
 
       BDD representativeBdd =
           _activeButUnreferencedRepresentative == null

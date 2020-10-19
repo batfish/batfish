@@ -159,7 +159,8 @@ public class InterfacePropertiesAnswerer extends Answerer {
           } catch (ClassCastException e) {
             throw new BatfishException(
                 String.format(
-                    "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for interface '%s': %s",
+                    "Type mismatch between property value ('%s') and Schema ('%s') for property"
+                        + " '%s' for interface '%s': %s",
                     propertyDescriptor.getGetter().apply(iface),
                     propertyDescriptor.getSchema(),
                     property,

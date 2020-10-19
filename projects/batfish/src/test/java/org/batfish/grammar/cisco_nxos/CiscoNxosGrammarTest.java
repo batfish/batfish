@@ -1913,7 +1913,8 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         warnings.getRedFlagWarnings().get(0).getText(),
         equalTo(
-            "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data shows speed 200000000 bps. Configured value will be used."));
+            "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data shows"
+                + " speed 200000000 bps. Configured value will be used."));
   }
 
   @Test
@@ -1970,7 +1971,8 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         warnings.getRedFlagWarnings().get(0).getText(),
         equalTo(
-            "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime data shows bandwidth 200000000 bps. Configured value will be used."));
+            "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime data"
+                + " shows bandwidth 200000000 bps. Configured value will be used."));
   }
 
   @Test
@@ -2420,7 +2422,8 @@ public final class CiscoNxosGrammarTest {
         eth11,
         allOf(
             hasDescription(
-                "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing whitespace"),
+                "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing"
+                    + " whitespace"),
             hasMtu(9216)));
     assertTrue(eth11.getAutoState());
     assertThat(eth11.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
@@ -2441,7 +2444,8 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           iface.getDescription(),
           equalTo(
-              "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing whitespace"));
+              "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing"
+                  + " whitespace"));
       assertThat(iface.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
       assertThat(iface.getEigrp(), equalTo("100"));
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));

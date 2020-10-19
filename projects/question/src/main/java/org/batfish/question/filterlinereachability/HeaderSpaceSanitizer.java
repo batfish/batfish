@@ -47,8 +47,7 @@ public class HeaderSpaceSanitizer
 
   @Override
   public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
-    return exprAclLine
-        .toBuilder()
+    return exprAclLine.toBuilder()
         .setMatchCondition(visit(exprAclLine.getMatchCondition()))
         .build();
   }

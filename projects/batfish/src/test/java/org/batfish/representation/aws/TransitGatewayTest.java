@@ -175,8 +175,7 @@ public class TransitGatewayTest {
         vpcCfg.getVrfs().get(vrfNameForLink(tgwAttachment.getId())).getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME)
-                    .toBuilder()
+                toStaticRoute(vpcPrefix, NULL_INTERFACE_NAME).toBuilder()
                     .setAdministrativeCost(255)
                     .build(),
                 toStaticRoute(

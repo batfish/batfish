@@ -1377,7 +1377,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       warn(
           ctx,
           String.format(
-              "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
+              "Cannot have an address object and group with the same name '%s'. Ignoring the"
+                  + " object definition.",
               name));
       _currentAddressObject = new AddressObject(name);
     } else {
@@ -1439,7 +1440,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       warn(
           ctx,
           String.format(
-              "Cannot have an address object and group with the same name '%s'. Ignoring the group definition.",
+              "Cannot have an address object and group with the same name '%s'. Ignoring the group"
+                  + " definition.",
               name));
       _currentAddressGroup = new AddressGroup(name);
     } else {
@@ -2492,7 +2494,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       } else {
         warn(
             ctx,
-            "Error: Cannot set 'rule-type intrazone' for security rule with different source and destination zones.");
+            "Error: Cannot set 'rule-type intrazone' for security rule with different source and"
+                + " destination zones.");
       }
     } else if (ctx.UNIVERSAL() != null) {
       _currentSecurityRule.setRuleType(RuleType.UNIVERSAL);

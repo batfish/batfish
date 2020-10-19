@@ -114,8 +114,9 @@ public final class ClientTest {
   private static final String NETWORK_NOT_SET = "Active network is not set\n";
 
   private static final String SNAPSHOT_NOT_SET =
-      "Active snapshot is not set.\nSpecify snapshot on"
-          + " command line (-snapshotdir <snapshotdir>) or use command (init-snapshot <snapshotdir>)\n";
+      "Active snapshot is not set.\n"
+          + "Specify snapshot on command line (-snapshotdir <snapshotdir>) or use command"
+          + " (init-snapshot <snapshotdir>)\n";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();

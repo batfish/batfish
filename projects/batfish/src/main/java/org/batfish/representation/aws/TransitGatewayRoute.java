@@ -49,10 +49,12 @@ abstract class TransitGatewayRoute implements Serializable {
       @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS) List<Attachment> attachments) {
     checkArgument(
         destinationCidrBlock != null || destinationIpv6CidrBlock != null,
-        "At least one of v4 or v6 destination CIDR must be present for a transit gateway static route");
+        "At least one of v4 or v6 destination CIDR must be present for a transit gateway static"
+            + " route");
     checkArgument(
         destinationCidrBlock == null || destinationIpv6CidrBlock == null,
-        "Only one of v4 or v6 destination CIDR block must be present for a transit gateway static route");
+        "Only one of v4 or v6 destination CIDR block must be present for a transit gateway static"
+            + " route");
     checkArgument(state != null, "State cannot be null for transit gateway attachment");
     checkArgument(type != null, "Type cannot be null for transit gateway attachment");
 

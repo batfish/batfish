@@ -44,8 +44,12 @@ public final class AwsConfigurationTestUtils {
    * @throws IllegalArgumentException if no such address is found
    */
   static Ip getAnyNodeIp(String nodeName, IBatfish batfish) {
-    return batfish.loadConfigurations(batfish.getSnapshot()).get(nodeName).getAllInterfaces()
-        .values().stream()
+    return batfish
+        .loadConfigurations(batfish.getSnapshot())
+        .get(nodeName)
+        .getAllInterfaces()
+        .values()
+        .stream()
         .flatMap(iface -> iface.getAllConcreteAddresses().stream())
         .findAny()
         .map(ConcreteInterfaceAddress::getIp)

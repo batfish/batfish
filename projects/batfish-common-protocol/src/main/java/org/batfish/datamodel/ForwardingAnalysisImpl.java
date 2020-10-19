@@ -616,7 +616,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 Entry::getKey /* vrf */,
                                 routesWithNextHopIpArpFalseByVrfEntry -> {
                                   String vrf = routesWithNextHopIpArpFalseByVrfEntry.getKey();
-                                  return routesWithNextHopIpArpFalseByVrfEntry.getValue().entrySet()
+                                  return routesWithNextHopIpArpFalseByVrfEntry
+                                      .getValue()
+                                      .entrySet()
                                       .stream()
                                       /* null_interface is handled in computeNullRoutedIps */
                                       .filter(
@@ -820,7 +822,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                         String iface = ifaceEntry.getKey();
                         // return a set of routes where each route has
                         // some final next hop ip unset
-                        return ifaceEntry.getValue() // routes with this interface as
+                        return ifaceEntry
+                            .getValue() // routes with this interface as
                             // outgoing interfaces
                             .stream()
                             .filter(
@@ -1006,7 +1009,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                             candidateRoutes.stream()
                                                 .filter(
                                                     route ->
-                                                        nextHopInterfaces.get(route)
+                                                        nextHopInterfaces
+                                                            .get(route)
                                                             .get(outInterface)
                                                             .keySet() // nextHopIps
                                                             .stream()

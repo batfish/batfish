@@ -165,7 +165,8 @@ public final class OspfInterfaceConfigurationAnswerer extends Answerer {
       } catch (ClassCastException e) {
         throw new BatfishException(
             String.format(
-                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for Interface '%s->%s-%s': %s",
+                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s'"
+                    + " for Interface '%s->%s-%s': %s",
                 propertyDescriptor.getGetter().apply(ospf),
                 propertyDescriptor.getSchema(),
                 property,

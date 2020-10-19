@@ -130,7 +130,8 @@ public final class TracerouteAnswererHelper {
     Set<Location> srcLocations =
         SpecifierFactories.getLocationSpecifierOrDefault(
                 _sourceLocationStr, AllInterfacesLocationSpecifier.INSTANCE)
-            .resolve(_specifierContext).stream()
+            .resolve(_specifierContext)
+            .stream()
             .filter(_isActiveLocation::visit)
             .collect(Collectors.toSet());
 

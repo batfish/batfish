@@ -443,28 +443,32 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     if (name.equals(LOOPBACK_INTERFACE_NAME)) {
       _w.redFlag(
           String.format(
-              "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
+              "Loopback interface can only be configured via 'net add loopback' family of"
+                  + " commands; following is invalid: %s",
               getFullText(ctx)));
       return null;
     }
     if (_c.getBonds().containsKey(name)) {
       _w.redFlag(
           String.format(
-              "bond interface '%s' can only be configured via 'net add bond' family of commands; following is invalid: %s",
+              "bond interface '%s' can only be configured via 'net add bond' family of commands;"
+                  + " following is invalid: %s",
               name, getFullText(ctx)));
       return null;
     }
     if (_c.getVrfs().containsKey(name)) {
       _w.redFlag(
           String.format(
-              "VRF loopback interface '%s' can only be configured via 'net add vrf' family of commands; following is invalid: %s",
+              "VRF loopback interface '%s' can only be configured via 'net add vrf' family of"
+                  + " commands; following is invalid: %s",
               name, getFullText(ctx)));
       return null;
     }
     if (_c.getVxlans().containsKey(name)) {
       _w.redFlag(
           String.format(
-              "VXLAN interface '%s' can only be configured via 'net add vxlan' family of commands; following is invalid: %s",
+              "VXLAN interface '%s' can only be configured via 'net add vxlan' family of commands;"
+                  + " following is invalid: %s",
               name, getFullText(ctx)));
       return null;
     }
@@ -480,7 +484,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       } else {
         _w.redFlag(
             String.format(
-                "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond interface in: %s",
+                "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond"
+                    + " interface in: %s",
                 name, superInterfaceName, getFullText(ctx)));
         return null;
       }
@@ -588,7 +593,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         // Do not attach new BGP process to configuration since since line is invalid
         _w.redFlag(
             String.format(
-                "Must first create BGP process via 'net add bgp autonomous-system <number>' before: %s",
+                "Must first create BGP process via 'net add bgp autonomous-system <number>'"
+                    + " before: %s",
                 getFullText(ctx)));
       }
     }
@@ -678,7 +684,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     } else if (!_c.getVxlans().keySet().containsAll(names)) {
       _w.redFlag(
           String.format(
-              "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: %s",
+              "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id"
+                  + " <id>' before line: %s",
               getFullText(ctx.getParent())));
       _currentVxlans = ImmutableList.of();
     } else {

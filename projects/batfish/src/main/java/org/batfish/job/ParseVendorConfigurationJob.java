@@ -251,7 +251,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case VYOS:
           _warnings.pedantic(
               String.format(
-                  "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
+                  "Flattening: '%s' on-the-fly; line-numbers reported for this file will be"
+                      + " spurious\n",
                   _filename));
           _fileText =
               Batfish.flatten(

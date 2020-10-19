@@ -97,7 +97,9 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     if (specifiedAcls.values().isEmpty()) {
       throw new IllegalArgumentException(
           String.format(
-              "Did not find any filters that meet the specified criteria. (Tips: Set '%s' to false if you want to analyze combined filters; use 'resolveFilterSpecifier' question to see which filters your nodes and filters match.)",
+              "Did not find any filters that meet the specified criteria. (Tips: Set '%s' to false"
+                  + " if you want to analyze combined filters; use 'resolveFilterSpecifier'"
+                  + " question to see which filters your nodes and filters match.)",
               PROP_IGNORE_COMPOSITES));
     }
 
@@ -151,7 +153,8 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
         .flatMap(
             aclName -> {
               List<AclLine> aclLines = node.getIpAccessLists().get(aclName).getLines();
-              return getBehaviorToReport(aclLines, headerSpaceBdd, bddConverter, action).entrySet()
+              return getBehaviorToReport(aclLines, headerSpaceBdd, bddConverter, action)
+                  .entrySet()
                   .stream()
                   .map(
                       e -> {

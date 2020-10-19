@@ -711,7 +711,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nonnull
   private static List<If> getStaticRouteCommunitySetters(@Nonnull RoutingInstance ri) {
     MatchProtocol matchStatic = new MatchProtocol(RoutingProtocol.STATIC);
-    return ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()
+    return ri
+        .getRibs()
+        .get(RoutingInformationBase.RIB_IPV4_UNICAST)
+        .getStaticRoutes()
+        .values()
         .stream()
         .filter(route -> !route.getCommunities().isEmpty())
         .map(
@@ -986,7 +990,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (iface.getBandwidth() == 0) {
         _w.pedantic(
             String.format(
-                "Cannot use IS-IS reference bandwidth for interface '%s' because interface bandwidth is 0.",
+                "Cannot use IS-IS reference bandwidth for interface '%s' because interface"
+                    + " bandwidth is 0.",
                 iface.getName()));
       } else {
         defaultCost = Math.max((long) (settings.getReferenceBandwidth() / iface.getBandwidth()), 1);
@@ -3645,7 +3650,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             name ->
                 _w.redFlag(
                     String.format(
-                        "community '%s' contains no literal communities, but is illegally used in 'then community' statement",
+                        "community '%s' contains no literal communities, but is illegally used in"
+                            + " 'then community' statement",
                         name)));
   }
 
@@ -3683,7 +3689,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (irbVlanIds.containsKey(l3Interface)) {
         _w.redFlag(
             String.format(
-                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned to vlan '%s'",
+                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned"
+                    + " to vlan '%s'",
                 l3Interface, vlanId, irbVlanIds.get(l3Interface)));
         continue;
       }
@@ -3698,14 +3705,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (es != null && (es.getSwitchportMode() != null || !es.getVlanMembers().isEmpty())) {
           _w.redFlag(
               String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan configuration under family ethernet-switching",
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan"
+                      + " configuration under family ethernet-switching",
                   memberIfName, vlanId));
           continue;
         }
         if (_indirectAccessPorts.containsKey(memberIfName)) {
           _w.redFlag(
               String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of vlan '%s'",
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of"
+                      + " vlan '%s'",
                   memberIfName, vlanId, _indirectAccessPorts.get(memberIfName).getName()));
           continue;
         }
