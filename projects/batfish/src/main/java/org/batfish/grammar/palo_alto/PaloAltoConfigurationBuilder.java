@@ -320,6 +320,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vlan_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_ecmp_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ebgpContext;
@@ -1842,6 +1843,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitVr_definition(Vr_definitionContext ctx) {
     _currentVirtualRouter = null;
+  }
+
+  @Override
+  public void exitVr_ecmp_enable(Vr_ecmp_enableContext ctx) {
+    if (ctx.NO() != null) {
+      warn(ctx, "Disabling of ECMP for IGP is not supported");
+    }
   }
 
   @Override

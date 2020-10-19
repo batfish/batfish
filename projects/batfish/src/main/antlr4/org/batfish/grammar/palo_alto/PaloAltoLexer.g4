@@ -118,6 +118,11 @@ AGGREGATE_MED
     'aggregate-med'
 ;
 
+ALGORITHM
+:
+    'algorithm'
+;
+
 ALLOW
 :
     'allow'
@@ -416,6 +421,11 @@ DYNAMIC_IP_AND_PORT
 EBGP
 :
     'ebgp'
+;
+
+ECMP
+:
+    'ecmp'
 ;
 
 EGP
@@ -836,6 +846,11 @@ LOOPBACK
 MATCH
 :
     'match'
+;
+
+MAX_PATH
+:
+    'max-path'
 ;
 
 MD5

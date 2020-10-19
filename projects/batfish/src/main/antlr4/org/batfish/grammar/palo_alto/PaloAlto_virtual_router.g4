@@ -22,6 +22,7 @@ vr_definition
     name = variable
     (
         vr_admin_dists
+        | vr_ecmp
         | vr_interface
         | vr_protocol
         | vr_routing_table
@@ -86,6 +87,21 @@ vrad_static
 vrad_static_ipv6
 :
     STATIC_IPV6 ad = protocol_ad
+;
+
+vr_ecmp
+:
+    ECMP
+    (
+       ALGORITHM null_rest_of_line
+       | MAX_PATH UINT8 // only 2,3,4 are allowed
+       | vr_ecmp_enable
+    )
+;
+
+vr_ecmp_enable
+:
+    ENABLE (YES | NO)
 ;
 
 vr_interface

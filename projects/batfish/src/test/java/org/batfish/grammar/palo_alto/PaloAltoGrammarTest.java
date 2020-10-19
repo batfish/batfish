@@ -3650,4 +3650,11 @@ public final class PaloAltoGrammarTest {
     // Non /32 address should not be associated with loopback
     assertThat(interfaces2.get(eth_lo).getConcreteAddress(), nullValue());
   }
+
+  @Test
+  public void testVirtualRouterEcmp() {
+    String hostname = "virtual-router-ecmp";
+    // Do not crash (i.e., no warnings generated)
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+  }
 }
