@@ -224,7 +224,8 @@ public class CommunityList extends CommunitySetExpr {
       return _communityCache.get().get(community);
     } catch (ExecutionException | UncheckedExecutionException e) {
       throw new UnsupportedOperationException(
-          "At least one line of this CommunityList has a match expression not supporting matchCommunity",
+          "At least one line of this CommunityList has a match expression not supporting"
+              + " matchCommunity",
           e);
     }
   }

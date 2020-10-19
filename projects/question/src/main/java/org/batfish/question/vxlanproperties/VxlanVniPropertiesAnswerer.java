@@ -162,7 +162,8 @@ public final class VxlanVniPropertiesAnswerer extends Answerer {
                     } catch (ClassCastException e) {
                       throw new BatfishException(
                           String.format(
-                              "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for VXLAN VNI settings '%s': %s",
+                              "Type mismatch between property value ('%s') and Schema ('%s') for"
+                                  + " property '%s' for VXLAN VNI settings '%s': %s",
                               propertyDescriptor.getGetter().apply(vxlanVniProperties),
                               propertyDescriptor.getSchema(),
                               property,

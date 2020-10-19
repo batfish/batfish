@@ -23,7 +23,8 @@ public final class AddOutgoingOriginalFlowFiltersConstraint implements Transitio
     // trivial managers.
     checkArgument(
         !mgr.isTrivial(),
-        "AddOutgoingOriginalFlowFiltersConstraint for a trivial BDDOutgoingOriginalFlowFilterManager. Use Identity instead");
+        "AddOutgoingOriginalFlowFiltersConstraint for a trivial"
+            + " BDDOutgoingOriginalFlowFilterManager. Use Identity instead");
     _mgr = mgr;
   }
 

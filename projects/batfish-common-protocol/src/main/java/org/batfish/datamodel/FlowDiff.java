@@ -167,8 +167,7 @@ public final class FlowDiff implements Comparable<FlowDiff> {
     }
 
     checkArgument(
-        flow1
-            .toBuilder()
+        flow1.toBuilder()
             .setDstIp(flow2.getDstIp())
             .setSrcIp(flow2.getSrcIp())
             .setDstPort(flow2.getDstPort())
@@ -197,8 +196,7 @@ public final class FlowDiff implements Comparable<FlowDiff> {
       return ImmutableSortedSet.of();
     }
     checkArgument(
-        origForwardFlow
-            .toBuilder()
+        origForwardFlow.toBuilder()
             .setDstIp(transformedForwardFlow.getDstIp())
             .setSrcIp(transformedForwardFlow.getSrcIp())
             .setDstPort(transformedForwardFlow.getDstPort())

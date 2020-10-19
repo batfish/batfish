@@ -335,7 +335,8 @@ public final class IpPermissions implements Serializable {
       // if protocols not from the above then fromPort and toPort should be null
       warnings.redFlag(
           String.format(
-              "IpPermissions for term %s: unexpected to have IpProtocol=%s, FromPort=%s, and ToPort=%s",
+              "IpPermissions for term %s: unexpected to have IpProtocol=%s, FromPort=%s, and"
+                  + " ToPort=%s",
               aclLineName, _ipProtocol, _fromPort, _toPort));
       return null;
     }

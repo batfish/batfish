@@ -76,8 +76,7 @@ public class FlowToBDDTest {
   @Test
   public void testFlowHeadersToBddTcp() {
     Flow flow =
-        BASE_FLOW
-            .toBuilder()
+        BASE_FLOW.toBuilder()
             .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(22)
             .setDstPort(55)

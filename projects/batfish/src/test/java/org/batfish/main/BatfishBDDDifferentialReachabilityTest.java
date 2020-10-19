@@ -119,7 +119,10 @@ public class BatfishBDDDifferentialReachabilityTest {
       Batfish batfish, Set<Flow> flows, FlowDisposition disposition) {
 
     Stream<Trace> traces =
-        batfish.getTracerouteEngine(batfish.getSnapshot()).computeTraces(flows, false).values()
+        batfish
+            .getTracerouteEngine(batfish.getSnapshot())
+            .computeTraces(flows, false)
+            .values()
             .stream()
             .flatMap(Collection::stream);
     assertTrue(
@@ -127,8 +130,11 @@ public class BatfishBDDDifferentialReachabilityTest {
         traces.allMatch(trace -> trace.getDisposition().equals(disposition)));
 
     traces =
-        batfish.getTracerouteEngine(batfish.getReferenceSnapshot()).computeTraces(flows, false)
-            .values().stream()
+        batfish
+            .getTracerouteEngine(batfish.getReferenceSnapshot())
+            .computeTraces(flows, false)
+            .values()
+            .stream()
             .flatMap(Collection::stream);
     assertTrue(
         String.format("no traces should have disposition %s in the delta environment", disposition),

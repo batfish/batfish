@@ -56,7 +56,8 @@ class TransitGatewayPeeringConnector {
           } else if (peers.size() > 1) {
             warnings.redFlag(
                 String.format(
-                    "Multiple matching peers found for TGW attachment %s: %s. Connecting to all of them.",
+                    "Multiple matching peers found for TGW attachment %s: %s. Connecting to all of"
+                        + " them.",
                     sendSideAttachment, peers));
           }
           peers.forEach(

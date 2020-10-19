@@ -147,8 +147,7 @@ public class InstanceWithMultipleInterfacesTest {
         sshFlowPrimary.toBuilder().setDstIp(secondary.getPrimaryPrivateIp().getPrivateIp()).build();
     Flow httpFlowPrimary = sshFlowPrimary.toBuilder().setDstPort(80).build();
     Flow httpFlowSecondary =
-        httpFlowPrimary
-            .toBuilder()
+        httpFlowPrimary.toBuilder()
             .setDstIp(secondary.getPrimaryPrivateIp().getPrivateIp())
             .build();
 

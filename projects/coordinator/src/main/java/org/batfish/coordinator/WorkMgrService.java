@@ -109,7 +109,8 @@ public class WorkMgrService {
                       : Integer.parseInt(maxSuggestions));
       if (answer == null) {
         return failureResponse(
-            "There was a problem getting Autocomplete suggestions - network or snapshot does not exist!");
+            "There was a problem getting Autocomplete suggestions - network or snapshot does not"
+                + " exist!");
       }
 
       List<String> serializedSuggestions =

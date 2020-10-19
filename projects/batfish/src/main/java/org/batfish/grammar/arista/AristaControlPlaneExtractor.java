@@ -3727,7 +3727,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       warn(
           ctx,
           String.format(
-              "Route map '%s' already contains clause numbered '%d'. Duplicate clause will be merged with original clause.",
+              "Route map '%s' already contains clause numbered '%d'. Duplicate clause will be"
+                  + " merged with original clause.",
               _currentRouteMap.getName(), num));
     }
     _currentRouteMapClause = clause;

@@ -52,7 +52,8 @@ public final class IsoAddress implements Serializable {
   static @Nonnull String invalidLengthMessage(
       @Nonnull String isoAddressStr, @Nonnull String trimmed) {
     return String.format(
-        "Expected an even number of hexadecimal digits representing 8-20 octets, but got: '%s' after trimming: '%s'",
+        "Expected an even number of hexadecimal digits representing 8-20 octets, but got: '%s'"
+            + " after trimming: '%s'",
         trimmed, isoAddressStr);
   }
 

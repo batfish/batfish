@@ -335,7 +335,8 @@ class FlowTracer {
     assert originalFlow.equals(currentFlow)
             || steps.stream()
                 .anyMatch(step -> step instanceof TransformationStep || step instanceof PolicyStep)
-        : "Original flow and current flow must be equal unless there's a transformation step or a policy step";
+        : "Original flow and current flow must be equal unless there's a transformation step or a"
+            + " policy step";
     _tracerouteContext = tracerouteContext;
     _currentConfig = currentConfig;
     _ingressInterface = ingressInterface;
@@ -1444,7 +1445,8 @@ class FlowTracer {
             outInterface, resolvedNhIp, getFinalActionForDisposition(disposition));
       default:
         throw new BatfishException(
-            "the disposition is must be insufficient info, neighbor unreachable, delivered to subnet or exits network.");
+            "the disposition is must be insufficient info, neighbor unreachable, delivered to"
+                + " subnet or exits network.");
     }
   }
 

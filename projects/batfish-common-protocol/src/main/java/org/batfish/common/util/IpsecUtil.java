@@ -713,7 +713,8 @@ public class IpsecUtil {
                             ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
                             traceAndReverseFlow.getNewFirewallSessions(),
                             false)
-                        .get(traceAndReverseFlow.getReverseFlow()).stream())
+                        .get(traceAndReverseFlow.getReverseFlow())
+                        .stream())
             .collect(ImmutableList.toImmutableList());
 
     return reverseTraces.stream()

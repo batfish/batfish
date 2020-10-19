@@ -114,8 +114,7 @@ public final class ClassicMetric implements EigrpMetric {
     checkArgument(isCompatible(o), "Cannot add incompatible EIGRP metrics");
     return toBuilder()
         .setValues(
-            _values
-                .toBuilder()
+            _values.toBuilder()
                 .setBandwidth(Math.min(_values.getBandwidth(), o.getValues().getBandwidth()))
                 .setDelay(_values.getDelay() + o.getValues().getDelay())
                 .build())

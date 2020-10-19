@@ -63,10 +63,12 @@ public final class ReferenceAddressGroupIpSpaceSpecifier implements IpSpaceSpeci
       String addressGroupName, String bookName, SpecifierContext ctxt) {
     return firstNonNull(
         AclIpSpace.union(
-            ctxt.getReferenceBook(bookName)
+            ctxt
+                .getReferenceBook(bookName)
                 .orElseThrow(
                     () -> new NoSuchElementException("ReferenceBook '" + bookName + "' not found"))
-                .getAddressesRecursive(addressGroupName).stream()
+                .getAddressesRecursive(addressGroupName)
+                .stream()
                 .map(IpWildcard::toIpSpace)
                 .collect(Collectors.toList())),
         EmptyIpSpace.INSTANCE);

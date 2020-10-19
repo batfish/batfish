@@ -163,8 +163,7 @@ final class IncrementalBdpEngine {
             true,
             new TracerouteEngineImpl(partialDataplane, newLayer3Topology, configurations),
             newLayer2Topology.orElse(null));
-    return currentTopologyContext
-        .toBuilder()
+    return currentTopologyContext.toBuilder()
         .setBgpTopology(newBgpTopology)
         .setLayer2Topology(newLayer2Topology)
         .setLayer3Topology(newLayer3Topology)
@@ -209,9 +208,7 @@ final class IncrementalBdpEngine {
           GlobalTracer.get().buildSpan("Initialize virtual routers for iBDP-external").start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> vr.initForEgpComputationBeforeTopologyLoop(externalAdverts, ipVrfOwners));
@@ -320,9 +317,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("{}: Recompute static routes with next-hop IP", iterationLabel);
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(nhIpSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::activateStaticRoutes);
       } finally {
@@ -337,9 +332,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("{}: Recompute aggregate/generated routes", iterationLabel);
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(genRoutesSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::recomputeGeneratedRoutes);
       } finally {
@@ -352,14 +345,10 @@ final class IncrementalBdpEngine {
       LOGGER.info("{}: Propagate EIGRP routes", iterationLabel);
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(eigrpSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.eigrpIteration(allNodes));
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::mergeEigrpRoutesToMainRib);
       } finally {
@@ -372,9 +361,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("{}: Recompute IS-IS routes", iterationLabel);
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(isisSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.initIsisExports(iteration, allNodes, networkConfigurations));
       } finally {
@@ -396,9 +383,7 @@ final class IncrementalBdpEngine {
         try (Scope innerScope = GlobalTracer.get().scopeManager().activate(isisSpanRecompute)) {
           assert innerScope != null; // avoid unused warning
           isisChanged.set(false);
-          nodes
-              .values()
-              .parallelStream()
+          nodes.values().parallelStream()
               .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(
                   vr -> {
@@ -420,14 +405,10 @@ final class IncrementalBdpEngine {
       LOGGER.info("{}: Propagate OSPF external", iterationLabel);
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(span)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.ospfIteration(allNodes));
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
       } finally {
@@ -449,9 +430,7 @@ final class IncrementalBdpEngine {
     LOGGER.info("{}: Init for new BGP iteration", iterationLabel);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
+      nodes.values().parallelStream()
           .forEach(
               n -> {
                 // Execute one round of bgp route propagation
@@ -468,9 +447,7 @@ final class IncrementalBdpEngine {
     try (Scope innerScope = GlobalTracer.get().scopeManager().activate(genSpan)) {
       assert innerScope != null; // avoid unused warning
       // first let's initialize nodes-level generated/aggregate routes
-      nodes
-          .values()
-          .parallelStream()
+      nodes.values().parallelStream()
           .forEach(n -> n.getVirtualRouters().forEach(VirtualRouter::initBgpAggregateRoutes));
     } finally {
       genSpan.finish();
@@ -484,9 +461,7 @@ final class IncrementalBdpEngine {
       assert innerScope != null; // avoid unused warning
 
       // Merge BGP routes from BGP process into the main RIB
-      nodes
-          .values()
-          .parallelStream()
+      nodes.values().parallelStream()
           .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::mergeBgpRoutesToMainRib);
 
@@ -501,9 +476,7 @@ final class IncrementalBdpEngine {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
 
-      nodes
-          .values()
-          .parallelStream()
+      nodes.values().parallelStream()
           .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::queueCrossVrfImports);
     } finally {
@@ -517,9 +490,7 @@ final class IncrementalBdpEngine {
     LOGGER.info("{}: Leaking routes across VRFs", iterationLabel);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
+      nodes.values().parallelStream()
           .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::processCrossVrfRoutes);
     } finally {
@@ -537,9 +508,7 @@ final class IncrementalBdpEngine {
     LOGGER.info("Compute FIBs");
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      nodes
-          .values()
-          .parallelStream()
+      nodes.values().parallelStream()
           .flatMap(n -> n.getVirtualRouters().stream())
           .forEach(VirtualRouter::computeFib);
     } finally {
@@ -574,9 +543,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Initialize for IGP computation");
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializeSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.initForIgpComputation(topologyContext));
       } finally {
@@ -595,9 +562,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Compute static routes post IGP convergence");
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(staticSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> {
@@ -644,9 +609,7 @@ final class IncrementalBdpEngine {
               .start();
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializationSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.initForEgpComputationWithNewTopology(topologyContext));
       } finally {
@@ -693,9 +656,7 @@ final class IncrementalBdpEngine {
           try (Scope reiinitscope = GlobalTracer.get().scopeManager().activate(depRoutesspan)) {
             assert reiinitscope != null; // avoid unused warning
 
-            nodes
-                .values()
-                .parallelStream()
+            nodes.values().parallelStream()
                 .flatMap(n -> n.getVirtualRouters().parallelStream())
                 .forEach(VirtualRouter::reinitForNewIteration);
           } finally {
@@ -736,9 +697,7 @@ final class IncrementalBdpEngine {
 
           // Tell each VR that a route computation round has ended.
           // This must be the last thing called on a VR in a routing round.
-          nodes
-              .values()
-              .parallelStream()
+          nodes.values().parallelStream()
               .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(VirtualRouter::endOfEgpRound);
 
@@ -788,9 +747,7 @@ final class IncrementalBdpEngine {
     LOGGER.info("Iteration {}: Check if fixed point reached", _numIterations);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return nodes
-          .values()
-          .parallelStream()
+      return nodes.values().parallelStream()
           .flatMap(n -> n.getVirtualRouters().stream())
           .anyMatch(VirtualRouter::isDirty);
     } finally {
@@ -810,9 +767,7 @@ final class IncrementalBdpEngine {
     LOGGER.info("Iteration {}: Compute hashCode", _numIterations);
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
-      return nodes
-          .values()
-          .parallelStream()
+      return nodes.values().parallelStream()
           .flatMap(node -> node.getVirtualRouters().stream())
           .mapToInt(VirtualRouter::computeIterationHashCode)
           .sum();
@@ -900,22 +855,16 @@ final class IncrementalBdpEngine {
 
         while (schedule.hasNext()) {
           Map<String, Node> scheduleNodes = schedule.next();
-          scheduleNodes
-              .values()
-              .parallelStream()
+          scheduleNodes.values().parallelStream()
               .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
 
-          scheduleNodes
-              .values()
-              .parallelStream()
+          scheduleNodes.values().parallelStream()
               .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
         }
         dirty =
-            allNodes
-                .values()
-                .parallelStream()
+            allNodes.values().parallelStream()
                 .flatMap(n -> n.getVirtualRouters().stream())
                 .flatMap(vr -> vr.getOspfProcesses().values().stream())
                 .anyMatch(OspfRoutingProcess::isDirty);
@@ -948,9 +897,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("RIP internal: Iteration {}", ripInternalIterations);
       try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
         assert scope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> {
@@ -968,9 +915,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Unstage RIP internal: Iteration {}", ripInternalIterations);
       try (Scope scope = GlobalTracer.get().scopeManager().activate(unstageSpan)) {
         assert scope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(VirtualRouter::unstageRipInternalRoutes);
       } finally {
@@ -983,9 +928,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Import RIP internal: Iteration {}", ripInternalIterations);
       try (Scope scope = GlobalTracer.get().scopeManager().activate(importSpan)) {
         assert scope != null; // avoid unused warning
-        nodes
-            .values()
-            .parallelStream()
+        nodes.values().parallelStream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(
                 vr -> {

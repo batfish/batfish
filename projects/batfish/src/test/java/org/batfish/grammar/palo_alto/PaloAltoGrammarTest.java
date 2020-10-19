@@ -2117,8 +2117,7 @@ public final class PaloAltoGrammarTest {
     assertThat(
         ifaceOutgoingFilter.getLines().get(0),
         equalTo(
-            ExprAclLine.REJECT_ALL
-                .toBuilder()
+            ExprAclLine.REJECT_ALL.toBuilder()
                 .setName("Not in a zone")
                 .setTraceElement(unzonedIfaceRejectTraceElement(ifaceName))
                 .build()));
@@ -2167,7 +2166,8 @@ public final class PaloAltoGrammarTest {
         vendorConfig.getWarnings().getParseWarnings(),
         hasItem(
             hasComment(
-                "Error: Cannot set 'rule-type intrazone' for security rule with different source and destination zones.")));
+                "Error: Cannot set 'rule-type intrazone' for security rule with different source"
+                    + " and destination zones.")));
   }
 
   @Test
@@ -2287,7 +2287,8 @@ public final class PaloAltoGrammarTest {
             String.format(
                 "Could not convert RuleEndpoint range to RangeSet: %s",
                 new RuleEndpoint(IP_RANGE, "192.168.1.101-192.168.1.1")),
-            "NAT rule NATRULE1 of VSYS vsys1 will not apply source translation because its source translation pool is empty"));
+            "NAT rule NATRULE1 of VSYS vsys1 will not apply source translation because its source"
+                + " translation pool is empty"));
   }
 
   @Test
@@ -2303,7 +2304,8 @@ public final class PaloAltoGrammarTest {
     assertThat(
         warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
         containsInAnyOrder(
-            "NAT rule RULE1 of VSYS vsys1 will not apply source translation because its source translation pool is empty",
+            "NAT rule RULE1 of VSYS vsys1 will not apply source translation because its source"
+                + " translation pool is empty",
             String.format(
                 "Could not convert RuleEndpoint range to RangeSet: %s",
                 new RuleEndpoint(IP_RANGE, "192.168.1.101-192.168.1.1"))));

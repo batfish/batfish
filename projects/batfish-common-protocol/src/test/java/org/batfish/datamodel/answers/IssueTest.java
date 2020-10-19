@@ -14,7 +14,8 @@ public class IssueTest {
   @Test
   public void testSerDeser() throws IOException {
     String issueStr =
-        "{\"explanation\" : \"myex\", \"type\" : { \"major\" : \"maj\", \"minor\": \"min\" }, \"severity\" : 75, \"url\": \"www.cnn.com\"}";
+        "{\"explanation\" : \"myex\", \"type\" : { \"major\" : \"maj\", \"minor\": \"min\" },"
+            + " \"severity\" : 75, \"url\": \"www.cnn.com\"}";
     Issue issue = BatfishObjectMapper.mapper().readValue(issueStr, Issue.class);
 
     // check if the issue is properly deserialized

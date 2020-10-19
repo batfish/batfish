@@ -111,8 +111,7 @@ public final class ReturnFlowTransformation {
     public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       HeaderSpace forwardHeaderSpace = matchHeaderSpace.getHeaderspace();
       return new MatchHeaderSpace(
-          forwardHeaderSpace
-              .toBuilder()
+          forwardHeaderSpace.toBuilder()
               .setSrcIps(forwardHeaderSpace.getDstIps())
               .setDstIps(forwardHeaderSpace.getSrcIps())
               .setSrcPorts(forwardHeaderSpace.getDstPorts())

@@ -95,7 +95,8 @@ public enum Command {
     descs.put(
         ANSWER,
         new CommandUsage(
-            "<template-name> [differential={true,false}] [questionName=name] [param1=value1 [param2=value2] ...]",
+            "<template-name> [differential={true,false}] [questionName=name] [param1=value1"
+                + " [param2=value2] ...]",
             "Answer the template by name for the current snapshot"));
     descs.put(
         DEL_BATFISH_OPTION,

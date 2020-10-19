@@ -29,7 +29,8 @@ public final class HostConfigurationTest {
   @Test
   public void testToHostInterfacesDeserializationFromArrayDuplicate() throws IOException {
     String jsonText =
-        "[{ \"name\": \"eth0\", \"gateway\": \"10.0.0.1\" },{ \"name\": \"eth0\", \"gateway\": \"10.0.0.2\" }]";
+        "[{ \"name\": \"eth0\", \"gateway\": \"10.0.0.1\" },{ \"name\": \"eth0\", \"gateway\":"
+            + " \"10.0.0.2\" }]";
     Map<String, HostInterface> hostInterfaces =
         toHostInterfaces(BatfishObjectMapper.mapper().readTree(jsonText));
     assertThat(hostInterfaces, hasKeys("eth0"));

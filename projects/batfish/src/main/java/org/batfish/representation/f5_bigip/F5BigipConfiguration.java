@@ -899,7 +899,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
                   } else {
                     _w.redFlag(
                         String.format(
-                            "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip address",
+                            "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip"
+                                + " address",
                             neighbor.getName(), updateSourceInterface));
                   }
                 }
@@ -1866,7 +1867,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
       if (_bgpProcesses.size() > 1) {
         _w.redFlag(
             String.format(
-                "Multiple BGP processes not supported. Only using first process alphabetically: '%s'",
+                "Multiple BGP processes not supported. Only using first process alphabetically:"
+                    + " '%s'",
                 proc.getName()));
       }
       _c.getDefaultVrf().setBgpProcess(toBgpProcess(proc));
@@ -2107,7 +2109,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     if (!highestIp.isPresent()) {
       w.redFlag(
           String.format(
-              "Router-id is not manually configured for %s in VRF %s. Unable to infer default router-id as no interfaces have IP addresses",
+              "Router-id is not manually configured for %s in VRF %s. Unable to infer default"
+                  + " router-id as no interfaces have IP addresses",
               processDesc, vrf));
       return Ip.ZERO;
     }

@@ -69,7 +69,8 @@ public class CiscoConversionsTest {
     assertThat(
         oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
         equalTo(
-            "distribute-list refers an undefined access-list `filter`, it will not filter anything"));
+            "distribute-list refers an undefined access-list `filter`, it will not filter"
+                + " anything"));
   }
 
   @Test
@@ -114,7 +115,8 @@ public class CiscoConversionsTest {
     assertThat(
         Iterables.getOnlyElement(_warnings.getRedFlagWarnings()).getText(),
         equalTo(
-            "Invalid local address interface configured for ISAKMP profile Missing_Local_Interface"));
+            "Invalid local address interface configured for ISAKMP profile"
+                + " Missing_Local_Interface"));
   }
 
   @Test
@@ -238,7 +240,8 @@ public class CiscoConversionsTest {
     assertThat(
         oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
         equalTo(
-            "OSPF process vrf:p1 in cisco_conf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"));
+            "OSPF process vrf:p1 in cisco_conf uses distribute-list of type ACCESS_LIST, only"
+                + " prefix-lists are supported in dist-lists by Batfish"));
   }
 
   @Test
@@ -260,7 +263,8 @@ public class CiscoConversionsTest {
     assertThat(
         oldConfig.getWarnings().getRedFlagWarnings().iterator().next().getText(),
         equalTo(
-            "dist-list in OSPF process vrf:p1 uses a prefix-list which is not defined, this dist-list will allow everything"));
+            "dist-list in OSPF process vrf:p1 uses a prefix-list which is not defined, this"
+                + " dist-list will allow everything"));
   }
 
   private static CiscoConfiguration basicCiscoConfig() {

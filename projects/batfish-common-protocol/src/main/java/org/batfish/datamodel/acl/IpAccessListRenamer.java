@@ -41,8 +41,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
 
     @Override
     public AclLine visitExprAclLine(ExprAclLine exprAclLine) {
-      return exprAclLine
-          .toBuilder()
+      return exprAclLine.toBuilder()
           .setMatchCondition(visit(exprAclLine.getMatchCondition()))
           .build();
     }
@@ -81,8 +80,7 @@ public class IpAccessListRenamer implements Function<IpAccessList, IpAccessList>
       IpSpace srcOrDstIps = rename(headerSpace.getSrcOrDstIps());
       MatchHeaderSpace newMatchHeaderSpace =
           new MatchHeaderSpace(
-              headerSpace
-                  .toBuilder()
+              headerSpace.toBuilder()
                   .setDstIps(dstIps)
                   .setNotDstIps(notDstIps)
                   .setSrcIps(srcIps)

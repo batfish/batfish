@@ -204,8 +204,7 @@ public final class TracerouteUtils {
     checkArgument(
         returnIngressVrf == null ^ returnIngressIface == null,
         "Either returnIngressVrf or returnIngressIface required, but not both");
-    return forwardFlow
-        .toBuilder()
+    return forwardFlow.toBuilder()
         .setDstIp(forwardFlow.getSrcIp())
         .setDstPort(forwardFlow.getSrcPort())
         .setSrcIp(forwardFlow.getDstIp())
