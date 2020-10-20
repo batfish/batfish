@@ -29618,6 +29618,28 @@
             "          SMALL:'small'",
             "          NEWLINE:'\\n'))))",
             "  (stanza",
+            "    (s_ip",
+            "      IP:'ip'",
+            "      (ip_local",
+            "        LOCAL:'local'",
+            "        (ipl_policy",
+            "          POLICY:'policy'",
+            "          ROUTE_MAP:'route-map'",
+            "          name = (variable",
+            "            VARIABLE:'V4POLICY'  <== mode:M_RouteMap)",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_ipv6",
+            "      IPV6:'ipv6'",
+            "      (ipv6_local",
+            "        LOCAL:'local'",
+            "        (ipv6l_policy",
+            "          POLICY:'policy'",
+            "          ROUTE_MAP:'route-map'",
+            "          name = (variable",
+            "            VARIABLE:'V6POLICY'  <== mode:M_RouteMap)",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza",
             "    (s_null",
             "      (null_single",
             "        IP:'ip'",
@@ -77068,6 +77090,22 @@
             }
           ]
         },
+        "configs/cisco_misc" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 107,
+              "Parser_Context" : "[ipl_policy ip_local s_ip stanza cisco_configuration]",
+              "Text" : "policy route-map V4POLICY"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 108,
+              "Parser_Context" : "[ipv6l_policy ipv6_local s_ipv6 stanza cisco_configuration]",
+              "Text" : "policy route-map V6POLICY"
+            }
+          ]
+        },
         "configs/cisco_ospf" : {
           "Parse warnings" : [
             {
@@ -79579,19 +79617,19 @@
         "configs/cisco_misc" : {
           "class-map" : {
             "class-default" : {
-              "definitionLines" : "210",
+              "definitionLines" : "212",
               "numReferrers" : 1
             }
           },
           "object-group service" : {
             "SVCGRP-ICMP" : {
-              "definitionLines" : "177-178",
+              "definitionLines" : "179-180",
               "numReferrers" : 0
             }
           },
           "policy-map" : {
             "global_policy" : {
-              "definitionLines" : "194-211",
+              "definitionLines" : "196-213",
               "numReferrers" : 1
             }
           }
@@ -85042,22 +85080,22 @@
           "class-map" : {
             "ICMP-cmap" : {
               "policy-map class" : [
-                206
+                208
               ]
             },
             "TCP-cmap" : {
               "policy-map class" : [
-                208
+                210
               ]
             },
             "class-default" : {
               "policy-map class" : [
-                210
+                212
               ]
             },
             "inspection_default" : {
               "policy-map class" : [
-                195
+                197
               ]
             }
           },
@@ -85071,7 +85109,19 @@
           "policy-map" : {
             "global_policy" : {
               "service-policy global" : [
-                237
+                239
+              ]
+            }
+          },
+          "route-map" : {
+            "V4POLICY" : {
+              "ip local policy route-map" : [
+                107
+              ]
+            },
+            "V6POLICY" : {
+              "ipv6 local policy route-map" : [
+                108
               ]
             }
           }
@@ -90204,17 +90254,17 @@
           "class-map" : {
             "ICMP-cmap" : {
               "policy-map class" : [
-                206
+                208
               ]
             },
             "TCP-cmap" : {
               "policy-map class" : [
-                208
+                210
               ]
             },
             "inspection_default" : {
               "policy-map class" : [
-                195
+                197
               ]
             }
           },
@@ -90222,6 +90272,18 @@
             "cops-acl" : {
               "cops listener access-list" : [
                 42
+              ]
+            }
+          },
+          "route-map" : {
+            "V4POLICY" : {
+              "ip local policy route-map" : [
+                107
+              ]
+            },
+            "V6POLICY" : {
+              "ipv6 local policy route-map" : [
+                108
               ]
             }
           }
