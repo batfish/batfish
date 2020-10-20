@@ -41,5 +41,6 @@ public class GroupWildcardTest {
     assertThat(toJavaRegex("[!a-c]"), equalTo("[^a-c]"));
     assertThat(toJavaRegex("[!qwerty]"), equalTo("[^qwerty]"));
     assertThat(toJavaRegex("test[!4]"), equalTo("test[^4]"));
+    assertThat(toJavaRegex("*[^/][^0]"), equalTo(".*[^/][^0]"));
   }
 }
