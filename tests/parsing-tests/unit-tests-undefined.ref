@@ -1625,7 +1625,7 @@
         "Lines" : {
           "filename" : "configs/cisco_misc",
           "lines" : [
-            206
+            208
           ]
         }
       },
@@ -1637,7 +1637,7 @@
         "Lines" : {
           "filename" : "configs/cisco_misc",
           "lines" : [
-            208
+            210
           ]
         }
       },
@@ -1649,7 +1649,7 @@
         "Lines" : {
           "filename" : "configs/cisco_misc",
           "lines" : [
-            195
+            197
           ]
         }
       },
@@ -1662,6 +1662,30 @@
           "filename" : "configs/cisco_misc",
           "lines" : [
             42
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "V4POLICY",
+        "Context" : "ip local policy route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            107
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "V6POLICY",
+        "Context" : "ipv6 local policy route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            108
           ]
         }
       },
@@ -4410,10 +4434,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 358 results",
+      "notes" : "Found 360 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 358
+      "numResults" : 360
     }
   }
 ]

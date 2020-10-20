@@ -176,7 +176,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_TRA
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IPV6_LOCAL_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_LOCAL_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_POOL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_ROUTE_NHINT;
@@ -652,11 +654,13 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_route_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_route_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_ssh_versionContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipl_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipsec_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipsec_encryptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipsec_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipv6_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipv6_prefix_list_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipv6l_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Is_type_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.L_access_classContext;
 import org.batfish.grammar.cisco.CiscoParser.L_exec_timeoutContext;
@@ -6011,6 +6015,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       _configuration.setDomainName(null);
     }
+  }
+
+  @Override
+  public void exitIpl_policy(Ipl_policyContext ctx) {
+    todo(ctx);
+    String name = ctx.name.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, IP_LOCAL_POLICY_ROUTE_MAP, ctx.name.start.getLine());
+  }
+
+  @Override
+  public void exitIpv6l_policy(Ipv6l_policyContext ctx) {
+    todo(ctx);
+    String name = ctx.name.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, IPV6_LOCAL_POLICY_ROUTE_MAP, ctx.name.start.getLine());
   }
 
   @Override

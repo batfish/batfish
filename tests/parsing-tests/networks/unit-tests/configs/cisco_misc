@@ -104,6 +104,8 @@ ip flow-aggregation cache source-prefix
 !
 ip inspect WAAS flush-timeout 10
 ip internal event-history static-rt size small
+ip local policy route-map V4POLICY
+ipv6 local policy route-map V6POLICY
 ip mfwd event-history packet size small
 ip ospf name-lookup
 ip spd queue max-threshold 123
