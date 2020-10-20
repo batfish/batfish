@@ -34,7 +34,7 @@ public class BDDPacket {
    * will reduce time spent garbage collecting for large computations, but will waste memory for
    * smaller ones.
    */
-  private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 10000;
+  private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 1_000_000;
 
   /*
    * The ratio of node table size to node cache size to preserve when resizing. The default
