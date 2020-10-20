@@ -677,7 +677,6 @@ null_single
             | ICMP
             | IGMP
             | LOAD_SHARING
-            | LOCAL
             | MFIB
             | MFWD
             | MOBILE
@@ -725,7 +724,6 @@ null_single
             | FIREWALL
             | HOP_LIMIT
             | HOST
-            | LOCAL
             | MFIB
             | MFIB_MODE
             | MLD

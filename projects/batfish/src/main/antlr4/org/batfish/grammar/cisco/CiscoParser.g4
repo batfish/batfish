@@ -2660,6 +2660,12 @@ s_interface_line
    NO? INTERFACE BREAKOUT null_rest_of_line
 ;
 
+s_ip
+:
+  IP
+  ip_local
+;
+
 s_ip_default_gateway
 :
    NO? IP DEFAULT_GATEWAY
@@ -2699,6 +2705,16 @@ s_ip_domain_name
    (
       USE_VRF variable
    )? NEWLINE
+;
+
+ip_local
+:
+  LOCAL ipl_policy
+;
+
+ipl_policy
+:
+  POLICY ROUTE_MAP name = variable NEWLINE
 ;
 
 s_ip_name_server
@@ -2804,6 +2820,22 @@ s_ipsla
       | ipsla_responder
       | ipsla_schedule
    )*
+;
+
+s_ipv6
+:
+  IPV6
+  ipv6_local
+;
+
+ipv6_local
+:
+  LOCAL ipv6l_policy
+;
+
+ipv6l_policy
+:
+  POLICY ROUTE_MAP name = variable NEWLINE
 ;
 
 s_l2
@@ -3708,6 +3740,7 @@ stanza
    // do not move below s_interface
    s_interface_line
    | s_interface
+   | s_ip
    | s_ip_access_list_eth
    | s_ip_access_list_session
    | s_ip_default_gateway
@@ -3726,8 +3759,9 @@ stanza
    | s_ip_tacacs_source_interface
    | s_ip_wccp
    | s_ipc
-   | s_ipv6_router_ospf
    | s_ipsla
+   | s_ipv6
+   | s_ipv6_router_ospf
    | s_key
    | s_l2
    | s_l2tp_class
