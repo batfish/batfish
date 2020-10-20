@@ -47,7 +47,7 @@ public class GroupWildcard extends BaseParser<String> {
   Rule CharacterClass() {
     return Sequence(
         Ch('['),
-        Sequence(push(""), Optional(Op_Bang(), push(pop(1) + pop()))),
+        Sequence(push(""), Optional(FirstOf(Op_Bang(), Op_Carat()), push(pop(1) + pop()))),
         ClassLiterals(),
         Ch(']'),
         push(String.format("[%s%s]", pop(1), pop())));
@@ -63,7 +63,8 @@ public class GroupWildcard extends BaseParser<String> {
                 CharRange('0', '9'),
                 Ch('-'),
                 Ch('_'),
-                Ch(':'))),
+                Ch(':'),
+                Ch('/'))),
         push(match()));
   }
 
@@ -73,14 +74,10 @@ public class GroupWildcard extends BaseParser<String> {
   @SuppressSubnodes
   Rule AllLiterals() {
     // Skipping special characters until proven otherwise
-    Rule base = FirstOf(ClassLiterals(), NonClassLiterals(), Dot());
+    Rule base = FirstOf(ClassLiterals(), Dot());
     return Sequence(
         base, // pop()
         ZeroOrMore(base, push(pop(1) + pop())));
-  }
-
-  Rule NonClassLiterals() {
-    return Sequence(Ch('/'), push(match()));
   }
 
   Rule Dot() {
@@ -110,6 +107,17 @@ public class GroupWildcard extends BaseParser<String> {
   @SuppressSubnodes
   Rule Op_Bang() {
     return Sequence(Ch('!'), push("^"));
+  }
+
+  /**
+   * This is the same as {@link #Op_Bang()}. It is not documented as supported by Juniper
+   * (https://www.juniper.net/documentation/en_US/junos/topics/topic-map/configuration-groups-usage.html),
+   * but it is reported to work in open-source user configs
+   * (https://github.com/batfish/batfish/issues/6059).
+   */
+  @SuppressSubnodes
+  Rule Op_Carat() {
+    return Sequence(Ch('^'), push("^"));
   }
 
   public static String toJavaRegex(String wildcard) {
