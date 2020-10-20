@@ -59,7 +59,7 @@ public final class ApplicationBuiltIn {
           .addService(
               Service.builder("bfd")
                   .setIpProtocol(IpProtocol.UDP)
-                  .addPort(179)
+                  .addPort(3784)
                   .addPort(3785)
                   .addPort(4784)
                   .build())
