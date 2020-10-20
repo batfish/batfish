@@ -2032,7 +2032,7 @@
             "        (management_api_null",
             "          PROTOCOL:'protocol'",
             "          (null_rest_of_line",
-            "            VARIABLE:'unix-socket'",
+            "            UNIX_SOCKET:'unix-socket'",
             "            NEWLINE:'\\n'))",
             "        (management_api_null",
             "          NO:'no'",
