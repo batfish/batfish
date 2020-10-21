@@ -55,6 +55,7 @@ eos_router_bgp_tail
   eos_rb_address_family
   | eos_rb_inner
   | eos_rb_monitoring
+  | eos_rb_no
   | eos_rb_vlan
   | eos_rb_vlan_aware_bundle
   | eos_rb_vrf
@@ -1090,7 +1091,7 @@ eos_rb_af_neighbor_common
     | eos_rbafnc_next_hop_unchanged
     | eos_rbafnc_prefix_list
     | eos_rbafnc_route_map
-//    | eos_rbafnc_weight
+    | eos_rbafnc_weight
   )
 ;
 
@@ -1127,6 +1128,11 @@ eos_rbafnc_prefix_list
 eos_rbafnc_route_map
 :
   ROUTE_MAP name = variable (IN | OUT) NEWLINE
+;
+
+eos_rbafnc_weight
+:
+  WEIGHT weight = DEC NEWLINE  // weight = 1..65535
 ;
 
 // Common to ipv4/ipv6 unicast > bgp. Other address families should just use the rbafbc rules.
@@ -1186,6 +1192,7 @@ eos_rb_af_no_neighbor_common
   | eos_rbafnonc_next_hop_unchanged
   | eos_rbafnonc_prefix_list
   | eos_rbafnonc_route_map
+  | eos_rbafnonc_weight
 ;
 
 eos_rbafnonc_activate
@@ -1221,6 +1228,11 @@ eos_rbafnonc_prefix_list
 eos_rbafnonc_route_map
 :
   ROUTE_MAP (IN | OUT) NEWLINE
+;
+
+eos_rbafnonc_weight
+:
+  WEIGHT NEWLINE
 ;
 
 eos_rb_inner
@@ -1715,7 +1727,6 @@ eos_rbi_neighbor_common
     | eos_rbinc_timers
 //    | eos_rbinc_transport
 //    | eos_rbinc_ttl
-//    | eos_rbinc_weight
     | eos_rbinc_update_source
   )
 ;
@@ -2356,7 +2367,7 @@ eos_rbino_neighbor
     | eos_rbinon_ttl
     | eos_rbinon_transport
     | eos_rbinon_update_source
-    | eos_rbinon_weight
+    | eos_rbafnonc_weight  // intended rbafnonc - it affects the generic address family
   )
 ;
 
@@ -2607,11 +2618,6 @@ eos_rbinon_transport_remote_port
 eos_rbinon_update_source
 :
   UPDATE_SOURCE NEWLINE
-;
-
-eos_rbinon_weight
-:
-  WEIGHT NEWLINE
 ;
 
 eos_rbino_redistribute
@@ -2940,6 +2946,21 @@ eos_rb_monitoring
     | eos_rbm_station
     | eos_rbm_timestamp
   )
+;
+
+eos_rb_no
+:
+  NO eos_rbn_bgp
+;
+
+eos_rbn_bgp
+:
+  BGP eos_rbnb_host_routes
+;
+
+eos_rbnb_host_routes
+:
+  HOST_ROUTES FIB DIRECT_INSTALL NEWLINE
 ;
 
 eos_rbm_port

@@ -1996,6 +1996,26 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testParseBgpShowRunAll4() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_4");
+    assertThat(c.getAristaBgp().getVrfs().keySet(), containsInAnyOrder("default", "VRF10"));
+    AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
+    assertThat(defaultVrf.getV4neighbors().keySet(), empty());
+    /// vrf
+    AristaBgpVrf vrf = c.getAristaBgp().getVrfs().get("VRF10");
+    Ip neighborIp = Ip.parse("10.2.3.4");
+    assertThat(vrf.getV4neighbors().keySet(), contains(neighborIp));
+    /// pg
+    AristaBgpPeerGroupNeighbor pg = c.getAristaBgp().getPeerGroup("SOME_GROUP");
+    assertThat(pg, notNullValue());
+    assertThat(pg.getGenericAddressFamily().getRouteMapIn(), equalTo("SOME_IMPORT"));
+    assertThat(pg.getGenericAddressFamily().getRouteMapOut(), equalTo("SOME_EXPORT"));
+    assertThat(defaultVrf.getV4UnicastAf().getPeerGroup("SOME_GROUP").getRouteMapIn(), nullValue());
+    assertThat(
+        defaultVrf.getV4UnicastAf().getPeerGroup("SOME_GROUP").getRouteMapOut(), nullValue());
+  }
+
+  @Test
   public void testParseInterfaceShowRunAll() {
     Configuration c = parseConfig("arista_interface_show_run_all");
     // Test relies on the last line in each interface being this description.
