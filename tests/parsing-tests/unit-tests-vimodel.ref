@@ -36517,6 +36517,48 @@
             "type" : "VLAN",
             "vlan" : 1000,
             "vrf" : "default"
+          },
+          "Vlan1001" : {
+            "name" : "Vlan1001",
+            "active" : false,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Vlan1001"
+            ],
+            "hsrpGroups" : {
+              "1001" : {
+                "authentication" : "9d02ca801b026e21590248fb1578fe959b68a16cccdb0005917dce66a40c5f78",
+                "groupNumber" : 1001,
+                "helloTime" : 500,
+                "holdTime" : 2000,
+                "ip" : "1.2.3.4",
+                "preempt" : true,
+                "priority" : 105,
+                "trackActions" : {
+                  "1" : {
+                    "class" : "org.batfish.datamodel.tracking.DecrementPriority",
+                    "subtrahend" : 20
+                  }
+                }
+              }
+            },
+            "hsrpVersion" : "2",
+            "mtu" : 1500,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "VLAN",
+            "vlan" : 1001,
+            "vrf" : "default"
           }
         },
         "vendorFamily" : {

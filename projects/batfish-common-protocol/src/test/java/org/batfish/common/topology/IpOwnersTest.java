@@ -192,7 +192,11 @@ public class IpOwnersTest {
   @Test
   public void testExtractHsrp() {
     Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
-    Interface i = Interface.builder().setName("name").build();
+    Interface i =
+        Interface.builder()
+            .setName("name")
+            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+            .build();
     extractHsrp(groups, i);
     assertTrue(groups.isEmpty());
 
@@ -217,8 +221,18 @@ public class IpOwnersTest {
             .build();
 
     Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
-    Interface i1 = Interface.builder().setOwner(c1).setName("i1").build();
-    Interface i2 = Interface.builder().setOwner(c2).setName("i2").build();
+    Interface i1 =
+        Interface.builder()
+            .setOwner(c1)
+            .setName("i1")
+            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+            .build();
+    Interface i2 =
+        Interface.builder()
+            .setOwner(c2)
+            .setName("i2")
+            .setAddress(ConcreteInterfaceAddress.parse("2.3.4.5/24"))
+            .build();
 
     Ip ip = Ip.parse("1.1.1.1");
     i1.setHsrpGroups(

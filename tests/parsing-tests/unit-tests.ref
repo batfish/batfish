@@ -52822,6 +52822,83 @@
             "                  DECREMENT:'decrement'",
             "                  subtrahend = DEC:'20'))))",
             "          NEWLINE:'\\n'))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Vlan'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'1001'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'",
+            "          (standby_version",
+            "            VERSION:'version'",
+            "            version = (variable_permissive",
+            "              DEC:'2'))",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'",
+            "          (standby_group",
+            "            group = DEC:'1001'",
+            "            (standby_group_authentication",
+            "              AUTHENTICATION:'authentication'",
+            "              auth = (variable",
+            "                DEC:'012345678901234567890123456789012345678'  <== mode:M_Authentication)))",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'",
+            "          (standby_group",
+            "            group = DEC:'1001'",
+            "            (standby_group_ip",
+            "              IP:'ip'",
+            "              ip = IP_ADDRESS:'1.2.3.4'))",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'",
+            "          (standby_group",
+            "            group = DEC:'1001'",
+            "            (standby_group_preempt",
+            "              PREEMPT:'preempt'))",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'",
+            "          (standby_group",
+            "            group = DEC:'1001'",
+            "            (standby_group_priority",
+            "              PRIORITY:'priority'",
+            "              priority = DEC:'105'))",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'",
+            "          (standby_group",
+            "            group = DEC:'1001'",
+            "            (standby_group_timers",
+            "              TIMERS:'timers'",
+            "              MSEC:'msec'",
+            "              hello_ms = DEC:'500'",
+            "              hold_sec = DEC:'2'))",
+            "          NEWLINE:'\\n'))",
+            "      (if_inner",
+            "        (if_standby",
+            "          STANDBY:'standby'",
+            "          (standby_group",
+            "            group = DEC:'1001'",
+            "            (standby_group_track",
+            "              TRACK:'track'",
+            "              group = DEC:'1'",
+            "              (track_action",
+            "                (track_action_decrement",
+            "                  DECREMENT:'decrement'",
+            "                  subtrahend = DEC:'20'))))",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -80913,6 +80990,10 @@
             "Vlan1000" : {
               "definitionLines" : "5-12",
               "numReferrers" : 1
+            },
+            "Vlan1001" : {
+              "definitionLines" : "14-21",
+              "numReferrers" : 1
             }
           }
         },
@@ -86949,12 +87030,18 @@
               "interface" : [
                 5
               ]
+            },
+            "Vlan1001" : {
+              "interface" : [
+                14
+              ]
             }
           },
           "track" : {
             "1" : {
               "interface standby track" : [
-                12
+                12,
+                21
               ]
             }
           }
@@ -90953,7 +91040,8 @@
           "track" : {
             "1" : {
               "interface standby track" : [
-                12
+                12,
+                21
               ]
             }
           }
