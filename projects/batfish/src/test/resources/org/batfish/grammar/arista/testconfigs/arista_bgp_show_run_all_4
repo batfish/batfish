@@ -1,0 +1,204 @@
+!RANCID-CONTENT-TYPE: arista
+!
+! Command: show running-config all
+! device: arista_bgp_show_run_all_4 (DCS-7050QX-32S, EOS-4.16.10M)
+!
+! boot system flash:/EOS-4.16.10M.swi
+!
+hostname arista_bgp_show_run_all_4
+!
+router bgp 65500
+   no shutdown
+   router-id 10.2.3.5
+   bgp convergence time 300
+   bgp convergence slow-peer time 90
+   no bgp confederation identifier
+   no update wait-for-convergence
+   no update wait-install
+   bgp log-neighbor-changes
+   bgp default ipv4-unicast
+   no bgp default ipv4-unicast transport ipv6
+   no bgp default ipv6-unicast
+   timers bgp 60 180
+   distance bgp 200 200 200
+   graceful-restart restart-time 300
+   graceful-restart stalepath-time 300
+   no bgp cluster-id
+   bgp client-to-client reflection
+   no graceful-restart
+   graceful-restart-helper
+   bgp peer-mac-resolution-timeout 0
+   bgp enforce-first-as
+   no bgp route install-map
+   no bgp transport listen-port
+   no default-metric
+   no bgp always-compare-med
+   no bgp bestpath med missing-as-worst
+   no bgp bestpath med confed
+   no bgp host-routes fib direct-install
+   no bgp route-reflector preserve-attributes
+   maximum-paths 64 ecmp 128
+   bgp additional-paths receive
+   ucmp mode 1 128 5.0
+   ucmp link-bandwidth update-delay 0
+   no ucmp link-bandwidth encoding-weighted
+   ucmp fec threshold trigger 50 clear 40 warning-only
+   bgp listen limit 1000
+   bgp bestpath as-path multipath-relax
+   no bgp aspath-cmp-include-nexthop
+   bgp bestpath ecmp-fast
+   no bgp bestpath tie-break age
+   no bgp bestpath tie-break router-id
+   no bgp bestpath tie-break originator-id
+   no bgp bestpath tie-break cluster-list-length
+   no bgp advertise-inactive
+   no bgp auto-local-addr
+   neighbor SOME_GROUP peer-group
+   no neighbor SOME_GROUP remote-as
+   no neighbor SOME_GROUP import-localpref
+   no neighbor SOME_GROUP export-localpref
+   no neighbor SOME_GROUP description
+   no neighbor SOME_GROUP next-hop-self
+   no neighbor SOME_GROUP next-hop-peer
+   neighbor SOME_GROUP allowas-in 1
+   no neighbor SOME_GROUP shutdown
+   no neighbor SOME_GROUP remove-private-as
+   no neighbor SOME_GROUP out-delay
+   no neighbor SOME_GROUP link-bandwidth update-delay
+   no neighbor SOME_GROUP local-as
+   no neighbor SOME_GROUP weight
+   no neighbor SOME_GROUP transport connection-mode passive
+   no neighbor SOME_GROUP transport remote-port
+   no neighbor SOME_GROUP update-source
+   no neighbor SOME_GROUP dont-capability-negotiate
+   no neighbor SOME_GROUP fall-over bfd
+   no neighbor SOME_GROUP local-v4-addr
+   no neighbor SOME_GROUP local-v6-addr
+   no neighbor SOME_GROUP auto-local-addr
+   no neighbor SOME_GROUP next-hop-v6-addr
+   neighbor SOME_GROUP soft-reconfiguration inbound
+   no neighbor SOME_GROUP ebgp-multihop
+   no neighbor SOME_GROUP route-reflector-client
+   neighbor SOME_GROUP timers 4 12
+   neighbor SOME_GROUP route-map SOME_IMPORT in
+   no neighbor SOME_GROUP graceful-restart
+   neighbor SOME_GROUP graceful-restart-helper
+   neighbor SOME_GROUP additional-paths receive
+   neighbor SOME_GROUP route-map SOME_EXPORT out
+   no neighbor SOME_GROUP password
+   no neighbor SOME_GROUP default-originate
+   no neighbor SOME_GROUP enforce-first-as
+   no neighbor SOME_GROUP metric-out
+   no neighbor SOME_GROUP idle-restart-timer
+   neighbor SOME_GROUP send-community
+   neighbor SOME_GROUP maximum-routes 12000
+   no neighbor SOME_GROUP link-bandwidth
+   bgp redistribute-internal
+   redistribute connected route-map ORIGINATE
+   no redistribute isis
+   no redistribute ospf match internal
+   no redistribute ospf match external
+   no redistribute ospf match nssa-external
+   no redistribute ospf3 match internal
+   no redistribute ospf3 match external
+   no redistribute static
+   no redistribute rip
+   no redistribute aggregate
+   address-family ipv4
+      no bgp additional-paths install
+      bgp additional-paths receive
+      no bgp route install-map
+      neighbor SOME_GROUP activate
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP prefix-list in
+      no neighbor SOME_GROUP prefix-list out
+      no neighbor SOME_GROUP default-originate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP weight
+   !
+   address-family ipv6
+      no bgp additional-paths install
+      bgp additional-paths receive
+      no bgp route install-map
+      neighbor SOME_GROUP activate
+      no neighbor SOME_GROUP route-map in
+      no neighbor SOME_GROUP route-map out
+      no neighbor SOME_GROUP prefix-list in
+      no neighbor SOME_GROUP prefix-list out
+      no neighbor SOME_GROUP default-originate
+      neighbor SOME_GROUP additional-paths receive
+      no neighbor SOME_GROUP weight
+   vrf VRF10
+      local-as 65500
+      no shutdown
+      no router-id
+      bgp convergence time 300
+      bgp convergence slow-peer time 90
+      no bgp confederation identifier
+      no update wait-for-convergence
+      no update wait-install
+      bgp log-neighbor-changes
+      bgp default ipv4-unicast
+      no bgp default ipv4-unicast transport ipv6
+      no bgp default ipv6-unicast
+      timers bgp 60 180
+      distance bgp 200 200 200
+      graceful-restart restart-time 300
+      graceful-restart stalepath-time 300
+      no bgp cluster-id
+      bgp client-to-client reflection
+      no graceful-restart
+      graceful-restart-helper
+      bgp peer-mac-resolution-timeout 0
+      bgp enforce-first-as
+      no bgp route install-map
+      no bgp transport listen-port
+      no default-metric
+      no bgp always-compare-med
+      no bgp bestpath med missing-as-worst
+      no bgp bestpath med confed
+      no bgp route-reflector preserve-attributes
+      maximum-paths 64 ecmp 128
+      no bgp additional-paths install
+      bgp additional-paths receive
+      ucmp mode 1 128 5.0
+      ucmp link-bandwidth update-delay 0
+      no ucmp link-bandwidth encoding-weighted
+      ucmp fec threshold trigger 50 clear 40 warning-only
+      bgp listen limit 1000
+      bgp bestpath as-path multipath-relax
+      no bgp aspath-cmp-include-nexthop
+      bgp bestpath ecmp-fast
+      no bgp bestpath tie-break age
+      no bgp bestpath tie-break router-id
+      no bgp bestpath tie-break originator-id
+      no bgp bestpath tie-break cluster-list-length
+      no bgp advertise-inactive
+      no bgp auto-local-addr
+      neighbor 10.2.3.4 peer-group PEER_AS65500
+      neighbor 10.2.3.4 description SOME_CRAZY_DESC
+      neighbor 10.2.3.4 local-v6-addr 2001:db8::1:0:0:1
+      bgp redistribute-internal
+      redistribute connected route-map ORIGINATE
+      no redistribute isis
+      no redistribute ospf match internal
+      no redistribute ospf match external
+      no redistribute ospf match nssa-external
+      no redistribute ospf3 match internal
+      no redistribute ospf3 match external
+      no redistribute static
+      no redistribute rip
+      no redistribute aggregate
+      address-family ipv4
+         bgp additional-paths receive
+         no bgp route install-map
+         default neighbor 10.2.3.4 activate
+      !
+      address-family ipv6
+         no bgp additional-paths install
+         bgp additional-paths receive
+         no bgp route install-map
+         default neighbor 10.2.3.4 activate
+   !
+!
