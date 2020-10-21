@@ -2713,6 +2713,11 @@ DIRECT
    'direct'
 ;
 
+DIRECT_INSTALL
+:
+   'direct-install'
+;
+
 DIRECT_INWARD_DIAL
 :
    'direct-inward-dial'
@@ -3844,6 +3849,11 @@ FEX_FABRIC
    'fex-fabric'
 ;
 
+FIB
+:
+   'fib'
+;
+
 FIBER_NODE
 :
    'fiber-node' -> pushMode ( M_FiberNode )
@@ -4491,7 +4501,12 @@ HOST_REDIRECT
 
 HOST_ROUTE
 :
-'host-route'
+   'host-route'
+;
+
+HOST_ROUTES
+:
+   'host-routes'
 ;
 
 HOST_TOS_REDIRECT
