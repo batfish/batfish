@@ -361,7 +361,6 @@ rec_null
       | BFD
       | DEFAULT_INFORMATION
       | DISTANCE
-      | DISTRIBUTE_LIST
       | HELLO_INTERVAL
       | MAXIMUM_PATHS
       | (METRIC MAXIMUM_HOPS)
@@ -394,7 +393,7 @@ redl_gateway
       IN
       | OUT
    )
-   NEWLINE
+   (iname = interface_name_unstructured)? NEWLINE
 ;
 
 redl_prefix
@@ -405,7 +404,7 @@ redl_prefix
       IN
       | OUT
    )
-   NEWLINE
+   (iname = interface_name_unstructured)? NEWLINE
 ;
 
 redl_route_map
@@ -415,7 +414,7 @@ redl_route_map
       IN
       | OUT
    )
-   NEWLINE
+   (iname = interface_name_unstructured)? NEWLINE
 ;
 
 ren_address_family

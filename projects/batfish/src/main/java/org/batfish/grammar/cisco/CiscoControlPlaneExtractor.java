@@ -7749,6 +7749,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
           ctx.gwname.getStart().getLine());
     }
+    if (ctx.iname != null) {
+      _configuration.referenceStructure(
+          INTERFACE,
+          getCanonicalInterfaceName(ctx.iname.getText()),
+          ctx.IN() == null
+              ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
+              : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+          ctx.iname.getStart().getLine());
+    }
   }
 
   @Override
@@ -7763,6 +7772,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.name.getText(),
         ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
         ctx.name.getStart().getLine());
+    if (ctx.iname != null) {
+      _configuration.referenceStructure(
+          INTERFACE,
+          getCanonicalInterfaceName(ctx.iname.getText()),
+          ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+          ctx.iname.getStart().getLine());
+    }
   }
 
   @Override
@@ -7777,6 +7793,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.name.getText(),
         ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         ctx.name.getStart().getLine());
+    if (ctx.iname != null) {
+      _configuration.referenceStructure(
+          INTERFACE,
+          getCanonicalInterfaceName(ctx.iname.getText()),
+          ctx.IN() == null
+              ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT
+              : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+          ctx.iname.getStart().getLine());
+    }
   }
 
   @Override
