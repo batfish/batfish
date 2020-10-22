@@ -24,3 +24,8 @@ set security policies from-zone A to-zone B policy 123-4 then trace
 set security zones security-zone ZONE-protocols host-inbound-traffic protocols all
 set security zones security-zone ZONE-system-services host-inbound-traffic system-services all
 #
+set interfaces xe-0/0/0 unit 0 family inet address 1.2.3.4/24
+set security zones security-zone A interfaces xe-0/0/0.0
+set interfaces xe-1/0/0 unit 0 family inet address 2.3.4.5/24
+set security zones security-zone B interfaces xe-1/0/0.0
+#

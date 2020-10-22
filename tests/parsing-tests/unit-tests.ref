@@ -67714,6 +67714,94 @@
             "                    (hib_system_service",
             "                      ALL:'all')))))))))",
             "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'1.2.3.4/24'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_zones",
+            "              ZONES:'zones'",
+            "              (sez_security_zone",
+            "                SECURITY_ZONE:'security-zone'",
+            "                (zone",
+            "                  name = (variable",
+            "                    text = VARIABLE:'A'))",
+            "                (sezs_interfaces",
+            "                  INTERFACES:'interfaces'",
+            "                  (interface_id",
+            "                    name = INTERFACE_NAME:'xe-0/0/0'  <== mode:M_Interface",
+            "                    PERIOD:'.'",
+            "                    unit = DEC:'0')",
+            "                  (apply))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_interfaces",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id",
+            "                name = INTERFACE_NAME:'xe-1/0/0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = DEC:'0'",
+            "                (i_common",
+            "                  (i_family",
+            "                    FAMILY:'family'",
+            "                    (if_inet",
+            "                      INET:'inet'",
+            "                      (ifi_address",
+            "                        ADDRESS:'address'",
+            "                        IP_PREFIX:'2.3.4.5/24'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line",
+            "    SET:'set'",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'",
+            "            (se_zones",
+            "              ZONES:'zones'",
+            "              (sez_security_zone",
+            "                SECURITY_ZONE:'security-zone'",
+            "                (zone",
+            "                  name = (variable",
+            "                    text = VARIABLE:'B'))",
+            "                (sezs_interfaces",
+            "                  INTERFACES:'interfaces'",
+            "                  (interface_id",
+            "                    name = INTERFACE_NAME:'xe-1/0/0'  <== mode:M_Interface",
+            "                    PERIOD:'.'",
+            "                    unit = DEC:'0')",
+            "                  (apply))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -81719,6 +81807,24 @@
               "numReferrers" : 1
             }
           },
+          "interface" : {
+            "xe-0/0/0" : {
+              "definitionLines" : "27",
+              "numReferrers" : 1
+            },
+            "xe-0/0/0.0" : {
+              "definitionLines" : "27",
+              "numReferrers" : 2
+            },
+            "xe-1/0/0" : {
+              "definitionLines" : "29",
+              "numReferrers" : 1
+            },
+            "xe-1/0/0.0" : {
+              "definitionLines" : "29",
+              "numReferrers" : 2
+            }
+          },
           "security policy" : {
             "zone~A~to~zone~B" : {
               "definitionLines" : "19-22",
@@ -88020,6 +88126,34 @@
             "PROPOSAL" : {
               "ike policy ike proposal" : [
                 14
+              ]
+            }
+          },
+          "interface" : {
+            "xe-0/0/0" : {
+              "interface" : [
+                27
+              ]
+            },
+            "xe-0/0/0.0" : {
+              "interface" : [
+                27
+              ],
+              "security zones security-zone interfaces" : [
+                28
+              ]
+            },
+            "xe-1/0/0" : {
+              "interface" : [
+                29
+              ]
+            },
+            "xe-1/0/0.0" : {
+              "interface" : [
+                29
+              ],
+              "security zones security-zone interfaces" : [
+                30
               ]
             }
           },
