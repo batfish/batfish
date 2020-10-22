@@ -64116,18 +64116,7 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.TrueExpr"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                      "srcInterfaces" : [
-                        "xe-0/0/0.0"
-                      ]
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
                 },
                 "name" : "123-4",
                 "traceElement" : {
@@ -65200,27 +65189,25 @@
                 "class" : "org.batfish.datamodel.ExprAclLine",
                 "action" : "PERMIT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                },
-                "name" : "HOST_OUTBOUND",
-                "traceElement" : {
-                  "fragments" : [
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
                     {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched Juniper semantics on traffic originated from device"
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "xe-0/0/0.0"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "zone~A~to~zone~B"
                     }
                   ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.AclAclLine",
-                "aclName" : "zone~A~to~zone~B",
-                "name" : "Match security policy from zone A to zone B",
+                },
                 "traceElement" : {
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched "
+                      "text" : "Permitted by "
                     },
                     {
                       "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
@@ -65230,6 +65217,58 @@
                         "structureName" : "zone~A~to~zone~B",
                         "structureType" : "security policy"
                       }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "xe-0/0/0.0"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
+                      "aclName" : "zone~A~to~zone~B"
+                    }
+                  ]
+                },
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Denied by "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "security policy from zone A to zone B",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "zone~A~to~zone~B",
+                        "structureType" : "security policy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "HOST_OUTBOUND",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched Juniper semantics on traffic originated from device"
                     }
                   ]
                 }

@@ -15,7 +15,6 @@ import static org.batfish.representation.juniper.JuniperConfiguration.OSPF_DEAD_
 import static org.batfish.representation.juniper.JuniperConfiguration.buildScreen;
 import static org.batfish.representation.juniper.JuniperConfiguration.getRouterId;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilter;
-import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAccessListLines;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
@@ -62,7 +61,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -171,14 +169,11 @@ public class JuniperConfigurationTest {
                 .setMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
-                                            .build(),
-                                        TraceElement.of("Matched source-address 1.2.3.0/24")))),
-                            new MatchSrcInterface(zone.getInterfaces()))))
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
+                                    .build(),
+                                TraceElement.of("Matched source-address 1.2.3.0/24")))))
                 .build()));
   }
 
@@ -678,24 +673,33 @@ public class JuniperConfigurationTest {
     Zone zone = new Zone("toZone", null);
 
     ConcreteFirewallFilter crossZoneFilter =
-        new ConcreteFirewallFilter("crossZonePolicy", Family.INET);
+        new ConcreteFirewallFilter(zoneToZoneFilter("junos-host", "toZone"), Family.INET);
 
-    zone.getFromZonePolicies().put("crossZonePolicy", crossZoneFilter);
+    zone.getFromZonePolicies().put(crossZoneFilter.getName(), crossZoneFilter);
 
     config.buildSecurityPolicyAcl("acl", zone);
     IpAccessList acl = config._c.getIpAccessLists().get("acl");
     assertNotNull(acl);
-    assertThat(acl.getLines(), hasSize(3));
+    assertThat(acl.getLines(), hasSize(4));
 
     assertThat(
         acl.getLines().get(0).getTraceElement(),
-        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+        equalTo(
+            TraceElement.builder()
+                .add("Permitted by ")
+                .add(
+                    "security policy from junos-host to zone toZone",
+                    new VendorStructureId(
+                        config.getFilename(),
+                        SECURITY_POLICY.getDescription(),
+                        zoneToZoneFilter("junos-host", "toZone")))
+                .build()));
 
     assertThat(
         acl.getLines().get(1).getTraceElement(),
         equalTo(
             TraceElement.builder()
-                .add("Matched ")
+                .add("Denied by ")
                 .add(
                     "security policy from junos-host to zone toZone",
                     new VendorStructureId(
@@ -706,6 +710,10 @@ public class JuniperConfigurationTest {
 
     assertThat(
         acl.getLines().get(2).getTraceElement(),
+        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+
+    assertThat(
+        acl.getLines().get(3).getTraceElement(),
         equalTo(TraceElement.of("Matched default policy")));
   }
 
@@ -713,28 +721,39 @@ public class JuniperConfigurationTest {
   public void testBuildSecurityPolicyAcl_traceElement_fromZone() {
     JuniperConfiguration config = createConfig();
     Zone zone = new Zone("toZone", null);
+    Zone fromZone = new Zone("fromZone", null);
+    config.getMasterLogicalSystem().getZones().put(fromZone.getName(), fromZone);
 
     ConcreteFirewallFilter crossZoneFilter =
-        new ConcreteFirewallFilter("crossZonePolicy", Family.INET);
+        new ConcreteFirewallFilter(zoneToZoneFilter("fromZone", "toZone"), Family.INET);
 
     crossZoneFilter.setFromZone("fromZone");
 
-    zone.getFromZonePolicies().put("crossZonePolicy", crossZoneFilter);
+    zone.getFromZonePolicies().put(crossZoneFilter.getName(), crossZoneFilter);
 
     config.buildSecurityPolicyAcl("acl", zone);
     IpAccessList acl = config._c.getIpAccessLists().get("acl");
     assertNotNull(acl);
-    assertThat(acl.getLines(), hasSize(3));
+    assertThat(acl.getLines(), hasSize(4));
 
     assertThat(
         acl.getLines().get(0).getTraceElement(),
-        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+        equalTo(
+            TraceElement.builder()
+                .add("Permitted by ")
+                .add(
+                    "security policy from zone fromZone to zone toZone",
+                    new VendorStructureId(
+                        config.getFilename(),
+                        SECURITY_POLICY.getDescription(),
+                        zoneToZoneFilter("fromZone", "toZone")))
+                .build()));
 
     assertThat(
         acl.getLines().get(1).getTraceElement(),
         equalTo(
             TraceElement.builder()
-                .add("Matched ")
+                .add("Denied by ")
                 .add(
                     "security policy from zone fromZone to zone toZone",
                     new VendorStructureId(
@@ -745,6 +764,10 @@ public class JuniperConfigurationTest {
 
     assertThat(
         acl.getLines().get(2).getTraceElement(),
+        equalTo(TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+
+    assertThat(
+        acl.getLines().get(3).getTraceElement(),
         equalTo(TraceElement.of("Matched default policy")));
   }
 
@@ -754,7 +777,7 @@ public class JuniperConfigurationTest {
     FwTerm term = new FwTerm("term");
     term.getThens().add(FwThenAccept.INSTANCE);
     List<FwTerm> terms = ImmutableList.of(term);
-    IpAccessList acl = config.fwTermsToIpAccessList("acl", terms, null, FIREWALL_FILTER);
+    IpAccessList acl = config.fwTermsToIpAccessList("acl", terms, FIREWALL_FILTER);
 
     assertThat(acl.getLines(), hasSize(1));
 
@@ -768,27 +791,6 @@ public class JuniperConfigurationTest {
     TraceElement actual = acl.getLines().get(0).getTraceElement();
     assertThat(actual, equalTo(expected));
     assertThat(actual.getText(), equalTo("Matched term"));
-  }
-
-  @Test
-  public void testMergeIpAccessListLines() {
-    List<ExprAclLine> lines =
-        ImmutableList.of(
-            new ExprAclLine(
-                LineAction.PERMIT,
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(Ip.parse("1.1.1.1").toIpSpace()).build()),
-                "match1",
-                TraceElement.of("trace of match1")));
-
-    MatchHeaderSpace conj =
-        new MatchHeaderSpace(
-            HeaderSpace.builder().setDstIps(Ip.parse("2.2.2.2").toIpSpace()).build());
-
-    List<AclLine> aclLines = mergeIpAccessListLines(lines, conj);
-
-    assertThat(aclLines, hasSize(1));
-    assertThat(aclLines.get(0).getTraceElement(), equalTo(TraceElement.of("trace of match1")));
   }
 
   @Test
