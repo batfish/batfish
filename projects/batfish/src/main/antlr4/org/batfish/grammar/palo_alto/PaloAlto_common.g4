@@ -10,6 +10,14 @@ bgp_asn
     uint32
 ;
 
+move_action
+:
+    AFTER name = variable
+    | BEFORE name = variable
+    | BOTTOM
+    | TOP
+;
+
 null_rest_of_line
 :
     ~NEWLINE*

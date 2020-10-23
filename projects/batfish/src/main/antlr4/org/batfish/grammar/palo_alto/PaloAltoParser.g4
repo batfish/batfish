@@ -37,10 +37,20 @@ options {
 palo_alto_configuration
 :
     (
-        set_line
+        move_line
+        | set_line
         /* TODO: delete line, etc. */
         | newline
     )+ EOF
+;
+
+move_line
+:
+   MOVE
+   (
+      m_vsys
+      | m_rulebase
+   )
 ;
 
 newline

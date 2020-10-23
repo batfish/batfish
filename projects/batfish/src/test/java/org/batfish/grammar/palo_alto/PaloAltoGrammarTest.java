@@ -3659,4 +3659,16 @@ public final class PaloAltoGrammarTest {
     // Do not crash (i.e., no warnings generated)
     parsePaloAltoConfig(hostname);
   }
+
+  @Test
+  public void testSecurityRuleMove() {
+    String hostname = "move-rulebase-security";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertThat(
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules().keySet(),
+        contains("RULE3", "RULE4", "RULE1", "RULE5", "RULE2"));
+    assertThat(
+        c.getVirtualSystems().get("MY_VSYS").getRulebase().getSecurityRules().keySet(),
+        contains("RULE7", "RULE6"));
+  }
 }
