@@ -60,7 +60,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
   /**
    * See {@link Map#containsKey}, with the exception that this rejects {@code null} values.
    *
-   * @throws IllegalArgumentException if the key is {@code null}
+   * @throws IllegalArgumentException if the value is {@code null}
    */
   @Override
   public boolean containsValue(Object value) {
@@ -84,7 +84,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
    * Insert a new value into the map, at the end. See {@link Map#get}, with the exception that this
    * rejects {@code null} keys
    *
-   * @throws IllegalArgumentException if the key is {@code null}
+   * @throws IllegalArgumentException if the key or value is {@code null}
    */
   @Override
   @Nullable
@@ -175,24 +175,30 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
   }
 
   /**
-   * Move the given key prior the the pivot key
+   * Move the given key prior to the pivot key. Moving a key before itself has no effect.
    *
    * @throws IllegalArgumentException if either key does not exist
    */
   public void moveBefore(K key, K pivot) {
     int pivotIndex = _keyList.indexOf(pivot);
     checkArgument(pivotIndex != -1, String.format("Key %s does not exist in the map", pivot));
+    if (key.equals(pivot)) {
+      return;
+    }
     moveTo(key, pivotIndex);
   }
 
   /**
-   * Move the given key immediately after the pivot key
+   * Move the given key immediately after the pivot key. Moving a key after itself has no effect.
    *
    * @throws IllegalArgumentException if either key does not exist
    */
   public void moveAfter(K key, K pivot) {
     int pivotIndex = _keyList.indexOf(pivot);
     checkArgument(pivotIndex != -1, String.format("Key %s does not exist in the map", pivot));
+    if (key.equals(pivot)) {
+      return;
+    }
     moveTo(key, pivotIndex + 1);
   }
 

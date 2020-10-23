@@ -149,6 +149,15 @@ public class InsertOrderedMapTest {
     assertThat(_testMap.keySet(), contains("key2", "key1"));
   }
 
+  @Test
+  public void testMoveBeforeSameKey() {
+    _testMap.put("key1", "value");
+    _testMap.put("key2", "value2");
+    // This should have no effect
+    _testMap.moveBefore("key1", "key1");
+    assertThat(_testMap.keySet(), contains("key1", "key2"));
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testMoveBeforeRejectNonExistentKey() {
     _testMap.put("key1", "value");
@@ -167,6 +176,15 @@ public class InsertOrderedMapTest {
     _testMap.put("key2", "value");
     _testMap.moveAfter("key1", "key2");
     assertThat(_testMap.keySet(), contains("key2", "key1"));
+  }
+
+  @Test
+  public void testMoveAfterSameKey() {
+    _testMap.put("key1", "value");
+    _testMap.put("key2", "value2");
+    // This should have no effect
+    _testMap.moveAfter("key1", "key1");
+    assertThat(_testMap.keySet(), contains("key1", "key2"));
   }
 
   @Test(expected = IllegalArgumentException.class)
