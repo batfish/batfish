@@ -717,6 +717,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return text;
   }
 
+  /** Return the rulebase based on the {@link #_currentRuleScope current rulebase scope} */
+  @Nonnull
+  private Rulebase getRulebase() {
+    Rulebase rulebase;
+    if (_currentRuleScope == RulebaseId.DEFAULT) {
+      rulebase = _currentVsys.getRulebase();
+    } else if (_currentRuleScope == RulebaseId.PRE) {
+      rulebase = _currentVsys.getPreRulebase();
+    } else {
+      assert _currentRuleScope == RulebaseId.POST;
+      rulebase = _currentVsys.getPostRulebase();
+    }
+    return rulebase;
+  }
+
   /** A helper function to extract all variables from an optional list. */
   private static List<Variable_list_itemContext> variables(@Nullable Variable_listContext ctx) {
     if (ctx == null || ctx.variable_list_item() == null) {
@@ -2283,15 +2298,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSrn_definition(Srn_definitionContext ctx) {
     String name = getText(ctx.name);
-    Rulebase rulebase;
-    if (_currentRuleScope == RulebaseId.DEFAULT) {
-      rulebase = _currentVsys.getRulebase();
-    } else if (_currentRuleScope == RulebaseId.PRE) {
-      rulebase = _currentVsys.getPreRulebase();
-    } else {
-      assert _currentRuleScope == RulebaseId.POST;
-      rulebase = _currentVsys.getPostRulebase();
-    }
+    Rulebase rulebase = getRulebase();
     _currentNatRule = rulebase.getNatRules().computeIfAbsent(name, NatRule::new);
 
     // Use constructed name so same-named defs across vsys are unique
@@ -2452,15 +2459,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSrs_definition(Srs_definitionContext ctx) {
     String name = getText(ctx.name);
-    Rulebase rulebase;
-    if (_currentRuleScope == RulebaseId.DEFAULT) {
-      rulebase = _currentVsys.getRulebase();
-    } else if (_currentRuleScope == RulebaseId.PRE) {
-      rulebase = _currentVsys.getPreRulebase();
-    } else {
-      assert _currentRuleScope == RulebaseId.POST;
-      rulebase = _currentVsys.getPostRulebase();
-    }
+    Rulebase rulebase = getRulebase();
     _currentSecurityRule =
         rulebase.getSecurityRules().computeIfAbsent(name, n -> new SecurityRule(n, _currentVsys));
 
