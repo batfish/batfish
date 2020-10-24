@@ -1544,6 +1544,9 @@ public class WorkMgr extends AbstractCoordinator {
       // Preserve proper snapshot dir formatting (single top-level dir), so copy new files directly
       // into existing top-level dir
       FileUtils.copyDirectory(getSnapshotSubdir(unzipDir).toFile(), newSnapshotInputsDir.toFile());
+
+      // do not need this directory anymore
+      CommonUtil.deleteDirectory(unzipDir);
     }
 
     // Update line-up/line-down interface statuses
@@ -1581,13 +1584,19 @@ public class WorkMgr extends AbstractCoordinator {
         new TypeReference<List<String>>() {});
 
     // Use initSnapshot to handle creating metadata, etc.
-    initSnapshot(
-        networkName,
-        snapshotName,
-        newSnapshotInputsDir.getParent(),
-        false,
-        creationTime,
-        baseSnapshotId);
+    try {
+      initSnapshot(
+          networkName,
+          snapshotName,
+          newSnapshotInputsDir.getParent(),
+          false,
+          creationTime,
+          baseSnapshotId);
+    } catch (Exception e) {
+      throw new BatfishException(String.format("Error forking snapshot: %s", e.getMessage()), e);
+    } finally {
+      CommonUtil.deleteDirectory(newSnapshotInputsDir);
+    }
   }
 
   /**
