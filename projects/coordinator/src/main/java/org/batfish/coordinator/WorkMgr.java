@@ -1546,7 +1546,7 @@ public class WorkMgr extends AbstractCoordinator {
       FileUtils.copyDirectory(getSnapshotSubdir(unzipDir).toFile(), newSnapshotInputsDir.toFile());
 
       // do not need this directory anymore
-      CommonUtil.deleteDirectory(unzipDir);
+      FileUtils.deleteDirectory(unzipDir.toFile());
     }
 
     // Update line-up/line-down interface statuses
@@ -1592,10 +1592,8 @@ public class WorkMgr extends AbstractCoordinator {
           false,
           creationTime,
           baseSnapshotId);
-    } catch (Exception e) {
-      throw new BatfishException(String.format("Error forking snapshot: %s", e.getMessage()), e);
     } finally {
-      CommonUtil.deleteDirectory(newSnapshotInputsDir);
+      FileUtils.deleteDirectory(newSnapshotInputsDir.toFile());
     }
   }
 
