@@ -99,6 +99,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
@@ -159,6 +160,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefix_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_post_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_pre_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_vsysContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Move_actionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Mr_securityContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
@@ -748,6 +755,34 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return ctx.ip_prefix();
   }
 
+  /** Helper function to move structures (identifiable by name) in a given map */
+  private void executeMove(
+      String name, @Nonnull Move_actionContext ctx, InsertOrderedMap<String, ?> map) {
+    if (!map.containsKey(name)) {
+      warn(ctx, String.format("Cannot execute move, %s does not exist", name));
+      return;
+    }
+    if (ctx.TOP() != null) {
+      map.moveFirst(name);
+    } else if (ctx.BOTTOM() != null) {
+      map.moveLast(name);
+    } else if (ctx.BEFORE() != null) {
+      String pivot = getText(ctx.name);
+      if (!map.containsKey(pivot)) {
+        warn(ctx, String.format("Cannot execute move, %s does not exist", pivot));
+        return;
+      }
+      map.moveBefore(name, pivot);
+    } else if (ctx.AFTER() != null) {
+      String pivot = getText(ctx.name);
+      if (!map.containsKey(pivot)) {
+        warn(ctx, String.format("Cannot execute move, %s does not exist", pivot));
+        return;
+      }
+      map.moveAfter(name, pivot);
+    }
+  }
+
   @Override
   public void exitBgp_enable(Bgp_enableContext ctx) {
     _currentBgpVr.setEnable(toBoolean(ctx.yn));
@@ -1174,6 +1209,53 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitIf_tag(If_tagContext ctx) {
     toInteger(ctx, ctx.tag).ifPresent(_currentInterface::setTag);
+  }
+
+  @Override
+  public void enterM_rulebase(M_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.DEFAULT;
+  }
+
+  @Override
+  public void exitM_rulebase(M_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterM_pre_rulebase(M_pre_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.PRE;
+  }
+
+  @Override
+  public void exitM_pre_rulebase(M_pre_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterM_post_rulebase(M_post_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.POST;
+  }
+
+  @Override
+  public void exitM_post_rulebase(M_post_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterM_vsys(M_vsysContext ctx) {
+    _currentVsys =
+        _currentConfiguration.getVirtualSystems().computeIfAbsent(getText(ctx.name), Vsys::new);
+  }
+
+  @Override
+  public void exitM_vsys(M_vsysContext ctx) {
+    _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void exitMr_security(Mr_securityContext ctx) {
+    String ruleName = getText(ctx.name);
+    executeMove(ruleName, ctx.action, getRulebase().getSecurityRules());
   }
 
   @Override

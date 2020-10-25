@@ -8,6 +8,31 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
+m_rulebase
+:
+    RULEBASE m_rulebase_inner
+;
+
+m_post_rulebase
+:
+    POST_RULEBASE m_rulebase_inner
+;
+
+m_pre_rulebase
+:
+    PRE_RULEBASE m_rulebase_inner
+;
+
+m_rulebase_inner
+:
+    mr_security
+;
+
+mr_security
+:
+    SECURITY RULES name = variable action = move_action
+;
+
 s_rulebase
 :
     RULEBASE rulebase_inner

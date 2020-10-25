@@ -1,0 +1,69 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname move-rulebase-security
+
+set rulebase security rules RULE1 from any
+set rulebase security rules RULE1 to [ z1 z2 ]
+set rulebase security rules RULE1 source any
+set rulebase security rules RULE1 source-user any
+set rulebase security rules RULE1 destination any
+set rulebase security rules RULE1 service "SERVICE1"
+set rulebase security rules RULE1 application any
+set rulebase security rules RULE1 action deny
+
+set rulebase security rules RULE2 from any
+set rulebase security rules RULE2 to [ z1 z2 ]
+set rulebase security rules RULE2 source [ 2.2.2.2 ]
+set rulebase security rules RULE2 negate-source yes
+set rulebase security rules RULE2 destination [ 1.1.1.2 1.1.4.2 ]
+set rulebase security rules RULE2 service any
+set rulebase security rules RULE2 application any
+set rulebase security rules RULE2 action allow
+
+set rulebase security rules RULE3 from any
+set rulebase security rules RULE3 to any
+set rulebase security rules RULE3 source any
+set rulebase security rules RULE3 destination any
+set rulebase security rules RULE3 service any
+set rulebase security rules RULE3 application any
+set rulebase security rules RULE3 action deny
+
+set rulebase security rules RULE4 from any
+set rulebase security rules RULE4 to any
+set rulebase security rules RULE4 source any
+set rulebase security rules RULE4 destination any
+set rulebase security rules RULE4 service any
+set rulebase security rules RULE4 application any
+set rulebase security rules RULE4 action deny
+
+set rulebase security rules RULE5 from any
+set rulebase security rules RULE5 to any
+set rulebase security rules RULE5 source any
+set rulebase security rules RULE5 destination any
+set rulebase security rules RULE5 service any
+set rulebase security rules RULE5 application any
+set rulebase security rules RULE5 action deny
+
+move rulebase security rules RULE3 top
+move rulebase security rules RULE4 before RULE2
+move rulebase security rules RULE1 after RULE4
+move rulebase security rules RULE2 bottom
+
+# Final order of rules after moves: 3,4,1,5,2
+
+set vsys MY_VSYS rulebase security rules RULE6 from any
+set vsys MY_VSYS rulebase security rules RULE6 to any
+set vsys MY_VSYS rulebase security rules RULE6 source any
+set vsys MY_VSYS rulebase security rules RULE6 destination any
+set vsys MY_VSYS rulebase security rules RULE6 service any
+set vsys MY_VSYS rulebase security rules RULE6 application any
+set vsys MY_VSYS rulebase security rules RULE6 action deny
+
+set vsys MY_VSYS rulebase security rules RULE7 from any
+set vsys MY_VSYS rulebase security rules RULE7 to any
+set vsys MY_VSYS rulebase security rules RULE7 source any
+set vsys MY_VSYS rulebase security rules RULE7 destination any
+set vsys MY_VSYS rulebase security rules RULE7 service any
+set vsys MY_VSYS rulebase security rules RULE7 application any
+set vsys MY_VSYS rulebase security rules RULE7 action deny
+
+move vsys MY_VSYS rulebase security rules RULE7 before RULE6
