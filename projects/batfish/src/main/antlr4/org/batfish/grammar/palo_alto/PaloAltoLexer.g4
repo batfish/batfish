@@ -98,6 +98,11 @@ AES_256_GCM
     'aes-256-gcm'
 ;
 
+AFTER
+:
+    'after'
+;
+
 AGGREGATE
 :
     'aggregate'
@@ -198,6 +203,11 @@ AUTO
     'auto'
 ;
 
+BEFORE
+:
+    'before'
+;
+
 BFD
 :
     'bfd'
@@ -216,6 +226,11 @@ BOTH
 BOTNET
 :
     'botnet'
+;
+
+BOTTOM
+:
+    'bottom'
 ;
 
 BROADCAST
@@ -888,6 +903,11 @@ MGT_CONFIG
     'mgt-config'
 ;
 
+MOVE
+:
+    'move'
+;
+
 MTU
 :
     'mtu'
@@ -1491,6 +1511,11 @@ TIMEZONE
 TO
 :
     'to'
+;
+
+TOP
+:
+    'top'
 ;
 
 TRANSFERS_FILES
