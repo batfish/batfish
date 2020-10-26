@@ -306,7 +306,10 @@ public final class IpOwners {
                 candidates = Collections.newSetFromMap(new IdentityHashMap<>());
                 hsrpGroups.put(ip, groupNum, candidates);
               }
-              candidates.add(i);
+              if (i.getConcreteAddress() != null) {
+                // Only interfaces that have IP addresses are considered valid.
+                candidates.add(i);
+              }
             });
   }
 
@@ -327,6 +330,10 @@ public final class IpOwners {
               assert groupNum != null;
               Set<Interface> candidates = cell.getValue();
               assert candidates != null;
+              if (candidates.isEmpty()) {
+                // No interfaces can actually be the master for this group.
+                return;
+              }
               /*
                * Compare priorities first. If tied, break tie based on highest interface IP.
                */
