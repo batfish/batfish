@@ -65316,6 +65316,38 @@
               }
             ],
             "name" : "~SECURITY_POLICIES_TO~xe-1/0/0.0"
+          },
+          "~zone~A~to~zone~B~pure" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "123-4",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "123-4",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~zone~A~to~zone~B~pure 123-4",
+                        "structureType" : "security policy term"
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~zone~A~to~zone~B~pure",
+            "sourceName" : "~zone~A~to~zone~B~pure",
+            "sourceType" : "security policy"
           }
         },
         "ipSpaceMetadata" : {
