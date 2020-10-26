@@ -2432,9 +2432,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   IpAccessList securityPolicyToIpAccessList(ConcreteFirewallFilter filter)
       throws VendorConversionException {
-    /*
-     * From zone is present if this is not a global security policy and if the from-zone is not junos-host.
-     */
+    // For cross-zone policies, create an ACL that contains purely the policy without the from-zone
+    // check. This is not used in the forwarding pipeline, but rather is for policy analysis only.
+    if (filter.getName().startsWith("zone~")) {
+      IpAccessList purelyPolicy =
+          fwTermsToIpAccessList(
+              String.format("~%s~pure", filter.getName()),
+              filter.getTerms().values(),
+              null,
+              JuniperStructureType.SECURITY_POLICY);
+      _c.getIpAccessLists().put(purelyPolicy.getName(), purelyPolicy);
+    }
+
+    // From zone is present if this is not a global security policy and if the from-zone is not
+    // junos-host.
     AclLineMatchExpr matchSrcInterface =
         filter
             .getFromZone()
@@ -2444,7 +2455,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         _masterLogicalSystem.getZones().get(zoneName).getInterfaces()))
             .orElse(null);
 
-    /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
+    // In the forwarding pipeline, the returned ACL has a logical AND of srcInterface filter and
+    // headerSpace filter.
     return fwTermsToIpAccessList(
         filter.getName(),
         filter.getTerms().values(),
