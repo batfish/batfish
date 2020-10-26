@@ -64033,6 +64033,124 @@
             "lifetimeSeconds" : 28800
           }
         },
+        "interfaces" : {
+          "xe-0/0/0" : {
+            "name" : "xe-0/0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0"
+            ],
+            "mtu" : 1500,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "xe-0/0/0.0" : {
+            "name" : "xe-0/0/0.0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "1.2.3.4/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-0/0/0.0"
+            ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : false,
+              "sessionInterfaces" : [
+                "xe-0/0/0.0"
+              ]
+            },
+            "mtu" : 1500,
+            "preTransformationOutgoingFilter" : "~SECURITY_POLICIES_TO~xe-0/0/0.0",
+            "prefix" : "1.2.3.4/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default",
+            "zone" : "A"
+          },
+          "xe-1/0/0" : {
+            "name" : "xe-1/0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-1/0/0"
+            ],
+            "mtu" : 1500,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
+          "xe-1/0/0.0" : {
+            "name" : "xe-1/0/0.0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "2.3.4.5/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E10,
+            "declaredNames" : [
+              "xe-1/0/0.0"
+            ],
+            "firewallSessionInterfaceInfo" : {
+              "fibLookup" : false,
+              "sessionInterfaces" : [
+                "xe-1/0/0.0"
+              ]
+            },
+            "mtu" : 1500,
+            "preTransformationOutgoingFilter" : "~SECURITY_POLICIES_TO~xe-1/0/0.0",
+            "prefix" : "2.3.4.5/24",
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOGICAL",
+            "vrf" : "default",
+            "zone" : "B"
+          }
+        },
         "ipAccessLists" : {
           "zone~A~to~zone~B" : {
             "lines" : [
@@ -64046,7 +64164,10 @@
                       "class" : "org.batfish.datamodel.acl.TrueExpr"
                     },
                     {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
+                      "srcInterfaces" : [
+                        "xe-0/0/0.0"
+                      ]
                     }
                   ]
                 },
@@ -65055,6 +65176,178 @@
             "name" : "~INBOUND_ZONE_FILTER~ZONE-system-services",
             "sourceName" : "~INBOUND_ZONE_FILTER~ZONE-system-services",
             "sourceType" : "firewall filter"
+          },
+          "~SECURITY_POLICIES_TO~xe-0/0/0.0" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "HOST_OUTBOUND",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched Juniper semantics on traffic originated from device"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.AclAclLine",
+                "aclName" : "~GLOBAL_SECURITY_POLICY~",
+                "name" : "Match global security policy",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "global security policy",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~GLOBAL_SECURITY_POLICY~",
+                        "structureType" : "security policy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "DEFAULT_POLICY",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched default policy"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~SECURITY_POLICIES_TO~xe-0/0/0.0"
+          },
+          "~SECURITY_POLICIES_TO~xe-1/0/0.0" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
+                },
+                "name" : "HOST_OUTBOUND",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched Juniper semantics on traffic originated from device"
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.AclAclLine",
+                "aclName" : "zone~A~to~zone~B",
+                "name" : "Match security policy from zone A to zone B",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "security policy from zone A to zone B",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "zone~A~to~zone~B",
+                        "structureType" : "security policy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.AclAclLine",
+                "aclName" : "~GLOBAL_SECURITY_POLICY~",
+                "name" : "Match global security policy",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "global security policy",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~GLOBAL_SECURITY_POLICY~",
+                        "structureType" : "security policy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "DENY",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "DEFAULT_POLICY",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched default policy"
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~SECURITY_POLICIES_TO~xe-1/0/0.0"
+          },
+          "~zone~A~to~zone~B~pure" : {
+            "lines" : [
+              {
+                "class" : "org.batfish.datamodel.ExprAclLine",
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "123-4",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "123-4",
+                      "vendorStructureId" : {
+                        "filename" : "configs/juniper_security",
+                        "structureName" : "~zone~A~to~zone~B~pure 123-4",
+                        "structureType" : "security policy term"
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "name" : "~zone~A~to~zone~B~pure",
+            "sourceName" : "~zone~A~to~zone~B~pure",
+            "sourceType" : "security policy"
           }
         },
         "ipSpaceMetadata" : {
