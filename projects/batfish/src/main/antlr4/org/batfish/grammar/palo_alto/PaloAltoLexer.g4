@@ -53,6 +53,11 @@ ADDRESS_FAMILY_IDENTIFIER
     'address-family-identifier'
 ;
 
+ADJUST_TCP_MSS
+:
+    'adjust-tcp-mss'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
@@ -1712,6 +1717,11 @@ LINE_COMMENT
         | '!'
     )
     F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+;
+
+NETFLOW_PROFILE
+:
+    'netflow-profile'
 ;
 
 NEWLINE
