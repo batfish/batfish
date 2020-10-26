@@ -299,6 +299,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_rule_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
@@ -2690,6 +2691,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         type = ADDRESS_LIKE;
       }
       referenceStructure(type, uniqueName, SECURITY_RULE_SOURCE, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void exitSrs_tag(Srs_tagContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentSecurityRule.getTags().add(tag);
     }
   }
 
