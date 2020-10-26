@@ -2277,21 +2277,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   @Nonnull
   IpAccessList fwTermsToIpAccessList(
-      String aclName,
-      Collection<FwTerm> terms,
+      String createdAclName,
+      ConcreteFirewallFilter filter,
       @Nullable AclLineMatchExpr conjunctMatchExpr,
       JuniperStructureType aclType)
       throws VendorConversionException {
 
     List<ExprAclLine> lines =
-        terms.stream()
-            .flatMap(term -> convertFwTermToExprAclLines(aclName, term, aclType).stream())
+        filter.getTerms().values().stream()
+            .flatMap(term -> convertFwTermToExprAclLines(filter.getName(), term, aclType).stream())
             .collect(ImmutableList.toImmutableList());
 
     return IpAccessList.builder()
-        .setName(aclName)
+        .setName(createdAclName)
         .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
-        .setSourceName(aclName)
+        .setSourceName(filter.getName())
         .setSourceType(aclType.getDescription())
         .build();
   }
@@ -2413,8 +2413,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       assert !filter.getFromZone().isPresent(); // not a security policy
 
       /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
-      return fwTermsToIpAccessList(
-          name, filter.getTerms().values(), null, JuniperStructureType.FIREWALL_FILTER);
+      return fwTermsToIpAccessList(name, filter, null, JuniperStructureType.FIREWALL_FILTER);
     } else {
       assert f instanceof CompositeFirewallFilter;
       CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
@@ -2438,7 +2437,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpAccessList purelyPolicy =
           fwTermsToIpAccessList(
               String.format("~%s~pure", filter.getName()),
-              filter.getTerms().values(),
+              filter,
               null,
               JuniperStructureType.SECURITY_POLICY);
       _c.getIpAccessLists().put(purelyPolicy.getName(), purelyPolicy);
@@ -2458,10 +2457,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // In the forwarding pipeline, the returned ACL has a logical AND of srcInterface filter and
     // headerSpace filter.
     return fwTermsToIpAccessList(
-        filter.getName(),
-        filter.getTerms().values(),
-        matchSrcInterface,
-        JuniperStructureType.SECURITY_POLICY);
+        filter.getName(), filter, matchSrcInterface, JuniperStructureType.SECURITY_POLICY);
   }
 
   @Nullable
