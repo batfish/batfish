@@ -65337,7 +65337,7 @@
                       "text" : "123-4",
                       "vendorStructureId" : {
                         "filename" : "configs/juniper_security",
-                        "structureName" : "~zone~A~to~zone~B~pure 123-4",
+                        "structureName" : "zone~A~to~zone~B 123-4",
                         "structureType" : "security policy term"
                       }
                     }
@@ -65346,7 +65346,7 @@
               }
             ],
             "name" : "~zone~A~to~zone~B~pure",
-            "sourceName" : "~zone~A~to~zone~B~pure",
+            "sourceName" : "zone~A~to~zone~B",
             "sourceType" : "security policy"
           }
         },
