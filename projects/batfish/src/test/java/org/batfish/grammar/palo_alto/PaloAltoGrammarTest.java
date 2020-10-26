@@ -3671,4 +3671,18 @@ public final class PaloAltoGrammarTest {
         c.getVirtualSystems().get("MY_VSYS").getRulebase().getSecurityRules().keySet(),
         contains("RULE7", "RULE6"));
   }
+
+  @Test
+  public void testSecurityRuleTag() {
+    String hostname = "security-rule-tag";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertThat(
+        c.getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getRulebase()
+            .getSecurityRules()
+            .get("RULE1")
+            .getTags(),
+        contains("TAG"));
+  }
 }

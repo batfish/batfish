@@ -87,6 +87,7 @@ srs_definition
         | srs_source_user
         | srs_target
         | srs_to
+        | srs_tag
     )?
 ;
 
@@ -188,6 +189,11 @@ srs_source
 srs_source_user
 :
     SOURCE_USER ANY // only support user any so far
+;
+
+srs_tag
+:
+    TAG tags = variable_list
 ;
 
 srs_target

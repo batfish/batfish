@@ -1,6 +1,7 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
@@ -51,6 +52,8 @@ public final class SecurityRule implements Serializable {
   // Rule type
   @Nullable private RuleType _ruleType;
 
+  @Nonnull private final List<String> _tags;
+
   public SecurityRule(String name, Vsys vsys) {
     _action = LineAction.DENY;
     _applications = new TreeSet<>();
@@ -62,6 +65,7 @@ public final class SecurityRule implements Serializable {
     _source = new LinkedList<>();
     _negateSource = false;
     _to = new TreeSet<>();
+    _tags = new ArrayList<>(1);
     _name = name;
     _vsys = vsys;
   }
@@ -129,6 +133,11 @@ public final class SecurityRule implements Serializable {
   @Nonnull
   public SortedSet<String> getTo() {
     return _to;
+  }
+
+  @Nonnull
+  public List<String> getTags() {
+    return _tags;
   }
 
   @Nonnull
