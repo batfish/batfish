@@ -2797,15 +2797,15 @@ public final class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 2));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "2", 2));
-    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 3));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 9));
 
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_IN", 2));
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_OUT", 2));
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_IN", 2));
-    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_OUT", 2));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_IN", 3));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_OUT", 3));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_IN", 3));
+    assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_GW_OUT", 3));
 
-    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_IN", 1));
-    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_OUT", 1));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_IN", 2));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_OUT", 2));
 
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());

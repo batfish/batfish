@@ -27,11 +27,17 @@ ip prefix-list PL_GW_OUT permit 0.0.0.0/0 le 32
 router eigrp 2
   distribute-list prefix PL_IN in
   distribute-list prefix PL_IN gateway PL_GW_IN in
+  distribute-list prefix PL_IN in GigabitEthernet0/0
+
   distribute-list gateway PL_GW_IN in
+  distribute-list gateway PL_GW_IN in GigabitEthernet0/0
 
   distribute-list prefix PL_OUT out
   distribute-list prefix PL_OUT gateway PL_GW_OUT out
+  distribute-list prefix PL_OUT out GigabitEthernet0/0
+
   distribute-list gateway PL_GW_OUT out
+  distribute-list gateway PL_GW_OUT out GigabitEthernet0/0
 !
 !
 route-map RM_IN permit 10
@@ -40,6 +46,8 @@ route-map RM_OUT permit 10
 !
 router eigrp 3
   distribute-list route-map RM_IN in
+  distribute-list route-map RM_IN in GigabitEthernet0/0
 
   distribute-list route-map RM_OUT out
+  distribute-list route-map RM_OUT out GigabitEthernet0/0
 !
