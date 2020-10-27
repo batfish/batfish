@@ -22,6 +22,8 @@ public final class Interface implements Serializable {
 
   /** Loopback bandwidth */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
+  /** Management bandwidth */
+  private static final double DEFAULT_MGMT_BANDWIDTH = 1E9D;
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
   private static final double DEFAULT_NXOS_ETHERNET_SPEED = 1E9D;
 
@@ -75,6 +77,8 @@ public final class Interface implements Serializable {
     switch (type) {
       case LOOPBACK:
         return DEFAULT_LOOPBACK_BANDWIDTH;
+      case MGMT:
+        return DEFAULT_MGMT_BANDWIDTH;
       case PORT_CHANNEL:
         return null;
       case VLAN:
