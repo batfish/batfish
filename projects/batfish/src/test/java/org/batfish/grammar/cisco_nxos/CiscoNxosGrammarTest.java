@@ -2430,6 +2430,8 @@ public final class CiscoNxosGrammarTest {
     assertThat(eth11.getIncomingFilter(), IpAccessListMatchers.hasName("acl_in"));
     assertThat(eth11.getOutgoingFilter(), IpAccessListMatchers.hasName("acl_out"));
     // TODO: convert and test delay
+
+    assertThat(c, hasInterface("mgmt0", hasBandwidth(1e9)));
   }
 
   @Test
@@ -2437,7 +2439,7 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_interface_properties");
     assertThat(
         vc.getInterfaces(),
-        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet100/100"));
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet100/100", "mgmt0"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
