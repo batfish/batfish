@@ -241,9 +241,8 @@ public class BDDPacket {
     if (bdd.isZero()) {
       return Optional.empty();
     }
-    BDD representativeBDD =
-        BDDRepresentativePicker.pickRepresentative(
-            bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
+
+    BDD representativeBDD = getFlowBDD(bdd, preference);
 
     if (representativeBDD.isZero()) {
       // Should not be possible if the preference is well-formed.
@@ -251,6 +250,22 @@ public class BDDPacket {
     }
 
     return Optional.of(getRepresentativeFlow(representativeBDD));
+  }
+
+  /**
+   * Restrict a BDD according to a given flow preference.
+   *
+   * @param bdd a BDD representing a set of packet headers
+   * @param preference a FlowPreference representing flow preference
+   * @return A BDD restricted to more preferred flows. Note that the return value is NOT a full
+   *     assignment.
+   */
+  public @Nonnull BDD getFlowBDD(BDD bdd, FlowPreference preference) {
+    if (bdd.isZero()) {
+      return bdd;
+    }
+    return BDDRepresentativePicker.pickRepresentative(
+        bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
   }
 
   /**
