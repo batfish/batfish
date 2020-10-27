@@ -1,0 +1,9 @@
+set deviceconfig system hostname application-ignored
+
+# Config should only have 1 parse warning for ignored application statements.
+set application APP1 default port tcp/1025
+set application APP1 category foo
+set application APP1 subcategory bar
+set application APP1 technology baz
+set application APP1 risk 1
+set vsys vsys2 application APP2 category spam
