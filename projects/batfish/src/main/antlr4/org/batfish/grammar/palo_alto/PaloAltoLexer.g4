@@ -323,6 +323,11 @@ DEAD_COUNTS
     'dead-counts'
 ;
 
+DEFAULT
+:
+    'default'
+;
+
 DEFAULT_GATEWAY
 :
     'default-gateway'

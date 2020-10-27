@@ -15,13 +15,44 @@ s_application_definition
 :
     name = variable
     (
-        sapp_description
+        sapp_category
+        | sapp_default_port
+        | sapp_description
+        | sapp_risk
+        | sapp_subcategory
+        | sapp_technology
     )?
+;
+
+sapp_category
+:
+    CATEGORY null_rest_of_line
+;
+
+sapp_default_port
+:
+    DEFAULT PORT null_rest_of_line
 ;
 
 sapp_description
 :
     DESCRIPTION description = value
+;
+
+sapp_risk
+:
+// 1-5
+  RISK uint8
+;
+
+sapp_subcategory
+:
+  SUBCATEGORY null_rest_of_line
+;
+
+sapp_technology
+:
+  TECHNOLOGY null_rest_of_line
 ;
 
 s_application_group

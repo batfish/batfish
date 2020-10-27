@@ -101,6 +101,7 @@ import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -123,6 +124,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -136,6 +138,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
@@ -699,6 +702,20 @@ public final class PaloAltoGrammarTest {
     assertThat(applications.get("app2").getDescription(), equalTo("this is a description"));
     assertThat(
         applications.get("app w spaces").getDescription(), equalTo("this is another description"));
+  }
+
+  @Test
+  public void testApplicationsIgnoredStatements() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("application-ignored");
+
+    // Make sure the configured applications were discovered
+    assertThat(
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplications().keySet(), contains("APP1"));
+    assertThat(c.getVirtualSystems().get("vsys2").getApplications().keySet(), contains("APP2"));
+
+    // Should result in only one warning
+    ParseWarning warning = Iterables.getOnlyElement(c.getWarnings().getParseWarnings());
+    assertThat(warning.getComment(), containsStringIgnoringCase("application"));
   }
 
   @Test

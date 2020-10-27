@@ -226,7 +226,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sagd_filterContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_categoryContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_default_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_riskContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_subcategoryContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_technologyContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_descriptionContext;
@@ -437,6 +442,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
+
+  /** Should file at most one warning about ignored application statements */
+  private boolean _filedWarningApplicationStatementIgnored = false;
 
   private AddressGroup _currentAddressGroup;
   private AddressObject _currentAddressObject;
@@ -1600,8 +1608,33 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSapp_category(Sapp_categoryContext ctx) {
+    fileWarningApplicationStatementIgnored(ctx);
+  }
+
+  @Override
+  public void exitSapp_default_port(Sapp_default_portContext ctx) {
+    fileWarningApplicationStatementIgnored(ctx);
+  }
+
+  @Override
   public void exitSapp_description(Sapp_descriptionContext ctx) {
     _currentApplication.setDescription(getText(ctx.description));
+  }
+
+  @Override
+  public void exitSapp_risk(Sapp_riskContext ctx) {
+    fileWarningApplicationStatementIgnored(ctx);
+  }
+
+  @Override
+  public void exitSapp_subcategory(Sapp_subcategoryContext ctx) {
+    fileWarningApplicationStatementIgnored(ctx);
+  }
+
+  @Override
+  public void exitSapp_technology(Sapp_technologyContext ctx) {
+    fileWarningApplicationStatementIgnored(ctx);
   }
 
   @Override
@@ -3147,6 +3180,15 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     } else {
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+    }
+  }
+
+  private void fileWarningApplicationStatementIgnored(ParserRuleContext ctx) {
+    if (!_filedWarningApplicationStatementIgnored) {
+      _filedWarningApplicationStatementIgnored = true;
+      warn(
+          ctx,
+          "Application statements are not supported. Application effects will not be modeled.");
     }
   }
 
