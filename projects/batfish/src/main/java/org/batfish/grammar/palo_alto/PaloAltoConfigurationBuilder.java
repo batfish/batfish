@@ -3164,7 +3164,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _filedWarningApplicationStatementIgnored = true;
       warn(
           ctx,
-          "Application statements are not supported. Application effects will not be modeled.");
+          "Application definitions only affect App-ID, so Batfish ignores custom application definitions.");
     }
   }
 
