@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
@@ -92,7 +93,7 @@ public final class FilterQuestionUtils {
     if (bdd.isZero()) {
       return Optional.empty();
     }
-    BDD assignment = bdd.fullSatOne();
+    BDD assignment = pkt.getFlowBDD(bdd, FlowPreference.TESTFILTER).fullSatOne();
     return Optional.of(
         pkt.getRepresentativeFlow(assignment)
             .setIngressNode(hostname)
