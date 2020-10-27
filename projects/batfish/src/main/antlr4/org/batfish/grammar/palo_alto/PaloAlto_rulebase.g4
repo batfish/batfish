@@ -50,8 +50,14 @@ s_pre_rulebase
 
 rulebase_inner
 :
-    sr_nat
+    sr_application_override
+    | sr_nat
     | sr_security
+;
+
+sr_application_override
+:
+    APPLICATION_OVERRIDE null_rest_of_line
 ;
 
 sr_security

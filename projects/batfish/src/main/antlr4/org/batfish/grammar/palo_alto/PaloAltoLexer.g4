@@ -163,6 +163,11 @@ APPLICATION_GROUP
     'application-group'
 ;
 
+APPLICATION_OVERRIDE
+:
+    'application-override'
+;
+
 AREA
 :
     'area'

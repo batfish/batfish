@@ -3742,4 +3742,11 @@ public final class PaloAltoGrammarTest {
             .get(Prefix.parse("120.120.120.120/32"))
             .getEbgpMultihop());
   }
+
+  @Test
+  public void testApplicationOverride() {
+    String hostname = "application-override";
+    // Don't crash
+    parsePaloAltoConfig(hostname);
+  }
 }

@@ -275,6 +275,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sr_application_overrideContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
@@ -1847,6 +1848,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentDeviceGroup.addVsys(getText(ctx.device), _currentDeviceGroupVsys);
     }
     _currentDeviceGroupVsys = null;
+  }
+
+  @Override
+  public void exitSr_application_override(Sr_application_overrideContext ctx) {
+    // application-override only affects App-ID, so Batfish ignores it
+    // TODO: maybe surface a warning to user? but don't spam on every line.
   }
 
   @Override
