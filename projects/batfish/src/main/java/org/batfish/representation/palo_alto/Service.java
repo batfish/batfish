@@ -4,6 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -93,16 +95,16 @@ public final class Service implements ServiceGroupMember {
 
   private final String _name;
   @Nullable private String _description;
-
   @Nullable private IpProtocol _protocol;
-
   @Nonnull private IntegerSpace _sourcePorts;
   @Nonnull private IntegerSpace _ports;
+  @Nonnull private final List<String> _tags;
 
   public Service(String name) {
     _name = name;
     _ports = IntegerSpace.EMPTY;
     _sourcePorts = IntegerSpace.EMPTY;
+    _tags = new ArrayList<>(1);
   }
 
   @Nullable
@@ -142,6 +144,15 @@ public final class Service implements ServiceGroupMember {
 
   public void setProtocol(IpProtocol protocol) {
     _protocol = protocol;
+  }
+
+  @Nonnull
+  public List<String> getTags() {
+    return _tags;
+  }
+
+  public void addTag(String tag) {
+    _tags.add(tag);
   }
 
   @Override
