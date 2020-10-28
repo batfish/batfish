@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname vlan
+!
+interface Vlan1
+  no shutdown
+!
+interface Ethernet1
+  no shutdown
+  switchport mode access
+  switchport access vlan 1
+!
+interface Vlan2
+  no shutdown
+!
+interface Ethernet2
+  shutdown
+  switchport mode access
+  switchport access vlan 2
+!
