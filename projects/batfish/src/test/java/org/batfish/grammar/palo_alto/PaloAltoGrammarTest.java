@@ -2624,6 +2624,17 @@ public final class PaloAltoGrammarTest {
     IpAccessList sg1 = c.getIpAccessLists().get(serviceGroup1AclName);
     AclLine line1 = sg1.getLines().get(0);
     assertThat(line1.getName(), equalTo(service1.getSourceName()));
+
+    // Verify VS tags
+    PaloAltoConfiguration vsConfig = parsePaloAltoConfig(hostname);
+    assertThat(
+        vsConfig
+            .getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getServices()
+            .get("SERVICE 4")
+            .getTags(),
+        contains("TAG"));
   }
 
   @Test
