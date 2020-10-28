@@ -118,6 +118,7 @@ bgppgp_connection_options
     CONNECTION_OPTIONS
     (
         bgppgp_co_incoming_bgp_connection
+        | bgppgp_co_multihop
         | bgppgp_co_null
         | bgppgp_co_outgoing_bgp_connection
     )
@@ -140,6 +141,11 @@ bgppgp_coi_allow
 bgppgp_coi_remote_port
 :
     REMOTE_PORT p = port_number
+;
+
+bgppgp_co_multihop
+:
+    MULTIHOP num = uint8 // 0-255
 ;
 
 bgppgp_co_null

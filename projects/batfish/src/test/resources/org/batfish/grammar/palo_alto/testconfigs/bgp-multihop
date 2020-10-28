@@ -1,0 +1,15 @@
+set deviceconfig system hostname bgp-multihop
+
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.5 ip 1.1.1.3/24
+set network virtual-router vr1 interface ethernet1/3.5
+
+set network virtual-router vr1 protocol bgp enable yes
+set network virtual-router vr1 protocol bgp router-id 1.1.1.1
+set network virtual-router vr1 protocol bgp local-as 1
+
+set network virtual-router vr1 protocol bgp peer-group pg1 enable yes
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 local-address interface ethernet1/3.5
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 peer-address ip 120.120.120.120
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 peer-as 2345
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 enable yes
+set network virtual-router vr1 protocol bgp peer-group pg1 peer peer1 connection-options multihop 0

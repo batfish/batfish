@@ -3713,4 +3713,33 @@ public final class PaloAltoGrammarTest {
             .getTags(),
         contains("TAG"));
   }
+
+  @Test
+  public void testBgpMultihopExtraction() {
+    String hostname = "bgp-multihop";
+    PaloAltoConfiguration vs = parsePaloAltoConfig(hostname);
+    assertThat(
+        vs.getVirtualRouters()
+            .get("vr1")
+            .getBgp()
+            .getPeerGroups()
+            .get("pg1")
+            .getPeers()
+            .get("peer1")
+            .getMultihop(),
+        equalTo(0));
+  }
+
+  @Test
+  public void testBgpMultihopConversion() {
+    String hostname = "bgp-multihop";
+    Configuration c = parseConfig(hostname);
+    assertTrue(
+        c.getVrfs()
+            .get("vr1")
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("120.120.120.120/32"))
+            .getEbgpMultihop());
+  }
 }
