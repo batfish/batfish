@@ -880,7 +880,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Integer vlanNumber = null;
       // Populate vlanInterface and nonVlanInterfaces, and initialize
       // vlanMemberCounts:
-      for (Interface iface : c.getAllInterfaces().values()) {
+      for (Interface iface : c.getActiveInterfaces().values()) {
         if ((iface.getInterfaceType() == InterfaceType.VLAN)
             && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
           vlanInterfaces.put(vlanNumber, iface);
