@@ -306,6 +306,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.St_commentsContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.St_descriptionContext;
@@ -2787,6 +2788,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         assert item.range != null;
         _currentService.addSourcePorts(new SubRange(getText(item.range)));
       }
+    }
+  }
+
+  @Override
+  public void enterSserv_tag(Sserv_tagContext ctx) {
+    for (Variable_list_itemContext tag : variables(ctx.tags)) {
+      _currentService.addTag(getText(tag));
     }
   }
 
