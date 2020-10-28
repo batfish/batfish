@@ -123,6 +123,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_local_portContext
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_max_prefixesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_asContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_reflector_clientContext;
@@ -952,6 +953,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitBgppgp_la_ip(Bgppgp_la_ipContext ctx) {
     ConcreteInterfaceAddress address = toConcreteInterfaceAddress(ctx.interface_address());
     _currentBgpPeer.setLocalAddress(address.getIp());
+  }
+
+  @Override
+  public void exitBgppgp_max_prefixes(Bgppgp_max_prefixesContext ctx) {
+    warn(ctx, "Batfish does not limit the number of prefixes received over BGP");
   }
 
   @Override
