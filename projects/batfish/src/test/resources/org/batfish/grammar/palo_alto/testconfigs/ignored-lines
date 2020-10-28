@@ -117,3 +117,12 @@ set device-group DGNAME profiles spyware NAME rules NAME2 packet-capture disable
 set device-group DGNAME profiles vulnerability NAME rules NAME2 action alert
 set device-group DGNAME profile-group GROUPNAME spyware NAME2
 set device-group DGNAME profile-group GROUPNAME vulnerability NAME2
+
+# BGP
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER connection-options keep-alive-interval 30
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER connection-options open-delay-time 0
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER connection-options hold-time 90
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER connection-options idle-hold-time 15
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER connection-options min-route-adv-interval 30
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER bfd profile Inherit-vr-global-setting
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER max-prefixes 5000

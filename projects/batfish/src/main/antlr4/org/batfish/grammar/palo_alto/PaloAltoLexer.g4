@@ -653,6 +653,10 @@ HIP_PROFILES
     'hip-profiles'
 ;
 
+HOLD_TIME:
+    'hold-time'
+;
+
 HOSTNAME
 :
     'hostname'
@@ -676,6 +680,11 @@ IBGP
 ICMP
 :
     'icmp'
+;
+
+IDLE_HOLD_TIME
+:
+    'idle-hold-time'
 ;
 
 IETF
@@ -771,6 +780,11 @@ IPV4
 IPV6
 :
     'ipv6'
+;
+
+KEEP_ALIVE_INTERVAL
+:
+    'keep-alive-interval'
 ;
 
 LAYER2
@@ -878,6 +892,11 @@ MAX_PATH
     'max-path'
 ;
 
+MAX_PREFIXES
+:
+    'max-prefixes'
+;
+
 MD5
 :
     'md5'
@@ -891,6 +910,11 @@ MED
 MESHED_CLIENT
 :
     'meshed-client'
+;
+
+MIN_ROUTE_ADV_INTERVAL
+:
+    'min-route-adv-interval'
 ;
 
 MINUTES
@@ -1011,6 +1035,11 @@ NTP_SERVERS
 NULL
 :
     'null'
+;
+
+OPEN_DELAY_TIME
+:
+    'open-delay-time'
 ;
 
 ORIGIN
