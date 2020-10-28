@@ -3685,11 +3685,4 @@ public final class PaloAltoGrammarTest {
             .getTags(),
         contains("TAG"));
   }
-
-  @Test
-  public void testBgpIgnore() {
-    String hostname = "bgp-ignore";
-    // Don't crash
-    parsePaloAltoConfig(hostname);
-  }
 }
