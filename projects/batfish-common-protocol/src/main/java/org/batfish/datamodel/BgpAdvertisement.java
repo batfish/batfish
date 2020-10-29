@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -273,37 +273,37 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   @JsonCreator
   private static BgpAdvertisement create(
-      @JsonProperty(PROP_TYPE) @Nonnull BgpAdvertisementType type,
-      @JsonProperty(PROP_NETWORK) @Nonnull Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) @Nonnull Ip nextHopIp,
-      @JsonProperty(PROP_SRC_NODE) @Nonnull String srcNode,
-      @JsonProperty(PROP_SRC_VRF) @Nonnull String srcVrf,
-      @JsonProperty(PROP_SRC_IP) @Nonnull Ip srcIp,
-      @JsonProperty(PROP_DST_NODE) @Nonnull String dstNode,
-      @JsonProperty(PROP_DST_VRF) @Nonnull String dstVrf,
-      @JsonProperty(PROP_DST_IP) @Nonnull Ip dstIp,
-      @JsonProperty(PROP_SRC_PROTOCOL) @Nonnull RoutingProtocol srcProtocol,
-      @JsonProperty(PROP_ORIGIN_TYPE) @Nonnull OriginType originType,
-      @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
-      @JsonProperty(PROP_MED) long med,
-      @JsonProperty(PROP_ORIGINATOR_IP) @Nonnull Ip originatorIp,
-      @JsonProperty(PROP_AS_PATH) @Nonnull AsPath asPath,
+      @JsonProperty(PROP_TYPE) BgpAdvertisementType type,
+      @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_SRC_NODE) String srcNode,
+      @JsonProperty(PROP_SRC_VRF) String srcVrf,
+      @JsonProperty(PROP_SRC_IP) Ip srcIp,
+      @JsonProperty(PROP_DST_NODE) String dstNode,
+      @JsonProperty(PROP_DST_VRF) String dstVrf,
+      @JsonProperty(PROP_DST_IP) Ip dstIp,
+      @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
+      @JsonProperty(PROP_LOCAL_PREFERENCE) Long localPreference,
+      @JsonProperty(PROP_MED) Long med,
+      @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
+      @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
       @JsonProperty(PROP_CLUSTER_LIST) SortedSet<Long> clusterList,
-      @JsonProperty(PROP_WEIGHT) int weight) {
-    checkNotNull(type, "type must be specified for BgpAdvertisement");
-    checkNotNull(network, "network must be specified for BgpAdvertisement");
-    checkNotNull(nextHopIp, "nextHopIp must be specified for BgpAdvertisement");
-    checkNotNull(srcNode, "srcNode must be specified for BgpAdvertisement");
-    checkNotNull(srcVrf, "srcVrf must be specified for BgpAdvertisement");
-    checkNotNull(srcIp, "srcIp must be specified for BgpAdvertisement");
-    checkNotNull(dstNode, "dstNode must be specified for BgpAdvertisement");
-    checkNotNull(dstVrf, "dstVrf must be specified for BgpAdvertisement");
-    checkNotNull(dstIp, "dstIp must be specified for BgpAdvertisement");
-    checkNotNull(srcProtocol, "srcProtocol must be specified for BgpAdvertisement");
-    checkNotNull(originType, "originType must be specified for BgpAdvertisement");
-    checkNotNull(originatorIp, "originatorIp must be specified for BgpAdvertisement");
-    checkNotNull(asPath, "asPath must be specified for BgpAdvertisement");
+      @JsonProperty(PROP_WEIGHT) Integer weight) {
+    checkArgument(type != null, "type must be specified for BgpAdvertisement");
+    checkArgument(network != null, "network must be specified for BgpAdvertisement");
+    checkArgument(nextHopIp != null, "nextHopIp must be specified for BgpAdvertisement");
+    checkArgument(srcNode != null, "srcNode must be specified for BgpAdvertisement");
+    checkArgument(srcVrf != null, "srcVrf must be specified for BgpAdvertisement");
+    checkArgument(srcIp != null, "srcIp must be specified for BgpAdvertisement");
+    checkArgument(dstNode != null, "dstNode must be specified for BgpAdvertisement");
+    checkArgument(dstVrf != null, "dstVrf must be specified for BgpAdvertisement");
+    checkArgument(dstIp != null, "dstIp must be specified for BgpAdvertisement");
+    checkArgument(srcProtocol != null, "srcProtocol must be specified for BgpAdvertisement");
+    checkArgument(originType != null, "originType must be specified for BgpAdvertisement");
+    checkArgument(originatorIp != null, "originatorIp must be specified for BgpAdvertisement");
+    checkArgument(asPath != null, "asPath must be specified for BgpAdvertisement");
     return new BgpAdvertisement(
         type,
         network,
@@ -316,13 +316,13 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         dstIp,
         srcProtocol,
         originType,
-        localPreference,
-        med,
+        firstNonNull(localPreference, 100L),
+        firstNonNull(med, 0L),
         originatorIp,
         asPath,
         firstNonNull(communities, ImmutableSortedSet.of()),
         firstNonNull(clusterList, ImmutableSortedSet.of()),
-        weight);
+        firstNonNull(weight, 0));
   }
 
   public BgpAdvertisement(
@@ -347,11 +347,11 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _type = type;
     _network = network;
     _nextHopIp = nextHopIp;
-    _srcNode = srcNode.toLowerCase(); // canonicalize node names
-    _srcVrf = srcVrf;
+    _srcNode = srcNode.toLowerCase(); // canonicalize node name
+    _srcVrf = srcVrf.toLowerCase(); // canonicalize vrf name
     _srcIp = srcIp;
-    _dstNode = dstNode.toLowerCase(); // canonicalize node names
-    _dstVrf = dstVrf;
+    _dstNode = dstNode.toLowerCase(); // canonicalize node name
+    _dstVrf = dstVrf.toLowerCase(); // canonicalize vrf name
     _dstIp = dstIp;
     _srcProtocol = srcProtocol;
     _originType = originType;
