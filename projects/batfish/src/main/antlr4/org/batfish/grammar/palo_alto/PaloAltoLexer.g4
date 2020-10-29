@@ -952,6 +952,11 @@ MULTICAST
     'multicast'
 ;
 
+MULTIHOP
+:
+    'multihop'
+;
+
 NAT
 :
     'nat'
