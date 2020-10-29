@@ -2860,6 +2860,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     name = ctx.name.getText();
     _currentRoutingInstance =
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
+    _currentRoutingInstance.getGlobalMasterInterface().setParent(_currentMasterInterface);
     _configuration.defineFlattenedStructure(ROUTING_INSTANCE, name, ctx, _parser);
   }
 
@@ -5106,6 +5107,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRi_interface(Ri_interfaceContext ctx) {
     Interface iface = initInterface(ctx.id);
     iface.setRoutingInstance(_currentRoutingInstance.getName());
+    iface.setParent(_currentRoutingInstance.getGlobalMasterInterface());
     _configuration.referenceStructure(
         INTERFACE, iface.getName(), ROUTING_INSTANCE_INTERFACE, getLine(ctx.id.getStop()));
   }
