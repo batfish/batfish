@@ -5784,4 +5784,16 @@ public final class FlatJuniperGrammarTest {
         hasInterface(
             "et-0/0/0.0", hasAllowedVlans(equalTo(IntegerSpace.of(Range.closed(1, 4094))))));
   }
+
+  /**
+   * Test that interfaces inherit OSPF properties from the virtual master interface inside a routing
+   * instance
+   */
+  @Test
+  public void testOspfInterfaceAllInRoutingInstanceInheritance() {
+    String hostname = "ospf-area-interface-all";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(111))));
+    assertThat(c, hasInterface("ge-0/0/1.0", hasOspfCost(equalTo(111))));
+  }
 }
