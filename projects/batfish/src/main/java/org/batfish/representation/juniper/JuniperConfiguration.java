@@ -1180,9 +1180,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // chooses the correct
     // interface type...you should never have to set the interface type" (see
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
-    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
+    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceTypeOrDefault()));
 
-    if (vsIface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+    if (vsIface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       // neighbors only for NBMA mode:
       // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/neighbor-edit-protocols-ospf.html
       ospfSettings.setNbmaNeighbors(
@@ -1211,7 +1211,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
-    if (iface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_DEAD_INTERVAL;
     }
     return DEFAULT_DEAD_INTERVAL;
@@ -1229,7 +1229,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (helloInterval != null) {
       return helloInterval;
     }
-    if (iface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_HELLO_INTERVAL;
     }
     return DEFAULT_HELLO_INTERVAL;
