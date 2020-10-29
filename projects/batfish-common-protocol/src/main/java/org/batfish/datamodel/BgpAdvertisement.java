@@ -272,7 +272,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   private final int _weight;
 
   @JsonCreator
-  private BgpAdvertisement create(
+  private static BgpAdvertisement create(
       @JsonProperty(PROP_TYPE) @Nonnull BgpAdvertisementType type,
       @JsonProperty(PROP_NETWORK) @Nonnull Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nonnull Ip nextHopIp,
