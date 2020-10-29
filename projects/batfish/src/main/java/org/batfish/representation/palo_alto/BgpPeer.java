@@ -52,6 +52,15 @@ public class BgpPeer implements Serializable {
     _localInterface = localInterface;
   }
 
+  @Nullable
+  public Integer getMultihop() {
+    return _multihop;
+  }
+
+  public void setMultihop(@Nullable Integer multihop) {
+    _multihop = multihop;
+  }
+
   public @Nonnull String getName() {
     return _name;
   }
@@ -90,4 +99,5 @@ public class BgpPeer implements Serializable {
   private @Nullable Ip _peerAddress;
   private @Nullable Long _peerAs;
   private @Nullable ReflectorClient _reflectorClient;
+  private @Nullable Integer _multihop;
 }

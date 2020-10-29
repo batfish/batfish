@@ -116,6 +116,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpp_importContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_peerContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_co_multihopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coi_allowContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coi_remote_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_allowContext;
@@ -925,6 +926,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitBgppgp_coi_remote_port(Bgppgp_coi_remote_portContext ctx) {
     _currentBgpPeer.getConnectionOptions().setRemotePort(toInteger(ctx.p));
+  }
+
+  @Override
+  public void enterBgppgp_co_multihop(Bgppgp_co_multihopContext ctx) {
+    _currentBgpPeer.setMultihop(toInteger(ctx.num));
   }
 
   @Override
