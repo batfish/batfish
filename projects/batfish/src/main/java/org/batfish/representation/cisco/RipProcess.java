@@ -20,8 +20,6 @@ public class RipProcess implements Serializable {
 
   private String _defaultInformationOriginateMap;
 
-  private Integer _defaultInformationOriginateMapLine;
-
   private String _distributeListIn;
 
   private boolean _distributeListInAcl;
@@ -64,10 +62,6 @@ public class RipProcess implements Serializable {
 
   public String getDefaultInformationOriginateMap() {
     return _defaultInformationOriginateMap;
-  }
-
-  public Integer getDefaultInformationOriginateMapLine() {
-    return _defaultInformationOriginateMapLine;
   }
 
   public String getDistributeListIn() {
