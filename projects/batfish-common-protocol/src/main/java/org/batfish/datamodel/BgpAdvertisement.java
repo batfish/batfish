@@ -348,10 +348,10 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _network = network;
     _nextHopIp = nextHopIp;
     _srcNode = srcNode.toLowerCase(); // canonicalize node name
-    _srcVrf = srcVrf.toLowerCase(); // canonicalize vrf name
+    _srcVrf = srcVrf;
     _srcIp = srcIp;
     _dstNode = dstNode.toLowerCase(); // canonicalize node name
-    _dstVrf = dstVrf.toLowerCase(); // canonicalize vrf name
+    _dstVrf = dstVrf;
     _dstIp = dstIp;
     _srcProtocol = srcProtocol;
     _originType = originType;

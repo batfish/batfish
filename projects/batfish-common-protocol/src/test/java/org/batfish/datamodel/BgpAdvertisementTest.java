@@ -34,7 +34,9 @@ public class BgpAdvertisementTest {
             10);
     assertThat(advert.getSrcNode(), equalTo("srcnode"));
     assertThat(advert.getDstNode(), equalTo("dstnode"));
-    assertThat(advert.getSrcVrf(), equalTo("srcvrf"));
-    assertThat(advert.getDstVrf(), equalTo("dstvrf"));
+
+    // don't canonicalize VRFs
+    assertThat(advert.getSrcVrf(), equalTo("srcVrf"));
+    assertThat(advert.getDstVrf(), equalTo("dstVrf"));
   }
 }
