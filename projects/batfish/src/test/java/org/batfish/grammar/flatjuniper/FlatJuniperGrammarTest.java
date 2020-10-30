@@ -5793,7 +5793,15 @@ public final class FlatJuniperGrammarTest {
   public void testOspfInterfaceAllInRoutingInstanceInheritance() {
     String hostname = "ospf-area-interface-all";
     Configuration c = parseConfig(hostname);
-    assertThat(c, hasInterface("ge-0/0/0.0", hasOspfCost(equalTo(111))));
-    assertThat(c, hasInterface("ge-0/0/1.0", hasOspfCost(equalTo(111))));
+    List<String> ifaces = ImmutableList.of("ge-0/0/0.0", "ge-0/0/1.0");
+    for (String iface : ifaces) {
+      assertThat(c, hasInterface(iface, hasOspfCost(equalTo(111))));
+      assertThat(
+          c.getAllInterfaces().get(iface).getOspfSettings().getNetworkType(),
+          equalTo(OspfNetworkType.POINT_TO_POINT));
+      assertThat(
+          c.getAllInterfaces().get(iface).getOspfSettings().getHelloInterval(), equalTo(222));
+      assertThat(c.getAllInterfaces().get(iface).getOspfSettings().getDeadInterval(), equalTo(333));
+    }
   }
 }
