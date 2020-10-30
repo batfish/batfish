@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
@@ -92,7 +94,7 @@ public class Interface implements Serializable {
   @Nullable private Integer _ospfHelloInterval;
   private int _ospfHelloMultiplier;
   private boolean _ospfPassive;
-  private OspfInterfaceType _ospfInterfaceType;
+  @Nullable private OspfInterfaceType _ospfInterfaceType;
   private @Nonnull Set<InterfaceOspfNeighbor> _ospfNeighbors;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
@@ -114,7 +116,6 @@ public class Interface implements Serializable {
     _bandwidth = getDefaultBandwidthByName(name);
     _defined = false;
     _name = name;
-    _ospfInterfaceType = OspfInterfaceType.BROADCAST;
     _ospfNeighbors = new HashSet<>();
     _allowedVlans = new LinkedList<>();
     _allowedVlanNames = new LinkedList<>();
@@ -231,8 +232,19 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
+  /** Return the set (or inherited from parent interface) OSPF interface type. */
+  @Nullable
   public OspfInterfaceType getOspfInterfaceType() {
     return _ospfInterfaceType;
+  }
+
+  /**
+   * Return the set (or inherited from parent interface) OSPF interface type. If unset, returns
+   * vendor default.
+   */
+  @Nonnull
+  public OspfInterfaceType getOspfInterfaceTypeOrDefault() {
+    return firstNonNull(_ospfInterfaceType, OspfInterfaceType.BROADCAST);
   }
 
   public boolean getOspfPassive() {
@@ -305,6 +317,15 @@ public class Interface implements Serializable {
     }
     if (_ospfDisable == null) {
       _ospfDisable = _parent._ospfDisable;
+    }
+    if (_ospfHelloInterval == null) {
+      _ospfHelloInterval = _parent._ospfHelloInterval;
+    }
+    if (_ospfDeadInterval == null) {
+      _ospfDeadInterval = _parent._ospfDeadInterval;
+    }
+    if (_ospfInterfaceType == null) {
+      _ospfInterfaceType = _parent._ospfInterfaceType;
     }
   }
 
