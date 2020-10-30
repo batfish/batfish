@@ -6275,4 +6275,11 @@ public final class CiscoGrammarTest {
         outside,
         equalTo(new FirewallSessionInterfaceInfo(true, ImmutableSet.of("outside"), null, null)));
   }
+
+  @Test
+  public void testVasiInterface() throws IOException {
+    Configuration c = parseConfig("iosxe-vasi-interface");
+    assertThat(c, hasInterface("vasileft1", hasAddress("1.1.1.2/31")));
+    assertThat(c, hasInterface("vasiright1", hasAddress("1.1.1.3/31")));
+  }
 }
