@@ -45,7 +45,7 @@ public final class BlockReservedAddressesAtInternet implements IspTrafficFilteri
   }
 
   /** Prefix -> description for TraceElement (optional). */
-  private static final Map<String, String> BLOCKED_ADDRESS =
+  static final Map<String, String> BLOCKED_ADDRESS =
       ImmutableMap.<String, String>builder()
           .put("0.0.0.0/8", "RFC 6890")
           .put("10.0.0.0/8", "RFC 1918 private")

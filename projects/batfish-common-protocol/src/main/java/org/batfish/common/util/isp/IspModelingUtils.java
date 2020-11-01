@@ -3,6 +3,7 @@ package org.batfish.common.util.isp;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.naturalOrder;
+import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.BLOCKED_ADDRESS;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -31,6 +32,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.util.isp.IspModel.Remote;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -84,8 +86,14 @@ public final class IspModelingUtils {
       new LocationInfo(
           // use as a source
           true,
-          // pick any source IP (excluding snapshot owned IPs)
-          UniverseIpSpace.INSTANCE,
+          // pick any non-blocked source IP (excluding snapshot owned IPs)
+          Objects.requireNonNull(
+              AclIpSpace.difference(
+                  UniverseIpSpace.INSTANCE,
+                  AclIpSpace.union(
+                      BLOCKED_ADDRESS.keySet().stream()
+                          .map(prefix -> Prefix.parse(prefix).toIpSpace())
+                          .collect(Collectors.toSet())))),
           // pretend there's a neighbor that responds to ARP, so we get EXITS_NETWORK instead of
           // NEIGHBOR_UNREACHABLE for traffic routed to the internet
           INTERNET_OUT_SUBNET.getLastHostIp().toIpSpace());
