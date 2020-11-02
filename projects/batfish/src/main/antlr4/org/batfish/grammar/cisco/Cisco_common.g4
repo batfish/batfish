@@ -26,6 +26,13 @@ bgp_asn
     | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
 ;
 
+both_export_import
+:
+  BOTH
+  | EXPORT
+  | IMPORT
+;
+
 community
 :
    ACCEPT_OWN

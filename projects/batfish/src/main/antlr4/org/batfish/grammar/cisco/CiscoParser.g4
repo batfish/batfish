@@ -1883,6 +1883,22 @@ vrfd_af_export
    NEWLINE
 ;
 
+vrfd_af_import
+:
+   IMPORT
+   vrfd_af_import_map
+;
+
+vrfd_af_import_map
+:
+   MAP name = variable NEWLINE
+;
+
+vrfd_af_route_target
+:
+   ROUTE_TARGET type = both_export_import rt = route_target NEWLINE
+;
+
 vrfd_af_null
 :
    NO?
@@ -3401,6 +3417,7 @@ s_vrf_definition
       vrfd_address_family
       | vrfd_description
       | vrfd_rd
+      | vrfd_route_target
       | vrfd_null
    )*
    (
@@ -4634,62 +4651,6 @@ vpn_null
    ) null_rest_of_line
 ;
 
-vrfc_address_family
-:
-   ADDRESS_FAMILY (IPV4 | IPV6) UNICAST NEWLINE
-   (
-      vrfc_route_target
-   )*
-;
-
-vrfc_ip_route
-:
-   IP ROUTE ip_route_tail
-;
-
-vrfc_rd
-:
-   RD (AUTO | route_distinguisher) NEWLINE
-;
-
-vrfc_route_target
-:
-   ROUTE_TARGET (IMPORT | EXPORT | BOTH) (AUTO | route_target) EVPN? NEWLINE
-;
-
-vrfc_shutdown
-:
-   NO? SHUTDOWN NEWLINE
-;
-
-vrfc_vni
-:
-   VNI vni = DEC NEWLINE
-;
-
-
-vrfc_null
-:
-   NO?
-   (
-      (
-         IP
-         (
-            AMT
-            | AUTO_DISCARD
-            | DOMAIN_LIST
-            | DOMAIN_NAME
-            | IGMP
-            | MROUTE
-            | MSDP
-            | NAME_SERVER
-            | PIM
-         )
-      )
-      | MDT
-   ) null_rest_of_line
-;
-
 vrfd_address_family
 :
    ADDRESS_FAMILY
@@ -4706,7 +4667,9 @@ vrfd_address_family
    )? NEWLINE
    (
       vrfd_af_export
+      | vrfd_af_import
       | vrfd_af_null
+      | vrfd_af_route_target
    )*
    (
       EXIT_ADDRESS_FAMILY NEWLINE
@@ -4723,12 +4686,16 @@ vrfd_rd
    RD (AUTO | rd = route_distinguisher) NEWLINE
 ;
 
+vrfd_route_target
+:
+   ROUTE_TARGET type = both_export_import rt = route_target NEWLINE
+;
+
 vrfd_null
 :
    NO?
    (
       AUTO_IMPORT
-      | ROUTE_TARGET
    ) null_rest_of_line
 ;
 

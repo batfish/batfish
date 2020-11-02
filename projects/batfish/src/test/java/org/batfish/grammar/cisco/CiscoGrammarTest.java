@@ -3453,6 +3453,12 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosVrfDefinition() throws IOException {
+    // Don't crash
+    parseConfig("ios-vrf-definition");
+  }
+
+  @Test
   public void testIosZoneSecurity() throws IOException {
     String hostname = "ios-zone-security";
     String filename = "configs/" + hostname;

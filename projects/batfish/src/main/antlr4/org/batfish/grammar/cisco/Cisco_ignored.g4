@@ -456,7 +456,6 @@ null_inner
       | PROVISION
       | RANDOM
       | RANDOM_DETECT
-      | RD
       | REACT
       | REAL
       | RECEIVE
@@ -471,7 +470,6 @@ null_inner
       | RETRIES
       | REVISION
       | RING
-      | ROUTE_TARGET
       | RP_ADDRESS
       | SA_FILTER
       | SATELLITE
@@ -861,11 +859,9 @@ null_single
       | QUIT
       | RADIUS_COMMON_PW
       | RADIUS_SERVER
-      | RD
       | RESOURCE
       | RESOURCE_POOL
       | NO ROUTE
-      | ROUTE_TARGET
       | RTR
       | SAT
       | SCHEDULE
