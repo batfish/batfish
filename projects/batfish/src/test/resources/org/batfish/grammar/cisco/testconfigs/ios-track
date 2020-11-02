@@ -20,5 +20,5 @@ track 4 ip route 0.0.0.0 0.0.0.0 reachability
 track 5 ip route 0.0.0.0 0.0.0.0 reachability
   delay down 10 up 10
 !
-track 6 ip sla1
+track 6 ip sla 1
 !
