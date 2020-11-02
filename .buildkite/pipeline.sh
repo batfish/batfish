@@ -164,4 +164,5 @@ cat <<EOF
           download:
             - "workspace/**/jacoco.exec"
             - "workspace/allinone.jar"
+    soft_fail: true
 EOF
