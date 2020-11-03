@@ -1,4 +1,4 @@
-parser grammar CiscoParser;
+parser grammar Cisco_nat;
 
 import Cisco_common;
 
