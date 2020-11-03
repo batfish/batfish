@@ -3270,6 +3270,7 @@ s_track
   (
     track_block
     | track_interface
+    | track_ip
     | track_list
   )
 ;
@@ -4076,6 +4077,19 @@ track_block_type_null
 track_interface
 :
   INTERFACE interface_name LINE_PROTOCOL NEWLINE
+;
+
+track_ip
+:
+  IP null_rest_of_line track_ip_null*
+;
+
+track_ip_null
+:
+  (
+    DEFAULT
+    | DELAY
+  ) null_rest_of_line
 ;
 
 track_list
