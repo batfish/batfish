@@ -125,6 +125,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -159,6 +160,8 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
 import org.batfish.representation.arista.MlagConfiguration;
+import org.batfish.representation.arista.RouteMap;
+import org.batfish.representation.arista.RouteMapClause;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -2360,6 +2363,30 @@ public class AristaGrammarTest {
   public void testIpv6RouteParsing() {
     // Don't crash
     parseConfig("ipv6_route");
+  }
+
+  @Test
+  public void testRouteMapExtraction() {
+    AristaConfiguration c = parseVendorConfig("route_map");
+    assertThat(c.getRouteMaps(), hasKeys("map1", "DANAIL_PETROV_20201103", "ACTION_CHANGES"));
+    {
+      RouteMap rm = c.getRouteMaps().get("DANAIL_PETROV_20201103");
+      assertThat(rm.getClauses(), hasKeys(10));
+      RouteMapClause clause = rm.getClauses().get(10);
+      assertThat(clause.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(clause.getMatchList(), hasSize(1));
+      assertThat(clause.getSetList(), hasSize(1));
+    }
+    {
+      RouteMap rm = c.getRouteMaps().get("ACTION_CHANGES");
+      assertThat(rm.getClauses(), hasKeys(10));
+      RouteMapClause clause = rm.getClauses().get(10);
+      // Action changed from permit to deny
+      assertThat(clause.getAction(), equalTo(LineAction.DENY));
+      // Clauses were merged
+      assertThat(clause.getMatchList(), hasSize(1));
+      assertThat(clause.getSetList(), hasSize(1));
+    }
   }
 
   @Test
