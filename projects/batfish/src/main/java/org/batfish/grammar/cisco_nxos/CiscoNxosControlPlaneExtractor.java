@@ -3783,7 +3783,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/command_references/configuration_commands/b_Using_N9K_Config_Commands/b_N9K_Bookmap_chapter_00.html#wp2015222148
      */
     _currentBgpVrfNeighborAddressFamily.setAllowAsIn(
-        ctx.num == null ? 3 : toInteger(ctx, ctx.num).orElse(null));
+        ctx.num == null
+            ? 3
+            // if new value is invalid, keep old value
+            : toInteger(ctx, ctx.num).orElse(_currentBgpVrfNeighborAddressFamily.getAllowAsIn()));
   }
 
   @Override
