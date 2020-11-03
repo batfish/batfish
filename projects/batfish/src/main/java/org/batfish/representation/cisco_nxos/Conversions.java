@@ -710,7 +710,7 @@ final class Conversions {
       BgpVrfNeighborAddressFamilyConfiguration naf, boolean inheritedSupressInactive) {
     return AddressFamilyCapabilities.builder()
         .setAdvertiseInactive(!firstNonNull(naf.getSuppressInactive(), inheritedSupressInactive))
-        .setAllowLocalAsIn(firstNonNull(naf.getAllowAsIn(), Boolean.FALSE))
+        .setAllowLocalAsIn(firstNonNull(naf.getAllowAsIn(), 0) > 0)
         .setAllowRemoteAsOut(firstNonNull(naf.getDisablePeerAsCheck(), Boolean.FALSE))
         .setSendCommunity(firstNonNull(naf.getSendCommunityStandard(), Boolean.FALSE))
         .setSendExtendedCommunity(firstNonNull(naf.getSendCommunityExtended(), Boolean.FALSE))
