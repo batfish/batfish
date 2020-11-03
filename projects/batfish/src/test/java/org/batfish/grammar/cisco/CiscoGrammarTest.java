@@ -345,7 +345,9 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -3450,6 +3452,21 @@ public final class CiscoGrammarTest {
         pvcae,
         hasParseWarning(
             filename, containsString("Export maps for VRFs are not currently supported")));
+  }
+
+  @Test
+  public void testIosVrfDefinition() {
+    CiscoConfiguration vc = parseCiscoConfig("ios-vrf-definition", ConfigurationFormat.CISCO_IOS);
+    assertThat(
+        vc.getVrfs().get("vrf1").getRouteDistinguisher(),
+        equalTo(RouteDistinguisher.from(1111, 11L)));
+    assertThat(
+        vc.getVrfs().get("vrf1").getRouteImportTarget(),
+        equalTo(ExtendedCommunity.target(2222, 22)));
+    assertThat(
+        vc.getVrfs().get("vrf1").getRouteExportTarget(),
+        equalTo(ExtendedCommunity.target(2222, 23)));
+    // TODO: extract (and test) RD/RT config at address family level
   }
 
   @Test
