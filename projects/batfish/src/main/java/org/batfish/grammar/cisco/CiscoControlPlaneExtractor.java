@@ -986,12 +986,10 @@ import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrfc_rdContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrfc_route_targetContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrfc_shutdownContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrfc_vniContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_exportContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_rdContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
@@ -3535,37 +3533,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       username = unquote(ctx.quoted_user.getText());
     }
     _currentUser = _configuration.getCf().getUsers().computeIfAbsent(username, User::new);
-  }
-
-  @Override
-  public void exitVrfc_rd(Vrfc_rdContext ctx) {
-    if (ctx.AUTO() == null) {
-      currentVrf().setRouteDistinguisher(toRouteDistinguisher(ctx.route_distinguisher()));
-    }
-  }
-
-  @Override
-  public void exitVrfc_route_target(Vrfc_route_targetContext ctx) {
-    ExtendedCommunity rt = ctx.AUTO() != null ? null : toRouteTarget(ctx.route_target());
-    if (ctx.IMPORT() != null || ctx.BOTH() != null) {
-      currentVrf().setRouteImportTarget(rt);
-    }
-    if (ctx.EXPORT() != null || ctx.BOTH() != null) {
-      currentVrf().setRouteExportTarget(rt);
-    }
-  }
-
-  @Override
-  public void exitVrfc_shutdown(Vrfc_shutdownContext ctx) {
-    if (ctx.NO() == null) {
-      todo(ctx);
-    }
-    currentVrf().setShutdown(ctx.NO() != null);
-  }
-
-  @Override
-  public void exitVrfc_vni(Vrfc_vniContext ctx) {
-    currentVrf().setVni(toInteger(ctx.vni));
   }
 
   @Override
@@ -8649,6 +8616,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_vrf_definition(S_vrf_definitionContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void exitVrfd_rd(Vrfd_rdContext ctx) {
+    currentVrf().setRouteDistinguisher(toRouteDistinguisher(ctx.rd));
+  }
+
+  @Override
+  public void exitVrfd_route_target(Vrfd_route_targetContext ctx) {
+    if (ctx.type.BOTH() != null || ctx.type.IMPORT() != null) {
+      currentVrf().setRouteImportTarget(toRouteTarget(ctx.rt));
+    } else if (ctx.type.BOTH() != null || ctx.type.EXPORT() != null) {
+      currentVrf().setRouteExportTarget(toRouteTarget(ctx.rt));
+    }
   }
 
   @Override
