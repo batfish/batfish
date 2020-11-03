@@ -1567,6 +1567,11 @@ FRAGMENTS
   'fragments'
 ;
 
+FREQUENCY
+:
+  'frequency'
+;
+
 FTP_DATA
 :
   'ftp-data'
