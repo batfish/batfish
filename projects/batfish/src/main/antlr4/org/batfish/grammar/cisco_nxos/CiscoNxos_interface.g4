@@ -125,10 +125,16 @@ i_hsrp
 :
   HSRP
   (
-    ih_delay
+    | ih_bfd
+    | ih_delay
     | ih_group
     | ih_version
   )
+;
+
+ih_bfd
+:
+  BFD NEWLINE
 ;
 
 ih_delay
