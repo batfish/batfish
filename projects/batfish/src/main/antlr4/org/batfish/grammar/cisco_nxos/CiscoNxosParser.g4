@@ -248,11 +248,15 @@ ip_sla_entry
 :
   (
     DNS
+    | FREQUENCY
     | HTTP
     | ICMP_ECHO
     | TCP_CONNECT
+    | THRESHOLD
+    | TIMEOUT
     | UDP_ECHO
     | UDP_JITTER
+    | VRF
   ) null_rest_of_line
 ;
 
