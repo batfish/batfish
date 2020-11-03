@@ -194,6 +194,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
@@ -2950,6 +2951,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             // Not applicable to PBR
             return null;
           }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetWeight(
+              RouteMapSetWeight routeMapSetWeight) {
+            // Not applicable to PBR
+            return null;
+          }
         };
     List<org.batfish.datamodel.packet_policy.Statement> trueStatements =
         entry
@@ -3262,6 +3270,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public Stream<Statement> visitRouteMapSetTag(RouteMapSetTag routeMapSetTag) {
             return Stream.of(new SetTag(new LiteralLong(routeMapSetTag.getTag())));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetWeight(RouteMapSetWeight routeMapSetWeight) {
+            return Stream.of(new SetWeight(new LiteralInt(routeMapSetWeight.getWeight())));
           }
         });
   }
