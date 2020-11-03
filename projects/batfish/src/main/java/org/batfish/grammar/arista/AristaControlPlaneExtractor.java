@@ -3717,8 +3717,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.name.getText();
     RouteMap routeMap = _configuration.getRouteMaps().computeIfAbsent(name, RouteMap::new);
     _currentRouteMap = routeMap;
-    int num = toInteger(ctx.num);
-    LineAction action = toLineAction(ctx.rmt);
+    int num = ctx.num != null ? toInteger(ctx.num) : 10;
+    LineAction action = ctx.rmt != null ? toLineAction(ctx.rmt) : LineAction.PERMIT;
     RouteMapClause clause = _currentRouteMap.getClauses().get(num);
     if (clause == null) {
       clause = new RouteMapClause(action, name, num);
@@ -3730,6 +3730,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
               "Route map '%s' already contains clause numbered '%d'. Duplicate clause will be"
                   + " merged with original clause.",
               _currentRouteMap.getName(), num));
+      // Yes, action can change if the line is reconfigured.
+      clause.setAction(action);
     }
     _currentRouteMapClause = clause;
     _configuration.defineStructure(ROUTE_MAP, name, ctx);

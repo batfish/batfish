@@ -4,3 +4,15 @@ hostname route_map
 !
 route-map map1 permit 1
  set local-preference 4294967295
+!
+! The below was reported on Batfish Slack. It's for an older version of EOS: 4.20.7
+route-map DANAIL_PETROV_20201103
+  match ip address prefix-list PL_DANAIL_PETROV_20201103
+  set community 12345:54321
+!
+route-map ACTION_CHANGES permit 10
+  match ip address prefix-list SOME_PL
+!
+route-map ACTION_CHANGES deny
+  set community 12345:54321
+!
