@@ -7543,4 +7543,37 @@ public final class CiscoNxosGrammarTest {
   public void testWordLexing() {
     assertThat(parseVendorConfig("nxos_word"), notNullValue());
   }
+
+  @Test
+  public void testBgpAllowAsInExtraction() {
+    String hostname = "nxos_bgp_allowas_in";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("1.1.1.1"))
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        equalTo(3));
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("2.2.2.2"))
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        equalTo(2));
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("3.3.3.3"))
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        nullValue());
+  }
 }

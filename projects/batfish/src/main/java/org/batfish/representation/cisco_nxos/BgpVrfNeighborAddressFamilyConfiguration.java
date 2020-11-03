@@ -19,11 +19,11 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
   }
 
   @Nullable
-  public Boolean getAllowAsIn() {
+  public Integer getAllowAsIn() {
     return _allowAsIn;
   }
 
-  public void setAllowAsIn(@Nullable Boolean allowAsIn) {
+  public void setAllowAsIn(@Nullable Integer allowAsIn) {
     _allowAsIn = allowAsIn;
   }
 
@@ -139,7 +139,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _suppressInactive = suppressInactive;
   }
 
-  private @Nullable Boolean _allowAsIn;
+  private @Nullable Integer _allowAsIn;
   private @Nullable Boolean _asOverride;
   private @Nullable Boolean _defaultOriginate;
   private @Nullable String _defaultOriginateMap;

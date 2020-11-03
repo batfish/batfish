@@ -268,6 +268,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_specContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_port_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_source_portContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Allowas_in_max_occurrencesContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_execContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
@@ -813,6 +814,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     implements BatfishListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
+  private static final IntegerSpace BGP_ALLOWAS_IN = IntegerSpace.of(Range.closed(1, 10));
   private static final LongSpace BGP_ASN_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
       IntegerSpace.of(Range.closed(2, 255));
@@ -3776,10 +3778,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_n_af_allowas_in(Rb_n_af_allowas_inContext ctx) {
-    if (ctx.num != null) {
-      todo(ctx);
-    }
-    _currentBgpVrfNeighborAddressFamily.setAllowAsIn(true);
+    /*
+    Default value for allowas-in, if unspecified, is 3
+    https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/command_references/configuration_commands/b_Using_N9K_Config_Commands/b_N9K_Bookmap_chapter_00.html#wp2015222148
+    */
+    Optional<Integer> value = ctx.num == null ? Optional.of(3) : toInteger(ctx, ctx.num);
+    value.ifPresent(_currentBgpVrfNeighborAddressFamily::setAllowAsIn);
   }
 
   @Override
@@ -6334,6 +6338,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Tcp_flags_maskContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, TCP_FLAGS_MASK_RANGE, "tcp-flags-mask");
+  }
+
+  private Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Allowas_in_max_occurrencesContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, BGP_ALLOWAS_IN, "bgp allowas-in");
   }
 
   private int toInteger(Tcp_port_numberContext ctx) {
