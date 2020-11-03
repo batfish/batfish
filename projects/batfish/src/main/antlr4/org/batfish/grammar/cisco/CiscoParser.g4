@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_nat, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -1128,62 +1128,6 @@ ip_domain_null
    (
       LIST
    ) null_rest_of_line
-;
-
-ip_nat_destination
-:
-   IP NAT INSIDE DESTINATION LIST acl = variable POOL pool = variable NEWLINE
-;
-
-ip_nat_null
-:
-   IP NAT (
-      LOG
-      | TRANSLATION
-   ) null_rest_of_line
-;
-
-ip_nat_pool
-:
-   IP NAT POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
-   (
-      NETMASK mask = IP_ADDRESS
-      | PREFIX_LENGTH prefix_length = DEC
-   )? NEWLINE
-;
-
-ip_nat_pool_range
-:
-   IP NAT POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
-   (
-      RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
-   )+
-;
-
-ip_nat_source
-:
-   IP NAT (INSIDE | OUTSIDE) SOURCE
-   (
-      (
-         LIST acl = variable POOL pool = variable
-      )
-      |
-      (
-         STATIC local = IP_ADDRESS global = IP_ADDRESS
-      )
-      |
-      (
-         STATIC NETWORK local = IP_ADDRESS global = IP_ADDRESS
-         (
-            mask = IP_ADDRESS
-            | FORWARD_SLASH prefix = DEC
-         )
-      )
-   )
-   (
-      ADD_ROUTE
-      | NO_ALIAS
-   )* NEWLINE
 ;
 
 ip_probe_null
