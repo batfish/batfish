@@ -578,6 +578,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_metric_typeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_originContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_tagContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_weightContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_last_asContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsipnh_literalContext;
@@ -793,6 +794,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.RouteMapSetWeight;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
 import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.SnmpServer;
@@ -6012,6 +6014,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRms_tag(Rms_tagContext ctx) {
     _currentRouteMapEntry.setSetTag(new RouteMapSetTag(toLong(ctx.tag)));
+  }
+
+  @Override
+  public void exitRms_weight(Rms_weightContext ctx) {
+    _currentRouteMapEntry.setSetWeight(new RouteMapSetWeight(toInteger(ctx.weight)));
   }
 
   @Override

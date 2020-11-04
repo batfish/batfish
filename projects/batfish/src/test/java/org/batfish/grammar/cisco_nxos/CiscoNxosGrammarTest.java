@@ -340,6 +340,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.RouteMapSetWeight;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
 import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.StaticRoute;
@@ -5845,6 +5846,7 @@ public final class CiscoNxosGrammarTest {
             "set_origin_igp",
             "set_origin_incomplete",
             "set_tag",
+            "set_weight",
             "match_undefined_access_list",
             "match_undefined_community_list",
             "match_undefined_prefix_list",
@@ -6228,6 +6230,11 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = processRouteIn(rp, base);
       assertThat(route.getTag(), equalTo(1L));
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_weight");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getWeight(), equalTo(1));
+    }
 
     // matches with undefined references
     // TODO: match ip address (undefined) - relevant to routing?
@@ -6334,6 +6341,7 @@ public final class CiscoNxosGrammarTest {
             "set_origin_igp",
             "set_origin_incomplete",
             "set_tag",
+            "set_weight",
             "match_undefined_access_list",
             "match_undefined_community_list",
             "match_undefined_prefix_list",
@@ -6769,6 +6777,16 @@ public final class CiscoNxosGrammarTest {
       RouteMapSetTag set = entry.getSetTag();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getTag(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_weight");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetWeight set = entry.getSetWeight();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getWeight(), equalTo(1));
     }
 
     // continue extraction
