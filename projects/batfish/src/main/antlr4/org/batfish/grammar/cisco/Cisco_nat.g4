@@ -92,7 +92,7 @@ ipniosm_add_route
 ipnios_list
 :
    // Delegate to common ACL NAT specification
-   list = ipnc_list
+   acl_pool = ipnc_list
    ipnios_modifiers*
    NEWLINE
 ;

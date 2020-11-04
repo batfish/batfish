@@ -6176,7 +6176,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentIosNatDirection == Direction.INSIDE
             ? RuleAction.SOURCE_INSIDE
             : RuleAction.SOURCE_OUTSIDE;
-    _currentIosSourceNat = toIosDynamicNat(ctx.list, ruleAction);
+    _currentIosSourceNat = toIosDynamicNat(ctx.acl_pool, ruleAction);
     _configuration.getCiscoIosNats().add(_currentIosSourceNat);
   }
 
