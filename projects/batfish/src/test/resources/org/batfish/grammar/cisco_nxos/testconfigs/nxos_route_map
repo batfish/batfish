@@ -169,6 +169,9 @@ route-map set_origin_incomplete permit 10
 route-map set_tag permit 10
   set tag 1
 
+route-map set_weight permit 10
+  set weight 1
+
 !!! Matches with undefined references
 route-map match_undefined_access_list permit 10
   match ip address acl_undefined
