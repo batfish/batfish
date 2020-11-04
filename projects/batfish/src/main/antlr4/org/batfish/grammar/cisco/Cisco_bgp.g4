@@ -60,6 +60,7 @@ address_family_rb_stanza
       | null_no_neighbor_rb_stanza
       | peer_group_assignment_rb_stanza
       | peer_group_creation_rb_stanza
+      | router_id_rb_stanza
    )* address_family_footer
 ;
 

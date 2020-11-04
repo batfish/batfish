@@ -11,3 +11,6 @@ router bgp 22222
  exit-peer-session
  neighbor 1.1.1.1 inherit peer-session FOO-BAR:BAZ
  neighbor 1.1.1.1 inherit peer-policy FOO-BAR_BAZ:QUX
+ address-family ipv4 vrf EXTRA
+   bgp router-id 10.10.10.10
+ exit-address-family
