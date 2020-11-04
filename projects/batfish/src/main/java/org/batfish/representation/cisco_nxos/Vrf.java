@@ -3,7 +3,9 @@ package org.batfish.representation.cisco_nxos;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,6 +24,7 @@ public final class Vrf implements Serializable {
     _name = name;
     _id = id;
     _addressFamilies = new HashMap<>();
+    _nameServers = new ArrayList<>(1);
     _staticRoutes = HashMultimap.create();
   }
 
@@ -43,6 +46,19 @@ public final class Vrf implements Serializable {
    */
   public int getId() {
     return _id;
+  }
+
+  @Nonnull
+  public List<NameServer> getNameServers() {
+    return _nameServers;
+  }
+
+  public void addNameServer(@Nonnull NameServer server) {
+    if (_nameServers.contains(server)) {
+      // Do not add duplicates
+      return;
+    }
+    _nameServers.add(server);
   }
 
   public @Nullable RouteDistinguisherOrAuto getRd() {
@@ -80,6 +96,7 @@ public final class Vrf implements Serializable {
   private final Map<AddressFamily, VrfAddressFamily> _addressFamilies;
   private final @Nonnull String _name;
   private final int _id;
+  @Nonnull private final List<NameServer> _nameServers;
   private @Nullable RouteDistinguisherOrAuto _rd;
   private boolean _shutdown;
   private final Multimap<Prefix, StaticRoute> _staticRoutes;
