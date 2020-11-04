@@ -26,6 +26,7 @@ junit_tests(
         "//projects/batfish/src/test/resources/org/batfish/grammar/juniper/testconfigs",
         "//projects/batfish/src/test/resources/org/batfish/grammar/juniper/testrigs",
     ],
+    tags = ["cpu:4"],
     deps = [
         ":testlib",
         "//projects/batfish",

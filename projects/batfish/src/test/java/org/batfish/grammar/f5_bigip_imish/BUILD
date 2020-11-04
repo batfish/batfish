@@ -11,9 +11,14 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
+        "//projects/batfish/src/test/resources:log4j_config",
         "//projects/batfish/src/test/resources/org/batfish/grammar/f5_bigip_imish/snapshots",
         "//projects/batfish/src/test/resources/org/batfish/grammar/f5_bigip_imish/testconfigs",
-        "//projects/batfish/src/test/resources:log4j_config",
+    ],
+    runtime_deps = [
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+        "@maven//:org_mockito_mockito_inline",
     ],
     deps = [
         "//projects/batfish",
@@ -28,10 +33,5 @@ junit_tests(
         "@maven//:org_antlr_antlr4_runtime",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
-    ],
-    runtime_deps = [
-            "@maven//:org_mockito_mockito_inline",
-            "@maven//:org_apache_logging_log4j_log4j_core",
-                    "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
 )

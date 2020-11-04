@@ -13,6 +13,7 @@ junit_tests(
     resources = [
         "//projects/batfish/src/test/resources/org/batfish/grammar/juniper/testconfigs",
     ],
+    tags = ["cpu:4"],
     deps = [
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
