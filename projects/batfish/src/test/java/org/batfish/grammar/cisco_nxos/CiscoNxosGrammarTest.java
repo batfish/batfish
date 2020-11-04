@@ -291,6 +291,7 @@ import org.batfish.representation.cisco_nxos.Lacp;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.NameServer;
 import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
@@ -3969,7 +3970,8 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         c.getDnsServers(),
-        containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3", "dead:beef::1"));
+        containsInAnyOrder(
+            "192.0.2.1", "192.0.2.2", "192.0.2.3", "dead:beef::1", "192.0.2.99", "192.0.2.100"));
   }
 
   @Test
@@ -3978,13 +3980,18 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(
-        vc.getIpNameServersByUseVrf(),
-        equalTo(
-            ImmutableMap.of(
-                DEFAULT_VRF_NAME,
-                ImmutableList.of("192.0.2.2", "192.0.2.1", "dead:beef::1"),
-                "management",
-                ImmutableList.of("192.0.2.3"))));
+        vc.getDefaultVrf().getNameServers(),
+        contains(
+            new NameServer("192.0.2.2", null),
+            new NameServer("192.0.2.1", null),
+            new NameServer("dead:beef::1", null),
+            new NameServer("192.0.2.3", MANAGEMENT_VRF_NAME)));
+    assertThat(
+        vc.getVrfs().get("other_vrf").getNameServers(),
+        contains(
+            new NameServer("192.0.2.99", MANAGEMENT_VRF_NAME),
+            new NameServer("192.0.2.100", null)));
+    assertThat(vc.getVrfs().get(MANAGEMENT_VRF_NAME).getNameServers(), empty());
   }
 
   @Test

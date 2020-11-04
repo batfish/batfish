@@ -189,7 +189,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Ints;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -432,6 +431,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_destinationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_vlanContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Name_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
@@ -742,6 +742,7 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.LoggingServer;
+import org.batfish.representation.cisco_nxos.NameServer;
 import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
@@ -2015,19 +2016,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitIp_name_server(Ip_name_serverContext ctx) {
-    String vrf;
+    String useVrf = null;
     if (ctx.vrf != null) {
       Optional<String> vrfOrErr = toString(ctx, ctx.vrf);
       if (!vrfOrErr.isPresent()) {
         return;
       }
-      vrf = vrfOrErr.get();
-    } else {
-      vrf = DEFAULT_VRF_NAME;
+      useVrf = vrfOrErr.get();
     }
-    List<String> existingServers =
-        _c.getIpNameServersByUseVrf().computeIfAbsent(vrf, v -> new LinkedList<>());
-    ctx.servers.stream().map(ParserRuleContext::getText).forEach(existingServers::add);
+    for (Name_serverContext server : ctx.servers) {
+      _currentVrf.addNameServer(new NameServer(getFullText(server), useVrf));
+    }
   }
 
   @Override
