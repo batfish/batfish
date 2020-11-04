@@ -36604,6 +36604,31 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:EXTRA~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:EXTRA~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
@@ -36639,6 +36664,19 @@
           }
         },
         "vrfs" : {
+          "EXTRA" : {
+            "name" : "EXTRA",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "10.10.10.10",
+              "clusterListAsIgpCost" : false,
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          },
           "default" : {
             "name" : "default",
             "bgpProcess" : {
