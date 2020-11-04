@@ -400,7 +400,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private @Nullable String _ipDomainName;
-  private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
@@ -435,7 +434,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipAccessLists = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
-    _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _ipv6AccessLists = new HashMap<>();
     _ipv6PrefixLists = new HashMap<>();
@@ -1029,8 +1027,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private void convertIpNameServers() {
     _c.setDnsServers(
-        _ipNameServersByUseVrf.values().stream()
+        _vrfs.values().stream()
+            .map(Vrf::getNameServers)
             .flatMap(Collection::stream)
+            .map(NameServer::getName)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
@@ -1439,10 +1439,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nullable String getIpDomainName() {
     return _ipDomainName;
-  }
-
-  public @Nonnull Map<String, List<String>> getIpNameServersByUseVrf() {
-    return _ipNameServersByUseVrf;
   }
 
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {

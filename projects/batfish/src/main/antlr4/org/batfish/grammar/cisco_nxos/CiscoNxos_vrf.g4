@@ -73,6 +73,7 @@ vc_ip
   IP
   (
     ip_route
+    | ip_name_server
     | vc_ip_null
   )
 ;
