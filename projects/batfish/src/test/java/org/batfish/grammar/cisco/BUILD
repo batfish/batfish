@@ -14,6 +14,7 @@ junit_tests(
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco/testconfigs",
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco/testrigs",
     ],
+    tags = ["cpu:4"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",

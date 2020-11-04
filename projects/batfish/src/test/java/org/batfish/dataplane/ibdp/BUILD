@@ -27,6 +27,10 @@ junit_tests(
     resources = [
         "//projects/batfish/src/test/resources",
     ],
+    runtime_deps = [
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
     deps = [
         ":testlib",
         "//projects/batfish",
@@ -41,8 +45,4 @@ junit_tests(
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_hamcrest_hamcrest",
     ],
-    runtime_deps = [
-        "@maven//:org_apache_logging_log4j_log4j_core",
-        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
-    ]
 )
