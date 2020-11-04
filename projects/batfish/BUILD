@@ -104,6 +104,7 @@ junit_tests(
     resources = [
         "//projects/batfish/src/test/resources",
     ],
+    tags = ["cpu:4"],
     deps = [
         ":batfish",
         ":batfish_testlib",

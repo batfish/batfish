@@ -13,6 +13,7 @@ junit_tests(
     resources = [
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_xr/testconfigs",
     ],
+    tags = ["cpu:4"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",

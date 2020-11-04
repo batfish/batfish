@@ -14,6 +14,7 @@ junit_tests(
         "//projects/batfish/src/test/resources/org/batfish/grammar/palo_alto/snapshots",
         "//projects/batfish/src/test/resources/org/batfish/grammar/palo_alto/testconfigs",
     ],
+    tags = ["cpu:4"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
