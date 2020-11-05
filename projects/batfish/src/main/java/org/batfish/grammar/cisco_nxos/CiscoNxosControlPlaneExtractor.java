@@ -550,6 +550,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_no_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf4_redistributeContext;
@@ -4117,6 +4118,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitRec_autonomous_system(Rec_autonomous_systemContext ctx) {
     Optional<Integer> asn = toInteger(ctx, ctx.eigrp_asn());
     asn.ifPresent(_currentEigrpVrf::setAsn);
+  }
+
+  @Override
+  public void exitRec_distance(Rec_distanceContext ctx) {
+    _currentEigrpVrf.setDistanceInternal(toInteger(ctx.internal));
+    _currentEigrpVrf.setDistanceExternal(toInteger(ctx.external));
   }
 
   @Override

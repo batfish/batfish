@@ -37,6 +37,7 @@ router eigrp EIGRP1234
   vrf VRF
     ! This router-id is unset, and will be inferred from loopback98
     router-id 1.2.3.4
+    distance 20 22
     no router-id
     autonomous-system 12345
     passive-interface default

@@ -25,6 +25,24 @@ public final class EigrpVrfConfiguration implements Serializable {
     _asn = asn;
   }
 
+  @Nullable
+  public Integer getDistanceInternal() {
+    return _distanceInternal;
+  }
+
+  public void setDistanceInternal(@Nullable Integer distanceInternal) {
+    _distanceInternal = distanceInternal;
+  }
+
+  @Nullable
+  public Integer getDistanceExternal() {
+    return _distanceExternal;
+  }
+
+  public void setDistanceExternal(@Nullable Integer distanceExternal) {
+    _distanceExternal = distanceExternal;
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -84,6 +102,8 @@ public final class EigrpVrfConfiguration implements Serializable {
   ///////////////////////////////////
 
   private @Nullable Integer _asn;
+  private @Nullable Integer _distanceInternal;
+  private @Nullable Integer _distanceExternal;
   private @Nullable Ip _routerId;
   private @Nullable EigrpVrfIpv4AddressFamilyConfiguration _v4AddressFamily;
   private @Nullable EigrpVrfIpv6AddressFamilyConfiguration _v6AddressFamily;

@@ -30,6 +30,7 @@ re_common
 :
   rec_address_family
   | rec_autonomous_system
+  | rec_distance
   | rec_no
   | rec_passive_interface
   | rec_router_id
@@ -125,6 +126,11 @@ recaf6_redistribute
 rec_autonomous_system
 :
   AUTONOMOUS_SYSTEM eigrp_asn NEWLINE
+;
+
+rec_distance
+:
+  DISTANCE internal = uint8 external = uint8 NEWLINE
 ;
 
 rec_no

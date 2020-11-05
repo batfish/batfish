@@ -53,6 +53,13 @@ public final class EigrpProcessConfiguration implements Serializable {
     return _vrfs.get(vrfName);
   }
 
+  /*
+    See https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_eigrp.html
+    for admin distance defaults
+  */
+  public static int DEFAULT_DISTANCE_INTERNAL = 90;
+  public static int DEFAULT_DISTANCE_EXTERNAL = 170;
+
   ///////////////////////////////////
   // Private implementation details
   ///////////////////////////////////
