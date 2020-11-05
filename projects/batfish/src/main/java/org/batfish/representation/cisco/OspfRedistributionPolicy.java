@@ -20,7 +20,7 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
   private Long _tag;
 
   public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol, RoutingProtocol.OSPF);
+    super(sourceProtocol);
   }
 
   public Long getMetric() {

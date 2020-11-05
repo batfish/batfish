@@ -13,7 +13,7 @@ public class RipRedistributionPolicy extends RedistributionPolicy {
   private Long _metric;
 
   public RipRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol, RoutingProtocol.RIP);
+    super(sourceProtocol);
   }
 
   public Long getMetric() {
