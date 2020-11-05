@@ -292,6 +292,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -387,6 +388,7 @@ import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
@@ -755,6 +757,7 @@ import org.batfish.grammar.cisco.CiscoParser.Onn_dynamicContext;
 import org.batfish.grammar.cisco.CiscoParser.Onn_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_expr_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Os_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Ospf_route_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_interface_default_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_interface_is_stanzaContext;
@@ -7545,8 +7548,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration.referenceStructure(
             ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
       }
-      if (ctx.MATCH() != null) {
-        todo(ctx);
+      if (!ctx.MATCH().isEmpty()) {
+        Set<RoutingProtocol> protocols = new HashSet<>(ctx.ospf_route_type().size());
+        for (Ospf_route_typeContext ospf_route_typeContext : ctx.ospf_route_type()) {
+          protocols.addAll(toOspfRoutingProtocols(ospf_route_typeContext));
+        }
+        r.getSpecialAttributes()
+            .put(BgpRedistributionPolicy.OSPF_ROUTE_TYPES, new MatchProtocol(protocols));
       }
       if (ctx.procname != null) {
         r.getSpecialAttributes()
@@ -7554,6 +7562,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
+    }
+  }
+
+  private Set<RoutingProtocol> toOspfRoutingProtocols(Ospf_route_typeContext ctx) {
+    if (ctx.INTERNAL() != null) {
+      return ImmutableSet.of(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA);
+    }
+    // TODO: differentiate between EXTERNAL and NSSA_EXTERNAL, currently they are all E1/2 in VI.
+    if (ctx.type != null) {
+      int t = toInteger(ctx.type);
+      if (t == 1) {
+        return ImmutableSet.of(RoutingProtocol.OSPF_E1);
+      } else if (t == 2) {
+        return ImmutableSet.of(RoutingProtocol.OSPF_E2);
+      } else {
+        return ImmutableSet.of();
+      }
+    } else {
+      return ImmutableSet.of(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2);
     }
   }
 

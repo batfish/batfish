@@ -393,6 +393,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.cisco.BgpRedistributionPolicy;
 import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.CiscoConfiguration;
@@ -6302,5 +6303,47 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("iosxe-vasi-interface");
     assertThat(c, hasInterface("vasileft1", hasAddress("1.1.1.2/31")));
     assertThat(c, hasInterface("vasiright1", hasAddress("1.1.1.3/31")));
+  }
+
+  @Test
+  public void testBgpRedistributeOspfExtraction() {
+    {
+      String hostname = "ios-bgp-redistribute-ospf";
+      CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+      BgpRedistributionPolicy redistributionPolicy =
+          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+      assertThat(redistributionPolicy.getRouteMap(), nullValue());
+      assertThat(redistributionPolicy.getMetric(), nullValue());
+      assertThat(
+          redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+          nullValue());
+    }
+    {
+      String hostname = "ios-bgp-redistribute-ospf-match-various";
+      CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+      BgpRedistributionPolicy redistributionPolicy =
+          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+      assertThat(redistributionPolicy.getRouteMap(), equalTo("ospf2bgp"));
+      assertThat(redistributionPolicy.getMetric(), equalTo(10000L));
+      assertThat(
+          redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+          equalTo(
+              new MatchProtocol(
+                  RoutingProtocol.OSPF,
+                  RoutingProtocol.OSPF_IA,
+                  RoutingProtocol.OSPF_E1,
+                  RoutingProtocol.OSPF_E2)));
+    }
+    {
+      String hostname = "ios-bgp-redistribute-ospf-match-internal";
+      CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+      BgpRedistributionPolicy redistributionPolicy =
+          vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
+      assertThat(redistributionPolicy.getRouteMap(), nullValue());
+      assertThat(redistributionPolicy.getMetric(), nullValue());
+      assertThat(
+          redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+          equalTo(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
+    }
   }
 }

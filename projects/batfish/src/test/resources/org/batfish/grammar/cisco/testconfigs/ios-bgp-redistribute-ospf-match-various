@@ -1,0 +1,8 @@
+!
+hostname ios-bgp-redistribute-ospf-match-various
+!
+route-map ospf2bgp permit 10
+
+router bgp 1
+  redistribute ospf 1 metric 10000 match internal external 1 external 2 route-map ospf2bgp
+!
