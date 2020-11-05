@@ -22402,7 +22402,8 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                           "protocols" : [
-                            "ospf"
+                            "ospf",
+                            "ospfIA"
                           ]
                         },
                         {

@@ -77068,24 +77068,6 @@
               "Text" : "bgp redistribute-internal"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 30,
-              "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "redistribute ospf abc"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 31,
-              "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "redistribute ospf 2"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 32,
-              "Parser_Context" : "[redistribute_ospf_bgp_tail bgp_tail router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-              "Text" : "redistribute ospf 2 vrf vrf1"
-            },
-            {
               "Comment" : "BGP unusuppress-map is not currently supported",
               "Line" : 40,
               "Parser_Context" : "[unsuppress_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",

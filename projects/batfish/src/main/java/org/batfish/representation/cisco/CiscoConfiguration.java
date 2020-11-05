@@ -1373,7 +1373,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportOspfConditions = new Conjunction();
       exportOspfConditions.setComment("Redistribute OSPF routes into BGP");
-      exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
+      exportOspfConditions
+          .getConjuncts()
+          .add(
+              firstNonNull(
+                  (MatchProtocol)
+                      redistributeOspfPolicy
+                          .getSpecialAttributes()
+                          .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+                  // No match type means internal routes only, at least on IOS.
+                  // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
+                  new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
       String mapName = redistributeOspfPolicy.getRouteMap();
       if (mapName != null) {
         RouteMap redistributeOspfRouteMap = _routeMaps.get(mapName);
