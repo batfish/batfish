@@ -840,8 +840,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     EigrpProcess.Builder proc =
         EigrpProcess.builder()
             .setAsNumber(asn)
-            .setInternalAdminCost(firstNonNull(vrfConfig.getDistanceInternal(), 90))
-            .setExternalAdminCost(firstNonNull(vrfConfig.getDistanceExternal(), 170))
+            .setInternalAdminCost(
+                firstNonNull(
+                    vrfConfig.getDistanceInternal(),
+                    EigrpProcessConfiguration.DEFAULT_DISTANCE_INTERNAL))
+            .setExternalAdminCost(
+                firstNonNull(
+                    vrfConfig.getDistanceExternal(),
+                    EigrpProcessConfiguration.DEFAULT_DISTANCE_EXTERNAL))
             .setRouterId(routerId);
     proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
     if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {

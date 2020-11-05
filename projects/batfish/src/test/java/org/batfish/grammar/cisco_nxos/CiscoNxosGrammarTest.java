@@ -1290,8 +1290,8 @@ public final class CiscoNxosGrammarTest {
         EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), nullValue());
-        assertThat(vrf.getDistanceInternal(), equalTo(10));
-        assertThat(vrf.getDistanceExternal(), equalTo(12));
+        assertThat(vrf.getDistanceInternal(), nullValue());
+        assertThat(vrf.getDistanceExternal(), nullValue());
         assertThat(vrf.getRouterId(), equalTo(Ip.parse("5.5.5.5")));
 
         assertThat(vrf.getV4AddressFamily(), nullValue());
@@ -1344,8 +1344,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(v.getEigrpProcesses(), hasKeys(123L));
       EigrpProcess p123 = v.getEigrpProcesses().get(123L);
       assertThat(p123.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
-      assertThat(p123.getInternalAdminCost(), equalTo(10));
-      assertThat(p123.getExternalAdminCost(), equalTo(12));
+      assertThat(
+          p123.getInternalAdminCost(),
+          equalTo(EigrpProcessConfiguration.DEFAULT_DISTANCE_INTERNAL));
+      assertThat(
+          p123.getExternalAdminCost(),
+          equalTo(EigrpProcessConfiguration.DEFAULT_DISTANCE_EXTERNAL));
     }
     {
       org.batfish.datamodel.Vrf v = c.getVrfs().get(MANAGEMENT_VRF_NAME);
