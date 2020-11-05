@@ -837,7 +837,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           inferRouterId(
               v.getName(), _c.getAllInterfaces(v.getName()), _w, "EIGRP process " + procName);
     }
-    EigrpProcess.Builder proc = EigrpProcess.builder().setAsNumber(asn).setRouterId(routerId);
+    EigrpProcess.Builder proc =
+        EigrpProcess.builder()
+            .setAsNumber(asn)
+            .setInternalAdminCost(firstNonNull(vrfConfig.getDistanceInternal(), 90))
+            .setExternalAdminCost(firstNonNull(vrfConfig.getDistanceExternal(), 170))
+            .setRouterId(routerId);
     proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
     if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {
       // TODO: figure out what this does and handle it.
