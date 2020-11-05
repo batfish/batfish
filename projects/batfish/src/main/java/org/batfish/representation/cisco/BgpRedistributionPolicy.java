@@ -10,7 +10,7 @@ public class BgpRedistributionPolicy extends RedistributionPolicy implements Ser
   private Long _metric;
 
   public BgpRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol, RoutingProtocol.BGP);
+    super(sourceProtocol);
   }
 
   public Long getMetric() {

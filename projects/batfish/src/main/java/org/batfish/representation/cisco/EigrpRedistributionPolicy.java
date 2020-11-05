@@ -13,7 +13,7 @@ public class EigrpRedistributionPolicy extends RedistributionPolicy {
   private @Nullable EigrpMetricValues _metric;
 
   public EigrpRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol, RoutingProtocol.EIGRP);
+    super(sourceProtocol);
   }
 
   @Nullable
