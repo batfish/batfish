@@ -7613,4 +7613,18 @@ public final class CiscoNxosGrammarTest {
             .getAllowAsIn(),
         nullValue());
   }
+
+  @Test
+  public void testInterfaceEigrpPropertiesExtraction() {
+    String hostname = "nxos_interface_eigrp";
+    // Don't crash. TODO: turn into full test
+    parseVendorConfig(hostname);
+  }
+
+  @Test
+  public void testInterfaceEigrpPropertiesConversion() throws IOException {
+    String hostname = "nxos_interface_eigrp";
+    // Don't crash. TODO: turn into full test
+    parseConfig(hostname);
+  }
 }

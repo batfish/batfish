@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_eigrp
+!
+feature eigrp
+
+interface Ethernet1/1
+  ip address 192.0.2.2/24
+  ip hold-time eigrp 1 100
+  ip hello-interval eigrp 1 200
