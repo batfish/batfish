@@ -1255,6 +1255,8 @@ EIGRP
       case KEY_CHAIN:
         pushMode(M_TwoWords);
         break;
+      case HELLO_INTERVAL:
+      case HOLD_TIME:
       case MODE:
       case REDISTRIBUTE:
       case ROUTER:
@@ -1715,6 +1717,11 @@ HEX_UINT32
 HMM
 :
   'hmm'
+;
+
+HOLD_TIME
+:
+  'hold-time'
 ;
 
 HOST

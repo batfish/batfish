@@ -388,6 +388,8 @@ i_ip
     | i_ip_address
     | i_ip_authentication
     | i_ip_dhcp
+    | i_ip_hello_interval
+    | i_ip_hold_time
     | i_ip_forward
     | i_ip_igmp
     | i_ip_null
@@ -467,6 +469,16 @@ i_ip_dhcp_relay
 i_ip_forward
 :
   FORWARD NEWLINE
+;
+
+i_ip_hello_interval
+:
+  HELLO_INTERVAL EIGRP router_eigrp_process_tag time = uint16 NEWLINE
+;
+
+i_ip_hold_time
+:
+  HOLD_TIME EIGRP router_eigrp_process_tag time = uint16 NEWLINE
 ;
 
 i_ip_igmp
