@@ -54,6 +54,15 @@ public class EigrpInterfaceSettings implements Serializable {
     return new Builder();
   }
 
+  public Builder toBuilder() {
+    return builder()
+        .setAsn(_asn)
+        .setEnabled(_enabled)
+        .setExportPolicy(_exportPolicy)
+        .setMetric(_metric)
+        .setPassive(_passive);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {

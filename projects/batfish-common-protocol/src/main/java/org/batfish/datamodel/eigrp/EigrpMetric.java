@@ -1,10 +1,14 @@
 package org.batfish.datamodel.eigrp;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.google.common.primitives.UnsignedLong;
 import java.io.Serializable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 @JsonTypeInfo(use = Id.NAME, property = "type")
 @JsonSubTypes({
@@ -43,4 +47,51 @@ public interface EigrpMetric extends Serializable {
    * calculation. See {@link EigrpMetricValues} for units.
    */
   EigrpMetricValues getValues();
+
+  Builder<?, ?> toBuilder();
+
+  abstract class Builder<B extends Builder<B, M>, M extends EigrpMetric> {
+    @Nullable protected EigrpMetricValues _values;
+    protected short _k1 = 1;
+    protected short _k3 = 1;
+
+    @Nonnull
+    protected abstract B getThis();
+
+    @Nonnull
+    public B setValues(EigrpMetricValues values) {
+      _values = values;
+      return getThis();
+    }
+
+    @Nonnull
+    public B setK1(short k1) {
+      checkArgument(k1 <= 255);
+      _k1 = k1;
+      return getThis();
+    }
+
+    @Nonnull
+    public B setK1(int k1) {
+      checkArgument(k1 <= 255);
+      _k1 = (short) k1;
+      return getThis();
+    }
+
+    @Nonnull
+    public B setK3(short k3) {
+      checkArgument(k3 <= 255);
+      _k3 = k3;
+      return getThis();
+    }
+
+    @Nonnull
+    public B setK3(int k3) {
+      checkArgument(k3 <= 255);
+      _k3 = (short) k3;
+      return getThis();
+    }
+
+    public abstract M build();
+  }
 }

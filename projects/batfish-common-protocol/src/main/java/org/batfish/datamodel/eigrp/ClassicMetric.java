@@ -148,6 +148,7 @@ public final class ClassicMetric implements EigrpMetric {
     return MoreObjects.toStringHelper(this).add(PROP_VALUES, _values).toString();
   }
 
+  @Override
   public Builder toBuilder() {
     return builder().setValues(_values).setK1(_k1).setK3(_k3);
   }
@@ -168,47 +169,18 @@ public final class ClassicMetric implements EigrpMetric {
     return new Builder();
   }
 
-  public static final class Builder {
-    @Nullable private EigrpMetricValues _values;
-    private short _k1 = 1;
-    private short _k3 = 1;
+  public static final class Builder
+      extends EigrpMetric.Builder<ClassicMetric.Builder, ClassicMetric> {
 
     private Builder() {}
 
     @Nonnull
-    public Builder setValues(@Nonnull EigrpMetricValues values) {
-      _values = values;
+    @Override
+    protected Builder getThis() {
       return this;
     }
 
-    @Nonnull
-    public Builder setK1(short k1) {
-      checkArgument(k1 <= 255);
-      _k1 = k1;
-      return this;
-    }
-
-    @Nonnull
-    public Builder setK1(int k1) {
-      checkArgument(k1 <= 255);
-      _k1 = (short) k1;
-      return this;
-    }
-
-    @Nonnull
-    public Builder setK3(short k3) {
-      checkArgument(k3 <= 255);
-      _k3 = k3;
-      return this;
-    }
-
-    @Nonnull
-    public Builder setK3(int k3) {
-      checkArgument(k3 <= 255);
-      _k3 = (short) k3;
-      return this;
-    }
-
+    @Override
     @Nonnull
     public ClassicMetric build() {
       checkArgument(_values != null, "Missing %s", PROP_VALUES);
