@@ -167,6 +167,9 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
@@ -662,10 +665,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private static void computeAggregatedInterfaceBandwidths(Map<String, Interface> interfaces) {
-    // Set bandwidths for aggregate interfaces
+    // Set bandwidths and recalculate EIGRP metrics for aggregate interfaces
     interfaces.values().stream()
         .filter(iface -> iface.getInterfaceType() == InterfaceType.AGGREGATED)
-        .forEach(
+        .peek(
             iface -> {
               /* If interface has dependencies, bandwidth should be sum of their bandwidths. */
               if (!iface.getDependencies().isEmpty()) {
@@ -685,6 +688,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
                         .sum());
               }
+            })
+        // Recalculate EIGRP metrics now that bandwidths are accurate
+        .filter(iface -> iface.getEigrp() != null)
+        .forEach(
+            iface -> {
+              Double bw = iface.getBandwidth();
+              assert bw != null; // we just set it
+              EigrpInterfaceSettings eigrp = iface.getEigrp();
+              EigrpMetric metric = eigrp.getMetric();
+              EigrpMetricValues metricValues = metric.getValues();
+              EigrpMetricValues newValues = metricValues.toBuilder().setBandwidth(bw).build();
+              EigrpMetric newMetric = metric.toBuilder().setValues(newValues).build();
+              iface.setEigrp(eigrp.toBuilder().setMetric(newMetric).build());
             });
     // Now that aggregate interfaces have bandwidths, set bandwidths for aggregate child interfaces
     interfaces.values().stream()
