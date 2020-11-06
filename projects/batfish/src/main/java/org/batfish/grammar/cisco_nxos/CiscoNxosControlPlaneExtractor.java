@@ -793,6 +793,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
 import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
+import org.batfish.representation.cisco_nxos.RouteMapSetMetricEigrp;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
@@ -5979,7 +5980,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRms_metric(Rms_metricContext ctx) {
-    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(toLong(ctx.metric)));
+    if (ctx.delay == null) {
+      _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(toLong(ctx.metric)));
+    } else {
+      _currentRouteMapEntry.setSetMetricEigrp(
+          new RouteMapSetMetricEigrp(
+              toLong(ctx.metric),
+              toLong(ctx.delay),
+              toInteger(ctx.reliability),
+              toInteger(ctx.load),
+              toLong(ctx.mtu)));
+    }
   }
 
   @Override

@@ -162,6 +162,9 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.GeneratedRoute;
@@ -205,7 +208,11 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
@@ -338,6 +345,7 @@ import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
 import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
+import org.batfish.representation.cisco_nxos.RouteMapSetMetricEigrp;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
@@ -5857,6 +5865,7 @@ public final class CiscoNxosGrammarTest {
             "set_ipv6_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
+            "set_metric_eigrp",
             "set_metric_type_external",
             "set_metric_type_internal",
             "set_metric_type_type_1",
@@ -6217,6 +6226,44 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = processRouteIn(rp, base);
       assertThat(route.getMetric(), equalTo(1L));
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_metric_eigrp");
+
+      EigrpMetric originalMetric =
+          ClassicMetric.builder()
+              .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+              .build();
+      EigrpRoute routeBefore =
+          EigrpInternalRoute.builder()
+              .setAdmin(90)
+              .setNetwork(Prefix.ZERO)
+              .setEigrpMetric(originalMetric)
+              .setProcessAsn(1L)
+              .build();
+      EigrpExternalRoute.Builder builder =
+          EigrpExternalRoute.builder()
+              .setAdmin(90)
+              .setNetwork(Prefix.ZERO)
+              .setDestinationAsn(1L)
+              .setProcessAsn(1L)
+              .setNetwork(Prefix.ZERO);
+      assertTrue(
+          rp.process(
+              routeBefore,
+              builder,
+              EigrpProcess.builder()
+                  .setAsNumber(1L)
+                  .setMode(EigrpProcessMode.CLASSIC)
+                  .setRouterId(Ip.ZERO)
+                  .build(),
+              Direction.IN));
+      EigrpExternalRoute routAfter = builder.build();
+      assertThat(routAfter.getEigrpMetric().getValues().getBandwidth(), equalTo(1L));
+      assertThat(routAfter.getEigrpMetric().getValues().getDelay(), equalTo(2L));
+      assertThat(routAfter.getEigrpMetric().getValues().getReliability(), equalTo(3));
+      assertThat(routAfter.getEigrpMetric().getValues().getEffectiveBandwidth(), equalTo(4));
+      assertThat(routAfter.getEigrpMetric().getValues().getMtu(), equalTo(5L));
+    }
     // TODO: test set metric-type external
     // TODO: test set metric-type internal
     {
@@ -6352,6 +6399,7 @@ public final class CiscoNxosGrammarTest {
             "set_ipv6_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
+            "set_metric_eigrp",
             "set_metric_type_external",
             "set_metric_type_internal",
             "set_metric_type_type_1",
@@ -6716,6 +6764,20 @@ public final class CiscoNxosGrammarTest {
       RouteMapSetMetric set = entry.getSetMetric();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getMetric(), equalTo(1L));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_metric_eigrp");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetMetricEigrp set = entry.getSetMetricEigrp();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getBandwidth(), equalTo(1L));
+      assertThat(set.getDelay(), equalTo(2L));
+      assertThat(set.getReliability(), equalTo(3));
+      assertThat(set.getLoad(), equalTo(4));
+      assertThat(set.getMtu(), equalTo(5L));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_metric_type_external");
