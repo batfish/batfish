@@ -190,6 +190,7 @@ ip sla 10
  samples-of-history-kept 10
  history filter failures
  udp-jitter 130.59.38.105 5000
+ vrf VRF1
 !
 ip sla timeout 100
 !

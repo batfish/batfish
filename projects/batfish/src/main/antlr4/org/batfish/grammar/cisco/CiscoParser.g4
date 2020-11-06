@@ -1211,6 +1211,7 @@ ip_sla_null
       | TIMEOUT
       | TOS
       | UDP_JITTER
+      | VRF
    ) null_rest_of_line
 ;
 
