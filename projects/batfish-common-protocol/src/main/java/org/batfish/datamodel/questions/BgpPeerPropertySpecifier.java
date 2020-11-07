@@ -41,6 +41,7 @@ import org.batfish.specifier.parboiled.Grammar;
 public class BgpPeerPropertySpecifier extends PropertySpecifier {
 
   public static final String CONFEDERATION = "Confederation";
+  public static final String DESCRIPTION = "Description";
   public static final String LOCAL_AS = "Local_AS";
   public static final String LOCAL_IP = "Local_IP";
   public static final String IS_PASSIVE = "Is_Passive";
@@ -128,6 +129,10 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
               CONFEDERATION,
               new PropertyDescriptor<>(
                   BgpPeerConfig::getConfederationAsn, Schema.LONG, "Confederation AS number"))
+          .put(
+              DESCRIPTION,
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getDescription, Schema.STRING, "Configured peer description"))
           .build();
 
   /** Returns the property descriptor for {@code property} */
