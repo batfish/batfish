@@ -131,7 +131,8 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
                   BgpPeerConfig::getConfederationAsn, Schema.LONG, "Confederation AS number"))
           .put(
               DESCRIPTION,
-              new PropertyDescriptor<>(BgpPeerConfig::getDescription, Schema.STRING, "Description"))
+              new PropertyDescriptor<>(
+                  BgpPeerConfig::getDescription, Schema.STRING, "Configured peer description"))
           .build();
 
   /** Returns the property descriptor for {@code property} */
