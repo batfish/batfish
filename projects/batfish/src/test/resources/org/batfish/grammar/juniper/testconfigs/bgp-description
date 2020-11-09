@@ -1,0 +1,8 @@
+#
+set system host-name bgp-description
+#
+set routing-options autonomous-system 1
+set protocols bgp group G description G
+set protocols bgp group G neighbor 1.2.3.4 description N
+# neighbor 2.3.4.5 does NOT inherit the description from G
+set protocols bgp group G neighbor 2.3.4.5
