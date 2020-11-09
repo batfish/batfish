@@ -114,6 +114,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisMetricType;
@@ -170,6 +171,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
@@ -187,6 +189,7 @@ import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -2939,6 +2942,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetricEigrp(
+              RouteMapSetMetricEigrp routeMapSetMetric) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
           public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetricType(
               RouteMapSetMetricType routeMapSetMetricType) {
             // Not applicable to PBR
@@ -3245,6 +3255,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public Stream<Statement> visitRouteMapSetMetric(RouteMapSetMetric routeMapSetMetric) {
             return Stream.of(new SetMetric(new LiteralLong(routeMapSetMetric.getMetric())));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetMetricEigrp(
+              RouteMapSetMetricEigrp routeMapSetMetric) {
+            return Stream.of(
+                new SetEigrpMetric(
+                    new LiteralEigrpMetric(
+                        EigrpMetricValues.builder()
+                            .setBandwidth(routeMapSetMetric.getBandwidth())
+                            .setDelay(routeMapSetMetric.getDelay())
+                            .setReliability(routeMapSetMetric.getReliability())
+                            .setEffectiveBandwidth(routeMapSetMetric.getLoad())
+                            .setMtu(routeMapSetMetric.getMtu())
+                            .build())));
           }
 
           @Override

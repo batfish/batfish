@@ -32,6 +32,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapSetIpNextHop _setIpNextHop;
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
   private @Nullable RouteMapSetMetric _setMetric;
+  private @Nullable RouteMapSetMetricEigrp _setMetricEigrp;
   private @Nullable RouteMapSetMetricType _setMetricType;
   private @Nullable RouteMapSetOrigin _setOrigin;
   private @Nullable RouteMapSetTag _setTag;
@@ -147,6 +148,10 @@ public final class RouteMapEntry implements Serializable {
     return _setMetric;
   }
 
+  public @Nullable RouteMapSetMetricEigrp getSetMetricEigrp() {
+    return _setMetricEigrp;
+  }
+
   public @Nullable RouteMapSetMetricType getSetMetricType() {
     return _setMetricType;
   }
@@ -165,6 +170,7 @@ public final class RouteMapEntry implements Serializable {
             _setIpNextHop,
             _setLocalPreference,
             _setMetric,
+            _setMetricEigrp,
             _setMetricType,
             _setOrigin,
             _setTag,
@@ -265,6 +271,10 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetMetric(@Nullable RouteMapSetMetric setMetric) {
     _setMetric = setMetric;
+  }
+
+  public void setSetMetricEigrp(@Nullable RouteMapSetMetricEigrp setMetricEigrp) {
+    _setMetricEigrp = setMetricEigrp;
   }
 
   public void setSetMetricType(@Nullable RouteMapSetMetricType setMetricType) {
