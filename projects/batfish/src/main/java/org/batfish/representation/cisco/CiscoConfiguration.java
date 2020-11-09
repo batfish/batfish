@@ -1879,22 +1879,24 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   @Nonnull
   private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
-    Optional<Double> bw =
+    Long bw =
         Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName(), _vendor))
             .filter(Objects::nonNull)
-            .findFirst();
-    if (!bw.isPresent()) {
+            .findFirst()
+            .map(bandwidth -> bandwidth.longValue() / 1000) // convert to kbps
+            .orElse(null);
+    // Bandwidth can be null for port-channels (will be calculated later).
+    // Otherwise if it is null, we're missing bandwidth info.
+    if (bw == null && iface.getChannelGroup() == null) {
       _w.redFlag(
           String.format("Missing bandwidth for %s, EIGRP metric will be wrong", iface.getName()));
+      bw = (long) 1e9; // default to 1e9 kbps
     }
     EigrpMetricValues values =
         EigrpMetricValues.builder()
             .setDelay(
                 firstNonNull(iface.getDelay(), Interface.getDefaultDelay(iface.getName(), _vendor)))
-            .setBandwidth(
-                // Scale to kbps
-                // TODO: this value is wrong for port-channels but will prevent crashing
-                bw.orElse(1e12) / 1000)
+            .setBandwidth(bw)
             .build();
     if (mode == EigrpProcessMode.CLASSIC) {
       return ClassicMetric.builder().setValues(values).build();

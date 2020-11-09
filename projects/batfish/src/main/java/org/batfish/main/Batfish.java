@@ -167,8 +167,6 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
-import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
@@ -693,14 +691,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         .filter(iface -> iface.getEigrp() != null)
         .forEach(
             iface -> {
-              Double bw = iface.getBandwidth();
-              assert bw != null; // we just set it
-              EigrpInterfaceSettings eigrp = iface.getEigrp();
-              EigrpMetric metric = eigrp.getMetric();
-              EigrpMetricValues metricValues = metric.getValues();
-              EigrpMetricValues newValues = metricValues.toBuilder().setBandwidth(bw).build();
-              EigrpMetric newMetric = metric.toBuilder().setValues(newValues).build();
-              iface.setEigrp(eigrp.toBuilder().setMetric(newMetric).build());
+              EigrpMetricValues metricValues = iface.getEigrp().getMetric().getValues();
+              if (metricValues.getBandwidth() == null) {
+                // only set bandwidth if it's not explicitly configured for EIGRP
+                Double bw = iface.getBandwidth();
+                assert bw != null; // we just set it
+                metricValues.setBandwidth(bw.longValue());
+              }
             });
     // Now that aggregate interfaces have bandwidths, set bandwidths for aggregate child interfaces
     interfaces.values().stream()
