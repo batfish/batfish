@@ -19,16 +19,14 @@ public final class EigrpMetricValues implements Serializable {
   private static final String PROP_RELIABILITY = "reliability";
   private static final String PROP_MTU = "mtu";
 
-  private long _bandwidth;
-  private long _delay;
-  private int _effectiveBandwidth;
-  private int _reliability;
-  private long _mtu;
+  @Nullable private Long _bandwidth;
+  private final long _delay;
+  private final int _effectiveBandwidth;
+  private final int _reliability;
+  private final long _mtu;
 
   private EigrpMetricValues(
-      long bandwidth, long delay, int effectiveBandwidth, int reliability, long mtu) {
-    checkArgument(
-        bandwidth >= 0, "Invalid %s value for EIGRP metric: %s", PROP_BANDWIDTH, bandwidth);
+      @Nullable Long bandwidth, long delay, int effectiveBandwidth, int reliability, long mtu) {
     checkArgument(delay >= 0, "Invalid %s value for EIGRP metric: %s", PROP_DELAY, delay);
     checkArgument(
         effectiveBandwidth >= 0 && effectiveBandwidth <= 255,
@@ -36,16 +34,17 @@ public final class EigrpMetricValues implements Serializable {
         PROP_EFFECTIVE_BANDWIDTH,
         effectiveBandwidth);
     checkArgument(mtu >= 0, "Invalid %s value for EIGRP metric: %s", PROP_MTU, mtu);
-    _bandwidth = bandwidth;
+    setBandwidth(bandwidth); // checks bandwidth parameter
     _delay = delay;
     _effectiveBandwidth = effectiveBandwidth;
     _reliability = reliability;
     _mtu = mtu;
   }
 
-  /** Bandwidth value, in Kbps */
+  /** Bandwidth value, in Kbps. Nonnull after snapshot postprocessing. */
+  @Nullable
   @JsonProperty(PROP_BANDWIDTH)
-  public long getBandwidth() {
+  public Long getBandwidth() {
     return _bandwidth;
   }
 
@@ -73,6 +72,15 @@ public final class EigrpMetricValues implements Serializable {
     return _mtu;
   }
 
+  public void setBandwidth(@Nullable Long bandwidth) {
+    checkArgument(
+        bandwidth == null || bandwidth >= 0,
+        "Invalid %s value for EIGRP metric: %s",
+        PROP_BANDWIDTH,
+        bandwidth);
+    _bandwidth = bandwidth;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
@@ -82,7 +90,7 @@ public final class EigrpMetricValues implements Serializable {
       return false;
     }
     EigrpMetricValues that = (EigrpMetricValues) o;
-    return _bandwidth == that._bandwidth
+    return Objects.equals(_bandwidth, that._bandwidth)
         && _delay == that._delay
         && _effectiveBandwidth == that._effectiveBandwidth
         && _reliability == that._reliability
@@ -119,7 +127,7 @@ public final class EigrpMetricValues implements Serializable {
   }
 
   public static final class Builder {
-    private Long _bandwidth;
+    @Nullable private Long _bandwidth;
     private Long _delay;
     private int _effectiveBandwidth = 0;
     private int _reliability = 0;
@@ -129,7 +137,7 @@ public final class EigrpMetricValues implements Serializable {
 
     /** Bandwidth in Kbps */
     @Nonnull
-    public Builder setBandwidth(long bandwidth) {
+    public Builder setBandwidth(@Nullable Long bandwidth) {
       _bandwidth = bandwidth;
       return this;
     }

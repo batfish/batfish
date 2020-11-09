@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -13,7 +14,7 @@ class EigrpMetricMatchersImpl {
     }
 
     @Override
-    @Nonnull
+    @Nullable
     protected Long featureValueOf(EigrpMetric actual) {
       return actual.getValues().getBandwidth();
     }

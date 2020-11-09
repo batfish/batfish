@@ -1,6 +1,7 @@
 package org.batfish.datamodel.eigrp;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -100,6 +101,7 @@ public final class WideMetric implements EigrpMetric {
 
   @Override
   public UnsignedLong cost() {
+    checkState(_values.getBandwidth() != null, "Cannot calculate cost before bandwidth is set");
     UnsignedLong scaledBw =
         UnsignedLong.valueOf(BANDWIDTH_FACTOR)
             .times(WIDE_FACTOR)
@@ -156,6 +158,7 @@ public final class WideMetric implements EigrpMetric {
   @Override
   public WideMetric add(EigrpMetric o) {
     checkArgument(isCompatible(o), "Cannot add incompatible EIGRP metrics");
+    assert _values.getBandwidth() != null && o.getValues().getBandwidth() != null;
     return toBuilder()
         .setValues(
             _values.toBuilder()
