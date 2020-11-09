@@ -443,6 +443,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor =
             BgpActivePeerConfig.builder().setPeerAddress(prefix.getStartIp()).setRemoteAs(remoteAs);
       }
+      neighbor.setDescription(ig.getDescription());
 
       // route reflection
       Ip declaredClusterId = ig.getClusterId();

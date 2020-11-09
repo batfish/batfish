@@ -209,6 +209,7 @@ import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
@@ -893,6 +894,16 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         bgpProcess.getActiveNeighbors().get(Prefix.parse("1.1.1.1/32")).getConfederationAsn(),
         equalTo(7L));
+  }
+
+  @Test
+  public void testBgpDescription() {
+    Configuration c = parseConfig("bgp-description");
+    Map<Prefix, BgpActivePeerConfig> neighbors =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    assertThat(neighbors, hasKeys(Prefix.parse("1.2.3.4/32"), Prefix.parse("2.3.4.5/32")));
+    assertThat(neighbors.get(Prefix.parse("1.2.3.4/32")).getDescription(), equalTo("N"));
+    assertThat(neighbors.get(Prefix.parse("2.3.4.5/32")).getDescription(), nullValue());
   }
 
   @Test

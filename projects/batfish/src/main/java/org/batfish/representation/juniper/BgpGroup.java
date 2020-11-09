@@ -76,9 +76,7 @@ public class BgpGroup implements Serializable {
       if (_clusterId == null) {
         _clusterId = _parent._clusterId;
       }
-      if (_description == null) {
-        _description = _parent._description;
-      }
+      // Deliberately do not inherit description
       if (_disable == null) {
         _disable = _parent._disable;
       }
