@@ -2727,23 +2727,24 @@ public final class CiscoGrammarTest {
             .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
             .build();
 
-    // Test redistribution policy
+    // Test redistribution policy allows redistribution from router EIGRP 2
     RoutingPolicy redistrPolicy =
         c.getRoutingPolicies().get(eigrpProcess1.getRedistributionPolicy());
-    redistrPolicy.process(
-        EigrpExternalRoute.builder()
-            .setNetwork(Prefix.parse("172.21.30.0/24"))
-            .setEigrpMetric(metric)
-            .setProcessAsn(2L)
-            .setDestinationAsn(5L)
-            .build(),
-        EigrpExternalRoute.builder(),
-        eigrpProcess1,
-        Direction.IN);
+    assertTrue(
+        redistrPolicy.process(
+            EigrpExternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.30.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(2L)
+                .setDestinationAsn(5L)
+                .build(),
+            EigrpExternalRoute.builder(),
+            eigrpProcess1,
+            Direction.IN));
 
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
 
-    // a route redistributed from router EIGRP 2 and allowed by distribute list
+    // a route (previously) redistributed from router EIGRP 2 and allowed by distribute list
     assertTrue(
         routingPolicy.process(
             EigrpExternalRoute.builder()
@@ -2754,7 +2755,7 @@ public final class CiscoGrammarTest {
                 .build(),
             EigrpExternalRoute.builder(),
             Direction.OUT));
-    // a route redistributed from router EIGRP 2 and denied by distribute list
+    // a route (previously) redistributed from router EIGRP 2 and denied by distribute list
     assertFalse(
         routingPolicy.process(
             EigrpExternalRoute.builder()
@@ -2765,7 +2766,7 @@ public final class CiscoGrammarTest {
                 .build(),
             EigrpExternalRoute.builder(),
             Direction.OUT));
-    // a route redistributed internally from router EIGRP 1 and allowed by distribute list
+    // an internal route sent from router EIGRP 1 and allowed by distribute list
     assertTrue(
         routingPolicy.process(
             EigrpInternalRoute.builder()
@@ -2776,8 +2777,7 @@ public final class CiscoGrammarTest {
             EigrpExternalRoute.builder(),
             Direction.OUT));
     // a route matching distribute list but does not have the correct ASN so falls through till the
-    // end and
-    // gets rejected
+    // end and gets rejected
     assertFalse(
         routingPolicy.process(
             EigrpExternalRoute.builder()
