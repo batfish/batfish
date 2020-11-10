@@ -2761,7 +2761,7 @@ public final class CiscoGrammarTest {
             EigrpExternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.31.0/24"))
                 .setEigrpMetric(metric)
-                .setProcessAsn(2L)
+                .setProcessAsn(1L)
                 .setDestinationAsn(5L)
                 .build(),
             EigrpExternalRoute.builder(),
