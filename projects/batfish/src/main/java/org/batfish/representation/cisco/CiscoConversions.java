@@ -1394,27 +1394,6 @@ public class CiscoConversions {
   }
 
   /**
-   * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
-   * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
-   */
-  static List<If> clearFalseStatementsAndAddMatchOwnAsn(List<If> redistributeIfs, long ownAsn) {
-    List<Statement> emptyFalseStatements = ImmutableList.of();
-    List<If> redistributeIfsWithEmptyFalse =
-        redistributeIfs.stream()
-            .map(
-                redistributionStatement ->
-                    new If(
-                        redistributionStatement.getGuard(),
-                        redistributionStatement.getTrueStatements(),
-                        emptyFalseStatements))
-            .collect(Collectors.toList());
-
-    redistributeIfsWithEmptyFalse.add(ifToAllowEigrpToOwnAsn(ownAsn));
-
-    return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
-  }
-
-  /**
    * Inserts an {@link If} generated from the provided distributeList to the beginning of
    * existingStatements and creates a {@link RoutingPolicy} from the result
    */
