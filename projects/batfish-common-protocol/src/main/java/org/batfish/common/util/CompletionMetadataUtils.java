@@ -281,9 +281,9 @@ public final class CompletionMetadataUtils {
 
     return iface != null
         && iface.getActive()
-        && (location instanceof InterfaceLinkLocation
-            // currently, only interfaces with valid non-LLA addresses are valid TR sources
-            || !iface.getAllConcreteAddresses().isEmpty());
+        // packets can enter any interface (InterfaceLinkLocation); to originate (InterfaceLocation)
+        // the interface must have an address (properly configured L3 interface)
+        && (location instanceof InterfaceLinkLocation || !iface.getAllAddresses().isEmpty());
   }
 
   public static Set<String> getStructureNames(Map<String, Configuration> configurations) {

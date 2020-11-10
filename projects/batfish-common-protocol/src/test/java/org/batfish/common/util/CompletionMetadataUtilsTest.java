@@ -52,7 +52,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
-import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
@@ -662,14 +661,8 @@ public final class CompletionMetadataUtilsTest {
             .build();
     Location loc2 = new InterfaceLinkLocation("n1", i2.getName());
 
-    // no concrete address
-    Interface i3 =
-        Interface.builder()
-            .setName("i3")
-            .setOwner(c)
-            .setActive(true)
-            .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
-            .build();
+    // no address
+    Interface i3 = Interface.builder().setName("i3").setOwner(c).setActive(true).build();
     Location loc3 = new InterfaceLocation("n1", i3.getName());
 
     Map<String, Configuration> configurations = ImmutableMap.of(c.getHostname(), c);
