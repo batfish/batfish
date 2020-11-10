@@ -33,6 +33,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Protocol;
@@ -774,10 +775,12 @@ public final class AutoCompleteUtils {
       String query, @Nullable CompletionMetadata completionMetadata) {
     List<AutocompleteSuggestion> suggestions;
     checkNotNull(
-        completionMetadata.getSourceLocations(),
-        "cannot autocomplete source locations without LocationInfo");
+        completionMetadata.getLocations(),
+        "cannot autocomplete source locations without location metadata");
     Map<String, Optional<String>> locationsAndHumanNames =
-        completionMetadata.getSourceLocations().stream()
+        completionMetadata.getLocations().stream()
+            .filter(LocationCompletionMetadata::isSource)
+            .map(LocationCompletionMetadata::getLocation)
             .collect(
                 ImmutableMap.toImmutableMap(
                     ToSpecifierString::toSpecifierString,

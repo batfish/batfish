@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.function.Function;
 import org.batfish.common.CompletionMetadata;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.InputValidationNotes.Validity;
@@ -178,8 +179,10 @@ public class InputValidationUtilsTest {
     CompletionMetadata metadata =
         CompletionMetadata.builder()
             .setNodes(ImmutableSet.of(INTERNET_LOCATION.getNodeName(), "node"))
-            .setSourceLocations(
-                ImmutableSet.of(INTERNET_LOCATION, new InterfaceLocation("node", "iface")))
+            .setLocations(
+                ImmutableSet.of(
+                    new LocationCompletionMetadata(INTERNET_LOCATION, true),
+                    new LocationCompletionMetadata(new InterfaceLocation("node", "iface"), true)))
             .build();
 
     // shorthand for INTERNET_LOCATION is valid

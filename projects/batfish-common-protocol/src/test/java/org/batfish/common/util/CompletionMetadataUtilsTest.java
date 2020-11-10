@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
@@ -583,8 +584,8 @@ public final class CompletionMetadataUtilsTest {
     Location loc3 = new InterfaceLocation("n3", "i3");
     LocationInfo info3 = new LocationInfo(true, EmptyIpSpace.INSTANCE, UniverseIpSpace.INSTANCE);
 
-    Set<Location> sourcesWithSourceIps =
+    Set<LocationCompletionMetadata> sourcesWithSourceIps =
         getSourceLocationsWithSrcIps(ImmutableMap.of(loc1, info1, loc2, info2, loc3, info3));
-    assertThat(sourcesWithSourceIps, contains(loc1));
+    assertThat(sourcesWithSourceIps, contains(new LocationCompletionMetadata(loc1, true)));
   }
 }

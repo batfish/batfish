@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Ip;
@@ -73,7 +74,6 @@ import org.batfish.role.RoleDimensionMapping;
 import org.batfish.role.RoleMapping;
 import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
-import org.batfish.specifier.Location;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1293,12 +1293,13 @@ public class AutoCompleteUtilsTest {
         ImmutableMap.of(
             "n1", new NodeCompletionMetadata("human"), "n2", new NodeCompletionMetadata(null));
 
-    Set<Location> sourceLocations =
+    Set<LocationCompletionMetadata> locations =
         ImmutableSet.of(
-            new InterfaceLocation("n1", "iface"), new InterfaceLinkLocation("n2", "link"));
+            new LocationCompletionMetadata(new InterfaceLocation("n1", "iface"), true),
+            new LocationCompletionMetadata(new InterfaceLinkLocation("n2", "link"), true));
 
     CompletionMetadata metadata =
-        CompletionMetadata.builder().setNodes(nodes).setSourceLocations(sourceLocations).build();
+        CompletionMetadata.builder().setNodes(nodes).setLocations(locations).build();
 
     // list all sources
     {

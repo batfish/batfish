@@ -5,10 +5,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -231,7 +231,7 @@ public final class CompletionMetadataUtils {
     return routingPolicyNames.build();
   }
 
-  public static Set<Location> getSourceLocationsWithSrcIps(
+  public static Set<LocationCompletionMetadata> getSourceLocationsWithSrcIps(
       Map<Location, LocationInfo> locationInfo) {
     IpSpaceToBDD toBdd = new BDDPacket().getDstIpSpaceToBDD();
     return locationInfo.entrySet().stream()
@@ -240,7 +240,7 @@ public final class CompletionMetadataUtils {
               LocationInfo info = entry.getValue();
               return info.isSource() && !toBdd.visit(info.getSourceIps()).isZero();
             })
-        .map(Entry::getKey)
+        .map(e -> new LocationCompletionMetadata(e.getKey(), true))
         .collect(ImmutableSet.toImmutableSet());
   }
 
