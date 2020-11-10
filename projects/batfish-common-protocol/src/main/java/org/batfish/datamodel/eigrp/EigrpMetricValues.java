@@ -1,8 +1,10 @@
 package org.batfish.datamodel.eigrp;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
@@ -34,7 +36,8 @@ public final class EigrpMetricValues implements Serializable {
         PROP_EFFECTIVE_BANDWIDTH,
         effectiveBandwidth);
     checkArgument(mtu >= 0, "Invalid %s value for EIGRP metric: %s", PROP_MTU, mtu);
-    setBandwidth(bandwidth); // checks bandwidth parameter
+    setBandwidth(
+        checkNotNull(bandwidth, "%s cannot be null", PROP_BANDWIDTH)); // checks bandwidth parameter
     _delay = delay;
     _effectiveBandwidth = effectiveBandwidth;
     _reliability = reliability;
@@ -72,12 +75,10 @@ public final class EigrpMetricValues implements Serializable {
     return _mtu;
   }
 
-  public void setBandwidth(@Nullable Long bandwidth) {
+  @JsonIgnore
+  public void setBandwidth(long bandwidth) {
     checkArgument(
-        bandwidth == null || bandwidth >= 0,
-        "Invalid %s value for EIGRP metric: %s",
-        PROP_BANDWIDTH,
-        bandwidth);
+        bandwidth >= 0, "Invalid %s value for EIGRP metric: %s", PROP_BANDWIDTH, bandwidth);
     _bandwidth = bandwidth;
   }
 
