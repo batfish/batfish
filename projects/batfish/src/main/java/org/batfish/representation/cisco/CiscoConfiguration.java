@@ -1886,12 +1886,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .map(bandwidth -> bandwidth.longValue() / 1000) // convert to kbps
             .orElse(null);
     // Bandwidth can be null for port-channels (will be calculated later).
-    // Otherwise if it is null, we're missing bandwidth info.
-    if (bw == null && computeInterfaceType(iface.getName(), _vendor) != InterfaceType.AGGREGATED) {
-      _w.redFlag(
-          String.format("Missing bandwidth for %s, EIGRP metric will be wrong", iface.getName()));
-      bw = (long) 1e9; // default to 1e9 kbps
-    }
+    assert bw != null || computeInterfaceType(iface.getName(), _vendor) == InterfaceType.AGGREGATED;
     EigrpMetricValues values =
         EigrpMetricValues.builder()
             .setDelay(
