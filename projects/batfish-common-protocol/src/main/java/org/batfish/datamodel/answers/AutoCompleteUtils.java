@@ -44,7 +44,6 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
-import org.batfish.specifier.Location;
 import org.batfish.specifier.ToSpecifierString;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
@@ -784,25 +783,26 @@ public final class AutoCompleteUtils {
     checkNotNull(
         completionMetadata.getLocations(),
         "cannot autocomplete source locations without location metadata");
-    Stream<Location> locations =
-        tracerouteSource
-            ? completionMetadata.getLocations().stream()
-                .filter(LocationCompletionMetadata::isTracerouteSource)
-                // prefer source locations
-                .sorted(
-                    (loc1, loc2) ->
-                        loc1.isSource() == loc2.isSource() ? 0 : loc1.isSource() ? -1 : 1)
-                .map(LocationCompletionMetadata::getLocation)
-            : completionMetadata.getLocations().stream()
-                .filter(LocationCompletionMetadata::isSource)
-                .map(LocationCompletionMetadata::getLocation);
     Map<String, Optional<String>> locationsAndHumanNames =
-        locations.collect(
-            ImmutableMap.toImmutableMap(
-                ToSpecifierString::toSpecifierString,
-                location ->
-                    Optional.ofNullable(
-                        completionMetadata.getNodes().get(location.getNodeName()).getHumanName())));
+        (tracerouteSource
+                ? completionMetadata.getLocations().stream()
+                    .filter(LocationCompletionMetadata::isTracerouteSource)
+                    // prefer source locations
+                    .sorted(
+                        (loc1, loc2) ->
+                            loc1.isSource() == loc2.isSource() ? 0 : loc1.isSource() ? -1 : 1)
+                : completionMetadata.getLocations().stream()
+                    .filter(LocationCompletionMetadata::isSource))
+            .map(LocationCompletionMetadata::getLocation)
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    ToSpecifierString::toSpecifierString,
+                    location ->
+                        Optional.ofNullable(
+                            completionMetadata
+                                .getNodes()
+                                .get(location.getNodeName())
+                                .getHumanName())));
     return stringAutoComplete(query, locationsAndHumanNames);
   }
 

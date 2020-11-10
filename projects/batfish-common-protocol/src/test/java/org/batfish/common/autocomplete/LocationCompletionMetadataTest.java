@@ -18,9 +18,10 @@ public final class LocationCompletionMetadataTest {
     Location loc = new InterfaceLinkLocation("node", "iface");
     new EqualsTester()
         .addEqualityGroup(
-            new LocationCompletionMetadata(loc, true),
-            new LocationCompletionMetadata(new InterfaceLinkLocation("node", "iface"), true))
-        .addEqualityGroup(new LocationCompletionMetadata(loc, false))
+            new LocationCompletionMetadata(loc, true, true),
+            new LocationCompletionMetadata(new InterfaceLinkLocation("node", "iface"), true, true))
+        .addEqualityGroup(new LocationCompletionMetadata(loc, false, true))
+        .addEqualityGroup(new LocationCompletionMetadata(loc, true, false))
         .testEquals();
   }
 

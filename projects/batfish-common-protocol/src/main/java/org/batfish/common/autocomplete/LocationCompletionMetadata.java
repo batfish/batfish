@@ -1,6 +1,5 @@
 package org.batfish.common.autocomplete;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,9 +37,14 @@ public final class LocationCompletionMetadata implements Serializable {
   @JsonCreator
   private static LocationCompletionMetadata jsonCreator(
       @Nullable @JsonProperty(PROP_LOCATION) Location location,
-      @Nullable @JsonProperty(PROP_SOURCE) Boolean isSource) {
+      @Nullable @JsonProperty(PROP_SOURCE) Boolean isSource,
+      @Nullable @JsonProperty(PROP_TRACEROUTE_SOURCE) Boolean isTracerouteSoure) {
     checkArgument(location != null, "Location cannot be null for LocationCompletionMetadata");
-    return new LocationCompletionMetadata(location, firstNonNull(isSource, false));
+    checkArgument(isSource != null, "isSource cannot be null for LocationCompletionMetadata");
+    checkArgument(
+        isTracerouteSoure != null,
+        "isTracerouteSource cannot be null for LocationCompletionMetadata");
+    return new LocationCompletionMetadata(location, isSource, isTracerouteSoure);
   }
 
   @Override
