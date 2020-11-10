@@ -16,9 +16,7 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.RoutingProtocol;
 
 /** Represents an EIGRP process on a router */
 @ParametersAreNonnullByDefault
@@ -239,16 +237,6 @@ public final class EigrpProcess implements Serializable {
     public Builder setExternalAdminCost(int externalAdminCost) {
       _externalAdminCost = externalAdminCost;
       return this;
-    }
-
-    /**
-     * Sets {@link #setInternalAdminCost(int)} and {@link #setExternalAdminCost(int)} to default
-     * EIGRP administrative costs for the given {@link ConfigurationFormat}.
-     */
-    @Nonnull
-    public Builder setAdminCostsToVendorDefaults(@Nonnull ConfigurationFormat format) {
-      return setInternalAdminCost(RoutingProtocol.EIGRP.getDefaultAdministrativeCost(format))
-          .setExternalAdminCost(RoutingProtocol.EIGRP_EX.getDefaultAdministrativeCost(format));
     }
   }
 }
