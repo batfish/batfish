@@ -1369,6 +1369,45 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
+  public void testTracerouteSourceLocationAutocomplete() {
+    Map<String, NodeCompletionMetadata> nodes =
+        ImmutableMap.of(
+            "n0",
+            new NodeCompletionMetadata(null),
+            "n1",
+            new NodeCompletionMetadata(null),
+            "n2",
+            new NodeCompletionMetadata(null));
+
+    Set<LocationCompletionMetadata> locations =
+        ImmutableSet.of(
+            new LocationCompletionMetadata(new InterfaceLocation("n0", "iface"), false, false),
+            new LocationCompletionMetadata(new InterfaceLocation("n1", "iface"), false, true),
+            new LocationCompletionMetadata(new InterfaceLinkLocation("n2", "iface"), true, true));
+
+    CompletionMetadata metadata =
+        CompletionMetadata.builder().setNodes(nodes).setLocations(locations).build();
+
+    // non-TR sources are not listed and sources are listed first
+    {
+      assertThat(
+          AutoCompleteUtils.autoComplete(
+                  "network",
+                  "snapshot",
+                  Type.TRACEROUTE_SOURCE_LOCATION,
+                  "",
+                  5,
+                  metadata,
+                  null,
+                  null)
+              .stream()
+              .map(AutocompleteSuggestion::getText)
+              .collect(Collectors.toSet()),
+          equalTo(ImmutableSet.of("@enter(n2[iface])", "n1[iface]")));
+    }
+  }
+
+  @Test
   public void testReferenceBookAutocomplete() {
     ReferenceLibrary library =
         new ReferenceLibrary(

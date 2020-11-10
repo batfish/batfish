@@ -17,14 +17,22 @@ import org.batfish.specifier.Location;
 @ParametersAreNonnullByDefault
 public final class LocationCompletionMetadata implements Serializable {
   private static final String PROP_LOCATION = "location";
-  private static final String PROP_SOURCE = "isSource";
+  private static final String PROP_SOURCE = "source";
+  private static final String PROP_TRACEROUTE_SOURCE = "tracerouteSource";
 
   @Nonnull private final Location _location;
   private final boolean _isSource;
+  private final boolean _isTracerouteSource;
 
   public LocationCompletionMetadata(Location location, boolean isSource) {
+    this(location, isSource, true);
+  }
+
+  public LocationCompletionMetadata(
+      Location location, boolean isSource, boolean isTracerouteSource) {
     _location = location;
     _isSource = isSource;
+    _isTracerouteSource = isTracerouteSource;
   }
 
   @JsonCreator
@@ -44,12 +52,14 @@ public final class LocationCompletionMetadata implements Serializable {
       return false;
     }
     LocationCompletionMetadata that = (LocationCompletionMetadata) o;
-    return _location.equals(that._location) && _isSource == that._isSource;
+    return _location.equals(that._location)
+        && _isSource == that._isSource
+        && _isTracerouteSource == that._isTracerouteSource;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_location, _isSource);
+    return Objects.hash(_location, _isSource, _isTracerouteSource);
   }
 
   /** @return The location for which this completion data is about. */
@@ -64,11 +74,18 @@ public final class LocationCompletionMetadata implements Serializable {
     return _isSource;
   }
 
+  /** @return Whether this location is a valid traceroute source. */
+  @JsonProperty(PROP_TRACEROUTE_SOURCE)
+  public boolean isTracerouteSource() {
+    return _isTracerouteSource;
+  }
+
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_location", _location)
-        .add("_isSource", _isSource)
+        .add("location", _location)
+        .add("isSource", _isSource)
+        .add("isTracerouteSource", _isTracerouteSource)
         .toString();
   }
 }

@@ -44,6 +44,7 @@ import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.DispositionSpecifier;
+import org.batfish.specifier.Location;
 import org.batfish.specifier.ToSpecifierString;
 import org.batfish.specifier.parboiled.Grammar;
 import org.batfish.specifier.parboiled.ParboiledAutoComplete;
@@ -739,13 +740,18 @@ public final class AutoCompleteUtils {
           }
         case SOURCE_LOCATION:
           {
-            suggestions = autoCompleteSourceLocation(query, completionMetadata);
+            suggestions = autoCompleteSourceLocation(query, false, completionMetadata);
             break;
           }
         case STRUCTURE_NAME:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
             suggestions = baseAutoComplete(query, completionMetadata.getStructureNames());
+            break;
+          }
+        case TRACEROUTE_SOURCE_LOCATION:
+          {
+            suggestions = autoCompleteSourceLocation(query, true, completionMetadata);
             break;
           }
         case VRF:
@@ -772,26 +778,32 @@ public final class AutoCompleteUtils {
 
   @Nonnull
   static List<AutocompleteSuggestion> autoCompleteSourceLocation(
-      String query, @Nullable CompletionMetadata completionMetadata) {
-    List<AutocompleteSuggestion> suggestions;
+      String query, boolean tracerouteSource, @Nullable CompletionMetadata completionMetadata) {
+    checkNotNull(
+        completionMetadata, "Cannot autocomplete source locations without completion metadata");
     checkNotNull(
         completionMetadata.getLocations(),
         "cannot autocomplete source locations without location metadata");
+    Stream<Location> locations =
+        tracerouteSource
+            ? completionMetadata.getLocations().stream()
+                .filter(LocationCompletionMetadata::isTracerouteSource)
+                // prefer source locations
+                .sorted(
+                    (loc1, loc2) ->
+                        loc1.isSource() == loc2.isSource() ? 0 : loc1.isSource() ? -1 : 1)
+                .map(LocationCompletionMetadata::getLocation)
+            : completionMetadata.getLocations().stream()
+                .filter(LocationCompletionMetadata::isSource)
+                .map(LocationCompletionMetadata::getLocation);
     Map<String, Optional<String>> locationsAndHumanNames =
-        completionMetadata.getLocations().stream()
-            .filter(LocationCompletionMetadata::isSource)
-            .map(LocationCompletionMetadata::getLocation)
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    ToSpecifierString::toSpecifierString,
-                    location ->
-                        Optional.ofNullable(
-                            completionMetadata
-                                .getNodes()
-                                .get(location.getNodeName())
-                                .getHumanName())));
-    suggestions = stringAutoComplete(query, locationsAndHumanNames);
-    return suggestions;
+        locations.collect(
+            ImmutableMap.toImmutableMap(
+                ToSpecifierString::toSpecifierString,
+                location ->
+                    Optional.ofNullable(
+                        completionMetadata.getNodes().get(location.getNodeName()).getHumanName())));
+    return stringAutoComplete(query, locationsAndHumanNames);
   }
 
   /**

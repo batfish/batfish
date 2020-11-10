@@ -9,13 +9,15 @@ import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
-import static org.batfish.common.util.CompletionMetadataUtils.getSourceLocationsWithSrcIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getSourceLocations;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
 import static org.batfish.common.util.CompletionMetadataUtils.interfaceDisplayString;
+import static org.batfish.common.util.CompletionMetadataUtils.isTracerouteSource;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -50,6 +52,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
@@ -62,6 +65,7 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.specifier.InterfaceLinkLocation;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -570,7 +574,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetSourceLocationsWithSourceIps() {
+  public void testGetSourceLocations() {
     // included
     Location loc1 = new InterfaceLocation("n1", "i1");
     LocationInfo info1 = new LocationInfo(true, UniverseIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
@@ -584,8 +588,94 @@ public final class CompletionMetadataUtilsTest {
     Location loc3 = new InterfaceLocation("n3", "i3");
     LocationInfo info3 = new LocationInfo(true, EmptyIpSpace.INSTANCE, UniverseIpSpace.INSTANCE);
 
+    // included: as TR source
+    Location loc4 = new InterfaceLocation("n4", "i4");
+    LocationInfo info4 = new LocationInfo(true, EmptyIpSpace.INSTANCE, UniverseIpSpace.INSTANCE);
+    Configuration c4 =
+        Configuration.builder()
+            .setHostname("n4")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Interface.builder()
+        .setName("i4")
+        .setOwner(c4)
+        .setActive(true)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+        .build();
+
+    Map<String, Configuration> configurations =
+        ImmutableMap.of(
+            "n1",
+            Configuration.builder()
+                .setHostname("n1")
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build(),
+            "n2",
+            Configuration.builder()
+                .setHostname("n1")
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build(),
+            "n3",
+            Configuration.builder()
+                .setHostname("n3")
+                .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+                .build(),
+            "n4",
+            c4);
+
     Set<LocationCompletionMetadata> sourcesWithSourceIps =
-        getSourceLocationsWithSrcIps(ImmutableMap.of(loc1, info1, loc2, info2, loc3, info3));
-    assertThat(sourcesWithSourceIps, contains(new LocationCompletionMetadata(loc1, true)));
+        getSourceLocations(
+            ImmutableMap.of(loc1, info1, loc2, info2, loc3, info3, loc4, info4), configurations);
+    assertThat(
+        sourcesWithSourceIps,
+        contains(
+            new LocationCompletionMetadata(loc1, true, false),
+            new LocationCompletionMetadata(loc4, false, true)));
+  }
+
+  @Test
+  public void testIsTracerouteSource() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("n1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+
+    // both i1 locations are valid
+    Interface i1 =
+        Interface.builder()
+            .setName("i1")
+            .setOwner(c)
+            .setActive(true)
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+            .build();
+    Location loc1 = new InterfaceLocation("n1", i1.getName());
+    Location loc1link = new InterfaceLinkLocation("n1", i1.getName());
+
+    // inactive interface
+    Interface i2 =
+        Interface.builder()
+            .setName("i2")
+            .setOwner(c)
+            .setActive(false)
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+            .build();
+    Location loc2 = new InterfaceLinkLocation("n1", i2.getName());
+
+    // no concrete address
+    Interface i3 =
+        Interface.builder()
+            .setName("i3")
+            .setOwner(c)
+            .setActive(true)
+            .setAddress(LinkLocalAddress.of(Ip.parse("169.254.0.1")))
+            .build();
+    Location loc3 = new InterfaceLocation("n1", i3.getName());
+
+    Map<String, Configuration> configurations = ImmutableMap.of(c.getHostname(), c);
+    assertTrue(isTracerouteSource(loc1, configurations));
+    assertTrue(isTracerouteSource(loc1link, configurations));
+    assertFalse(isTracerouteSource(loc2, configurations));
+    assertFalse(isTracerouteSource(loc3, configurations));
   }
 }

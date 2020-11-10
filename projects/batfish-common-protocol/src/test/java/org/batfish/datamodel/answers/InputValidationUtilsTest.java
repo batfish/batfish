@@ -178,35 +178,49 @@ public class InputValidationUtilsTest {
   public void testValidateSourceLocation() {
     CompletionMetadata metadata =
         CompletionMetadata.builder()
-            .setNodes(ImmutableSet.of(INTERNET_LOCATION.getNodeName(), "node"))
+            .setNodes(ImmutableSet.of(INTERNET_LOCATION.getNodeName(), "node", "trnode"))
             .setLocations(
                 ImmutableSet.of(
                     new LocationCompletionMetadata(INTERNET_LOCATION, true),
-                    new LocationCompletionMetadata(new InterfaceLocation("node", "iface"), true)))
+                    new LocationCompletionMetadata(new InterfaceLocation("node", "iface"), true),
+                    new LocationCompletionMetadata(
+                        new InterfaceLocation("trnode", "iface"), false, true)))
             .build();
 
     // shorthand for INTERNET_LOCATION is valid
     {
-      InputValidationNotes notes = validateSourceLocation("internet", metadata);
+      InputValidationNotes notes = validateSourceLocation("internet", false, metadata);
       assertEquals(Validity.VALID, notes.getValidity());
     }
 
     // longhand for INTERNET_LOCATION is invalid
     {
-      InputValidationNotes notes = validateSourceLocation("@enter(internet[out])", metadata);
+      InputValidationNotes notes = validateSourceLocation("@enter(internet[out])", false, metadata);
       assertEquals(Validity.INVALID, notes.getValidity());
     }
 
     // exact match is valid
     {
-      InputValidationNotes notes = validateSourceLocation("node[iface]", metadata);
+      InputValidationNotes notes = validateSourceLocation("node[iface]", false, metadata);
       assertEquals(Validity.VALID, notes.getValidity());
     }
 
     // partial match is invalid
     {
-      InputValidationNotes notes = validateSourceLocation("node", metadata);
+      InputValidationNotes notes = validateSourceLocation("node", false, metadata);
       assertEquals(Validity.INVALID, notes.getValidity());
+    }
+
+    // trnode does not match
+    {
+      InputValidationNotes notes = validateSourceLocation("trnode[iface]", false, metadata);
+      assertEquals(Validity.INVALID, notes.getValidity());
+    }
+
+    // trnode matches
+    {
+      InputValidationNotes notes = validateSourceLocation("trnode[iface]", true, metadata);
+      assertEquals(Validity.VALID, notes.getValidity());
     }
   }
 
