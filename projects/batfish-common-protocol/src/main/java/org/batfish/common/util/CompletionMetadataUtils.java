@@ -235,7 +235,7 @@ public final class CompletionMetadataUtils {
     return routingPolicyNames.build();
   }
 
-  public static Set<LocationCompletionMetadata> getSourceLocations(
+  public static Set<LocationCompletionMetadata> getLocationCompletionMetadata(
       Map<Location, LocationInfo> locationInfo, Map<String, Configuration> configurations) {
     IpSpaceToBDD toBdd = new BDDPacket().getDstIpSpaceToBDD();
     return locationInfo.entrySet().stream()
@@ -281,6 +281,7 @@ public final class CompletionMetadataUtils {
 
     return iface != null
         && iface.getActive()
+        && !iface.getSwitchport() // ignore L2 interfacecs
         // packets can enter any interface (InterfaceLinkLocation); to originate (InterfaceLocation)
         // the interface must have an address (properly configured L3 interface)
         && (location instanceof InterfaceLinkLocation || !iface.getAllAddresses().isEmpty());

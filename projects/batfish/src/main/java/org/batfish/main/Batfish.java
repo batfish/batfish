@@ -12,11 +12,11 @@ import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNT
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getLocationCompletionMetadata;
 import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
-import static org.batfish.common.util.CompletionMetadataUtils.getSourceLocations;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
@@ -2071,7 +2071,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
-        getSourceLocations(getLocationInfo(snapshot), configurations),
+        getLocationCompletionMetadata(getLocationInfo(snapshot), configurations),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),

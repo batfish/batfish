@@ -5,11 +5,11 @@ import static org.batfish.common.util.CompletionMetadataUtils.addressGroupDispla
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getLocationCompletionMetadata;
 import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
 import static org.batfish.common.util.CompletionMetadataUtils.getRoutingPolicyNames;
-import static org.batfish.common.util.CompletionMetadataUtils.getSourceLocations;
 import static org.batfish.common.util.CompletionMetadataUtils.getStructureNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getVrfs;
 import static org.batfish.common.util.CompletionMetadataUtils.getZones;
@@ -573,7 +573,7 @@ public final class CompletionMetadataUtilsTest {
   }
 
   @Test
-  public void testGetSourceLocations() {
+  public void testGetLocationCompletionMetadata() {
     // included
     Location loc1 = new InterfaceLocation("n1", "i1");
     LocationInfo info1 = new LocationInfo(true, UniverseIpSpace.INSTANCE, EmptyIpSpace.INSTANCE);
@@ -623,7 +623,7 @@ public final class CompletionMetadataUtilsTest {
             c4);
 
     Set<LocationCompletionMetadata> sourcesWithSourceIps =
-        getSourceLocations(
+        getLocationCompletionMetadata(
             ImmutableMap.of(loc1, info1, loc2, info2, loc3, info3, loc4, info4), configurations);
     assertThat(
         sourcesWithSourceIps,
@@ -665,10 +665,15 @@ public final class CompletionMetadataUtilsTest {
     Interface i3 = Interface.builder().setName("i3").setOwner(c).setActive(true).build();
     Location loc3 = new InterfaceLocation("n1", i3.getName());
 
+    // L2 interface
+    Interface i4 = Interface.builder().setName("i4").setOwner(c).setSwitchport(true).build();
+    Location loc4 = new InterfaceLinkLocation("n1", i4.getName());
+
     Map<String, Configuration> configurations = ImmutableMap.of(c.getHostname(), c);
     assertTrue(isTracerouteSource(loc1, configurations));
     assertTrue(isTracerouteSource(loc1link, configurations));
     assertFalse(isTracerouteSource(loc2, configurations));
     assertFalse(isTracerouteSource(loc3, configurations));
+    assertFalse(isTracerouteSource(loc4, configurations));
   }
 }

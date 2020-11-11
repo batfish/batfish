@@ -16,34 +16,37 @@ import org.batfish.specifier.Location;
 @ParametersAreNonnullByDefault
 public final class LocationCompletionMetadata implements Serializable {
   private static final String PROP_LOCATION = "location";
-  private static final String PROP_SOURCE = "source";
+  private static final String PROP_SOURCE_WITH_IPS = "sourceWithIps";
   private static final String PROP_TRACEROUTE_SOURCE = "tracerouteSource";
 
   @Nonnull private final Location _location;
-  private final boolean _isSource;
+  private final boolean _isSourceWithIps;
   private final boolean _isTracerouteSource;
 
-  public LocationCompletionMetadata(Location location, boolean isSource) {
-    this(location, isSource, true);
+  public LocationCompletionMetadata(Location location, boolean isSourceWithIps) {
+    this(location, isSourceWithIps, isSourceWithIps);
   }
 
   public LocationCompletionMetadata(
       Location location, boolean isSource, boolean isTracerouteSource) {
     _location = location;
-    _isSource = isSource;
+    _isSourceWithIps = isSource;
     _isTracerouteSource = isTracerouteSource;
   }
 
   @JsonCreator
   private static LocationCompletionMetadata jsonCreator(
       @Nullable @JsonProperty(PROP_LOCATION) Location location,
-      @Nullable @JsonProperty(PROP_SOURCE) Boolean isSource,
+      @Nullable @JsonProperty(PROP_SOURCE_WITH_IPS) Boolean isSource,
       @Nullable @JsonProperty(PROP_TRACEROUTE_SOURCE) Boolean isTracerouteSoure) {
-    checkArgument(location != null, "Location cannot be null for LocationCompletionMetadata");
-    checkArgument(isSource != null, "isSource cannot be null for LocationCompletionMetadata");
+    checkArgument(
+        location != null, "%s cannot be null for LocationCompletionMetadata", PROP_LOCATION);
+    checkArgument(
+        isSource != null, "%s cannot be null for LocationCompletionMetadata", PROP_SOURCE_WITH_IPS);
     checkArgument(
         isTracerouteSoure != null,
-        "isTracerouteSource cannot be null for LocationCompletionMetadata");
+        "%s cannot be null for LocationCompletionMetadata",
+        PROP_TRACEROUTE_SOURCE);
     return new LocationCompletionMetadata(location, isSource, isTracerouteSoure);
   }
 
@@ -57,13 +60,13 @@ public final class LocationCompletionMetadata implements Serializable {
     }
     LocationCompletionMetadata that = (LocationCompletionMetadata) o;
     return _location.equals(that._location)
-        && _isSource == that._isSource
+        && _isSourceWithIps == that._isSourceWithIps
         && _isTracerouteSource == that._isTracerouteSource;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_location, _isSource, _isTracerouteSource);
+    return Objects.hash(_location, _isSourceWithIps, _isTracerouteSource);
   }
 
   /** @return The location for which this completion data is about. */
@@ -72,10 +75,13 @@ public final class LocationCompletionMetadata implements Serializable {
     return _location;
   }
 
-  /** @return Whether this location is a source based on its LocationInfo. */
-  @JsonProperty(PROP_SOURCE)
-  public boolean isSource() {
-    return _isSource;
+  /**
+   * @return Whether this location is a "natural" source based on its LocationInfo and it has
+   *     non-empty set of source IPs.
+   */
+  @JsonProperty(PROP_SOURCE_WITH_IPS)
+  public boolean isSourceWithIps() {
+    return _isSourceWithIps;
   }
 
   /** @return Whether this location is a valid traceroute source. */
@@ -88,7 +94,7 @@ public final class LocationCompletionMetadata implements Serializable {
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add("location", _location)
-        .add("isSource", _isSource)
+        .add("isSource", _isSourceWithIps)
         .add("isTracerouteSource", _isTracerouteSource)
         .toString();
   }

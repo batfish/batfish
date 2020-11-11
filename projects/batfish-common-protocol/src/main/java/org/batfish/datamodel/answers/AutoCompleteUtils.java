@@ -790,9 +790,11 @@ public final class AutoCompleteUtils {
                     // prefer source locations
                     .sorted(
                         (loc1, loc2) ->
-                            loc1.isSource() == loc2.isSource() ? 0 : loc1.isSource() ? -1 : 1)
+                            loc1.isSourceWithIps() == loc2.isSourceWithIps()
+                                ? 0
+                                : loc1.isSourceWithIps() ? -1 : 1)
                 : completionMetadata.getLocations().stream()
-                    .filter(LocationCompletionMetadata::isSource))
+                    .filter(LocationCompletionMetadata::isSourceWithIps))
             .map(LocationCompletionMetadata::getLocation)
             .collect(
                 ImmutableMap.toImmutableMap(
