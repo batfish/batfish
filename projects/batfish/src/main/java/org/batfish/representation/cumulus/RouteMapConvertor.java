@@ -59,6 +59,9 @@ class RouteMapConvertor {
     String currentRoutingPolicyName = _routeMap.getName();
 
     ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
+    currentRoutingPolicyStatements.add(
+        Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+        Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
     for (RouteMapEntry currentEntry : _routeMap.getEntries().values()) {
       int currentSequence = currentEntry.getNumber();
       if (_continueTargets.contains(currentSequence)) {

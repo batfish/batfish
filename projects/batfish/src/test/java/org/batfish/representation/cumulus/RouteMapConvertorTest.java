@@ -8,11 +8,16 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -42,6 +47,7 @@ public class RouteMapConvertorTest {
   private static RouteMapEntry ENTRY1;
   private static RouteMapEntry ENTRY2;
   private static RouteMapEntry ENTRY3;
+  private Builder _originalRouteBuilder;
 
   private void initRouteMap() {
     /*
@@ -80,6 +86,14 @@ public class RouteMapConvertorTest {
     VC.setWarnings(W);
     C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_NCLU);
     initRouteMap();
+    _originalRouteBuilder =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setNetwork(Prefix.parse("10.20.30.0/31"));
   }
 
   @Test
@@ -91,9 +105,13 @@ public class RouteMapConvertorTest {
     RoutingPolicy policy = convertor.toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.builder();
-    outputBuilder.setTag(1L);
-    Environment.Builder env = Environment.builder(C).setUseOutputAttributes(true);
-    Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+    _originalRouteBuilder.setTag(1L);
+    Environment.Builder env = Environment.builder(C);
+    Result result =
+        policy.call(
+            env.setOriginalRoute(_originalRouteBuilder.build())
+                .setOutputRoute(outputBuilder)
+                .build());
     // not match entry2, so metric is updated to 20
     assertFalse(result.getBooleanValue());
     assertThat(outputBuilder.getMetric(), equalTo(20L));
@@ -106,9 +124,12 @@ public class RouteMapConvertorTest {
     RoutingPolicy policy = convertor.toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.builder();
-    outputBuilder.setTag(1L);
-    Environment.Builder env = Environment.builder(C).setUseOutputAttributes(true);
-    Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+    Environment.Builder env = Environment.builder(C);
+    Result result =
+        policy.call(
+            env.setOriginalRoute(_originalRouteBuilder.setTag(1L).build())
+                .setOutputRoute(outputBuilder)
+                .build());
     // match entry3, so metric is updated to 30
     assertTrue(result.getBooleanValue());
     assertThat(outputBuilder.getMetric(), equalTo(30L));
@@ -121,9 +142,12 @@ public class RouteMapConvertorTest {
     RoutingPolicy policy = convertor.toRouteMap();
 
     Builder outputBuilder = Bgpv4Route.builder();
-    outputBuilder.setTag(2L);
-    Environment.Builder env = Environment.builder(C).setUseOutputAttributes(true);
-    Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+    Environment.Builder env = Environment.builder(C);
+    Result result =
+        policy.call(
+            env.setOriginalRoute(_originalRouteBuilder.setTag(2L).build())
+                .setOutputRoute(outputBuilder)
+                .build());
     assertFalse(result.getBooleanValue());
     assertThat(outputBuilder.getMetric(), equalTo(20L));
   }
@@ -215,7 +239,8 @@ public class RouteMapConvertorTest {
 
     Builder outputBuilder = Bgpv4Route.builder();
     Environment.Builder env = Environment.builder(C);
-    policy.call(env.setOutputRoute(outputBuilder).build());
+    policy.call(
+        env.setOriginalRoute(_originalRouteBuilder.build()).setOutputRoute(outputBuilder).build());
     assertThat(outputBuilder.getLocalPreference(), equalTo(200L));
   }
 
@@ -229,7 +254,8 @@ public class RouteMapConvertorTest {
 
     Builder outputBuilder = Bgpv4Route.builder();
     Environment.Builder env = Environment.builder(C);
-    policy.call(env.setOutputRoute(outputBuilder).build());
+    policy.call(
+        env.setOriginalRoute(_originalRouteBuilder.build()).setOutputRoute(outputBuilder).build());
     assertThat(outputBuilder.getTag(), equalTo(999L));
   }
 
@@ -260,7 +286,11 @@ public class RouteMapConvertorTest {
                         Statements.ExitAccept.toStaticStatement()))
                 .build());
     Environment.Builder env = Environment.builder(C);
-    Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+    Result result =
+        policy.call(
+            env.setOriginalRoute(_originalRouteBuilder.build())
+                .setOutputRoute(outputBuilder)
+                .build());
     assertTrue(result.getBooleanValue());
     assertThat(outputBuilder.getTag(), equalTo(7777L));
     assertThat(outputBuilder.getLocalPreference(), equalTo(2000L));
@@ -289,7 +319,11 @@ public class RouteMapConvertorTest {
 
     Builder outputBuilder = Bgpv4Route.builder();
     Environment.Builder env = Environment.builder(C);
-    Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+    Result result =
+        policy.call(
+            env.setOriginalRoute(_originalRouteBuilder.build())
+                .setOutputRoute(outputBuilder)
+                .build());
     assertFalse(result.getBooleanValue());
   }
 
@@ -305,7 +339,11 @@ public class RouteMapConvertorTest {
 
     Builder outputBuilder = Bgpv4Route.builder();
     Environment.Builder env = Environment.builder(C);
-    Result result = policy.call(env.setOutputRoute(outputBuilder).build());
+    Result result =
+        policy.call(
+            env.setOriginalRoute(_originalRouteBuilder.build())
+                .setOutputRoute(outputBuilder)
+                .build());
     assertTrue(result.getBooleanValue());
   }
 }

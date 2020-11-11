@@ -382,6 +382,33 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
+  public void testSetCommunityContinue() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
+    Configuration c = parseConfig("set_community_additive_continue");
+    RoutingPolicy rp1 = c.getRoutingPolicies().get("RM_SET_ADDITIVE_TEST_1");
+    Bgpv4Route inRoute =
+        base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(4, 4))).build();
+    Bgpv4Route outputRoute1 = processRouteIn(rp1, inRoute);
+    assertThat(
+        outputRoute1.getCommunities().getCommunities(),
+        containsInAnyOrder(
+            StandardCommunity.of(2, 2),
+            StandardCommunity.of(3, 3),
+            StandardCommunity.of(4, 4),
+            StandardCommunity.of(7, 7)));
+  }
+
+  @Test
   public void testSetMetric() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
