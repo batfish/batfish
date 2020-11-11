@@ -357,6 +357,7 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
+import org.batfish.datamodel.matchers.EigrpMetricMatchers;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
@@ -1716,6 +1717,22 @@ public final class CiscoGrammarTest {
         c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
         c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+  }
+
+  /** Test named EIGRP process with passive interfaces */
+  @Test
+  public void testIosPortChannelEigrpMetric() throws IOException {
+    Configuration c = parseConfig("ios-portchannel-eigrp");
+
+    /* Port-channel23 should have EIGRP bandwidth based on member interfaces' bandwidths */
+    long expectedBw = (long) 2e9;
+    Interface portChannel23 = c.getAllInterfaces().get("Port-channel23");
+    assertThat(portChannel23, hasBandwidth(expectedBw));
+    assertThat(
+        portChannel23,
+        hasEigrp(
+            EigrpInterfaceSettingsMatchers.hasEigrpMetric(
+                EigrpMetricMatchers.hasBandwidth(expectedBw))));
   }
 
   /**

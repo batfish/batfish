@@ -167,6 +167,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
@@ -1784,6 +1785,25 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private void postProcessEigrpCosts(Map<String, Configuration> configurations) {
+    configurations.values().stream()
+        .flatMap(c -> c.getAllInterfaces().values().stream())
+        // Recalculate EIGRP metrics now that bandwidths are accurate
+        .filter(
+            iface ->
+                iface.getInterfaceType() == InterfaceType.AGGREGATED && iface.getEigrp() != null)
+        .forEach(
+            iface -> {
+              EigrpMetricValues metricValues = iface.getEigrp().getMetric().getValues();
+              if (metricValues.getBandwidth() == null) {
+                // only set bandwidth if it's not explicitly configured for EIGRP
+                Double bw = iface.getBandwidth();
+                assert bw != null; // all bandwidths should be finalized at this point
+                metricValues.setBandwidth(bw.longValue());
+              }
+            });
+  }
+
   private void postProcessOspfCosts(Map<String, Configuration> configurations) {
     configurations
         .values()
@@ -2050,6 +2070,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
+    postProcessEigrpCosts(configurations); // must be after postProcessAggregatedInterfaces
     EigrpTopologyUtils.initNeighborConfigs(nc);
   }
 
