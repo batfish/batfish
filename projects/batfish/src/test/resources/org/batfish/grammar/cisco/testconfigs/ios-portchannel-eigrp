@@ -2,12 +2,6 @@
 hostname ios-portchannel-eigrp
 !
 !
-vrf definition vrf_100
- !
- address-family ipv4
- exit-address-family
-!
-!
 interface Loopback23
  ip address 172.16.23.2 255.255.255.255
 !
