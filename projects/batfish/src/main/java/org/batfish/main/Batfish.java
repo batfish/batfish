@@ -12,6 +12,7 @@ import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNT
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getLocationCompletionMetadata;
 import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
@@ -120,7 +121,6 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.CompletionMetadataUtils;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
@@ -2071,7 +2071,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
-        CompletionMetadataUtils.getSourceLocationsWithSrcIps(getLocationInfo(snapshot)),
+        getLocationCompletionMetadata(getLocationInfo(snapshot), configurations),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),

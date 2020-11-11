@@ -33,6 +33,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Protocol;
@@ -738,13 +739,18 @@ public final class AutoCompleteUtils {
           }
         case SOURCE_LOCATION:
           {
-            suggestions = autoCompleteSourceLocation(query, completionMetadata);
+            suggestions = autoCompleteSourceLocation(query, false, completionMetadata);
             break;
           }
         case STRUCTURE_NAME:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
             suggestions = baseAutoComplete(query, completionMetadata.getStructureNames());
+            break;
+          }
+        case TRACEROUTE_SOURCE_LOCATION:
+          {
+            suggestions = autoCompleteSourceLocation(query, true, completionMetadata);
             break;
           }
         case VRF:
@@ -769,26 +775,50 @@ public final class AutoCompleteUtils {
     return suggestions;
   }
 
+  /**
+   * Returns a list of loactions that the match the query. The query can match on either the
+   * location (node, interface) or the human name of the node. When tracerouteSource is false,
+   * "natural" source locations (per location info) with IPs are considered. Otherwise, traceroute
+   * sources are considered. In the latter mode, natural sources are ranked higher.
+   */
   @Nonnull
   static List<AutocompleteSuggestion> autoCompleteSourceLocation(
-      String query, @Nullable CompletionMetadata completionMetadata) {
-    List<AutocompleteSuggestion> suggestions;
+      String query, boolean tracerouteSource, @Nullable CompletionMetadata completionMetadata) {
     checkNotNull(
-        completionMetadata.getSourceLocations(),
-        "cannot autocomplete source locations without LocationInfo");
-    Map<String, Optional<String>> locationsAndHumanNames =
-        completionMetadata.getSourceLocations().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    ToSpecifierString::toSpecifierString,
-                    location ->
-                        Optional.ofNullable(
-                            completionMetadata
-                                .getNodes()
-                                .get(location.getNodeName())
-                                .getHumanName())));
-    suggestions = stringAutoComplete(query, locationsAndHumanNames);
-    return suggestions;
+        completionMetadata, "Cannot autocomplete source locations without completion metadata");
+    checkNotNull(
+        completionMetadata.getLocations(),
+        "cannot autocomplete source locations without location metadata");
+    List<AutocompleteSuggestion> sourceSuggestions =
+        stringAutoComplete(query, getLocationsWithHumanNames(false, completionMetadata));
+    if (!tracerouteSource) {
+      return sourceSuggestions;
+    }
+    List<AutocompleteSuggestion> tracerouteSourceSuggestions =
+        stringAutoComplete(query, getLocationsWithHumanNames(true, completionMetadata));
+    return Streams.concat(sourceSuggestions.stream(), tracerouteSourceSuggestions.stream())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a map from location to the (optional) human name of its node. When tracerouteSource is
+   * false, "natural" source locations (per location info) with IPs are considered. Otherwise,
+   * traceroute sources that are not source location with IPs are considered.
+   */
+  private static Map<String, Optional<String>> getLocationsWithHumanNames(
+      boolean tracerouteSource, CompletionMetadata completionMetadata) {
+    return (tracerouteSource
+            ? completionMetadata.getLocations().stream()
+                .filter(loc -> loc.isTracerouteSource() && !loc.isSourceWithIps())
+            : completionMetadata.getLocations().stream()
+                .filter(LocationCompletionMetadata::isSourceWithIps))
+        .map(LocationCompletionMetadata::getLocation)
+        .collect(
+            ImmutableMap.toImmutableMap(
+                ToSpecifierString::toSpecifierString,
+                location ->
+                    Optional.ofNullable(
+                        completionMetadata.getNodes().get(location.getNodeName()).getHumanName())));
   }
 
   /**
