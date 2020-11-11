@@ -1,0 +1,30 @@
+set_community_additive_continue
+# This file describes the network interfaces
+
+iface eth0
+ address 10.20.30.0/31
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+agentx
+!
+router bgp 12345
+ bgp router-id 1.2.3.4
+ address-family ipv4 unicast
+  network 10.20.0.0/16
+ exit-address-family
+!
+route-map RM_SET_ADDITIVE_TEST_1 permit 1
+ set community 2:2 3:3 additive
+ on-match next
+
+route-map RM_SET_ADDITIVE_TEST_1 permit 2
+ set community 7:7 additive
+!
+line vty
+!
+!### end frr.conf
