@@ -1877,7 +1877,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .map(bandwidth -> bandwidth.longValue() / 1000) // convert to kbps
             .orElse(null);
     // Bandwidth can be null for port-channels (will be calculated later).
-    assert bw != null || computeInterfaceType(iface.getName(), _vendor) == InterfaceType.AGGREGATED;
+    if (bw == null) {
+      InterfaceType ifaceType = computeInterfaceType(iface.getName(), _vendor);
+      assert ifaceType == InterfaceType.AGGREGATED || ifaceType == InterfaceType.AGGREGATE_CHILD;
+    }
     EigrpMetricValues values =
         EigrpMetricValues.builder()
             .setDelay(
