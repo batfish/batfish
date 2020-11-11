@@ -1,0 +1,22 @@
+!
+hostname ios-portchannel-eigrp
+!
+!
+interface Loopback23
+ ip address 172.16.23.2 255.255.255.255
+!
+interface Port-channel23
+ ip address 10.12.23.2 255.255.255.252
+!
+interface GigabitEthernet1
+ channel-group 23 mode active
+!
+interface GigabitEthernet2
+ channel-group 23 mode active
+!
+router eigrp 23
+ network 10.12.23.0 0.0.0.255
+ network 172.16.23.2 0.0.0.0
+ passive-interface default
+ no passive-interface Port-channel23
+!
