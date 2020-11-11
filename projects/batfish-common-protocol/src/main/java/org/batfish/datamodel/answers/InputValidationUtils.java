@@ -181,7 +181,9 @@ public final class InputValidationUtils {
             nodeRolesData,
             referenceLibrary);
       case SOURCE_LOCATION:
-        return validateSourceLocation(query, completionMetadata);
+        return validateSourceLocation(query, false, completionMetadata);
+      case TRACEROUTE_SOURCE_LOCATION:
+        return validateSourceLocation(query, true, completionMetadata);
       case VXLAN_VNI_PROPERTY_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.VXLAN_VNI_PROPERTY_SPECIFIER,
@@ -197,9 +199,9 @@ public final class InputValidationUtils {
   @VisibleForTesting
   @Nonnull
   static InputValidationNotes validateSourceLocation(
-      String query, CompletionMetadata completionMetadata) {
+      String query, boolean tracerouteSource, CompletionMetadata completionMetadata) {
     Validity validity =
-        autoCompleteSourceLocation(query, completionMetadata).stream()
+        autoCompleteSourceLocation(query, tracerouteSource, completionMetadata).stream()
                 .anyMatch(suggestion -> suggestion.getText().equals(query))
             ? Validity.VALID
             : Validity.INVALID;

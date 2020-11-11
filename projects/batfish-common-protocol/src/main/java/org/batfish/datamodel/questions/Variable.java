@@ -94,6 +94,7 @@ public class Variable {
     STRING("string", true),
     STRUCTURE_NAME("structureName", true),
     SUBRANGE("subrange", true),
+    TRACEROUTE_SOURCE_LOCATION("tracerouteSourceLocation", true),
     VRF("vrf", true),
     VXLAN_VNI_PROPERTY_SPEC("vxlanVniPropertySpec", true),
     ZONE("zone", true),

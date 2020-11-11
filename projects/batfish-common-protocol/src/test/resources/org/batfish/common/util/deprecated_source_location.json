@@ -1,0 +1,9 @@
+{
+  "locationInfo": [
+    {
+      "class": "org.batfish.specifier.InterfaceLocation",
+      "interfaceName": "interface",
+      "nodeName": "node"
+    }
+  ]
+}
