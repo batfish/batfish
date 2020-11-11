@@ -1449,7 +1449,7 @@ public class CiscoXrConversions {
     String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
     RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
     c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
-    newProcess.setExportPolicy(eigrpExportPolicyName);
+    newProcess.setRedistributionPolicy(eigrpExportPolicyName);
 
     eigrpExportPolicy
         .getStatements()

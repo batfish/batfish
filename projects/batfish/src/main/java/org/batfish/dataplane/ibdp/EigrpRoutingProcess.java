@@ -83,7 +83,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * A {@link RibDelta} containing delta of the main RIB which will get exported as external routes
    * and get withdrawn/sent in the next iteration
    */
-  @Nonnull private RibDelta<? extends AnnotatedRoute<AbstractRoute>> _queuedForRedistribution;
+  @Nonnull private RibDelta<EigrpExternalRoute> _queuedForRedistribution;
 
   /** Set of routes to be merged to the main RIB at the end of the iteration */
   @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
@@ -165,7 +165,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
     // Filter and export redistribution queue according to per neighbor export policy and send
     // out/withdraw
-    exportRedistributed(_queuedForRedistribution, allNodes, nc);
+    sendOutExternalRoutes(_queuedForRedistribution, allNodes, nc);
     _queuedForRedistribution = RibDelta.empty();
 
     // Process new external routes and re-advertise them as necessary
@@ -184,26 +184,10 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   /**
-   * Export routes in queueForRedistribution {@link RibDelta} to all neighbors using per neighbor
-   * export policy
-   */
-  private void exportRedistributed(
-      RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
-      Map<String, Node> allNodes,
-      NetworkConfigurations nc) {
-    for (EigrpEdge eigrpEdge : _incomingExternalRoutes.keySet()) {
-      RoutingPolicy exportPolicyForEdge = getOwnExportPolicy(eigrpEdge.getNode2());
-      RibDelta<EigrpExternalRoute> routesForExport =
-          exportRedistributedPerNeighbor(queueForRedistribution, exportPolicyForEdge);
-      sendOutExternalRoutesPerNeighbor(routesForExport, allNodes, eigrpEdge, nc);
-    }
-  }
-
-  /**
    * Return exported routes in queueForRedistribution {@link RibDelta} using the provided
    * exportPolicy
    */
-  private RibDelta<EigrpExternalRoute> exportRedistributedPerNeighbor(
+  private RibDelta<EigrpExternalRoute> redistributeWithPolicy(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> queueForRedistribution,
       RoutingPolicy exportPolicy) {
     RibDelta.Builder<EigrpExternalRoute> builder = RibDelta.builder();
@@ -231,7 +215,10 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    _queuedForRedistribution = mainRibDelta;
+    _queuedForRedistribution =
+        redistributeWithPolicy(
+            mainRibDelta,
+            _configuration.getRoutingPolicies().get(_process.getRedistributionPolicy()));
   }
 
   @Override
@@ -486,7 +473,10 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return exportPolicy.process(eigrpRoute, eigrpRoute.toBuilder(), _process, Direction.OUT);
   }
 
-  /** External */
+  /**
+   * Execute neighbor-specific filtering/transformation for external routes. Returns an {@link
+   * Optional#empty()} if the route should not be sent to the remote neighbor.
+   */
   private Optional<EigrpExternalRoute> filterAndTransformExternalRoute(
       EigrpNeighborConfigId neighborConfigId, EigrpRoute route) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);

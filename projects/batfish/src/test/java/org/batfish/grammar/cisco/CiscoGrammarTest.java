@@ -1729,7 +1729,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
     String exportPolicyName =
-        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(2L).getExportPolicy();
+        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(2L).getRedistributionPolicy();
     assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
@@ -1774,7 +1774,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(asn))));
     org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess =
         c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn);
-    String exportPolicyName = eigrpProcess.getExportPolicy();
+    String exportPolicyName = eigrpProcess.getRedistributionPolicy();
     assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
@@ -2697,16 +2697,12 @@ public final class CiscoGrammarTest {
 
     String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0";
 
+    org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess1 =
+        c.getDefaultVrf().getEigrpProcesses().get(1L);
     assertThat(
-        c.getDefaultVrf()
-            .getEigrpProcesses()
-            .get(1L)
-            .getNeighbors()
-            .get("GigabitEthernet0/0")
-            .getExportPolicy(),
+        eigrpProcess1.getNeighbors().get("GigabitEthernet0/0").getExportPolicy(),
         equalTo(distListPolicyName));
 
-    BooleanExpr matchAsn2 = new MatchProcessAsn(2L);
     BooleanExpr matchAsn1 = new MatchProcessAsn(1L);
     BooleanExpr matchEigrp = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
 
@@ -2720,24 +2716,22 @@ public final class CiscoGrammarTest {
                 ImmutableList.of(),
                 ImmutableList.of(Statements.ExitReject.toStaticStatement())),
             new If(
-                new Conjunction(ImmutableList.of(matchAsn2, matchEigrp)),
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                ImmutableList.of()),
-            new If(
                 new Conjunction(ImmutableList.of(matchEigrp, matchAsn1)),
                 ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                 ImmutableList.of(Statements.ExitReject.toStaticStatement())));
 
     assertThat(c.getRoutingPolicies().get(distListPolicyName).getStatements(), equalTo(statements));
 
-    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
     EigrpMetric metric =
         WideMetric.builder()
             .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
             .build();
-    // a route redistributed from router EIGRP 2 and allowed by distribute list
+
+    // Test redistribution policy allows redistribution from router EIGRP 2
+    RoutingPolicy redistrPolicy =
+        c.getRoutingPolicies().get(eigrpProcess1.getRedistributionPolicy());
     assertTrue(
-        routingPolicy.process(
+        redistrPolicy.process(
             EigrpExternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.30.0/24"))
                 .setEigrpMetric(metric)
@@ -2745,19 +2739,34 @@ public final class CiscoGrammarTest {
                 .setDestinationAsn(5L)
                 .build(),
             EigrpExternalRoute.builder(),
+            eigrpProcess1,
+            Direction.IN));
+
+    RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
+
+    // a route (previously) redistributed from router EIGRP 2 and allowed by distribute list
+    assertTrue(
+        routingPolicy.process(
+            EigrpExternalRoute.builder()
+                .setNetwork(Prefix.parse("172.21.30.0/24"))
+                .setEigrpMetric(metric)
+                .setProcessAsn(1L)
+                .setDestinationAsn(5L)
+                .build(),
+            EigrpExternalRoute.builder(),
             Direction.OUT));
-    // a route redistributed from router EIGRP 2 and denied by distribute list
+    // a route (previously) redistributed from router EIGRP 2 and denied by distribute list
     assertFalse(
         routingPolicy.process(
             EigrpExternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.31.0/24"))
                 .setEigrpMetric(metric)
-                .setProcessAsn(2L)
+                .setProcessAsn(1L)
                 .setDestinationAsn(5L)
                 .build(),
             EigrpExternalRoute.builder(),
             Direction.OUT));
-    // a route redistributed internally from router EIGRP 1 and allowed by distribute list
+    // an internal route sent from router EIGRP 1 and allowed by distribute list
     assertTrue(
         routingPolicy.process(
             EigrpInternalRoute.builder()
@@ -2768,8 +2777,7 @@ public final class CiscoGrammarTest {
             EigrpExternalRoute.builder(),
             Direction.OUT));
     // a route matching distribute list but does not have the correct ASN so falls through till the
-    // end and
-    // gets rejected
+    // end and gets rejected
     assertFalse(
         routingPolicy.process(
             EigrpExternalRoute.builder()

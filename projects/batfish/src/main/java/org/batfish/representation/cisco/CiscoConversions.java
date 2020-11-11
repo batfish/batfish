@@ -1075,12 +1075,12 @@ public class CiscoConversions {
      * Route redistribution modifies the configuration structure, so do this last to avoid having to
      * clean up configuration if another conversion step fails
      */
-    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
-    RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
-    c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
-    newProcess.setExportPolicy(eigrpExportPolicyName);
+    String redistributionPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
+    RoutingPolicy redistributionPolicy = new RoutingPolicy(redistributionPolicyName, c);
+    c.getRoutingPolicies().put(redistributionPolicyName, redistributionPolicy);
+    newProcess.setRedistributionPolicy(redistributionPolicyName);
 
-    eigrpExportPolicy
+    redistributionPolicy
         .getStatements()
         .addAll(
             eigrpRedistributionPoliciesToStatements(
@@ -1091,7 +1091,7 @@ public class CiscoConversions {
 
   /** Creates an {@link If} statement to allow EIGRP routes redistributed from supplied localAsn */
   @Nonnull
-  private static If ifToAllowEigrpToOwnAsn(long localAsn) {
+  static If ifToAllowEigrpToOwnAsn(long localAsn) {
     return new If(
         new Conjunction(
             ImmutableList.of(
@@ -1391,27 +1391,6 @@ public class CiscoConversions {
         ospfSettings.setInboundDistributeListPolicy(policyName);
       }
     }
-  }
-
-  /**
-   * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
-   * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
-   */
-  static List<If> clearFalseStatementsAndAddMatchOwnAsn(List<If> redistributeIfs, long ownAsn) {
-    List<Statement> emptyFalseStatements = ImmutableList.of();
-    List<If> redistributeIfsWithEmptyFalse =
-        redistributeIfs.stream()
-            .map(
-                redistributionStatement ->
-                    new If(
-                        redistributionStatement.getGuard(),
-                        redistributionStatement.getTrueStatements(),
-                        emptyFalseStatements))
-            .collect(Collectors.toList());
-
-    redistributeIfsWithEmptyFalse.add(ifToAllowEigrpToOwnAsn(ownAsn));
-
-    return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
   }
 
   /**

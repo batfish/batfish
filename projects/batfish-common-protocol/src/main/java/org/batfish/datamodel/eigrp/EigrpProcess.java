@@ -30,7 +30,7 @@ public final class EigrpProcess implements Serializable {
   private static final String PROP_EXTERNAL_ADMIN_COST = "externalAdminCost";
 
   private final long _asn;
-  @Nullable private final String _exportPolicy;
+  @Nullable private final String _redistributionPolicy;
   @Nonnull private final EigrpProcessMode _mode;
   @Nonnull private SortedMap<String, EigrpNeighborConfig> _neighbors;
   @Nonnull private final Ip _routerId;
@@ -46,7 +46,7 @@ public final class EigrpProcess implements Serializable {
       int internalAdminCost,
       int externalAdminCost) {
     _asn = asn;
-    _exportPolicy = exportPolicy;
+    _redistributionPolicy = exportPolicy;
     _mode = mode;
     _neighbors = ImmutableSortedMap.copyOf(neighbors);
     _routerId = routerId;
@@ -94,8 +94,8 @@ public final class EigrpProcess implements Serializable {
    */
   @Nullable
   @JsonProperty(PROP_EXPORT_POLICY)
-  public String getExportPolicy() {
-    return _exportPolicy;
+  public String getRedistributionPolicy() {
+    return _redistributionPolicy;
   }
 
   /** @return All EIGRP neighbors in this process */
@@ -159,7 +159,7 @@ public final class EigrpProcess implements Serializable {
     }
     EigrpProcess that = (EigrpProcess) o;
     return _asn == that._asn
-        && Objects.equals(_exportPolicy, that._exportPolicy)
+        && Objects.equals(_redistributionPolicy, that._redistributionPolicy)
         && _mode == that._mode
         && _neighbors == that._neighbors
         && _routerId.equals(that._routerId)
@@ -170,7 +170,13 @@ public final class EigrpProcess implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _asn, _exportPolicy, _mode, _routerId, _neighbors, _internalAdminCost, _externalAdminCost);
+        _asn,
+        _redistributionPolicy,
+        _mode,
+        _routerId,
+        _neighbors,
+        _internalAdminCost,
+        _externalAdminCost);
   }
 
   public static class Builder {
@@ -207,7 +213,7 @@ public final class EigrpProcess implements Serializable {
     }
 
     @Nonnull
-    public Builder setExportPolicy(@Nullable String exportPolicy) {
+    public Builder setRedistributionPolicy(@Nullable String exportPolicy) {
       _exportPolicy = exportPolicy;
       return this;
     }

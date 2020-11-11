@@ -13,14 +13,13 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco.CiscoConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
-import static org.batfish.representation.cisco.CiscoConversions.eigrpRedistributionPoliciesToStatements;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
+import static org.batfish.representation.cisco.CiscoConversions.ifToAllowEigrpToOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.insertDistributeListFilterAndGetPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
@@ -1732,14 +1731,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .getInterfacePassiveStatus()
               .getOrDefault(getNewInterfaceName(iface), eigrpProcess.getPassiveInterfaceDefault());
 
-      List<If> redistributePolicyStatements =
-          eigrpRedistributionPoliciesToStatements(
-              eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
-
-      List<If> redistributeAndAllowEigrpFromSelfAsn =
-          clearFalseStatementsAndAddMatchOwnAsn(
-              redistributePolicyStatements, eigrpProcess.getAsn());
-
       String policyName =
           String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName);
       RoutingPolicy routingPolicy =
@@ -1747,7 +1738,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               c,
               this,
               eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName()),
-              redistributeAndAllowEigrpFromSelfAsn,
+              ImmutableList.of(ifToAllowEigrpToOwnAsn(eigrpProcess.getAsn())),
               policyName);
 
       c.getRoutingPolicies().put(policyName, routingPolicy);
