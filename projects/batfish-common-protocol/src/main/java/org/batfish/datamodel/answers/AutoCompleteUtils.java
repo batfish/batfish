@@ -775,6 +775,12 @@ public final class AutoCompleteUtils {
     return suggestions;
   }
 
+  /**
+   * Returns a list of loactions that the match the query. The query can match on either the
+   * location (node, interface) or the human name of the node. When tracerouteSource is false,
+   * "natural" source locations (per location info) with IPs are considered. Otherwise, traceroute
+   * sources are considered. In the latter mode, natural sources are ranked higher.
+   */
   @Nonnull
   static List<AutocompleteSuggestion> autoCompleteSourceLocation(
       String query, boolean tracerouteSource, @Nullable CompletionMetadata completionMetadata) {
@@ -783,29 +789,36 @@ public final class AutoCompleteUtils {
     checkNotNull(
         completionMetadata.getLocations(),
         "cannot autocomplete source locations without location metadata");
-    Map<String, Optional<String>> locationsAndHumanNames =
-        (tracerouteSource
-                ? completionMetadata.getLocations().stream()
-                    .filter(LocationCompletionMetadata::isTracerouteSource)
-                    // prefer source locations
-                    .sorted(
-                        (loc1, loc2) ->
-                            loc1.isSourceWithIps() == loc2.isSourceWithIps()
-                                ? 0
-                                : loc1.isSourceWithIps() ? -1 : 1)
-                : completionMetadata.getLocations().stream()
-                    .filter(LocationCompletionMetadata::isSourceWithIps))
-            .map(LocationCompletionMetadata::getLocation)
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    ToSpecifierString::toSpecifierString,
-                    location ->
-                        Optional.ofNullable(
-                            completionMetadata
-                                .getNodes()
-                                .get(location.getNodeName())
-                                .getHumanName())));
-    return stringAutoComplete(query, locationsAndHumanNames);
+    List<AutocompleteSuggestion> sourceSuggestions =
+        stringAutoComplete(query, getLocationsWithHumanNames(false, completionMetadata));
+    if (!tracerouteSource) {
+      return sourceSuggestions;
+    }
+    List<AutocompleteSuggestion> tracerouteSourceSuggestions =
+        stringAutoComplete(query, getLocationsWithHumanNames(true, completionMetadata));
+    return Streams.concat(sourceSuggestions.stream(), tracerouteSourceSuggestions.stream())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a map from location to the (optional) human name of its node. When tracerouteSource is
+   * false, "natural" source locations (per location info) with IPs are considered. Otherwise,
+   * traceroute sources that are not source location with IPs are considered.
+   */
+  private static Map<String, Optional<String>> getLocationsWithHumanNames(
+      boolean tracerouteSource, CompletionMetadata completionMetadata) {
+    return (tracerouteSource
+            ? completionMetadata.getLocations().stream()
+                .filter(loc -> loc.isTracerouteSource() && !loc.isSourceWithIps())
+            : completionMetadata.getLocations().stream()
+                .filter(LocationCompletionMetadata::isSourceWithIps))
+        .map(LocationCompletionMetadata::getLocation)
+        .collect(
+            ImmutableMap.toImmutableMap(
+                ToSpecifierString::toSpecifierString,
+                location ->
+                    Optional.ofNullable(
+                        completionMetadata.getNodes().get(location.getNodeName()).getHumanName())));
   }
 
   /**
