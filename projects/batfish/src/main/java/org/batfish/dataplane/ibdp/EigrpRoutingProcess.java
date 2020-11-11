@@ -215,10 +215,15 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   @Override
   public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    _queuedForRedistribution =
-        redistributeWithPolicy(
-            mainRibDelta,
-            _configuration.getRoutingPolicies().get(_process.getRedistributionPolicy()));
+    if (_process.getRedistributionPolicy() == null) {
+      return;
+    }
+    RoutingPolicy exportPolicy =
+        _configuration.getRoutingPolicies().get(_process.getRedistributionPolicy());
+    if (exportPolicy == null) {
+      return;
+    }
+    _queuedForRedistribution = redistributeWithPolicy(mainRibDelta, exportPolicy);
   }
 
   @Override
