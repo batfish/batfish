@@ -801,6 +801,7 @@ import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Re_redistribute_staticContext;
+import org.batfish.grammar.cisco.CiscoParser.Re_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Reaf_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Reaf_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Reafi_passive_interfaceContext;
@@ -823,6 +824,7 @@ import org.batfish.grammar.cisco.CiscoParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ren_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ren_metric_weightsContext;
+import org.batfish.grammar.cisco.CiscoParser.Reno_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro6_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
@@ -6797,12 +6799,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    if (ctx.NO() == null) {
-      Ip routerId = toIp(ctx.id);
-      _currentEigrpProcess.setRouterId(routerId);
-    } else {
-      _currentEigrpProcess.setRouterId(null);
-    }
+    Ip routerId = toIp(ctx.id);
+    _currentEigrpProcess.setRouterId(routerId);
   }
 
   @Override
@@ -7060,6 +7058,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRec_metric_weights(Rec_metric_weightsContext ctx) {
     // See https://github.com/batfish/batfish/issues/1946
     todo(ctx);
+  }
+
+  @Override
+  public void exitReno_shutdown(Reno_shutdownContext ctx) {
+    _currentEigrpProcess.setShutdown(false);
+  }
+
+  @Override
+  public void exitRe_shutdown(Re_shutdownContext ctx) {
+    _currentEigrpProcess.setShutdown(true);
   }
 
   @Override
