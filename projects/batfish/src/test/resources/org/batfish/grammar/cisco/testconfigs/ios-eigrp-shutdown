@@ -1,0 +1,17 @@
+!
+hostname ios-eigrp-shutdown
+!
+router eigrp 1
+  eigrp router-id 1.1.1.1
+  network 10.0.0.0 0.0.0.255
+!
+router eigrp 2
+  eigrp router-id 2.2.2.2
+  shutdown
+  no shutdown
+!
+router eigrp 3
+  eigrp router-id 3.3.3.3
+  no shutdown
+  shutdown
+!

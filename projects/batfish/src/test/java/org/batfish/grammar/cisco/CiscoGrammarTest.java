@@ -6371,4 +6371,30 @@ public final class CiscoGrammarTest {
           equalTo(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
     }
   }
+
+  @Test
+  public void testEigrpShutdownExtraction() {
+    CiscoConfiguration vc = parseCiscoConfig("ios-eigrp-shutdown", ConfigurationFormat.CISCO_IOS);
+    Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
+    assertThat(procs.get(1L).getShutdown(), nullValue());
+    assertFalse(procs.get(2L).getShutdown());
+    assertTrue(procs.get(3L).getShutdown());
+  }
+
+  @Test
+  public void testEigrpShutdownConversion() throws IOException {
+    Configuration c = parseConfig("ios-eigrp-shutdown");
+    Map<Long, org.batfish.datamodel.eigrp.EigrpProcess> procs =
+        c.getDefaultVrf().getEigrpProcesses();
+    assertThat(procs, hasKeys(1L, 2L));
+  }
+
+  @Test
+  public void testEigrpRouterIdExtraction() {
+    CiscoConfiguration vc =
+        parseCiscoConfig("ios-eigrp-classic-routerid", ConfigurationFormat.CISCO_IOS);
+    Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
+    assertThat(procs.get(1L).getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(procs.get(2L).getRouterId(), nullValue());
+  }
 }

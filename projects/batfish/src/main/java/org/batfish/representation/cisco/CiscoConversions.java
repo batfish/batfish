@@ -1049,6 +1049,10 @@ public class CiscoConversions {
       return null;
     }
 
+    if (firstNonNull(proc.getShutdown(), Boolean.FALSE)) {
+      return null;
+    }
+
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
 

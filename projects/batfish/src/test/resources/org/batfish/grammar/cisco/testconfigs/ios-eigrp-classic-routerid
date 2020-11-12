@@ -1,0 +1,10 @@
+!
+hostname ios-eigrp-classic-routerid
+!
+router eigrp 1
+  eigrp router-id 1.1.1.1
+!
+router eigrp 2
+  eigrp router-id 1.1.1.2
+  no eigrp router-id
+!
