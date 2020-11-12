@@ -19,7 +19,7 @@ public class FlowToBDDTest {
           .setDscp(5)
           .setEcn(3)
           .setFragmentOffset(4)
-          .setPacketLength(11)
+          .setPacketLength(71)
           .build();
   private static final BDDPacket PACKET = new BDDPacket();
 
