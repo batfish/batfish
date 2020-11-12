@@ -5808,6 +5808,20 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testPortChannelSubinterfaceConversion() throws IOException {
+    String hostname = "port_channel_subinterface";
+    Configuration c = parseConfig(hostname);
+    org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1.1");
+    assertThat(iface, isActive());
+    assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATE_CHILD));
+    // Should inherit bandwidth from parent portchannel
+    assertThat(iface, hasBandwidth(200E6));
+    assertThat(
+        iface, hasDependencies(contains(new Dependency("port-channel1", DependencyType.BIND))));
+    assertThat(iface, hasChannelGroupMembers(empty()));
+  }
+
+  @Test
   public void testRipParsing() throws IOException {
     parseConfig("nxos_rip");
     // don't crash.

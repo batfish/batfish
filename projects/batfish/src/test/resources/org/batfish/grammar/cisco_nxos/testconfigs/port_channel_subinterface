@@ -1,0 +1,24 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname port_channel_subinterface
+!
+
+! port-channel with active members:
+! - shutdown = false (default)
+! - active = true
+! - each member has bandwidth 100Mbits (unit is kilobits)
+interface port-channel1
+!
+interface Ethernet1/1
+  channel-group 1
+  bandwidth 100000
+!
+interface Ethernet1/2
+  channel-group 1
+  bandwidth 100000
+!
+
+! port-channel subinterface
+interface port-channel1.1
+  no shutdown
+!

@@ -17,7 +17,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
@@ -1865,7 +1864,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setAutoState(iface.getAutostate());
 
     CiscoNxosInterfaceType type = iface.getType();
-    newIfaceBuilder.setType(toInterfaceType(type, parent != null));
+    InterfaceType viType = toInterfaceType(type, parent != null);
+    newIfaceBuilder.setType(viType);
 
     Optional<InterfaceRuntimeData> runtimeData =
         Optional.ofNullable(_hostname)
@@ -1921,8 +1921,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       _portChannelMembers.put(portChannel, ifaceName);
     }
 
-    // port-channels
-    if (type == PORT_CHANNEL) {
+    // port-channels (and not port-channel subinterfaces)
+    if (viType == InterfaceType.AGGREGATED) {
       Collection<String> members = _portChannelMembers.get(ifaceName);
       newIfaceBuilder.setChannelGroupMembers(members);
       newIfaceBuilder.setDependencies(
