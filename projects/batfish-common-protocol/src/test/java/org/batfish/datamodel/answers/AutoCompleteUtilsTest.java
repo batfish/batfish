@@ -1660,6 +1660,29 @@ public class AutoCompleteUtilsTest {
   }
 
   @Test
+  public void testOrderingSuggestionsRank() {
+    String query = "125";
+    AutocompleteSuggestion s1 =
+        AutocompleteSuggestion.builder()
+            .setText("123")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .setRank(2)
+            .build();
+    AutocompleteSuggestion s2 =
+        AutocompleteSuggestion.builder()
+            .setText("234")
+            .setSuggestionType(SuggestionType.CONSTANT)
+            .setRank(1)
+            .build();
+
+    // s2 should come first even though it is a worse match per text
+    assertThat(
+        orderSuggestions(query, ImmutableList.of(s1, s2)), equalTo(ImmutableList.of(s2, s1)));
+    assertThat(
+        orderSuggestions(query, ImmutableList.of(s2, s1)), equalTo(ImmutableList.of(s2, s1)));
+  }
+
+  @Test
   public void testOrderingSuggestionsText() {
     String query = "125";
     AutocompleteSuggestion s1 =
