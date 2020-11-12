@@ -142,7 +142,7 @@ public final class AutoCompleteUtils {
         orderSuggestions(query, suggestions), maxSuggestions, MAX_SUGGESTIONS_PER_TYPE);
   }
 
-  /** Basic ordering logic, by suggestion type and then by suggestion text */
+  /** Basic ordering logic, by suggestion type, rank, and then by suggestion text */
   @VisibleForTesting
   static List<AutocompleteSuggestion> orderSuggestions(
       String query, List<AutocompleteSuggestion> suggestions) {
@@ -151,6 +151,8 @@ public final class AutoCompleteUtils {
         .sorted(
             // first order by suggestion type
             Comparator.comparing(AutocompleteSuggestion::getSuggestionType)
+                // then rank within the same type
+                .thenComparing(AutocompleteSuggestion::getRank)
                 // then by (inverse of) common prefix length
                 .thenComparing(
                     s ->
@@ -790,12 +792,12 @@ public final class AutoCompleteUtils {
         completionMetadata.getLocations(),
         "cannot autocomplete source locations without location metadata");
     List<AutocompleteSuggestion> sourceSuggestions =
-        stringAutoComplete(query, getLocationsWithHumanNames(false, completionMetadata));
+        stringAutoComplete(query, getLocationsWithHumanNames(false, completionMetadata), 1);
     if (!tracerouteSource) {
       return sourceSuggestions;
     }
     List<AutocompleteSuggestion> tracerouteSourceSuggestions =
-        stringAutoComplete(query, getLocationsWithHumanNames(true, completionMetadata));
+        stringAutoComplete(query, getLocationsWithHumanNames(true, completionMetadata), 2);
     return Streams.concat(sourceSuggestions.stream(), tracerouteSourceSuggestions.stream())
         .collect(ImmutableList.toImmutableList());
   }
@@ -872,9 +874,21 @@ public final class AutoCompleteUtils {
    *
    * <p>The search is case-insensitive and looks for a substring match.
    */
+  @VisibleForTesting
   @Nonnull
-  public static List<AutocompleteSuggestion> stringAutoComplete(
+  static List<AutocompleteSuggestion> stringAutoComplete(
       @Nullable String query, Map<String, Optional<String>> stringsWithDescriptions) {
+    return stringAutoComplete(query, stringsWithDescriptions, AutocompleteSuggestion.DEFAULT_RANK);
+  }
+
+  /**
+   * Returns a list of suggestions based on query strings.
+   *
+   * <p>The search is case-insensitive and looks for a substring match.
+   */
+  @Nonnull
+  private static List<AutocompleteSuggestion> stringAutoComplete(
+      @Nullable String query, Map<String, Optional<String>> stringsWithDescriptions, int rank) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
 
@@ -885,7 +899,7 @@ public final class AutoCompleteUtils {
                     || s.getValue()
                         .map(hint -> hint.toLowerCase().contains(testQuery))
                         .orElse(false))
-        .map(s -> new AutocompleteSuggestion(s.getKey(), false, s.getValue().orElse(null)))
+        .map(s -> new AutocompleteSuggestion(s.getKey(), false, s.getValue().orElse(null), rank))
         .collect(ImmutableList.toImmutableList());
   }
 
