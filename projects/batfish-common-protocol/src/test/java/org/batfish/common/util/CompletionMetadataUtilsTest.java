@@ -648,7 +648,7 @@ public final class CompletionMetadataUtilsTest {
               .setName("i1")
               .setOwner(c)
               .setActive(true)
-              .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+              .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
               .build();
       Location loc1 = new InterfaceLocation("n1", i1.getName());
       Location loc1link = new InterfaceLinkLocation("n1", i1.getName());
@@ -698,6 +698,19 @@ public final class CompletionMetadataUtilsTest {
       Location loc5 = new InterfaceLinkLocation("n1", i5.getName());
 
       assertFalse(isTracerouteSource(loc5, configurations));
+    }
+
+    {
+      // non-loopback interface with a /32 address
+      Interface i6 =
+          Interface.builder()
+              .setName("i6")
+              .setOwner(c)
+              .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+              .build();
+      Location loc6 = new InterfaceLinkLocation("n1", i6.getName());
+
+      assertFalse(isTracerouteSource(loc6, configurations));
     }
   }
 }
