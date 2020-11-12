@@ -51,7 +51,9 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern NEXUS_COMMIT_LINE_PATTERN = Pattern.compile("(?m)^ *commit *$");
   private static final Pattern NEXUS_FEATURE_LINE_PATTERN =
       Pattern.compile("(?m)^\\s*(no\\s*)?feature\\s+[^\\s+].*$");
-  private static final Pattern NEXUS_BOOTFLASH_PATTERN = Pattern.compile("bootflash:(n\\d+|nxos)");
+  private static final Pattern NEXUS_BOOT_NXOS_PATTERN = Pattern.compile("boot nxos");
+  private static final Pattern NEXUS_BOOTFLASH_PATTERN =
+      Pattern.compile("bootflash:(n\\d+|/?nxos)");
 
   // checkJuniper patterns
   private static final Pattern FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN =
@@ -147,7 +149,9 @@ public final class VendorConfigurationFormatDetector {
     if (checkCiscoXr() == ConfigurationFormat.CISCO_IOS_XR) {
       return ConfigurationFormat.CISCO_IOS_XR;
     }
-    if (fileTextMatches(NEXUS_FEATURE_LINE_PATTERN) || fileTextMatches(NEXUS_BOOTFLASH_PATTERN)) {
+    if (fileTextMatches(NEXUS_BOOT_NXOS_PATTERN)
+        || fileTextMatches(NEXUS_FEATURE_LINE_PATTERN)
+        || fileTextMatches(NEXUS_BOOTFLASH_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
     }
     if (fileTextMatches(CISCO_LIKE_PATTERN)
