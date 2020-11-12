@@ -130,9 +130,10 @@ public class VendorConfigurationFormatDetectorTest {
   public void testNxos() {
     String n7000 = "boot system bootflash:n7000-s2-dk9.7.2.1.D1.1.bin sup-2 \n";
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";
+    String nxosVirtual = "boot nxos bootflash:/nxos.9.2.3.bin\n";
     String rancid = "!RANCID-CONTENT-TYPE: cisco-nx\n";
 
-    for (String fileText : ImmutableList.of(n7000, nxos, rancid)) {
+    for (String fileText : ImmutableList.of(n7000, nxos, nxosVirtual, rancid)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_NX));
     }
   }
