@@ -48,7 +48,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       _ipProtocol = null;
       _srcIp = Ip.ZERO;
       _ingressVrf = Configuration.DEFAULT_VRF_NAME;
-      _packetLength = 0;
+      _packetLength = 64; // min-sized ICMP packet (which is more than min-sized TCP/UDP)
       _tcpFlagsCwr = 0;
       _tcpFlagsEce = 0;
       _tcpFlagsUrg = 0;
@@ -89,13 +89,17 @@ public final class Flow implements Comparable<Flow>, Serializable {
       if (_ipProtocol == IpProtocol.ICMP) {
         checkArgument(_icmpType != null, "ICMP packets must have an ICMP type");
         checkArgument(_icmpCode != null, "ICMP packets must have an ICMP code");
+        checkArgument(_packetLength >= 64, "ICMP packets must be at least 64 bytes");
       } else if (_ipProtocol == IpProtocol.TCP) {
         checkArgument(_srcPort != null, "TCP packets must have a source port");
         checkArgument(_dstPort != null, "TCP packets must have a destination port");
+        checkArgument(_packetLength >= 40, "TCP packets must be at least 40 bytes");
       } else if (_ipProtocol == IpProtocol.UDP) {
         checkArgument(_srcPort != null, "UDP packets must have a source port");
         checkArgument(_dstPort != null, "UDP packets must have a destination port");
+        checkArgument(_packetLength >= 28, "UDP packets must be at least 28 bytes");
       }
+      checkArgument(_packetLength >= 20, "IP packets must be at least 20 bytes");
 
       @Nullable Integer icmpCode = _icmpCode;
       @Nullable Integer icmpType = _icmpType;

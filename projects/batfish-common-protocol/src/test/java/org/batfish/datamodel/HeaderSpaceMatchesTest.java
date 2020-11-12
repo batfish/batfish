@@ -20,7 +20,7 @@ public class HeaderSpaceMatchesTest {
   private static final int _fragmentOffset = 5;
   private static final int _icmpCode = 5;
   private static final int _icmpType = 5;
-  private static final int _packetLength = 5;
+  private static final int _packetLength = 75;
   private static final Ip _srcIp = Ip.parse("1.1.1.1");
   private static final int _srcPort = 22;
   private static final TcpFlags _tcpFlags = TcpFlags.builder().setAck(true).build();
