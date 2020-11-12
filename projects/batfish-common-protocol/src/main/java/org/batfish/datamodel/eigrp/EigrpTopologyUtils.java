@@ -131,8 +131,7 @@ public class EigrpTopologyUtils {
                 || iface.getEigrp() == null
                 || !iface.getEigrp().getEnabled()
                 || iface.getEigrp().getAsn() != proc.getAsn()
-                // TODO EIGRP bandwidth should be guaranteed nonnull. Remove this when portchannel
-                //  subinterfaces correctly set EIGRP bandwidth.
+                // this shouldn't happen, but if it does, ignore the interface
                 || iface.getEigrp().getMetric().getValues().getBandwidth() == null) {
               continue;
             }

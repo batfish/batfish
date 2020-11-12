@@ -1788,10 +1788,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void postProcessEigrpCosts(Map<String, Configuration> configurations) {
     configurations.values().stream()
         .flatMap(c -> c.getAllInterfaces().values().stream())
-        // Recalculate EIGRP metrics now that bandwidths are accurate
         .filter(
             iface ->
-                iface.getInterfaceType() == InterfaceType.AGGREGATED && iface.getEigrp() != null)
+                iface.getEigrp() != null
+                    && (iface.getInterfaceType() == InterfaceType.AGGREGATED
+                        || iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD))
         .forEach(
             iface -> {
               EigrpMetricValues metricValues = iface.getEigrp().getMetric().getValues();
