@@ -367,9 +367,21 @@ rec_no
 :
    NO
    (
-     reno_shutdown
+     recno_eigrp
      | rec_null
+     | reno_shutdown
    )
+;
+
+recno_eigrp
+:
+  EIGRP
+  recno_eigrp_router_id
+;
+
+recno_eigrp_router_id
+:
+  ROUTER_ID NEWLINE
 ;
 
 rec_null

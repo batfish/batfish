@@ -807,6 +807,7 @@ import org.batfish.grammar.cisco.CiscoParser.Reaf_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Reafi_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Rec_metric_weightsContext;
+import org.batfish.grammar.cisco.CiscoParser.Recno_eigrp_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_is_stanzaContext;
@@ -7058,6 +7059,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRec_metric_weights(Rec_metric_weightsContext ctx) {
     // See https://github.com/batfish/batfish/issues/1946
     todo(ctx);
+  }
+
+  @Override
+  public void exitRecno_eigrp_router_id(Recno_eigrp_router_idContext ctx) {
+    _currentEigrpProcess.setRouterId(null);
   }
 
   @Override
