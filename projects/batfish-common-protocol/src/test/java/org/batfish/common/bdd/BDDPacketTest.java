@@ -59,6 +59,23 @@ public class BDDPacketTest {
   }
 
   @Test
+  public void testGetFlow_not_sane() {
+    BDDPacket pkt = new BDDPacket();
+    BDDPacketLength length = pkt.getPacketLength();
+    BDDIpProtocol protocol = pkt.getIpProtocol();
+    assertThat(pkt.getFlow(length.value(19)), equalTo(Optional.empty()));
+    assertThat(
+        pkt.getFlow(length.value(27).and(protocol.value(IpProtocol.UDP))),
+        equalTo(Optional.empty()));
+    assertThat(
+        pkt.getFlow(length.value(39).and(protocol.value(IpProtocol.TCP))),
+        equalTo(Optional.empty()));
+    assertThat(
+        pkt.getFlow(length.value(63).and(protocol.value(IpProtocol.ICMP))),
+        equalTo(Optional.empty()));
+  }
+
+  @Test
   public void testGetFlow_ICMP() {
     BDDPacket pkt = new BDDPacket();
     Ip dstIp = Ip.parse("123.45.78.0");
