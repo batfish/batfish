@@ -377,12 +377,10 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -2721,12 +2719,6 @@ public final class CiscoGrammarTest {
     assertThat(
         eigrpProcess1.getNeighbors().get("GigabitEthernet0/0").getExportPolicy(),
         equalTo(distListPolicyName));
-
-    BooleanExpr matchAsn1 = new MatchProcessAsn(1L);
-    BooleanExpr matchEigrp = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
-
-    BooleanExpr exprForDistributeList =
-        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("2"));
 
     EigrpMetric metric =
         WideMetric.builder()
