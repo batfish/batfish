@@ -16,12 +16,14 @@ public class EigrpInterfaceSettings implements Serializable {
   private static final String PROP_ASN = "asn";
   private static final String PROP_ENABLED = "enabled";
   private static final String PROP_EXPORT_POLICY = "exportPolicy";
+  private static final String PROP_IMPORT_POLICY = "importPolicy";
   private static final String PROP_METRIC = "metric";
   private static final String PROP_PASSIVE = "passive";
 
   private final long _asn;
   private final boolean _enabled;
   @Nullable private final String _exportPolicy;
+  @Nullable private final String _importPolicy;
   @Nonnull private final EigrpMetric _metric;
   private final boolean _passive;
 
@@ -29,11 +31,13 @@ public class EigrpInterfaceSettings implements Serializable {
       long asn,
       boolean enabled,
       @Nullable String exportPolicy,
+      @Nullable String importPolicy,
       @Nonnull EigrpMetric metric,
       boolean passive) {
     _asn = asn;
     _enabled = enabled;
     _exportPolicy = exportPolicy;
+    _importPolicy = importPolicy;
     _metric = metric;
     _passive = passive;
   }
@@ -43,11 +47,12 @@ public class EigrpInterfaceSettings implements Serializable {
       @Nullable @JsonProperty(PROP_ASN) Long asn,
       @JsonProperty(PROP_ENABLED) boolean enabled,
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
+      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
       @Nullable @JsonProperty(PROP_METRIC) EigrpMetric metric,
       @JsonProperty(PROP_PASSIVE) boolean passive) {
     checkArgument(asn != null, "Missing %s", PROP_ASN);
     checkArgument(metric != null, "Missing %s", PROP_METRIC);
-    return new EigrpInterfaceSettings(asn, enabled, exportPolicy, metric, passive);
+    return new EigrpInterfaceSettings(asn, enabled, exportPolicy, importPolicy, metric, passive);
   }
 
   public static Builder builder() {
@@ -66,6 +71,7 @@ public class EigrpInterfaceSettings implements Serializable {
     return Objects.equals(_asn, rhs._asn)
         && (_enabled == rhs._enabled)
         && Objects.equals(_exportPolicy, rhs._exportPolicy)
+        && Objects.equals(_importPolicy, rhs._importPolicy)
         && _metric.equals(rhs._metric)
         && _passive == rhs._passive;
   }
@@ -84,8 +90,16 @@ public class EigrpInterfaceSettings implements Serializable {
 
   /** @return Name of the export policy for this interface if there is any */
   @Nullable
+  @JsonProperty(PROP_EXPORT_POLICY)
   public String getExportPolicy() {
     return _exportPolicy;
+  }
+
+  /** @return Name of the export policy for this interface if there is any */
+  @Nullable
+  @JsonProperty(PROP_IMPORT_POLICY)
+  public String getImportPolicy() {
+    return _importPolicy;
   }
 
   /** @return The interface metric */
@@ -103,7 +117,7 @@ public class EigrpInterfaceSettings implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _enabled, _exportPolicy, _metric, _passive);
+    return Objects.hash(_asn, _enabled, _exportPolicy, _importPolicy, _metric, _passive);
   }
 
   public static class Builder {
@@ -111,6 +125,7 @@ public class EigrpInterfaceSettings implements Serializable {
     @Nullable private Long _asn;
     private boolean _enabled;
     @Nullable private String _exportPolicy;
+    @Nullable private String _importPolicy;
     @Nullable private EigrpMetric _metric;
     private boolean _passive;
 
@@ -120,7 +135,8 @@ public class EigrpInterfaceSettings implements Serializable {
     public EigrpInterfaceSettings build() {
       checkArgument(_asn != null, "Missing %s", PROP_ASN);
       checkArgument(_metric != null, "Missing %s", PROP_METRIC);
-      return new EigrpInterfaceSettings(_asn, _enabled, _exportPolicy, _metric, _passive);
+      return new EigrpInterfaceSettings(
+          _asn, _enabled, _exportPolicy, _importPolicy, _metric, _passive);
     }
 
     public Builder setAsn(@Nullable Long asn) {
@@ -135,6 +151,11 @@ public class EigrpInterfaceSettings implements Serializable {
 
     public Builder setExportPolicy(@Nullable String exportPolicy) {
       _exportPolicy = exportPolicy;
+      return this;
+    }
+
+    public Builder setImportPolicy(@Nullable String importPolicy) {
+      _importPolicy = importPolicy;
       return this;
     }
 

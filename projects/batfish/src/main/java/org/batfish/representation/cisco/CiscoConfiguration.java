@@ -17,10 +17,10 @@ import static org.batfish.representation.cisco.CiscoConversions.computeDistribut
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.generateEigrpPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.cisco.CiscoConversions.ifToAllowEigrpToOwnAsn;
-import static org.batfish.representation.cisco.CiscoConversions.insertDistributeListFilterAndGetPolicy;
+import static org.batfish.representation.cisco.CiscoConversions.matchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
@@ -1731,23 +1731,40 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .getInterfacePassiveStatus()
               .getOrDefault(getNewInterfaceName(iface), eigrpProcess.getPassiveInterfaceDefault());
 
-      String policyName =
-          String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName);
-      RoutingPolicy routingPolicy =
-          insertDistributeListFilterAndGetPolicy(
+      // Export distribute lists
+      String exportPolicyName =
+          eigrpNeighborExportPolicyName(ifaceName, vrfName, eigrpProcess.getAsn());
+      RoutingPolicy exportPolicy =
+          generateEigrpPolicy(
               c,
               this,
-              eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName()),
-              ImmutableList.of(ifToAllowEigrpToOwnAsn(eigrpProcess.getAsn())),
-              policyName);
+              Arrays.asList(
+                  eigrpProcess.getOutboundGlobalDistributeList(),
+                  eigrpProcess.getOutboundInterfaceDistributeLists().get(ifaceName)),
+              ImmutableList.of(matchOwnAsn(eigrpProcess.getAsn())),
+              exportPolicyName);
+      c.getRoutingPolicies().put(exportPolicyName, exportPolicy);
 
-      c.getRoutingPolicies().put(policyName, routingPolicy);
+      // Import distribute lists
+      String importPolicyName =
+          eigrpNeighborImportPolicyName(ifaceName, vrfName, eigrpProcess.getAsn());
+      RoutingPolicy importPolicy =
+          generateEigrpPolicy(
+              c,
+              this,
+              Arrays.asList(
+                  eigrpProcess.getInboundGlobalDistributeList(),
+                  eigrpProcess.getInboundInterfaceDistributeLists().get(ifaceName)),
+              ImmutableList.of(),
+              importPolicyName);
+      c.getRoutingPolicies().put(importPolicyName, importPolicy);
 
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
-              .setExportPolicy(policyName)
+              .setExportPolicy(exportPolicyName)
+              .setImportPolicy(importPolicyName)
               .setMetric(computeEigrpMetricForInterface(iface, eigrpProcess.getMode()))
               .setPassive(passive)
               .build());
@@ -1866,6 +1883,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
           new FirewallSessionInterfaceInfo(true, ImmutableSet.of(newIface.getName()), null, null));
     }
     return newIface;
+  }
+
+  public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, Long asn) {
+    return String.format("~EIGRP_IMPORT_POLICY_%s_%s_%s", vrfName, asn, ifaceName);
+  }
+
+  public static String eigrpNeighborExportPolicyName(String ifaceName, String vrfName, Long asn) {
+    return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, asn, ifaceName);
   }
 
   @Nonnull
