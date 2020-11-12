@@ -639,41 +639,78 @@ public final class CompletionMetadataUtilsTest {
             .setHostname("n1")
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
-
-    // both i1 locations are valid
-    Interface i1 =
-        Interface.builder()
-            .setName("i1")
-            .setOwner(c)
-            .setActive(true)
-            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
-            .build();
-    Location loc1 = new InterfaceLocation("n1", i1.getName());
-    Location loc1link = new InterfaceLinkLocation("n1", i1.getName());
-
-    // inactive interface
-    Interface i2 =
-        Interface.builder()
-            .setName("i2")
-            .setOwner(c)
-            .setActive(false)
-            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
-            .build();
-    Location loc2 = new InterfaceLinkLocation("n1", i2.getName());
-
-    // no address
-    Interface i3 = Interface.builder().setName("i3").setOwner(c).setActive(true).build();
-    Location loc3 = new InterfaceLocation("n1", i3.getName());
-
-    // L2 interface
-    Interface i4 = Interface.builder().setName("i4").setOwner(c).setSwitchport(true).build();
-    Location loc4 = new InterfaceLinkLocation("n1", i4.getName());
-
     Map<String, Configuration> configurations = ImmutableMap.of(c.getHostname(), c);
-    assertTrue(isTracerouteSource(loc1, configurations));
-    assertTrue(isTracerouteSource(loc1link, configurations));
-    assertFalse(isTracerouteSource(loc2, configurations));
-    assertFalse(isTracerouteSource(loc3, configurations));
-    assertFalse(isTracerouteSource(loc4, configurations));
+
+    {
+      // both i1 locations are valid
+      Interface i1 =
+          Interface.builder()
+              .setName("i1")
+              .setOwner(c)
+              .setActive(true)
+              .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31"))
+              .build();
+      Location loc1 = new InterfaceLocation("n1", i1.getName());
+      Location loc1link = new InterfaceLinkLocation("n1", i1.getName());
+
+      assertTrue(isTracerouteSource(loc1, configurations));
+      assertTrue(isTracerouteSource(loc1link, configurations));
+    }
+
+    {
+      // inactive interface
+      Interface i2 =
+          Interface.builder()
+              .setName("i2")
+              .setOwner(c)
+              .setActive(false)
+              .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+              .build();
+      Location loc2 = new InterfaceLinkLocation("n1", i2.getName());
+
+      assertFalse(isTracerouteSource(loc2, configurations));
+    }
+
+    {
+      // no address
+      Interface i3 = Interface.builder().setName("i3").setOwner(c).setActive(true).build();
+      Location loc3 = new InterfaceLocation("n1", i3.getName());
+
+      assertFalse(isTracerouteSource(loc3, configurations));
+    }
+
+    {
+      // L2 interface
+      Interface i4 = Interface.builder().setName("i4").setOwner(c).setSwitchport(true).build();
+      Location loc4 = new InterfaceLinkLocation("n1", i4.getName());
+
+      assertFalse(isTracerouteSource(loc4, configurations));
+    }
+
+    {
+      // loopback interface
+      Interface i5 =
+          Interface.builder()
+              .setName("Loopback")
+              .setOwner(c)
+              .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+              .build();
+      Location loc5 = new InterfaceLinkLocation("n1", i5.getName());
+
+      assertFalse(isTracerouteSource(loc5, configurations));
+    }
+
+    {
+      // non-loopback interface with a /32 address
+      Interface i6 =
+          Interface.builder()
+              .setName("i6")
+              .setOwner(c)
+              .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
+              .build();
+      Location loc6 = new InterfaceLinkLocation("n1", i6.getName());
+
+      assertFalse(isTracerouteSource(loc6, configurations));
+    }
   }
 }

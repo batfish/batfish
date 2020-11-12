@@ -281,10 +281,17 @@ public final class CompletionMetadataUtils {
 
     return iface != null
         && iface.getActive()
-        && !iface.getSwitchport() // ignore L2 interfacecs
-        // packets can enter any interface (InterfaceLinkLocation); to originate (InterfaceLocation)
-        // the interface must have an address (properly configured L3 interface)
-        && (location instanceof InterfaceLinkLocation || !iface.getAllAddresses().isEmpty());
+        && !iface.getSwitchport() // ignore L2 interfaces
+        && ((location instanceof InterfaceLinkLocation
+                // packets can enter (InterfaceLinkLocation) interfaces that are not loopback and
+                // have either LLA or a concrete address with prefix size < 32
+                && !iface.isLoopback()
+                && (!iface.getAllLinkLocalAddresses().isEmpty()
+                    || iface.getAllConcreteAddresses().stream()
+                        .anyMatch(address -> address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)))
+            || (location instanceof InterfaceLocation
+                // packets can start (InterfaceLocation) at any interfaces with an IP address
+                && !iface.getAllAddresses().isEmpty()));
   }
 
   public static Set<String> getStructureNames(Map<String, Configuration> configurations) {
