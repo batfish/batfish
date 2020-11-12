@@ -35,6 +35,7 @@ public class EigrpProcess implements Serializable {
   private @Nullable EigrpMetric _defaultMetric;
   @Nullable private Ip _routerId;
   private boolean _passiveInterfaceDefault;
+  @Nullable private Boolean _shutdown;
 
   public EigrpProcess(@Nullable Long asn, EigrpProcessMode mode, @Nonnull String vrfName) {
     _asn = asn;
@@ -143,6 +144,15 @@ public class EigrpProcess implements Serializable {
 
   public void setRouterId(@Nullable Ip routerId) {
     _routerId = routerId;
+  }
+
+  @Nullable
+  public Boolean getShutdown() {
+    return _shutdown;
+  }
+
+  public void setShutdown(boolean shutdown) {
+    _shutdown = shutdown;
   }
 
   public Set<IpWildcard> getWildcardNetworks() {

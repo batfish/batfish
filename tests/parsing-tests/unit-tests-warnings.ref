@@ -290,15 +290,15 @@
       {
         "Filename" : "configs/cisco_eigrp",
         "Line" : 13,
-        "Text" : "metric weights 0 1 2 3 4 5",
-        "Parser_Context" : "[rec_metric_weights rec_address_family_tail rec_address_family re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Text" : "weights 0 1 2 3 4 5",
+        "Parser_Context" : "[rec_metric_weights rec_metric rec_address_family_tail rec_address_family re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
         "Line" : 23,
-        "Text" : "metric weights 0 1 2 3 4 5",
-        "Parser_Context" : "[rec_metric_weights re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
+        "Text" : "weights 0 1 2 3 4 5",
+        "Parser_Context" : "[rec_metric_weights rec_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {

@@ -16,15 +16,16 @@ re_classic_tail
 :
    re_distribute_list
    | re_eigrp
-   | re_eigrp_router_id
    | rec_address_family
-   | rec_metric_weights
+   | rec_metric
+   | rec_no
    | rec_null
    | re_default_metric
    | re_network
    | re_passive_interface_default
    | re_passive_interface
    | re_redistribute
+   | re_shutdown
 ;
 
 re_default_metric
@@ -52,6 +53,7 @@ re_eigrp
    (
       re_eigrp_null
       | re_eigrp_stub
+      | re_eigrp_router_id
    )
 ;
 
@@ -67,10 +69,7 @@ re_eigrp_null
 
 re_eigrp_router_id
 :
-   (
-      EIGRP ROUTER_ID id = IP_ADDRESS
-      | NO EIGRP ROUTER_ID
-   ) NEWLINE
+   ROUTER_ID id = IP_ADDRESS NEWLINE
 ;
 
 re_eigrp_stub
@@ -106,8 +105,9 @@ re_named
 
 re_named_tail
 :
-   ren_address_family
-   | ren_null
+   re_shutdown
+   | ren_address_family
+   | ren_no
    | ren_service_family
 ;
 
@@ -323,12 +323,8 @@ rec_address_family_null
       AUTO_SUMMARY
       | BFD
       | DEFAULT_INFORMATION
-      | DISTANCE
-      | DISTRIBUTE_LIST
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
-      | (METRIC MAXIMUM_HOPS)
-      | NEIGHBOR
       | NSF
       | OFFSET_LIST
    ) null_rest_of_line
@@ -339,41 +335,76 @@ rec_address_family_tail
    re_autonomous_system
    | re_default_metric
    | re_eigrp
-   | re_eigrp_router_id
    | re_network
    | re_passive_interface_default
    | re_passive_interface
    | re_redistribute
+   | re_shutdown
    | rec_address_family_null
-   | rec_metric_weights
+   | rec_metric
+;
+
+rec_metric
+:
+   METRIC
+   (
+     rec_metric_maximum_hops
+     | rec_metric_weights
+   )
+;
+
+rec_metric_maximum_hops
+:
+   MAXIMUM_HOPS DEC NEWLINE
 ;
 
 rec_metric_weights
 :
-   METRIC WEIGHTS tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC NEWLINE
+   WEIGHTS tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC NEWLINE
+;
+
+rec_no
+:
+   NO
+   (
+     recno_eigrp
+     | rec_null
+     | reno_shutdown
+   )
+;
+
+recno_eigrp
+:
+  EIGRP
+  recno_eigrp_router_id
+;
+
+recno_eigrp_router_id
+:
+  ROUTER_ID NEWLINE
 ;
 
 rec_null
 :
-   NO?
    (
       AUTO_SUMMARY
       | BFD
       | DEFAULT_INFORMATION
-      | DISTANCE
       | HELLO_INTERVAL
       | MAXIMUM_PATHS
-      | (METRIC MAXIMUM_HOPS)
       | NEIGHBOR
       | NSF
       | OFFSET_LIST
-      | SHUTDOWN
       | SPLIT_HORIZON
-      | SUMMARY_METRIC
       | TIMERS
       | TRAFFIC_SHARE
       | VARIANCE
    ) null_rest_of_line
+;
+
+re_shutdown
+:
+  SHUTDOWN NEWLINE
 ;
 
 redl_acl
@@ -470,9 +501,12 @@ ren_metric_weights
    tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC k6 = DEC NEWLINE
 ;
 
-ren_null
+ren_no
 :
-   NO? SHUTDOWN
+  NO
+  (
+    reno_shutdown
+  )
 ;
 
 ren_service_family
@@ -497,13 +531,17 @@ ren_service_family_null
 ren_service_family_tail
 :
    re_eigrp
-   | re_eigrp_router_id
    | ren_metric_weights
    | ren_service_family_null
    | resf_interface_default
    | resf_interface
    | resf_null
    | resf_topology
+;
+
+reno_shutdown
+:
+  SHUTDOWN NEWLINE
 ;
 
 resf_interface
