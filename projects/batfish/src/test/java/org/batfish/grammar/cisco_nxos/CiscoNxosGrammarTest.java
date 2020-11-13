@@ -7693,8 +7693,11 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testInterfaceEigrpPropertiesExtraction() {
     String hostname = "nxos_interface_eigrp";
-    // Don't crash. TODO: turn into full test
-    parseVendorConfig(hostname);
+    // TODO: test other properties (hold time, hello interval)
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    Interface iface = vc.getInterfaces().get("Ethernet1/1");
+    assertThat(iface.getEigrpBandwidth(), equalTo(300));
+    assertThat(iface.getEigrpDelay(), equalTo(400));
   }
 
   @Test

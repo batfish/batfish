@@ -127,6 +127,8 @@ public final class Interface implements Serializable {
   private @Nullable String _description;
   private final @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
   private @Nullable String _eigrp;
+  private @Nullable Integer _eigrpBandwidth;
+  private @Nullable Integer _eigrpDelay;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
@@ -223,6 +225,14 @@ public final class Interface implements Serializable {
 
   public void setEigrp(@Nullable String eigrp) {
     _eigrp = eigrp;
+  }
+
+  public @Nullable Integer getEigrpBandwidth() {
+    return _eigrpBandwidth;
+  }
+
+  public @Nullable Integer getEigrpDelay() {
+    return _eigrpDelay;
   }
 
   public @Nullable Integer getEncapsulationVlan() {
@@ -440,6 +450,14 @@ public final class Interface implements Serializable {
 
   public void setDescription(@Nullable String description) {
     _description = description;
+  }
+
+  public void setEigrpBandwidth(@Nullable Integer eigrpBandwidth) {
+    _eigrpBandwidth = eigrpBandwidth;
+  }
+
+  public void setEigrpDelay(@Nullable Integer delay) {
+    _eigrpDelay = delay;
   }
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
