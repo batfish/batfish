@@ -333,6 +333,7 @@ rec_address_family_null
 rec_address_family_tail
 :
    re_autonomous_system
+   | re_distribute_list
    | re_default_metric
    | re_eigrp
    | re_network
