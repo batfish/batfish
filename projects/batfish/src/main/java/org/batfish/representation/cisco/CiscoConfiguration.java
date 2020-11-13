@@ -1886,11 +1886,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, Long asn) {
-    return String.format("~EIGRP_IMPORT_POLICY_%s_%s_%s", vrfName, asn, ifaceName);
+    return String.format("~EIGRP_IMPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
   }
 
   public static String eigrpNeighborExportPolicyName(String ifaceName, String vrfName, Long asn) {
-    return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, asn, ifaceName);
+    return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
   }
 
   @Nonnull

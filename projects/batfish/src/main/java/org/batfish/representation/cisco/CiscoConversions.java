@@ -1093,7 +1093,7 @@ public class CiscoConversions {
     return newProcess.build();
   }
 
-  /** Creates an {@link BooleanExpr} statement that matches EIGRP routes with a given ASN */
+  /** Creates a {@link BooleanExpr} statement that matches EIGRP routes with a given ASN */
   @Nonnull
   static BooleanExpr matchOwnAsn(long localAsn) {
     return new Conjunction(
@@ -1395,7 +1395,7 @@ public class CiscoConversions {
   }
 
   /**
-   * Generate a EIGRP policy from the provided {@param distributeLists} and any additional {@param
+   * Generate an EIGRP policy from the provided {@param distributeLists} and any additional {@param
    * extraConditions} that must be true for the policy to permit the route
    *
    * <p>Note that the list of distribute lists is allowed to have {@code null} elements (those will

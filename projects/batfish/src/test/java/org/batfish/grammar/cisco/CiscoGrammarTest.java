@@ -2712,7 +2712,7 @@ public final class CiscoGrammarTest {
   public void testIosEigrpDistributeListConversion() throws IOException {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 
-    String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0";
+    String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0~";
 
     org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess1 =
         c.getDefaultVrf().getEigrpProcesses().get(1L);
@@ -2859,14 +2859,8 @@ public final class CiscoGrammarTest {
   public void testIosEigrpDistributeListWithPrefixListConversion() throws IOException {
     String hostname = "ios-eigrp-distribute-list-prefix-list";
     Configuration c = parseConfig(hostname);
-    String ifaceName = "GigabitEthernet0/0";
-    EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
-    String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
-    assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
-    String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
-    assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
-
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
+    // helper builder
     EigrpInternalRoute.Builder builder =
         EigrpInternalRoute.builder()
             .setAdmin(90)
@@ -2875,43 +2869,89 @@ public final class CiscoGrammarTest {
                     .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
                     .build())
             .setProcessAsn(1L);
-    RoutingPolicy importPolicy = policies.get(importPolicyName);
-    // Allow routes permitted by both prefix lists
-    assertTrue(
-        importPolicy.process(
-            builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
-            EigrpInternalRoute.builder(),
-            Direction.IN));
-    // Block others
-    assertFalse(
-        importPolicy.process(
-            builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
-            EigrpInternalRoute.builder(),
-            Direction.IN));
-    assertFalse(
-        importPolicy.process(
-            builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
-            EigrpInternalRoute.builder(),
-            Direction.IN));
+    {
+      String ifaceName = "GigabitEthernet0/0";
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
 
-    RoutingPolicy exportPolicy = policies.get(exportPolicyName);
-    // Allow routes permitted by both prefix lists
-    assertTrue(
-        exportPolicy.process(
-            builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
-            EigrpInternalRoute.builder(),
-            Direction.OUT));
-    // Block others
-    assertFalse(
-        exportPolicy.process(
-            builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
-            EigrpInternalRoute.builder(),
-            Direction.OUT));
-    assertFalse(
-        exportPolicy.process(
-            builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
-            EigrpInternalRoute.builder(),
-            Direction.OUT));
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow routes permitted by both prefix lists
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      // Block others
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow routes permitted by both prefix lists
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      // Block others
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
+    {
+      // This interface has no iface-specific distribute lists.
+      String ifaceName = "GigabitEthernet1/0";
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow routes permitted by global prefix list
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      // Block others
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow routes permitted by global list
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      // Block others
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
   }
 
   @Test
@@ -2926,7 +2966,7 @@ public final class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet0")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2936,7 +2976,7 @@ public final class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet1")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2946,7 +2986,7 @@ public final class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet2")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
                         .setPassive(true)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")

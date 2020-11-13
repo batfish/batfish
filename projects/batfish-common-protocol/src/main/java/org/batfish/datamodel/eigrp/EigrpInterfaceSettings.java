@@ -95,7 +95,7 @@ public class EigrpInterfaceSettings implements Serializable {
     return _exportPolicy;
   }
 
-  /** @return Name of the export policy for this interface if there is any */
+  /** @return Name of the import policy for this interface if there is any */
   @Nullable
   @JsonProperty(PROP_IMPORT_POLICY)
   public String getImportPolicy() {
