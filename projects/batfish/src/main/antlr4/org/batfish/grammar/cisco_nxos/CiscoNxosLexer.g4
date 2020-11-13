@@ -1255,6 +1255,8 @@ EIGRP
       case KEY_CHAIN:
         pushMode(M_TwoWords);
         break;
+      case BANDWIDTH:
+      case DELAY:
       case HELLO_INTERVAL:
       case HOLD_TIME:
       case MODE:
