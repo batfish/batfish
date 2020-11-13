@@ -387,6 +387,8 @@ i_ip
     i_ip_access_group
     | i_ip_address
     | i_ip_authentication
+    | i_ip_bandwidth
+    | i_ip_delay
     | i_ip_dhcp
     | i_ip_hello_interval
     | i_ip_hold_time
@@ -449,6 +451,18 @@ i_ip_address_concrete
     ROUTE_PREFERENCE rp = uint8
     | TAG tag = uint32
   )* NEWLINE
+;
+
+i_ip_bandwidth
+:
+  // bandwidth 1 - 2,560,000,000 kb/s
+  BANDWIDTH EIGRP router_eigrp_process_tag bw = interface_bandwidth_kbps NEWLINE
+;
+
+i_ip_delay
+:
+  // delay 1 - 16,777,215 (2^24) tens of microseconds
+  DELAY EIGRP router_eigrp_process_tag delay = interface_delay_10us NEWLINE
 ;
 
 i_ip_address_dhcp

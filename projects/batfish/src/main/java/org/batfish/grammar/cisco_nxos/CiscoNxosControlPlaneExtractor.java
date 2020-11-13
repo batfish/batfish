@@ -314,6 +314,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_bandwidthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_forwardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
@@ -5147,6 +5149,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.rp != null) {
       address.setRoutePreference(toInteger(ctx.rp));
     }
+  }
+
+  @Override
+  public void exitI_ip_bandwidth(I_ip_bandwidthContext ctx) {
+    Integer bandwidth = toBandwidth(ctx, ctx.bw);
+    _currentInterfaces.forEach(iface -> iface.setEigrpBandwidth(bandwidth));
+  }
+
+  @Override
+  public void exitI_ip_delay(I_ip_delayContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.delay, INTERFACE_DELAY_10US_RANGE, "Interface delay (tens of microseconds)")
+        .ifPresent(delay -> _currentInterfaces.forEach(iface -> iface.setEigrpDelay(delay)));
   }
 
   @Override
