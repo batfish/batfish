@@ -4,10 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -92,14 +90,20 @@ public class TraceDag {
       List<Hop> hopsInput, List<FirewallSessionTraceInfo> sessionsInput, int rootId) {
     Node node = _nodes.get(rootId);
 
-    List<Hop> hops = new ArrayList<>(hopsInput);
-    hops.add(node._hop);
+    List<Hop> hops =
+        ImmutableList.<Hop>builderWithExpectedSize(hopsInput.size() + 1)
+            .addAll(hopsInput)
+            .add(node._hop)
+            .build();
 
     List<FirewallSessionTraceInfo> sessions;
     FirewallSessionTraceInfo firewallSessionTraceInfo = node._firewallSessionTraceInfo;
     if (firewallSessionTraceInfo != null) {
-      sessions = new ArrayList<>(sessionsInput);
-      sessions.add(firewallSessionTraceInfo);
+      sessions =
+          ImmutableList.<FirewallSessionTraceInfo>builderWithExpectedSize(sessionsInput.size() + 1)
+              .addAll(sessionsInput)
+              .add(firewallSessionTraceInfo)
+              .build();
     } else {
       sessions = sessionsInput;
     }
@@ -128,6 +132,6 @@ public class TraceDag {
   }
 
   public Stream<TraceAndReverseFlow> getTraces() {
-    return _rootIds.stream().map(this::getTraces).flatMap(Function.identity());
+    return _rootIds.stream().flatMap(this::getTraces);
   }
 }
