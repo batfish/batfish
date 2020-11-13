@@ -2008,6 +2008,7 @@ public class CumulusFrrGrammarTest {
                     .setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setAdmin(20)
                     .setLocalPreference(100)
+                    .setMetric(22)
                     .build())));
   }
 }

@@ -3997,6 +3997,7 @@ public final class CiscoGrammarTest {
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setMetric(matchEigrp.getMetric())
                   .setNextHopIp(nextHopIp)
                   .setReceivedFromIp(nextHopIp)
                   .setOriginatorIp(bgpRouterId)
@@ -4026,6 +4027,7 @@ public final class CiscoGrammarTest {
                   .setProtocol(RoutingProtocol.IBGP)
                   .setAdmin(ibgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setMetric(matchEigrp.getMetric())
                   .setNextHopIp(nextHopIp)
                   .setReceivedFromIp(Ip.ZERO) // for ibgp
                   .setOriginatorIp(bgpRouterId)
@@ -4066,6 +4068,7 @@ public final class CiscoGrammarTest {
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setMetric(matchEigrpEx.getMetric())
                   .setNextHopIp(nextHopIp)
                   .setReceivedFromIp(nextHopIp)
                   .setOriginatorIp(bgpRouterId)
