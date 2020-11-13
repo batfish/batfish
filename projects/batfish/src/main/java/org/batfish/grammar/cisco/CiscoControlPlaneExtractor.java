@@ -7802,27 +7802,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String ifaceName = ctx.iname == null ? null : getCanonicalInterfaceName(ctx.iname.getText());
     String filterName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
+    DistributeList distributeList =
+        new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST);
     if (ctx.IN() != null) {
-      warn(ctx.getParent(), "Inbound distribute-list is not supported for EIGRP");
       _configuration.referenceStructure(
           IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
       if (ifaceName != null) {
         _configuration.referenceStructure(
             INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
+        _currentEigrpProcess.getInboundInterfaceDistributeLists().put(ifaceName, distributeList);
+      } else {
+        _currentEigrpProcess.setInboundGlobalDistributeList(distributeList);
       }
       return;
     }
     _configuration.referenceStructure(
         IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
     if (ifaceName == null) {
-      warn(ctx.getParent(), "Global distribute-list not supported for EIGRP");
-      return;
+      _currentEigrpProcess.setOutboundGlobalDistributeList(distributeList);
+    } else {
+      _configuration.referenceStructure(
+          INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
+      _currentEigrpProcess.getOutboundInterfaceDistributeLists().put(ifaceName, distributeList);
     }
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
-    _currentEigrpProcess
-        .getOutboundInterfaceDistributeLists()
-        .put(ifaceName, new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST));
   }
 
   @Override
@@ -7831,10 +7833,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    warn(ctx.getParent(), "Prefix lists in distribute-list are not supported for EIGRP");
+    String prefixListName = ctx.name.getText();
     _configuration.referenceStructure(
         PREFIX_LIST,
-        ctx.name.getText(),
+        prefixListName,
         ctx.IN() == null
             ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
             : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
@@ -7845,15 +7847,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ctx.gwname.getText(),
           ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT : EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
           ctx.gwname.getStart().getLine());
+      warn(ctx.getParent(), "Gateway prefix lists in distribute-list are not supported for EIGRP");
     }
+
+    DistributeList distributeList =
+        new DistributeList(prefixListName, DistributeListFilterType.PREFIX_LIST);
     if (ctx.iname != null) {
+      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(
           INTERFACE,
-          getCanonicalInterfaceName(ctx.iname.getText()),
+          ifaceName,
           ctx.IN() == null
               ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
               : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
           ctx.iname.getStart().getLine());
+      if (ctx.IN() == null) {
+        _currentEigrpProcess.getOutboundInterfaceDistributeLists().put(ifaceName, distributeList);
+      } else {
+        _currentEigrpProcess.getInboundInterfaceDistributeLists().put(ifaceName, distributeList);
+      }
+    } else {
+      if (ctx.IN() == null) {
+        _currentEigrpProcess.setOutboundGlobalDistributeList(distributeList);
+      } else {
+        _currentEigrpProcess.setInboundGlobalDistributeList(distributeList);
+      }
     }
   }
 

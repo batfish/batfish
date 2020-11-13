@@ -1093,16 +1093,13 @@ public class CiscoConversions {
     return newProcess.build();
   }
 
-  /** Creates an {@link If} statement to allow EIGRP routes redistributed from supplied localAsn */
+  /** Creates a {@link BooleanExpr} statement that matches EIGRP routes with a given ASN */
   @Nonnull
-  static If ifToAllowEigrpToOwnAsn(long localAsn) {
-    return new If(
-        new Conjunction(
-            ImmutableList.of(
-                new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
-                new MatchProcessAsn(localAsn))),
-        ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+  static BooleanExpr matchOwnAsn(long localAsn) {
+    return new Conjunction(
+        ImmutableList.of(
+            new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
+            new MatchProcessAsn(localAsn)));
   }
 
   /**
@@ -1398,30 +1395,38 @@ public class CiscoConversions {
   }
 
   /**
-   * Inserts an {@link If} generated from the provided distributeList to the beginning of
-   * existingStatements and creates a {@link RoutingPolicy} from the result
+   * Generate an EIGRP policy from the provided {@param distributeLists} and any additional {@param
+   * extraConditions} that must be true for the policy to permit the route
+   *
+   * <p>Note that the list of distribute lists is allowed to have {@code null} elements (those will
+   * be skipped). Invalid (e.g., non-existent) distribute lists will be skipped as well.
    */
-  static RoutingPolicy insertDistributeListFilterAndGetPolicy(
+  static RoutingPolicy generateEigrpPolicy(
       @Nonnull Configuration c,
       @Nonnull CiscoConfiguration vsConfig,
-      @Nullable DistributeList distributeList,
-      @Nonnull List<If> existingStatements,
+      @Nonnull List<DistributeList> distributeLists,
+      @Nonnull List<BooleanExpr> extraConditions,
       @Nonnull String name) {
-    ImmutableList.Builder<Statement> combinedStatments = ImmutableList.builder();
-    if (distributeList != null && sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
-      combinedStatments.add(
-          new If(
-              new MatchPrefixSet(
-                  DestinationNetwork.instance(),
-                  new NamedPrefixSet(distributeList.getFilterName())),
-              ImmutableList.of(),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    ImmutableList.Builder<BooleanExpr> matchesBuilder = ImmutableList.builder();
+    for (DistributeList distributeList : distributeLists) {
+      if (distributeList == null || !sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
+        continue;
+      }
+      matchesBuilder.add(
+          new MatchPrefixSet(
+              DestinationNetwork.instance(), new NamedPrefixSet(distributeList.getFilterName())));
     }
-    combinedStatments.addAll(existingStatements);
+    matchesBuilder.addAll(extraConditions);
+
     return RoutingPolicy.builder()
         .setOwner(c)
         .setName(name)
-        .setStatements(combinedStatments.build())
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new Conjunction(matchesBuilder.build()),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
         .build();
   }
 

@@ -1,0 +1,21 @@
+!
+hostname ios-eigrp-distribute-list-prefix-list
+!
+ip prefix-list PL_IN permit 1.1.1.0/24 ge 24
+ip prefix-list PL_IN_IFACE permit 1.1.1.0/24 ge 30
+ip prefix-list PL_OUT permit 2.2.2.0/24 ge 24
+ip prefix-list PL_OUT_IFACE permit 2.2.2.0/24 ge 30
+!
+interface GigabitEthernet0/0
+ ip address 2.2.2.2 255.255.255.0
+interface GigabitEthernet1/0
+ ip address 3.3.3.3 255.255.255.0
+!
+router eigrp 1
+  distribute-list prefix PL_IN in
+  distribute-list prefix PL_OUT out
+  distribute-list prefix PL_IN_IFACE in GigabitEthernet0/0
+  distribute-list prefix PL_OUT_IFACE out GigabitEthernet0/0
+  network 2.2.2.0 0.0.0.255
+  network 3.3.3.0 0.0.0.255
+!
