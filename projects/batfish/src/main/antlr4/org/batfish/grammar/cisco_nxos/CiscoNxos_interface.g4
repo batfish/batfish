@@ -389,6 +389,7 @@ i_ip
     | i_ip_authentication
     | i_ip_bandwidth
     | i_ip_delay
+    | i_ip_distribute_list
     | i_ip_dhcp
     | i_ip_hello_interval
     | i_ip_hold_time
@@ -478,6 +479,15 @@ i_ip_dhcp
 i_ip_dhcp_relay
 :
   RELAY ADDRESS ip_address NEWLINE
+;
+
+i_ip_distribute_list
+:
+  DISTRIBUTE_LIST EIGRP router_eigrp_process_tag
+  (
+    PREFIX_LIST prefixlist = ip_prefix_list_name
+    | ROUTE_MAP routemap = route_map_name
+  ) (IN | OUT) NEWLINE
 ;
 
 i_ip_forward
