@@ -21,6 +21,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLAS
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
+import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
@@ -113,9 +114,12 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
+import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -206,6 +210,7 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
+import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -1956,8 +1961,146 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     newIface.setVrf(vrf);
 
+    EigrpProcessConfiguration eigrpProcess = _eigrpProcesses.getOrDefault(iface.getEigrp(), null);
+    if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
+      String importPolicyName =
+          eigrpNeighborImportPolicyName(ifaceName, vrfName, eigrpProcess.getAsn());
+      String exportPolicyName =
+          eigrpNeighborExportPolicyName(ifaceName, vrfName, eigrpProcess.getAsn());
+      generateEigrpPolicy(_c, this, iface.getEigrpInboundDistributeList(), importPolicyName);
+      generateEigrpPolicy(_c, this, iface.getEigrpOutboundDistributeList(), exportPolicyName);
+
+      // TODO Support passive EIGRP neighbors
+      newIface.setEigrp(
+          EigrpInterfaceSettings.builder()
+              .setAsn(eigrpProcess.getAsn().longValue())
+              .setEnabled(true)
+              .setImportPolicy(importPolicyName)
+              .setExportPolicy(exportPolicyName)
+              .setMetric(computeEigrpMetricForInterface(iface))
+              .build());
+    }
+
     newIface.setOwner(_c);
     return newIface;
+  }
+
+  /**
+   * Generate an EIGRP policy from the provided {@link DistributeList distributeList} and add it to
+   * the given VI {@link Configuration}. If {@code distributeList} is null, generates a policy that
+   * permits all routes.
+   *
+   * <p>TODO Verify that all routes should be permitted in the absence of a distribute-list
+   */
+  static RoutingPolicy generateEigrpPolicy(
+      @Nonnull Configuration c,
+      @Nonnull CiscoNxosConfiguration vsConfig,
+      @Nullable DistributeList distributeList,
+      @Nonnull String name) {
+    RoutingPolicy.Builder routingPolicy = RoutingPolicy.builder().setOwner(c).setName(name);
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    if (distributeList == null || !sanityCheckEigrpDistributeList(distributeList, vsConfig)) {
+      statements.add(Statements.ExitAccept.toStaticStatement());
+    } else {
+      // only prefix-list-based distribute-lists are supported and will pass sanityCheck
+      assert distributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST;
+      BooleanExpr matchDistributeList =
+          new MatchPrefixSet(
+              DestinationNetwork.instance(), new NamedPrefixSet(distributeList.getFilterName()));
+      statements.add(
+          new If(
+              matchDistributeList,
+              ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    }
+    // Building routing policy with owner c will add it to c's routing policies
+    return routingPolicy.setStatements(statements.build()).build();
+  }
+
+  /**
+   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
+   * Returns false if it refers to a route-map, which is not yet supported for distribute-lists, or
+   * a prefix-list that does not exist.
+   *
+   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
+   * distributeList} is not found to be valid for conversion to routing policy.
+   *
+   * @param distributeList {@link DistributeList distributeList} to be validated
+   * @param vsConfig Vendor specific {@link CiscoNxosConfiguration configuration}
+   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
+   *     policy
+   */
+  static boolean sanityCheckEigrpDistributeList(
+      @Nonnull DistributeList distributeList, @Nonnull CiscoNxosConfiguration vsConfig) {
+    switch (distributeList.getFilterType()) {
+      case ROUTE_MAP:
+        vsConfig
+            .getWarnings()
+            .redFlag(
+                String.format(
+                    "Route-maps are not supported in EIGRP distribute-lists: %s",
+                    distributeList.getFilterName()));
+        return false;
+      case PREFIX_LIST:
+        if (vsConfig.getIpPrefixLists().containsKey(distributeList.getFilterName())) {
+          return true;
+        }
+        vsConfig
+            .getWarnings()
+            .redFlag(
+                String.format(
+                    "distribute-list references an undefined prefix-list `%s`, it will not filter"
+                        + " anything",
+                    distributeList.getFilterName()));
+        return false;
+      default:
+        throw new IllegalStateException(
+            String.format(
+                "Unrecognized distribute-list filter type %s", distributeList.getFilterType()));
+    }
+  }
+
+  public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, int asn) {
+    return String.format("~EIGRP_IMPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
+  }
+
+  public static String eigrpNeighborExportPolicyName(String ifaceName, String vrfName, int asn) {
+    return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
+  }
+
+  @Nonnull
+  private EigrpMetric computeEigrpMetricForInterface(Interface iface) {
+    // configuredBw is in kb/s
+    Integer configuredBw =
+        Optional.ofNullable(iface.getEigrpBandwidth()).orElse(iface.getBandwidth());
+    Long bw = null;
+    if (configuredBw != null) {
+      bw = configuredBw.longValue();
+    } else {
+      Double defaultBw = getDefaultBandwidth(iface.getType());
+      if (defaultBw != null) {
+        // default bandwidth is in bits per second
+        bw = (long) (defaultBw / 1000);
+      }
+    }
+    // Bandwidth can be null for port-channels and port-channel subinterfaces (will be calculated
+    // later). CiscoNxosInterfaceType.PORT_CHANNEL includes both.
+    assert bw != null || iface.getType() == CiscoNxosInterfaceType.PORT_CHANNEL;
+    int delayTensOfMicroseconds =
+        Stream.of(
+                iface.getEigrpDelay(),
+                iface.getDelayTensOfMicroseconds(),
+                defaultDelayTensOfMicroseconds(iface.getType()))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
+    EigrpMetricValues values =
+        EigrpMetricValues.builder()
+            .setDelay(delayTensOfMicroseconds * 10e7) // convert to picoseconds
+            .setBandwidth(bw)
+            .build();
+    // TODO Can NXOS use ClassicMetric?
+    return WideMetric.builder().setValues(values).build();
   }
 
   private @Nonnull InterfaceType toInterfaceType(

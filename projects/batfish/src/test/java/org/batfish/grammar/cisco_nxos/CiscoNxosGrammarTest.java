@@ -88,8 +88,11 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAU
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborExportPolicyName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborImportPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
@@ -116,6 +119,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -209,6 +213,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -267,6 +272,8 @@ import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
+import org.batfish.representation.cisco_nxos.DistributeList;
+import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfIpv4AddressFamilyConfiguration;
@@ -7695,15 +7702,159 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_interface_eigrp";
     // TODO: test other properties (hold time, hello interval)
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
-    Interface iface = vc.getInterfaces().get("Ethernet1/1");
-    assertThat(iface.getEigrpBandwidth(), equalTo(300));
-    assertThat(iface.getEigrpDelay(), equalTo(400));
+    {
+      // Interface with custom EIGRP BW, delay
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getEigrpBandwidth(), equalTo(300));
+      assertThat(iface.getEigrpDelay(), equalTo(400));
+    }
+    {
+      // Interface with no custom EIGRP configurations
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertNull(iface.getEigrpBandwidth());
+      assertNull(iface.getEigrpDelay());
+    }
   }
 
   @Test
   public void testInterfaceEigrpPropertiesConversion() throws IOException {
     String hostname = "nxos_interface_eigrp";
-    // Don't crash. TODO: turn into full test
-    parseConfig(hostname);
+    Configuration c = parseConfig(hostname);
+    {
+      /*
+      interface Ethernet1/1
+        vrf member VRF
+        ip address 192.0.2.2/24
+        ip router eigrp 1
+        ip bandwidth eigrp 1 300
+        ip delay eigrp 1 400
+        ip hold-time eigrp 1 100
+        ip hello-interval eigrp 1 200
+       */
+      String ifaceName = "Ethernet1/1";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(
+          iface.getBandwidth(), equalTo(getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET)));
+      EigrpInterfaceSettings eigrp = iface.getEigrp();
+      assertNotNull(eigrp);
+      assertThat(eigrp.getMetric().getValues().getBandwidth(), equalTo(300L));
+      // EIGRP metric values have delay in ps (10e-12); config has it in tens of µs (10e-5)
+      assertThat(eigrp.getMetric().getValues().getDelay(), equalTo((long) (400 * 10e7)));
+    }
+    {
+      /*
+      interface Ethernet1/2
+        vrf member VRF
+        ip address 192.0.3.2/24
+        ip router eigrp 1
+       */
+      String ifaceName = "Ethernet1/2";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      Double defaultBw = getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET);
+      assertThat(iface.getBandwidth(), equalTo(defaultBw));
+      EigrpInterfaceSettings eigrp = iface.getEigrp();
+      assertNotNull(eigrp);
+      // EIGRP metric values have bandwidth in kb/s; VI config has it in bits/s
+      assertThat(
+          eigrp.getMetric().getValues().getBandwidth(), equalTo(defaultBw.longValue() / 1000));
+      assertThat(
+          eigrp.getMetric().getValues().getDelay(),
+          equalTo((long) (defaultDelayTensOfMicroseconds(CiscoNxosInterfaceType.ETHERNET) * 10e7)));
+    }
+  }
+
+  @Test
+  public void testEigrpDistributeListWithPrefixListExtraction() {
+    String hostname = "eigrp_distribute_list_prefix_list";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    {
+      // Interface with custom EIGRP BW, delay, distribute lists
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(
+          iface.getEigrpInboundDistributeList(),
+          equalTo(new DistributeList("PL_IN", DistributeListFilterType.PREFIX_LIST)));
+      assertThat(
+          iface.getEigrpOutboundDistributeList(),
+          equalTo(new DistributeList("PL_OUT", DistributeListFilterType.PREFIX_LIST)));
+    }
+    {
+      // Interface with no custom EIGRP configurations
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertNull(iface.getEigrpInboundDistributeList());
+      assertNull(iface.getEigrpOutboundDistributeList());
+    }
+  }
+
+  @Test
+  public void testEigrpDistributeListWithPrefixListConversion() throws IOException {
+    String hostname = "eigrp_distribute_list_prefix_list";
+    Configuration c = parseConfig(hostname);
+    Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
+    // helper builder
+    EigrpInternalRoute.Builder builder =
+        EigrpInternalRoute.builder()
+            .setAdmin(90)
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build())
+            .setProcessAsn(1L);
+    {
+      String ifaceName = "Ethernet1/1";
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, "VRF", 1);
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, "VRF", 1);
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow only routes permitted by prefix list
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow only routes permitted by prefix list
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
+    {
+      // This interface has no distribute lists; should permit all traffic.
+      String ifaceName = "Ethernet1/2";
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, "VRF", 1);
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, "VRF", 1);
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
   }
 }
