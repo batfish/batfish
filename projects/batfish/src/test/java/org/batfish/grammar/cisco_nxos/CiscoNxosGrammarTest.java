@@ -7703,16 +7703,18 @@ public final class CiscoNxosGrammarTest {
     // TODO: test other properties (hold time, hello interval)
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
     {
-      // Interface with custom EIGRP BW, delay
+      // Interface with custom EIGRP BW, delay, passive-interface
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getEigrpBandwidth(), equalTo(300));
       assertThat(iface.getEigrpDelay(), equalTo(400));
+      assertTrue(iface.getEigrpPassive());
     }
     {
       // Interface with no custom EIGRP configurations
       Interface iface = vc.getInterfaces().get("Ethernet1/2");
       assertNull(iface.getEigrpBandwidth());
       assertNull(iface.getEigrpDelay());
+      assertFalse(iface.getEigrpPassive());
     }
   }
 
@@ -7730,6 +7732,7 @@ public final class CiscoNxosGrammarTest {
         ip delay eigrp 1 400
         ip hold-time eigrp 1 100
         ip hello-interval eigrp 1 200
+        ip passive-interface eigrp 1
        */
       String ifaceName = "Ethernet1/1";
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
@@ -7740,6 +7743,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(eigrp.getMetric().getValues().getBandwidth(), equalTo(300L));
       // EIGRP metric values have delay in ps (10e-12); config has it in tens of µs (10e-5)
       assertThat(eigrp.getMetric().getValues().getDelay(), equalTo((long) (400 * 10e7)));
+      assertTrue(eigrp.getPassive());
     }
     {
       /*
@@ -7760,6 +7764,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           eigrp.getMetric().getValues().getDelay(),
           equalTo((long) (defaultDelayTensOfMicroseconds(CiscoNxosInterfaceType.ETHERNET) * 10e7)));
+      assertFalse(eigrp.getPassive());
     }
   }
 

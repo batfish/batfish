@@ -1266,6 +1266,7 @@ EIGRP
       case HELLO_INTERVAL:
       case HOLD_TIME:
       case MODE:
+      case PASSIVE_INTERFACE:
       case REDISTRIBUTE:
       case ROUTER:
         pushMode(M_Word);
