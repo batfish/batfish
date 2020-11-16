@@ -152,6 +152,7 @@ public final class Interface implements Serializable {
   private @Nullable String _eigrp;
   private @Nullable Integer _eigrpBandwidth;
   private @Nullable Integer _eigrpDelay;
+  private boolean _eigrpPassive;
   private @Nullable DistributeList _eigrpInboundDistributeList;
   private @Nullable DistributeList _eigrpOutboundDistributeList;
   private @Nullable Integer _encapsulationVlan;
@@ -268,6 +269,10 @@ public final class Interface implements Serializable {
 
   public @Nullable DistributeList getEigrpOutboundDistributeList() {
     return _eigrpOutboundDistributeList;
+  }
+
+  public boolean getEigrpPassive() {
+    return _eigrpPassive;
   }
 
   public @Nullable Integer getEncapsulationVlan() {
@@ -501,6 +506,10 @@ public final class Interface implements Serializable {
 
   public void setEigrpOutboundDistributeList(@Nullable DistributeList eigrpOutboundDistributeList) {
     _eigrpOutboundDistributeList = eigrpOutboundDistributeList;
+  }
+
+  public void setEigrpPassive(boolean eigrpPassive) {
+    _eigrpPassive = eigrpPassive;
   }
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {

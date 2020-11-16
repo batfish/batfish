@@ -397,6 +397,7 @@ i_ip
     | i_ip_igmp
     | i_ip_null
     | i_ip_ospf
+    | i_ip_passive_interface
     | i_ip_pim
     | i_ip_policy
     | i_ip_port
@@ -564,6 +565,11 @@ i_ip_ospf
     | iipo_passive_interface
     | iipo_priority
   )
+;
+
+i_ip_passive_interface
+:
+  PASSIVE_INTERFACE EIGRP router_eigrp_process_tag NEWLINE
 ;
 
 i_ip_pim

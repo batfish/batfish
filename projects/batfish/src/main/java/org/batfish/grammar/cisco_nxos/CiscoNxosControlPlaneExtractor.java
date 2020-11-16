@@ -322,6 +322,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_forwardContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_concreteContext;
@@ -5260,6 +5261,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           iface.setIpv6AddressDhcp(true);
           iface.getIpv6AddressSecondaries().clear();
         });
+  }
+
+  @Override
+  public void exitI_ip_passive_interface(I_ip_passive_interfaceContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setEigrpPassive(true));
   }
 
   @Override
