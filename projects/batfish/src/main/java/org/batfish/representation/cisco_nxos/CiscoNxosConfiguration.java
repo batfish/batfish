@@ -1970,7 +1970,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       generateEigrpPolicy(_c, this, iface.getEigrpInboundDistributeList(), importPolicyName);
       generateEigrpPolicy(_c, this, iface.getEigrpOutboundDistributeList(), exportPolicyName);
 
-      // TODO Support passive EIGRP neighbors
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn().longValue())
@@ -1978,6 +1977,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .setImportPolicy(importPolicyName)
               .setExportPolicy(exportPolicyName)
               .setMetric(computeEigrpMetricForInterface(iface))
+              .setPassive(iface.getEigrpPassive())
               .build());
     }
 
