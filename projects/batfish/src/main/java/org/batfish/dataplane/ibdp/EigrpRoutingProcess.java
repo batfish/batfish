@@ -1,6 +1,5 @@
 package org.batfish.dataplane.ibdp;
 
-import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
@@ -272,88 +271,134 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   @Nonnull
   private RibDelta<EigrpInternalRoute> processInternalRoutes(NetworkConfigurations nc) {
     // TODO: simplify all this later. Copied from old code
-    Builder<EigrpInternalRoute> builder = RibDelta.builder();
+    Builder<EigrpInternalRoute> deltaBuilder = RibDelta.builder();
     _incomingInternalRoutes.forEach(
-        (edge, queue) -> {
-          processInternalRoutesFromNeighbor(nc, builder, edge, queue);
-        });
-    return builder.build();
+        (edge, queue) -> processInternalRoutesFromNeighbor(nc, deltaBuilder, edge, queue));
+    return deltaBuilder.build();
   }
 
   private void processInternalRoutesFromNeighbor(
       NetworkConfigurations nc,
-      Builder<EigrpInternalRoute> builder,
+      Builder<EigrpInternalRoute> deltaBuilder,
       EigrpEdge edge,
       Queue<RouteAdvertisement<EigrpInternalRoute>> queue) {
+    Interface remoteIface = edge.getNode1().getInterface(nc);
+    assert remoteIface.getEigrp() != null;
+    Ip nextHopIp = remoteIface.getConcreteAddress().getIp();
     EigrpMetric connectingInterfaceMetric = edge.getNode2().getInterfaceSettings(nc).getMetric();
-    Interface neighborInterface = edge.getNode1().getInterface(nc);
-    Ip nextHopIp = neighborInterface.getConcreteAddress().getIp();
+    @Nullable
+    RoutingPolicy importPolicy =
+        Optional.ofNullable(remoteIface.getEigrp().getImportPolicy())
+            .map(_configuration.getRoutingPolicies()::get)
+            .orElse(null);
     while (!queue.isEmpty()) {
       RouteAdvertisement<EigrpInternalRoute> ra = queue.remove();
       EigrpInternalRoute route = ra.getRoute();
-      EigrpMetric newMetric = connectingInterfaceMetric.add(route.getEigrpMetric());
-      EigrpInternalRoute transformedRoute =
-          EigrpInternalRoute.builder()
-              .setAdmin(_process.getInternalAdminCost())
-              .setEigrpMetric(newMetric)
-              .setNetwork(route.getNetwork())
-              .setNextHopIp(nextHopIp)
-              .setProcessAsn(_asn)
-              .build();
+      Optional<EigrpInternalRoute> transformedRoute =
+          transformAndFilterInternalRouteFromNeighbor(
+              route, connectingInterfaceMetric, nextHopIp, importPolicy);
+      if (!transformedRoute.isPresent()) {
+        continue;
+      }
       if (!ra.isWithdrawn()) {
-        builder.from(_internalRib.mergeRouteGetDelta(transformedRoute));
+        deltaBuilder.from(_internalRib.mergeRouteGetDelta(transformedRoute.get()));
       } else {
-        builder.from(_internalRib.removeRouteGetDelta(transformedRoute));
+        deltaBuilder.from(_internalRib.removeRouteGetDelta(transformedRoute.get()));
       }
     }
   }
 
+  @VisibleForTesting
+  Optional<EigrpInternalRoute> transformAndFilterInternalRouteFromNeighbor(
+      EigrpInternalRoute route,
+      EigrpMetric connectingInterfaceMetric,
+      Ip nextHopIp,
+      @Nullable RoutingPolicy importPolicy) {
+
+    EigrpMetric newMetric = connectingInterfaceMetric.add(route.getEigrpMetric());
+    EigrpInternalRoute.Builder outputRouteBuilder =
+        EigrpInternalRoute.builder()
+            .setAdmin(_process.getInternalAdminCost())
+            .setEigrpMetric(newMetric)
+            .setNetwork(route.getNetwork())
+            .setNextHopIp(nextHopIp)
+            .setProcessAsn(_asn);
+    return filterRouteOnImport(route, outputRouteBuilder, importPolicy);
+  }
+
+  /** Run an EIGRP route though the given import policy */
+  @VisibleForTesting
+  <B extends EigrpRoute.Builder<B, R>, R extends EigrpRoute> Optional<R> filterRouteOnImport(
+      R route, B outputBuilder, @Nullable RoutingPolicy policy) {
+    if (policy == null) {
+      return Optional.of(outputBuilder.build());
+    }
+    boolean allowed = policy.process(route, outputBuilder, _process, Direction.IN);
+    return allowed ? Optional.of(outputBuilder.build()) : Optional.empty();
+  }
+
   @Nonnull
   private RibDelta<EigrpExternalRoute> processExternalRoutes(NetworkConfigurations nc) {
-    // TODO: simplify all this later. Copied from old code
     RibDelta.Builder<EigrpExternalRoute> deltaBuilder = RibDelta.builder();
-    EigrpExternalRoute.Builder routeBuilder = EigrpExternalRoute.builder();
-    routeBuilder.setAdmin(_process.getExternalAdminCost()).setProcessAsn(_asn);
-
     _incomingExternalRoutes.forEach(
-        (edge, queue) -> {
-          processExternalRoutesFromNeighbor(nc, deltaBuilder, routeBuilder, edge, queue);
-        });
-
+        (edge, queue) -> processExternalRoutesFromNeighbor(nc, deltaBuilder, edge, queue));
     return deltaBuilder.build();
   }
 
   private void processExternalRoutesFromNeighbor(
       NetworkConfigurations nc,
       Builder<EigrpExternalRoute> deltaBuilder,
-      EigrpExternalRoute.Builder routeBuilder,
       EigrpEdge edge,
       Queue<RouteAdvertisement<EigrpExternalRoute>> queue) {
-    Interface nextHopIntf = edge.getNode1().getInterface(nc);
-    Interface connectingIntf = edge.getNode2().getInterface(nc);
+    Interface remoteIface = edge.getNode1().getInterface(nc);
+    assert remoteIface.getEigrp() != null;
+    Interface localIface = edge.getNode2().getInterface(nc);
+    assert localIface.getEigrp() != null;
 
-    // Edge nodes must have EIGRP configuration
-    checkState(connectingIntf.getEigrp() != null);
-
-    EigrpMetric connectingIntfMetric = connectingIntf.getEigrp().getMetric();
-
-    routeBuilder.setNextHopIp(nextHopIntf.getConcreteAddress().getIp());
     while (queue.peek() != null) {
       RouteAdvertisement<EigrpExternalRoute> routeAdvert = queue.remove();
       EigrpExternalRoute neighborRoute = routeAdvert.getRoute();
-      EigrpMetric metric = connectingIntfMetric.add(neighborRoute.getEigrpMetric());
-      routeBuilder
-          .setDestinationAsn(neighborRoute.getDestinationAsn())
-          .setEigrpMetric(metric)
-          .setNetwork(neighborRoute.getNetwork());
-      EigrpExternalRoute transformedRoute = routeBuilder.build();
 
+      @Nullable
+      RoutingPolicy importPolicy =
+          Optional.ofNullable(localIface.getEigrp().getImportPolicy())
+              .map(_configuration.getRoutingPolicies()::get)
+              .orElse(null);
+      Optional<EigrpExternalRoute> transformedRoute =
+          transformAndFilterExternalRouteFromNeighbor(
+              neighborRoute,
+              localIface.getEigrp().getMetric(),
+              remoteIface.getConcreteAddress().getIp(),
+              importPolicy);
+      if (!transformedRoute.isPresent()) {
+        continue;
+      }
       if (!routeAdvert.isWithdrawn()) {
-        deltaBuilder.from(_externalRib.mergeRouteGetDelta(transformedRoute));
+        deltaBuilder.from(_externalRib.mergeRouteGetDelta(transformedRoute.get()));
       } else {
-        deltaBuilder.from(_externalRib.removeRouteGetDelta(transformedRoute));
+        deltaBuilder.from(_externalRib.removeRouteGetDelta(transformedRoute.get()));
       }
     }
+  }
+
+  @Nonnull
+  @VisibleForTesting
+  Optional<EigrpExternalRoute> transformAndFilterExternalRouteFromNeighbor(
+      EigrpExternalRoute route,
+      EigrpMetric connectingIntfMetric,
+      Ip nextHopIp,
+      @Nullable RoutingPolicy importPolicy) {
+    EigrpMetric newMetric = connectingIntfMetric.add(route.getEigrpMetric());
+
+    EigrpExternalRoute.Builder routeBuilder =
+        EigrpExternalRoute.builder()
+            .setAdmin(_process.getExternalAdminCost())
+            .setProcessAsn(_asn)
+            .setNextHopIp(nextHopIp)
+            .setDestinationAsn(route.getDestinationAsn())
+            .setEigrpMetric(newMetric)
+            .setNetwork(route.getNetwork());
+    return filterRouteOnImport(route, routeBuilder, importPolicy);
   }
 
   /**
