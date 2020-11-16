@@ -89,6 +89,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BUILT_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW_EXPORTER_SOURCE;
@@ -357,6 +361,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip6r_ospfv3Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip_port_access_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipdl_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipdl_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipi_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
@@ -711,6 +717,8 @@ import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
+import org.batfish.representation.cisco_nxos.DistributeList;
+import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfIpAddressFamilyConfiguration;
@@ -5178,6 +5186,48 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void exitI_ip_dhcp_relay(I_ip_dhcp_relayContext ctx) {
     Ip address = toIp(ctx.ip_address());
     _currentInterfaces.forEach(i -> i.getDhcpRelayAddresses().add(address));
+  }
+
+  @Override
+  public void exitIipdl_prefix_list(Iipdl_prefix_listContext ctx) {
+    Optional<String> prefixList = toString(ctx, ctx.prefixlist);
+    if (!prefixList.isPresent()) {
+      return;
+    }
+    _c.referenceStructure(
+        IP_PREFIX_LIST,
+        prefixList.get(),
+        ctx.IN() == null
+            ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
+            : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        ctx.prefixlist.getStart().getLine());
+    DistributeList distributeList =
+        new DistributeList(prefixList.get(), DistributeListFilterType.PREFIX_LIST);
+    if (ctx.IN() != null) {
+      _currentInterfaces.forEach(iface -> iface.setEigrpInboundDistributeList(distributeList));
+    } else {
+      _currentInterfaces.forEach(iface -> iface.setEigrpOutboundDistributeList(distributeList));
+    }
+  }
+
+  @Override
+  public void exitIipdl_route_map(Iipdl_route_mapContext ctx) {
+    Optional<String> routeMap = toString(ctx, ctx.routemap);
+    if (!routeMap.isPresent()) {
+      return;
+    }
+    _c.referenceStructure(
+        ROUTE_MAP,
+        routeMap.get(),
+        ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        ctx.routemap.getStart().getLine());
+    DistributeList distributeList =
+        new DistributeList(routeMap.get(), DistributeListFilterType.ROUTE_MAP);
+    if (ctx.IN() != null) {
+      _currentInterfaces.forEach(iface -> iface.setEigrpInboundDistributeList(distributeList));
+    } else {
+      _currentInterfaces.forEach(iface -> iface.setEigrpOutboundDistributeList(distributeList));
+    }
   }
 
   @Override

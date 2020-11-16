@@ -1100,6 +1100,11 @@ DISTRIBUTE
   'distribute'
 ;
 
+DISTRIBUTE_LIST
+:
+  'distribute-list'
+;
+
 DNS
 :
   'dns' -> pushMode(M_Words)
@@ -1257,6 +1262,7 @@ EIGRP
         break;
       case BANDWIDTH:
       case DELAY:
+      case DISTRIBUTE_LIST:
       case HELLO_INTERVAL:
       case HOLD_TIME:
       case MODE:
