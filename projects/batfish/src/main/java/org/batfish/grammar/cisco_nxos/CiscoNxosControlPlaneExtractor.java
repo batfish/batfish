@@ -321,7 +321,6 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_distribute_listContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_forwardContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_proxy_arpContext;
@@ -362,6 +361,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip6r_ospfv3Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip_port_access_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipdl_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipdl_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipi_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
@@ -5188,35 +5189,40 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void exitI_ip_distribute_list(I_ip_distribute_listContext ctx) {
-    DistributeList distributeList;
-    if (ctx.PREFIX_LIST() != null) {
-      Optional<String> prefixList = toString(ctx, ctx.prefixlist);
-      if (!prefixList.isPresent()) {
-        return;
-      }
-      _c.referenceStructure(
-          IP_PREFIX_LIST,
-          prefixList.get(),
-          ctx.IN() == null
-              ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
-              : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-          ctx.prefixlist.getStart().getLine());
-      distributeList = new DistributeList(prefixList.get(), DistributeListFilterType.PREFIX_LIST);
-    } else {
-      Optional<String> routeMap = toString(ctx, ctx.routemap);
-      if (!routeMap.isPresent()) {
-        return;
-      }
-      _c.referenceStructure(
-          ROUTE_MAP,
-          routeMap.get(),
-          ctx.IN() == null
-              ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT
-              : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-          ctx.routemap.getStart().getLine());
-      distributeList = new DistributeList(routeMap.get(), DistributeListFilterType.ROUTE_MAP);
+  public void exitIipdl_prefix_list(Iipdl_prefix_listContext ctx) {
+    Optional<String> prefixList = toString(ctx, ctx.prefixlist);
+    if (!prefixList.isPresent()) {
+      return;
     }
+    _c.referenceStructure(
+        IP_PREFIX_LIST,
+        prefixList.get(),
+        ctx.IN() == null
+            ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
+            : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        ctx.prefixlist.getStart().getLine());
+    DistributeList distributeList =
+        new DistributeList(prefixList.get(), DistributeListFilterType.PREFIX_LIST);
+    if (ctx.IN() != null) {
+      _currentInterfaces.forEach(iface -> iface.setEigrpInboundDistributeList(distributeList));
+    } else {
+      _currentInterfaces.forEach(iface -> iface.setEigrpOutboundDistributeList(distributeList));
+    }
+  }
+
+  @Override
+  public void exitIipdl_route_map(Iipdl_route_mapContext ctx) {
+    Optional<String> routeMap = toString(ctx, ctx.routemap);
+    if (!routeMap.isPresent()) {
+      return;
+    }
+    _c.referenceStructure(
+        ROUTE_MAP,
+        routeMap.get(),
+        ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        ctx.routemap.getStart().getLine());
+    DistributeList distributeList =
+        new DistributeList(routeMap.get(), DistributeListFilterType.ROUTE_MAP);
     if (ctx.IN() != null) {
       _currentInterfaces.forEach(iface -> iface.setEigrpInboundDistributeList(distributeList));
     } else {

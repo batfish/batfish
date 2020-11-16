@@ -1992,7 +1992,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    *
    * <p>TODO Verify that all routes should be permitted in the absence of a distribute-list
    */
-  static RoutingPolicy generateEigrpPolicy(
+  static void generateEigrpPolicy(
       @Nonnull Configuration c,
       @Nonnull CiscoNxosConfiguration vsConfig,
       @Nullable DistributeList distributeList,
@@ -2014,7 +2014,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     }
     // Building routing policy with owner c will add it to c's routing policies
-    return routingPolicy.setStatements(statements.build()).build();
+    routingPolicy.setStatements(statements.build()).build();
   }
 
   /**

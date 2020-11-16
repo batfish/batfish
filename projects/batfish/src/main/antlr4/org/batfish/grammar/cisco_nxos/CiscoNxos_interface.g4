@@ -485,9 +485,19 @@ i_ip_distribute_list
 :
   DISTRIBUTE_LIST EIGRP router_eigrp_process_tag
   (
-    PREFIX_LIST prefixlist = ip_prefix_list_name
-    | ROUTE_MAP routemap = route_map_name
-  ) (IN | OUT) NEWLINE
+    iipdl_prefix_list
+    | iipdl_route_map
+  )
+;
+
+iipdl_prefix_list
+:
+  PREFIX_LIST prefixlist = ip_prefix_list_name (IN | OUT) NEWLINE
+;
+
+iipdl_route_map
+:
+  ROUTE_MAP routemap = route_map_name (IN | OUT) NEWLINE
 ;
 
 i_ip_forward

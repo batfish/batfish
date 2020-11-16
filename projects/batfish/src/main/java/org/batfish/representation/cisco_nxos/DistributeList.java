@@ -3,6 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /** Represents NXOS distribute-lists */
 public final class DistributeList implements Serializable {
@@ -32,7 +33,7 @@ public final class DistributeList implements Serializable {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
