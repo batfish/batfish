@@ -905,8 +905,6 @@ import org.batfish.representation.cisco_xr.InspectClassMapMatch;
 import org.batfish.representation.cisco_xr.InspectClassMapMatchAccessGroup;
 import org.batfish.representation.cisco_xr.InspectClassMapMatchProtocol;
 import org.batfish.representation.cisco_xr.InspectClassMapProtocol;
-import org.batfish.representation.cisco_xr.InspectPolicyMap;
-import org.batfish.representation.cisco_xr.InspectPolicyMapInspectClass;
 import org.batfish.representation.cisco_xr.Interface;
 import org.batfish.representation.cisco_xr.IpBgpPeerGroup;
 import org.batfish.representation.cisco_xr.IpsecProfile;
@@ -1299,10 +1297,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private ServiceObjectGroup _currentServiceObjectGroup;
 
   private InspectClassMap _currentInspectClassMap;
-
-  private InspectPolicyMap _currentInspectPolicyMap;
-
-  private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
 
   private Integer _currentHsrpGroup;
 
