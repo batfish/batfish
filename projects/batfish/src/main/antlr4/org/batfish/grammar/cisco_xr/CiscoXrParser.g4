@@ -3552,7 +3552,6 @@ stanza
    | s_passwd
    | s_phone_proxy
    | s_policy_map
-   | s_policy_map_ios
    | s_privilege
    | s_process_max_time
    | s_qos_mapping

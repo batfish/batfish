@@ -22,7 +22,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_T
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.EXTCOMMUNITY_SET_RT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INSPECT_CLASS_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_TRANSFORM_SET;
@@ -97,7 +96,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FAILOVER
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FAILOVER_LINK_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
@@ -648,8 +646,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_is_stanzaCon
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_group_assignment_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_group_creation_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_sa_filterContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pi_iosicd_dropContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pi_iosicd_passContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_accept_registerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_accept_rpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_addressContext;
@@ -658,11 +654,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_ios_inspectContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosi_class_type_inspectContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_dropContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_inspectContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_passContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmc_service_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcse_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcsec_tailContext;
@@ -949,7 +940,6 @@ import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.OspfRedistributionPolicy;
 import org.batfish.representation.cisco_xr.OspfWildcardNetwork;
-import org.batfish.representation.cisco_xr.PolicyMapClassAction;
 import org.batfish.representation.cisco_xr.Prefix6List;
 import org.batfish.representation.cisco_xr.Prefix6ListLine;
 import org.batfish.representation.cisco_xr.PrefixList;
@@ -6068,14 +6058,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterPm_ios_inspect(Pm_ios_inspectContext ctx) {
-    String name = ctx.name.getText();
-    _currentInspectPolicyMap =
-        _configuration.getInspectPolicyMaps().computeIfAbsent(name, InspectPolicyMap::new);
-    _configuration.defineStructure(INSPECT_POLICY_MAP, name, ctx);
-  }
-
-  @Override
   public void enterPm_class(Pm_classContext ctx) {
     // TODO: do something with this.
     // should be something like _currentPolicyMapClass = ...
@@ -6112,53 +6094,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           POLICY_MAP_EVENT_CLASS_ACTIVATE,
           ctx.dtname.getStart().getLine());
     }
-  }
-
-  @Override
-  public void exitPm_ios_inspect(Pm_ios_inspectContext ctx) {
-    _currentInspectPolicyMap = null;
-  }
-
-  @Override
-  public void enterPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(
-        INSPECT_CLASS_MAP, name, INSPECT_POLICY_MAP_INSPECT_CLASS, line);
-    _currentInspectPolicyMapInspectClass =
-        _currentInspectPolicyMap
-            .getInspectClasses()
-            .computeIfAbsent(name, n -> new InspectPolicyMapInspectClass());
-  }
-
-  @Override
-  public void exitPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
-    _currentInspectPolicyMapInspectClass = null;
-  }
-
-  @Override
-  public void exitPi_iosicd_drop(Pi_iosicd_dropContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.DENY);
-  }
-
-  @Override
-  public void exitPi_iosicd_pass(Pi_iosicd_passContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.PERMIT);
-  }
-
-  @Override
-  public void exitPm_iosict_inspect(Pm_iosict_inspectContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.INSPECT);
-  }
-
-  @Override
-  public void exitPm_iosict_pass(Pm_iosict_passContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.PASS);
-  }
-
-  @Override
-  public void exitPm_iosict_drop(Pm_iosict_dropContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.DROP);
   }
 
   @Override

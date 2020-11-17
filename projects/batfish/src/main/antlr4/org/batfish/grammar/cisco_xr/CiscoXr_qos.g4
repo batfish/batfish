@@ -687,59 +687,6 @@ pmtcse_class
    pmtcsec_tail*
 ;
 
-pm_ios_inspect
-:
-   INSPECT name = variable_permissive NEWLINE
-   (
-      pm_iosi_class_default
-      | pm_iosi_class_type_inspect
-   )*
-;
-
-pm_iosi_class_default
-:
-   CLASS CLASS_DEFAULT NEWLINE
-   (
-      pi_iosicd_drop
-      | pi_iosicd_pass
-   )*
-;
-
-pm_iosi_class_type_inspect
-:
-   CLASS TYPE INSPECT name = variable NEWLINE
-   (
-      pm_iosict_drop
-      | pm_iosict_inspect
-      | pm_iosict_pass
-   )*
-;
-
-pi_iosicd_drop
-:
-   DROP LOG? NEWLINE
-;
-
-pi_iosicd_pass
-:
-   PASS NEWLINE
-;
-
-pm_iosict_drop
-:
-   DROP LOG? NEWLINE
-;
-
-pm_iosict_inspect
-:
-   INSPECT NEWLINE
-;
-
-pm_iosict_pass
-:
-   PASS NEWLINE
-;
-
 pm_null
 :
    NO?
@@ -938,11 +885,6 @@ s_policy_map
       )
    )
    pm_end_policy_map?
-;
-
-s_policy_map_ios
-:
-   POLICY_MAP TYPE pm_ios_inspect
 ;
 
 s_qos_mapping
