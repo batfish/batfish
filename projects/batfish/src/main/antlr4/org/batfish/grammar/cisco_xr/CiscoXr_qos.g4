@@ -677,25 +677,14 @@ pm_event
 
 pm_event_class
 :
-   DEC CLASS
+   CLASS
    (
-      ALWAYS
-      | classname = variable
-   ) DO_UNTIL_FAILURE NEWLINE
-   (
-      DEC
-      (
-         ACTIVATE SERVICE_TEMPLATE stname = variable
-         | AUTHENTICATE
-         | AUTHENTICATION_RESTART
-         | AUTHORIZE
-         | CLEAR_SESSION
-         | PAUSE
-         | RESTRICT
-         | RESUME
-         | TERMINATE
-      ) null_rest_of_line
-   )*
+      CLASS_DEFAULT
+      | TYPE CONTROL SUBSCRIBER classname = variable
+   )
+   pmec_do?
+   NEWLINE
+   pmec_tail*
 ;
 
 pm_ios_inspect
@@ -768,6 +757,15 @@ pm_parameters
    )*
 ;
 
+pm_tail
+:
+  pm_class
+  | pm_end_policy_map
+  | pm_event
+  | pm_null
+  | pm_parameters
+;
+
 pmc_null
 :
    NO?
@@ -813,6 +811,28 @@ pmcp_null
       | EXCEED_ACTION
       | VIOLATE_ACTION
    ) null_rest_of_line
+;
+
+pmec_do
+:
+  DO_ALL
+  | DO_UNTIL_FAILURE
+  | DO_UNTIL_SUCCESS
+;
+
+pmec_tail
+:
+  DEC
+  (
+     ACTIVATE DYNAMIC_TEMPLATE dtname = variable
+     | AUTHENTICATE
+     | AUTHORIZE
+     | DEACTIVATE
+     | DISCONNECT
+     | MONITOR
+     | SET_TIMER
+     | STOP_TIMER
+  ) null_rest_of_line
 ;
 
 pmp_null
@@ -898,34 +918,19 @@ s_policy_map
 :
    POLICY_MAP
    (
-      variable_policy_map_header
-      |
+      TYPE
       (
-         TYPE variable variable variable
+          ACCOUNTING
+          | CONTROL SUBSCRIBER
+          | PBR
+          | PERFORMANCE_TRAFFIC
+          | QOS
+          | REDIRECT
+          | TRAFFIC
       )
-      |
-      (
-         TYPE
-         (
-            CONTROL_PLANE
-            | NETWORK_QOS
-            | PBR
-            | QUEUEING
-            | QUEUING
-            | QOS
-         ) mapname = variable
-         (
-            TEMPLATE template = variable
-         )?
-      )
-   ) NEWLINE
-   (
-      pm_class
-      | pm_end_policy_map
-      | pm_event
-      | pm_null
-      | pm_parameters
-   )*
+   )?
+   mapname = variable NEWLINE
+   pm_tail*
 ;
 
 s_policy_map_ios

@@ -14,6 +14,8 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -731,5 +733,21 @@ public final class XrGrammarTest {
     assertTrue(bgpRpOut.process(permittedRoute, Bgpv4Route.builder(), Direction.OUT));
     assertTrue(bgpRpOut.process(permittedRoute2, Bgpv4Route.builder(), Direction.OUT));
     assertFalse(bgpRpOut.process(rejectedRoute, Bgpv4Route.builder(), Direction.OUT));
+  }
+
+  @Test
+  public void testPolicyMap() {
+    String hostname = "policy-map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    String filename = "configs/" + hostname;
+
+    assertThat(ccae, hasNumReferrers(filename, POLICY_MAP, "POLICY-MAP", 1));
+    assertThat(ccae, hasNumReferrers(filename, CLASS_MAP, "PPP", 1));
+
+    assertThat(ccae, hasNumReferrers(filename, POLICY_MAP, "PM", 0));
   }
 }

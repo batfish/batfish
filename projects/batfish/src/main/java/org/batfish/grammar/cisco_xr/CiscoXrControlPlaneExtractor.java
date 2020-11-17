@@ -18,6 +18,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_MAP_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.EXTCOMMUNITY_SET_RT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INSPECT_CLASS_MAP;
@@ -664,6 +665,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_dropContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_passContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmc_service_policyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmec_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.PortContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Port_specifierContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_list_bgp_tailContext;
@@ -3005,10 +3007,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void enterS_policy_map(S_policy_mapContext ctx) {
     // TODO: do something with this.
-    if (ctx.variable_policy_map_header() != null) {
-      String name = ctx.variable_policy_map_header().getText();
-      _configuration.defineStructure(POLICY_MAP, name, ctx);
-    }
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
   }
 
   @Override
@@ -6101,12 +6101,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _configuration.referenceStructure(
           CLASS_MAP, ctx.classname.getText(), POLICY_MAP_EVENT_CLASS, ctx.getStart().getLine());
     }
-    if (ctx.stname != null) {
+  }
+
+  @Override
+  public void exitPmec_tail(Pmec_tailContext ctx) {
+    if (ctx.dtname != null) {
       _configuration.referenceStructure(
-          SERVICE_TEMPLATE,
-          ctx.stname.getText(),
+          DYNAMIC_TEMPLATE,
+          ctx.dtname.getText(),
           POLICY_MAP_EVENT_CLASS_ACTIVATE,
-          ctx.stname.getStart().getLine());
+          ctx.dtname.getStart().getLine());
     }
   }
 
