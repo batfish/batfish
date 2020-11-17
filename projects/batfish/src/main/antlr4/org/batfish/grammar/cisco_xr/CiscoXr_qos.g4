@@ -667,24 +667,24 @@ pm_end_policy_map
    END_POLICY_MAP NEWLINE
 ;
 
-pm_event
+pmtcs_event
 :
    EVENT null_rest_of_line
    (
-      pm_event_class
+      pmtcse_class
    )*
 ;
 
-pm_event_class
+pmtcse_class
 :
    CLASS
    (
       CLASS_DEFAULT
       | TYPE CONTROL SUBSCRIBER classname = variable
    )
-   pmec_do?
+   pmtcsec_do?
    NEWLINE
-   pmec_tail*
+   pmtcsec_tail*
 ;
 
 pm_ios_inspect
@@ -760,8 +760,6 @@ pm_parameters
 pm_tail
 :
   pm_class
-  | pm_end_policy_map
-  | pm_event
   | pm_null
   | pm_parameters
 ;
@@ -813,14 +811,14 @@ pmcp_null
    ) null_rest_of_line
 ;
 
-pmec_do
+pmtcsec_do
 :
   DO_ALL
   | DO_UNTIL_FAILURE
   | DO_UNTIL_SUCCESS
 ;
 
-pmec_tail
+pmtcsec_tail
 :
   DEC
   (
@@ -845,6 +843,11 @@ pmp_null
       | PROTOCOL_VIOLATION
       | TCP_INSPECTION
    ) null_rest_of_line
+;
+
+pmtcs_tail
+:
+  pmtcs_event
 ;
 
 qm_null
@@ -918,19 +921,23 @@ s_policy_map
 :
    POLICY_MAP
    (
+      mapname = variable NEWLINE pm_tail*
+      |
       TYPE
       (
-          ACCOUNTING
-          | CONTROL SUBSCRIBER
-          | PBR
-          | PERFORMANCE_TRAFFIC
-          | QOS
-          | REDIRECT
-          | TRAFFIC
+          CONTROL SUBSCRIBER mapname = variable NEWLINE pmtcs_tail
+          |
+          (
+              ACCOUNTING
+              | PBR
+              | PERFORMANCE_TRAFFIC
+              | QOS
+              | REDIRECT
+              | TRAFFIC
+          ) mapname = variable NEWLINE pm_tail*
       )
-   )?
-   mapname = variable NEWLINE
-   pm_tail*
+   )
+   pm_end_policy_map?
 ;
 
 s_policy_map_ios

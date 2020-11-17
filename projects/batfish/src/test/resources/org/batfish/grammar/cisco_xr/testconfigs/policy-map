@@ -10,7 +10,7 @@ policy-map type control subscriber POLICY-MAP
   class type control subscriber PPP do-until-failure
    10 activate dynamic-template TEMPLATE1
   !
-  class class_default
+  class class-default
   class type control subscriber CM do-all
   class type control subscriber CM do-until-success
  !

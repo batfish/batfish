@@ -658,14 +658,14 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_event_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_ios_inspectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosi_class_type_inspectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_dropContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_passContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmc_service_policyContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmec_tailContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcse_classContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcsec_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.PortContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Port_specifierContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_list_bgp_tailContext;
@@ -6096,7 +6096,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitPm_event_class(Pm_event_classContext ctx) {
+  public void exitPmtcse_class(Pmtcse_classContext ctx) {
     if (ctx.classname != null) {
       _configuration.referenceStructure(
           CLASS_MAP, ctx.classname.getText(), POLICY_MAP_EVENT_CLASS, ctx.getStart().getLine());
@@ -6104,7 +6104,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitPmec_tail(Pmec_tailContext ctx) {
+  public void exitPmtcsec_tail(Pmtcsec_tailContext ctx) {
     if (ctx.dtname != null) {
       _configuration.referenceStructure(
           DYNAMIC_TEMPLATE,
