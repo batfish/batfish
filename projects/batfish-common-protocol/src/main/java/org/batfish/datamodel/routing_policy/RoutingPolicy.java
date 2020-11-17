@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +131,11 @@ public class RoutingPolicy implements Serializable {
   public Set<String> computeSources(
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     if (_sources == null) {
-      Set<String> newParentSources = Sets.union(parentSources, ImmutableSet.of(_name));
+      Set<String> newParentSources =
+          ImmutableSet.<String>builderWithExpectedSize(parentSources.size() + 1)
+              .addAll(parentSources)
+              .add(_name)
+              .build();
       ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
       childSources.add(_name);
       for (Statement statement : _statements) {
