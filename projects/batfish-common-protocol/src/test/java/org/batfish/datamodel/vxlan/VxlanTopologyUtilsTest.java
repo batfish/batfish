@@ -36,6 +36,7 @@ import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -96,6 +97,12 @@ public final class VxlanTopologyUtilsTest {
 
     @Override
     public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
+        Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<Flow, TraceDag> computeTraceDags(
         Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
       throw new UnsupportedOperationException();
     }

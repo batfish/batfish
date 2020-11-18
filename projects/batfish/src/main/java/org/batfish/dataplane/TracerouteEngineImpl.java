@@ -1,10 +1,16 @@
 package org.batfish.dataplane;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Ordering;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
@@ -29,6 +35,20 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
   @Override
   public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+    return computeTraceDags(flows, sessions, ignoreFilters).entrySet().parallelStream()
+        .map(
+            entry ->
+                new SimpleEntry<>(
+                    entry.getKey(),
+                    entry.getValue().getTraces().collect(ImmutableList.toImmutableList())))
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Ordering.natural(), Entry::getKey, Entry::getValue));
+  }
+
+  @Override
+  public Map<Flow, TraceDag> computeTraceDags(
+      Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
     return new TracerouteEngineImplContext(
             _dataPlane,
             _topology,
@@ -37,6 +57,6 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
             _dataPlane.getFibs(),
             ignoreFilters,
             _configurations)
-        .buildTracesAndReturnFlows();
+        .buildTraceDags();
   }
 }
