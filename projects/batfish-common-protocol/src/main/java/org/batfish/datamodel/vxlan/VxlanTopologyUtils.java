@@ -27,7 +27,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.Hop;
-import org.batfish.datamodel.flow.Trace;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
 /** Utility class for computing {@link VxlanTopology} instances from network data. */
 public final class VxlanTopologyUtils {
@@ -236,8 +236,11 @@ public final class VxlanTopologyUtils {
             .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
             .setDstPort(udpPort)
             .build();
-    List<Trace> traces = tracerouteEngine.computeTraces(ImmutableSet.of(flow), false).get(flow);
-    return traces.stream()
+    return tracerouteEngine
+        .computeTraceDags(ImmutableSet.of(flow), ImmutableSet.of(), false)
+        .get(flow)
+        .getTraces()
+        .map(TraceAndReverseFlow::getTrace)
         .anyMatch(
             trace -> {
               List<Hop> hops = trace.getHops();
