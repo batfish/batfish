@@ -1,23 +1,15 @@
-package org.batfish.dataplane.traceroute;
+package org.batfish.datamodel.flow;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.flow.EnterInputIfaceStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
-import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
-import org.batfish.datamodel.flow.Hop;
-import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
-import org.batfish.datamodel.flow.LoopStep;
-import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
-import org.batfish.datamodel.flow.Step;
-import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.pojo.Node;
 
 /** Utilities for building {@link Hop hops} and {@link Step steps} for testing. */
-final class HopTestUtils {
+public final class HopTestUtils {
   private static EnterInputIfaceStep enterInputIfaceStep(String node) {
     return EnterInputIfaceStep.builder()
         .setAction(StepAction.RECEIVED)
@@ -30,7 +22,7 @@ final class HopTestUtils {
   }
 
   /** Create a Hop with StepAction Forwarded. */
-  static Hop acceptedHop(String node) {
+  public static Hop acceptedHop(String node) {
     return new Hop(
         new Node(node),
         ImmutableList.of(
@@ -39,7 +31,7 @@ final class HopTestUtils {
   }
 
   /** Create a Hop with StepAction Forwarded. */
-  static Hop forwardedHop(String node) {
+  public static Hop forwardedHop(String node) {
     return new Hop(
         new Node(node),
         ImmutableList.of(
@@ -57,11 +49,11 @@ final class HopTestUtils {
                 .build()));
   }
 
-  static Hop loopHop(String node) {
+  public static Hop loopHop(String node) {
     return new Hop(new Node(node), ImmutableList.of(enterInputIfaceStep(node), LoopStep.INSTANCE));
   }
 
-  static Hop noRouteHop(String node) {
+  public static Hop noRouteHop(String node) {
     return new Hop(
         new Node(node),
         ImmutableList.of(

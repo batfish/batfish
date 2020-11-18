@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
@@ -54,5 +55,11 @@ public final class MockTracerouteEngine implements TracerouteEngine {
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Ordering.natural(), Entry::getKey, Entry::getValue));
+  }
+
+  @Override
+  public Map<Flow, TraceDag> computeTraceDags(
+      Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+    throw new UnsupportedOperationException();
   }
 }

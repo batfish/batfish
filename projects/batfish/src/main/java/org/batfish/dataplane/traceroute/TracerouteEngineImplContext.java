@@ -5,12 +5,9 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIn
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByOriginatingVrf;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Ordering;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +19,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
@@ -34,7 +32,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 
 /**
  * An implementation of {@link org.batfish.dataplane.TracerouteEngineImpl#computeTraces(Set,
@@ -78,7 +75,7 @@ public class TracerouteEngineImplContext {
    *
    * @return {@link SortedMap} of {@link Flow} to a {@link List} of {@link Trace}s
    */
-  public SortedMap<Flow, List<TraceAndReverseFlow>> buildTracesAndReturnFlows() {
+  public Map<Flow, TraceDag> buildTraceDags() {
     return _flows.parallelStream()
         .map(
             flow -> {
@@ -88,12 +85,9 @@ public class TracerouteEngineImplContext {
               DagTraceRecorder recorder = new DagTraceRecorder(flow);
               initialFlowTracer(this, ingressNodeName, ingressInterfaceName, flow, recorder)
                   .processHop();
-              return new SimpleEntry<>(
-                  flow, recorder.build().getTraces().collect(ImmutableList.toImmutableList()));
+              return new SimpleEntry<>(flow, recorder.build());
             })
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                Ordering.natural(), Entry::getKey, Entry::getValue));
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
   /**
