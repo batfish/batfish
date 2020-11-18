@@ -3,13 +3,15 @@ package org.batfish.dataplane.traceroute;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import javax.annotation.Nullable;
-import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 
-/** Records information about a {@link Hop trace hop} needed to build a {@link TraceDag}. */
+/**
+ * Records information about a {@link Hop trace hop} needed to build a {@link
+ * org.batfish.common.traceroute.TraceDag}.
+ */
 public final class HopInfo {
   private final Hop _hop;
   // Flow as it entered the hop

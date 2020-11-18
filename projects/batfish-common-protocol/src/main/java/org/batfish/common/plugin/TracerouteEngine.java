@@ -61,7 +61,7 @@ public interface TracerouteEngine {
   SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters);
 
-  /** Computes {@link Trace TraceDag} for a {@link Set} of forward {@link Flow Flows}. */
+  /** Computes {@link TraceDag} for a {@link Set} of forward {@link Flow Flows}. */
   Map<Flow, TraceDag> computeTraceDags(
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters);
 }

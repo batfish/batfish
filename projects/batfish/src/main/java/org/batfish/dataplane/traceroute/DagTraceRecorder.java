@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.traceroute.TraceDag;
+import org.batfish.common.traceroute.TraceDagImpl;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.Hop;
@@ -37,7 +38,7 @@ public class DagTraceRecorder implements TraceRecorder {
   }
 
   /**
-   * The key used to lookup Nodes in a TraceDag.
+   * The key used to lookup Nodes in a TraceDagImpl.
    *
    * <p>TODO: implement equals/hashCode for {@link Hop} instead of using JSON.
    */
@@ -210,8 +211,8 @@ public class DagTraceRecorder implements TraceRecorder {
           && _forbiddenBreadcrumbs.stream().noneMatch(breadcrumbs::contains);
     }
 
-    /** Convert a {@link Node} to a {@link TraceDag.Node}. */
-    private int buildTraceDagNode(Map<Node, Integer> cache, List<TraceDag.Node> traceDagNodes) {
+    /** Convert a {@link Node} to a {@link TraceDagImpl.Node}. */
+    private int buildTraceDagNode(Map<Node, Integer> cache, List<TraceDagImpl.Node> traceDagNodes) {
       @Nullable Integer nodeId = cache.get(this);
       if (nodeId != null) {
         return nodeId;
@@ -226,7 +227,7 @@ public class DagTraceRecorder implements TraceRecorder {
       nodeId = traceDagNodes.size();
       cache.put(this, nodeId);
       traceDagNodes.add(
-          new TraceDag.Node(
+          new TraceDagImpl.Node(
               hopInfo.getHop(),
               hopInfo.getFirewallSessionTraceInfo(),
               hopInfo.getDisposition(),
@@ -284,11 +285,11 @@ public class DagTraceRecorder implements TraceRecorder {
       buildRoot();
     }
     Map<Node, Integer> nodeIds = new HashMap<>();
-    List<TraceDag.Node> dagNodes = new ArrayList<>(_nodeMap.size());
+    List<TraceDagImpl.Node> dagNodes = new ArrayList<>(_nodeMap.size());
     List<Integer> rootIds =
         _roots.stream()
             .map(root -> root.buildTraceDagNode(nodeIds, dagNodes))
             .collect(ImmutableList.toImmutableList());
-    return _builtTraceDag = new TraceDag(dagNodes, rootIds);
+    return _builtTraceDag = new TraceDagImpl(dagNodes, rootIds);
   }
 }
