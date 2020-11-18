@@ -21,7 +21,6 @@ public enum CiscoXrStructureType implements StructureType {
   ICMP_TYPE_OBJECT("object icmp-type"),
   ICMP_TYPE_OBJECT_GROUP("object-group icmp-type"),
   INSPECT_CLASS_MAP("class-map type inspect"),
-  INSPECT_POLICY_MAP("policy-map type inspect"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ipv4/6 acl"),
   IPSEC_PROFILE("crypto ipsec profile"),

@@ -71,7 +71,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -123,8 +122,6 @@ import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.ClassicMetric;
@@ -417,8 +414,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, InspectClassMap> _inspectClassMaps;
 
-  private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
-
   private final Map<String, Interface> _interfaces;
 
   private final Map<String, IpsecProfile> _ipsecProfiles;
@@ -503,7 +498,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
     _inspectClassMaps = new TreeMap<>();
-    _inspectPolicyMaps = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipsecTransformSets = new TreeMap<>();
     _ipsecProfiles = new TreeMap<>();
@@ -2221,9 +2215,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     createInspectClassMapAcls(c);
 
-    // create inspect policy-map ACLs
-    createInspectPolicyMapAcls(c);
-
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
@@ -2551,7 +2542,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.CLASS_MAP);
 
     // policy-map
-    markConcreteStructure(CiscoXrStructureType.INSPECT_POLICY_MAP);
     markConcreteStructure(CiscoXrStructureType.POLICY_MAP);
 
     // object-group
@@ -2573,6 +2563,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // service template
     markConcreteStructure(CiscoXrStructureType.SERVICE_TEMPLATE);
+
+    // dynamic template
+    markConcreteStructure(CiscoXrStructureType.DYNAMIC_TEMPLATE);
 
     // track
     markConcreteStructure(CiscoXrStructureType.TRACK);
@@ -2657,82 +2650,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               .setSourceType(CiscoXrStructureType.INSPECT_CLASS_MAP.getDescription())
               .build();
         });
-  }
-
-  private void createInspectPolicyMapAcls(Configuration c) {
-    _inspectPolicyMaps.forEach(
-        (inspectPolicyMapName, inspectPolicyMap) -> {
-          String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
-          inspectPolicyMap
-              .getInspectClasses()
-              .forEach(
-                  (inspectClassName, inspectPolicyMapInspectClass) -> {
-                    PolicyMapClassAction action = inspectPolicyMapInspectClass.getAction();
-                    if (action == null) {
-                      return;
-                    }
-                    String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
-                    if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
-                      return;
-                    }
-                    AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
-                    switch (action) {
-                      case DROP:
-                        policyMapAclLines.add(
-                            ExprAclLine.rejecting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Drop if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case INSPECT:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Inspect if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case PASS:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Pass if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      default:
-                        _w.unimplemented("Unimplemented policy-map class action: " + action);
-                        return;
-                    }
-                  });
-          policyMapAclLines.add(
-              ExprAclLine.builder()
-                  .setAction(inspectPolicyMap.getClassDefaultAction())
-                  .setMatchCondition(TrueExpr.INSTANCE)
-                  .setName(
-                      String.format(
-                          "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
-                  .build());
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectPolicyMapAclName)
-              .setLines(policyMapAclLines.build())
-              .setSourceName(inspectPolicyMapName)
-              .setSourceType(CiscoXrStructureType.INSPECT_POLICY_MAP.getDescription())
-              .build();
-        });
-  }
-
-  public static String computeInspectPolicyMapAclName(@Nonnull String inspectPolicyMapName) {
-    return String.format("~INSPECT_POLICY_MAP_ACL~%s~", inspectPolicyMapName);
   }
 
   public static String computeInspectClassMapAclName(@Nonnull String inspectClassMapName) {
@@ -2846,10 +2763,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, InspectClassMap> getInspectClassMaps() {
     return _inspectClassMaps;
-  }
-
-  public Map<String, InspectPolicyMap> getInspectPolicyMaps() {
-    return _inspectPolicyMaps;
   }
 
   public Map<String, TrackMethod> getTrackingGroups() {

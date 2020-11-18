@@ -11,10 +11,10 @@ policy-map type control subscriber POLICY-MAP
    10 activate dynamic-template TEMPLATE1
   !
   class class-default
-  class type control subscriber CM do-all
-  class type control subscriber CM do-until-success
+  class type control subscriber PPP do-all
+  class type control subscriber PPP do-until-success
  !
-end-policy-map
+! end-policy-map
 !
 interface Bundle-Ether1.1
  service-policy type control subscriber POLICY-MAP
