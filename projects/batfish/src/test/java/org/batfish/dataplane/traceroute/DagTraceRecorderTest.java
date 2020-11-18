@@ -13,10 +13,12 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.HopTestUtils;
 import org.batfish.dataplane.traceroute.DagTraceRecorder.NodeKey;
 import org.junit.Test;
 

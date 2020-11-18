@@ -21,21 +21,20 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Table;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
-import java.util.Comparator;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -62,7 +61,21 @@ public final class VxlanTopologyUtilsTest {
 
   private static class TestTracerouteEngine implements TracerouteEngine {
 
-    private final Map<String, List<Trace>> _results;
+    private final Map<String, List<TraceAndReverseFlow>> _results;
+
+    /** Builds a fake {@link TraceAndReverseFlow} for the given result. */
+    private static TraceAndReverseFlow resultToTarf(TestTracerouteEngineResult result) {
+      Trace forwardTrace =
+          new Trace(
+              result._accept ? FlowDisposition.ACCEPTED : FlowDisposition.DENIED_OUT,
+              result._addHop
+                  ? ImmutableList.of(new Hop(new Node(result._receivingNode), ImmutableList.of()))
+                  : ImmutableList.of());
+      return new TraceAndReverseFlow(
+          forwardTrace,
+          result._accept ? Flow.builder().setIngressNode(result._receivingNode).build() : null,
+          ImmutableSet.of());
+    }
 
     private TestTracerouteEngine(Map<String, TestTracerouteEngineResult> results) {
       _results =
@@ -70,34 +83,52 @@ public final class VxlanTopologyUtilsTest {
               .collect(
                   ImmutableMap.toImmutableMap(
                       Entry::getKey,
-                      resultEntry ->
-                          ImmutableList.of(
-                              new Trace(
-                                  resultEntry.getValue()._accept
-                                      ? FlowDisposition.ACCEPTED
-                                      : FlowDisposition.DENIED_OUT,
-                                  resultEntry.getValue()._addHop
-                                      ? ImmutableList.of(
-                                          new Hop(
-                                              new Node(resultEntry.getValue()._receivingNode),
-                                              ImmutableList.of()))
-                                      : ImmutableList.of()))));
+                      resultEntry -> ImmutableList.of(resultToTarf(resultEntry.getValue()))));
     }
 
     @Override
     public SortedMap<Flow, List<Trace>> computeTraces(Set<Flow> flows, boolean ignoreFilters) {
-      return flows.stream()
-          .collect(
-              ImmutableSortedMap.toImmutableSortedMap(
-                  Comparator.naturalOrder(),
-                  Function.<Flow>identity(),
-                  flow -> _results.get(flow.getIngressNode())));
+      throw new UnsupportedOperationException();
     }
 
     @Override
     public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
         Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
       throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<Flow, TraceDag> computeTraceDags(
+        Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+      return flows.stream()
+          .map(
+              flow -> {
+                List<TraceAndReverseFlow> result = _results.get(flow.getIngressNode());
+                TraceDag dag =
+                    new TraceDag() {
+                      @Override
+                      public int countEdges() {
+                        throw new UnsupportedOperationException();
+                      }
+
+                      @Override
+                      public int countNodes() {
+                        throw new UnsupportedOperationException();
+                      }
+
+                      @Override
+                      public int size() {
+                        throw new UnsupportedOperationException();
+                      }
+
+                      @Override
+                      public Stream<TraceAndReverseFlow> getTraces() {
+                        return result.stream();
+                      }
+                    };
+                return new SimpleEntry<>(flow, dag);
+              })
+          .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     }
   }
 

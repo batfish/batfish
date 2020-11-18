@@ -1,8 +1,8 @@
-package org.batfish.dataplane.traceroute;
+package org.batfish.common.traceroute;
 
-import static org.batfish.dataplane.traceroute.HopTestUtils.acceptedHop;
-import static org.batfish.dataplane.traceroute.HopTestUtils.forwardedHop;
-import static org.batfish.dataplane.traceroute.HopTestUtils.noRouteHop;
+import static org.batfish.datamodel.flow.HopTestUtils.acceptedHop;
+import static org.batfish.datamodel.flow.HopTestUtils.forwardedHop;
+import static org.batfish.datamodel.flow.HopTestUtils.noRouteHop;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.batfish.common.traceroute.TraceDagImpl.Node;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -21,10 +22,9 @@ import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
-import org.batfish.dataplane.traceroute.TraceDag.Node;
 import org.junit.Test;
 
-public class TraceDagTest {
+public class TraceDagImplTest {
   private static final Flow TEST_FLOW =
       Flow.builder().setDstIp(Ip.parse("1.1.1.1")).setIngressNode("src").build();
 
@@ -51,8 +51,8 @@ public class TraceDagTest {
     Node nodeC1 = new Node(hopC1, null, FlowDisposition.ACCEPTED, c1ReturnFlow, ImmutableList.of());
     Node nodeC2 = new Node(hopC2, null, FlowDisposition.ACCEPTED, c2ReturnFlow, ImmutableList.of());
     Node nodeC3 = new Node(hopC3, null, FlowDisposition.NO_ROUTE, null, ImmutableList.of());
-    TraceDag dag =
-        new TraceDag(
+    TraceDagImpl dag =
+        new TraceDagImpl(
             ImmutableList.of(nodeA, nodeB1, nodeB2, nodeC1, nodeC2, nodeC3), ImmutableList.of(0));
     List<TraceAndReverseFlow> traces = dag.getTraces().collect(Collectors.toList());
     assertThat(
