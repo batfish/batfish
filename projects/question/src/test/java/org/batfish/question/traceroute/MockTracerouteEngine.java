@@ -13,10 +13,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.dataplane.traceroute.TraceRecorder;
 
 /** Mock {@link org.batfish.common.plugin.TracerouteEngine}. */
 public final class MockTracerouteEngine implements TracerouteEngine {
@@ -40,6 +42,15 @@ public final class MockTracerouteEngine implements TracerouteEngine {
   static MockTracerouteEngine forSessions(
       Map<Set<FirewallSessionTraceInfo>, Map<Flow, List<TraceAndReverseFlow>>> resultsForSessions) {
     return new MockTracerouteEngine(resultsForSessions);
+  }
+
+  @Override
+  public <R extends TraceRecorder> SortedMap<Flow, R> recordTraces(
+      Set<Flow> flows,
+      Set<FirewallSessionTraceInfo> sessions,
+      boolean ignoreFilters,
+      Function<Flow, R> recorderFactory) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

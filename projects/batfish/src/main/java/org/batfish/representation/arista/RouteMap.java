@@ -3,10 +3,11 @@ package org.batfish.representation.arista;
 import java.io.Serializable;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 
 public class RouteMap implements Serializable {
 
-  private NavigableMap<Integer, RouteMapClause> _clauses;
+  private @Nonnull NavigableMap<Integer, RouteMapClause> _clauses;
 
   private final String _name;
 

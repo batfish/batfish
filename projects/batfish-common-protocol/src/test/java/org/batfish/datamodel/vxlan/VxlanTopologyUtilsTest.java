@@ -54,6 +54,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils.VrfId;
+import org.batfish.dataplane.traceroute.TraceRecorder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -97,6 +98,15 @@ public final class VxlanTopologyUtilsTest {
     @Override
     public SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
         Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <R extends TraceRecorder> SortedMap<Flow, R> recordTraces(
+        Set<Flow> flows,
+        Set<FirewallSessionTraceInfo> sessions,
+        boolean ignoreFilters,
+        Function<Flow, R> recorderFactory) {
       throw new UnsupportedOperationException();
     }
   }

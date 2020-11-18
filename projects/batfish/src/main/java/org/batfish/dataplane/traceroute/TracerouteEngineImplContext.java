@@ -5,8 +5,11 @@ import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByIn
 import static org.batfish.dataplane.traceroute.TracerouteUtils.buildSessionsByOriginatingVrf;
 import static org.batfish.dataplane.traceroute.TracerouteUtils.validateInputs;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedMap.Builder;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +22,9 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
@@ -71,6 +77,23 @@ public class TracerouteEngineImplContext {
     _topology = topology;
   }
 
+  public <R extends TraceRecorder> SortedMap<Flow, R> recordAllTraces(
+      Function<Flow, R> recorderFactory) {
+    Map<Flow, R> traces = new ConcurrentHashMap<>();
+    _flows.parallelStream()
+        .forEach(
+            flow -> {
+              validateInputs(_configurations, flow);
+              String ingressNodeName = flow.getIngressNode();
+              String ingressInterfaceName = flow.getIngressInterface();
+              R recorder = recorderFactory.apply(flow);
+              initialFlowTracer(this, ingressNodeName, ingressInterfaceName, flow, recorder)
+                  .processHop();
+              traces.put(flow, recorder);
+            });
+    return ImmutableSortedMap.copyOf(traces);
+  }
+
   /**
    * Builds the possible {@link Trace}s for a {@link Set} of {@link Flow}s in {@link
    * TracerouteEngineImplContext#_flows}
@@ -78,21 +101,14 @@ public class TracerouteEngineImplContext {
    * @return {@link SortedMap} of {@link Flow} to a {@link List} of {@link Trace}s
    */
   public SortedMap<Flow, List<TraceAndReverseFlow>> buildTracesAndReturnFlows() {
-    Map<Flow, List<TraceAndReverseFlow>> traces = new ConcurrentHashMap<>();
-    _flows.parallelStream()
-        .forEach(
-            flow -> {
-              List<TraceAndReverseFlow> currentTraces =
-                  traces.computeIfAbsent(flow, k -> new ArrayList<>());
-              validateInputs(_configurations, flow);
-              String ingressNodeName = flow.getIngressNode();
-              String ingressInterfaceName = flow.getIngressInterface();
-              DagTraceRecorder recorder = new DagTraceRecorder(flow);
-              initialFlowTracer(this, ingressNodeName, ingressInterfaceName, flow, recorder)
-                  .processHop();
-              recorder.build().getTraces().forEach(currentTraces::add);
-            });
-    return new TreeMap<>(traces);
+    Map<Flow, DagTraceRecorder> recordings = recordAllTraces(DagTraceRecorder::new);
+    ImmutableSortedMap.Builder<Flow, List<TraceAndReverseFlow>> ret =
+        ImmutableSortedMap.naturalOrder();
+    recordings.forEach(
+        (flow, recorder) -> {
+          ret.put(flow, recorder.build().getTraces().collect(ImmutableList.toImmutableList()));
+        });
+    return ret.build();
   }
 
   /**

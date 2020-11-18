@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.function.Function;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.dataplane.traceroute.TraceRecorder;
 
 /**
  * Indicates ability to process a set of {@link Flow} objects and return a set of {@link Trace},
@@ -47,6 +49,13 @@ public interface TracerouteEngine {
       Set<Flow> flows, boolean ignoreFilters) {
     return computeTracesAndReverseFlows(flows, ImmutableSet.of(), ignoreFilters);
   }
+
+  /** For each given {@link Flow}, creates a {@link TraceRecorder} and traces it. */
+  <R extends TraceRecorder> SortedMap<Flow, R> recordTraces(
+      Set<Flow> flows,
+      Set<FirewallSessionTraceInfo> sessions,
+      boolean ignoreFilters,
+      Function<Flow, R> recorderFactory);
 
   /**
    * Computes {@link Trace Traces} with reverse-direction {@link Flow Flows} for a {@link Set} of
