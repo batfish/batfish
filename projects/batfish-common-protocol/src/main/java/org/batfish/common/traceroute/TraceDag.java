@@ -1,4 +1,4 @@
-package org.batfish.dataplane.traceroute;
+package org.batfish.common.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -18,7 +18,7 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 /**
  * A DAG representation of a collection of {@link TraceAndReverseFlow traces}. Every path through
  * the DAG from a root to a leaf is a valid {@link TraceAndReverseFlow trace}, i.e. one that {@link
- * FlowTracer} would create.
+ * org.batfish.common.plugin.TracerouteEngine} would create.
  */
 public class TraceDag {
   /** A node in the DAG contains everything needed to reconstruct traces through the node. */
@@ -119,11 +119,11 @@ public class TraceDag {
     }
   }
 
-  int countEdges() {
+  public int countEdges() {
     return _nodes.stream().map(node -> node._successors).mapToInt(List::size).sum();
   }
 
-  int countNodes() {
+  public int countNodes() {
     return _nodes.size();
   }
 

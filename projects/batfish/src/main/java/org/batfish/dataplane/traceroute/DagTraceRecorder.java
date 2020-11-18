@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.Hop;

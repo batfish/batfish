@@ -1,8 +1,8 @@
-package org.batfish.dataplane.traceroute;
+package org.batfish.common.traceroute;
 
-import static org.batfish.dataplane.traceroute.HopTestUtils.acceptedHop;
-import static org.batfish.dataplane.traceroute.HopTestUtils.forwardedHop;
-import static org.batfish.dataplane.traceroute.HopTestUtils.noRouteHop;
+import static org.batfish.datamodel.flow.HopTestUtils.acceptedHop;
+import static org.batfish.datamodel.flow.HopTestUtils.forwardedHop;
+import static org.batfish.datamodel.flow.HopTestUtils.noRouteHop;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.batfish.common.traceroute.TraceDag.Node;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
@@ -21,7 +22,6 @@ import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
-import org.batfish.dataplane.traceroute.TraceDag.Node;
 import org.junit.Test;
 
 public class TraceDagTest {

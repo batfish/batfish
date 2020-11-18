@@ -3,6 +3,7 @@ package org.batfish.dataplane.traceroute;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import javax.annotation.Nullable;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
