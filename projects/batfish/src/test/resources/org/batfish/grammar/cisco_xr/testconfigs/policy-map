@@ -14,7 +14,7 @@ policy-map type control subscriber POLICY-MAP
   class type control subscriber PPP do-all
   class type control subscriber PPP do-until-success
  !
-! end-policy-map
+end-policy-map
 !
 interface Bundle-Ether1.1
  service-policy type control subscriber POLICY-MAP
