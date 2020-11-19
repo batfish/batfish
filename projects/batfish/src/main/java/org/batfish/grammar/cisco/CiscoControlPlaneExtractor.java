@@ -6702,14 +6702,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitMaximum_paths_bgp_tail(Maximum_paths_bgp_tailContext ctx) {
     int maximumPaths = toInteger(ctx.paths);
     BgpProcess proc = currentVrf().getBgpProcess();
+    assert proc != null;
     if (ctx.EBGP() != null) {
       proc.setMaximumPathsEbgp(maximumPaths);
     } else if (ctx.IBGP() != null) {
       proc.setMaximumPathsIbgp(maximumPaths);
     } else if (ctx.EIBGP() != null) {
-      proc.setMaximumPathsEibgp(maximumPaths);
+      proc.setMaximumPathsEbgp(maximumPaths);
+      proc.setMaximumPathsIbgp(maximumPaths);
     } else {
-      proc.setMaximumPaths(maximumPaths);
+      // On IOS and ASA, no type means EBGP only. For other OS'es handled by this parser, we can add
+      // configuration checks.
+      proc.setMaximumPathsEbgp(maximumPaths);
     }
   }
 
