@@ -33,20 +33,20 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -794,12 +794,19 @@ class FlowTracer {
 
       // Group traces by action (we do not want extra branching if there is branching
       // in FIB resolution)
-      SortedMap<FibAction, Set<FibEntry>> groupedByFibAction =
-          // Sort so that resulting traces will be in sensible deterministic order
-          ImmutableSortedMap.copyOf(
-              fibEntries.stream()
-                  .collect(Collectors.groupingBy(FibEntry::getAction, Collectors.toSet())),
-              FibActionComparator.INSTANCE);
+      TreeMap<FibAction, Set<FibEntry>> groupedByFibAction =
+          new TreeMap<>(FibActionComparator.INSTANCE);
+      for (FibEntry e : fibEntries) {
+        groupedByFibAction.compute(
+            e.getAction(),
+            (action, set) -> {
+              if (set == null) {
+                set = new HashSet<>();
+              }
+              set.add(e);
+              return set;
+            });
+      }
 
       // For every action corresponding to ECMP LPM FibEntry
       groupedByFibAction.forEach(
