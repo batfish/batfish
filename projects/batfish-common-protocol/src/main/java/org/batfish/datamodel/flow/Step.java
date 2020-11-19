@@ -3,6 +3,7 @@ package org.batfish.datamodel.flow;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /**
@@ -20,8 +21,8 @@ import javax.annotation.Nonnull;
   @JsonSubTypes.Type(value = LoopStep.class, name = "Loop"),
   @JsonSubTypes.Type(value = MatchSessionStep.class, name = "MatchSession"),
   @JsonSubTypes.Type(value = OriginateStep.class, name = "Originate"),
-  @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
   @JsonSubTypes.Type(value = PolicyStep.class, name = "Policy"),
+  @JsonSubTypes.Type(value = RoutingStep.class, name = "Routing"),
   @JsonSubTypes.Type(value = SetupSessionStep.class, name = "SetupSession"),
   @JsonSubTypes.Type(value = TransformationStep.class, name = "Transformation"),
 })
@@ -50,5 +51,21 @@ public abstract class Step<D> {
   @Nonnull
   public final StepAction getAction() {
     return _action;
+  }
+
+  @Override
+  public final boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Step<?> step = (Step<?>) o;
+    return _detail.equals(step._detail) && _action == step._action;
+  }
+
+  @Override
+  public final int hashCode() {
+    return Objects.hash(_detail, _action);
   }
 }

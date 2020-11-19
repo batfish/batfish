@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -94,6 +95,25 @@ public final class SetupSessionStep extends Step<SetupSessionStepDetail> {
     @Nonnull
     public Set<FlowDiff> getTransformation() {
       return _transformation;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof SetupSessionStepDetail)) {
+        return false;
+      }
+      SetupSessionStepDetail that = (SetupSessionStepDetail) o;
+      return _sessionScope.equals(that._sessionScope)
+          && _sessionAction.equals(that._sessionAction)
+          && _matchCriteria.equals(that._matchCriteria)
+          && _transformation.equals(that._transformation);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_sessionScope, _sessionAction, _matchCriteria, _transformation);
     }
 
     public static Builder builder() {

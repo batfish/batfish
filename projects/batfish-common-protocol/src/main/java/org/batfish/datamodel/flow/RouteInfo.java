@@ -61,8 +61,8 @@ public final class RouteInfo {
       return false;
     }
     RouteInfo other = (RouteInfo) o;
-    return Objects.equals(_protocol, other._protocol)
-        && Objects.equals(_network, other._network)
+    return _protocol.equals(other._protocol)
+        && _network.equals(other._network)
         && Objects.equals(_nextHopIp, other._nextHopIp)
         && Objects.equals(_nextVrf, other._nextVrf);
   }

@@ -3,6 +3,7 @@ package org.batfish.datamodel.flow;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -29,5 +30,52 @@ public class ArpErrorStepTest {
         clonedStep.getDetail().getOutputInterface(),
         equalTo(NodeInterfacePair.of("node", "iface")));
     assertThat(clonedStep.getDetail().getResolvedNexthopIp(), equalTo(Ip.parse("1.1.1.1")));
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(new Object())
+        .addEqualityGroup(
+            ArpErrorStep.builder()
+                .setAction(StepAction.NEIGHBOR_UNREACHABLE)
+                .setDetail(
+                    ArpErrorStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of("h", "i"))
+                        .build())
+                .build(),
+            ArpErrorStep.builder()
+                .setAction(StepAction.NEIGHBOR_UNREACHABLE)
+                .setDetail(
+                    ArpErrorStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of("h", "i"))
+                        .build())
+                .build())
+        .addEqualityGroup(
+            ArpErrorStep.builder()
+                .setAction(StepAction.INSUFFICIENT_INFO)
+                .setDetail(
+                    ArpErrorStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of("h", "i"))
+                        .build())
+                .build())
+        .addEqualityGroup(
+            ArpErrorStep.builder()
+                .setAction(StepAction.INSUFFICIENT_INFO)
+                .setDetail(
+                    ArpErrorStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of("h", "i1"))
+                        .build())
+                .build())
+        .addEqualityGroup(
+            ArpErrorStep.builder()
+                .setAction(StepAction.INSUFFICIENT_INFO)
+                .setDetail(
+                    ArpErrorStepDetail.builder()
+                        .setOutputInterface(NodeInterfacePair.of("h", "i1"))
+                        .setResolvedNexthopIp(Ip.ZERO)
+                        .build())
+                .build())
+        .testEquals();
   }
 }

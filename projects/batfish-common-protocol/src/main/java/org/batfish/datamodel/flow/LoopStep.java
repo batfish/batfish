@@ -19,6 +19,16 @@ public final class LoopStep extends Step<LoopStepDetail> {
 
   static final class LoopStepDetail {
     private LoopStepDetail() {}
+
+    @Override
+    public boolean equals(Object o) {
+      return o instanceof LoopStepDetail;
+    }
+
+    @Override
+    public int hashCode() {
+      return LoopStepDetail.class.hashCode();
+    }
   }
 
   @SuppressWarnings("PMD.UnusedFormalParameter")

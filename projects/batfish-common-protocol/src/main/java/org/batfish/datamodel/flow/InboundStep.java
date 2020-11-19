@@ -15,7 +15,7 @@ import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 public final class InboundStep extends Step<InboundStepDetail> {
 
   /** Detail about {@link InboundStep}. */
-  public static class InboundStepDetail {
+  public static final class InboundStepDetail {
     private static final String PROP_INTERFACE = "interface";
 
     @Nonnull private final String _interface;
@@ -36,10 +36,23 @@ public final class InboundStep extends Step<InboundStepDetail> {
     public String getInterface() {
       return _interface;
     }
-  }
 
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof InboundStepDetail)) {
+        return false;
+      }
+      InboundStepDetail that = (InboundStepDetail) o;
+      return _interface.equals(that._interface);
+    }
+
+    @Override
+    public int hashCode() {
+      return _interface.hashCode();
+    }
+  }
 
   private InboundStep(InboundStepDetail detail, StepAction action) {
     super(detail, action);
