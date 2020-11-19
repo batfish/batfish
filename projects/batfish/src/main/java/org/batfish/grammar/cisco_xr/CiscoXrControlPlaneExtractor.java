@@ -18,10 +18,10 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_MAP_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.EXTCOMMUNITY_SET_RT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INSPECT_CLASS_MAP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_TRANSFORM_SET;
@@ -96,7 +96,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FAILOVER
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FAILOVER_LINK_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
@@ -144,8 +143,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_A
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_CANDIDATE_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_SPT_THRESHOLD_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_CLASS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT;
@@ -647,8 +644,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_is_stanzaCon
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_group_assignment_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_group_creation_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_sa_filterContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pi_iosicd_dropContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pi_iosicd_passContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_accept_registerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_accept_rpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_addressContext;
@@ -656,14 +651,15 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_spt_thresholdContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_event_classContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_ios_inspectContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosi_class_type_inspectContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_dropContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_inspectContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_iosict_passContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmc_service_policyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_accountingContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_control_subscriberContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_pbrContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_performance_trafficContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_qosContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_redirectContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_trafficContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcse_classContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcsec_activateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.PortContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Port_specifierContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_list_bgp_tailContext;
@@ -776,7 +772,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_loggingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_mac_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_mac_access_list_extendedContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ntpContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_policy_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ospfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ripContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_serviceContext;
@@ -912,8 +907,6 @@ import org.batfish.representation.cisco_xr.InspectClassMapMatch;
 import org.batfish.representation.cisco_xr.InspectClassMapMatchAccessGroup;
 import org.batfish.representation.cisco_xr.InspectClassMapMatchProtocol;
 import org.batfish.representation.cisco_xr.InspectClassMapProtocol;
-import org.batfish.representation.cisco_xr.InspectPolicyMap;
-import org.batfish.representation.cisco_xr.InspectPolicyMapInspectClass;
 import org.batfish.representation.cisco_xr.Interface;
 import org.batfish.representation.cisco_xr.IpBgpPeerGroup;
 import org.batfish.representation.cisco_xr.IpsecProfile;
@@ -947,7 +940,6 @@ import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.OspfRedistributionPolicy;
 import org.batfish.representation.cisco_xr.OspfWildcardNetwork;
-import org.batfish.representation.cisco_xr.PolicyMapClassAction;
 import org.batfish.representation.cisco_xr.Prefix6List;
 import org.batfish.representation.cisco_xr.Prefix6ListLine;
 import org.batfish.representation.cisco_xr.PrefixList;
@@ -1307,10 +1299,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private ServiceObjectGroup _currentServiceObjectGroup;
 
   private InspectClassMap _currentInspectClassMap;
-
-  private InspectPolicyMap _currentInspectPolicyMap;
-
-  private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
 
   private Integer _currentHsrpGroup;
 
@@ -2656,6 +2644,54 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
+  public void enterPm_type_accounting(Pm_type_accountingContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
+    warn(ctx, "Policy map of type accounting is not supported");
+  }
+
+  @Override
+  public void enterPm_type_control_subscriber(Pm_type_control_subscriberContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
+  }
+
+  @Override
+  public void enterPm_type_pbr(Pm_type_pbrContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
+    warn(ctx, "Policy map of type pbr is not supported");
+  }
+
+  @Override
+  public void enterPm_type_performance_traffic(Pm_type_performance_trafficContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
+    warn(ctx, "Policy map of type performance-traffic is not supported");
+  }
+
+  @Override
+  public void enterPm_type_qos(Pm_type_qosContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
+    warn(ctx, "Policy map of type qos is not supported");
+  }
+
+  @Override
+  public void enterPm_type_redirect(Pm_type_redirectContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
+    warn(ctx, "Policy map of type redirect is not supported");
+  }
+
+  @Override
+  public void enterPm_type_traffic(Pm_type_trafficContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.defineStructure(POLICY_MAP, name, ctx);
+    warn(ctx, "Policy map of type traffic is not supported");
+  }
+
+  @Override
   public void enterRo_area(Ro_areaContext ctx) {
     long area;
     if (ctx.area_int != null) {
@@ -2999,15 +3035,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void enterS_ntp(S_ntpContext ctx) {
     if (_configuration.getCf().getNtp() == null) {
       _configuration.getCf().setNtp(new Ntp());
-    }
-  }
-
-  @Override
-  public void enterS_policy_map(S_policy_mapContext ctx) {
-    // TODO: do something with this.
-    if (ctx.variable_policy_map_header() != null) {
-      String name = ctx.variable_policy_map_header().getText();
-      _configuration.defineStructure(POLICY_MAP, name, ctx);
     }
   }
 
@@ -6068,102 +6095,20 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterPm_ios_inspect(Pm_ios_inspectContext ctx) {
-    String name = ctx.name.getText();
-    _currentInspectPolicyMap =
-        _configuration.getInspectPolicyMaps().computeIfAbsent(name, InspectPolicyMap::new);
-    _configuration.defineStructure(INSPECT_POLICY_MAP, name, ctx);
-  }
-
-  @Override
-  public void enterPm_class(Pm_classContext ctx) {
-    // TODO: do something with this.
-    // should be something like _currentPolicyMapClass = ...
-    String name = ctx.name.getText();
-    _configuration.referenceStructure(CLASS_MAP, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
-    if ("class-default".equals(name)) {
-      // This is a hack because there's an implicit class named "class-default" and we don't want
-      // a false positive undefined reference.
-      _configuration.defineSingleLineStructure(
-          CLASS_MAP, "class-default", ctx.getStart().getLine());
-    }
-  }
-
-  @Override
-  public void exitPm_class(Pm_classContext ctx) {
-    // TODO: do something with this.
-    // should be something like _currentPolicyMapClass = null.
-  }
-
-  @Override
-  public void exitPm_event_class(Pm_event_classContext ctx) {
+  public void exitPmtcse_class(Pmtcse_classContext ctx) {
     if (ctx.classname != null) {
       _configuration.referenceStructure(
           CLASS_MAP, ctx.classname.getText(), POLICY_MAP_EVENT_CLASS, ctx.getStart().getLine());
     }
-    if (ctx.stname != null) {
-      _configuration.referenceStructure(
-          SERVICE_TEMPLATE,
-          ctx.stname.getText(),
-          POLICY_MAP_EVENT_CLASS_ACTIVATE,
-          ctx.stname.getStart().getLine());
-    }
   }
 
   @Override
-  public void exitPm_ios_inspect(Pm_ios_inspectContext ctx) {
-    _currentInspectPolicyMap = null;
-  }
-
-  @Override
-  public void enterPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+  public void exitPmtcsec_activate(Pmtcsec_activateContext ctx) {
     _configuration.referenceStructure(
-        INSPECT_CLASS_MAP, name, INSPECT_POLICY_MAP_INSPECT_CLASS, line);
-    _currentInspectPolicyMapInspectClass =
-        _currentInspectPolicyMap
-            .getInspectClasses()
-            .computeIfAbsent(name, n -> new InspectPolicyMapInspectClass());
-  }
-
-  @Override
-  public void exitPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
-    _currentInspectPolicyMapInspectClass = null;
-  }
-
-  @Override
-  public void exitPi_iosicd_drop(Pi_iosicd_dropContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.DENY);
-  }
-
-  @Override
-  public void exitPi_iosicd_pass(Pi_iosicd_passContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.PERMIT);
-  }
-
-  @Override
-  public void exitPm_iosict_inspect(Pm_iosict_inspectContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.INSPECT);
-  }
-
-  @Override
-  public void exitPm_iosict_pass(Pm_iosict_passContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.PASS);
-  }
-
-  @Override
-  public void exitPm_iosict_drop(Pm_iosict_dropContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.DROP);
-  }
-
-  @Override
-  public void exitPmc_service_policy(Pmc_service_policyContext ctx) {
-    _configuration.referenceStructure(
-        POLICY_MAP,
-        ctx.name.getText(),
-        POLICY_MAP_CLASS_SERVICE_POLICY,
-        ctx.name.getStart().getLine());
+        DYNAMIC_TEMPLATE,
+        ctx.dtname.getText(),
+        POLICY_MAP_EVENT_CLASS_ACTIVATE,
+        ctx.dtname.getStart().getLine());
   }
 
   @Override

@@ -55,7 +55,6 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   FAILOVER_LINK_INTERFACE("failover link interface"),
   ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT("object-group icmp-type group-object"),
   INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP("class-map type inspect match access-group"),
-  INSPECT_POLICY_MAP_INSPECT_CLASS("policy-map type inspect class type inspect"),
   INTERFACE_BFD_TEMPLATE("interface bfd template"),
   INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
   INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST("interface igmp host-proxy access-list"),
