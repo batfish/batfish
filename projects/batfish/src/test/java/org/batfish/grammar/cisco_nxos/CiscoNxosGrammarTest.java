@@ -7741,8 +7741,8 @@ public final class CiscoNxosGrammarTest {
       EigrpInterfaceSettings eigrp = iface.getEigrp();
       assertNotNull(eigrp);
       assertThat(eigrp.getMetric().getValues().getBandwidth(), equalTo(300L));
-      // EIGRP metric values have delay in ps (10e-12); config has it in tens of µs (10e-5)
-      assertThat(eigrp.getMetric().getValues().getDelay(), equalTo((long) (400 * 10e7)));
+      // EIGRP metric values have delay in ps (1e-12); config has it in tens of µs (1e-5)
+      assertThat(eigrp.getMetric().getValues().getDelay(), equalTo((long) (400 * 1e7)));
       assertTrue(eigrp.getPassive());
     }
     {
@@ -7763,7 +7763,7 @@ public final class CiscoNxosGrammarTest {
           eigrp.getMetric().getValues().getBandwidth(), equalTo(defaultBw.longValue() / 1000));
       assertThat(
           eigrp.getMetric().getValues().getDelay(),
-          equalTo((long) (defaultDelayTensOfMicroseconds(CiscoNxosInterfaceType.ETHERNET) * 10e7)));
+          equalTo((long) (defaultDelayTensOfMicroseconds(CiscoNxosInterfaceType.ETHERNET) * 1e7)));
       assertFalse(eigrp.getPassive());
     }
   }
