@@ -834,7 +834,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _dstPorts.stream().noneMatch(sr -> sr.includes(flow.getDstPort()))) {
       return false;
     }
-    if (_notDstPorts.stream().anyMatch(sr -> sr.includes(flow.getDstPort()))) {
+    if (!_notDstPorts.isEmpty()
+        && _notDstPorts.stream().anyMatch(sr -> sr.includes(flow.getDstPort()))) {
       return false;
     }
     if (!_ecns.isEmpty() && !_ecns.contains(flow.getEcn())) {
@@ -847,7 +848,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _fragmentOffsets.stream().noneMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
-    if (_notFragmentOffsets.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
+    if (!_notFragmentOffsets.isEmpty()
+        && _notFragmentOffsets.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
     if (!_icmpCodes.isEmpty()
@@ -855,7 +857,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _icmpCodes.stream().noneMatch(sr -> sr.includes(flow.getIcmpCode()))) {
       return false;
     }
-    if (_notIcmpCodes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
+    if (!_notIcmpCodes.isEmpty()
+        && _notIcmpCodes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
     if (!_icmpTypes.isEmpty()
@@ -863,7 +866,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _icmpTypes.stream().noneMatch(sr -> sr.includes(flow.getIcmpType()))) {
       return false;
     }
-    if (_notIcmpTypes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
+    if (!_notIcmpTypes.isEmpty()
+        && _notIcmpTypes.stream().anyMatch(sr -> sr.includes(flow.getFragmentOffset()))) {
       return false;
     }
     if (!_ipProtocols.isEmpty() && !_ipProtocols.contains(flow.getIpProtocol())) {
@@ -876,7 +880,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _packetLengths.stream().noneMatch(sr -> sr.includes(flow.getPacketLength()))) {
       return false;
     }
-    if (_notPacketLengths.stream().anyMatch(sr -> sr.includes(flow.getPacketLength()))) {
+    if (!_notPacketLengths.isEmpty()
+        && _notPacketLengths.stream().anyMatch(sr -> sr.includes(flow.getPacketLength()))) {
       return false;
     }
     if (_srcOrDstIps != null
@@ -899,7 +904,8 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
         && _srcPorts.stream().noneMatch(sr -> sr.includes(flow.getSrcPort()))) {
       return false;
     }
-    if (_notSrcPorts.stream().anyMatch(sr -> sr.includes(flow.getSrcPort()))) {
+    if (!_notSrcPorts.isEmpty()
+        && _notSrcPorts.stream().anyMatch(sr -> sr.includes(flow.getSrcPort()))) {
       return false;
     }
     if (!_tcpFlags.isEmpty() && _tcpFlags.stream().noneMatch(tcpFlags -> tcpFlags.match(flow))) {
