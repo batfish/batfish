@@ -59,8 +59,6 @@ public class BgpProcess implements Serializable {
 
   private Integer _maximumPathsEbgp;
 
-  private Integer _maximumPathsEibgp;
-
   private Integer _maximumPathsIbgp;
 
   private Map<String, NamedBgpPeerGroup> _namedPeerGroups;
@@ -229,10 +227,6 @@ public class BgpProcess implements Serializable {
     return _maximumPathsEbgp;
   }
 
-  public Integer getMaximumPathsEibgp() {
-    return _maximumPathsEibgp;
-  }
-
   public Integer getMaximumPathsIbgp() {
     return _maximumPathsIbgp;
   }
@@ -279,10 +273,6 @@ public class BgpProcess implements Serializable {
 
   public void setMaximumPathsEbgp(Integer maximumPathsEbgp) {
     _maximumPathsEbgp = maximumPathsEbgp;
-  }
-
-  public void setMaximumPathsEibgp(Integer maximumPathsEibgp) {
-    _maximumPathsEibgp = maximumPathsEibgp;
   }
 
   public void setMaximumPathsIbgp(Integer maximumPathsIbgp) {
