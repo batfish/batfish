@@ -67,8 +67,16 @@ public class DagTraceRecorder implements TraceRecorder {
 
     @Override
     public int hashCode() {
-      return Objects.hash(_initialFlow, _hopJson);
+      int hash = _hashCode;
+      if (hash == 0) {
+        hash = Objects.hash(_initialFlow, _hop);
+        _hashCode = hash;
+      }
+      return hash;
     }
+
+    // Memoized hashcode;
+    private int _hashCode;
   }
 
   /**
