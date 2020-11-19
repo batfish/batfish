@@ -114,12 +114,12 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
-import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -856,7 +856,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     vrfConfig.getDistanceExternal(),
                     EigrpProcessConfiguration.DEFAULT_DISTANCE_EXTERNAL))
             .setRouterId(routerId);
-    proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
+    proc.setMode(EigrpProcessMode.CLASSIC);
     if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {
       // TODO: figure out what this does and handle it.
       _w.redFlag(
@@ -2096,11 +2096,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .orElse(null);
     EigrpMetricValues values =
         EigrpMetricValues.builder()
-            .setDelay(delayTensOfMicroseconds * 10e7) // convert to picoseconds
+            .setDelay(delayTensOfMicroseconds * 1e7) // convert to picoseconds
             .setBandwidth(bw)
             .build();
-    // TODO Can NXOS use ClassicMetric?
-    return WideMetric.builder().setValues(values).build();
+    return ClassicMetric.builder().setValues(values).build();
   }
 
   private @Nonnull InterfaceType toInterfaceType(
