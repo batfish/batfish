@@ -58,7 +58,7 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
         return false;
       }
       TransformationStepDetail detail = (TransformationStepDetail) o;
-      return Objects.equals(_type, detail._type) && Objects.equals(_flowDiffs, detail._flowDiffs);
+      return _type.equals(detail._type) && _flowDiffs.equals(detail._flowDiffs);
     }
 
     @Override
@@ -77,9 +77,6 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
     }
   }
 
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
-
   public TransformationStep(TransformationStepDetail detail, StepAction action) {
     super(detail, action);
     checkArgument(action == StepAction.TRANSFORMED || action == StepAction.PERMITTED);
@@ -93,24 +90,6 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
           detail._flowDiffs.isEmpty(),
           "Cannot construct a PERMITTED TransformationStep with FlowDiffs");
     }
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == this) {
-      return true;
-    }
-    if (!(o instanceof TransformationStep)) {
-      return false;
-    }
-    TransformationStep step = (TransformationStep) o;
-    return Objects.equals(getAction(), step.getAction())
-        && Objects.equals(getDetail(), step.getDetail());
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(getAction(), getDetail());
   }
 
   @JsonCreator
