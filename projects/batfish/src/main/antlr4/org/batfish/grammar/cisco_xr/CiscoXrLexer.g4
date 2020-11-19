@@ -2621,6 +2621,11 @@ DCE_MODE
    'dce-mode'
 ;
 
+DEACTIVATE
+:
+   'deactivate'
+;
+
 DEAD_INTERVAL
 :
    'dead-interval'
@@ -3211,6 +3216,11 @@ DISCARD_ROUTE
    'discard-route'
 ;
 
+DISCONNECT
+:
+   'disconnect'
+;
+
 DISCOVERED_AP_CNT
 :
    'discovered-ap-cnt'
@@ -3276,9 +3286,19 @@ DO
    'do'
 ;
 
+DO_ALL
+:
+   'do-all'
+;
+
 DO_UNTIL_FAILURE
 :
    'do-until-failure'
+;
+
+DO_UNTIL_SUCCESS
+:
+   'do-until-success'
 ;
 
 DOD_HOST_PROHIBITED
@@ -3539,6 +3559,11 @@ DYNAMIC_MCAST_OPTIMIZATION
 DYNAMIC_MCAST_OPTIMIZATION_THRESH
 :
    'dynamic-mcast-optimization-thresh'
+;
+
+DYNAMIC_TEMPLATE
+:
+   'dynamic-template'
 ;
 
 E164
@@ -8672,6 +8697,11 @@ PERCENT_LITERAL
    'percent'
 ;
 
+PERFORMANCE_TRAFFIC
+:
+   'performance-traffic'
+;
+
 PERIODIC
 :
    'periodic'
@@ -10669,6 +10699,11 @@ SET_OVERLOAD_BIT
    'set-overload-bit'
 ;
 
+SET_TIMER
+:
+   'set-timer'
+;
+
 SETUP
 :
    'setup'
@@ -11334,6 +11369,11 @@ STOP_ONLY
 STOP_RECORD
 :
    'stop-record'
+;
+
+STOP_TIMER
+:
+   'stop-timer'
 ;
 
 STOPBITS
@@ -12044,6 +12084,11 @@ TRACKING_PRIORITY_INCREMENT
 TRADITIONAL
 :
    'traditional'
+;
+
+TRAFFIC
+:
+   'traffic'
 ;
 
 TRAFFIC_ENG
