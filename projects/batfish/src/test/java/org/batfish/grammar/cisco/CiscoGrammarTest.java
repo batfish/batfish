@@ -1732,7 +1732,7 @@ public final class CiscoGrammarTest {
         portChannel23,
         hasEigrp(
             EigrpInterfaceSettingsMatchers.hasEigrpMetric(
-                EigrpMetricMatchers.hasBandwidth(expectedBw))));
+                EigrpMetricMatchers.hasBandwidth(expectedBw / 1000)))); // scale to kbps
   }
 
   /**

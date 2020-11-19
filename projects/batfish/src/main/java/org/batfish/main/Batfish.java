@@ -1800,7 +1800,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 // only set bandwidth if it's not explicitly configured for EIGRP
                 Double bw = iface.getBandwidth();
                 assert bw != null; // all bandwidths should be finalized at this point
-                metricValues.setBandwidth(bw.longValue());
+                metricValues.setBandwidth(bw.longValue() / 1000); // convert to kbps
               }
             });
   }
