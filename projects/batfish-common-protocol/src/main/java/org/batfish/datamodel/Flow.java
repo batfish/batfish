@@ -707,23 +707,31 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _dscp,
-        _dstIp,
-        _dstPort,
-        _ecn,
-        _fragmentOffset,
-        _icmpCode,
-        _icmpType,
-        _ingressInterface,
-        _ingressNode,
-        _ingressVrf,
-        _ipProtocol.ordinal(),
-        _packetLength,
-        _srcIp,
-        _srcPort,
-        _tcpFlags);
+    int hash = _hashCode;
+    if (hash == 0) {
+      hash =
+          Objects.hash(
+              _dscp,
+              _dstIp,
+              _dstPort,
+              _ecn,
+              _fragmentOffset,
+              _icmpCode,
+              _icmpType,
+              _ingressInterface,
+              _ingressNode,
+              _ingressVrf,
+              _ipProtocol.ordinal(),
+              _packetLength,
+              _srcIp,
+              _srcPort,
+              _tcpFlags);
+      _hashCode = hash;
+    }
+    return hash;
   }
+
+  private transient int _hashCode;
 
   private String tcpFlagsStr() {
     return String.format(
