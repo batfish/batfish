@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -27,8 +28,8 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_TRANSFORMED_FLOW = "transformedFlow";
 
-    private @Nonnull NodeInterfacePair _outputInterface;
-    private @Nullable Flow _transformedFlow;
+    private final @Nonnull NodeInterfacePair _outputInterface;
+    private final @Nullable Flow _transformedFlow;
 
     private ExitOutputIfaceStepDetail(
         NodeInterfacePair outInterface, @Nullable Flow transformedFlow) {
@@ -54,6 +55,23 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     @Nullable
     public Flow getTransformedFlow() {
       return _transformedFlow;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof ExitOutputIfaceStepDetail)) {
+        return false;
+      }
+      ExitOutputIfaceStepDetail that = (ExitOutputIfaceStepDetail) o;
+      return _outputInterface.equals(that._outputInterface)
+          && Objects.equals(_transformedFlow, that._transformedFlow);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_outputInterface, _transformedFlow);
     }
 
     public static Builder builder() {
@@ -113,9 +131,6 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     /** Only for use by {@link ExitOutputIfaceStep#builder()}. */
     private Builder() {}
   }
-
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
 
   @JsonCreator
   private static ExitOutputIfaceStep jsonCreator(

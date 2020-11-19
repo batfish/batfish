@@ -19,10 +19,10 @@ public final class Hop {
   private static final String PROP_STEPS = "steps";
 
   /** Name of the node for this {@link Hop} */
-  @Nonnull private Node _node;
+  private final @Nonnull Node _node;
 
   /** {@link List} of {@link Step} present for the given {@link Hop} */
-  private List<Step<?>> _steps;
+  private final @Nonnull List<Step<?>> _steps;
 
   public Hop(Node node, List<Step<?>> steps) {
     _node = node;
@@ -44,7 +44,7 @@ public final class Hop {
   }
 
   @JsonProperty(PROP_STEPS)
-  public List<Step<?>> getSteps() {
+  public @Nonnull List<Step<?>> getSteps() {
     return _steps;
   }
 
@@ -56,7 +56,7 @@ public final class Hop {
       return false;
     }
     Hop other = (Hop) o;
-    return Objects.equals(_node, other._node) && Objects.equals(_steps, other._steps);
+    return _node.equals(other._node) && _steps.equals(other._steps);
   }
 
   @Override

@@ -19,7 +19,7 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
   public static final class OriginateStepDetail {
     private static final String PROP_ORIGINATING_VRF = "originatingVrf";
 
-    private @Nonnull String _originatingVrf;
+    private final @Nonnull String _originatingVrf;
 
     private OriginateStepDetail(String originatingVrf) {
       _originatingVrf = originatingVrf;
@@ -33,8 +33,25 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
     }
 
     @JsonProperty(PROP_ORIGINATING_VRF)
+    @Nonnull
     public String getOriginatingVrf() {
       return _originatingVrf;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof OriginateStepDetail)) {
+        return false;
+      }
+      OriginateStepDetail that = (OriginateStepDetail) o;
+      return _originatingVrf.equals(that._originatingVrf);
+    }
+
+    @Override
+    public int hashCode() {
+      return _originatingVrf.hashCode();
     }
 
     public static Builder builder() {
@@ -59,9 +76,6 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
       private Builder() {}
     }
   }
-
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
 
   public static Builder builder() {
     return new Builder();

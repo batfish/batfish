@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -49,10 +50,10 @@ public class FilterStep extends Step<FilterStepDetail> {
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_FLOW = "flow";
 
-    private @Nonnull String _filter;
-    private @Nonnull FilterType _type;
-    private @Nullable String _inputInterface;
-    private @Nonnull Flow _flow;
+    private final @Nonnull String _filter;
+    private final @Nonnull FilterType _type;
+    private final @Nullable String _inputInterface;
+    private final @Nonnull Flow _flow;
 
     public FilterStepDetail(
         @Nonnull String filter,
@@ -100,10 +101,26 @@ public class FilterStep extends Step<FilterStepDetail> {
     public Flow getFlow() {
       return _flow;
     }
-  }
 
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof FilterStepDetail)) {
+        return false;
+      }
+      FilterStepDetail that = (FilterStepDetail) o;
+      return _filter.equals(that._filter)
+          && _type == that._type
+          && Objects.equals(_inputInterface, that._inputInterface)
+          && _flow.equals(that._flow);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_filter, _type, _inputInterface, _flow);
+    }
+  }
 
   @JsonCreator
   private static FilterStep jsonCreator(
