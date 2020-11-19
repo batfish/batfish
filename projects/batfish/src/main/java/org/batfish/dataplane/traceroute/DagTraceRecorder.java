@@ -69,7 +69,7 @@ public class DagTraceRecorder implements TraceRecorder {
     public int hashCode() {
       int hash = _hashCode;
       if (hash == 0) {
-        hash = Objects.hash(_initialFlow, _hop);
+        hash = Objects.hash(_initialFlow, _hopJson);
         _hashCode = hash;
       }
       return hash;
