@@ -21,7 +21,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.traceroute.TraceDag;
 import org.batfish.common.traceroute.TraceDagImpl;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.Hop;
 
@@ -37,20 +36,16 @@ public class DagTraceRecorder implements TraceRecorder {
     _flow = flow;
   }
 
-  /**
-   * The key used to lookup Nodes in a TraceDagImpl.
-   *
-   * <p>TODO: implement equals/hashCode for {@link Hop} instead of using JSON.
-   */
+  /** The key used to lookup Nodes in a TraceDagImpl. */
   @VisibleForTesting
   static final class NodeKey {
     private final @Nonnull Flow _initialFlow;
-    private final @Nonnull String _hopJson;
+    private final @Nonnull Hop _hop;
 
     @VisibleForTesting
     NodeKey(Flow initialFlow, Hop hop) {
       _initialFlow = initialFlow;
-      _hopJson = BatfishObjectMapper.writeStringRuntimeError(hop);
+      _hop = hop;
     }
 
     @Override
@@ -62,14 +57,14 @@ public class DagTraceRecorder implements TraceRecorder {
         return false;
       }
       NodeKey nodeKey = (NodeKey) o;
-      return _initialFlow.equals(nodeKey._initialFlow) && _hopJson.equals(nodeKey._hopJson);
+      return _initialFlow.equals(nodeKey._initialFlow) && _hop.equals(nodeKey._hop);
     }
 
     @Override
     public int hashCode() {
       int hash = _hashCode;
       if (hash == 0) {
-        hash = Objects.hash(_initialFlow, _hopJson);
+        hash = Objects.hash(_initialFlow, _hop);
         _hashCode = hash;
       }
       return hash;
