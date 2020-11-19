@@ -39,6 +39,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.eigrp.EigrpEdge;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfigId;
@@ -285,10 +286,11 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     Interface remoteIface = edge.getNode1().getInterface(nc);
     assert remoteIface.getEigrp() != null;
     Ip nextHopIp = remoteIface.getConcreteAddress().getIp();
-    EigrpMetric connectingInterfaceMetric = edge.getNode2().getInterfaceSettings(nc).getMetric();
+    EigrpInterfaceSettings localEigrpIface = edge.getNode2().getInterfaceSettings(nc);
+    EigrpMetric connectingInterfaceMetric = localEigrpIface.getMetric();
     @Nullable
     RoutingPolicy importPolicy =
-        Optional.ofNullable(remoteIface.getEigrp().getImportPolicy())
+        Optional.ofNullable(localEigrpIface.getImportPolicy())
             .map(_configuration.getRoutingPolicies()::get)
             .orElse(null);
     while (!queue.isEmpty()) {
