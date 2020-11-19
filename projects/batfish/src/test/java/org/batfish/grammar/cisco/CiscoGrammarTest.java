@@ -178,6 +178,8 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeProtoco
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborImportPolicyName;
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
@@ -350,6 +352,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
@@ -374,17 +377,14 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
-import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.tracking.DecrementPriority;
@@ -2712,32 +2712,13 @@ public final class CiscoGrammarTest {
   public void testIosEigrpDistributeListConversion() throws IOException {
     Configuration c = parseConfig("ios-eigrp-distribute-list");
 
-    String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0";
+    String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0~";
 
     org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess1 =
         c.getDefaultVrf().getEigrpProcesses().get(1L);
     assertThat(
         eigrpProcess1.getNeighbors().get("GigabitEthernet0/0").getExportPolicy(),
         equalTo(distListPolicyName));
-
-    BooleanExpr matchAsn1 = new MatchProcessAsn(1L);
-    BooleanExpr matchEigrp = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
-
-    BooleanExpr exprForDistributeList =
-        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet("2"));
-
-    List<Statement> statements =
-        ImmutableList.of(
-            new If(
-                exprForDistributeList,
-                ImmutableList.of(),
-                ImmutableList.of(Statements.ExitReject.toStaticStatement())),
-            new If(
-                new Conjunction(ImmutableList.of(matchEigrp, matchAsn1)),
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-
-    assertThat(c.getRoutingPolicies().get(distListPolicyName).getStatements(), equalTo(statements));
 
     EigrpMetric metric =
         WideMetric.builder()
@@ -2837,21 +2818,11 @@ public final class CiscoGrammarTest {
 
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
-
-    assertThat(
-        pvcae,
-        hasParseWarning(
-            filename, containsString("Inbound distribute-list is not supported for EIGRP")));
-    assertThat(
-        pvcae,
-        hasParseWarning(
-            filename, containsString("Global distribute-list not supported for EIGRP")));
-
     assertThat(
         pvcae,
         hasParseWarning(
             filename,
-            containsString("Prefix lists in distribute-list are not supported for EIGRP")));
+            containsString("Gateway prefix lists in distribute-list are not supported for EIGRP")));
     assertThat(
         pvcae,
         hasParseWarning(
@@ -2860,6 +2831,127 @@ public final class CiscoGrammarTest {
         pvcae,
         hasParseWarning(
             filename, containsString("Route maps in distribute-list are not supported for EIGRP")));
+  }
+
+  @Test
+  public void testIosEigrpDistributeListWithPrefixListExtraction() {
+    String hostname = "ios-eigrp-distribute-list-prefix-list";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
+    assertThat(
+        proc.getInboundGlobalDistributeList(),
+        equalTo(new DistributeList("PL_IN", DistributeListFilterType.PREFIX_LIST)));
+    assertThat(
+        proc.getOutboundGlobalDistributeList(),
+        equalTo(new DistributeList("PL_OUT", DistributeListFilterType.PREFIX_LIST)));
+    String ifaceName = "GigabitEthernet0/0";
+    assertThat(
+        proc.getInboundInterfaceDistributeLists(),
+        hasEntry(
+            ifaceName, new DistributeList("PL_IN_IFACE", DistributeListFilterType.PREFIX_LIST)));
+    assertThat(
+        proc.getOutboundInterfaceDistributeLists(),
+        hasEntry(
+            ifaceName, new DistributeList("PL_OUT_IFACE", DistributeListFilterType.PREFIX_LIST)));
+  }
+
+  @Test
+  public void testIosEigrpDistributeListWithPrefixListConversion() throws IOException {
+    String hostname = "ios-eigrp-distribute-list-prefix-list";
+    Configuration c = parseConfig(hostname);
+    Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
+    // helper builder
+    EigrpInternalRoute.Builder builder =
+        EigrpInternalRoute.builder()
+            .setAdmin(90)
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build())
+            .setProcessAsn(1L);
+    {
+      String ifaceName = "GigabitEthernet0/0";
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow routes permitted by both prefix lists
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      // Block others
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow routes permitted by both prefix lists
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      // Block others
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
+    {
+      // This interface has no iface-specific distribute lists.
+      String ifaceName = "GigabitEthernet1/0";
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow routes permitted by global prefix list
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      // Block others
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow routes permitted by global list
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      // Block others
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
   }
 
   @Test
@@ -2874,7 +2966,7 @@ public final class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet0")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2884,7 +2976,7 @@ public final class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet1")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
                         .setPassive(false)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")
@@ -2894,7 +2986,7 @@ public final class CiscoGrammarTest {
                     EigrpNeighborConfig.builder()
                         .setAsn(1L)
                         .setInterfaceName("Ethernet2")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2")
+                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
                         .setPassive(true)
                         .setHostname("ios-eigrp-classic")
                         .setVrfName("default")

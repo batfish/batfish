@@ -1100,6 +1100,11 @@ DISTRIBUTE
   'distribute'
 ;
 
+DISTRIBUTE_LIST
+:
+  'distribute-list'
+;
+
 DNS
 :
   'dns' -> pushMode(M_Words)
@@ -1255,9 +1260,13 @@ EIGRP
       case KEY_CHAIN:
         pushMode(M_TwoWords);
         break;
+      case BANDWIDTH:
+      case DELAY:
+      case DISTRIBUTE_LIST:
       case HELLO_INTERVAL:
       case HOLD_TIME:
       case MODE:
+      case PASSIVE_INTERFACE:
       case REDISTRIBUTE:
       case ROUTER:
         pushMode(M_Word);

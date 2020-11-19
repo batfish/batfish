@@ -1,13 +1,11 @@
-package org.batfish.dataplane.traceroute;
+package org.batfish.common.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -20,9 +18,9 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 /**
  * A DAG representation of a collection of {@link TraceAndReverseFlow traces}. Every path through
  * the DAG from a root to a leaf is a valid {@link TraceAndReverseFlow trace}, i.e. one that {@link
- * FlowTracer} would create.
+ * org.batfish.common.plugin.TracerouteEngine} would create.
  */
-public class TraceDag {
+public final class TraceDagImpl implements TraceDag {
   /** A node in the DAG contains everything needed to reconstruct traces through the node. */
   public static final class Node {
     private final Hop _hop;
@@ -51,11 +49,12 @@ public class TraceDag {
   private final List<Node> _nodes;
   private final List<Integer> _rootIds;
 
-  public TraceDag(List<Node> nodes, List<Integer> rootIds) {
+  public TraceDagImpl(List<Node> nodes, List<Integer> rootIds) {
     _nodes = nodes;
     _rootIds = rootIds;
   }
 
+  @Override
   public int size() {
     return new SizeComputer().size();
   }
@@ -92,14 +91,20 @@ public class TraceDag {
       List<Hop> hopsInput, List<FirewallSessionTraceInfo> sessionsInput, int rootId) {
     Node node = _nodes.get(rootId);
 
-    List<Hop> hops = new ArrayList<>(hopsInput);
-    hops.add(node._hop);
+    List<Hop> hops =
+        ImmutableList.<Hop>builderWithExpectedSize(hopsInput.size() + 1)
+            .addAll(hopsInput)
+            .add(node._hop)
+            .build();
 
     List<FirewallSessionTraceInfo> sessions;
     FirewallSessionTraceInfo firewallSessionTraceInfo = node._firewallSessionTraceInfo;
     if (firewallSessionTraceInfo != null) {
-      sessions = new ArrayList<>(sessionsInput);
-      sessions.add(firewallSessionTraceInfo);
+      sessions =
+          ImmutableList.<FirewallSessionTraceInfo>builderWithExpectedSize(sessionsInput.size() + 1)
+              .addAll(sessionsInput)
+              .add(firewallSessionTraceInfo)
+              .build();
     } else {
       sessions = sessionsInput;
     }
@@ -115,11 +120,13 @@ public class TraceDag {
     }
   }
 
-  int countEdges() {
+  @Override
+  public int countEdges() {
     return _nodes.stream().map(node -> node._successors).mapToInt(List::size).sum();
   }
 
-  int countNodes() {
+  @Override
+  public int countNodes() {
     return _nodes.size();
   }
 
@@ -127,7 +134,8 @@ public class TraceDag {
     return getTraces(ImmutableList.of(), new Stack<>(), rootId);
   }
 
+  @Override
   public Stream<TraceAndReverseFlow> getTraces() {
-    return _rootIds.stream().map(this::getTraces).flatMap(Function.identity());
+    return _rootIds.stream().flatMap(this::getTraces);
   }
 }

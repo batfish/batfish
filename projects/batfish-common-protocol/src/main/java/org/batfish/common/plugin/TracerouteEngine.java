@@ -3,9 +3,11 @@ package org.batfish.common.plugin;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import org.batfish.common.traceroute.TraceDag;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
@@ -57,5 +59,9 @@ public interface TracerouteEngine {
    * @return {@link SortedMap} of {@link Flow Flows} to {@link List} of {@link Trace Traces}
    */
   SortedMap<Flow, List<TraceAndReverseFlow>> computeTracesAndReverseFlows(
+      Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters);
+
+  /** Computes {@link TraceDag} for a {@link Set} of forward {@link Flow Flows}. */
+  Map<Flow, TraceDag> computeTraceDags(
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters);
 }

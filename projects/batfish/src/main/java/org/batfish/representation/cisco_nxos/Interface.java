@@ -20,10 +20,18 @@ public final class Interface implements Serializable {
 
   private static final double DEFAULT_INTERFACE_BANDWIDTH = 1E12D;
 
-  /** Loopback bandwidth */
+  /** Loopback bandwidth (bits/s) */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
-  /** Management bandwidth */
+  /** Management bandwidth (bits/s) */
   private static final double DEFAULT_MGMT_BANDWIDTH = 1E9D;
+  /**
+   * Default interface delay in tens of microseconds: "10 microseconds for all interfaces except
+   * loopback ports"
+   * https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/interfaces/command/cisco_nexus7000_interfaces_command_ref/d_commands.html#wp1043520423
+   */
+  private static final int DEFAULT_INTERFACE_DELAY = 1;
+  /** Default loopback delay in tens of microseconds */
+  private static final int DEFAULT_LOOPBACK_DELAY = 500;
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
   private static final double DEFAULT_NXOS_ETHERNET_SPEED = 1E9D;
 
@@ -69,6 +77,7 @@ public final class Interface implements Serializable {
     }
   }
 
+  /** Default bandwidth in bits/second */
   public static @Nullable Double getDefaultBandwidth(CiscoNxosInterfaceType type) {
     Double defaultSpeed = getDefaultSpeed(type);
     if (defaultSpeed != null) {
@@ -86,6 +95,20 @@ public final class Interface implements Serializable {
       default:
         // Use default bandwidth for other interface types that have no speed
         return DEFAULT_INTERFACE_BANDWIDTH;
+    }
+  }
+
+  /** Default interface delay in tens of microseconds */
+  public static int defaultDelayTensOfMicroseconds(CiscoNxosInterfaceType type) {
+    // TODO Is this actually correct for EIGRP delays?
+    switch (type) {
+      case LOOPBACK:
+        return DEFAULT_LOOPBACK_DELAY;
+      case MGMT:
+      case PORT_CHANNEL:
+      case VLAN:
+      default:
+        return DEFAULT_INTERFACE_DELAY;
     }
   }
 
@@ -127,6 +150,11 @@ public final class Interface implements Serializable {
   private @Nullable String _description;
   private final @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
   private @Nullable String _eigrp;
+  private @Nullable Integer _eigrpBandwidth;
+  private @Nullable Integer _eigrpDelay;
+  private boolean _eigrpPassive;
+  private @Nullable DistributeList _eigrpInboundDistributeList;
+  private @Nullable DistributeList _eigrpOutboundDistributeList;
   private @Nullable Integer _encapsulationVlan;
   private @Nullable InterfaceHsrp _hsrp;
   private @Nullable String _ipAccessGroupIn;
@@ -223,6 +251,28 @@ public final class Interface implements Serializable {
 
   public void setEigrp(@Nullable String eigrp) {
     _eigrp = eigrp;
+  }
+
+  /** Configured bandwidth for EIGRP, in kb/s */
+  public @Nullable Integer getEigrpBandwidth() {
+    return _eigrpBandwidth;
+  }
+
+  /** Configured delay for EIGRP, in tens of microseconds */
+  public @Nullable Integer getEigrpDelay() {
+    return _eigrpDelay;
+  }
+
+  public @Nullable DistributeList getEigrpInboundDistributeList() {
+    return _eigrpInboundDistributeList;
+  }
+
+  public @Nullable DistributeList getEigrpOutboundDistributeList() {
+    return _eigrpOutboundDistributeList;
+  }
+
+  public boolean getEigrpPassive() {
+    return _eigrpPassive;
   }
 
   public @Nullable Integer getEncapsulationVlan() {
@@ -440,6 +490,26 @@ public final class Interface implements Serializable {
 
   public void setDescription(@Nullable String description) {
     _description = description;
+  }
+
+  public void setEigrpBandwidth(@Nullable Integer eigrpBandwidth) {
+    _eigrpBandwidth = eigrpBandwidth;
+  }
+
+  public void setEigrpDelay(@Nullable Integer delay) {
+    _eigrpDelay = delay;
+  }
+
+  public void setEigrpInboundDistributeList(@Nullable DistributeList eigrpInboundDistributeList) {
+    _eigrpInboundDistributeList = eigrpInboundDistributeList;
+  }
+
+  public void setEigrpOutboundDistributeList(@Nullable DistributeList eigrpOutboundDistributeList) {
+    _eigrpOutboundDistributeList = eigrpOutboundDistributeList;
+  }
+
+  public void setEigrpPassive(boolean eigrpPassive) {
+    _eigrpPassive = eigrpPassive;
   }
 
   public void setEncapsulationVlan(@Nullable Integer encapsulationVlan) {
