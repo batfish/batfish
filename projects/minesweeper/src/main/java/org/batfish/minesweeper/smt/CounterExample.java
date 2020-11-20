@@ -175,7 +175,6 @@ class CounterExample {
 
           // Create dummy information
           BgpActivePeerConfig n = slice.getGraph().getEbgpNeighbors().get(logicalEdge.getEdge());
-          String srcNode = "as" + n.getRemoteAsns();
           Ip zeroIp = Ip.create(0);
           Ip dstIp = n.getLocalIp();
 
@@ -201,11 +200,8 @@ class CounterExample {
                   BgpAdvertisementType.EBGP_RECEIVED,
                   pfx,
                   zeroIp,
-                  srcNode,
-                  "default",
                   zeroIp,
                   routerName,
-                  "default",
                   dstIp,
                   RoutingProtocol.BGP,
                   OriginType.EGP,
