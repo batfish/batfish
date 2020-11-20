@@ -1412,9 +1412,14 @@ public class CiscoConversions {
       if (distributeList == null || !sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
         continue;
       }
-      matchesBuilder.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(), new NamedPrefixSet(distributeList.getFilterName())));
+      String filterName = distributeList.getFilterName();
+      if (distributeList.getFilterType() == DistributeListFilterType.ROUTE_MAP) {
+        matchesBuilder.add(new CallExpr(filterName));
+      } else {
+        // prefix-list or ACL
+        matchesBuilder.add(
+            new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(filterName)));
+      }
     }
     matchesBuilder.addAll(extraConditions);
 
@@ -1457,16 +1462,32 @@ public class CiscoConversions {
                   "Extended access lists are not supported in EIGRP distribute-lists: %s",
                   distributeList.getFilterName()));
       return false;
-    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
-      // if referred access-list is not defined, all prefixes will be allowed
-      vsConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "distribute-list refers an undefined access-list `%s`, it will not filter"
-                      + " anything",
-                  distributeList.getFilterName()));
-      return false;
+    } else {
+      if (distributeList.getFilterType() == DistributeListFilterType.ROUTE_MAP) {
+        if (!c.getRoutingPolicies().containsKey(distributeList.getFilterName())) {
+          // if referred route-map is not defined, all prefixes will be allowed
+          vsConfig
+              .getWarnings()
+              .redFlag(
+                  String.format(
+                      "distribute-list refers an undefined route-map `%s`, it will not filter"
+                          + " anything",
+                      distributeList.getFilterName()));
+          return false;
+        }
+      } else {
+        if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+          // if referred access-list is not defined, all prefixes will be allowed
+          vsConfig
+              .getWarnings()
+              .redFlag(
+                  String.format(
+                      "distribute-list refers an undefined access-list `%s`, it will not filter"
+                          + " anything",
+                      distributeList.getFilterName()));
+          return false;
+        }
+      }
     }
     return true;
   }
