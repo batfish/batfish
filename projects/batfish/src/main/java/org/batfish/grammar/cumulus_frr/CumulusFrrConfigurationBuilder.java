@@ -487,9 +487,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighbor.setLocalAs(asn);
-    // TODO: Handle no-prepend and replace-as.
-    if (ctx.NO_PREPEND() != null || ctx.REPLACE_AS() != null) {
-      todo(ctx);
+    if (ctx.NO_PREPEND() == null || ctx.REPLACE_AS() == null) {
+      warn(ctx, "local-as is supported only in 'no-prepend replace-as' mode");
     }
   }
 
