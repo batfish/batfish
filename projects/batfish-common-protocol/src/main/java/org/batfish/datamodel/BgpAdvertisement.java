@@ -71,8 +71,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
     private String _dstNode;
 
-    private String _dstVrf;
-
     private long _localPreference;
 
     private long _med;
@@ -87,11 +85,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
     private Ip _srcIp;
 
-    private String _srcNode;
-
     private RoutingProtocol _srcProtocol;
-
-    private String _srcVrf;
 
     private BgpAdvertisementType _type;
 
@@ -102,11 +96,8 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
           _type,
           _network,
           _nextHopIp,
-          _srcNode,
-          _srcVrf,
           _srcIp,
           _dstNode,
-          _dstVrf,
           _dstIp,
           _srcProtocol,
           _originType,
@@ -141,11 +132,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
     public Builder setDstNode(String dstNode) {
       _dstNode = dstNode;
-      return this;
-    }
-
-    public Builder setDstVrf(String dstVrf) {
-      _dstVrf = dstVrf;
       return this;
     }
 
@@ -184,18 +170,8 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
       return this;
     }
 
-    public Builder setSrcNode(String srcNode) {
-      _srcNode = srcNode;
-      return this;
-    }
-
     public Builder setSrcProtocol(RoutingProtocol srcProtocol) {
       _srcProtocol = srcProtocol;
-      return this;
-    }
-
-    public Builder setSrcVrf(String srcVrf) {
-      _srcVrf = srcVrf;
       return this;
     }
 
@@ -215,7 +191,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_DST_IP = "dstIp";
   private static final String PROP_DST_NODE = "dstNode";
-  private static final String PROP_DST_VRF = "dstVrf";
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
   private static final String PROP_MED = "med";
   private static final String PROP_NETWORK = "network";
@@ -223,17 +198,22 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   private static final String PROP_ORIGIN_TYPE = "originType";
   private static final String PROP_ORIGINATOR_IP = "originatorIp";
   private static final String PROP_SRC_IP = "srcIp";
-  private static final String PROP_SRC_NODE = "srcNode";
   private static final String PROP_SRC_PROTOCOL = "srcProtocol";
-  private static final String PROP_SRC_VRF = "srcVrf";
   private static final String PROP_TYPE = "type";
   private static final String PROP_WEIGHT = "weight";
 
-  public static final int UNSET_LOCAL_PREFERENCE = 0;
+  // deprecated fields that exist only for backward compatibility
+  private static final String PROP_DST_VRF = "dstVrf";
+  private static final String PROP_SRC_VRF = "srcVrf";
+  private static final String PROP_SRC_NODE = "srcNode";
 
-  public static final Ip UNSET_ORIGINATOR_IP = Ip.AUTO;
+  public static final long DEFAULT_LOCAL_PREFERENCE = 100;
 
-  public static final int UNSET_WEIGHT = 0;
+  public static final long DEFAULT_MED = 0;
+
+  public static final Ip DEFAULT_ORIGINATOR_IP = Ip.AUTO;
+
+  public static final int DEFAULT_WEIGHT = 0;
 
   private final AsPath _asPath;
 
@@ -244,8 +224,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   private final Ip _dstIp;
 
   private final String _dstNode;
-
-  private final String _dstVrf;
 
   private final long _localPreference;
 
@@ -261,11 +239,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private final Ip _srcIp;
 
-  private final String _srcNode;
-
   private final RoutingProtocol _srcProtocol;
-
-  private final String _srcVrf;
 
   private final BgpAdvertisementType _type;
 
@@ -276,11 +250,11 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
       @JsonProperty(PROP_TYPE) BgpAdvertisementType type,
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_SRC_NODE) String srcNode,
-      @JsonProperty(PROP_SRC_VRF) String srcVrf,
+      @JsonProperty(PROP_SRC_NODE) String srcNode, // unused field (here for backward compatibility)
+      @JsonProperty(PROP_SRC_VRF) String srcVrf, // unused field (here for backward compatibility)
       @JsonProperty(PROP_SRC_IP) Ip srcIp,
       @JsonProperty(PROP_DST_NODE) String dstNode,
-      @JsonProperty(PROP_DST_VRF) String dstVrf,
+      @JsonProperty(PROP_DST_VRF) String dstVrf, // unused field (here for backward compatibility)
       @JsonProperty(PROP_DST_IP) Ip dstIp,
       @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
       @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
@@ -294,46 +268,36 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     checkArgument(type != null, "type must be specified for BgpAdvertisement");
     checkArgument(network != null, "network must be specified for BgpAdvertisement");
     checkArgument(nextHopIp != null, "nextHopIp must be specified for BgpAdvertisement");
-    checkArgument(srcNode != null, "srcNode must be specified for BgpAdvertisement");
-    checkArgument(srcVrf != null, "srcVrf must be specified for BgpAdvertisement");
     checkArgument(srcIp != null, "srcIp must be specified for BgpAdvertisement");
     checkArgument(dstNode != null, "dstNode must be specified for BgpAdvertisement");
-    checkArgument(dstVrf != null, "dstVrf must be specified for BgpAdvertisement");
     checkArgument(dstIp != null, "dstIp must be specified for BgpAdvertisement");
     checkArgument(srcProtocol != null, "srcProtocol must be specified for BgpAdvertisement");
     checkArgument(originType != null, "originType must be specified for BgpAdvertisement");
-    checkArgument(originatorIp != null, "originatorIp must be specified for BgpAdvertisement");
     checkArgument(asPath != null, "asPath must be specified for BgpAdvertisement");
     return new BgpAdvertisement(
         type,
         network,
         nextHopIp,
-        srcNode,
-        srcVrf,
         srcIp,
         dstNode,
-        dstVrf,
         dstIp,
         srcProtocol,
         originType,
-        firstNonNull(localPreference, 100L),
-        firstNonNull(med, 0L),
-        originatorIp,
+        firstNonNull(localPreference, DEFAULT_LOCAL_PREFERENCE),
+        firstNonNull(med, DEFAULT_MED),
+        firstNonNull(originatorIp, DEFAULT_ORIGINATOR_IP),
         asPath,
         firstNonNull(communities, ImmutableSortedSet.of()),
         firstNonNull(clusterList, ImmutableSortedSet.of()),
-        firstNonNull(weight, 0));
+        firstNonNull(weight, DEFAULT_WEIGHT));
   }
 
   public BgpAdvertisement(
       @Nonnull BgpAdvertisementType type,
       @Nonnull Prefix network,
       @Nonnull Ip nextHopIp,
-      @Nonnull String srcNode,
-      @Nonnull String srcVrf,
       @Nonnull Ip srcIp,
       @Nonnull String dstNode,
-      @Nonnull String dstVrf,
       @Nonnull Ip dstIp,
       @Nonnull RoutingProtocol srcProtocol,
       @Nonnull OriginType originType,
@@ -347,11 +311,8 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _type = type;
     _network = network;
     _nextHopIp = nextHopIp;
-    _srcNode = srcNode.toLowerCase(); // canonicalize node name
-    _srcVrf = srcVrf;
     _srcIp = srcIp;
     _dstNode = dstNode.toLowerCase(); // canonicalize node name
-    _dstVrf = dstVrf;
     _dstIp = dstIp;
     _srcProtocol = srcProtocol;
     _originType = originType;
@@ -375,29 +336,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (ret != 0) {
       return ret;
     }
-    ret = _srcNode.compareTo(rhs._srcNode);
-    if (ret != 0) {
-      return ret;
-    }
-    ret = _srcVrf.compareTo(rhs._srcVrf);
-    if (ret != 0) {
-      return ret;
-    }
     ret = _dstNode.compareTo(rhs._dstNode);
-    if (ret != 0) {
-      return ret;
-    }
-    if (_dstVrf == null) {
-      if (rhs._dstVrf != null) {
-        ret = -1;
-      } else {
-        ret = 0;
-      }
-    } else if (rhs._dstVrf == null) {
-      ret = 1;
-    } else {
-      ret = _dstVrf.compareTo(rhs._dstVrf);
-    }
     if (ret != 0) {
       return ret;
     }
@@ -478,13 +417,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (!_dstNode.equals(other._dstNode)) {
       return false;
     }
-    if (_dstVrf == null) {
-      if (other._dstVrf != null) {
-        return false;
-      }
-    } else if (!_dstVrf.equals(other._dstVrf)) {
-      return false;
-    }
     if (_localPreference != other._localPreference) {
       return false;
     }
@@ -503,13 +435,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (!_srcIp.equals(other._srcIp)) {
       return false;
     }
-    if (!_srcNode.equals(other._srcNode)) {
-      return false;
-    }
     if (_srcProtocol != other._srcProtocol) {
-      return false;
-    }
-    if (!_srcVrf.equals(other._srcVrf)) {
       return false;
     }
     if (!_type.equals(other._type)) {
@@ -544,11 +470,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   @JsonProperty(PROP_DST_NODE)
   public String getDstNode() {
     return _dstNode;
-  }
-
-  @JsonProperty(PROP_DST_VRF)
-  public String getDstVrf() {
-    return _dstVrf;
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
@@ -586,19 +507,9 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     return _srcIp;
   }
 
-  @JsonProperty(PROP_SRC_NODE)
-  public String getSrcNode() {
-    return _srcNode;
-  }
-
   @JsonProperty(PROP_SRC_PROTOCOL)
   public RoutingProtocol getSrcProtocol() {
     return _srcProtocol;
-  }
-
-  @JsonProperty(PROP_SRC_VRF)
-  public String getSrcVrf() {
-    return _srcVrf;
   }
 
   @JsonProperty(PROP_TYPE)
@@ -619,7 +530,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         _communities,
         _dstIp,
         _dstNode,
-        _dstVrf,
         _localPreference,
         _med,
         _network,
@@ -627,9 +537,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         _originType.ordinal(),
         _originatorIp,
         _srcIp,
-        _srcNode,
         _srcProtocol.ordinal(),
-        _srcVrf,
         _type.ordinal(),
         _weight);
   }
@@ -637,7 +545,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   @Override
   public String toString() {
     String originatorIp =
-        _originatorIp.equals(UNSET_ORIGINATOR_IP) ? "N/A" : _originatorIp.toString();
+        _originatorIp.equals(DEFAULT_ORIGINATOR_IP) ? "N/A" : _originatorIp.toString();
     return "BgpAdvert<"
         + _type
         + ", "
@@ -651,13 +559,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         + ", "
         + _srcProtocol
         + ", "
-        + _srcNode
-        + ", "
-        + _srcVrf
-        + ", "
         + _dstNode
-        + ", "
-        + _dstVrf
         + ", "
         + _localPreference
         + ", "
