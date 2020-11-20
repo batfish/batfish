@@ -1968,7 +1968,7 @@ public final class CiscoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "PortChannel1",
+            "Port-channel1",
             hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
   }
 

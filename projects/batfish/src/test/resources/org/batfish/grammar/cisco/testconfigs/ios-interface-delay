@@ -10,7 +10,7 @@ interface GigabitEthernet0/1
  no shutdown
  delay 1000
 !
-interface PortChannel1
+interface Port-channel1
  ip address 10.0.3.1 255.255.255.0
  no shutdown
 !
