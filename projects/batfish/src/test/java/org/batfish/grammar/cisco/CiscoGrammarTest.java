@@ -1965,6 +1965,11 @@ public final class CiscoGrammarTest {
         hasInterface(
             "Tunnel0",
             hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(50_000_000_000L)))));
+    assertThat(
+        c,
+        hasInterface(
+            "Port-channel1",
+            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
   }
 
   @Test

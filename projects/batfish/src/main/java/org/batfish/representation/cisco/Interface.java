@@ -240,8 +240,13 @@ public class Interface implements Serializable {
 
   private @Nullable Double _speed;
 
-  /** Returns the default interface delay in picoseconds for the given {@code format}. */
-  public static long getDefaultDelay(String name, ConfigurationFormat format) {
+  /**
+   * Returns the default interface delay in picoseconds for the given {@code format}.
+   *
+   * @param bandwidth in kbps
+   */
+  public static long getDefaultDelay(
+      String name, ConfigurationFormat format, @Nullable Long bandwidth) {
     if (format == ConfigurationFormat.CISCO_IOS && name.startsWith("Loopback")) {
       // Enhanced Interior Gateway Routing Protocol (EIGRP) Wide Metrics White Paper
       return LOOPBACK_IOS_DELAY;
@@ -250,9 +255,14 @@ public class Interface implements Serializable {
       return TUNNEL_IOS_DELAY;
     }
 
-    Double bandwidth = getDefaultBandwidth(name, format);
     if (bandwidth == null || bandwidth == 0D) {
-      return 0xFFFFFFFFL;
+      /*
+      We should only get here if the interface is a portchannel, or portchannel subinterface.
+      In an overwhelming majority of cases we encounter, a portchannel will have a combined bandwidth of >=1G,
+      so the default delay will be 1e7 (see See https://tools.ietf.org/html/rfc7868#section-5.6.1.2)
+      This will be wrong if the portchannel bandwidth is <1G, i.e., it is aggregating over FastEthernet or other legacy interface type.
+      */
+      return (long) 1e7;
     }
 
     /*
@@ -262,7 +272,7 @@ public class Interface implements Serializable {
      * For bandwidths < 1Gb, the delay may be interface type-specific.
      * See https://tools.ietf.org/html/rfc7868#section-5.6.1.2
      */
-    return (long) (1E16 / bandwidth);
+    return (long) (1E13 / bandwidth);
   }
 
   public static final IntegerSpace ALL_VLANS = IntegerSpace.of(new SubRange(1, 4094));
