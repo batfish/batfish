@@ -7906,20 +7906,38 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "No EIGRP process available");
       return;
     }
-    warn(ctx.getParent(), "Route maps in distribute-list are not supported for EIGRP");
+    String routeMapName = ctx.name.getText();
+    DistributeList distributeList =
+        new DistributeList(routeMapName, DistributeListFilterType.ROUTE_MAP);
     _configuration.referenceStructure(
         ROUTE_MAP,
-        ctx.name.getText(),
+        routeMapName,
         ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         ctx.name.getStart().getLine());
     if (ctx.iname != null) {
+      String interfaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(
           INTERFACE,
-          getCanonicalInterfaceName(ctx.iname.getText()),
+          interfaceName,
           ctx.IN() == null
               ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT
               : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
           ctx.iname.getStart().getLine());
+      if (ctx.IN() == null) {
+        _currentEigrpProcess
+            .getOutboundInterfaceDistributeLists()
+            .put(interfaceName, distributeList);
+      } else {
+        _currentEigrpProcess
+            .getInboundInterfaceDistributeLists()
+            .put(interfaceName, distributeList);
+      }
+    } else {
+      if (ctx.IN() == null) {
+        _currentEigrpProcess.setOutboundGlobalDistributeList(distributeList);
+      } else {
+        _currentEigrpProcess.setInboundGlobalDistributeList(distributeList);
+      }
     }
   }
 

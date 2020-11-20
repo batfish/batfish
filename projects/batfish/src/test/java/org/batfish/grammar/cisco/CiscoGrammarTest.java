@@ -2827,10 +2827,6 @@ public final class CiscoGrammarTest {
         pvcae,
         hasParseWarning(
             filename, containsString("Gateways in distribute-list are not supported for EIGRP")));
-    assertThat(
-        pvcae,
-        hasParseWarning(
-            filename, containsString("Route maps in distribute-list are not supported for EIGRP")));
   }
 
   @Test
@@ -2858,6 +2854,126 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosEigrpDistributeListWithPrefixListConversion() throws IOException {
     String hostname = "ios-eigrp-distribute-list-prefix-list";
+    Configuration c = parseConfig(hostname);
+    Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
+    // helper builder
+    EigrpInternalRoute.Builder builder =
+        EigrpInternalRoute.builder()
+            .setAdmin(90)
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build())
+            .setProcessAsn(1L);
+    {
+      String ifaceName = "GigabitEthernet0/0";
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow routes permitted by both prefix lists
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      // Block others
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow routes permitted by both prefix lists
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      // Block others
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
+    {
+      // This interface has no iface-specific distribute lists.
+      String ifaceName = "GigabitEthernet1/0";
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, DEFAULT_VRF_NAME, 1L);
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow routes permitted by global prefix list
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      // Block others
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow routes permitted by global list
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      // Block others
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
+  }
+
+  @Test
+  public void testIosEigrpDistributeListWithRouteMapExtraction() {
+    String hostname = "ios-eigrp-distribute-list-routemap";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
+    assertThat(
+        proc.getInboundGlobalDistributeList(),
+        equalTo(new DistributeList("RM_IN", DistributeListFilterType.ROUTE_MAP)));
+    assertThat(
+        proc.getOutboundGlobalDistributeList(),
+        equalTo(new DistributeList("RM_OUT", DistributeListFilterType.ROUTE_MAP)));
+    String ifaceName = "GigabitEthernet0/0";
+    assertThat(
+        proc.getInboundInterfaceDistributeLists(),
+        hasEntry(ifaceName, new DistributeList("RM_IN_IFACE", DistributeListFilterType.ROUTE_MAP)));
+    assertThat(
+        proc.getOutboundInterfaceDistributeLists(),
+        hasEntry(
+            ifaceName, new DistributeList("RM_OUT_IFACE", DistributeListFilterType.ROUTE_MAP)));
+  }
+
+  @Test
+  public void testIosEigrpDistributeListWithRouteMapConversion() throws IOException {
+    String hostname = "ios-eigrp-distribute-list-routemap";
     Configuration c = parseConfig(hostname);
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
     // helper builder
