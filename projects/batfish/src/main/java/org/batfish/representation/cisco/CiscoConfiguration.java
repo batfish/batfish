@@ -1909,7 +1909,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     EigrpMetricValues values =
         EigrpMetricValues.builder()
             .setDelay(
-                firstNonNull(iface.getDelay(), Interface.getDefaultDelay(iface.getName(), _vendor)))
+                firstNonNull(
+                    iface.getDelay(), Interface.getDefaultDelay(iface.getName(), _vendor, bw)))
             .setBandwidth(bw)
             .build();
     if (mode == EigrpProcessMode.CLASSIC) {
