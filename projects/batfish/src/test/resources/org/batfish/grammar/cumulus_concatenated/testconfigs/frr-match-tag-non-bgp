@@ -1,0 +1,22 @@
+frr-match-tag-non-bgp
+# This file describes the network interfaces
+auto lo
+iface lo inet loopback
+
+auto swp1
+iface swp1
+
+# ports.conf --
+frr version
+frr defaults datacenter
+!
+interface lo
+ ip address 2.2.2.2/32
+ ip ospf area 0
+!
+! This should not crash on non-bgp routes
+route-map SET_METRIC permit 10
+ match tag 100
+ set metric 20
+!
+end

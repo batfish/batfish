@@ -117,7 +117,9 @@ public enum Statements {
           break;
 
         case SetReadIntermediateBgpAttributes:
-          environment.setReadFromIntermediateBgpAttributes(true);
+          if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+            environment.setReadFromIntermediateBgpAttributes(true);
+          }
           break;
 
         case SetWriteIntermediateBgpAttributes:
