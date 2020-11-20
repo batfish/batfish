@@ -207,13 +207,11 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   private static final String PROP_SRC_VRF = "srcVrf";
   private static final String PROP_SRC_NODE = "srcNode";
 
-  public static final long DEFAULT_LOCAL_PREFERENCE = 100;
+  public static final long UNSET_LOCAL_PREFERENCE = 0;
 
-  public static final long DEFAULT_MED = 0;
+  public static final Ip UNSET_ORIGINATOR_IP = Ip.AUTO;
 
-  public static final Ip DEFAULT_ORIGINATOR_IP = Ip.AUTO;
-
-  public static final int DEFAULT_WEIGHT = 0;
+  public static final int UNSET_WEIGHT = 0;
 
   private final AsPath _asPath;
 
@@ -283,13 +281,13 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         dstIp,
         srcProtocol,
         originType,
-        firstNonNull(localPreference, DEFAULT_LOCAL_PREFERENCE),
-        firstNonNull(med, DEFAULT_MED),
-        firstNonNull(originatorIp, DEFAULT_ORIGINATOR_IP),
+        firstNonNull(localPreference, UNSET_LOCAL_PREFERENCE),
+        firstNonNull(med, 0L),
+        firstNonNull(originatorIp, UNSET_ORIGINATOR_IP),
         asPath,
         firstNonNull(communities, ImmutableSortedSet.of()),
         firstNonNull(clusterList, ImmutableSortedSet.of()),
-        firstNonNull(weight, DEFAULT_WEIGHT));
+        firstNonNull(weight, UNSET_WEIGHT));
   }
 
   public BgpAdvertisement(
@@ -545,7 +543,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   @Override
   public String toString() {
     String originatorIp =
-        _originatorIp.equals(DEFAULT_ORIGINATOR_IP) ? "N/A" : _originatorIp.toString();
+        _originatorIp.equals(UNSET_ORIGINATOR_IP) ? "N/A" : _originatorIp.toString();
     return "BgpAdvert<"
         + _type
         + ", "
