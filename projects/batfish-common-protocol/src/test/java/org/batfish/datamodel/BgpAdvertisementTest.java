@@ -17,11 +17,8 @@ public class BgpAdvertisementTest {
             BgpAdvertisementType.EBGP_SENT,
             Prefix.parse("1.1.1.1/24"),
             Ip.parse("1.1.1.1"),
-            "srcNode",
-            "srcVrf",
             Ip.parse("2.2.2.2"),
             "dstNode",
-            "dstVrf",
             Ip.parse("3.3.3.3"),
             RoutingProtocol.BGP,
             OriginType.EGP,
@@ -32,11 +29,6 @@ public class BgpAdvertisementTest {
             ImmutableSortedSet.of(),
             ImmutableSortedSet.of(),
             10);
-    assertThat(advert.getSrcNode(), equalTo("srcnode"));
     assertThat(advert.getDstNode(), equalTo("dstnode"));
-
-    // don't canonicalize VRFs
-    assertThat(advert.getSrcVrf(), equalTo("srcVrf"));
-    assertThat(advert.getDstVrf(), equalTo("dstVrf"));
   }
 }
