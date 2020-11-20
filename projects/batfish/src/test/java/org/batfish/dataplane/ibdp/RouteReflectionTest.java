@@ -219,7 +219,6 @@ public class RouteReflectionTest {
                     .setNextHopIp(as1PeeringIp)
                     .setOriginatorIp(as1PeeringIp)
                     .setSrcIp(as1PeeringIp)
-                    .setSrcNode("as1Edge")
                     .build(),
                 _ab.setAsPath(AsPath.ofSingletonAsSets(3L))
                     .setDstIp(edge2EbgpIfaceIp)
@@ -228,7 +227,6 @@ public class RouteReflectionTest {
                     .setNextHopIp(as3PeeringIp)
                     .setOriginatorIp(as3PeeringIp)
                     .setSrcIp(as3PeeringIp)
-                    .setSrcNode("as3Edge")
                     .build()));
     return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dpResult._dataPlane);
   }
@@ -350,7 +348,6 @@ public class RouteReflectionTest {
                             .setNextHopIp(as1PeeringIp)
                             .setOriginatorIp(as1PeeringIp)
                             .setSrcIp(as1PeeringIp)
-                            .setSrcNode("as1Edge")
                             .build()))
                 ._dataPlane;
     return IncrementalBdpEngine.getRoutes(dp);
@@ -363,10 +360,8 @@ public class RouteReflectionTest {
         new BgpAdvertisement.Builder()
             .setClusterList(ImmutableSortedSet.of())
             .setCommunities(ImmutableSortedSet.of())
-            .setDstVrf(Configuration.DEFAULT_VRF_NAME)
             .setOriginType(OriginType.INCOMPLETE)
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
-            .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
             .setType(BgpAdvertisementType.EBGP_SENT);
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);

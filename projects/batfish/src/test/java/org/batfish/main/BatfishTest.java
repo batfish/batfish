@@ -275,7 +275,6 @@ public class BatfishTest {
                             .setType(BgpAdvertisementType.EBGP_SENT)
                             .setNetwork(Prefix.strict("192.0.2.0/24"))
                             .setNextHopIp(Ip.parse("10.0.0.1"))
-                            .setSrcNode("neighbor")
                             .setSrcIp(Ip.parse("10.0.0.3"))
                             .setDstNode("rtr1")
                             .setDstIp(Ip.parse("10.0.0.4"))
@@ -286,8 +285,6 @@ public class BatfishTest {
                             .setOriginatorIp(Ip.ZERO)
                             .setAsPath(AsPath.empty())
                             .setCommunities(ImmutableSortedSet.of())
-                            .setSrcVrf("default")
-                            .setDstVrf("default")
                             .setClusterList(ImmutableSortedSet.of())
                             .build())))));
   }
