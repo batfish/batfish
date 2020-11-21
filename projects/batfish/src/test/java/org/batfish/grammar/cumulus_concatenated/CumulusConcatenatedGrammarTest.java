@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_concatenated;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
@@ -43,10 +44,12 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -790,5 +793,16 @@ public class CumulusConcatenatedGrammarTest {
                         .equals("local-as is supported only in 'no-prepend replace-as' mode"))
             .count(),
         equalTo(2L));
+  }
+
+  @Test
+  public void testRouteMapMatchTagNonBgp() throws IOException {
+    Configuration c = parseConfig("frr-match-tag-non-bgp");
+    RoutingPolicy policy = c.getRoutingPolicies().get("SET_METRIC");
+    // Don't crash
+    policy.process(
+        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "iface"),
+        OspfExternalType2Route.builder(),
+        OUT);
   }
 }
