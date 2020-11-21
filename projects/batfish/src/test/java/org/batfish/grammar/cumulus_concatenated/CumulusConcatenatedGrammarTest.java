@@ -51,6 +51,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -771,5 +772,23 @@ public class CumulusConcatenatedGrammarTest {
     Long neighbor_iface_local_as =
         defaultVrf.getBgpProcess().getInterfaceNeighbors().get("bond2").getLocalAs();
     assertThat(neighbor_iface_local_as, equalTo(10L));
+  }
+
+  @Test
+  public void testLocalAsWarn() throws IOException {
+    String hostname = "local_as_test_warn";
+    IBatfish batfish = getBatfishForConfigurationNames(hostname);
+    String filename = "configs/" + hostname;
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    // should get two copies of this warning
+    assertThat(
+        pvcae.getWarnings().get(filename).getParseWarnings().stream()
+            .filter(
+                w ->
+                    w.getComment()
+                        .equals("local-as is supported only in 'no-prepend replace-as' mode"))
+            .count(),
+        equalTo(2L));
   }
 }
