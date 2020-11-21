@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
@@ -113,7 +114,7 @@ public class BgpProcess implements Serializable {
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
   private final int _ibgpAdminCost;
-  private Supplier<Set<Long>> _clusterIds;
+  private final @Nonnull Supplier<Set<Long>> _clusterIds;
   @Nonnull private SortedMap<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
   private boolean _multipathEbgp;
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
@@ -167,7 +168,7 @@ public class BgpProcess implements Serializable {
     _ibgpAdminCost = ibgpAdminCost;
     _interfaceNeighbors = new TreeMap<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
-    _clusterIds = new ClusterIdsSupplier();
+    _clusterIds = Suppliers.memoize(new ClusterIdsSupplier());
     _originationSpace = new PrefixSpace();
     _passiveNeighbors = new TreeMap<>();
     _routerId = routerId;
