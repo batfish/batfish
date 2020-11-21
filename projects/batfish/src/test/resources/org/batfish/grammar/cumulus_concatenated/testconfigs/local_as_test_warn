@@ -1,0 +1,23 @@
+local_as_test_warn
+# This file describes the network interfaces
+
+iface lo inet loopback
+ address 1.1.1.0/32
+
+### end /etc/network/interfaces
+
+# ports.conf --
+### start of frr.conf
+frr version
+!
+router bgp 1
+ bgp router-id 1.1.1.0
+ network 1.1.1.0/32
+
+ neighbor 2.2.2.2 local-as 10
+ neighbor 3.3.3.3 local-as 10 no-prepend
+ neighbor 4.4.4.4 local-as 10 no-prepend replace-as
+!
+line vty
+!
+!### end frr.conf
