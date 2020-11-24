@@ -952,7 +952,8 @@ import org.batfish.grammar.cisco.CiscoParser.Ss_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_enable_trapsContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_file_transferContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_group_v3Context;
-import org.batfish.grammar.cisco.CiscoParser.Ss_hostContext;
+import org.batfish.grammar.cisco.CiscoParser.Ss_host_asaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ss_host_genericContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_tftp_server_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_trap_sourceContext;
@@ -1425,9 +1426,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private ServiceObject _currentServiceObject;
 
   private SnmpCommunity _currentSnmpCommunity;
-
-  @SuppressWarnings("unused")
-  private SnmpHost _currentSnmpHost;
 
   private StandardAccessList _currentStandardAcl;
 
@@ -3645,7 +3643,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterSs_host(Ss_hostContext ctx) {
+  public void exitSs_host_generic(Ss_host_genericContext ctx) {
     String hostname;
     if (ctx.ip4 != null) {
       hostname = ctx.ip4.getText();
@@ -3656,8 +3654,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Invalid host");
     }
-    Map<String, SnmpHost> hosts = _configuration.getSnmpServer().getHosts();
-    _currentSnmpHost = hosts.computeIfAbsent(hostname, SnmpHost::new);
+    _configuration.getSnmpServer().getHosts().computeIfAbsent(hostname, SnmpHost::new);
+  }
+
+  @Override
+  public void exitSs_host_asa(Ss_host_asaContext ctx) {
+    String sourceInterface = ctx.source_interface.getText();
+    _configuration.setSnmpSourceInterface(sourceInterface);
+    _configuration.referenceStructure(
+        INTERFACE,
+        sourceInterface,
+        SNMP_SERVER_SOURCE_INTERFACE,
+        ctx.source_interface.getStart().getLine());
+    String hostname;
+    if (ctx.ip4 != null) {
+      hostname = ctx.ip4.getText();
+    } else if (ctx.ip6 != null) {
+      hostname = ctx.ip6.getText();
+    } else if (ctx.host != null) {
+      hostname = ctx.host.getText();
+    } else {
+      throw new BatfishException("Invalid host");
+    }
+    _configuration.getSnmpServer().getHosts().computeIfAbsent(hostname, SnmpHost::new);
   }
 
   @Override
@@ -9062,11 +9081,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           SNMP_SERVER_GROUP_V3_ACCESS_IPV6,
           ctx.v6acl.getStart().getLine());
     }
-  }
-
-  @Override
-  public void exitSs_host(Ss_hostContext ctx) {
-    _currentSnmpHost = null;
   }
 
   @Override

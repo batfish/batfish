@@ -9745,6 +9745,11 @@ POLICY_MAP_OUTPUT
    'policy-map-output'
 ;
 
+POLL
+:
+  'poll'
+;
+
 POOL
 :
    'pool'
