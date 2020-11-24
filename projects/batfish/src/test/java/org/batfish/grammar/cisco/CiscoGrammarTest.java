@@ -1307,6 +1307,13 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testAsaSnmp() throws IOException {
+    Configuration c = parseConfig("asa_snmp");
+    assertThat(c.getSnmpSourceInterface(), equalTo("inside"));
+    assertThat(c.getSnmpTrapServers(), contains("1.2.3.4"));
+  }
+
+  @Test
   public void testCadantBanner() throws IOException {
     Configuration c = parseConfig("cadant_banner");
     assertThat(

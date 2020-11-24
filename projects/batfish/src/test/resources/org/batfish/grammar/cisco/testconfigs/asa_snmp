@@ -1,0 +1,7 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa_snmp
+!
+snmp-server host inside 1.2.3.4 poll version 3 some_user
+!
