@@ -379,7 +379,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (ret != 0) {
       return ret;
     }
-    ret = nullSafeCompareTo(_srcNode, _dstNode);
+    ret = nullSafeCompareTo(_srcNode, rhs._srcNode);
     if (ret != 0) {
       return ret;
     }
