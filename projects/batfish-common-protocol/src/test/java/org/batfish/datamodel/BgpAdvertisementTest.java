@@ -89,4 +89,49 @@ public class BgpAdvertisementTest {
                 ImmutableSortedSet.of(),
                 UNSET_WEIGHT)));
   }
+
+  @Test
+  public void testCompareTo() {
+    BgpAdvertisement left =
+        new BgpAdvertisement(
+            BgpAdvertisementType.EBGP_SENT,
+            Prefix.parse("4.0.0.0/8"),
+            Ip.parse("10.14.22.4"),
+            null,
+            DEFAULT_VRF_NAME,
+            Ip.parse("10.14.22.4"),
+            "as1border2",
+            "default",
+            Ip.parse("10.14.22.1"),
+            RoutingProtocol.AGGREGATE,
+            OriginType.EGP,
+            UNSET_LOCAL_PREFERENCE,
+            0L,
+            UNSET_ORIGINATOR_IP,
+            AsPath.of(AsSet.of(1239)),
+            ImmutableSortedSet.of(StandardCommunity.of(262145)),
+            ImmutableSortedSet.of(),
+            UNSET_WEIGHT);
+    BgpAdvertisement right =
+        new BgpAdvertisement(
+            BgpAdvertisementType.EBGP_SENT,
+            Prefix.parse("4.0.0.0/8"),
+            Ip.parse("10.14.22.4"),
+            null,
+            DEFAULT_VRF_NAME,
+            Ip.parse("10.14.22.4"),
+            "as1border2",
+            "default",
+            Ip.parse("10.14.22.1"),
+            RoutingProtocol.AGGREGATE,
+            OriginType.EGP,
+            UNSET_LOCAL_PREFERENCE,
+            0L,
+            UNSET_ORIGINATOR_IP,
+            AsPath.of(AsSet.of(1239)),
+            ImmutableSortedSet.of(StandardCommunity.of(262145)),
+            ImmutableSortedSet.of(),
+            UNSET_WEIGHT);
+    assertThat(left.compareTo(right), equalTo(0));
+  }
 }
