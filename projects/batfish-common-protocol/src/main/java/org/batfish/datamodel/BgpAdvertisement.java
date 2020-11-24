@@ -2,10 +2,12 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.bgp.community.Community;
 
@@ -229,7 +232,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   private static final String PROP_TYPE = "type";
   private static final String PROP_WEIGHT = "weight";
 
-  public static final int UNSET_LOCAL_PREFERENCE = 0;
+  public static final long UNSET_LOCAL_PREFERENCE = 0;
 
   public static final Ip UNSET_ORIGINATOR_IP = Ip.AUTO;
 
@@ -261,7 +264,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private final Ip _srcIp;
 
-  private final String _srcNode;
+  @Nullable private final String _srcNode;
 
   private final RoutingProtocol _srcProtocol;
 
@@ -294,42 +297,38 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     checkArgument(type != null, "type must be specified for BgpAdvertisement");
     checkArgument(network != null, "network must be specified for BgpAdvertisement");
     checkArgument(nextHopIp != null, "nextHopIp must be specified for BgpAdvertisement");
-    checkArgument(srcNode != null, "srcNode must be specified for BgpAdvertisement");
-    checkArgument(srcVrf != null, "srcVrf must be specified for BgpAdvertisement");
     checkArgument(srcIp != null, "srcIp must be specified for BgpAdvertisement");
     checkArgument(dstNode != null, "dstNode must be specified for BgpAdvertisement");
-    checkArgument(dstVrf != null, "dstVrf must be specified for BgpAdvertisement");
     checkArgument(dstIp != null, "dstIp must be specified for BgpAdvertisement");
     checkArgument(srcProtocol != null, "srcProtocol must be specified for BgpAdvertisement");
     checkArgument(originType != null, "originType must be specified for BgpAdvertisement");
-    checkArgument(originatorIp != null, "originatorIp must be specified for BgpAdvertisement");
     checkArgument(asPath != null, "asPath must be specified for BgpAdvertisement");
     return new BgpAdvertisement(
         type,
         network,
         nextHopIp,
         srcNode,
-        srcVrf,
+        firstNonNull(srcVrf, DEFAULT_VRF_NAME),
         srcIp,
         dstNode,
-        dstVrf,
+        firstNonNull(dstVrf, DEFAULT_VRF_NAME),
         dstIp,
         srcProtocol,
         originType,
-        firstNonNull(localPreference, 100L),
+        firstNonNull(localPreference, UNSET_LOCAL_PREFERENCE),
         firstNonNull(med, 0L),
-        originatorIp,
+        firstNonNull(originatorIp, UNSET_ORIGINATOR_IP),
         asPath,
         firstNonNull(communities, ImmutableSortedSet.of()),
         firstNonNull(clusterList, ImmutableSortedSet.of()),
-        firstNonNull(weight, 0));
+        firstNonNull(weight, UNSET_WEIGHT));
   }
 
   public BgpAdvertisement(
       @Nonnull BgpAdvertisementType type,
       @Nonnull Prefix network,
       @Nonnull Ip nextHopIp,
-      @Nonnull String srcNode,
+      @Nullable String srcNode,
       @Nonnull String srcVrf,
       @Nonnull Ip srcIp,
       @Nonnull String dstNode,
@@ -347,7 +346,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _type = type;
     _network = network;
     _nextHopIp = nextHopIp;
-    _srcNode = srcNode.toLowerCase(); // canonicalize node name
+    _srcNode = srcNode == null ? null : srcNode.toLowerCase(); // canonicalize node name
     _srcVrf = srcVrf;
     _srcIp = srcIp;
     _dstNode = dstNode.toLowerCase(); // canonicalize node name
@@ -368,6 +367,11 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     return new Builder();
   }
 
+  @VisibleForTesting
+  static int nullSafeCompareTo(@Nullable String left, @Nullable String right) {
+    return left == null ? right == null ? 0 : -1 : right == null ? 1 : left.compareTo(right);
+  }
+
   @Override
   public int compareTo(BgpAdvertisement rhs) {
     int ret;
@@ -375,7 +379,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (ret != 0) {
       return ret;
     }
-    ret = _srcNode.compareTo(rhs._srcNode);
+    ret = nullSafeCompareTo(_srcNode, rhs._srcNode);
     if (ret != 0) {
       return ret;
     }
@@ -503,7 +507,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (!_srcIp.equals(other._srcIp)) {
       return false;
     }
-    if (!_srcNode.equals(other._srcNode)) {
+    if (!Objects.equals(_srcNode, other._srcNode)) {
       return false;
     }
     if (_srcProtocol != other._srcProtocol) {
@@ -587,6 +591,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   @JsonProperty(PROP_SRC_NODE)
+  @Nullable
   public String getSrcNode() {
     return _srcNode;
   }
