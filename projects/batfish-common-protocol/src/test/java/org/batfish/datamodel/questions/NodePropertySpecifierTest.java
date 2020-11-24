@@ -1,6 +1,7 @@
 package org.batfish.datamodel.questions;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
@@ -34,5 +35,11 @@ public class NodePropertySpecifierTest {
     assertThat(
         new NodePropertySpecifier(firstTwoProperties).getMatchingProperties(),
         containsInAnyOrder(prop1, prop2));
+  }
+
+  @Test
+  public void testRegexNoMatch() {
+    NodePropertySpecifier spec = NodePropertySpecifier.create("/no-matching-properties/");
+    assertThat(spec.getMatchingProperties(), empty());
   }
 }
