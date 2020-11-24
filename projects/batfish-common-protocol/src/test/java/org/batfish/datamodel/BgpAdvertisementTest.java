@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.BgpAdvertisement.nullSafeCompareTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -38,5 +39,13 @@ public class BgpAdvertisementTest {
     // don't canonicalize VRFs
     assertThat(advert.getSrcVrf(), equalTo("srcVrf"));
     assertThat(advert.getDstVrf(), equalTo("dstVrf"));
+  }
+
+  @Test
+  public void testNullSafeCompareTo() {
+    assertThat(nullSafeCompareTo(null, null), equalTo(0));
+    assertThat(nullSafeCompareTo(null, "a"), equalTo(-1));
+    assertThat(nullSafeCompareTo("a", null), equalTo(1));
+    assertThat(nullSafeCompareTo("a", "b"), equalTo("a".compareTo("b")));
   }
 }
