@@ -1,12 +1,21 @@
 package org.batfish.datamodel;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.BgpAdvertisement.UNSET_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpAdvertisement.UNSET_ORIGINATOR_IP;
+import static org.batfish.datamodel.BgpAdvertisement.UNSET_WEIGHT;
 import static org.batfish.datamodel.BgpAdvertisement.nullSafeCompareTo;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Test;
 
 public class BgpAdvertisementTest {
@@ -47,5 +56,37 @@ public class BgpAdvertisementTest {
     assertThat(nullSafeCompareTo(null, "a"), equalTo(-1));
     assertThat(nullSafeCompareTo("a", null), equalTo(1));
     assertThat(nullSafeCompareTo("a", "b"), equalTo("a".compareTo("b")));
+  }
+
+  /** Test that optional fields are handled properly in the json creator */
+  @Test
+  public void testCreateMissingValues() throws JsonProcessingException {
+    String input =
+        readResource("org/batfish/datamodel/bgp-advertisement-missing-fields.json", UTF_8);
+    BgpAdvertisement advertisement =
+        BatfishObjectMapper.mapper().readValue(input, BgpAdvertisement.class);
+
+    assertThat(
+        advertisement,
+        equalTo(
+            new BgpAdvertisement(
+                BgpAdvertisementType.EBGP_SENT,
+                Prefix.parse("4.0.0.0/8"),
+                Ip.parse("10.14.22.4"),
+                null,
+                DEFAULT_VRF_NAME,
+                Ip.parse("10.14.22.4"),
+                "as1border2",
+                "default",
+                Ip.parse("10.14.22.1"),
+                RoutingProtocol.AGGREGATE,
+                OriginType.EGP,
+                UNSET_LOCAL_PREFERENCE,
+                0L,
+                UNSET_ORIGINATOR_IP,
+                AsPath.of(AsSet.of(1239)),
+                ImmutableSortedSet.of(StandardCommunity.of(262145)),
+                ImmutableSortedSet.of(),
+                UNSET_WEIGHT)));
   }
 }
