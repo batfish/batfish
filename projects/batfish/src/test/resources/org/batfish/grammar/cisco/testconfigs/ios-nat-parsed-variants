@@ -8,6 +8,7 @@ route-map ipniss permit 10
   match ip address 1.2.3.4
 !
 ip nat inside source static 1.1.1.1 2.2.2.2
+ip nat inside source static 1.1.1.1 2.2.2.2 extendable
 ip nat inside source static 1.1.1.1 2.2.2.2 redundancy rg
 ip nat inside source static 1.1.1.1 2.2.2.2 no-alias
 ip nat inside source static 1.1.1.1 2.2.2.2 no-payload
@@ -29,6 +30,7 @@ ip nat inside source static 1.1.1.1 2.2.2.2 vrf v1 route-map ipniss redundancy r
 !
 ip nat outside source static 1.1.1.1 2.2.2.2
 ip nat outside source static 1.1.1.1 2.2.2.2 add-route
+ip nat outside source static 1.1.1.1 2.2.2.2 extendable
 ip nat outside source static 1.1.1.1 2.2.2.2 no-alias
 ip nat outside source static 1.1.1.1 2.2.2.2 no-payload
 ip nat outside source static 1.1.1.1 2.2.2.2 redundancy rg no-alias

@@ -91,7 +91,7 @@ ipnis_list
 :
    // Delegate to common ACL NAT specification
    acl_pool = ipnc_list
-   ( OVERLOAD )?
+   OVERLOAD?
    NEWLINE
 ;
 
@@ -100,7 +100,7 @@ ipnis_route_map
    ROUTE_MAP mapname = variable
    INTERFACE iname = interface_name
    ( VRF variable )?
-   ( OVERLOAD )?
+   OVERLOAD?
    NEWLINE
 ;
 
@@ -122,7 +122,7 @@ ipnos_list
 :
    // Delegate to common ACL NAT specification
    acl_pool = ipnc_list
-   ( ipnosm_add_route )?
+   ipnosm_add_route?
    NEWLINE
 ;
 
@@ -131,7 +131,7 @@ ipnos_route_map
    ROUTE_MAP mapname = variable
    POOL pname = variable
    ( VRF vrfname = variable )?
-   ( ipnosm_add_route )?
+   ipnosm_add_route?
    NEWLINE
 ;
 
@@ -153,9 +153,15 @@ ipnos_static
 // common modifiers for inside and outside source static NAT
 ipnioss_modifiers
 :
-   NO_ALIAS
+   ipniossm_extendable
+   | NO_ALIAS
    | NO_PAYLOAD
    | REDUNDANCY variable
+;
+
+ipniossm_extendable
+:
+   EXTENDABLE
 ;
 
 

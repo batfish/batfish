@@ -5230,7 +5230,7 @@ public final class CiscoGrammarTest {
 
   /** Tests for the syntactic variants we parse and that we link references. */
   @Test
-  public void testIosNatRefsAndWarnings() throws IOException {
+  public void testIosNatParsedVariants() throws IOException {
     String hostname = "ios-nat-parsed-variants";
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);

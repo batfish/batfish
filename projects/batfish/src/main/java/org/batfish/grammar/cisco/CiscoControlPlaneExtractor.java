@@ -670,6 +670,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ipni_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnios_static_addrContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnios_static_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnioss_local_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipniossm_extendableContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnis_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnis_route_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnis_staticContext;
@@ -6249,6 +6250,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
     // Adding a route via NAT is not currently supported
     // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIpniossm_extendable(Ipniossm_extendableContext ctx) {
+    // Translating to multiple public IPs is not currently supported
+    // https://networklessons.com/uncategorized/nat-extendable-on-cisco-ios
     todo(ctx);
   }
 

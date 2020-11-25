@@ -4553,6 +4553,11 @@ EXTEND
    'extend'
 ;
 
+EXTENDABLE
+:
+   'extendable'
+;
+
 EXTENDED
 :
    'extended'
