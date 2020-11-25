@@ -56,6 +56,8 @@ ip nat inside source route-map ipnisr interface GigabitEthernet0/0 overload
 route-map ipnosr permit 10
   match ip address 1.2.3.4
 !
+ip nat pool p1 3.3.3.1 3.3.3.254 prefix-length 24
+!
 ip nat outside source route-map ipnosr pool p1
 ip nat outside source route-map ipnosr pool p1 vrf v1
 ip nat outside source route-map ipnosr pool p1 vrf v1 add-route

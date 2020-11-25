@@ -197,6 +197,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.NAMED_RSA_PUB_KEY;
+import static org.batfish.representation.cisco.CiscoStructureType.NAT_POOL;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
@@ -5241,6 +5242,7 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnisr", 4));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 5));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnosr", 4));
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "p1", 4));
   }
 
   @Test
