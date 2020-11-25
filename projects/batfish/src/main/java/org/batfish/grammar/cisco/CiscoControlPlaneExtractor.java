@@ -181,6 +181,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.IP_DOMAIN_LOO
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_LOCAL_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_POOL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_INSIDE_SOURCE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_INSIDE_SOURCE_STATIC;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_OUTSIDE_SOURCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_POOL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_ROUTE_NHINT;
@@ -664,11 +667,17 @@ import org.batfish.grammar.cisco.CiscoParser.Ipn_pool_prefixContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipn_pool_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnc_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipni_destinationContext;
-import org.batfish.grammar.cisco.CiscoParser.Ipnios_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnios_static_addrContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnios_static_networkContext;
-import org.batfish.grammar.cisco.CiscoParser.Ipniosm_add_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnioss_local_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipniossm_extendableContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnis_listContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnis_route_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnis_staticContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnos_listContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnos_route_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnos_staticContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnosm_add_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipsec_authenticationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipsec_encryptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipsec_encryption_arubaContext;
@@ -6163,17 +6172,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterIpnios_list(Ipnios_listContext ctx) {
-    RuleAction ruleAction =
-        _currentIosNatDirection == Direction.INSIDE
-            ? RuleAction.SOURCE_INSIDE
-            : RuleAction.SOURCE_OUTSIDE;
-    _currentIosSourceNat = toIosDynamicNat(ctx.acl_pool, ruleAction);
+  public void enterIpnis_list(Ipnis_listContext ctx) {
+    _currentIosSourceNat = toIosDynamicNat(ctx.acl_pool, RuleAction.SOURCE_INSIDE);
     _configuration.getCiscoIosNats().add(_currentIosSourceNat);
   }
 
   @Override
-  public void exitIpnios_list(Ipnios_listContext ctx) {
+  public void exitIpnis_list(Ipnis_listContext ctx) {
+    _currentIosSourceNat = null;
+  }
+
+  @Override
+  public void enterIpnos_list(Ipnos_listContext ctx) {
+    _currentIosSourceNat = toIosDynamicNat(ctx.acl_pool, RuleAction.SOURCE_OUTSIDE);
+    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
+  }
+
+  @Override
+  public void exitIpnos_list(Ipnos_listContext ctx) {
     _currentIosSourceNat = null;
   }
 
@@ -6231,10 +6247,54 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIpniosm_add_route(Ipniosm_add_routeContext ctx) {
+  public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
     // Adding a route via NAT is not currently supported
     // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
     todo(ctx);
+  }
+
+  @Override
+  public void exitIpniossm_extendable(Ipniossm_extendableContext ctx) {
+    // Translating to multiple public IPs is not currently supported
+    // https://networklessons.com/uncategorized/nat-extendable-on-cisco-ios
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIpnis_route_map(Ipnis_route_mapContext ctx) {
+    warn(ctx, "ip nat inside source route-map is not supported");
+    _configuration.referenceStructure(
+        ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+    _configuration.referenceStructure(
+        INTERFACE, ctx.iname.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIpnis_static(Ipnis_staticContext ctx) {
+    if (ctx.VRF() != null) {
+      warn(ctx, "vrf specification in 'ip nat inside source static' is not supported");
+    }
+    if (ctx.ROUTE_MAP() != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
+      warn(ctx, "route-map specification in 'ip nat inside source static' is not supported");
+    }
+  }
+
+  @Override
+  public void exitIpnos_route_map(Ipnos_route_mapContext ctx) {
+    warn(ctx, "ip nat outside source route-map is not supported");
+    _configuration.referenceStructure(
+        ROUTE_MAP, ctx.mapname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+    _configuration.referenceStructure(
+        NAT_POOL, ctx.pname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIpnos_static(Ipnos_staticContext ctx) {
+    if (ctx.VRF() != null) {
+      warn(ctx, "vrf specification in 'ip nat outside source static' is not supported");
+    }
   }
 
   @Override

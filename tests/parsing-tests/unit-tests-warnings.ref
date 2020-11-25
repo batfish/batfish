@@ -389,7 +389,7 @@
         "Filename" : "configs/cisco_ip_nat",
         "Line" : 13,
         "Text" : "add-route",
-        "Parser_Context" : "[ipniosm_add_route ipnios_modifiers ipnios_static_addr ipnios_static ipnio_source ipn_outside s_ip_nat stanza cisco_configuration]",
+        "Parser_Context" : "[ipnosm_add_route ipnos_static ipno_source ipn_outside s_ip_nat stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
