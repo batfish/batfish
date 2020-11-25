@@ -3450,6 +3450,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.FAILOVER_LAN_INTERFACE,
         CiscoStructureUsage.FAILOVER_LINK_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
+        CiscoStructureUsage.IP_NAT_INSIDE_SOURCE,
         CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
         CiscoStructureUsage.IP_ROUTE_NHINT,
         CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE,
