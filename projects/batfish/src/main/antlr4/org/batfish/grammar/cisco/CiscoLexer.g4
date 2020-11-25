@@ -8755,6 +8755,11 @@ NO_L4R_SHIM
    'No l4r_shim'
 ;
 
+NO_PAYLOAD
+:
+   'no-payload'
+;
+
 NO_PREPEND
 :
    'no-prepend'
@@ -16659,6 +16664,11 @@ M_Interface_NEWLINE
 M_Interface_NUMBER
 :
    DEC -> type ( DEC )
+;
+
+M_Interface_OVERLOAD
+:
+   'overload' -> type ( OVERLOAD ) , popMode
 ;
 
 M_Interface_PERIOD

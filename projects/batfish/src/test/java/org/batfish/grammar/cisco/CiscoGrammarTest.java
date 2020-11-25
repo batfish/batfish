@@ -5227,6 +5227,22 @@ public final class CiscoGrammarTest {
     assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
   }
 
+  /** Tests for the syntactic variants we parse and that we link references. */
+  @Test
+  public void testIosNatRefsAndWarnings() throws IOException {
+    String hostname = "ios-nat-parsed-variants";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipniss", 4));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnisr", 4));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 5));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnosr", 4));
+  }
+
   @Test
   public void testIosSwitchportMode() throws IOException {
     Configuration c = parseConfig("ios_switchport_mode");

@@ -25414,20 +25414,19 @@
             "      NAT:'nat'",
             "      (ipn_outside",
             "        OUTSIDE:'outside'",
-            "        (ipnio_source",
+            "        (ipno_source",
             "          SOURCE:'source'",
-            "          (ipnios_static",
+            "          (ipnos_static",
             "            STATIC:'static'",
             "            (ipnios_static_addr",
             "              ips = (ipnioss_local_global",
             "                local = IP_ADDRESS:'6.6.6.6'",
-            "                global = IP_ADDRESS:'7.7.7.7')",
-            "              (ipnios_modifiers",
-            "                (ipniosm_add_route",
-            "                  ADD_ROUTE:'add-route'))",
-            "              (ipnios_modifiers",
-            "                NO_ALIAS:'no-alias')",
-            "              NEWLINE:'\\n'))))))",
+            "                global = IP_ADDRESS:'7.7.7.7'))",
+            "            (ipnosm_add_route",
+            "              ADD_ROUTE:'add-route')",
+            "            (ipnioss_modifiers",
+            "              NO_ALIAS:'no-alias')",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -77199,7 +77198,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 13,
-              "Parser_Context" : "[ipniosm_add_route ipnios_modifiers ipnios_static_addr ipnios_static ipnio_source ipn_outside s_ip_nat stanza cisco_configuration]",
+              "Parser_Context" : "[ipnosm_add_route ipnos_static ipno_source ipn_outside s_ip_nat stanza cisco_configuration]",
               "Text" : "add-route"
             }
           ]

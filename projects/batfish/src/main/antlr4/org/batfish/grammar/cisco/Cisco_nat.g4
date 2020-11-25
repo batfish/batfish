@@ -66,8 +66,8 @@ ipni_source
 :
   SOURCE
   (
-    ipnios_list
-    // | ipnios_route_map
+    ipnis_list
+    | ipnis_route_map
     | ipnis_static
   )
 ;
@@ -76,33 +76,31 @@ ipno_source
 :
   SOURCE
   (
-    ipnios_list
-    // | ipnios_route_map
+    ipnos_list
+    | ipnos_route_map
     | ipnos_static
   )
 ;
 
-// Modifier common to different source NATs
-ipnios_modifiers
-:
-   (
-      ipniosm_add_route
-      | NO_ALIAS
-      // | ipniosm_overload
-      // | ipniosm_vrf
-   )
-;
-
-ipniosm_add_route
+ipnosm_add_route
 :
    ADD_ROUTE
 ;
 
-ipnios_list
+ipnis_list
 :
    // Delegate to common ACL NAT specification
    acl_pool = ipnc_list
-   ipnios_modifiers*
+   ( OVERLOAD )?
+   NEWLINE
+;
+
+ipnis_route_map
+:
+   ROUTE_MAP mapname = variable
+   INTERFACE iname = interface_name
+   ( VRF variable )?
+   ( OVERLOAD )?
    NEWLINE
 ;
 
@@ -113,6 +111,28 @@ ipnis_static
       ipnios_static_addr
       | ipnios_static_network
    )
+   //order of these options matters
+   ( VRF vrfname = variable )?
+   ( ROUTE_MAP mapname = variable )?
+   ipnioss_modifiers*
+   NEWLINE
+;
+
+ipnos_list
+:
+   // Delegate to common ACL NAT specification
+   acl_pool = ipnc_list
+   ( ipnosm_add_route )?
+   NEWLINE
+;
+
+ipnos_route_map
+:
+   ROUTE_MAP mapname = variable
+   POOL pname = variable
+   ( VRF vrfname = variable )?
+   ( ipnosm_add_route )?
+   NEWLINE
 ;
 
 ipnos_static
@@ -122,13 +142,26 @@ ipnos_static
       ipnios_static_addr
       | ipnios_static_network
    )
+   ( VRF vrfname = variable )?
+   (
+      ipnosm_add_route
+      | ipnioss_modifiers
+   )*
+   NEWLINE
 ;
+
+// common modifiers for inside and outside source static NAT
+ipnioss_modifiers
+:
+   NO_ALIAS
+   | NO_PAYLOAD
+   | REDUNDANCY variable
+;
+
 
 ipnios_static_addr
 :
    ips = ipnioss_local_global
-   ipnios_modifiers*
-   NEWLINE
 ;
 
 ipnios_static_network
@@ -138,8 +171,6 @@ ipnios_static_network
       mask = IP_ADDRESS
       | FORWARD_SLASH prefix = DEC
    )
-   ipnios_modifiers*
-   NEWLINE
 ;
 
 ipnioss_local_global
