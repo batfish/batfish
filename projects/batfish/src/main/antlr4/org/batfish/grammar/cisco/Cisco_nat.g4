@@ -27,14 +27,14 @@ ipn_inside
 :
   INSIDE
   (
-    ipnio_source
+    ipni_source
     | ipni_destination
   )
 ;
 
 ipn_outside
 :
-  OUTSIDE ipnio_source
+  OUTSIDE ipno_source
 ;
 
 ipn_log
@@ -62,14 +62,23 @@ ipnc_list
    LIST acl = variable POOL pool = variable
 ;
 
-// Source NAT is allowed on both inside and outside
-ipnio_source
+ipni_source
 :
   SOURCE
   (
     ipnios_list
     // | ipnios_route_map
-    | ipnios_static
+    | ipnis_static
+  )
+;
+
+ipno_source
+:
+  SOURCE
+  (
+    ipnios_list
+    // | ipnios_route_map
+    | ipnos_static
   )
 ;
 
@@ -97,7 +106,16 @@ ipnios_list
    NEWLINE
 ;
 
-ipnios_static
+ipnis_static
+:
+   STATIC
+   (
+      ipnios_static_addr
+      | ipnios_static_network
+   )
+;
+
+ipnos_static
 :
    STATIC
    (
