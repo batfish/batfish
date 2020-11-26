@@ -36994,32 +36994,36 @@
             "        DEC:'3')",
             "      (track_list",
             "        LIST:'list'",
-            "        (null_rest_of_line",
-            "          VARIABLE:'boolean'",
+            "        (tl_boolean",
+            "          BOOLEAN:'boolean'",
             "          AND:'and'",
-            "          NEWLINE:'\\n')",
-            "        (track_list_null",
-            "          OBJECT:'object'",
-            "          (null_rest_of_line",
-            "            DEC:'1'",
-            "            NEWLINE:'\\n'))",
-            "        (track_list_null",
-            "          OBJECT:'object'",
-            "          (null_rest_of_line",
-            "            DEC:'2'",
-            "            NEWLINE:'\\n'))",
-            "        (track_list_null",
-            "          DELAY:'delay'",
-            "          (null_rest_of_line",
-            "            VARIABLE:'up'",
-            "            DEC:'10'",
-            "            NEWLINE:'\\n'))",
-            "        (track_list_null",
-            "          DELAY:'delay'",
-            "          (null_rest_of_line",
-            "            VARIABLE:'down'",
-            "            DEC:'10'",
-            "            NEWLINE:'\\n')))))",
+            "          NEWLINE:'\\n'",
+            "          (tlb_tail",
+            "            (tl_object",
+            "              OBJECT:'object'",
+            "              name = (variable",
+            "                DEC:'1'))",
+            "            NEWLINE:'\\n')",
+            "          (tlb_tail",
+            "            (tl_object",
+            "              OBJECT:'object'",
+            "              name = (variable",
+            "                DEC:'2'))",
+            "            NEWLINE:'\\n')",
+            "          (tlb_tail",
+            "            (tl_null_tail",
+            "              DELAY:'delay'",
+            "              (null_rest_of_line",
+            "                VARIABLE:'up'",
+            "                DEC:'10'",
+            "                NEWLINE:'\\n')))",
+            "          (tlb_tail",
+            "            (tl_null_tail",
+            "              DELAY:'delay'",
+            "              (null_rest_of_line",
+            "                VARIABLE:'down'",
+            "                DEC:'10'",
+            "                NEWLINE:'\\n')))))))",
             "  (stanza",
             "    (s_track",
             "      TRACK:'track'",
@@ -37031,7 +37035,7 @@
             "          TYPE:'type'",
             "          (null_rest_of_line",
             "            LIST:'list'",
-            "            VARIABLE:'boolean'",
+            "            BOOLEAN:'boolean'",
             "            OR:'or'",
             "            NEWLINE:'\\n')",
             "          (track_block_type_null",
@@ -80032,11 +80036,11 @@
           "track" : {
             "1" : {
               "definitionLines" : "4",
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "2" : {
               "definitionLines" : "5",
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "3" : {
               "definitionLines" : "6-10",
@@ -85814,6 +85818,18 @@
             "GigabitEthernet0/1" : {
               "track interface" : [
                 5
+              ]
+            }
+          },
+          "track" : {
+            "1" : {
+              "track list" : [
+                7
+              ]
+            },
+            "2" : {
+              "track list" : [
+                8
               ]
             }
           }

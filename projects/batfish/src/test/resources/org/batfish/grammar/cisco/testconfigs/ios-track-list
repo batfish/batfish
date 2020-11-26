@@ -10,10 +10,10 @@ track 3 list boolean and
   object 2
 !
 !!! no element in the list and uses OR
-track 5 list boolean and
+track 4 list boolean and
 !
 !! list threshold
-track 6 list threshold percentage
+track 5 list threshold percentage
   threshold percentage up 70 down 30
   object 1
   object 2
@@ -23,5 +23,10 @@ track 6 list threshold weight
   object 2 weight 20
   threshold weight up 20 down 0
 !
-track 6 list threshold percentage
+track 7 list threshold percentage
+!
+! nulls
+track 8 list boolean and
+  delay up 10
+  default delay
 !

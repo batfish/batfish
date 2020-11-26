@@ -4045,7 +4045,7 @@ tl_boolean
     | OR
   )
   NEWLINE
-  (tl_object NEWLINE)*
+  tlb_tail*
 ;
 
 tl_threshold
@@ -4057,11 +4057,18 @@ tl_threshold
    )
 ;
 
+tlb_tail
+:
+  tl_null_tail
+  | tl_object NEWLINE
+;
+
 tlt_percentage
 :
    PERCENTAGE NEWLINE
    (
        THRESHOLD null_rest_of_line
+       | tl_null_tail
        | tl_object NEWLINE
    )*
 ;
@@ -4071,8 +4078,18 @@ tlt_weight
    WEIGHT NEWLINE
    (
        THRESHOLD null_rest_of_line
+       | tl_null_tail
        | tl_object WEIGHT DEC NEWLINE
    )*
+;
+
+tl_null_tail
+:
+  (
+     DEFAULT
+     | DELAY
+  )
+  null_rest_of_line
 ;
 
 tl_object
