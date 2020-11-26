@@ -224,6 +224,13 @@ public class WorkMgr extends AbstractCoordinator {
               network, snapshot, Throwables.getStackTraceAsString(e));
           continue;
         }
+        if (metadata == null) {
+          _logger.debugf(
+              "computeExpungeBeforeDate: network or snapshot removed between listing and metadata"
+                  + " fetching: network '%s', snapshot '%s'",
+              network, snapshot);
+          continue;
+        }
         builder.add(metadata.getCreationTimestamp());
       }
     }
