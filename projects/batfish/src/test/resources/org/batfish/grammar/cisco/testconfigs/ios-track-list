@@ -1,0 +1,27 @@
+!
+hostname ios-track-list
+!
+track 1 interface FastEthernet1/0 line-protocol
+track 2 interface FastEthernet1/0 line-protocol
+!
+!! list boolean
+track 3 list boolean and
+  object 1
+  object 2
+!
+!!! no element in the list and uses OR
+track 5 list boolean and
+!
+!! list threshold
+track 6 list threshold percentage
+  threshold percentage up 70 down 30
+  object 1
+  object 2
+!!! no elements in the list
+track 6 list threshold weight
+  object 1 weight 10
+  object 2 weight 20
+  threshold weight up 20 down 0
+!
+track 6 list threshold percentage
+!

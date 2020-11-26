@@ -4030,15 +4030,54 @@ track_ip_null
 
 track_list
 :
-  LIST null_rest_of_line track_list_null*
+  LIST
+  (
+     tl_boolean
+     | tl_threshold
+  )
 ;
 
-track_list_null
+tl_boolean
 :
+  BOOLEAN
   (
-    DELAY
-    | OBJECT
-  ) null_rest_of_line
+    AND
+    | OR
+  )
+  NEWLINE
+  (tl_object NEWLINE)*
+;
+
+tl_threshold
+:
+   THRESHOLD
+   (
+      tlt_percentage
+      | tlt_weight
+   )
+;
+
+tlt_percentage
+:
+   PERCENTAGE NEWLINE
+   (
+       THRESHOLD null_rest_of_line
+       | tl_object NEWLINE
+   )*
+;
+
+tlt_weight
+:
+   WEIGHT NEWLINE
+   (
+       THRESHOLD null_rest_of_line
+       | tl_object WEIGHT DEC NEWLINE
+   )*
+;
+
+tl_object
+:
+    OBJECT name = variable
 ;
 
 ts_common

@@ -3687,6 +3687,18 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosTrackList() throws IOException {
+    String hostname = "ios-track-list";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 3));
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 3));
+  }
+
+  @Test
   public void testIosVrfdAddressFamilyExportMap() throws IOException {
     String hostname = "ios-vrfd-address-family-export-map";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
