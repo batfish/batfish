@@ -340,6 +340,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
   }
 
+  private static @Nonnull Statement callInContext(String routingPolicyName) {
+    return new If(
+        new CallExpr(routingPolicyName),
+        ImmutableList.of(ROUTE_MAP_PERMIT_STATEMENT),
+        ImmutableList.of(ROUTE_MAP_DENY_STATEMENT));
+  }
+
   public static @Nonnull String toJavaRegex(String ciscoRegex) {
     String withoutQuotes;
     if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
@@ -2763,6 +2770,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertRouteMap(RouteMap routeMap) {
+    if (routeMap.getEntries().isEmpty()) {
+      // Denies everything
+      RoutingPolicy.builder()
+          .setName(routeMap.getName())
+          .setOwner(_c)
+          .setStatements(ImmutableList.of(ROUTE_MAP_DENY_STATEMENT))
+          .build();
+      return;
+    }
+
     /*
      * High-level overview:
      * - Group route-map entries into disjoint intervals, where each entry that is the target of a
@@ -2773,6 +2790,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
      *     interval started by its target.
      *   - False branch of an entry at the end of an interval calls the RoutingPolicy for the next
      *     interval.
+     * - The top-level RoutingPolicy that corresponds to the route-map just calls the first
+     *   interval and does a context-appropriate return based on that result.
      */
     String routeMapName = routeMap.getName();
 
@@ -2798,10 +2817,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // sequence -> next sequence if no match, or null if last sequence
     Map<Integer, Integer> noMatchNextBySeq = noMatchNextBySeqBuilder.build();
 
+    // Build the top-level RoutingPolicy that corresponds to the route-map. All it does is call
+    // the first interval and return its result in a context-appropriate way.
+    int firstSequence = routeMap.getEntries().firstEntry().getKey();
+    String firstSequenceRoutingPolicyName = computeRoutingPolicyName(routeMapName, firstSequence);
+    RoutingPolicy.builder()
+        .setName(routeMapName)
+        .setOwner(_c)
+        .setStatements(ImmutableList.of(callInContext(firstSequenceRoutingPolicyName)))
+        .build();
+
     /*
      * Initially:
-     * - set the name of the generated routing policy for the route-map
-     * - initialize the statement queue
+     * - initialize the statement queue to default deny for the very first statement
      * For each entry in the route-map:
      * - If the current entry is the start of a new interval:
      *   - Build the RoutingPolicy for the previous interval.
@@ -2812,12 +2840,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
      *     - If there were no continue statements, the final interval is the single policy for the
      *       whole route-map.
      */
-    String currentRoutingPolicyName = routeMap.getName();
-    ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
+    String currentRoutingPolicyName = firstSequenceRoutingPolicyName;
+    ImmutableList.Builder<Statement> currentRoutingPolicyStatements =
+        ImmutableList.<Statement>builder()
+            .add(Statements.SetLocalDefaultActionReject.toStaticStatement());
     for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
       int currentSequence = currentEntry.getSequence();
       if (continueTargets.contains(currentSequence)) {
-        // finalize the routing policy consisting of queued statements up to this point
+        // Finalize the routing policy consisting of queued statements up to this point. The last
+        // statement includes a call to the next statement if not matched.
         RoutingPolicy.builder()
             .setName(currentRoutingPolicyName)
             .setOwner(_c)
@@ -2832,8 +2863,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           toStatement(routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
     }
     // finalize last routing policy
-    // TODO: do default action, which changes when continuing from a permit
-    currentRoutingPolicyStatements.add(ROUTE_MAP_DENY_STATEMENT);
+    currentRoutingPolicyStatements.add(Statements.ReturnLocalDefaultAction.toStaticStatement());
     RoutingPolicy.builder()
         .setName(currentRoutingPolicyName)
         .setOwner(_c)
@@ -2878,27 +2908,25 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     Integer continueTarget = entry.getContinue();
     LineAction action = entry.getAction();
-    Statement finalTrueStatement;
 
-    // final action if matched
+    // If matched, change the default action.
+    if (action == LineAction.PERMIT) {
+      trueStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
+    } else {
+      assert action == LineAction.DENY;
+      trueStatements.add(Statements.SetLocalDefaultActionReject.toStaticStatement());
+    }
+
+    // Additionally if matched, continue by calling the named policy.
     if (continueTarget != null) {
       if (continueTargets.contains(continueTarget)) {
-        // TODO: verify correct semantics: possibly, should add two statements in this case; first
-        // should set default action to permit/deny if this is a permit/deny entry, and second
-        // should call policy for next entry.
-        finalTrueStatement = call(computeRoutingPolicyName(routeMapName, continueTarget));
+        trueStatements.add(call(computeRoutingPolicyName(routeMapName, continueTarget)));
       } else {
         // invalid continue target, so just deny
         // TODO: verify actual behavior
-        finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
+        trueStatements.add(Statements.ReturnFalse.toStaticStatement());
       }
-    } else if (action == LineAction.PERMIT) {
-      finalTrueStatement = ROUTE_MAP_PERMIT_STATEMENT;
-    } else {
-      assert action == LineAction.DENY;
-      finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
     }
-    trueStatements.add(finalTrueStatement);
 
     // final action if not matched
     Integer noMatchNext = noMatchNextBySeq.get(entry.getSequence());
