@@ -4060,16 +4060,16 @@ tl_threshold
 tlb_tail
 :
   tl_null_tail
-  | tl_object NEWLINE
+  | tl_object_tail
 ;
 
 tlt_percentage
 :
    PERCENTAGE NEWLINE
    (
-       THRESHOLD null_rest_of_line
-       | tl_null_tail
-       | tl_object NEWLINE
+       tl_null_tail
+       | tl_object_tail
+       | tlt_null_tail
    )*
 ;
 
@@ -4077,12 +4077,13 @@ tlt_weight
 :
    WEIGHT NEWLINE
    (
-       THRESHOLD null_rest_of_line
-       | tl_null_tail
-       | tl_object WEIGHT DEC NEWLINE
+       tl_null_tail
+       | tltw_object_tail
+       | tlt_null_tail
    )*
 ;
 
+// common null tail for track list
 tl_null_tail
 :
   (
@@ -4092,9 +4093,25 @@ tl_null_tail
   null_rest_of_line
 ;
 
+// common null tail for track list threshold
+tlt_null_tail
+:
+  THRESHOLD null_rest_of_line
+;
+
+tl_object_tail
+:
+    tl_object NEWLINE
+;
+
 tl_object
 :
     OBJECT name = variable
+;
+
+tltw_object_tail
+:
+  tl_object WEIGHT DEC NEWLINE
 ;
 
 ts_common

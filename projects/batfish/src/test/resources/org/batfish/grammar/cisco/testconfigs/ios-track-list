@@ -30,3 +30,11 @@ track 8 list boolean and
   delay up 10
   default delay
 !
+track 9 list threshold weight
+  delay up 10
+  default delay
+!
+track 9 list threshold percentage
+  delay up 10
+  default delay
+!
