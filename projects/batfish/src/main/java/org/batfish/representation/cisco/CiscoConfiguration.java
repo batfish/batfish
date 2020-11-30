@@ -3672,7 +3672,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
 
     // track
-    markConcreteStructure(CiscoStructureType.TRACK, CiscoStructureUsage.INTERFACE_STANDBY_TRACK);
+    markConcreteStructure(CiscoStructureType.TRACK);
 
     // VXLAN
     markConcreteStructure(CiscoStructureType.VXLAN, CiscoStructureUsage.VXLAN_SELF_REF);
