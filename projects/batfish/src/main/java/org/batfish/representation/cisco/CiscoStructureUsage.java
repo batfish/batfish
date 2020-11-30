@@ -230,6 +230,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   SSH_IPV6_ACL("ssh ipv6 access-list"),
   TACACS_SOURCE_INTERFACE("tacacs source-interface"),
   TRACK_INTERFACE("track interface"),
+  TRACK_LIST("track list"),
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
   TUNNEL_SOURCE("tunnel source"),
   TWICE_NAT_MAPPED_INTERFACE("twice nat mapped interface"),

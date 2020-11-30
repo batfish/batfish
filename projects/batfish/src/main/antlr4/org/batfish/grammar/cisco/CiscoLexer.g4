@@ -1658,6 +1658,11 @@ BLOGGERD
    'bloggerd'
 ;
 
+BOOLEAN
+:
+   'boolean'
+;
+
 BOOT
 :
    'boot'
@@ -9573,6 +9578,11 @@ PENALTY_PERIOD
 PERCENT_LITERAL
 :
    'percent'
+;
+
+PERCENTAGE
+:
+   'percentage'
 ;
 
 PERIODIC

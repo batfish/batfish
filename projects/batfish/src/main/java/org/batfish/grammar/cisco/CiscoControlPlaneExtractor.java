@@ -268,6 +268,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT;
@@ -993,6 +994,7 @@ import org.batfish.grammar.cisco.CiscoParser.T_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_policy_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Tl_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_actionContext;
 import org.batfish.grammar.cisco.CiscoParser.Track_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
@@ -9377,6 +9379,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentNamedPeerGroup = null;
     _currentPeerSession = null;
     popPeer();
+  }
+
+  @Override
+  public void exitTl_object(Tl_objectContext ctx) {
+    _configuration.referenceStructure(
+        TRACK, ctx.name.getText(), TRACK_LIST, ctx.getStart().getLine());
   }
 
   @Override
