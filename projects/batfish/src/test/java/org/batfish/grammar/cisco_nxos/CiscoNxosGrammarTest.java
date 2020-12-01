@@ -242,14 +242,10 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprEvalua
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetNextHop;
-import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
@@ -694,25 +690,6 @@ public final class CiscoNxosGrammarTest {
   public void testBgpNextHopUnchanged() throws IOException {
     Configuration c = parseConfig("nxos_bgp_nh_unchanged");
     RoutingPolicy nhipUnchangedPolicy = c.getRoutingPolicies().get("NHIP-UNCHANGED");
-
-    // assert on the structure of routing policy
-    Statement defaultPermitStatement =
-        new If(
-            BooleanExprs.CALL_EXPR_CONTEXT,
-            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
-    Statement defaultDenyStatement =
-        new If(
-            BooleanExprs.CALL_EXPR_CONTEXT,
-            ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-    assertThat(
-        nhipUnchangedPolicy.getStatements(),
-        equalTo(
-            ImmutableList.of(
-                new SetNextHop(UnchangedNextHop.getInstance()),
-                defaultPermitStatement,
-                defaultDenyStatement)));
 
     // assert on the behavior of routing policy
     Ip originalNhip = Ip.parse("12.12.12.12");
@@ -5848,68 +5825,124 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         c.getRoutingPolicies(),
         hasKeys(
+            "empty_pbr_statistics", // really empty, it has no first term
             "empty_deny",
+            computeRoutingPolicyName("empty_deny", 10),
             "empty_permit",
-            "empty_pbr_statistics",
+            computeRoutingPolicyName("empty_permit", 10),
             "match_as_number",
+            computeRoutingPolicyName("match_as_number", 10),
             "match_as_path",
+            computeRoutingPolicyName("match_as_path", 10),
             "match_community_standard",
+            computeRoutingPolicyName("match_community_standard", 10),
             "match_community_expanded",
+            computeRoutingPolicyName("match_community_expanded", 10),
             "match_interface",
+            computeRoutingPolicyName("match_interface", 10),
             "match_ip_address",
+            computeRoutingPolicyName("match_ip_address", 10),
             "match_ip_address_prefix_list",
+            computeRoutingPolicyName("match_ip_address_prefix_list", 10),
             "match_ipv6_address",
+            computeRoutingPolicyName("match_ipv6_address", 10),
             "match_ipv6_address_prefix_list",
+            computeRoutingPolicyName("match_ipv6_address_prefix_list", 10),
             "match_metric",
+            computeRoutingPolicyName("match_metric", 10),
             "match_route_type_external",
+            computeRoutingPolicyName("match_route_type_external", 10),
             "match_route_type_internal",
+            computeRoutingPolicyName("match_route_type_internal", 10),
             "match_route_type_local",
+            computeRoutingPolicyName("match_route_type_local", 10),
             "match_route_type_nssa_external",
+            computeRoutingPolicyName("match_route_type_nssa_external", 10),
             "match_route_type_type_1",
+            computeRoutingPolicyName("match_route_type_type_1", 10),
             "match_route_type_type_2",
+            computeRoutingPolicyName("match_route_type_type_2", 10),
             "match_route_types",
+            computeRoutingPolicyName("match_route_types", 10),
             "match_route_types_unsupported",
+            computeRoutingPolicyName("match_route_types_unsupported", 10),
             "match_source_protocol_connected",
+            computeRoutingPolicyName("match_source_protocol_connected", 10),
             "match_source_protocol_static",
+            computeRoutingPolicyName("match_source_protocol_static", 10),
             "match_tag",
+            computeRoutingPolicyName("match_tag", 10),
             "match_vlan",
+            computeRoutingPolicyName("match_vlan", 10),
             "set_as_path_prepend_last_as",
+            computeRoutingPolicyName("set_as_path_prepend_last_as", 10),
             "set_as_path_prepend_literal_as",
+            computeRoutingPolicyName("set_as_path_prepend_literal_as", 10),
             "set_comm_list_expanded",
+            computeRoutingPolicyName("set_comm_list_expanded", 10),
             "set_comm_list_standard",
+            computeRoutingPolicyName("set_comm_list_standard", 10),
             "set_comm_list_standard_single",
+            computeRoutingPolicyName("set_comm_list_standard_single", 10),
             "set_community",
+            computeRoutingPolicyName("set_community", 10),
             "set_community_additive",
+            computeRoutingPolicyName("set_community_additive", 10),
             "set_ip_next_hop_literal",
+            computeRoutingPolicyName("set_ip_next_hop_literal", 10),
             "set_ip_next_hop_literal2",
+            computeRoutingPolicyName("set_ip_next_hop_literal2", 10),
             "set_ip_next_hop_unchanged",
+            computeRoutingPolicyName("set_ip_next_hop_unchanged", 10),
             "set_ipv6_next_hop_unchanged",
+            computeRoutingPolicyName("set_ipv6_next_hop_unchanged", 10),
             "set_local_preference",
+            computeRoutingPolicyName("set_local_preference", 10),
             "set_metric",
+            computeRoutingPolicyName("set_metric", 10),
             "set_metric_eigrp",
+            computeRoutingPolicyName("set_metric_eigrp", 10),
             "set_metric_type_external",
+            computeRoutingPolicyName("set_metric_type_external", 10),
             "set_metric_type_internal",
+            computeRoutingPolicyName("set_metric_type_internal", 10),
             "set_metric_type_type_1",
+            computeRoutingPolicyName("set_metric_type_type_1", 10),
             "set_metric_type_type_2",
+            computeRoutingPolicyName("set_metric_type_type_2", 10),
             "set_origin_egp",
+            computeRoutingPolicyName("set_origin_egp", 10),
             "set_origin_igp",
+            computeRoutingPolicyName("set_origin_igp", 10),
             "set_origin_incomplete",
+            computeRoutingPolicyName("set_origin_incomplete", 10),
             "set_tag",
+            computeRoutingPolicyName("set_tag", 10),
             "set_weight",
+            computeRoutingPolicyName("set_weight", 10),
             "match_undefined_access_list",
+            computeRoutingPolicyName("match_undefined_access_list", 10),
             "match_undefined_community_list",
+            computeRoutingPolicyName("match_undefined_community_list", 10),
             "match_undefined_prefix_list",
+            computeRoutingPolicyName("match_undefined_prefix_list", 10),
             "continue_skip_deny",
+            computeRoutingPolicyName("continue_skip_deny", 10),
             computeRoutingPolicyName("continue_skip_deny", 30),
             "continue_from_deny_to_permit",
+            computeRoutingPolicyName("continue_from_deny_to_permit", 10),
             computeRoutingPolicyName("continue_from_deny_to_permit", 20),
             "continue_from_permit_to_fall_off",
+            computeRoutingPolicyName("continue_from_permit_to_fall_off", 10),
             computeRoutingPolicyName("continue_from_permit_to_fall_off", 20),
             "continue_from_permit_and_set_to_fall_off",
+            computeRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 10),
             computeRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 20),
             "continue_from_set_to_match_on_set_field",
+            computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 10),
             computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20),
             "reach_continue_target_without_match",
+            computeRoutingPolicyName("reach_continue_target_without_match", 10),
             computeRoutingPolicyName("reach_continue_target_without_match", 30)));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
@@ -6348,17 +6381,15 @@ public final class CiscoNxosGrammarTest {
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_permit_to_fall_off");
-      // TODO: verify
-      // should deny everything without tag 10
-      assertRoutingPolicyDeniesRoute(rp, base);
-      assertRoutingPolicyPermitsRoute(rp, base.toBuilder().setTag(10L).build());
+      // should permit everything without tag 10 or 11
+      assertRoutingPolicyPermitsRoute(rp, base);
+      assertRoutingPolicyDeniesRoute(rp, base.toBuilder().setTag(10L).build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_permit_and_set_to_fall_off");
-      // TODO: verify
-      // should deny everything without tag 10
-      assertRoutingPolicyDeniesRoute(rp, base);
-      assertThat(processRouteIn(rp, base.toBuilder().setTag(10L).build()), hasMetric(10L));
+      // should permit everything that does not have tag 10
+      assertThat(processRouteIn(rp, base), hasMetric(10L));
+      assertRoutingPolicyDeniesRoute(rp, base.toBuilder().setTag(10L).build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_set_to_match_on_set_field");
@@ -6915,7 +6946,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().keySet(), contains(10, 20));
       assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
-      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L, 11L));
     }
@@ -6925,21 +6956,19 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
       assertThat(rm.getEntries().get(10).getSetMetric().getMetric(), equalTo(10L));
-      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("continue_from_set_to_match_on_set_field");
-      assertThat(rm.getEntries().keySet(), contains(10, 20, 30));
-      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().keySet(), contains(10, 20));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
       assertThat(rm.getEntries().get(10).getSetMetric().getMetric(), equalTo(10L));
       assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchMetric().getMetric(), equalTo(10L));
-      assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.DENY));
-      assertThat(rm.getEntries().get(30).getContinue(), nullValue());
     }
     {
       RouteMap rm = vc.getRouteMaps().get("reach_continue_target_without_match");
@@ -6947,7 +6976,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(30));
       assertThat(rm.getEntries().get(10).getMatchTag().getTags(), contains(10L));
-      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L));
       assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.PERMIT));
