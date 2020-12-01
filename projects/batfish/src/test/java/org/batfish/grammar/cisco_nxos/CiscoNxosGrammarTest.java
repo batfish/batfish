@@ -6985,6 +6985,97 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testRouteMapExhaustive() throws IOException {
+    Configuration c = parseConfig("nxos_route_map_exhaustive");
+    assertThat(c.getRoutingPolicies(), hasKey("RM"));
+    RoutingPolicy rm = c.getRoutingPolicies().get("RM");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setTag(0L)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setMetric(0L) // 30 match metric 3
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("192.0.2.254"))
+            .setNetwork(Prefix.ZERO)
+            .build();
+    // There are 8 paths through the route-map, let's test them all.
+    // 10 deny tag 1, continue                OR    fall-through
+    // 20 permit community 0:2, continue      OR    fall-through
+    // 30 deny metric 3, terminate            OR   40 terminate
+    {
+      // false false false -> 40 only
+      Bgpv4Route after = processRouteIn(rm, base);
+      assertThat(after.getTag(), not(equalTo(10L)));
+      assertThat(after.getCommunities(), not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // false false true -> 30 only
+      assertRoutingPolicyDeniesRoute(rm, base.toBuilder().setMetric(3).build());
+    }
+    {
+      // false true false -> 20, 40
+      Bgpv4Route after =
+          processRouteIn(
+              rm,
+              base.toBuilder().setCommunities(CommunitySet.of(StandardCommunity.of(2))).build());
+      assertThat(after.getTag(), not(equalTo(10L)));
+      assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(20))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // false true true -> 20, 30
+      assertRoutingPolicyDeniesRoute(
+          rm,
+          base.toBuilder()
+              .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+              .setMetric(3)
+              .build());
+    }
+    {
+      // true false false -> 10, 40
+      Bgpv4Route after = processRouteIn(rm, base.toBuilder().setTag(1L).build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // true false true -> 10, 30
+      assertRoutingPolicyDeniesRoute(rm, base.toBuilder().setTag(1L).setMetric(3).build());
+    }
+    {
+      // true true false -> 10, 20, 40
+      Bgpv4Route after =
+          processRouteIn(
+              rm,
+              base.toBuilder()
+                  .setTag(1L)
+                  .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+                  .build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(20))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // true true true -> 10, 20, 30
+      assertRoutingPolicyDeniesRoute(
+          rm,
+          base.toBuilder()
+              .setTag(1L)
+              .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+              .setMetric(3)
+              .build());
+    }
+  }
+
+  @Test
   public void testRouteMapMultipleChainedContinueEntriesConversion() throws IOException {
     Configuration c = parseConfig("nxos_route_map_multiple_chained_continue_entries");
     RoutingPolicy exportPolicy =
