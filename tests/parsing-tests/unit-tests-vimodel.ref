@@ -74353,15 +74353,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
-                  "cmp" : "EQ",
-                  "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                    "value" : 10
-                  }
-                },
-                "trueStatements" : [
+                "falseStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
@@ -74381,17 +74373,10 @@
                       }
                     ]
                   }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
-                  "cmp" : "EQ",
-                  "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                    "value" : 20
-                  }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~foobar~SEQ:10~"
                 },
                 "trueStatements" : [
                   {
@@ -74399,44 +74384,12 @@
                     "falseStatements" : [
                       {
                         "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitReject"
+                        "type" : "ExitAccept"
                       }
                     ],
                     "guard" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
                       "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnFalse"
-                      }
-                    ]
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
-                  "cmp" : "EQ",
-                  "tag" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                    "value" : 30
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnFalse"
-                      }
-                    ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~foobar~SEQ:50~"
                     },
                     "trueStatements" : [
                       {
@@ -74444,25 +74397,6 @@
                         "type" : "ReturnTrue"
                       }
                     ]
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
                   }
                 ]
               }
@@ -74482,6 +74416,10 @@
                   }
                 },
                 "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
@@ -74511,6 +74449,10 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionAccept"
+              },
+              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
@@ -74528,6 +74470,89 @@
                     "type" : "ReturnTrue"
                   }
                 ]
+              }
+            ]
+          },
+          "~foobar~SEQ:10~" : {
+            "name" : "~foobar~SEQ:10~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionReject"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                  "cmp" : "EQ",
+                  "tag" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 10
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                  "cmp" : "EQ",
+                  "tag" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 20
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchTag",
+                  "cmp" : "EQ",
+                  "tag" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 30
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnFalse"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "~foobar~SEQ:50~"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionReject"
               }
             ]
           },
@@ -74572,6 +74597,10 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 5
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -74639,6 +74668,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -74702,6 +74735,10 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 100
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -74769,6 +74806,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -74832,6 +74873,10 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 200
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -74899,6 +74944,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -74962,6 +75011,10 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 300
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -75029,6 +75082,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -75092,6 +75149,10 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 500
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -75159,6 +75220,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -75196,6 +75261,10 @@
                 },
                 "trueStatements" : [
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -75217,23 +75286,8 @@
                 ]
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionReject"
               }
             ]
           },
@@ -75288,6 +75342,10 @@
                         }
                       ]
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -75365,6 +75423,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -75438,6 +75500,10 @@
                         }
                       ]
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -75515,6 +75581,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -75588,6 +75658,10 @@
                         }
                       ]
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -75665,6 +75739,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -75727,6 +75805,10 @@
                 }
               },
               {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionAccept"
+              },
+              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
@@ -75751,42 +75833,12 @@
             "name" : "~foobar~SEQ:310~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionAccept"
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnLocalDefaultAction"
               }
             ]
           },
@@ -75810,6 +75862,10 @@
                     }
                   ]
                 }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionAccept"
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -75891,6 +75947,10 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 150
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -75976,6 +76036,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -76059,6 +76123,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
                     "falseStatements" : [
                       {
@@ -76140,6 +76208,10 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
                       "value" : 300
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetLocalDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.If",
