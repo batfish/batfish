@@ -110,7 +110,7 @@ ACCESS_GROUP
 ACCESS_LIST
 :
    'access-list'
-   {_enableAclNum = true; _enableDec = false;_inAccessList = true;}
+   {_enableAclNum = true; _enableDec = false;}
 
 ;
 
@@ -12152,7 +12152,6 @@ NEWLINE
     _enableDec = true;
     _enableRegex = false;
     _enableAclNum = false;
-    _inAccessList = false;
   }
 ;
 
