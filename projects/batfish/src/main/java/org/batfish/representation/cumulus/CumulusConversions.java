@@ -485,15 +485,9 @@ public final class CumulusConversions {
 
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
-      if (interfaceNeighbor.getLocalAs() != null) {
-        localAs = interfaceNeighbor.getLocalAs();
-      }
       addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
-      if (ipNeighbor.getLocalAs() != null) {
-        localAs = ipNeighbor.getLocalAs();
-      }
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
     } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
       throw new IllegalArgumentException(
