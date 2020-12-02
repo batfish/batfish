@@ -2417,7 +2417,7 @@ public class AristaGrammarTest {
         Bgpv4Route.builder()
             .setTag(0L)
             .setSrcProtocol(RoutingProtocol.BGP)
-            .setMetric(0L) // 30 match metric 3
+            .setMetric(0L)
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -2463,6 +2463,7 @@ public class AristaGrammarTest {
               .build());
     }
     {
+      assert true;
       // TODO(PR#6465) true false false -> 10, 40
       //      Bgpv4Route after = processRouteIn(rm, base.toBuilder().setTag(1L).build());
       //      assertThat(after.getTag(), equalTo(10L));
@@ -2477,6 +2478,7 @@ public class AristaGrammarTest {
           rm, base.toBuilder().setTag(1L).setNetwork(Prefix.parse("1.2.3.4/32")).build());
     }
     {
+      assert true;
       //      // TODO(PR#6465) true true false -> 10, 20, 40
       //      Bgpv4Route after =
       //          processRouteIn(

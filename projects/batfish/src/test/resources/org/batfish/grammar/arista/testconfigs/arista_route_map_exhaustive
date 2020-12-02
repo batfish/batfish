@@ -16,7 +16,7 @@ route-map RM permit 20
  continue 30
 route-map RM deny 30
  match ip address pl30
- set metric 10
+ set metric 30
 route-map RM permit 40
  set local-preference 40
  description Done
