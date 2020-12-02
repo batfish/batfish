@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -1803,19 +1804,33 @@ public final class AristaConfiguration extends VendorConfiguration {
       }
       lastEntry = currentEntry;
     }
+    Map<Integer, Integer> noMatchNextBySeq = noMatchNextBySeqBuilder.build();
 
-    // sequences that are valid targets of a continue statement
-    Set<Integer> continueTargets =
+    // sequence -> continue sequence if match, or null if sequence does not have a continue
+    ImmutableMap<Integer, Integer> continues =
         routeMap.getClauses().values().stream()
             .map(
-                clause ->
-                    clause.getContinueLine() == null ? null : clause.getContinueLine().getTarget())
+                clause -> {
+                  if (clause.getContinueLine() == null) {
+                    return null; // no continue
+                  }
+                  RouteMapContinue cont = clause.getContinueLine();
+                  Integer effectiveTarget = cont.getTarget();
+                  if (effectiveTarget == null) {
+                    // Naked continue, continue to next line.
+                    effectiveTarget = noMatchNextBySeq.get(clause.getSeqNum());
+                  }
+                  if (effectiveTarget == null) {
+                    // Naked continue on last line.
+                    return null;
+                  }
+                  return new SimpleEntry<>(clause.getSeqNum(), effectiveTarget);
+                })
             .filter(Objects::nonNull)
-            .filter(routeMap.getClauses().keySet()::contains)
-            .collect(ImmutableSet.toImmutableSet());
-
-    // sequence -> next sequence if no match, or null if last sequence
-    Map<Integer, Integer> noMatchNextBySeq = noMatchNextBySeqBuilder.build();
+            .filter(e -> routeMap.getClauses().containsKey(e.getValue()))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    // sequences that are valid targets of a continue statement
+    Set<Integer> continueTargets = ImmutableSet.copyOf(continues.values());
 
     // Build the top-level RoutingPolicy that corresponds to the route-map. All it does is call
     // the first interval and return its result in a context-appropriate way.
@@ -1860,7 +1875,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         currentRoutingPolicyName = computeRoutingPolicyName(routeMapName, currentSequence);
       } // or else undefined reference
       currentRoutingPolicyStatements.add(
-          toStatement(c, routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
+          toStatement(c, routeMapName, currentEntry, noMatchNextBySeq, continues, continueTargets));
     }
 
     // finalize last routing policy
@@ -1877,6 +1892,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       String routeMapName,
       RouteMapClause entry,
       Map<Integer, Integer> noMatchNextBySeq,
+      Map<Integer, Integer> continues,
       Set<Integer> continueTargets) {
     BooleanExpr guard = toMatchBooleanExpr(c, entry);
 
@@ -1886,9 +1902,9 @@ public final class AristaConfiguration extends VendorConfiguration {
       rmSet.applyTo(trueStatements, this, c, _w);
     }
 
-    RouteMapContinue cont = entry.getContinueLine();
     LineAction action = entry.getAction();
 
+    RouteMapContinue cont = entry.getContinueLine();
     if (cont == null) {
       // No continue: on match, return the action.
       if (action == LineAction.PERMIT) {
@@ -1905,14 +1921,12 @@ public final class AristaConfiguration extends VendorConfiguration {
         assert action == LineAction.DENY;
         trueStatements.add(Statements.SetLocalDefaultActionReject.toStaticStatement());
       }
-      int target = cont.getTarget();
-      if (continueTargets.contains(target)) {
-        // TODO: verify correct semantics: possibly, should add two statements in this case; first
-        // should set default action to permit/deny if this is a permit/deny entry, and second
-        // should call policy for next entry.
+      Integer target = continues.get(entry.getSeqNum());
+      if (target != null) {
         trueStatements.add(call(computeRoutingPolicyName(routeMapName, target)));
       } else {
-        String targetName = String.format("clause: '%s' in route-map: '%s'", target, routeMapName);
+        String targetName =
+            String.format("clause: '%s' in route-map: '%s'", cont.getTarget(), routeMapName);
         undefined(
             AristaStructureType.ROUTE_MAP_CLAUSE,
             targetName,

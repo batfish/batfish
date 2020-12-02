@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_route_map_naked_continue
+!
+route-map RM permit 5
+   continue
+   set community 0:1 additive
+!
+route-map RM permit 9999
+   set metric 3
+!
