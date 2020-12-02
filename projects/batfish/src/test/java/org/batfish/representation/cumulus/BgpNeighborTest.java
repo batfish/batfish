@@ -3,10 +3,15 @@ package org.batfish.representation.cumulus;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.testing.EqualsTester;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.junit.Test;
 
@@ -66,5 +71,66 @@ public final class BgpNeighborTest {
       assertThat(leaf.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), equalTo(Boolean.TRUE));
       assertThat(leaf.getRemoteAs(), equalTo(RemoteAs.explicit(8)));
     }
+  }
+
+  @Test
+  public void testRemoteAsEquals() {
+    new EqualsTester()
+        .addEqualityGroup(1)
+        .addEqualityGroup(RemoteAs.explicit(5), RemoteAs.explicit(5))
+        .addEqualityGroup(RemoteAs.explicit(7))
+        .addEqualityGroup(RemoteAs.internal())
+        .addEqualityGroup(RemoteAs.external())
+        .testEquals();
+  }
+
+  @Test
+  public void testRemoteAsExplicit() {
+    RemoteAs explicit5 = RemoteAs.explicit(5);
+    // remoteAs should always resolve to 5
+    assertThat(explicit5.getRemoteAs(null), equalTo(LongSpace.of(5)));
+    assertThat(explicit5.getRemoteAs(7L), equalTo(LongSpace.of(5)));
+    // Only 5 is known iBGP
+    assertFalse(explicit5.isKnownIbgp(4L));
+    assertTrue(explicit5.isKnownIbgp(5L));
+    assertFalse(explicit5.isKnownIbgp(6L));
+    // All but 5 are known eBGP
+    assertTrue(explicit5.isKnownEbgp(4L));
+    assertFalse(explicit5.isKnownEbgp(5L));
+    assertTrue(explicit5.isKnownEbgp(6L));
+    // Neither is known with null
+    assertFalse(explicit5.isKnownIbgp(null));
+    assertFalse(explicit5.isKnownEbgp(null));
+  }
+
+  @Test
+  public void testRemoteAsExternal() {
+    RemoteAs external = RemoteAs.external();
+    // RemoteAS is anything but argument, empty for null.
+    assertThat(external.getRemoteAs(null), equalTo(LongSpace.EMPTY));
+    assertThat(
+        external.getRemoteAs(5L),
+        equalTo(BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(5))));
+    // Never known iBGP
+    assertFalse(external.isKnownIbgp(null));
+    assertFalse(external.isKnownIbgp(5L));
+    // Always known eBGP
+    assertTrue(external.isKnownEbgp(null));
+    assertTrue(external.isKnownEbgp(5L));
+  }
+
+  @Test
+  public void testRemoteAsInternal() {
+    RemoteAs internal = RemoteAs.internal();
+    // RemoteAS is same as argument, empty for null.
+    assertThat(internal.getRemoteAs(null), equalTo(LongSpace.EMPTY));
+    assertThat(internal.getRemoteAs(5L), equalTo(LongSpace.of(5)));
+    assertThat(internal.getRemoteAs(7L), equalTo(LongSpace.of(7)));
+    // Always known iBGP
+    assertTrue(internal.isKnownIbgp(null));
+    assertTrue(internal.isKnownIbgp(5L));
+    // Never known eBGP
+    assertFalse(internal.isKnownEbgp(null));
+    assertFalse(internal.isKnownEbgp(5L));
   }
 }
