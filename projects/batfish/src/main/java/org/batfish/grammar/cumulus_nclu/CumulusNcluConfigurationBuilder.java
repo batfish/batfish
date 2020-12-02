@@ -775,6 +775,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
           String.format(
               "Cannot create BGP neighbor for illegal abstract interface name '%s' in: %s",
               _currentBgpNeighborName, getFullText(ctx)));
+      _currentBgpNeighbor = new BgpPeerGroupNeighbor("dummy");
       return;
     }
 
