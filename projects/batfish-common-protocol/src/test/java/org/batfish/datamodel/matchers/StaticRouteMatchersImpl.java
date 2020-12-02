@@ -19,15 +19,4 @@ final class StaticRouteMatchersImpl {
       return actual.getNextVrf();
     }
   }
-
-  static final class HasTag extends FeatureMatcher<StaticRoute, Long> {
-    HasTag(Matcher<? super Long> subMatcher) {
-      super(subMatcher, "A StaticRoute with tag", "tag");
-    }
-
-    @Override
-    protected Long featureValueOf(StaticRoute actual) {
-      return actual.getTag();
-    }
-  }
 }
