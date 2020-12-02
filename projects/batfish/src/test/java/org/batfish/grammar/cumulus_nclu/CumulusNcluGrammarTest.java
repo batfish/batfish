@@ -559,6 +559,12 @@ public final class CumulusNcluGrammarTest {
   }
 
   @Test
+  public void testBgpInvalidInterfaceNeighbor() throws IOException {
+    CumulusNcluConfiguration c = parseVendorConfig("cumulus_nclu_bgp_invalid_interface_neighbor");
+    assertThat(c.getBgpProcess().getDefaultVrf().getNeighbors(), anEmptyMap());
+  }
+
+  @Test
   public void testBgpIpNeighbor() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_bgp_ip_neighbor");
     long internalAs = 65500L;

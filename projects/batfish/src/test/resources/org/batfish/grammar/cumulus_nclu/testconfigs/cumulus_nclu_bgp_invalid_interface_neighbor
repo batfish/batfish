@@ -1,0 +1,8 @@
+net del all
+#
+net add hostname cumulus_nclu_bgp_invalid_interface_neighbor
+#
+net add bgp autonomous-system 65500
+net add bgp neighbor NOT_AN_IFACE_NAME interface remote-as 5
+#
+net commit
