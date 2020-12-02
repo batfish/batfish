@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.Ip;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.junit.Test;
 
 /** Test of {@link BgpNeighbor} and subclasses. */
@@ -24,11 +25,10 @@ public final class BgpNeighborTest {
     BgpNeighborL2vpnEvpnAddressFamily pgL2vpn = new BgpNeighborL2vpnEvpnAddressFamily();
     pgL2vpn.setRouteReflectorClient(true);
     pg.setL2vpnEvpnAddressFamily(pgL2vpn);
-    pg.setRemoteAs(8L);
-    pg.setRemoteAsType(RemoteAsType.EXPLICIT);
+    pg.setRemoteAs(RemoteAs.explicit(8));
     {
       // all props set, inherit nothing
-      BgpIpNeighbor leaf = new BgpIpNeighbor("leaf");
+      BgpIpNeighbor leaf = new BgpIpNeighbor("leaf", Ip.parse("1.2.3.4"));
       leaf.setBgpNeighborSource(new BgpNeighborSourceAddress(Ip.ZERO));
       leaf.setDescription("leaf desc");
       leaf.setEbgpMultihop(1L);
@@ -39,7 +39,7 @@ public final class BgpNeighborTest {
       leafL2vpn.setRouteReflectorClient(false);
       leaf.setL2vpnEvpnAddressFamily(leafL2vpn);
       leaf.setPeerGroup("pg");
-      leaf.setRemoteAsType(RemoteAsType.EXTERNAL);
+      leaf.setRemoteAs(RemoteAs.external());
 
       leaf.inheritFrom(ImmutableMap.of("pg", pg));
 
@@ -50,12 +50,11 @@ public final class BgpNeighborTest {
       assertThat(
           leaf.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), not(equalTo(Boolean.TRUE)));
       assertThat(leaf.getPeerGroup(), equalTo("pg"));
-      assertThat(leaf.getRemoteAs(), nullValue());
-      assertThat(leaf.getRemoteAsType(), equalTo(RemoteAsType.EXTERNAL));
+      assertThat(leaf.getRemoteAs(), equalTo(RemoteAs.external()));
     }
     {
       // no props set, inherit everything applicable
-      BgpIpNeighbor leaf = new BgpIpNeighbor("leaf");
+      BgpIpNeighbor leaf = new BgpIpNeighbor("leaf", Ip.parse("1.2.3.4"));
       leaf.setPeerGroup("pg");
       leaf.inheritFrom(ImmutableMap.of("pg", pg));
 
@@ -65,8 +64,7 @@ public final class BgpNeighborTest {
       assertThat(leaf.getEbgpMultihop(), equalTo(5L));
       assertThat(leaf.getIpv4UnicastAddressFamily().getNextHopSelf(), equalTo(Boolean.TRUE));
       assertThat(leaf.getL2vpnEvpnAddressFamily().getRouteReflectorClient(), equalTo(Boolean.TRUE));
-      assertThat(leaf.getRemoteAs(), equalTo(8L));
-      assertThat(leaf.getRemoteAsType(), equalTo(RemoteAsType.EXPLICIT));
+      assertThat(leaf.getRemoteAs(), equalTo(RemoteAs.explicit(8)));
     }
   }
 }

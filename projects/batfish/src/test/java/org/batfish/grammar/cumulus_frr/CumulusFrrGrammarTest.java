@@ -10,9 +10,6 @@ import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
-import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
-import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -75,6 +72,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
 import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
 import org.batfish.representation.cumulus.BgpNetwork;
@@ -616,7 +614,7 @@ public class CumulusFrrGrammarTest {
     assertThat(neighbors.keySet(), contains("foo"));
     BgpNeighbor foo = neighbors.get("foo");
     assertThat(foo, isA(BgpPeerGroupNeighbor.class));
-    assertThat(foo.getRemoteAs(), equalTo(2L));
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2L)));
   }
 
   @Test
@@ -640,8 +638,7 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
     BgpNeighbor foo = neighbors.get("n");
-    assertThat(foo.getRemoteAsType(), equalTo(EXPLICIT));
-    assertThat(foo.getRemoteAs(), equalTo(2L));
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
   }
 
   @Test
@@ -650,8 +647,7 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
     BgpNeighbor foo = neighbors.get("n");
-    assertThat(foo.getRemoteAsType(), equalTo(EXTERNAL));
-    assertNull(foo.getRemoteAs());
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.external()));
   }
 
   @Test
@@ -660,8 +656,7 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
     BgpNeighbor foo = neighbors.get("n");
-    assertThat(foo.getRemoteAsType(), equalTo(INTERNAL));
-    assertNull(foo.getRemoteAs());
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.internal()));
   }
 
   @Test
@@ -680,7 +675,7 @@ public class CumulusFrrGrammarTest {
     assertThat(neighbors.keySet(), contains("1.2.3.4"));
     BgpNeighbor neighbor = neighbors.get("1.2.3.4");
     assertThat(neighbor, isA(BgpIpNeighbor.class));
-    assertThat(neighbor.getRemoteAs(), equalTo(2L));
+    assertThat(neighbor.getRemoteAs(), equalTo(RemoteAs.explicit(2L)));
   }
 
   @Test

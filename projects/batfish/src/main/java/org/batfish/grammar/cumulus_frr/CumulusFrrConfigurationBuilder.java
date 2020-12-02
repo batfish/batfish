@@ -23,9 +23,6 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDI
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
-import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
-import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
-import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -153,6 +150,7 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
@@ -869,13 +867,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
-            .computeIfAbsent(
-                name,
-                (ipStr) -> {
-                  BgpIpNeighbor neighbor = new BgpIpNeighbor(ipStr);
-                  neighbor.setPeerIp(Ip.parse(ipStr));
-                  return neighbor;
-                });
+            .computeIfAbsent(name, (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)));
   }
 
   @Override
@@ -944,15 +936,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbnp_remote_as(Sbnp_remote_asContext ctx) {
+    assert _currentBgpNeighbor != null;
     if (ctx.autonomous_system() != null) {
-      _currentBgpNeighbor.setRemoteAsType(EXPLICIT);
-      _currentBgpNeighbor.setRemoteAs(parseLong(ctx.autonomous_system().getText()));
+      _currentBgpNeighbor.setRemoteAs(
+          RemoteAs.explicit(parseLong(ctx.autonomous_system().getText())));
     } else if (ctx.EXTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(EXTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
-    } else if (ctx.INTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(INTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.external());
+    } else {
+      assert ctx.INTERNAL() != null;
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.internal());
     }
   }
 
