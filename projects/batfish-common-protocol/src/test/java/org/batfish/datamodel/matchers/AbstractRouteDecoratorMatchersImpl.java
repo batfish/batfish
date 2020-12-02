@@ -75,6 +75,17 @@ final class AbstractRouteDecoratorMatchersImpl {
     }
   }
 
+  static final class HasTag extends FeatureMatcher<AbstractRouteDecorator, Long> {
+    HasTag(Matcher<? super Long> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with tag", "tag");
+    }
+
+    @Override
+    protected Long featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getTag();
+    }
+  }
+
   static final class IsNonForwarding extends FeatureMatcher<AbstractRouteDecorator, Boolean> {
     IsNonForwarding(@Nonnull Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "An AbstractRouteDecorator with nonRouting:", "nonRouting");
