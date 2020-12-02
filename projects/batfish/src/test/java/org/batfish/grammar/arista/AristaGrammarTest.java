@@ -2502,6 +2502,28 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testRouteMapNakedContinue() {
+    Configuration c = parseConfig("arista_route_map_naked_continue");
+    assertThat(c.getRoutingPolicies(), hasKey("RM"));
+    RoutingPolicy rm = c.getRoutingPolicies().get("RM");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setTag(0L)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setMetric(0L)
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("192.0.2.254"))
+            .setNetwork(Prefix.ZERO)
+            .build();
+    Bgpv4Route after = processRouteIn(rm, base);
+    assertThat(after.getMetric(), equalTo(3L));
+    assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(1))));
+  }
+
+  @Test
   public void testSnmpExtraction() {
     Configuration config = parseConfig("arista_snmp");
     assertThat(config.getSnmpTrapServers(), containsInAnyOrder("10.1.2.3"));
