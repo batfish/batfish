@@ -2463,14 +2463,12 @@ public class AristaGrammarTest {
               .build());
     }
     {
-      assert true;
-      // TODO(PR#6465) true false false -> 10, 40
-      //      Bgpv4Route after = processRouteIn(rm, base.toBuilder().setTag(1L).build());
-      //      assertThat(after.getTag(), equalTo(10L));
-      //      assertThat(after.getCommunities(),
-      // not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
-      //      assertThat(after.getMetric(), not(equalTo(30L)));
-      //      assertThat(after.getLocalPreference(), equalTo(40L));
+      // true false false -> 10, 40
+      Bgpv4Route after = processRouteIn(rm, base.toBuilder().setTag(1L).build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
     }
     {
       // true false true -> 10, 30
@@ -2478,20 +2476,18 @@ public class AristaGrammarTest {
           rm, base.toBuilder().setTag(1L).setNetwork(Prefix.parse("1.2.3.4/32")).build());
     }
     {
-      assert true;
-      //      // TODO(PR#6465) true true false -> 10, 20, 40
-      //      Bgpv4Route after =
-      //          processRouteIn(
-      //              rm,
-      //              base.toBuilder()
-      //                  .setTag(1L)
-      //                  .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
-      //                  .build());
-      //      assertThat(after.getTag(), equalTo(10L));
-      //      assertThat(after.getCommunities(),
-      // equalTo(CommunitySet.of(StandardCommunity.of(20))));
-      //      assertThat(after.getMetric(), not(equalTo(30L)));
-      //      assertThat(after.getLocalPreference(), equalTo(40L));
+      // true true false -> 10, 20, 40
+      Bgpv4Route after =
+          processRouteIn(
+              rm,
+              base.toBuilder()
+                  .setTag(1L)
+                  .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+                  .build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(20))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
     }
     {
       // true true true -> 10, 20, 30
