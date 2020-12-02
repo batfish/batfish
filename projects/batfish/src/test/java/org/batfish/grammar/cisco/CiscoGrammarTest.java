@@ -28,6 +28,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
@@ -3564,6 +3565,30 @@ public final class CiscoGrammarTest {
 
     assertThat(setWeightPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
     assertThat(transformedRoute.build().getLocalPreference(), equalTo((1L << 32) - 1));
+  }
+
+  @Test
+  public void testIosRouteMapSetTag() throws IOException {
+    String hostname = "ios-route-map-set-tag";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    RoutingPolicy setTagPolicy =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getRoutingPolicies()
+            .get("SET_TAG");
+    Bgpv4Route r =
+        Bgpv4Route.builder()
+            .setWeight(1)
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route.Builder transformedRoute = r.toBuilder();
+
+    assertThat(setTagPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
+    assertThat(transformedRoute.build(), hasTag(20));
   }
 
   @Test
