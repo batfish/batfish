@@ -74493,7 +74493,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionReject"
+                    "type" : "ReturnFalse"
                   }
                 ]
               },
@@ -74510,7 +74510,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionReject"
+                    "type" : "ReturnFalse"
                   }
                 ]
               },
@@ -74552,7 +74552,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "SetLocalDefaultActionReject"
+                "type" : "ReturnFalse"
               }
             ]
           },
@@ -75287,7 +75287,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "SetLocalDefaultActionReject"
+                "type" : "ReturnFalse"
               }
             ]
           },
@@ -75834,7 +75834,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "SetLocalDefaultActionAccept"
+                "type" : "ReturnTrue"
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",

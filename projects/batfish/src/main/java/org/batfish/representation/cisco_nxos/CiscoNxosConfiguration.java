@@ -2909,16 +2909,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     Integer continueTarget = entry.getContinue();
     LineAction action = entry.getAction();
 
-    // If matched, change the default action.
-    if (action == LineAction.PERMIT) {
-      trueStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
+    if (continueTarget == null) {
+      // No continue: on match, return the action.
+      if (action == LineAction.PERMIT) {
+        trueStatements.add(Statements.ReturnTrue.toStaticStatement());
+      } else {
+        assert action == LineAction.DENY;
+        trueStatements.add(Statements.ReturnFalse.toStaticStatement());
+      }
     } else {
-      assert action == LineAction.DENY;
-      trueStatements.add(Statements.SetLocalDefaultActionReject.toStaticStatement());
-    }
-
-    // Additionally if matched, continue by calling the named policy.
-    if (continueTarget != null) {
+      // Continue: on match, change the default.
+      if (action == LineAction.PERMIT) {
+        trueStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
+      } else {
+        assert action == LineAction.DENY;
+        trueStatements.add(Statements.SetLocalDefaultActionReject.toStaticStatement());
+      }
       if (continueTargets.contains(continueTarget)) {
         trueStatements.add(call(computeRoutingPolicyName(routeMapName, continueTarget)));
       } else {
