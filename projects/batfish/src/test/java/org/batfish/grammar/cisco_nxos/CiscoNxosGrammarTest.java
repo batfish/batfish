@@ -5,8 +5,10 @@ import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
@@ -249,6 +251,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
+import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.ParserBatfishException;
@@ -650,6 +653,9 @@ public final class CiscoNxosGrammarTest {
           ipv4u.getRedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2")),
           equalTo(
               new RedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2"), "OSPF_MAP2")));
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocolInstance.eigrp("EIGRP")),
+          equalTo(new RedistributionPolicy(RoutingProtocolInstance.eigrp("EIGRP"), "EIGRP_MAP")));
 
       BgpVrfIpv6AddressFamilyConfiguration ipv6u = vrf.getIpv6UnicastAddressFamily();
       assertThat(ipv6u, notNullValue());
@@ -752,6 +758,130 @@ public final class CiscoNxosGrammarTest {
             .get(Ip.parse("1.2.3.0"))
             .getIpv4UnicastAddressFamily()
             .getDefaultOriginate());
+  }
+
+  @Test
+  public void testBgpRedistFromEigrpConversion() throws IOException {
+    // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
+    Configuration c = parseConfig("nxos_bgp_eigrp_redistribution");
+    RoutingPolicy bgpExportPolicy =
+        c.getRoutingPolicies().get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    Prefix matchRm = Prefix.parse("5.5.5.0/24");
+    Prefix noMatchRm = Prefix.parse("5.5.5.0/30");
+    Ip bgpRouterId = Ip.parse("1.1.1.1");
+    Ip bgpPeerId = Ip.parse("2.2.2.2");
+    Ip nextHopIp = Ip.parse("3.3.3.3"); // not actually in config, just made up
+    BgpSessionProperties.Builder spb =
+        BgpSessionProperties.builder().setTailAs(1L).setTailIp(bgpPeerId).setHeadIp(nextHopIp);
+    BgpSessionProperties ibgpSessionProps =
+        spb.setHeadAs(1L).setSessionType(SessionType.IBGP).build();
+    BgpSessionProperties ebgpSessionProps =
+        spb.setHeadAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+
+    // Create eigrp routes to redistribute
+    EigrpInternalRoute.Builder internalRb =
+        EigrpInternalRoute.builder()
+            .setProcessAsn(1L)
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                    .build());
+    EigrpRoute matchEigrp = internalRb.setNetwork(matchRm).build();
+    EigrpRoute noMatchEigrp = internalRb.setNetwork(noMatchRm).build();
+
+    // TODO BGP metric should match original route's metric
+    {
+      // Redistribute matching EIGRP route into EBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.BGP)
+                  .setAdmin(ebgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(nextHopIp)
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .build()));
+    }
+    {
+      // Redistribute nonmatching EIGRP route to EBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT));
+    }
+    {
+      // Redistribute matching EIGRP route to IBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.IBGP)
+                  .setAdmin(ibgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(Ip.ZERO) // for ibgp
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .build()));
+    }
+    {
+      // Redistribute nonmatching EIGRP route to IBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT));
+    }
+    {
+      // Ensure external EIGRP route can also match routing policy
+      EigrpRoute matchEigrpEx =
+          EigrpExternalRoute.builder()
+              .setProcessAsn(1L)
+              .setDestinationAsn(2L)
+              .setEigrpMetric(
+                  ClassicMetric.builder()
+                      .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                      .build())
+              .setNetwork(matchRm)
+              .build();
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.BGP)
+                  .setAdmin(ebgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(nextHopIp)
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP_EX)
+                  .build()));
+    }
   }
 
   @Test

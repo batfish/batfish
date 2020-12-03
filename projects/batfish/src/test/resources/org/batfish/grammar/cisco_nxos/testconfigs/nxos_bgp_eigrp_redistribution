@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_eigrp_redistribution
+feature bgp
+!
+ip prefix-list redist_eigrp seq 5 permit 5.5.5.0/24
+!
+route-map redist_eigrp permit 10
+  match ip address prefix-list redist_eigrp
+!
+router bgp 1
+  router-id 1.1.1.1
+  address-family ipv4 unicast
+    redistribute eigrp 1 route-map redist_eigrp
+  neighbor 2.2.2.2
+      remote-as 2
+!
