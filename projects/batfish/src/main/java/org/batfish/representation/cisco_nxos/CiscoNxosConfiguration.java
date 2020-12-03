@@ -708,6 +708,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       exportConditions.add(ospf);
     }
 
+    // Export EIGRP routes that should be redistributed.
+    List<RedistributionPolicy> eigrpPolicies =
+        ipv4af == null
+            ? ImmutableList.of()
+            : ipv4af.getRedistributionPolicies(NxosRoutingProtocol.EIGRP);
+    for (RedistributionPolicy eigrpPolicy : eigrpPolicies) {
+      /* TODO: how do we match on source tag (aka EIGRP process tag)? */
+      String routeMap = eigrpPolicy.getRouteMap();
+      RouteMap map = _routeMaps.get(routeMap);
+      List<BooleanExpr> conditions =
+          ImmutableList.of(
+              new Disjunction(
+                  new MatchProtocol(RoutingProtocol.EIGRP),
+                  new MatchProtocol(RoutingProtocol.EIGRP_EX)),
+              redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+      Conjunction eigrp = new Conjunction(conditions);
+      eigrp.setComment("Redistribute EIGRP routes into BGP");
+      exportConditions.add(eigrp);
+    }
+
     // Now we add all the per-network export policies.
     if (ipv4af != null) {
       ipv4af
