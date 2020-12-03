@@ -92,6 +92,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
@@ -821,6 +822,7 @@ import org.batfish.grammar.cisco.CiscoParser.Recno_eigrp_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_aggregate_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_connected_is_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Redistribute_eigrp_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_ospf_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_ospfv3_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Redistribute_rip_bgp_tailContext;
@@ -7628,6 +7630,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       r.setLevel(IsisLevel.LEVEL_1_2);
     } else {
       r.setLevel(IsisRedistributionPolicy.DEFAULT_LEVEL);
+    }
+  }
+
+  @Override
+  public void exitRedistribute_eigrp_bgp_tail(Redistribute_eigrp_bgp_tailContext ctx) {
+    BgpProcess proc = currentVrf().getBgpProcess();
+    // Intentional identity comparison
+    if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
+      RoutingProtocol sourceProtocol = RoutingProtocol.EIGRP;
+      BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
+      proc.getRedistributionPolicies().put(sourceProtocol, r);
+      // TODO match specific EIGRP process ID (ctx.id)
+      if (ctx.map != null) {
+        String map = ctx.map.getText();
+        r.setRouteMap(map);
+        _configuration.referenceStructure(
+            ROUTE_MAP, map, BGP_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
+      }
+    } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
+      throw new BatfishException("do not currently handle per-neighbor redistribution policies");
     }
   }
 

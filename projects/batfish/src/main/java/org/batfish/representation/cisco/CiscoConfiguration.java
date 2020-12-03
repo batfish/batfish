@@ -1395,6 +1395,28 @@ public final class CiscoConfiguration extends VendorConfiguration {
       exportConditions.add(exportOspfConditions);
     }
 
+    // Export EIGRP routes that should be redistributed.
+    BgpRedistributionPolicy redistributeEigrpPolicy =
+        // key EIGRP indicates redist external too; EIGRP_EX is never used as a key
+        proc.getRedistributionPolicies().get(RoutingProtocol.EIGRP);
+    if (redistributeEigrpPolicy != null) {
+      ImmutableList.Builder<BooleanExpr> exportEigrpConditions = ImmutableList.builder();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
+      exportEigrpConditions.add(new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX));
+      String mapName = redistributeEigrpPolicy.getRouteMap();
+      if (mapName != null) {
+        RouteMap redistributeEigrpRouteMap = _routeMaps.get(mapName);
+        if (redistributeEigrpRouteMap != null) {
+          weInterior = new CallExpr(mapName);
+        }
+      }
+      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
+      exportEigrpConditions.add(we);
+      Conjunction eigrp = new Conjunction(exportEigrpConditions.build());
+      eigrp.setComment("Redistribute EIGRP routes into BGP");
+      exportConditions.add(eigrp);
+    }
+
     // cause ip peer groups to inherit unset fields from owning named peer
     // group if it exists, and then always from process master peer group
     Set<LeafBgpPeerGroup> leafGroups = new LinkedHashSet<>();
