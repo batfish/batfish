@@ -27,6 +27,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.junit.Test;
 
@@ -274,8 +275,9 @@ public class CumulusConcatenatedConfigurationTest {
 
     BgpProcess bgpProc = new BgpProcess();
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
+    bgpVrf.setAutonomousSystem(65000L);
     BgpNeighbor neighbpr = new BgpInterfaceNeighbor("swp2");
-    neighbpr.setRemoteAsType(RemoteAsType.EXTERNAL);
+    neighbpr.setRemoteAs(RemoteAs.external());
     frrConfiguration.setBgpProcess(bgpProc);
     bgpProc.getVrfs().put(DEFAULT_VRF_NAME, bgpVrf);
     bgpVrf.getNeighbors().put(neighbpr.getName(), neighbpr);

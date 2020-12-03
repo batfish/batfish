@@ -92183,11 +92183,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Skipping invalidly configured BGP peer 1.1.1.1"
+              "text" : "Skipping BGP neighbor 1.1.1.1: missing remote-as configuration"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Skipping invalidly configured BGP peer 1.1.1.2"
+              "text" : "Skipping BGP neighbor 1.1.1.2: missing remote-as configuration"
             }
           ]
         },

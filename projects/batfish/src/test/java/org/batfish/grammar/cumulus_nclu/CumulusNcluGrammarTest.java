@@ -132,6 +132,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpProcess;
 import org.batfish.representation.cumulus.BgpRedistributionPolicy;
 import org.batfish.representation.cumulus.BgpVrf;
@@ -141,7 +142,6 @@ import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusRoutingProtocol;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.Interface;
-import org.batfish.representation.cumulus.RemoteAsType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -468,8 +468,8 @@ public final class CumulusNcluGrammarTest {
     assertThat("Ensure interface neighbor has correct name", in.getName(), equalTo("swp1"));
     assertThat(
         "Ensure interface uses correct remote-as type",
-        in.getRemoteAsType(),
-        equalTo(RemoteAsType.EXTERNAL));
+        in.getRemoteAs(),
+        equalTo(RemoteAs.external()));
 
     // l2vpn evpn route activation and reflector settings
     assertTrue(
@@ -1646,6 +1646,7 @@ public final class CumulusNcluGrammarTest {
 
     BgpUnnumberedPeerConfig vrf2BgpPeer =
         c.getVrfs().get("vrf2").getBgpProcess().getInterfaceNeighbors().get("swp2");
+    assertThat(vrf2BgpPeer, notNullValue());
     assertThat(vrf2BgpPeer.getIpv4UnicastAddressFamily(), notNullValue());
     assertThat(vrf2BgpPeer.getEvpnAddressFamily(), nullValue());
   }

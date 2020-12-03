@@ -23,6 +23,7 @@ net add vxlan vni10002 bridge access 2
 
 # VNIs for vrf1
 net add vrf vrf1 vni 10004
+net add bgp vrf vrf1 autonomous-system 65500
 net add bgp vrf vrf1 router-id 192.0.1.1
 net add vxlan vni10004 vxlan id 10004
 net add vxlan vni10004 vxlan local-tunnelip 192.0.2.14
@@ -36,6 +37,7 @@ net add vxlan vni10005 bridge access 5
 
 # VNIs for vrf6
 net add vrf vrf6 vni 10006
+net add bgp vrf vrf6 autonomous-system 65500
 net add bgp vrf vrf6 router-id 192.0.1.1
 ## advertise ipv4 unicast must appear in the tenant VRF config to take effect
 net add bgp vrf vrf6 l2vpn evpn advertise ipv4 unicast
@@ -46,6 +48,7 @@ net add vxlan vni10006 bridge access 6
 # Unrelated to EVPN vrf
 net add vrf vrf2
 net add interface swp2 vrf vrf2
+net add bgp vrf vrf2 autonomous-system 65500
 net add bgp vrf vrf2 router-id 192.0.2.2
 net add bgp vrf vrf2 neighbor swp2 interface remote-as external
 

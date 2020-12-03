@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_nclu;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
+import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BOND_SLAVE;
@@ -164,6 +165,7 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
@@ -179,7 +181,6 @@ import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
-import org.batfish.representation.cumulus.RemoteAsType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
@@ -804,13 +805,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
       return;
     }
-    BgpIpNeighbor ipNeighbor =
-        (BgpIpNeighbor)
-            _currentBgpVrf
-                .getNeighbors()
-                .computeIfAbsent(_currentBgpNeighborName, BgpIpNeighbor::new);
-    ipNeighbor.setPeerIp(peerIp);
-    _currentBgpNeighbor = ipNeighbor;
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(_currentBgpNeighborName, name -> new BgpIpNeighbor(name, peerIp));
   }
 
   @Override
@@ -1066,16 +1064,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBnp_remote_as(Bnp_remote_asContext ctx) {
     assert _currentBgpNeighbor != null;
-    if (ctx.EXTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
-    } else if (ctx.INTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
+    if (ctx.as != null) {
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.explicit(parseLong(ctx.as.getText())));
+    } else if (ctx.EXTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.external());
     } else {
-      assert ctx.as != null;
-      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXPLICIT);
-      _currentBgpNeighbor.setRemoteAs(toLong(ctx.as));
+      assert ctx.INTERNAL() != null;
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.internal());
     }
   }
 
