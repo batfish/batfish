@@ -3,6 +3,17 @@
 hostname arista_acl_show_run_all
 !
 ip access-list standard SOME_ACL
+   counters per-entry
+   no counters per-entry
+   statistics per-entry
    no statistics per-entry
    fragment-rules
    10 permit 192.0.2.0/24
+!
+ip access-list SOME_EXT_ACL
+   counters per-entry
+   no counters per-entry
+   statistics per-entry
+   no statistics per-entry
+   fragment-rules
+   10 permit tcp any any eq ssh https
