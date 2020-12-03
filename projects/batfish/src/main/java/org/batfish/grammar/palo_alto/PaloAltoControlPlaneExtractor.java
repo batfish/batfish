@@ -30,6 +30,7 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
 
   @Override
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
+    PreprocessPaloAltoExtractor.preprocess(tree, _text, _parser, _w);
     PaloAltoConfigurationBuilder cb = new PaloAltoConfigurationBuilder(_parser, _text, _w);
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(cb, tree);

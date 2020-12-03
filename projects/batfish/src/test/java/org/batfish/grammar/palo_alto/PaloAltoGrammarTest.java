@@ -63,6 +63,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeOutgoingFilterName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
@@ -3741,5 +3742,33 @@ public final class PaloAltoGrammarTest {
             .getActiveNeighbors()
             .get(Prefix.parse("120.120.120.120/32"))
             .getEbgpMultihop());
+  }
+
+  @Test
+  public void testDelete() throws IOException {
+    String hostname = "delete-line";
+    PaloAltoConfiguration vsConfig = parsePaloAltoConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        vsConfig
+            .getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getRulebase()
+            .getSecurityRules()
+            .get("RULE1")
+            .getSource(),
+        contains(new RuleEndpoint(REFERENCE, "addr2")));
+    String filename = "configs/" + hostname;
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr1"), 0));
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr2"), 1));
   }
 }

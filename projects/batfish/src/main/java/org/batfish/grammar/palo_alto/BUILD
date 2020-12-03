@@ -12,6 +12,7 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto",
+        "//projects/batfish/src/main/java/org/batfish/grammar/hierarchical",
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
