@@ -13,8 +13,10 @@ import static org.batfish.datamodel.AuthenticationMethod.LINE;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
 import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
 import static org.batfish.datamodel.AuthenticationMethod.NONE;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -66,6 +68,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPostTransformationIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPreTransformationOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -210,6 +213,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
@@ -283,6 +287,7 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -294,6 +299,7 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
@@ -393,6 +399,7 @@ import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -3920,6 +3927,152 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(classMapDropAclName, rejects(flowPass, null, c)));
     assertThat(c, hasIpAccessList(classMapDropAclName, rejects(flowInspect, null, c)));
     assertThat(c, hasIpAccessList(classMapDropAclName, accepts(flowDrop, null, c)));
+  }
+
+  @Test
+  public void testIosXeEigrpToBgpRedistExtraction() throws IOException {
+    String hostname = "ios-xe-eigrp-to-bgp";
+    String redistRmName = "redist_eigrp";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    org.batfish.representation.cisco.BgpProcess bgpProc = vc.getDefaultVrf().getBgpProcess();
+    assert bgpProc != null;
+    BgpRedistributionPolicy eigrpRedist =
+        bgpProc.getRedistributionPolicies().get(RoutingProtocol.EIGRP);
+    assert eigrpRedist != null;
+    assertThat(eigrpRedist.getRouteMap(), equalTo(redistRmName));
+
+    /* Confirm route-map was referenced from correct context */
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, ROUTE_MAP, redistRmName, BGP_REDISTRIBUTE_EIGRP_MAP));
+  }
+
+  @Test
+  public void testIosXeEigrpToBgpRedistConversion() throws IOException {
+    // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
+    Configuration c = parseConfig("ios-xe-eigrp-to-bgp");
+    RoutingPolicy bgpExportPolicy =
+        c.getRoutingPolicies().get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    Prefix matchRm = Prefix.parse("5.5.5.0/24");
+    Prefix noMatchRm = Prefix.parse("5.5.5.0/30");
+    Ip bgpRouterId = Ip.parse("1.1.1.1");
+    Ip bgpPeerId = Ip.parse("2.2.2.2");
+    Ip nextHopIp = Ip.parse("3.3.3.3"); // not actually in config, just made up
+    BgpSessionProperties.Builder spb =
+        BgpSessionProperties.builder().setTailAs(1L).setTailIp(bgpPeerId).setHeadIp(nextHopIp);
+    BgpSessionProperties ibgpSessionProps =
+        spb.setHeadAs(1L).setSessionType(SessionType.IBGP).build();
+    BgpSessionProperties ebgpSessionProps =
+        spb.setHeadAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+
+    // Create eigrp routes to redistribute
+    EigrpInternalRoute.Builder internalRb =
+        EigrpInternalRoute.builder()
+            .setProcessAsn(1L)
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                    .build());
+    EigrpRoute matchEigrp = internalRb.setNetwork(matchRm).build();
+    EigrpRoute noMatchEigrp = internalRb.setNetwork(noMatchRm).build();
+
+    // TODO BGP metric should match original route's metric
+    {
+      // Redistribute matching EIGRP route into EBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.BGP)
+                  .setAdmin(ebgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(nextHopIp)
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .build()));
+    }
+    {
+      // Redistribute nonmatching EIGRP route to EBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT));
+    }
+    {
+      // Redistribute matching EIGRP route to IBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.IBGP)
+                  .setAdmin(ibgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(Ip.ZERO) // for ibgp
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .build()));
+    }
+    {
+      // Redistribute nonmatching EIGRP route to IBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT));
+    }
+    {
+      // Ensure external EIGRP route can also match routing policy
+      EigrpRoute matchEigrpEx =
+          EigrpExternalRoute.builder()
+              .setProcessAsn(1L)
+              .setDestinationAsn(2L)
+              .setEigrpMetric(
+                  ClassicMetric.builder()
+                      .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                      .build())
+              .setNetwork(matchRm)
+              .build();
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.BGP)
+                  .setAdmin(ebgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(nextHopIp)
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP_EX)
+                  .build()));
+    }
   }
 
   @Test

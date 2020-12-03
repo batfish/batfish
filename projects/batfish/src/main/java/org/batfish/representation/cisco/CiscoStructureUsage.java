@@ -36,6 +36,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_REDISTRIBUTE_ATTACHED_HOST_MAP("bgp redistribute attached-host route-map"),
   BGP_REDISTRIBUTE_CONNECTED_MAP("bgp redistribute connected route-map"),
   BGP_REDISTRIBUTE_DYNAMIC_MAP("bgp redistribute dynamic route-map"),
+  BGP_REDISTRIBUTE_EIGRP_MAP("bgp redistribute eigrp route-map"),
   BGP_REDISTRIBUTE_ISIS_MAP("bgp redistribute isis route-map"),
   BGP_REDISTRIBUTE_OSPF_MAP("bgp redistribute ospf route-map"),
   BGP_REDISTRIBUTE_OSPFV3_MAP("bgp redistribute ospfv3 route-map"),

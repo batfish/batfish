@@ -707,7 +707,7 @@ redistribute_connected_bgp_tail
 
 redistribute_eigrp_bgp_tail
 :
-   REDISTRIBUTE EIGRP id = DEC null_rest_of_line
+   REDISTRIBUTE EIGRP id = DEC (ROUTE_MAP map = variable)? NEWLINE
 ;
 
 redistribute_ospf_bgp_tail

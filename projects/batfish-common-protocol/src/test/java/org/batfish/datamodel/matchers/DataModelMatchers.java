@@ -345,6 +345,20 @@ public final class DataModelMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
+   * reference in {@code filename} to a structure of type {@code type} named {@code structureName}
+   * of usage type {@code usage}.
+   */
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasReferencedStructure(
+      @Nonnull String filename,
+      @Nonnull StructureType type,
+      @Nonnull String structureName,
+      @Nonnull StructureUsage usage) {
+    return new ConvertConfigurationAnswerElementMatchers.HasReferenceWithUsage(
+        filename, type, structureName, usage);
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has
    * an undefined reference in {@code hostname} to a structure of type {@code type} named {@code
    * structureName} of usage type {@code usage} with reference lines matching the provided {@code
