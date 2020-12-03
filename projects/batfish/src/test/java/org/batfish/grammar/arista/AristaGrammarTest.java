@@ -1790,8 +1790,9 @@ public class AristaGrammarTest {
   @Test
   public void testParseAclShowRunAll() {
     Configuration c = parseConfig("arista_acl_show_run_all");
-    // Tests that the ACL parses.
+    // Tests that the ACLs parse.
     assertThat(c, hasIpAccessList("SOME_ACL", hasLines(hasSize(1))));
+    assertThat(c, hasIpAccessList("SOME_EXT_ACL", hasLines(hasSize(1))));
   }
 
   @Test
