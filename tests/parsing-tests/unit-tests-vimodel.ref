@@ -34505,6 +34505,7 @@
                 },
                 "swp2" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
+                  "clusterId" : 3221225986,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
@@ -34880,6 +34881,7 @@
               "neighbors" : {
                 "1.1.1.2/32" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
