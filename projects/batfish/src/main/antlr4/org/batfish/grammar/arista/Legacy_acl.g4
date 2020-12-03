@@ -217,9 +217,13 @@ extended_access_list_null_tail
          access_list_action protocol access_list_ip_range port_specifier?
          access_list_ip_range port_specifier? REFLECT
       )
+      | COUNTERS
       | DYNAMIC
       | EVALUATE
+      | FRAGMENT_RULES
       | MENU
+      | NO COUNTERS
+      | NO STATISTICS
       | REMARK
       | STATISTICS
    ) null_rest_of_line
@@ -924,7 +928,9 @@ standard_access_list_null_tail
       )? num = DEC
    )?
    (
-      FRAGMENT_RULES
+      COUNTERS
+      | FRAGMENT_RULES
+      | NO COUNTERS
       | NO STATISTICS
       | REMARK
       | STATISTICS
