@@ -67,6 +67,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasNativeVlan;
@@ -2735,6 +2736,18 @@ public final class FlatJuniperGrammarTest {
             .get(filename)
             .getOrDefault(VLAN.getDescription(), Collections.emptySortedMap()),
         allOf(hasKey("VLAN_TEST"), hasKey("VLAN_TEST_UNUSED")));
+  }
+
+  @Test
+  public void testInterfaceVtnet() {
+    Configuration c = parseConfig("interface-vtnet");
+
+    // Virtualized physical interface.
+    assertThat(c, hasInterface("vtnet0", hasInterfaceType(InterfaceType.PHYSICAL)));
+    assertThat(
+        c,
+        hasInterface(
+            "vtnet0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.1.2.3/30")))));
   }
 
   @Test
