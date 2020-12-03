@@ -275,6 +275,7 @@ public class CumulusConcatenatedConfigurationTest {
 
     BgpProcess bgpProc = new BgpProcess();
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
+    bgpVrf.setAutonomousSystem(65000L);
     BgpNeighbor neighbpr = new BgpInterfaceNeighbor("swp2");
     neighbpr.setRemoteAs(RemoteAs.external());
     frrConfiguration.setBgpProcess(bgpProc);
