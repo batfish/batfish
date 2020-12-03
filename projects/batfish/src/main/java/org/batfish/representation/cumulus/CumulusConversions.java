@@ -61,7 +61,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
-import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -483,6 +482,19 @@ public final class CumulusConversions {
       localAs = bgpVrf.getAutonomousSystem();
     }
 
+    if (neighbor.getRemoteAs() == null) {
+      w.redFlag(
+          "Skipping BGP neighbor " + neighbor.getName() + ": missing remote-as configuration");
+      return;
+    }
+    if (neighbor.getRemoteAs().getRemoteAs(localAs).isEmpty()) {
+      w.redFlag(
+          "Skipping BGP neighbor "
+              + neighbor.getName()
+              + ": unable to determine remote-as without local-as configured");
+      return;
+    }
+
     if (neighbor instanceof BgpInterfaceNeighbor) {
       BgpInterfaceNeighbor interfaceNeighbor = (BgpInterfaceNeighbor) neighbor;
       addInterfaceBgpNeighbor(c, vsConfig, interfaceNeighbor, localAs, bgpVrf, viBgpProcess, w);
@@ -503,11 +515,6 @@ public final class CumulusConversions {
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
       Warnings w) {
-    if (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null) {
-      w.redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
-      return;
-    }
-
     BgpPeerConfig.Builder<?, ?> peerConfigBuilder;
 
     // if an interface neighbor has only one address and that address is a /31, it gets treated as
@@ -515,9 +522,12 @@ public final class CumulusConversions {
     Interface viIface = c.getAllInterfaces().get(neighbor.getName());
     Optional<Ip> inferredIp = inferPeerIp(viIface);
     if (inferredIp.isPresent()) {
+      InterfaceAddress localAddress = viIface.getAddress();
+      // consequence of inferredIp
+      assert localAddress instanceof ConcreteInterfaceAddress;
       peerConfigBuilder =
           BgpActivePeerConfig.builder()
-              .setLocalIp(((ConcreteInterfaceAddress) viIface.getAddress()).getIp())
+              .setLocalIp(((ConcreteInterfaceAddress) localAddress).getIp())
               .setPeerAddress(inferredIp.get());
     } else {
       peerConfigBuilder =
@@ -539,19 +549,21 @@ public final class CumulusConversions {
       org.batfish.datamodel.BgpProcess newProc,
       BgpPeerConfig.Builder<?, ?> peerConfigBuilder,
       Warnings w) {
+    assert neighbor.getRemoteAs() != null; // precondition
 
-    RoutingPolicy exportRoutingPolicy = computeBgpNeighborExportRoutingPolicy(c, neighbor, bgpVrf);
+    RoutingPolicy exportRoutingPolicy =
+        computeBgpNeighborExportRoutingPolicy(c, neighbor, bgpVrf, localAs);
     @Nullable
     RoutingPolicy importRoutingPolicy = computeBgpNeighborImportRoutingPolicy(c, neighbor, bgpVrf);
 
     peerConfigBuilder
         .setBgpProcess(newProc)
-        .setClusterId(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor))
+        .setClusterId(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor, localAs))
         .setConfederation(bgpVrf.getConfederationId())
         .setDescription(neighbor.getDescription())
         .setGroup(neighbor.getPeerGroup())
         .setLocalAs(localAs)
-        .setRemoteAsns(computeRemoteAsns(neighbor, localAs))
+        .setRemoteAsns(neighbor.getRemoteAs().getRemoteAs(localAs))
         .setEbgpMultihop(neighbor.getEbgpMultihop() != null)
         .setGeneratedRoutes(
             bgpDefaultOriginate(neighbor) ? ImmutableSet.of(GENERATED_DEFAULT_ROUTE) : null)
@@ -619,12 +631,6 @@ public final class CumulusConversions {
       BgpVrf bgpVrf,
       org.batfish.datamodel.BgpProcess newProc,
       Warnings w) {
-    if (neighbor.getPeerIp() == null
-        || (neighbor.getRemoteAs() == null && neighbor.getRemoteAsType() == null)) {
-      w.redFlag("Skipping invalidly configured BGP peer " + neighbor.getName());
-      return;
-    }
-
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder()
             .setLocalIp(
@@ -639,7 +645,7 @@ public final class CumulusConversions {
 
   @Nonnull
   private static RoutingPolicy computeBgpNeighborExportRoutingPolicy(
-      Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf) {
+      Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf, @Nullable Long localAs) {
     String vrfName = bgpVrf.getVrfName();
 
     RoutingPolicy.Builder peerExportPolicy =
@@ -663,7 +669,7 @@ public final class CumulusConversions {
     }
 
     BooleanExpr peerExportConditions = computePeerExportConditions(neighbor, bgpVrf);
-    List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf);
+    List<Statement> acceptStmts = getAcceptStatements(neighbor, bgpVrf, localAs);
 
     peerExportPolicy.addStatement(
         new If(
@@ -761,9 +767,10 @@ public final class CumulusConversions {
         : new Conjunction(ImmutableList.of(commonCondition, peerCondition));
   }
 
-  private static List<Statement> getAcceptStatements(BgpNeighbor neighbor, BgpVrf bgpVrf) {
+  private static List<Statement> getAcceptStatements(
+      BgpNeighbor neighbor, BgpVrf bgpVrf, @Nullable Long localAs) {
     ImmutableList.Builder<Statement> acceptStatements = ImmutableList.builder();
-    SetNextHop setNextHop = getSetNextHop(neighbor, bgpVrf);
+    SetNextHop setNextHop = getSetNextHop(neighbor, localAs);
     SetMetric setMaxMedMetric = getSetMaxMedMetric(bgpVrf);
 
     if (setNextHop != null) {
@@ -792,18 +799,19 @@ public final class CumulusConversions {
   }
 
   @VisibleForTesting
-  static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, BgpVrf bgpVrf) {
-    if (neighbor.getRemoteAs() == null || bgpVrf.getAutonomousSystem() == null) {
+  static @Nullable SetNextHop getSetNextHop(BgpNeighbor neighbor, @Nullable Long localAs) {
+    if (neighbor.getRemoteAs() == null || localAs == null) {
       return null;
     }
 
-    boolean isIBgp = neighbor.getRemoteAs().equals(bgpVrf.getAutonomousSystem());
     // TODO: Need to handle dynamic neighbors.
     boolean nextHopSelf =
         Optional.ofNullable(neighbor.getIpv4UnicastAddressFamily())
             .map(BgpNeighborIpv4UnicastAddressFamily::getNextHopSelf)
             .orElse(false);
 
+    // Note that since localAs != null, this is authoritative.
+    boolean isIBgp = neighbor.getRemoteAs().isKnownIbgp(localAs);
     if (isIBgp) {
       // Check for "force".
       // TODO: Handle v6 AFI.
@@ -1025,22 +1033,6 @@ public final class CumulusConversions {
   private static boolean bgpDefaultOriginate(BgpNeighbor neighbor) {
     return neighbor.getIpv4UnicastAddressFamily() != null
         && Boolean.TRUE.equals(neighbor.getIpv4UnicastAddressFamily().getDefaultOriginate());
-  }
-
-  @Nonnull
-  private static LongSpace computeRemoteAsns(BgpNeighbor neighbor, @Nullable Long localAs) {
-    if (neighbor.getRemoteAsType() == RemoteAsType.EXPLICIT) {
-      Long remoteAs = neighbor.getRemoteAs();
-      return remoteAs == null ? LongSpace.EMPTY : LongSpace.of(remoteAs);
-    } else if (localAs == null) {
-      return LongSpace.EMPTY;
-    } else if (neighbor.getRemoteAsType() == RemoteAsType.EXTERNAL) {
-      return BgpPeerConfig.ALL_AS_NUMBERS.difference(LongSpace.of(localAs));
-    } else if (neighbor.getRemoteAsType() == RemoteAsType.INTERNAL) {
-      return LongSpace.of(localAs);
-    }
-    throw new IllegalArgumentException(
-        String.format("Invalid remote-as type: %s", neighbor.getRemoteAsType()));
   }
 
   @Nullable
@@ -1343,9 +1335,11 @@ public final class CumulusConversions {
    */
   @VisibleForTesting
   @Nullable
-  static Long inferClusterId(final BgpVrf bgpVrf, final Ip routerId, final BgpNeighbor neighbor) {
+  static Long inferClusterId(
+      final BgpVrf bgpVrf, final Ip routerId, final BgpNeighbor neighbor, @Nullable Long localAs) {
+    assert neighbor.getRemoteAs() != null; // precondition
     // Do not set cluster Id if peer is eBGP
-    if (!Objects.equals(neighbor.getRemoteAs(), bgpVrf.getAutonomousSystem())) {
+    if (neighbor.getRemoteAs().isKnownEbgp(localAs)) {
       return null;
     }
     // Return clusterId if set in the config, otherwise return routerId as default.

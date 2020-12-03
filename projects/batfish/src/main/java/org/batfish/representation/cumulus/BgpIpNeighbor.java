@@ -5,17 +5,14 @@ import org.batfish.datamodel.Ip;
 
 /** BGP neighbor identified by an IPv4 peer address */
 public class BgpIpNeighbor extends BgpNeighbor {
-  private Ip _peerIp;
+  private final @Nonnull Ip _peerIp;
 
-  public BgpIpNeighbor(String name) {
+  public BgpIpNeighbor(String name, Ip ip) {
     super(name);
-  }
-
-  public Ip getPeerIp() {
-    return _peerIp;
-  }
-
-  public void setPeerIp(@Nonnull Ip ip) {
     _peerIp = ip;
+  }
+
+  public @Nonnull Ip getPeerIp() {
+    return _peerIp;
   }
 }
