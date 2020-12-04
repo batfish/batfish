@@ -1,4 +1,4 @@
-package org.batfish.grammar.flatjuniper;
+package org.batfish.grammar.palo_alto;
 
 import static com.google.common.base.Predicates.not;
 import static java.util.stream.Collectors.toList;
@@ -13,37 +13,34 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_line_tailContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Delete_lineContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Delete_line_tailContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.hierarchical.StatementTree;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Delete_lineContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Delete_line_tailContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Set_lineContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_tailContext;
 
 /**
- * Flat Juniper pre-processor that removes parse tree nodes corresponding to deleted lines, as well
+ * Flat PaloAlto pre-processor that removes parse tree nodes corresponding to deleted lines, as well
  * as delete statements themselves.
  */
 @ParametersAreNonnullByDefault
-public class Deleter extends FlatJuniperParserBaseListener {
+public class Deleter extends PaloAltoParserBaseListener {
 
   /*
    * Implementation overview:
    *
-   * Iterate through each child parse-tree of the configuration. Each corresponds to a set,
-   * deactivate, or delete line.
+   * Iterate through each child parse-tree of the configuration. Each corresponds to a set
+   * or delete line.
    *
-   * Each time a 'deactivate' or 'set' parse-tree is encountered:
-   * - record the words following 'deactivate' or 'set'
+   * Each time a 'set' parse-tree is encountered:
+   * - record the words following 'set'
    * - build out the deactivate (or set) StatementTree, using each word as a key.
    * - add the parse-tree to the set of parse-trees stored at the node corresponding to the last word
    *
    * Each time a 'delete' parse-tree is encountered:
    * - record the words following 'delete'
-   * - for both the 'deactivate' and 'set' StatementTrees
+   * - for 'set' StatementTrees
    *   - find the node corresponding to the last word
    *   - collect all parse-trees stored there and in its subtrees
    *   - mark those parse-trees as deleted
@@ -55,26 +52,9 @@ public class Deleter extends FlatJuniperParserBaseListener {
    */
 
   public Deleter() {
-    _deactivateStatementTree = new StatementTree();
     _deletedStatements = new HashSet<>();
     _setStatementTree = new StatementTree();
     _statementsByTree = HashMultimap.create();
-  }
-
-  @Override
-  public void enterDeactivate_line_tail(Deactivate_line_tailContext ctx) {
-    _enablePathRecording = true;
-    _words = new LinkedList<>();
-  }
-
-  @Override
-  public void exitDeactivate_line_tail(Deactivate_line_tailContext ctx) {
-    _enablePathRecording = false;
-  }
-
-  @Override
-  public void exitDeactivate_line(Deactivate_lineContext ctx) {
-    addStatementToTree(_deactivateStatementTree, ctx);
   }
 
   @Override
@@ -96,7 +76,6 @@ public class Deleter extends FlatJuniperParserBaseListener {
   @Override
   public void exitDelete_line(Delete_lineContext ctx) {
     _deletedStatements.add(ctx);
-    deleteSubtree(_deactivateStatementTree);
     deleteSubtree(_setStatementTree);
   }
 
@@ -112,25 +91,7 @@ public class Deleter extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterInterface_id(Interface_idContext ctx) {
-    if (_enablePathRecording && (ctx.unit != null || ctx.chnl != null || ctx.node != null)) {
-      _enablePathRecording = false;
-      _reenablePathRecording = true;
-      String text = ctx.getText();
-      _words.add(text);
-    }
-  }
-
-  @Override
-  public void exitInterface_id(Interface_idContext ctx) {
-    if (_reenablePathRecording) {
-      _enablePathRecording = true;
-      _reenablePathRecording = false;
-    }
-  }
-
-  @Override
-  public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+  public void exitPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     // Replace the list of children with a new list containing only those nodes not marked for
     // deletion.
     ctx.children =
@@ -146,7 +107,7 @@ public class Deleter extends FlatJuniperParserBaseListener {
 
   /*
    * - Build out a path in tree, using each word as a key.
-   * - Add ctx to the set of parse-trees stored at the node correpsonding to the last word
+   * - Add ctx to the set of parse-trees stored at the node corresponding to the last word
    */
   private void addStatementToTree(StatementTree tree, ParseTree ctx) {
     StatementTree subtree = tree;
@@ -180,8 +141,6 @@ public class Deleter extends FlatJuniperParserBaseListener {
   }
 
   private boolean _enablePathRecording;
-  private boolean _reenablePathRecording;
-  private final @Nonnull StatementTree _deactivateStatementTree;
   private final @Nonnull StatementTree _setStatementTree;
   private List<String> _words;
   private Set<ParseTree> _deletedStatements;

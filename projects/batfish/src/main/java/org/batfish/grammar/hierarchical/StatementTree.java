@@ -1,4 +1,4 @@
-package org.batfish.grammar.flatjuniper;
+package org.batfish.grammar.hierarchical;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * each word of a statement corresponds to a subtree.
  */
 @ParametersAreNonnullByDefault
-class StatementTree {
+public class StatementTree {
 
   /** Returns subtree for {@code partialStatementText}. Creates if absent. */
   public @Nonnull StatementTree getOrAddSubtree(String partialStatementText) {
@@ -35,7 +35,7 @@ class StatementTree {
         Stream.of(this), _children.values().stream().flatMap(StatementTree::getSubtrees));
   }
 
-  StatementTree() {
+  public StatementTree() {
     this(null);
   }
 
