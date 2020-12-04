@@ -249,7 +249,7 @@ public class WorkMgr extends AbstractCoordinator {
       ImmutableSet.of(BfConsts.RELPATH_REFERENCE_LIBRARY_PATH, BfConsts.RELPATH_NODE_ROLES_PATH);
 
   private static final String SNAPSHOT_PACKAGING_INSTRUCTIONS_URL =
-      "https://github.com/batfish/batfish/wiki/Packaging-snapshots-for-analysis";
+      "https://batfish.readthedocs.io/en/latest/notebooks/interacting.html#Packaging-snapshot-data";
 
   private final IdManager _idManager;
   private final BatfishLogger _logger;
