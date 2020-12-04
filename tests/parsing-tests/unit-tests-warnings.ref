@@ -353,8 +353,8 @@
       {
         "Filename" : "configs/cisco_interface",
         "Line" : 125,
-        "Text" : "ip summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map",
-        "Parser_Context" : "[if_ip_summary_address if_inner s_interface stanza cisco_configuration]",
+        "Text" : "summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map",
+        "Parser_Context" : "[if_ip_summary_address if_ip if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
