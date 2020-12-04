@@ -3982,7 +3982,6 @@ public final class CiscoGrammarTest {
     EigrpRoute matchEigrp = internalRb.setNetwork(matchRm).build();
     EigrpRoute noMatchEigrp = internalRb.setNetwork(noMatchRm).build();
 
-    // TODO BGP metric should match original route's metric
     {
       // Redistribute matching EIGRP route into EBGP
       Bgpv4Route.Builder rb =
