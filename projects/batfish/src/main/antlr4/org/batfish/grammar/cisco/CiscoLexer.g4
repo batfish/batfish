@@ -4892,6 +4892,11 @@ FLOWCONTROL
    'flowcontrol'
 ;
 
+FLOWSPEC
+:
+   'flowspec'
+;
+
 FLUSH_AT_ACTIVATION
 :
    'flush-at-activation'
@@ -6549,6 +6554,11 @@ JOIN_GROUP
     'join-group'
 ;
 
+JOIN_PRUNE_INTERVAL
+:
+    'join-prune-interval'
+;
+
 JUMBO
 :
    'jumbo'
@@ -8012,6 +8022,11 @@ MIRROR
 MISMATCH
 :
    'mismatch'
+;
+
+MKA
+:
+   'mka'
 ;
 
 MLAG
@@ -12959,6 +12974,11 @@ TCAM
    'tcam'
 ;
 
+TCN
+:
+   'tcn'
+;
+
 TCP
 :
    'tcp'
@@ -14352,6 +14372,11 @@ V2C
 V3
 :
    'v3'
+;
+
+V3_QUERY_MAX_RESPONSE_TIME
+:
+   'v3-query-max-response-time'
 ;
 
 V4

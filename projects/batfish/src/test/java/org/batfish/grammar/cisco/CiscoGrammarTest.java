@@ -90,6 +90,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasHsrpGroup;
@@ -5280,6 +5281,27 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 5));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnosr", 4));
     assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "p1", 4));
+  }
+
+  @Test
+  public void testIosInterfaceShowRunAll() throws IOException {
+    Configuration c = parseConfig("ios_interface_show_run_all");
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "GigabitEthernet0/0/0",
+            "Loopback1",
+            "Port-channel1",
+            "Port-channel1.10",
+            "vasileft1",
+            "vasiright1"));
+    assertThat(
+        c, hasInterface("GigabitEthernet0/0/0", hasDescription("GigabitEthernet0/0/0 desc")));
+    assertThat(c, hasInterface("Loopback1", hasDescription("Loopback1 desc")));
+    assertThat(c, hasInterface("Port-channel1", hasDescription("Port-channel1 desc")));
+    assertThat(c, hasInterface("Port-channel1.10", hasDescription("Port-channel1.10 desc")));
+    assertThat(c, hasInterface("vasileft1", hasDescription("vasileft1 desc")));
+    assertThat(c, hasInterface("vasiright1", hasDescription("vasiright1 desc")));
   }
 
   @Test
