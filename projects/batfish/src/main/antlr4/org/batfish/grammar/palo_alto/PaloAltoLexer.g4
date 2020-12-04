@@ -348,6 +348,11 @@ DEFAULT_ROUTE
     'default-route'
 ;
 
+DELETE
+:
+    'delete'
+;
+
 DENY
 :
     'deny'
