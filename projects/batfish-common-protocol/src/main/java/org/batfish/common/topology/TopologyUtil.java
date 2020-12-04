@@ -439,7 +439,9 @@ public final class TopologyUtil {
                         || !layer1TailNodes.contains(edge.getNode2())
                         || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()));
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
-    // Look over all L1 logical edges and see if they both have link-local addresses
+
+    // Look over all L1 logical edges and see if they both have link-local addresses. If they do,
+    // include those in L3 topology
     Stream<Edge> layer1LLAEdgeStream =
         layer1LogicalTopology.getGraph().edges().stream()
             .filter(
@@ -467,19 +469,24 @@ public final class TopologyUtil {
                   // In the end it collapses to a set anyway
                   return Stream.of(l3Edge, l3Edge.reverse());
                 });
-    // Special-case sub-interfaces of aggregate interfaces
-    ImmutableSet<NodeInterfacePair> subInterfaces =
+
+    // Special-case sub-interfaces of aggregate interfaces that have link-local addresses.
+    // Since these interfaces will not appear in the L1 topology, we fall back to n^2 candidates and
+    // filter to only keep the ones that are in the same broadcast domain.
+    ImmutableSet<NodeInterfacePair> aggSubInterfacesWithLLAs =
         configurations.values().stream()
             .flatMap(Configuration::activeInterfaces)
-            .filter(i -> i.getInterfaceType() == InterfaceType.AGGREGATE_CHILD)
+            .filter(
+                i ->
+                    i.getInterfaceType() == InterfaceType.AGGREGATE_CHILD
+                        && !i.getAllLinkLocalAddresses().isEmpty())
             .map(i -> NodeInterfacePair.of(i.getOwner().getHostname(), i.getName()))
             .collect(ImmutableSet.toImmutableSet());
-
     Stream<Edge> subInterfaceLLAStream =
-        subInterfaces.stream()
+        aggSubInterfacesWithLLAs.stream()
             .flatMap(
                 i1 ->
-                    subInterfaces.stream()
+                    aggSubInterfacesWithLLAs.stream()
                         .filter(
                             i2 -> !i1.equals(i2) && layer2Topology.inSameBroadcastDomain(i1, i2))
                         .map(i2 -> new Edge(i1, i2)));
