@@ -1598,6 +1598,97 @@ public final class TopologyUtilTest {
     assertThat(t.getEdges(), containsInAnyOrder(edge, edge.reverse()));
   }
 
+  /**
+   * Test that aggregate subinterfaces that have link-local addresses and are in the same broadcast
+   * domain get an L3 edge
+   */
+  @Test
+  public void testComputeLayer3Topology_SubInterfaceWithlinkLocalAddresses() {
+    _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = _cb.setHostname("c1").build();
+    Configuration c2 = _cb.setHostname("c2").build();
+    Ip ip = Ip.parse("169.254.0.1");
+    Interface i1 = _ib.setOwner(c1).setName("ae1").setType(InterfaceType.AGGREGATED).build();
+    Interface i1sub =
+        _ib.setOwner(c1)
+            .setName("ae1.1")
+            .setAddress(LinkLocalAddress.of(ip))
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .build();
+    Interface i2 = _ib.setOwner(c2).setName("ae2").setType(InterfaceType.AGGREGATED).build();
+    Interface i2sub =
+        _ib.setOwner(c2)
+            .setName("ae2.2")
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .setAddress(LinkLocalAddress.of(ip))
+            .build();
+
+    Layer1Topology layer1Topology =
+        new Layer1Topology(
+            Collections.singleton(
+                new Layer1Edge(
+                    new Layer1Node(c1.getHostname(), i1.getName()),
+                    new Layer1Node(c2.getHostname(), i2.getName()))));
+    Topology t =
+        computeRawLayer3Topology(
+            layer1Topology,
+            layer1Topology,
+            Layer2Topology.fromDomains(
+                ImmutableList.of(
+                    ImmutableSet.of(
+                        new Layer2Node(c1.getHostname(), i1sub.getName(), null),
+                        new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    Edge edge =
+        new Edge(
+            NodeInterfacePair.of(c1.getHostname(), i1sub.getName()),
+            NodeInterfacePair.of(c2.getHostname(), i2sub.getName()));
+    assertThat(t.getEdges(), containsInAnyOrder(edge, edge.reverse()));
+  }
+
+  /**
+   * Test that aggregate subinterfaces that have mis-matched, concrete (not link-local) addresses
+   * and are in the same broadcast domain do not get an L3 edge
+   */
+  @Test
+  public void testComputeLayer3Topology_SubInterfaceWithoutLinkLocalAddresses() {
+    _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = _cb.setHostname("c1").build();
+    Configuration c2 = _cb.setHostname("c2").build();
+    Interface i1 = _ib.setOwner(c1).setName("ae1").setType(InterfaceType.AGGREGATED).build();
+    Interface i1sub =
+        _ib.setOwner(c1)
+            .setName("ae1.1")
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24"))
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .build();
+    Interface i2 = _ib.setOwner(c2).setName("ae2").setType(InterfaceType.AGGREGATED).build();
+    Interface i2sub =
+        _ib.setOwner(c2)
+            .setName("ae2.2")
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24"))
+            .build();
+
+    Layer1Topology layer1Topology =
+        new Layer1Topology(
+            Collections.singleton(
+                new Layer1Edge(
+                    new Layer1Node(c1.getHostname(), i1.getName()),
+                    new Layer1Node(c2.getHostname(), i2.getName()))));
+    Topology t =
+        computeRawLayer3Topology(
+            layer1Topology,
+            layer1Topology,
+            Layer2Topology.fromDomains(
+                ImmutableList.of(
+                    ImmutableSet.of(
+                        new Layer2Node(c1.getHostname(), i1sub.getName(), null),
+                        new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    assertThat(t.getEdges(), empty());
+  }
+
   @Test
   public void testComputeInitialTunnelTopology() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
