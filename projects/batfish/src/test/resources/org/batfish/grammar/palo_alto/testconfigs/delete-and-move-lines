@@ -1,0 +1,20 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname delete-and-move-lines
+
+set address addr1 ip-netmask 1.1.1.1
+set address addr2 ip-netmask 2.2.2.2
+
+set rulebase security rules RULE1 from any
+set rulebase security rules RULE1 to [ z1 z2 ]
+set rulebase security rules RULE1 source addr1
+set rulebase security rules RULE1 destination any
+set rulebase security rules RULE2 from any
+set rulebase security rules RULE2 to [ z1 z2 ]
+set rulebase security rules RULE2 source any
+set rulebase security rules RULE2 destination any
+move rulebase security rules RULE2 top
+# remove source line for RULE1
+delete rulebase security rules RULE1 source addr1
+# set new source
+# RULE1 should only have source as addr2, and only addr2 should be referenced. addr1 should be unused.
+set rulebase security rules RULE1 source addr2

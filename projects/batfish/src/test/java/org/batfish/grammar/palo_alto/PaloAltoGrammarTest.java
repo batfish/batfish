@@ -3771,4 +3771,34 @@ public final class PaloAltoGrammarTest {
         hasNumReferrers(
             filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr2"), 1));
   }
+
+  @Test
+  public void testDeleteAndMoveLines() throws IOException {
+    String hostname = "delete-and-move-lines";
+    PaloAltoConfiguration vsConfig = parsePaloAltoConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Check that rules were correctly re-arranged
+    assertThat(
+        vsConfig
+            .getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getRulebase()
+            .getSecurityRules()
+            .keySet(),
+        contains("RULE2", "RULE1"));
+
+    // References are still as expected
+    String filename = "configs/" + hostname;
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr1"), 0));
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr2"), 1));
+  }
 }
