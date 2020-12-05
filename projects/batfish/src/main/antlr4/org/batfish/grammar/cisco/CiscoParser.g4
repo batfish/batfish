@@ -1849,6 +1849,7 @@ vrfd_af_null
    NO?
    (
       MAXIMUM
+      | MDT
    ) null_rest_of_line
 ;
 
@@ -3353,9 +3354,10 @@ s_vrf_definition
    (
       vrfd_address_family
       | vrfd_description
+      | vrfd_no
+      | vrfd_null
       | vrfd_rd
       | vrfd_route_target
-      | vrfd_null
    )*
    (
       EXIT_VRF NEWLINE
@@ -4704,6 +4706,24 @@ vrfd_description
    description_line
 ;
 
+vrfd_no
+:
+   NO vrfd_no_null
+;
+
+vrfd_no_null
+:
+  (
+    AUTO_IMPORT
+    | IPV4 MULTICAST
+  ) null_rest_of_line
+;
+
+vrfd_null
+:
+   AUTO_IMPORT null_rest_of_line
+;
+
 vrfd_rd
 :
    RD (AUTO | rd = route_distinguisher) NEWLINE
@@ -4712,14 +4732,6 @@ vrfd_rd
 vrfd_route_target
 :
    ROUTE_TARGET type = both_export_import rt = route_target NEWLINE
-;
-
-vrfd_null
-:
-   NO?
-   (
-      AUTO_IMPORT
-   ) null_rest_of_line
 ;
 
 vrrp_interface
