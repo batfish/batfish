@@ -195,6 +195,44 @@ if_hsrp6_ip_address
    IP ip = IPV6_ADDRESS NEWLINE
 ;
 
+if_ip
+:
+  IP
+  (
+    if_ip_address_dhcp
+    | if_ip_authentication
+    | if_ip_cef
+    | if_ip_flow_monitor
+    | if_ip_hello_interval
+    | if_ip_helper_address
+    | if_ip_hold_time
+    | if_ip_inband_access_group
+    | if_ip_mfib
+    | if_ip_nat_inside
+    | if_ip_nat_outside
+    | if_ip_nbar
+    | if_ip_ospf_area
+    | if_ip_ospf_dead_interval
+    | if_ip_ospf_dead_interval_minimal
+    | if_ip_ospf_hello_interval
+    | if_ip_ospf_network
+    | if_ip_pim_neighbor_filter
+    | if_ip_policy
+    | if_ip_router_isis
+    | if_ip_router_ospf_area
+    | if_ip_rtp
+    | if_ip_split_horizon
+    | if_ip_summary_address
+    | if_ip_tcp
+    | if_ip_verify
+    | if_ip_virtual_router
+    | if_ip_vrf_autoclassify
+    | if_ip_vrf_receive
+    | if_ip_vrf_select
+    | if_ip_vrf_sitemap
+  )
+;
+
 if_ip_access_group
 :
    (
@@ -237,7 +275,7 @@ if_ip_address
 
 if_ip_address_dhcp
 :
-   IP ADDRESS DHCP NEWLINE
+   ADDRESS DHCP NEWLINE
 ;
 
 if_ip_address_secondary
@@ -256,7 +294,7 @@ if_ip_address_secondary
 
 if_ip_authentication
 :
-   IP AUTHENTICATION
+   AUTHENTICATION
    (
      if_ip_auth_key_chain
      | if_ip_auth_mode
@@ -273,6 +311,11 @@ if_ip_auth_mode
    MODE EIGRP asn = DEC MD5 NEWLINE
 ;
 
+if_ip_cef
+:
+  CEF null_rest_of_line
+;
+
 if_ip_dhcp
 :
    NO? IP DHCP
@@ -284,7 +327,7 @@ if_ip_dhcp
 
 if_ip_flow_monitor
 :
-   IP FLOW MONITOR name = variable
+   FLOW MONITOR name = variable
    (
       INPUT
       | OUTPUT
@@ -298,22 +341,22 @@ if_ip_forward
 
 if_ip_hello_interval
 :
-   IP HELLO_INTERVAL EIGRP asn = DEC interval = DEC NEWLINE
+   HELLO_INTERVAL EIGRP asn = DEC interval = DEC NEWLINE
 ;
 
 if_ip_helper_address
 :
-   IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
+   HELPER_ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 if_ip_hold_time
 :
-   IP HOLD_TIME EIGRP asn = DEC interval = DEC NEWLINE
+   HOLD_TIME EIGRP asn = DEC interval = DEC NEWLINE
 ;
 
 if_ip_inband_access_group
 :
-   IP INBAND ACCESS_GROUP name = variable_permissive NEWLINE
+   INBAND ACCESS_GROUP name = variable_permissive NEWLINE
 ;
 
 if_ip_igmp
@@ -328,24 +371,29 @@ if_ip_igmp
    )
 ;
 
+if_ip_mfib
+:
+  MFIB null_rest_of_line
+;
+
 if_ip_nat_inside
 :
-   IP NAT INSIDE NEWLINE
+   NAT INSIDE NEWLINE
 ;
 
 if_ip_nat_outside
 :
-   IP NAT OUTSIDE NEWLINE
+   NAT OUTSIDE NEWLINE
 ;
 
 if_ip_nbar
 :
-   IP NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
+   NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
 ;
 
 if_ip_ospf_area
 :
-   IP OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
+   OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
 ;
 
 if_ip_ospf_cost
@@ -355,22 +403,22 @@ if_ip_ospf_cost
 
 if_ip_ospf_dead_interval
 :
-   IP OSPF DEAD_INTERVAL seconds = DEC NEWLINE
+   OSPF DEAD_INTERVAL seconds = DEC NEWLINE
 ;
 
 if_ip_ospf_dead_interval_minimal
 :
-   IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
+   OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
 ;
 
 if_ip_ospf_hello_interval
 :
-   IP OSPF HELLO_INTERVAL seconds = DEC NEWLINE
+   OSPF HELLO_INTERVAL seconds = DEC NEWLINE
 ;
 
 if_ip_ospf_network
 :
-   IP OSPF NETWORK
+   OSPF NETWORK
    (
       BROADCAST
       | NON_BROADCAST
@@ -399,12 +447,12 @@ if_ip_passive_interface_eigrp
 
 if_ip_pim_neighbor_filter
 :
-   IP PIM NEIGHBOR_FILTER acl = variable NEWLINE
+   PIM NEIGHBOR_FILTER acl = variable NEWLINE
 ;
 
 if_ip_policy
 :
-   IP POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
+   POLICY ROUTE_MAP name = ~NEWLINE NEWLINE
 ;
 
 if_ip_proxy_arp
@@ -414,17 +462,22 @@ if_ip_proxy_arp
 
 if_ip_router_isis
 :
-   IP ROUTER ISIS null_rest_of_line
+   ROUTER ISIS null_rest_of_line
 ;
 
 if_ip_router_ospf_area
 :
-   IP ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
+   ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
 ;
 
 if_ip_rtp
 :
-   IP RTP HEADER_COMPRESSION (PASSIVE | IPHC_FORMAT | IETF_FORMAT) PERIODIC_REFRESH? NEWLINE
+   RTP HEADER_COMPRESSION (PASSIVE | IPHC_FORMAT | IETF_FORMAT) PERIODIC_REFRESH? NEWLINE
+;
+
+if_ip_split_horizon
+:
+  SPLIT_HORIZON NEWLINE
 ;
 
 if_ip_sticky_arp
@@ -436,7 +489,7 @@ if_ip_sticky_arp
 
 if_ip_summary_address
 :
-   IP SUMMARY_ADDRESS EIGRP asn = DEC
+   SUMMARY_ADDRESS EIGRP asn = DEC
    (
       addr = IP_ADDRESS netmask = IP_ADDRESS
       | prefix = IP_PREFIX
@@ -446,7 +499,7 @@ if_ip_summary_address
 
 if_ip_tcp
 :
-   IP TCP
+   TCP
    (
       if_ip_tcp_adjust_mss
       | if_ip_tcp_compression_connections
@@ -471,7 +524,7 @@ if_ip_tcp_header_compression
 
 if_ip_verify
 :
-   IP VERIFY UNICAST
+   VERIFY UNICAST
    (
       (
          NOTIFICATION THRESHOLD DEC
@@ -498,12 +551,12 @@ if_ip_verify
 
 if_ip_virtual_router
 :
-   IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
+   VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
 ;
 
 if_ip_vrf_autoclassify
 :
-   IP VRF AUTOCLASSIFY SOURCE NEWLINE
+   VRF AUTOCLASSIFY SOURCE NEWLINE
 ;
 
 if_ip_vrf_forwarding
@@ -513,17 +566,17 @@ if_ip_vrf_forwarding
 
 if_ip_vrf_receive
 :
-   IP VRF RECEIVE vrf = variable NEWLINE
+   VRF RECEIVE vrf = variable NEWLINE
 ;
 
 if_ip_vrf_select
 :
-   IP VRF SELECT SOURCE NEWLINE
+   VRF SELECT SOURCE NEWLINE
 ;
 
 if_ip_vrf_sitemap
 :
-   IP VRF SITEMAP map = variable NEWLINE
+   VRF SITEMAP map = variable NEWLINE
 ;
 
 if_ipv6
@@ -605,6 +658,11 @@ if_member_interface
   MEMBER_INTERFACE name = interface_name NEWLINE
 ;
 
+if_mka
+:
+  MKA null_rest_of_line
+;
+
 if_mtu
 :
    MTU mtu_size = DEC NEWLINE
@@ -615,9 +673,28 @@ if_nameif
    NAMEIF name = variable NEWLINE
 ;
 
+if_network_clock
+:
+  NETWORK_CLOCK null_rest_of_line
+;
+
+if_no
+:
+  NO
+  (
+    if_no_bfd
+    | if_no_ip
+    | if_no_mka
+    | if_no_nameif
+    | if_no_routing_dynamic
+    | if_no_security_level
+    | if_no_synchronous
+  )
+;
+
 if_no_bfd
 :
-   NO BFD (IPV4 | IPV6)?
+   BFD (IPV4 | IPV6)?
    (
        AUTHENTICATION
        | ECHO
@@ -629,24 +706,48 @@ if_no_bfd
    ) NEWLINE
 ;
 
+if_no_ip
+:
+  IP
+  (
+    if_no_ip_address
+    | if_no_ip_flowspec
+  )
+;
+
 if_no_ip_address
 :
-   NO IP ADDRESS NEWLINE
+   ADDRESS NEWLINE
+;
+
+if_no_ip_flowspec
+:
+  FLOWSPEC NEWLINE
+;
+
+if_no_mka
+:
+  MKA null_rest_of_line
 ;
 
 if_no_nameif
 :
-   NO NAMEIF NEWLINE
+   NAMEIF NEWLINE
 ;
 
 if_no_routing_dynamic
 :
-   NO ROUTING DYNAMIC NEWLINE
+   ROUTING DYNAMIC NEWLINE
 ;
 
 if_no_security_level
 :
-   NO SECURITY_LEVEL NEWLINE
+   SECURITY_LEVEL NEWLINE
+;
+
+if_no_synchronous
+:
+  SYNCHRONOUS null_rest_of_line
 ;
 
 if_null_block
@@ -784,6 +885,7 @@ if_null_block
                   | DENSE_MODE
                   | DR_PRIORITY
                   | HELLO_INTERVAL
+                  | JOIN_PRUNE_INTERVAL
                   | PASSIVE
                   | QUERY_INTERVAL
                   | SNOOPING
@@ -1563,6 +1665,8 @@ ifigmp_null
       | SNOOPING
       | STARTUP_QUERY_COUNT
       | STARTUP_QUERY_INTERVAL
+      | TCN
+      | V3_QUERY_MAX_RESPONSE_TIME
       | VERSION
    ) null_rest_of_line
 ;
@@ -1723,47 +1827,20 @@ if_inner
    | if_flow_sampler
    | if_hsrp
    | if_hsrp6
+   | if_ip
    | if_ip_proxy_arp
-   | if_ip_verify
    | if_ip_access_group
    | if_ip_address
-   | if_ip_address_dhcp
    | if_ip_address_secondary
-   | if_ip_authentication
    | if_ip_dhcp
-   | if_ip_flow_monitor
    | if_ip_forward
-   | if_ip_hello_interval
-   | if_ip_helper_address
-   | if_ip_hold_time
-   | if_ip_inband_access_group
    | if_ip_igmp
-   | if_ip_nat_inside
-   | if_ip_nat_outside
-   | if_ip_nbar
-   | if_ip_ospf_area
    | if_ip_ospf_cost
-   | if_ip_ospf_dead_interval
-   | if_ip_ospf_dead_interval_minimal
-   | if_ip_ospf_hello_interval
-   | if_ip_ospf_network
    | if_ip_ospf_passive_interface
    | if_ip_ospf_shutdown
    | if_ip_passive_interface_eigrp
-   | if_ip_pim_neighbor_filter
-   | if_ip_policy
-   | if_ip_router_isis
-   | if_ip_router_ospf_area
-   | if_ip_rtp
    | if_ip_sticky_arp
-   | if_ip_summary_address
-   | if_ip_tcp
-   | if_ip_virtual_router
-   | if_ip_vrf_autoclassify
    | if_ip_vrf_forwarding
-   | if_ip_vrf_receive
-   | if_ip_vrf_select
-   | if_ip_vrf_sitemap
    | if_ipv6
    | if_isis_circuit_type
    | if_isis_enable
@@ -1774,13 +1851,11 @@ if_inner
    | if_isis_tag
    | if_load_interval
    | if_member_interface
+   | if_mka
    | if_mtu
    | if_nameif
-   | if_no_bfd
-   | if_no_ip_address
-   | if_no_nameif
-   | if_no_routing_dynamic
-   | if_no_security_level
+   | if_network_clock
+   | if_no
    | if_port_security
    | if_private_vlan
    | if_pvc
