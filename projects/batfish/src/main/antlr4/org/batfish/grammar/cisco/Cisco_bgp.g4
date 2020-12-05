@@ -165,6 +165,11 @@ bgp_conf_peers_rb_stanza
   PEERS peers += bgp_asn+ NEWLINE
 ;
 
+bgp_enforce_first_as_stanza
+:
+   BGP ENFORCE_FIRST_AS NEWLINE
+;
+
 bgp_listen_range_rb_stanza
 :
    BGP LISTEN RANGE
@@ -439,6 +444,16 @@ vrf_block_rb_stanza
    )*
 ;
 
+no_bgp_asnotation_dot
+:
+   NO BGP ASNOTATION DOT NEWLINE
+;
+
+no_bgp_consistency_checker
+:
+   NO BGP CONSISTENCY_CHECKER NEWLINE
+;
+
 no_bgp_enforce_first_as_stanza
 :
    NO BGP ENFORCE_FIRST_AS NEWLINE
@@ -526,7 +541,8 @@ null_bgp_tail
       (
          BGP
          (
-            ATTRIBUTE_DOWNLOAD
+            AGGREGATE_TIMER
+            | ATTRIBUTE_DOWNLOAD
             |
             (
                BESTPATH
@@ -539,17 +555,21 @@ null_bgp_tail
             | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
+            | DYNAMIC_MED_INTERVAL
             | FAST_EXTERNAL_FALLOVER
             | GRACEFUL_RESTART
-            |
-            (
-               LISTEN LIMIT
-            )
+            | LISTEN LIMIT
             | LOG
             | LOG_NEIGHBOR_CHANGES
             | NEXTHOP
             | NON_DETERMINISTIC_MED
             | REDISTRIBUTE_INTERNAL
+            | REFRESH
+            | REGEXP
+            | ROUTE_MAP_CACHE
+            | TRANSPORT
+            | UPDATE_DELAY
+            | UPDATE_GROUP
          )
       )
       | CAPABILITY
@@ -707,7 +727,7 @@ redistribute_connected_bgp_tail
 
 redistribute_eigrp_bgp_tail
 :
-   REDISTRIBUTE EIGRP id = DEC (ROUTE_MAP map = variable)? NEWLINE
+   REDISTRIBUTE EIGRP id = DEC (METRIC metric = DEC)? (ROUTE_MAP map = variable)? NEWLINE
 ;
 
 redistribute_ospf_bgp_tail
@@ -802,6 +822,7 @@ router_bgp_stanza_tail
    | always_compare_med_rb_stanza
    | as_path_multipath_relax_rb_stanza
    | bgp_confederation_rb_stanza
+   | bgp_enforce_first_as_stanza
    | bgp_listen_range_rb_stanza
    | bgp_maxas_limit_rb_stanza
    | bgp_redistribute_internal_rb_stanza
@@ -811,6 +832,8 @@ router_bgp_stanza_tail
    | default_information_originate_rb_stanza
    | neighbor_flat_rb_stanza
    | neighbor_group_rb_stanza
+   | no_bgp_asnotation_dot
+   | no_bgp_consistency_checker
    | no_bgp_enforce_first_as_stanza
    | no_neighbor_activate_rb_stanza
    | no_neighbor_shutdown_rb_stanza
