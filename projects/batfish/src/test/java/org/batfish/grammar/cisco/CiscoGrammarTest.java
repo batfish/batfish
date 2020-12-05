@@ -5460,6 +5460,15 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosVrfdShowRunAll() {
+    CiscoConfiguration c = parseCiscoConfig("ios_vrfd_show_run_all", ConfigurationFormat.CISCO_IOS);
+    assertThat(c.getVrfs(), hasKeys("default", "VRF2"));
+    assertThat(
+        c.getVrfs().get("VRF2").getRouteDistinguisher(),
+        equalTo(RouteDistinguisher.parse("65000:1")));
+  }
+
+  @Test
   public void testIosSwitchportMode() throws IOException {
     Configuration c = parseConfig("ios_switchport_mode");
 
