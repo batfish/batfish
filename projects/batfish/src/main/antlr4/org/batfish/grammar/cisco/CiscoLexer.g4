@@ -546,6 +546,11 @@ AGGREGATE_ADDRESS
    'aggregate-address'
 ;
 
+AGGREGATE_TIMER
+:
+   'aggregate-timer'
+;
+
 AGING
 :
    'aging'
@@ -981,6 +986,11 @@ ASIP_WEBADMIN
 ASN
 :
    'asn'
+;
+
+ASNOTATION
+:
+   'asnotation'
 ;
 
 ASPLAIN
@@ -2443,6 +2453,11 @@ CONNECTION_REUSE
    'connection-reuse'
 ;
 
+CONSISTENCY_CHECKER
+:
+   'consistency-checker'
+;
+
 CONSOLE
 :
    'console'
@@ -3604,6 +3619,11 @@ DOS_PROFILE
    'dos-profile'
 ;
 
+DOT
+:
+   'dot'
+;
+
 DOT11
 :
    'dot11'
@@ -3832,6 +3852,11 @@ DYNAMIC_MCAST_OPTIMIZATION
 DYNAMIC_MCAST_OPTIMIZATION_THRESH
 :
    'dynamic-mcast-optimization-thresh'
+;
+
+DYNAMIC_MED_INTERVAL
+:
+   'dynamic-med-interval'
 ;
 
 E164
@@ -10662,9 +10687,19 @@ REFLEXIVE_LIST
    'reflexive-list'
 ;
 
+REFRESH
+:
+   'refresh'
+;
+
 REGEX_MODE
 :
    'regex-mode'
+;
+
+REGEXP
+:
+   'regexp'
 ;
 
 REGISTER_RATE_LIMIT
@@ -11095,6 +11130,11 @@ ROUTE_LOOKUP
 ROUTE_MAP
 :
    'route-map' -> pushMode ( M_RouteMap )
+;
+
+ROUTE_MAP_CACHE
+:
+   'route-map-cache'
 ;
 
 ROUTE_ONLY
@@ -14172,6 +14212,11 @@ UPDATE_CALENDAR
 UPDATE_DELAY
 :
    'update-delay'
+;
+
+UPDATE_GROUP
+:
+   'update-group'
 ;
 
 UPDATE_SOURCE

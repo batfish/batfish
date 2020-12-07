@@ -20,7 +20,6 @@ null_block
       | AS_PATH_SET
       | ATM
       | BASH
-      | BGP DISABLE_ADVERTISEMENT
       | BLOGGERD
       | BSD_CLIENT
       | BSD_USERNAME
