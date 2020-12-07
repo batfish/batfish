@@ -7642,6 +7642,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       BgpRedistributionPolicy r = new BgpRedistributionPolicy(sourceProtocol);
       proc.getRedistributionPolicies().put(sourceProtocol, r);
       // TODO match specific EIGRP process ID (ctx.id)
+      if (ctx.metric != null) {
+        int metric = toInteger(ctx.metric);
+        r.setMetric(metric);
+      }
       if (ctx.map != null) {
         String map = ctx.map.getText();
         r.setRouteMap(map);
