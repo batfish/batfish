@@ -170,6 +170,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUT
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_INSTANCE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
@@ -606,6 +607,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_no_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.If_si_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_speed_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_st_portfastContext;
@@ -5564,6 +5566,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String mapname = ctx.policy_map.getText();
     _configuration.referenceStructure(
         POLICY_MAP, mapname, INTERFACE_SERVICE_POLICY, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitIf_si_service_policy(If_si_service_policyContext ctx) {
+    String mapname = ctx.policy_map.getText();
+    _configuration.referenceStructure(
+        POLICY_MAP, mapname, INTERFACE_SERVICE_INSTANCE_SERVICE_POLICY, ctx.getStart().getLine());
   }
 
   @Override
