@@ -85195,6 +85195,14 @@
               ]
             }
           },
+          "policy-map" : {
+            "limit-access-to-1Gbps" : {
+              "interface service-instance service-policy" : [
+                209,
+                210
+              ]
+            }
+          },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
@@ -90453,6 +90461,14 @@
               ]
             }
           },
+          "policy-map" : {
+            "limit-access-to-1Gbps" : {
+              "interface service-instance service-policy" : [
+                209,
+                210
+              ]
+            }
+          },
           "route-map" : {
             "SITEMAP" : {
               "interface ip vrf sitemap" : [
@@ -90961,6 +90977,15 @@
             "to-VTY" : {
               "snmp server community ipv6 acl" : [
                 16
+              ]
+            }
+          }
+        },
+        "configs/cisco_system" : {
+          "policy-map" : {
+            "POLICY" : {
+              "system service-policy" : [
+                21
               ]
             }
           }

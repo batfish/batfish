@@ -206,6 +206,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.NAMED_RSA_PUB_
 import static org.batfish.representation.cisco.CiscoStructureType.NAT_POOL;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
@@ -6868,5 +6869,17 @@ public final class CiscoGrammarTest {
     Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
     assertThat(procs.get(1L).getRouterId(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(procs.get(2L).getRouterId(), nullValue());
+  }
+
+  @Test
+  public void testIosServicePolicyInner() throws IOException {
+    String hostname = "ios-service-policy-inner";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    String filename = "configs/" + hostname;
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasNumReferrers(filename, POLICY_MAP, "PM", 2));
   }
 }

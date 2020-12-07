@@ -119,6 +119,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_PIM_NEIGHBOR_FILTER("interface ip pim neighbor-filter"),
   INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),
   INTERFACE_SELF_REF("interface"),
+  INTERFACE_SERVICE_INSTANCE_SERVICE_POLICY("interface service-instance service-policy"),
   INTERFACE_SERVICE_POLICY("interface service-policy"),
   INTERFACE_SERVICE_POLICY_CONTROL_SUBSCRIBER("interface service-policy type control subscriber"),
   INTERFACE_STANDBY_TRACK("interface standby track"),
