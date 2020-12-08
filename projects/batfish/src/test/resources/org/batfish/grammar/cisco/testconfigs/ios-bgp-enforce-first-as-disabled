@@ -1,0 +1,7 @@
+!
+hostname ios-bgp-enforce-first-as-disabled
+!
+router bgp 65112
+ no bgp enforce-first-as
+ neighbor 1.2.3.4 remote-as 65112
+!

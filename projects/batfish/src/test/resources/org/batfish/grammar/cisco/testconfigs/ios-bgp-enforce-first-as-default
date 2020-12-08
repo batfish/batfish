@@ -1,0 +1,6 @@
+!
+hostname ios-bgp-enforce-first-as-default
+!
+router bgp 65112
+ neighbor 1.2.3.4 remote-as 65112
+!

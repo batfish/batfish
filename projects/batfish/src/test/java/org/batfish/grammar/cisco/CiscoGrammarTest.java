@@ -1587,6 +1587,60 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosBgpEnforceAsExtraction() {
+    {
+      CiscoConfiguration c =
+          parseCiscoConfig("ios-bgp-enforce-first-as-disabled", ConfigurationFormat.CISCO_IOS);
+      org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+      assertThat(p, notNullValue());
+      assertThat(p.getEnforceFirstAs(), equalTo(Boolean.FALSE));
+    }
+    {
+      CiscoConfiguration c =
+          parseCiscoConfig("ios-bgp-enforce-first-as-explicit", ConfigurationFormat.CISCO_IOS);
+      org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+      assertThat(p, notNullValue());
+      assertThat(p.getEnforceFirstAs(), equalTo(Boolean.TRUE));
+    }
+    {
+      CiscoConfiguration c =
+          parseCiscoConfig("ios-bgp-enforce-first-as-default", ConfigurationFormat.CISCO_IOS);
+      org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
+      assertThat(p, notNullValue());
+      assertThat(p.getEnforceFirstAs(), nullValue());
+    }
+  }
+
+  @Test
+  public void testIosBgpEnforceAsConversion() throws IOException {
+    Prefix peer = Prefix.parse("1.2.3.4/32");
+    {
+      Configuration c = parseConfig("ios-bgp-enforce-first-as-disabled");
+      BgpProcess p = c.getDefaultVrf().getBgpProcess();
+      assertThat(p, notNullValue());
+      assertThat(p.getActiveNeighbors(), hasKeys(peer));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertFalse(n.getEnforceFirstAs());
+    }
+    {
+      Configuration c = parseConfig("ios-bgp-enforce-first-as-explicit");
+      BgpProcess p = c.getDefaultVrf().getBgpProcess();
+      assertThat(p, notNullValue());
+      assertThat(p.getActiveNeighbors(), hasKeys(peer));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertTrue(n.getEnforceFirstAs());
+    }
+    {
+      Configuration c = parseConfig("ios-bgp-enforce-first-as-default");
+      BgpProcess p = c.getDefaultVrf().getBgpProcess();
+      assertThat(p, notNullValue());
+      assertThat(p.getActiveNeighbors(), hasKeys(peer));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertTrue(n.getEnforceFirstAs());
+    }
+  }
+
+  @Test
   public void testIosBgpPrefixListReferences() throws IOException {
     String hostname = "ios_bgp_prefix_list_references";
     String filename = String.format("configs/%s", hostname);
