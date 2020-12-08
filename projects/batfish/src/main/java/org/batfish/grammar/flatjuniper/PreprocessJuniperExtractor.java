@@ -42,16 +42,11 @@ public final class PreprocessJuniperExtractor {
    * @param tree The flat-Juniper parse tree to be pre-processed in-place.
    * @param hierarchy An empty {@link Hierarchy} that will be populated with trees for regular
    *     configuration lines, groups lines, and deactivate lines
-   * @param fileText The original text of the configuration
    * @param parser The parser that produced the parse {@code tree}.
    * @param w The store for warnings produced during pre-processing
    */
   static void preprocess(
-      ParserRuleContext tree,
-      Hierarchy hierarchy,
-      String fileText,
-      FlatJuniperCombinedParser parser,
-      Warnings w) {
+      ParserRuleContext tree, Hierarchy hierarchy, FlatJuniperCombinedParser parser, Warnings w) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     Span deleterSpan = GlobalTracer.get().buildSpan("FlatJuniper::Deleter").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(deleterSpan)) {
@@ -97,7 +92,7 @@ public final class PreprocessJuniperExtractor {
     Span groupTreeSpan = GlobalTracer.get().buildSpan("FlatJuniper::GroupTreeBuilder").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(groupTreeSpan)) {
       assert scope != null; // avoid unused warning
-      GroupTreeBuilder gb = new GroupTreeBuilder(parser, hierarchy);
+      GroupTreeBuilder gb = new GroupTreeBuilder(hierarchy);
       walker.walk(gb, tree);
     } finally {
       groupTreeSpan.finish();
@@ -158,12 +153,9 @@ public final class PreprocessJuniperExtractor {
 
   private final FlatJuniperCombinedParser _parser;
   private String _preprocessedConfigurationText;
-  private final String _text;
   private final Warnings _w;
 
-  public PreprocessJuniperExtractor(
-      String fileText, FlatJuniperCombinedParser combinedParser, Warnings warnings) {
-    _text = fileText;
+  public PreprocessJuniperExtractor(FlatJuniperCombinedParser combinedParser, Warnings warnings) {
     _parser = combinedParser;
     _w = warnings;
   }
@@ -177,7 +169,7 @@ public final class PreprocessJuniperExtractor {
    * will be available via {@link #getPreprocessedConfigurationText}.
    */
   public void processParseTree(ParserRuleContext tree) {
-    preprocess(tree, new Hierarchy(), _text, _parser, _w);
+    preprocess(tree, new Hierarchy(), _parser, _w);
     Hierarchy finalHierarchy = new Hierarchy();
     Span span = GlobalTracer.get().buildSpan("FlatJuniper::InitialTreeBuilder").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {

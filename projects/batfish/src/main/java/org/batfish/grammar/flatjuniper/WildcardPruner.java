@@ -5,6 +5,7 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
@@ -17,12 +18,32 @@ public class WildcardPruner extends FlatJuniperParserBaseListener {
 
   private boolean _enablePathRecording;
 
+  private boolean _reenablePathRecording;
+
   private List<ParseTree> _newConfigurationLines;
 
   @Override
   public void enterFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
     _configurationContext = ctx;
     _newConfigurationLines = new ArrayList<>(ctx.children);
+  }
+
+  @Override
+  public void enterInterface_id(Interface_idContext ctx) {
+    if (_enablePathRecording && (ctx.unit != null || ctx.chnl != null || ctx.node != null)) {
+      _enablePathRecording = false;
+      _reenablePathRecording = true;
+      String text = ctx.getText();
+      _currentPath.addNode(text, ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitInterface_id(Interface_idContext ctx) {
+    if (_reenablePathRecording) {
+      _enablePathRecording = true;
+      _reenablePathRecording = false;
+    }
   }
 
   @Override

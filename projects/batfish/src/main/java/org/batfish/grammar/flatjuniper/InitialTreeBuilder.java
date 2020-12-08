@@ -43,6 +43,14 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitInterface_id(Interface_idContext ctx) {
+    if (_reenablePathRecording) {
+      _enablePathRecording = true;
+      _reenablePathRecording = false;
+    }
+  }
+
+  @Override
   public void enterSet_line(Set_lineContext ctx) {
     _addLine = true;
     _enablePathRecording = true;
@@ -58,14 +66,6 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitApply_groups(Apply_groupsContext ctx) {
     _addLine = false;
-  }
-
-  @Override
-  public void exitInterface_id(Interface_idContext ctx) {
-    if (_reenablePathRecording) {
-      _enablePathRecording = true;
-      _reenablePathRecording = false;
-    }
   }
 
   @Override

@@ -492,7 +492,8 @@ ifia_vrrp_group
       | name = variable
    )
    (
-      ifiav_accept_data
+      apply
+      | ifiav_accept_data
       | ifiav_advertise_interval
       | ifiav_authentication_key
       | ifiav_authentication_type

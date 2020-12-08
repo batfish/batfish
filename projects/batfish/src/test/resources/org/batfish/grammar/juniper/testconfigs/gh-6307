@@ -1,0 +1,4 @@
+set system host-name gh-6307
+set groups VRRP interfaces irb unit <*> family inet address <*> vrrp-group <*> track interface ae0.0 priority-cost 10
+set interfaces irb unit 0 family inet address 1.2.3.4/24 vrrp-group 1
+set apply-groups VRRP
