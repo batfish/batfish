@@ -142,14 +142,13 @@ public final class Hierarchy {
     private abstract static class HierarchyNode {
 
       protected Set<String> _blacklistedGroups;
-      private Map<String, HierarchyChildNode> _children;
+      private final Map<String, HierarchyChildNode> _children;
 
       /**
        * Add a set line to {@code output} prefixed by {@code prefix} for each path from this node to
        * a leaf.
        */
       protected final void appendSetLines(@Nonnull String prefix, @Nonnull StringBuilder output) {
-        String prefixString = prefix;
         if (_children.isEmpty()) {
           // leaf, so append set line
           output.append(prefix).append("\n");
@@ -157,7 +156,7 @@ public final class Hierarchy {
         _children.forEach(
             (childText, child) -> {
               // append set lines for every path from child to leaf
-              child.appendSetLines(String.format("%s %s", prefixString, childText), output);
+              child.appendSetLines(String.format("%s %s", prefix, childText), output);
             });
       }
 
@@ -200,7 +199,7 @@ public final class Hierarchy {
     public static final class HierarchyPath {
 
       private boolean _containsWildcard;
-      private List<HierarchyChildNode> _nodes;
+      private final List<HierarchyChildNode> _nodes;
       private StatementContext _statement;
 
       public HierarchyPath() {
@@ -240,7 +239,7 @@ public final class Hierarchy {
 
     private static final class HierarchyWildcardNode extends HierarchyChildNode {
 
-      private String _wildcard;
+      private final String _wildcard;
 
       private HierarchyWildcardNode(String text, int lineNumber) {
         super(text, lineNumber);
@@ -341,9 +340,9 @@ public final class Hierarchy {
       };
     }
 
-    private String _groupName;
+    private final @Nullable String _groupName;
 
-    private HierarchyRootNode _root;
+    private final HierarchyRootNode _root;
 
     private HierarchyTree(@Nullable String groupName) {
       _groupName = groupName;
@@ -404,6 +403,7 @@ public final class Hierarchy {
         }
         currentNode = matchNode;
       }
+      assert matchNode != null;
       matchNode._line = ctx;
       matchNode._sourceGroup = group;
       return result;
@@ -755,11 +755,11 @@ public final class Hierarchy {
     }
   }
 
-  private HierarchyTree _deactivateTree;
+  private final HierarchyTree _deactivateTree;
 
-  private HierarchyTree _masterTree;
+  private final HierarchyTree _masterTree;
 
-  private Map<String, HierarchyTree> _trees;
+  private final Map<String, HierarchyTree> _trees;
 
   private final Map<Token, String> _tokenInputs;
 

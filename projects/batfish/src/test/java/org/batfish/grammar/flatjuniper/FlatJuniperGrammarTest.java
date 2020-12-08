@@ -4655,6 +4655,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testGH6307() {
+    parseConfig("gh-6307");
+    // don't crash.
+  }
+
+  @Test
   public void testRouteFilters() {
     Configuration c = parseConfig("route-filter");
     RouteFilterList rfl = c.getRouteFilterLists().get("route-filter-test:t1");

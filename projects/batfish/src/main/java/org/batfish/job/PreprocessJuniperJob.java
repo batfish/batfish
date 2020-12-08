@@ -96,8 +96,7 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
     _logger.debugf("Preprocessing Juniper config: \"%s\"...", _inputFile);
     FlatJuniperCombinedParser parser =
         new FlatJuniperCombinedParser(flatConfigText, _settings, lineMap);
-    PreprocessJuniperExtractor extractor =
-        new PreprocessJuniperExtractor(flatConfigText, parser, _warnings);
+    PreprocessJuniperExtractor extractor = new PreprocessJuniperExtractor(parser, _warnings);
     _logger.info("\tParsing...");
     // Parse the flat Juniper text
     ParserRuleContext tree = Batfish.parse(parser, _logger, _settings);
