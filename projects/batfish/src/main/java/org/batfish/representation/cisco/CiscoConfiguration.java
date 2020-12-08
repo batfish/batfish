@@ -1581,6 +1581,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newNeighborBuilder.setBgpProcess(newBgpProcess);
       newNeighborBuilder.setConfederation(proc.getConfederation());
+      newNeighborBuilder.setEnforceFirstAs(firstNonNull(proc.getEnforceFirstAs(), Boolean.TRUE));
 
       AddressFamilyCapabilities ipv4AfSettings =
           AddressFamilyCapabilities.builder()

@@ -45,6 +45,8 @@ public class BgpProcess implements Serializable {
 
   private Map<Prefix6, DynamicIpv6BgpPeerGroup> _dynamicIpv6PeerGroups;
 
+  private @Nullable Boolean _enforceFirstAs;
+
   private Map<Prefix, BgpNetwork> _ipNetworks;
 
   private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
@@ -197,6 +199,15 @@ public class BgpProcess implements Serializable {
 
   public Map<Prefix6, DynamicIpv6BgpPeerGroup> getDynamicIpv6PeerGroups() {
     return _dynamicIpv6PeerGroups;
+  }
+
+  @Nullable
+  public Boolean getEnforceFirstAs() {
+    return _enforceFirstAs;
+  }
+
+  public void setEnforceFirstAs(@Nullable Boolean enforceFirstAs) {
+    _enforceFirstAs = enforceFirstAs;
   }
 
   public Map<Prefix, BgpNetwork> getIpNetworks() {
