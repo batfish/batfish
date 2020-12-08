@@ -467,6 +467,7 @@ import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_asnContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_conf_identifier_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_conf_peers_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Bgp_enforce_first_as_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_redistribute_internal_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cadant_stdacl_nameContext;
@@ -722,6 +723,7 @@ import org.batfish.grammar.cisco.CiscoParser.Net_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Network6_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Network_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Next_hop_self_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.No_bgp_enforce_first_as_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_neighbor_activate_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.No_neighbor_shutdown_rb_stanzaContext;
@@ -1764,6 +1766,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Bgp_asnContext peer : ctx.peers) {
       members.add(toAsNum(peer));
     }
+  }
+
+  @Override
+  public void exitBgp_enforce_first_as_stanza(Bgp_enforce_first_as_stanzaContext ctx) {
+    BgpProcess proc = currentVrf().getBgpProcess();
+    proc.setEnforceFirstAs(true);
+  }
+
+  @Override
+  public void exitNo_bgp_enforce_first_as_stanza(No_bgp_enforce_first_as_stanzaContext ctx) {
+    BgpProcess proc = currentVrf().getBgpProcess();
+    proc.setEnforceFirstAs(false);
   }
 
   @Override

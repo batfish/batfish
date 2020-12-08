@@ -18082,7 +18082,7 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
@@ -22192,7 +22192,7 @@
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "group" : "as1",
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
@@ -22218,7 +22218,7 @@
                   "clusterId" : 16843009,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "group" : "as2",
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
@@ -23182,7 +23182,7 @@
                   "clusterId" : 16909060,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
@@ -25920,7 +25920,7 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "generatedRoutes" : [
                     {
                       "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -27934,7 +27934,7 @@
                   "clusterId" : 3475939343,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "group" : "LEAF",
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
@@ -73278,7 +73278,7 @@
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
@@ -73304,7 +73304,7 @@
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
@@ -73330,7 +73330,7 @@
                   "defaultMetric" : 0,
                   "description" : "neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus",
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
@@ -73710,7 +73710,7 @@
                   "clusterId" : 0,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
