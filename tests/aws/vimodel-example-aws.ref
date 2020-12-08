@@ -44276,7 +44276,7 @@
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "group" : "FW",
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
@@ -44307,7 +44307,7 @@
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "group" : "FW",
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
@@ -44334,7 +44334,7 @@
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
@@ -44364,7 +44364,7 @@
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "ipv4UnicastAddressFamily" : {
                     "addressFamilyCapabilities" : {
                       "additionalPathsReceive" : false,
@@ -44390,7 +44390,7 @@
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "generatedRoutes" : [
                     {
                       "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -44432,7 +44432,7 @@
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
-                  "enforceFirstAs" : false,
+                  "enforceFirstAs" : true,
                   "generatedRoutes" : [
                     {
                       "class" : "org.batfish.datamodel.GeneratedRoute",
