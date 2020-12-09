@@ -1990,7 +1990,34 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     newIface.setVrf(vrf);
 
-    EigrpProcessConfiguration eigrpProcess = _eigrpProcesses.getOrDefault(iface.getEigrp(), null);
+    String processTag = iface.getEigrp();
+    EigrpProcessConfiguration eigrpProcess = _eigrpProcesses.get(processTag);
+    if (iface.getAddress() != null) {
+      // check if this iface is included in an EIGRP process via a network statement
+      Ip ifaceIp = iface.getAddress().getAddress().getIp();
+      for (Entry<String, EigrpProcessConfiguration> e : _eigrpProcesses.entrySet()) {
+        EigrpProcessConfiguration process = e.getValue();
+        EigrpVrfConfiguration eigrpVrf = process.getVrf(vrfName);
+        if (eigrpVrf != null
+            && Stream.of(eigrpVrf.getV4AddressFamily(), eigrpVrf.getVrfIpv4AddressFamily())
+                .filter(Objects::nonNull)
+                .flatMap(ipv4Af -> ipv4Af.getNetworks().stream())
+                .anyMatch(network -> network.containsIp(ifaceIp))) {
+          // Found a process on interface
+          if (eigrpProcess != null) {
+            // Cisco does not recommend running multiple EIGRP autonomous systems on the same
+            // interface
+            _w.redFlag(
+                String.format(
+                    "Interface %s matches multiple EIGRP processes. Only process %s will be used.",
+                    iface.getName(), processTag));
+            break;
+          }
+          eigrpProcess = process;
+          processTag = e.getKey();
+        }
+      }
+    }
     if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
       String importPolicyName =
           eigrpNeighborImportPolicyName(ifaceName, vrfName, eigrpProcess.getAsn());

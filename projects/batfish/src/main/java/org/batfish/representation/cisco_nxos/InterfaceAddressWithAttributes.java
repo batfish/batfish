@@ -8,16 +8,16 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** Describes the configuration for an IP address assigned to an {@link Interface}. */
 @ParametersAreNonnullByDefault
 public final class InterfaceAddressWithAttributes implements Serializable {
-  public InterfaceAddressWithAttributes(InterfaceAddress address) {
+  public InterfaceAddressWithAttributes(ConcreteInterfaceAddress address) {
     _address = address;
   }
 
-  public @Nonnull InterfaceAddress getAddress() {
+  public @Nonnull ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
@@ -41,7 +41,7 @@ public final class InterfaceAddressWithAttributes implements Serializable {
   ///// Private implementation details         /////
   //////////////////////////////////////////////////
 
-  private final @Nonnull InterfaceAddress _address;
+  private final @Nonnull ConcreteInterfaceAddress _address;
   private int _routePreference;
   private long _tag;
 

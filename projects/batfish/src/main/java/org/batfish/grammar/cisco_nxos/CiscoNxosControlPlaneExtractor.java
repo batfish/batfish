@@ -4176,6 +4176,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRecaf_network(CiscoNxosParser.Recaf_networkContext ctx) {
+    _currentEigrpVrfIpAf.addNetwork(toPrefix(ctx.network));
+  }
+
+  @Override
   public void exitRecaf4_redistribute(Recaf4_redistributeContext ctx) {
     Optional<RoutingProtocolInstance> rpiOrError =
         toRoutingProtocolInstance(ctx, ctx.routing_instance_v4());
