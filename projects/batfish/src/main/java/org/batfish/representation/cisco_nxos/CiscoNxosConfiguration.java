@@ -1991,8 +1991,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     String processTag = iface.getEigrp();
     EigrpProcessConfiguration eigrpProcess = _eigrpProcesses.get(processTag);
     if (iface.getAddress() != null) {
-      // check if this iface is included in an EIGRP process via a network statement
-      // TODO: Determine whether we should also be checking secondary addresses
+      // Check if this iface is included in an EIGRP process via a network statement.
+      // (Secondary addresses do not count for network statement inclusion.)
       Ip ifaceIp = iface.getAddress().getAddress().getIp();
       for (Entry<String, EigrpProcessConfiguration> e : _eigrpProcesses.entrySet()) {
         EigrpProcessConfiguration process = e.getValue();
@@ -2004,8 +2004,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 .anyMatch(network -> network.containsIp(ifaceIp))) {
           // Found a process on interface
           if (eigrpProcess != null) {
-            // Cisco does not recommend running multiple EIGRP autonomous systems on the same
-            // interface
+            // TODO Support interfaces with multiple EIGRP processes
             _w.redFlag(
                 String.format(
                     "Interface %s matches multiple EIGRP processes. Only process %s will be used.",

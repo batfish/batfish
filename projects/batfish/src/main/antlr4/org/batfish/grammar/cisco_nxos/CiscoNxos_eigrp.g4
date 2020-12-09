@@ -105,8 +105,15 @@ recaf_ipv6
 
 recaf_common
 :
-  recaf_network
+  recaf_eigrp
+  | recaf_network
   | recaf_router_id
+;
+
+recaf_eigrp
+:
+  // EIGRP keyword here is undocumented, but apparently works for backwards compatibility.
+  EIGRP recaf_router_id
 ;
 
 recaf_network
@@ -116,8 +123,7 @@ recaf_network
 
 recaf_router_id
 :
-  // EIGRP keyword here is undocumented, but apparently works for backwards compatibility.
-  EIGRP? ROUTER_ID id = ip_address NEWLINE
+  ROUTER_ID id = ip_address NEWLINE
 ;
 
 recaf4_redistribute
