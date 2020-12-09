@@ -1822,25 +1822,27 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       InterfaceAddressWithAttributes addrWithAttr = iface.getAddress();
       if (addrWithAttr != null) {
         newIfaceBuilder.setAddress(addrWithAttr.getAddress());
-        // convert any connected route metadata
-        addressMetadata.put(
-            addrWithAttr.getAddress(),
-            ConnectedRouteMetadata.builder()
-                .setAdmin(addrWithAttr.getRoutePreference())
-                .setGenerateLocalRoutes(true)
-                .setTag(addrWithAttr.getTag())
-                .build());
+        if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
+          // convert any connected route metadata
+          addressMetadata.put(
+              (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
+              ConnectedRouteMetadata.builder()
+                  .setAdmin(addrWithAttr.getRoutePreference())
+                  .setGenerateLocalRoutes(true)
+                  .setTag(addrWithAttr.getTag())
+                  .build());
+        }
       }
       newIfaceBuilder.setSecondaryAddresses(
           iface.getSecondaryAddresses().stream()
               .map(InterfaceAddressWithAttributes::getAddress)
               .collect(ImmutableSet.toImmutableSet()));
-      iface
-          .getSecondaryAddresses()
+      iface.getSecondaryAddresses().stream()
+          .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
           .forEach(
               addr ->
                   addressMetadata.put(
-                      addr.getAddress(),
+                      (ConcreteInterfaceAddress) addr.getAddress(),
                       ConnectedRouteMetadata.builder()
                           .setAdmin(addr.getRoutePreference())
                           .setGenerateLocalRoutes(true)
@@ -1990,10 +1992,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     String processTag = iface.getEigrp();
     EigrpProcessConfiguration eigrpProcess = _eigrpProcesses.get(processTag);
-    if (iface.getAddress() != null) {
+    if (newIface.getAddress() != null
+        && newIface.getAddress() instanceof ConcreteInterfaceAddress) {
       // Check if this iface is included in an EIGRP process via a network statement.
       // (Secondary addresses do not count for network statement inclusion.)
-      Ip ifaceIp = iface.getAddress().getAddress().getIp();
+      Ip ifaceIp = ((ConcreteInterfaceAddress) newIface.getAddress()).getIp();
       for (Entry<String, EigrpProcessConfiguration> e : _eigrpProcesses.entrySet()) {
         EigrpProcessConfiguration process = e.getValue();
         EigrpVrfConfiguration eigrpVrf = process.getVrf(vrfName);
@@ -2682,6 +2685,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 Optional<Ip> ipOpt =
                     Optional.ofNullable(iface.getAddress())
                         .map(InterfaceAddressWithAttributes::getAddress)
+                        .filter(ConcreteInterfaceAddress.class::isInstance)
+                        .map(ConcreteInterfaceAddress.class::cast)
                         .map(ConcreteInterfaceAddress::getIp);
                 if (!ipOpt.isPresent()) {
                   return;
@@ -3275,6 +3280,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                             iface.getSecondaryAddresses().stream()))
                                 .filter(Objects::nonNull)
                                 .map(InterfaceAddressWithAttributes::getAddress)
+                                .filter(ConcreteInterfaceAddress.class::isInstance)
+                                .map(ConcreteInterfaceAddress.class::cast)
                                 .flatMap(
                                     address ->
                                         address.getPrefix().getPrefixLength() <= 30
