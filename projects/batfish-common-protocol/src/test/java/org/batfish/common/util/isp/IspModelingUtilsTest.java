@@ -348,7 +348,7 @@ public class IspModelingUtilsTest {
   }
 
   @Test
-  public void testCreateIspConfigurationNode() {
+  public void testCreateIspNode() {
     Ip ispIp = Ip.parse("2.2.2.2");
     Ip remoteIp = Ip.parse("1.1.1.1");
     ConcreteInterfaceAddress ispIfaceAddress = ConcreteInterfaceAddress.create(ispIp, 30);
@@ -411,6 +411,39 @@ public class IspModelingUtilsTest {
         equalTo(expectedIspPeerConfig));
 
     assertThat(ispConfiguration.getRoutingPolicies(), hasKey(EXPORT_POLICY_ON_ISP_TO_CUSTOMERS));
+
+    // no L1 edges are added when the remote is not LLA
+    assertThat(modeledNodes.getLayer1Edges(), equalTo(ImmutableSet.of()));
+  }
+
+  /** Tests that the expected L1 edges are added when the remote (border router) uses LLA */
+  @Test
+  public void testCreateIspNode_LlaRemote() {
+    Ip ispIp = Ip.parse("2.2.2.2");
+    Ip remoteIp = Ip.parse("1.1.1.1");
+    BgpActivePeerConfig remotePeerConfig =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(ispIp)
+            .setRemoteAs(1L)
+            .setLocalIp(remoteIp)
+            .setLocalAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+    long asn = 2L;
+    String ispName = getDefaultIspNodeName(asn);
+    String remoteHostname = "testNode";
+    String remoteIface = "testIface";
+    IspModel ispModel =
+        IspModel.builder()
+            .setAsn(asn)
+            .setName(ispName)
+            .setRemotes(
+                new Remote(remoteHostname, "testIface", LINK_LOCAL_ADDRESS, remotePeerConfig))
+            .setTrafficFiltering(IspTrafficFiltering.blockReservedAddressesAtInternet())
+            .build();
+
+    ModeledNodes modeledNodes = new ModeledNodes();
+    createIspNode(modeledNodes, ispModel, new NetworkFactory(), new BatfishLogger("output", false));
 
     assertThat(
         modeledNodes.getLayer1Edges(),
@@ -934,8 +967,6 @@ public class IspModelingUtilsTest {
         modeledNodes.getLayer1Edges(),
         equalTo(
             ImmutableSet.of(
-                new Layer1Edge(borderLayer1, ispLayer1Iface0),
-                new Layer1Edge(ispLayer1Iface0, borderLayer1),
                 new Layer1Edge(internetLayer1, ispLayer1Iface2),
                 new Layer1Edge(ispLayer1Iface2, internetLayer1))));
   }

@@ -516,7 +516,7 @@ public final class IspModelingUtils {
 
   /**
    * Creates the {@link Configuration} for the ISP node given an ASN and {@link IspModel}. Inserts
-   * that node and its layer1 edges to the Internet into {@code modeledNodes}.
+   * that node and layer1 edges to remote nodes (if needed) into {@code modeledNodes}.
    */
   @VisibleForTesting
   static void createIspNode(
@@ -619,11 +619,14 @@ public final class IspModelingUtils {
                       .setIncomingFilter(fromNetwork)
                       .setOutgoingFilter(toNetwork)
                       .build();
-              modeledNodes.addLayer1Edge(
-                  ispConfiguration.getHostname(),
-                  ispInterface.getName(),
-                  remote.getRemoteHostname(),
-                  remote.getRemoteIfaceName());
+              // add L1 edge only for the LLA case
+              if (remote.getIspIfaceAddress() instanceof LinkLocalAddress) {
+                modeledNodes.addLayer1Edge(
+                    ispConfiguration.getHostname(),
+                    ispInterface.getName(),
+                    remote.getRemoteHostname(),
+                    remote.getRemoteIfaceName());
+              }
               addBgpPeerToIsp(remote.getRemoteBgpPeerConfig(), ispInterface.getName(), bgpProcess);
             });
 
