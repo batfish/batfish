@@ -1265,6 +1265,7 @@ EIGRP
       case DISTRIBUTE_LIST:
       case HELLO_INTERVAL:
       case HOLD_TIME:
+      case IP:
       case MODE:
       case PASSIVE_INTERFACE:
       case REDISTRIBUTE:
