@@ -101,6 +101,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_EIGRP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_HELLO_INTERVAL_EIGRP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_HOLD_TIME_EIGRP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_IGMP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP;
@@ -321,7 +324,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_bandwidthContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_forwardContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_hello_intervalContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_hold_timeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_proxy_arpContext;
@@ -5232,8 +5238,35 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_ip_eigrp(I_ip_eigrpContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.tag);
+    maybeName.ifPresent(
+        name ->
+            _c.referenceStructure(
+                ROUTER_EIGRP, name, INTERFACE_IP_EIGRP, ctx.getStart().getLine()));
+  }
+
+  @Override
   public void exitI_ip_forward(I_ip_forwardContext ctx) {
     _currentInterfaces.forEach(i -> i.setIpForward(true));
+  }
+
+  @Override
+  public void exitI_ip_hello_interval(I_ip_hello_intervalContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.tag);
+    maybeName.ifPresent(
+        name ->
+            _c.referenceStructure(
+                ROUTER_EIGRP, name, INTERFACE_IP_HELLO_INTERVAL_EIGRP, ctx.getStart().getLine()));
+  }
+
+  @Override
+  public void exitI_ip_hold_time(I_ip_hold_timeContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.tag);
+    maybeName.ifPresent(
+        name ->
+            _c.referenceStructure(
+                ROUTER_EIGRP, name, INTERFACE_IP_HOLD_TIME_EIGRP, ctx.getStart().getLine()));
   }
 
   @Override

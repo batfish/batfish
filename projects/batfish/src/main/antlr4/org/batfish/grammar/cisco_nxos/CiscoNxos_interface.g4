@@ -391,9 +391,10 @@ i_ip
     | i_ip_delay
     | i_ip_distribute_list
     | i_ip_dhcp
+    | i_ip_eigrp
+    | i_ip_forward
     | i_ip_hello_interval
     | i_ip_hold_time
-    | i_ip_forward
     | i_ip_igmp
     | i_ip_null
     | i_ip_ospf
@@ -501,19 +502,20 @@ iipdl_route_map
   ROUTE_MAP routemap = route_map_name (IN | OUT) NEWLINE
 ;
 
+i_ip_eigrp
+:
+  EIGRP tag = router_eigrp_process_tag
+  i_ip_eigrp_bfd
+;
+
+i_ip_eigrp_bfd
+:
+  BFD DISABLE? NEWLINE
+;
+
 i_ip_forward
 :
   FORWARD NEWLINE
-;
-
-i_ip_hello_interval
-:
-  HELLO_INTERVAL EIGRP router_eigrp_process_tag time = uint16 NEWLINE
-;
-
-i_ip_hold_time
-:
-  HOLD_TIME EIGRP router_eigrp_process_tag time = uint16 NEWLINE
 ;
 
 i_ip_igmp
@@ -537,6 +539,16 @@ iipi_null
     | QUERY_MAX_RESPONSE_TIME
     | VERSION
   ) null_rest_of_line
+;
+
+i_ip_hello_interval
+:
+  HELLO_INTERVAL EIGRP tag = router_eigrp_process_tag time = uint16 NEWLINE
+;
+
+i_ip_hold_time
+:
+  HOLD_TIME EIGRP tag = router_eigrp_process_tag time = uint16 NEWLINE
 ;
 
 i_ip_null
