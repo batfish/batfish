@@ -11,6 +11,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
 import static org.batfish.common.topology.TopologyUtil.computeVniName;
+import static org.batfish.common.topology.TopologyUtil.isVirtualWireSameDevice;
 import static org.batfish.common.topology.TopologyUtil.unionLayer1PhysicalTopologies;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Ip.FIRST_CLASS_B_PRIVATE_IP;
@@ -1771,5 +1772,28 @@ public final class TopologyUtilTest {
     assertThat(
         unionLayer1PhysicalTopologies(Optional.of(topology1), Optional.of(topology2)),
         equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1, edge2, edge3)))));
+  }
+
+  @Test
+  public void testIsVirtualWire() {
+    // Not the same device
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("h1", "vasileft1"),
+                NodeInterfacePair.of("h2", "vasiright1"))));
+    // same device, not virtual wire
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "eth0"))));
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(NodeInterfacePair.of("h1", "eth2"), NodeInterfacePair.of("h1", "eth0"))));
+    // same device, virtual wire
+    assertTrue(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("h1", "vasileft1"),
+                NodeInterfacePair.of("h1", "vasiright1"))));
   }
 }
