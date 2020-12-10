@@ -431,13 +431,15 @@ public final class TopologyUtil {
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
         synthesizeL3Topology(configurations).getEdges().stream()
-            // keep if either node is not in tail of edge in layer-1, or if vertices are in
-            // same broadcast domain
             .filter(
                 edge ->
+                    // keep if either node is not in tail of edge in layer-1, or if vertices are in
+                    // same broadcast domain
                     !layer1TailNodes.contains(edge.getNode1())
                         || !layer1TailNodes.contains(edge.getNode2())
-                        || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail()));
+                        || layer2Topology.inSameBroadcastDomain(edge.getHead(), edge.getTail())
+                        // Keep if virtual wire
+                        || isVirtualWireSameDevice(edge));
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
 
     // Look over all L1 logical edges and see if they both have link-local addresses. If they do,
@@ -682,6 +684,24 @@ public final class TopologyUtil {
     }
     // Don't connect interfaces that have any IP address in common
     return !haveIpInCommon(iface1, iface2);
+  }
+
+  /**
+   * Returns true if the given edge could correspond to a virtual link on the same device. Such
+   * edges do not appear in L1 topology, but should not be pruned off when L1 is present.
+   *
+   * <p><b>Note</b> not every self-edge is a valid virtual wire (e.g., VRFs could have IP reuse,
+   * wires could be physical, etc.) This method employs some (questionable) heuristics to determine
+   * if a pair of interfaces constitutes a virtual wire.
+   *
+   * @param edge a valid (i.e., subnets match up) L3 edge.
+   */
+  @VisibleForTesting
+  static boolean isVirtualWireSameDevice(Edge edge) {
+    return edge.getTail().getHostname().equals(edge.getHead().getHostname())
+        // Cisco's cross-VRF NAT interfaces.
+        && edge.getInt1().startsWith("vasi")
+        && edge.getInt2().startsWith("vasi");
   }
 
   public static @Nonnull Layer1Topology computeLayer1LogicalTopology(
