@@ -2019,23 +2019,29 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         }
       }
     }
-    if (eigrpProcess != null && eigrpProcess.getAsn() != null) {
-      String importPolicyName =
-          eigrpNeighborImportPolicyName(ifaceName, vrfName, eigrpProcess.getAsn());
-      String exportPolicyName =
-          eigrpNeighborExportPolicyName(ifaceName, vrfName, eigrpProcess.getAsn());
-      generateEigrpPolicy(_c, this, iface.getEigrpInboundDistributeList(), importPolicyName);
-      generateEigrpPolicy(_c, this, iface.getEigrpOutboundDistributeList(), exportPolicyName);
+    if (eigrpProcess != null) {
+      // Find process ASN for this interface. If an ASN is explicitly configured for the interface's
+      // VRF, it takes precedence over process ASN (which is just process tag interpreted as ASN).
+      Integer asn =
+          Optional.ofNullable(eigrpProcess.getVrf(vrfName))
+              .map(EigrpVrfConfiguration::getAsn)
+              .orElse(eigrpProcess.getAsn());
+      if (asn != null) {
+        String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, vrfName, asn);
+        String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, vrfName, asn);
+        generateEigrpPolicy(_c, this, iface.getEigrpInboundDistributeList(), importPolicyName);
+        generateEigrpPolicy(_c, this, iface.getEigrpOutboundDistributeList(), exportPolicyName);
 
-      newIface.setEigrp(
-          EigrpInterfaceSettings.builder()
-              .setAsn(eigrpProcess.getAsn().longValue())
-              .setEnabled(true)
-              .setImportPolicy(importPolicyName)
-              .setExportPolicy(exportPolicyName)
-              .setMetric(computeEigrpMetricForInterface(iface))
-              .setPassive(iface.getEigrpPassive())
-              .build());
+        newIface.setEigrp(
+            EigrpInterfaceSettings.builder()
+                .setAsn(asn.longValue())
+                .setEnabled(true)
+                .setImportPolicy(importPolicyName)
+                .setExportPolicy(exportPolicyName)
+                .setMetric(computeEigrpMetricForInterface(iface))
+                .setPassive(iface.getEigrpPassive())
+                .build());
+      }
     }
 
     newIface.setOwner(_c);
