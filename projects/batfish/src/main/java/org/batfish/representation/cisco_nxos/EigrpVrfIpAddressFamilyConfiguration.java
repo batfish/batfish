@@ -1,12 +1,16 @@
 package org.batfish.representation.cisco_nxos;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Prefix;
 
 /**
  * Represents the EIGRP configuration for IPv4 or IPv6 address families at the VRF level.
@@ -17,7 +21,12 @@ import javax.annotation.Nullable;
 public abstract class EigrpVrfIpAddressFamilyConfiguration implements Serializable {
 
   public EigrpVrfIpAddressFamilyConfiguration() {
+    _networks = new HashSet<>();
     _redistributionPolicies = new HashMap<>();
+  }
+
+  public final @Nonnull Set<Prefix> getNetworks() {
+    return ImmutableSet.copyOf(_networks);
   }
 
   /** Return all redistribution policies. */
@@ -39,10 +48,15 @@ public abstract class EigrpVrfIpAddressFamilyConfiguration implements Serializab
     return _redistributionPolicies.get(protocol);
   }
 
+  public final void addNetwork(Prefix network) {
+    _networks.add(network);
+  }
+
   /** Set the redistribution policy for the given instance. */
   public final void setRedistributionPolicy(RoutingProtocolInstance instance, String routeMap) {
     _redistributionPolicies.put(instance, new RedistributionPolicy(instance, routeMap));
   }
 
+  private final Set<Prefix> _networks;
   private final Map<RoutingProtocolInstance, RedistributionPolicy> _redistributionPolicies;
 }

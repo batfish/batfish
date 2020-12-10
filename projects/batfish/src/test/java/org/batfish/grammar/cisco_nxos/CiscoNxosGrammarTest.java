@@ -8021,6 +8021,47 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testEigrpNetworkStatements() throws IOException {
+    /*
+    Tests undocumented-but-permitted IOS-like syntax for declaring networks in router eigrp stanza:
+    router eigrp 1
+      network 1.1.1.0/24
+     */
+    String hostname = "nxos_eigrp_network_statements";
+    Configuration c = parseConfig(hostname);
+    /*
+    Interfaces Ethernet1/1 - Ethernet1/4 should match EIGRP processes 1-4.
+    - Ethernet1/1 has network 10.10.10.1/24 in default VRF
+      - Process 1 has network 10.10.10.0/24 at top level
+    - Ethernet1/2 has network 11.11.11.1/24 in default VRF
+      - Process 2 has network 11.11.0.0/16 in ipv4 address family stanza
+    - Ethernet1/3 has network 12.12.12.1/24 in vrf VRF1
+      - Process 3 has network 12.12.12.0/30 in VRF1 stanza
+    - Ethernet1/4 has network 13.13.13.1/24 in vrf VRF1
+      - Process 4 has network 13.13.13.1/32 in VRF1 ipv4 address family stanza
+     */
+    for (int i = 1; i < 5; i++) {
+      String ifaceName = "Ethernet1/" + i;
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      EigrpInterfaceSettings eigrp = iface.getEigrp();
+      assertNotNull(eigrp);
+      assertThat(eigrp.getAsn(), equalTo((long) i));
+    }
+    {
+      /*
+      Interface Ethernet1/5 should NOT match process 5. It has network 14.14.14.1/24 in vrf VRF.
+      Process 5 has:
+      - matching network 14.14.14.0/24 at top level (matches default vrf only)
+      - matching network 14.14.14.0/24 for vrf VRF2
+      - non-matching network 14.14.14.2/32 for vrf VRF1
+       */
+      String ifaceName = "Ethernet1/5";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertNull(iface.getEigrp());
+    }
+  }
+
+  @Test
   public void testEigrpDistributeListWithPrefixListExtraction() {
     String hostname = "eigrp_distribute_list_prefix_list";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);

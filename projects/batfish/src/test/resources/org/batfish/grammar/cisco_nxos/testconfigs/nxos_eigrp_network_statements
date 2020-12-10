@@ -1,0 +1,59 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_eigrp_network_statements
+!
+feature eigrp
+!
+interface Ethernet1/1
+  ip address 10.10.10.1/24
+!
+interface Ethernet1/2
+  ip address 11.11.11.1/24
+!
+interface Ethernet1/3
+  vrf member VRF1
+  ip address 12.12.12.1/24
+!
+interface Ethernet1/4
+  vrf member VRF1
+  ip address 13.13.13.1/24
+!
+interface Ethernet1/5
+  vrf member VRF1
+  ip address 14.14.14.1/24
+!
+vrf context VRF1
+  ! defined so it will be converted
+!
+vrf context VRF2
+  ! defined so it will be converted
+!
+!
+! Should have Ethernet1/1
+router eigrp 1
+  network 10.10.10.0/24
+!
+! Should have Ethernet1/2
+router eigrp 2
+  address-family ipv4 unicast
+    network 11.11.0.0/16
+!
+! Should have Ethernet1/3
+router eigrp 3
+  vrf VRF1
+    network 12.12.12.0/30
+!
+! Should have Ethernet1/4
+router eigrp 4
+  vrf VRF1
+    address-family ipv4 unicast
+      network 13.13.13.1/32
+!
+! Should not match Ethernet1/5, which is in vrf VRF1 with address 14.14.14.1/24.
+router eigrp 5
+  network 14.14.14.0/24
+  vrf VRF2
+    network 14.14.14.0/24
+  vrf VRF1
+    network 14.14.14.2/32
+!
