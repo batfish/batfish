@@ -8022,6 +8022,33 @@ public final class CiscoNxosGrammarTest {
           equalTo((long) (defaultDelayTensOfMicroseconds(CiscoNxosInterfaceType.ETHERNET) * 1e7)));
       assertFalse(eigrp.getPassive());
     }
+    {
+      /*
+      router eigrp 3
+        autonomous-system 4
+      interface Ethernet1/3
+        ip address 192.0.3.3/24
+        ip router eigrp 3
+       */
+      // Since Ethernet1/3 is in the default vrf, autononomous-system 4 should override process tag
+      String ifaceName = "Ethernet1/3";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(iface.getEigrp().getAsn(), equalTo(4L));
+    }
+    {
+      /*
+      router eigrp 3
+        autonomous-system 4
+      interface Ethernet1/4
+        vrf member VRF
+        ip address 192.0.3.4/24
+        ip router eigrp 3
+       */
+      // Since Ethernet1/4 is not in the default vrf, autononomous-system 4 should be ignored
+      String ifaceName = "Ethernet1/4";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(iface.getEigrp().getAsn(), equalTo(3L));
+    }
   }
 
   @Test

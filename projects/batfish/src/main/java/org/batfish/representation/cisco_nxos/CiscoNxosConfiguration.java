@@ -2020,14 +2020,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       }
     }
     if (eigrpProcess != null) {
-      // TODO Does EigrpVrfConfiguration ASN take precedence over EigrpProcessConfiguration ASN?
-      Integer asn = eigrpProcess.getAsn();
-      if (asn == null) {
-        asn =
-            Optional.ofNullable(eigrpProcess.getVrf(vrfName))
-                .map(EigrpVrfConfiguration::getAsn)
-                .orElse(null);
-      }
+      // Find process ASN for this interface. If an ASN is explicitly configured for the interface's
+      // VRF, it takes precedence over process ASN (which is just process tag interpreted as ASN).
+      Integer asn =
+          Optional.ofNullable(eigrpProcess.getVrf(vrfName))
+              .map(EigrpVrfConfiguration::getAsn)
+              .orElse(eigrpProcess.getAsn());
       if (asn != null) {
         String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, vrfName, asn);
         String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, vrfName, asn);
