@@ -433,10 +433,12 @@ public final class TopologyUtil {
                 // provided L1 topology. Batfish adds these edges during ISP modeling, and not
                 // excluding them impact L3 edge inference for border.
                 l1Edge ->
-                    configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+                    !configurations.containsKey(l1Edge.getNode2().getHostname())
+                        || configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
                             != DeviceModel.BATFISH_ISP
                         // Internet connects to ISPs as well -- no need to filter that
-                        || configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+                        || !configurations.containsKey(l1Edge.getNode1().getHostname())
+                        || configurations.get(l1Edge.getNode1().getHostname()).getDeviceModel()
                             == DeviceModel.BATFISH_INTERNET)
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
