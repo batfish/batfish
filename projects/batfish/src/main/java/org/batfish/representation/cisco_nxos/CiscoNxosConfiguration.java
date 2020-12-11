@@ -1999,6 +1999,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       Ip ifaceIp = ((ConcreteInterfaceAddress) newIface.getAddress()).getIp();
       for (Entry<String, EigrpProcessConfiguration> e : _eigrpProcesses.entrySet()) {
         EigrpProcessConfiguration process = e.getValue();
+        if (eigrpProcess == process) {
+          // already matched this one based on interface's process tag
+          continue;
+        }
         EigrpVrfConfiguration eigrpVrf = process.getVrf(vrfName);
         if (eigrpVrf != null
             && Stream.of(eigrpVrf.getV4AddressFamily(), eigrpVrf.getVrfIpv4AddressFamily())
