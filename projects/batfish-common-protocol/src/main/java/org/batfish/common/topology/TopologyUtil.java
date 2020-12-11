@@ -429,17 +429,15 @@ public final class TopologyUtil {
                 rawLayer1Topology.getGraph().edges().stream(),
                 layer1LogicalTopology.getGraph().edges().stream())
             .filter(
-                // Ignore edges to ISPs when computing the set of nodes for which the L1 topology
-                // was user provided. Not doing so will impact L3 edge inference for border routers
-                // (where we added modeled edges to ISPs)
-                l1Edge -> {
-                  try {
-                    return configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
-                        != DeviceModel.BATFISH_ISP;
-                  } catch (NullPointerException e) {
-                    return true;
-                  }
-                })
+                // Ignore border-to-ISP edges when computing the set of nodes for which users
+                // provided L1 topology. Batfish adds these edges during ISP modeling, and not
+                // excluding them impact L3 edge inference for border.
+                l1Edge ->
+                    configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+                            != DeviceModel.BATFISH_ISP
+                        // Internet connects to ISPs as well -- no need to filter that
+                        || configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+                            == DeviceModel.BATFISH_INTERNET)
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
