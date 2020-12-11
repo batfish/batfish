@@ -432,14 +432,7 @@ public final class TopologyUtil {
                 // Ignore border-to-ISP edges when computing the set of nodes for which users
                 // provided L1 topology. Batfish adds these edges during ISP modeling, and not
                 // excluding them impact L3 edge inference for border.
-                l1Edge ->
-                    !configurations.containsKey(l1Edge.getNode2().getHostname())
-                        || configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
-                            != DeviceModel.BATFISH_ISP
-                        // Internet connects to ISPs as well -- no need to filter that
-                        || !configurations.containsKey(l1Edge.getNode1().getHostname())
-                        || configurations.get(l1Edge.getNode1().getHostname()).getDeviceModel()
-                            == DeviceModel.BATFISH_INTERNET)
+                l1Edge -> !isBorderToIspEdge(l1Edge, configurations))
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
@@ -684,6 +677,25 @@ public final class TopologyUtil {
           }
         });
     return prefixInterfaces;
+  }
+
+  /**
+   * Returns true if the edge is from a snapshot node to ISP. Such edges are added as part of ISP
+   * modeling, and need to ignored for the purposes of determining if the snapshot node had
+   * user-provided L1 topology.
+   *
+   * <p>If either end of the edge is not present in configurations, returns false.
+   */
+  @VisibleForTesting
+  static boolean isBorderToIspEdge(Layer1Edge l1Edge, Map<String, Configuration> configurations) {
+    return configurations.containsKey(l1Edge.getNode1().getHostname())
+        && configurations.containsKey(l1Edge.getNode2().getHostname())
+        // edge ends at ISP
+        && configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+            == DeviceModel.BATFISH_ISP
+        // but does not start at Internet
+        && configurations.get(l1Edge.getNode1().getHostname()).getDeviceModel()
+            != DeviceModel.BATFISH_INTERNET;
   }
 
   /**
