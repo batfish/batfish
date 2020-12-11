@@ -35,6 +35,7 @@ import org.batfish.common.topology.TunnelTopology.Builder;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -427,6 +428,16 @@ public final class TopologyUtil {
         Stream.concat(
                 rawLayer1Topology.getGraph().edges().stream(),
                 layer1LogicalTopology.getGraph().edges().stream())
+            .filter(
+                // Ignore border-to-ISP edges when computing the set of nodes for which users
+                // provided L1 topology. Batfish adds these edges during ISP modeling, and not
+                // excluding them impact L3 edge inference for border.
+                l1Edge ->
+                    configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+                            != DeviceModel.BATFISH_ISP
+                        // Internet connects to ISPs as well -- no need to filter that
+                        || configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+                            == DeviceModel.BATFISH_INTERNET)
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
