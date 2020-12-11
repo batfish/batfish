@@ -103,16 +103,6 @@
     {
       "node1": {
         "hostname": "Leaf1",
-        "interfaceName": "swp21"
-      },
-      "node2": {
-        "hostname": "pc10",
-        "interfaceName": "e0"
-      }
-    },
-    {
-      "node1": {
-        "hostname": "Leaf1",
         "interfaceName": "swp25"
       },
       "node2": {
