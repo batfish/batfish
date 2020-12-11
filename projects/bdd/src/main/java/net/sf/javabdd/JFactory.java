@@ -519,75 +519,25 @@ public final class JFactory extends BDDFactory {
 
   private abstract static class BddCacheData {
     int a, b, c;
-
-    abstract BddCacheData copy();
   }
 
   private static class BddCacheDataI extends BddCacheData {
     int res;
-
-    @Override
-    BddCacheData copy() {
-      BddCacheDataI that = new BddCacheDataI();
-      that.a = a;
-      that.b = b;
-      that.c = c;
-      that.res = res;
-      return that;
-    }
   }
 
   // a = index, c = operator, value = value.
   private static class BigIntegerBddCacheData extends BddCacheData {
     BigInteger value;
-
-    @Override
-    BddCacheData copy() {
-      BigIntegerBddCacheData that = new BigIntegerBddCacheData();
-      that.a = a;
-      that.b = b;
-      that.c = c;
-      that.value = value;
-      return that;
-    }
   }
 
   // a = operator, b = result, c = unused
   private static class MultiOpBddCacheData extends BddCacheData {
     int[] operands;
-
-    @Override
-    BddCacheData copy() {
-      MultiOpBddCacheData that = new MultiOpBddCacheData();
-      that.a = a;
-      that.b = b;
-      that.c = c;
-      that.operands = Arrays.copyOf(operands, operands.length);
-      return that;
-    }
   }
 
   private static class BddCache {
     BddCacheData[] table;
     int tablesize;
-
-    BddCache copy() {
-      BddCache that = new BddCache();
-      if (table instanceof BddCacheDataI[]) {
-        that.table = new BddCacheDataI[table.length];
-      } else if (table instanceof BigIntegerBddCacheData[]) {
-        that.table = new BigIntegerBddCacheData[table.length];
-      } else if (table instanceof MultiOpBddCacheData[]) {
-        that.table = new MultiOpBddCacheData[table.length];
-      } else {
-        throw new IllegalStateException("Unexpected BddCache type");
-      }
-      that.tablesize = tablesize;
-      for (int i = 0; i < table.length; ++i) {
-        that.table[i] = table[i].copy();
-      }
-      return that;
-    }
 
     /**
      * Returns the number of used entries in this cache.
