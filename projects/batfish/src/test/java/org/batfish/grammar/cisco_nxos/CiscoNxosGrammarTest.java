@@ -6146,11 +6146,12 @@ public final class CiscoNxosGrammarTest {
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_interface");
-      assertRoutingPolicyDeniesRoute(rp, base);
-      Bgpv4Route routeConnected = base.toBuilder().setNetwork(Prefix.parse("192.0.2.1/24")).build();
-      assertRoutingPolicyPermitsRoute(rp, routeConnected);
-      Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("192.0.2.1/32")).build();
-      assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      // TODO Should deny base route after implementing next hop matching (right now permits all)
+      assertRoutingPolicyPermitsRoute(rp, base);
+      Bgpv4Route routeNextHopIp = base.toBuilder().setNextHopIp(Ip.parse("192.0.2.1")).build();
+      assertRoutingPolicyPermitsRoute(rp, routeNextHopIp);
+      Bgpv4Route routeNextHopIface = base.toBuilder().setNextHopInterface("loopback0").build();
+      assertRoutingPolicyPermitsRoute(rp, routeNextHopIface);
     }
     // Skip match ip address - not relevant to routing
     {
@@ -6291,36 +6292,9 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyPermitsRoute(rp, route);
     }
     {
+      // match vlan is for pbr, doesn't apply for toBooleanExpr
       RoutingPolicy rp = c.getRoutingPolicies().get("match_vlan");
-      assertRoutingPolicyDeniesRoute(rp, base);
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/24")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/32")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeDirect);
-      }
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/24")).build();
-        assertRoutingPolicyDeniesRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/32")).build();
-        assertRoutingPolicyDeniesRoute(rp, routeDirect);
-      }
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/24")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/32")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeDirect);
-      }
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/24")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/32")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeDirect);
-      }
+      assertRoutingPolicyPermitsRoute(rp, base);
     }
 
     // sets

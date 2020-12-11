@@ -3272,34 +3272,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public BooleanExpr visitRouteMapMatchInterface(
               RouteMapMatchInterface routeMapMatchInterface) {
-            // TODO: ignore shutdown interfaces?
-            // TODO: ignore blacklisted interfaces?
+            // Matches any routes that have their next hop out one of the configured interfaces.
+            // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_rpm.html
+            // TODO: Implement MatchNextHopInterface/Ip
+            // TODO: ignore shutdown/blacklisted interfaces?
             // TODO: HSRP addresses? Only if elected?
-            return new Disjunction(
-                new MatchPrefixSet(
-                    DestinationNetwork.instance(),
-                    new ExplicitPrefixSet(
-                        new PrefixSpace(
-                            routeMapMatchInterface.getNames().stream()
-                                .map(_interfaces::get)
-                                .filter(Objects::nonNull)
-                                .flatMap(
-                                    iface ->
-                                        Stream.concat(
-                                            Stream.of(iface.getAddress()),
-                                            iface.getSecondaryAddresses().stream()))
-                                .filter(Objects::nonNull)
-                                .map(InterfaceAddressWithAttributes::getAddress)
-                                .filter(ConcreteInterfaceAddress.class::isInstance)
-                                .map(ConcreteInterfaceAddress.class::cast)
-                                .flatMap(
-                                    address ->
-                                        address.getPrefix().getPrefixLength() <= 30
-                                            ? Stream.of(
-                                                address.getPrefix(), address.getIp().toPrefix())
-                                            : Stream.of(address.getPrefix()))
-                                .map(PrefixRange::fromPrefix)
-                                .collect(ImmutableList.toImmutableList())))));
+            return BooleanExprs.TRUE;
           }
 
           @Override
@@ -3404,11 +3382,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
           @Override
           public BooleanExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
-            return visitRouteMapMatchInterface(
-                new RouteMapMatchInterface(
-                    routeMapMatchVlan.getVlans().stream()
-                        .map(vlan -> String.format("Vlan%d", vlan))
-                        .collect(ImmutableSet.toImmutableSet())));
+            // Ignore, as it only applies to PBR and has no effect on route filtering/redistribution
+            return BooleanExprs.TRUE;
           }
         });
   }
