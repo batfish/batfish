@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Random;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -519,6 +521,7 @@ public final class JFactory extends BDDFactory {
 
   private abstract static class BddCacheData {
     int a, b, c;
+    int hash;
   }
 
   private static class BddCacheDataI extends BddCacheData {
@@ -904,7 +907,8 @@ public final class JFactory extends BDDFactory {
       return BDDZERO;
     }
 
-    entry = BddCache_lookupI(applycache, NOTHASH(r));
+    int hash = NOTHASH(r);
+    entry = BddCache_lookupI(applycache, hash);
 
     if (entry.a == r && entry.c == bddop_not) {
       if (CACHESTATS) {
@@ -927,6 +931,7 @@ public final class JFactory extends BDDFactory {
     entry.a = r;
     entry.c = bddop_not;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -975,7 +980,8 @@ public final class JFactory extends BDDFactory {
     //
     // The only possible collision is apply(l, r, bddop_and) and ite(l, r, 0==BDDZERO).
     // Fortuitously, these are logically equivalent -- if f then g else false === f and g.
-    entry = BddCache_lookupI(applycache, APPLYHASH(f, g, -h));
+    int hash = APPLYHASH(f, g, -h);
+    entry = BddCache_lookupI(applycache, hash);
     if (entry.a == f && entry.b == g && entry.c == -h) { // To explain -h, see caching note above.
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -1039,6 +1045,7 @@ public final class JFactory extends BDDFactory {
     entry.b = g;
     entry.c = -h; // To explain -h, see caching note above.
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -1068,7 +1075,8 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    entry = BddCache_lookupI(replacecache, REPLACEHASH(replaceid, r));
+    int hash = REPLACEHASH(replaceid, r);
+    entry = BddCache_lookupI(replacecache, hash);
     if (entry.a == r && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -1105,6 +1113,7 @@ public final class JFactory extends BDDFactory {
     entry.a = r;
     entry.c = replaceid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -1132,7 +1141,8 @@ public final class JFactory extends BDDFactory {
       return 0;
     }
 
-    BddCacheDataI entry = BddCache_lookupI(replacecache, CORRECTIFYHASH(replaceid, l, r));
+    int hash = CORRECTIFYHASH(replaceid, l, r);
+    BddCacheDataI entry = BddCache_lookupI(replacecache, hash);
     if (entry.a == l && entry.b == r && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -1165,6 +1175,7 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = replaceid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -1350,7 +1361,8 @@ public final class JFactory extends BDDFactory {
         break;
     }
 
-    entry = BddCache_lookupI(applycache, APPLYHASH(l, r, applyop));
+    int hash = APPLYHASH(l, r, applyop);
+    entry = BddCache_lookupI(applycache, hash);
 
     if (entry.a == l && entry.b == r && entry.c == applyop) {
       if (CACHESTATS) {
@@ -1385,6 +1397,7 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = applyop;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -1407,7 +1420,8 @@ public final class JFactory extends BDDFactory {
       l = r;
       r = t;
     }
-    entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_and));
+    int hash = APPLYHASH(l, r, bddop_and);
+    entry = BddCache_lookupI(applycache, hash);
 
     if (entry.a == l && entry.b == r && entry.c == bddop_and) {
       if (CACHESTATS) {
@@ -1442,6 +1456,7 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = bddop_and;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -1456,7 +1471,8 @@ public final class JFactory extends BDDFactory {
     }
 
     // TODO: should we also check for diff? For now, don't since diff_sat should be real fast.
-    BddCacheDataI entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_diffsat));
+    int hash = APPLYHASH(l, r, bddop_diffsat);
+    BddCacheDataI entry = BddCache_lookupI(applycache, hash);
     if (entry.a == l && entry.b == r && entry.c == bddop_diffsat) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -1484,6 +1500,7 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = bddop_diffsat;
     entry.res = res ? BDDONE : BDDZERO;
+    entry.hash = hash;
 
     return res;
   }
@@ -1503,7 +1520,8 @@ public final class JFactory extends BDDFactory {
     }
 
     // TODO: should we also check for and? For now, don't since and_sat should be real fast.
-    BddCacheDataI entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_andsat));
+    int hash = APPLYHASH(l, r, bddop_andsat);
+    BddCacheDataI entry = BddCache_lookupI(applycache, hash);
     if (entry.a == l && entry.b == r && entry.c == bddop_andsat) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -1531,6 +1549,7 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = bddop_andsat;
     entry.res = res ? BDDONE : BDDZERO;
+    entry.hash = hash;
 
     return res;
   }
@@ -1574,8 +1593,8 @@ public final class JFactory extends BDDFactory {
     Arrays.sort(operands);
     operands = dedupSorted(operands);
 
-    MultiOpBddCacheData entry =
-        BddCache_lookupMultiOp(multiopcache, MULTIOPHASH(operands, bddop_or));
+    int hash = MULTIOPHASH(operands, bddop_or);
+    MultiOpBddCacheData entry = BddCache_lookupMultiOp(multiopcache, hash);
     if (entry.a == bddop_or && Arrays.equals(operands, entry.operands)) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -1704,6 +1723,7 @@ public final class JFactory extends BDDFactory {
     entry.a = bddop_or;
     entry.b = res;
     entry.operands = operands;
+    entry.hash = hash;
     return res;
   }
 
@@ -1725,7 +1745,8 @@ public final class JFactory extends BDDFactory {
       l = r;
       r = t;
     }
-    entry = BddCache_lookupI(applycache, APPLYHASH(l, r, bddop_or));
+    int hash = APPLYHASH(l, r, bddop_or);
+    entry = BddCache_lookupI(applycache, hash);
 
     if (entry.a == l && entry.b == r && entry.c == bddop_or) {
       if (CACHESTATS) {
@@ -1760,6 +1781,7 @@ public final class JFactory extends BDDFactory {
     entry.b = r;
     entry.c = bddop_or;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -1785,7 +1807,8 @@ public final class JFactory extends BDDFactory {
       res = and_rec(l, r);
       applyop = bddop_or;
     } else {
-      entry = BddCache_lookupI(appexcache, APPEXHASH(l, r, bddop_and));
+      int hash = APPEXHASH(l, r, bddop_and);
+      entry = BddCache_lookupI(appexcache, hash);
       if (entry.a == l && entry.b == r && entry.c == appexid) {
         if (CACHESTATS) {
           cachestats.opHit++;
@@ -1831,6 +1854,7 @@ public final class JFactory extends BDDFactory {
       entry.b = r;
       entry.c = appexid;
       entry.res = res;
+      entry.hash = hash;
     }
 
     return res;
@@ -1997,7 +2021,8 @@ public final class JFactory extends BDDFactory {
       }
       applyop = oldop;
     } else {
-      entry = BddCache_lookupI(appexcache, APPEXHASH(l, r, appexop));
+      int hash = APPEXHASH(l, r, appexop);
+      entry = BddCache_lookupI(appexcache, hash);
       if (entry.a == l && entry.b == r && entry.c == appexid) {
         if (CACHESTATS) {
           cachestats.opHit++;
@@ -2048,6 +2073,7 @@ public final class JFactory extends BDDFactory {
       entry.b = r;
       entry.c = appexid;
       entry.res = res;
+      entry.hash = hash;
     }
 
     return res;
@@ -2085,7 +2111,8 @@ public final class JFactory extends BDDFactory {
       }
       applyop = oldop;
     } else {
-      entry = BddCache_lookupI(appexcache, APPEXHASH(l, r, appexop));
+      int hash = APPEXHASH(l, r, appexop);
+      entry = BddCache_lookupI(appexcache, hash);
       if (entry.a == l && entry.b == r && entry.c == appexid) {
         if (CACHESTATS) {
           cachestats.opHit++;
@@ -2152,6 +2179,7 @@ public final class JFactory extends BDDFactory {
       entry.b = r;
       entry.c = appexid;
       entry.res = res;
+      entry.hash = hash;
     }
 
     return res;
@@ -2173,7 +2201,8 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    entry = BddCache_lookupI(quantcache, QUANTHASH(r));
+    int hash = QUANTHASH(r);
+    entry = BddCache_lookupI(quantcache, hash);
     if (entry.a == r && entry.c == quantid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2202,6 +2231,7 @@ public final class JFactory extends BDDFactory {
     entry.a = r;
     entry.c = quantid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -2214,7 +2244,8 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    entry = BddCache_lookupI(quantcache, QUANTHASH(r));
+    int hash = QUANTHASH(r);
+    entry = BddCache_lookupI(quantcache, hash);
     if (entry.a == r && entry.c == quantid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2253,6 +2284,7 @@ public final class JFactory extends BDDFactory {
     entry.a = r;
     entry.c = quantid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -2271,7 +2303,8 @@ public final class JFactory extends BDDFactory {
       return BDDONE;
     }
 
-    entry = BddCache_lookupI(quantcache, QUANTHASH(r));
+    int hash = QUANTHASH(r);
+    entry = BddCache_lookupI(quantcache, hash);
     if (entry.a == r && entry.c == quantid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2300,6 +2333,7 @@ public final class JFactory extends BDDFactory {
     entry.a = r;
     entry.c = quantid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -2334,7 +2368,8 @@ public final class JFactory extends BDDFactory {
       return BDDZERO;
     }
 
-    entry = BddCache_lookupI(misccache, CONSTRAINHASH(f, c));
+    int hash = CONSTRAINHASH(f, c);
+    entry = BddCache_lookupI(misccache, hash);
     if (entry.a == f && entry.b == c && entry.c == miscid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2381,6 +2416,7 @@ public final class JFactory extends BDDFactory {
     entry.b = c;
     entry.c = miscid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -2418,7 +2454,8 @@ public final class JFactory extends BDDFactory {
       return f;
     }
 
-    entry = BddCache_lookupI(replacecache, COMPOSEHASH(replaceid, f, g));
+    int hash = COMPOSEHASH(replaceid, f, g);
+    entry = BddCache_lookupI(replacecache, hash);
     if (entry.a == f && entry.b == g && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2456,6 +2493,7 @@ public final class JFactory extends BDDFactory {
     entry.b = g;
     entry.c = replaceid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -2488,7 +2526,8 @@ public final class JFactory extends BDDFactory {
       return f;
     }
 
-    entry = BddCache_lookupI(replacecache, VECCOMPOSEHASH(replaceid, f));
+    int hash = VECCOMPOSEHASH(replaceid, f);
+    entry = BddCache_lookupI(replacecache, hash);
     if (entry.a == f && entry.c == replaceid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2510,6 +2549,7 @@ public final class JFactory extends BDDFactory {
     entry.a = f;
     entry.c = replaceid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -2651,7 +2691,8 @@ public final class JFactory extends BDDFactory {
       return r;
     }
 
-    entry = BddCache_lookupI(misccache, RESTRHASH(r, miscid));
+    int hash = RESTRHASH(r, miscid);
+    entry = BddCache_lookupI(misccache, hash);
     if (entry.a == r && entry.c == miscid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -2681,6 +2722,7 @@ public final class JFactory extends BDDFactory {
     entry.a = r;
     entry.c = miscid;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -2713,7 +2755,8 @@ public final class JFactory extends BDDFactory {
       return BDDZERO;
     }
 
-    entry = BddCache_lookupI(applycache, APPLYHASH(f, d, bddop_simplify));
+    int hash = APPLYHASH(f, d, bddop_simplify);
+    entry = BddCache_lookupI(applycache, hash);
 
     if (entry.a == f && entry.b == d && entry.c == bddop_simplify) {
       if (CACHESTATS) {
@@ -2754,6 +2797,7 @@ public final class JFactory extends BDDFactory {
     entry.b = d;
     entry.c = bddop_simplify;
     entry.res = res;
+    entry.hash = hash;
 
     return res;
   }
@@ -3206,7 +3250,8 @@ public final class JFactory extends BDDFactory {
       return BigInteger.ONE;
     }
 
-    BigIntegerBddCacheData entry = BddCache_lookupBigInteger(countcache, PATHCOUHASH(r, miscid));
+    int hash = PATHCOUHASH(r, miscid);
+    BigIntegerBddCacheData entry = BddCache_lookupBigInteger(countcache, hash);
     if (entry.a == r && entry.c == miscid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -3225,6 +3270,7 @@ public final class JFactory extends BDDFactory {
     entry.a = r;
     entry.c = miscid;
     entry.value = size;
+    entry.hash = hash;
 
     return size;
   }
@@ -3247,7 +3293,8 @@ public final class JFactory extends BDDFactory {
       return BigInteger.ONE;
     }
 
-    BigIntegerBddCacheData entry = BddCache_lookupBigInteger(countcache, SATCOUHASH(root, miscid));
+    int hash = SATCOUHASH(root, miscid);
+    BigIntegerBddCacheData entry = BddCache_lookupBigInteger(countcache, hash);
     if (entry.a == root && entry.c == miscid) {
       if (CACHESTATS) {
         cachestats.opHit++;
@@ -3272,6 +3319,7 @@ public final class JFactory extends BDDFactory {
     entry.a = root;
     entry.c = miscid;
     entry.value = size;
+    entry.hash = hash;
 
     return size;
   }
@@ -3878,6 +3926,22 @@ public final class JFactory extends BDDFactory {
     }
   }
 
+  private static <T extends BddCacheData> T[] reallocateAndResize(
+      T[] oldTable, int newsize, IntFunction<T[]> newTable, Supplier<T> constructor) {
+    T[] ret = newTable.apply(newsize);
+    for (T entry : oldTable) {
+      ret[Math.abs(entry.hash % newsize)] = entry;
+    }
+    for (int i = 0; i < newsize; ++i) {
+      if (ret[i] != null) {
+        continue;
+      }
+      ret[i] = constructor.get();
+      ret[i].a = -1;
+    }
+    return ret;
+  }
+
   private int BddCache_resize(BddCache cache, int newsize) {
     if (cache == null) {
       return 0;
@@ -3894,27 +3958,20 @@ public final class JFactory extends BDDFactory {
     newsize = bdd_prime_gte(newsize);
 
     if (cache.table instanceof BddCacheDataI[]) {
-      cache.table = new BddCacheDataI[newsize];
+      cache.table =
+          reallocateAndResize(cache.table, newsize, BddCacheDataI[]::new, BddCacheDataI::new);
     } else if (cache.table instanceof BigIntegerBddCacheData[]) {
-      cache.table = new BigIntegerBddCacheData[newsize];
+      cache.table =
+          reallocateAndResize(
+              cache.table, newsize, BigIntegerBddCacheData[]::new, BigIntegerBddCacheData::new);
     } else if (cache.table instanceof MultiOpBddCacheData[]) {
-      cache.table = new MultiOpBddCacheData[newsize];
+      cache.table =
+          reallocateAndResize(
+              cache.table, newsize, MultiOpBddCacheData[]::new, MultiOpBddCacheData::new);
     } else {
       throw new IllegalStateException("unknown cache table type");
     }
 
-    for (int n = 0; n < newsize; n++) {
-      if (cache.table instanceof BddCacheDataI[]) {
-        cache.table[n] = new BddCacheDataI();
-      } else if (cache.table instanceof BigIntegerBddCacheData[]) {
-        cache.table[n] = new BigIntegerBddCacheData();
-      } else if (cache.table instanceof MultiOpBddCacheData[]) {
-        cache.table[n] = new MultiOpBddCacheData();
-      } else {
-        throw new IllegalStateException("unknown cache table type");
-      }
-      cache.table[n].a = -1;
-    }
     cache.tablesize = newsize;
 
     return 0;
