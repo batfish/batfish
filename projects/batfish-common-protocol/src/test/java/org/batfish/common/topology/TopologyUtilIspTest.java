@@ -39,9 +39,9 @@ public class TopologyUtilIspTest {
 
   @Before
   public void setup() {
-    NetworkFactory _nf = new NetworkFactory();
-    _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = _nf.interfaceBuilder();
+    NetworkFactory nf = new NetworkFactory();
+    _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    _ib = nf.interfaceBuilder();
   }
 
   private static class TopologySetup {
