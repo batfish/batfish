@@ -11,6 +11,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
 import static org.batfish.common.topology.TopologyUtil.computeVniName;
+import static org.batfish.common.topology.TopologyUtil.isBorderToIspEdge;
 import static org.batfish.common.topology.TopologyUtil.isVirtualWireSameDevice;
 import static org.batfish.common.topology.TopologyUtil.unionLayer1PhysicalTopologies;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
@@ -51,6 +52,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -1795,5 +1797,34 @@ public final class TopologyUtilTest {
             new Edge(
                 NodeInterfacePair.of("h1", "vasileft1"),
                 NodeInterfacePair.of("h1", "vasiright1"))));
+  }
+
+  @Test
+  public void testIsBorderToIspEdge() {
+    Configuration border =
+        _cb.setHostname("border").setDeviceModel(DeviceModel.CISCO_UNSPECIFIED).build();
+    Configuration isp = _cb.setHostname("isp").setDeviceModel(DeviceModel.BATFISH_ISP).build();
+    Configuration other =
+        _cb.setHostname("other").setDeviceModel(DeviceModel.CISCO_UNSPECIFIED).build();
+
+    Layer1Edge borderIspEdge =
+        new Layer1Edge(border.getHostname(), "to-isp", isp.getHostname(), "to-border");
+    Layer1Edge borderOtherEdge =
+        new Layer1Edge(border.getHostname(), "to-other", other.getHostname(), "to-border");
+
+    assertTrue(
+        isBorderToIspEdge(
+            borderIspEdge, ImmutableMap.of(border.getHostname(), border, isp.getHostname(), isp)));
+
+    assertFalse(
+        isBorderToIspEdge(
+            borderOtherEdge,
+            ImmutableMap.of(border.getHostname(), border, other.getHostname(), other)));
+
+    // missing border node in configs
+    assertFalse(isBorderToIspEdge(borderIspEdge, ImmutableMap.of(isp.getHostname(), isp)));
+
+    // missing remote node in configs
+    assertFalse(isBorderToIspEdge(borderIspEdge, ImmutableMap.of(isp.getHostname(), isp)));
   }
 }
