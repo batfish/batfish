@@ -35,6 +35,7 @@ import org.batfish.common.topology.TunnelTopology.Builder;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -427,6 +428,18 @@ public final class TopologyUtil {
         Stream.concat(
                 rawLayer1Topology.getGraph().edges().stream(),
                 layer1LogicalTopology.getGraph().edges().stream())
+            .filter(
+                // Ignore edges to ISPs when computing the set of nodes for which the L1 topology
+                // was user provided. Not doing so will impact L3 edge inference for border routers
+                // (where we added modeled edges to ISPs)
+                l1Edge -> {
+                  try {
+                    return configurations.get(l1Edge.getNode2().getHostname()).getDeviceModel()
+                        != DeviceModel.BATFISH_ISP;
+                  } catch (NullPointerException e) {
+                    return true;
+                  }
+                })
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Stream<Edge> filteredEdgeStream =
