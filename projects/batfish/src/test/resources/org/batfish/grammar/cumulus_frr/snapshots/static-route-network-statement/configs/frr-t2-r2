@@ -1,0 +1,12 @@
+# This file describes the network interfaces
+interface bond65
+ ip address 88.0.0.3/31
+ ip address 88.0.0.35/31
+# ports.conf --
+frr version
+router bgp 1
+ neighbor t2-to-t1 peer-group
+ neighbor t2-to-t1 remote-as 1
+ neighbor t2-to-t1 next-hop-self force
+ neighbor 88.0.0.2 peer-group t2-to-t1
+ neighbor 88.0.0.34 peer-group t2-to-t1
