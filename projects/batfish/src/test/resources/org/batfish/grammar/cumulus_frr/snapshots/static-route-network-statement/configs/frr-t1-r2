@@ -1,0 +1,17 @@
+# This file describes the network interfaces
+# ports.conf --
+frr version
+interface bond1
+ ip address 88.0.0.32/31
+ ip address 88.0.0.34/31
+
+ip route 99.8.0.0/20 Null0 250
+ip route 99.13.80.0/21 Null0
+
+router bgp 1
+ network 99.8.0.0/20 route-map TEST
+ network 99.13.80.0/21 route-map TEST
+ neighbor t1-to-t2 peer-group
+ neighbor t1-to-t2 remote-as 1
+ neighbor 88.0.0.33 peer-group t1-to-t2
+ neighbor 88.0.0.35 peer-group t1-to-t2
