@@ -6146,8 +6146,9 @@ public final class CiscoNxosGrammarTest {
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_interface");
-      // TODO Should deny base route after implementing next hop matching (right now permits all)
-      assertRoutingPolicyPermitsRoute(rp, base);
+      // TODO Should deny base route after implementing next hop matching (right now permits all).
+      //  https://github.com/batfish/batfish/issues/6502
+      //      assertRoutingPolicyDeniesRoute(rp, base);
       Bgpv4Route routeNextHopIp = base.toBuilder().setNextHopIp(Ip.parse("192.0.2.1")).build();
       assertRoutingPolicyPermitsRoute(rp, routeNextHopIp);
       Bgpv4Route routeNextHopIface = base.toBuilder().setNextHopInterface("loopback0").build();

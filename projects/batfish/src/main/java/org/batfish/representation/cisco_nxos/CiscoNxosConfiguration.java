@@ -3275,8 +3275,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             // Matches any routes that have their next hop out one of the configured interfaces.
             // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_rpm.html
             // TODO: Implement MatchNextHopInterface/Ip
-            // TODO: ignore shutdown/blacklisted interfaces?
-            // TODO: HSRP addresses? Only if elected?
+            // https://github.com/batfish/batfish/issues/6502
             return BooleanExprs.TRUE;
           }
 
