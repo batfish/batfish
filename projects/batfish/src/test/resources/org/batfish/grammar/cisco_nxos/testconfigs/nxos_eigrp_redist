@@ -1,0 +1,14 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_eigrp_redist
+!
+feature eigrp
+!
+ip prefix-list PL seq 5 permit 1.1.1.1/32
+!
+route-map RM permit 10
+ match ip address prefix-list PL
+!
+router eigrp 1
+  router-id 5.5.5.5
+  redistribute static route-map RM
