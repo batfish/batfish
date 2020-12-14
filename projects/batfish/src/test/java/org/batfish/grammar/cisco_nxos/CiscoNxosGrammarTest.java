@@ -6445,7 +6445,7 @@ public final class CiscoNxosGrammarTest {
               Direction.IN));
       EigrpExternalRoute routAfter = builder.build();
       assertThat(routAfter.getEigrpMetric().getValues().getBandwidth(), equalTo(1L));
-      assertThat(routAfter.getEigrpMetric().getValues().getDelay(), equalTo(2L));
+      assertThat(routAfter.getEigrpMetric().getValues().getDelay(), equalTo((long) 2e7));
       assertThat(routAfter.getEigrpMetric().getValues().getReliability(), equalTo(3));
       assertThat(routAfter.getEigrpMetric().getValues().getEffectiveBandwidth(), equalTo(4));
       assertThat(routAfter.getEigrpMetric().getValues().getMtu(), equalTo(5L));
@@ -6958,7 +6958,7 @@ public final class CiscoNxosGrammarTest {
       RouteMapSetMetricEigrp set = entry.getSetMetricEigrp();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getBandwidth(), equalTo(1L));
-      assertThat(set.getDelay(), equalTo(2L));
+      assertThat(set.getDelayTensOfMicroseconds(), equalTo(2L));
       assertThat(set.getReliability(), equalTo(3));
       assertThat(set.getLoad(), equalTo(4));
       assertThat(set.getMtu(), equalTo(5L));
