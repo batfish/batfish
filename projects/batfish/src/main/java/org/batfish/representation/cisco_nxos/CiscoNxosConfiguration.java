@@ -867,6 +867,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               vrfName, procName));
       return;
     }
+    if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {
+      // TODO: figure out what this does and handle it.
+      _w.redFlag(
+          String.format(
+              "VRF %s already has an EIGRP process for autonomous-system number %s. Skipping %s",
+              vrfName, asn, procName));
+      return;
+    }
     Ip routerId = vrfConfig.getRouterId();
     if (routerId == null) {
       routerId =
@@ -886,15 +894,63 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     EigrpProcessConfiguration.DEFAULT_DISTANCE_EXTERNAL))
             .setRouterId(routerId);
     proc.setMode(EigrpProcessMode.CLASSIC);
-    if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {
-      // TODO: figure out what this does and handle it.
-      _w.redFlag(
-          String.format(
-              "VRF %s already has an EIGRP process for autonomous-system number %s. Skipping %s",
-              vrfName, asn, procName));
-    } else {
-      v.addEigrpProcess(proc.build());
+    String redistPolicyName = eigrpRedistributionPolicyName(vrfName, asn);
+    if (createEigrpRedistributionPolicy(vrfConfig, redistPolicyName)) {
+      proc.setRedistributionPolicy(redistPolicyName);
     }
+    v.addEigrpProcess(proc.build());
+  }
+
+  /**
+   * Creates an EIGRP redistribution policy for the given {@link EigrpVrfConfiguration} with the
+   * given {@code policyName}. Doesn't create a policy if the VRF has no redistribution.
+   *
+   * @return {@code true} if a policy was created
+   */
+  private boolean createEigrpRedistributionPolicy(
+      EigrpVrfConfiguration vrfConfig, String policyName) {
+    // Create redistribution policy
+    List<RedistributionPolicy> redistPolicies =
+        Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
+            .filter(Objects::nonNull)
+            .flatMap(eigrpAf -> eigrpAf.getRedistributionPolicies().stream())
+            .collect(ImmutableList.toImmutableList());
+    if (redistPolicies.isEmpty()) {
+      return false;
+    }
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    // Set metric to default value for redistributed route. May be overwritten in called route-maps.
+    // Default bandwidth and delay found here, and resulting metric verified in GNS3:
+    // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/eigrp/default-metric-eigrp.html
+    Statement setMetric =
+        new SetEigrpMetric(
+            new LiteralEigrpMetric(
+                EigrpMetricValues.builder().setBandwidth(100000).setDelay(1E9).build()));
+    statements.add(setMetric);
+    redistPolicies.stream()
+        .filter(policy -> getRouteMaps().containsKey(policy.getRouteMap()))
+        .map(
+            policy -> {
+              List<Statement> routeMapCallExpr = ImmutableList.of(call(policy.getRouteMap()));
+              NxosRoutingProtocol protocol = policy.getInstance().getProtocol();
+              switch (protocol) {
+                case STATIC:
+                  return new If(new MatchProtocol(RoutingProtocol.STATIC), routeMapCallExpr);
+                default:
+                  _w.redFlag(
+                      String.format(
+                          "Redistribution from %s into EIGRP is not supported", protocol));
+                  return null;
+              }
+            })
+        .filter(Objects::nonNull)
+        .forEach(statements::add);
+    RoutingPolicy.builder()
+        .setName(policyName)
+        .setOwner(_c)
+        .setStatements(statements.build())
+        .build();
+    return true;
   }
 
   private void convertInterface(Interface iface) {
@@ -2133,6 +2189,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public static String eigrpNeighborExportPolicyName(String ifaceName, String vrfName, int asn) {
     return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
+  }
+
+  public static String eigrpRedistributionPolicyName(String vrfName, int asn) {
+    return String.format("~EIGRP_EXPORT_POLICY:%s:%s~", vrfName, asn);
   }
 
   @Nonnull
