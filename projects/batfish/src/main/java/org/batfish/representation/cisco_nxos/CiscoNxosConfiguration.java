@@ -909,11 +909,22 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    */
   private boolean createEigrpRedistributionPolicy(
       EigrpVrfConfiguration vrfConfig, String policyName) {
-    // Create redistribution policy
+    Set<NxosRoutingProtocol> supportedProtocols = ImmutableSet.of(NxosRoutingProtocol.STATIC);
     List<RedistributionPolicy> redistPolicies =
         Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
             .filter(Objects::nonNull)
             .flatMap(eigrpAf -> eigrpAf.getRedistributionPolicies().stream())
+            .filter(
+                redistPolicy -> {
+                  if (supportedProtocols.contains(redistPolicy.getInstance().getProtocol())) {
+                    return true;
+                  }
+                  _w.redFlag(
+                      String.format(
+                          "Redistribution from %s into EIGRP is not supported",
+                          redistPolicy.getInstance().getProtocol()));
+                  return false;
+                })
             .collect(ImmutableList.toImmutableList());
     if (redistPolicies.isEmpty()) {
       return false;
@@ -934,12 +945,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               List<Statement> routeMapCallExpr = ImmutableList.of(call(policy.getRouteMap()));
               NxosRoutingProtocol protocol = policy.getInstance().getProtocol();
               switch (protocol) {
+                  // If adding support for a new protocol, also add it to supportedProtocols above
                 case STATIC:
                   return new If(new MatchProtocol(RoutingProtocol.STATIC), routeMapCallExpr);
                 default:
-                  _w.redFlag(
-                      String.format(
-                          "Redistribution from %s into EIGRP is not supported", protocol));
                   return null;
               }
             })
