@@ -30,7 +30,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   private final long _metric;
   @Nonnull private final String _nextHopInterface;
   @Nonnull private final Ip _nextHopIp;
-  @Nullable private String _nextVrf;
+  @Nullable private final String _nextVrf;
 
   private transient int _hashCode;
 
