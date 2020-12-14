@@ -3501,7 +3501,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     new LiteralEigrpMetric(
                         EigrpMetricValues.builder()
                             .setBandwidth(routeMapSetMetric.getBandwidth())
-                            .setDelay(routeMapSetMetric.getDelay())
+                            // convert to picoseconds
+                            .setDelay(routeMapSetMetric.getDelayTensOfMicroseconds() * 1e7)
                             .setReliability(routeMapSetMetric.getReliability())
                             .setEffectiveBandwidth(routeMapSetMetric.getLoad())
                             .setMtu(routeMapSetMetric.getMtu())
