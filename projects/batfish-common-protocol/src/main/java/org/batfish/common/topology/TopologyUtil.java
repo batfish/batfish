@@ -98,7 +98,7 @@ public final class TopologyUtil {
                 node1,
                 node1Ranges.getRange(i1.getNativeVlan()),
                 node2,
-                node2Ranges.getRange(i1.getNativeVlan())));
+                node2Ranges.getRange(i2.getNativeVlan())));
       }
     } else if (i1Tag != null) {
       // i1 is a tagged layer-3 interface, and the other side is a trunk. The only possible edge is
