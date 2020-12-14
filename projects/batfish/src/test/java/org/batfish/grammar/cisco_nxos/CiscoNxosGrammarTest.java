@@ -92,6 +92,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAG
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborExportPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborImportPolicyName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpRedistributionPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
@@ -1486,6 +1487,57 @@ public final class CiscoNxosGrammarTest {
       assertThat(p12345.getRouterId(), equalTo(Ip.parse("98.98.98.98")));
       assertThat(p12345.getInternalAdminCost(), equalTo(20));
       assertThat(p12345.getExternalAdminCost(), equalTo(22));
+    }
+  }
+
+  @Test
+  public void testEigrpRedistributionPolicy() throws Exception {
+    String hostname = "nxos_eigrp_redist";
+    Configuration c = parseConfig(hostname);
+    RoutingPolicy redistPolicy =
+        c.getRoutingPolicies().get(eigrpRedistributionPolicyName("default", 1));
+    EigrpProcess eigrpProc = c.getDefaultVrf().getEigrpProcesses().get(1L);
+
+    // Redistribution policy should permit static routes to 1.1.1.1/32.
+    // Redistributed routes should have default EIGRP metric: bw 100000 kbps, delay 1E9 ps.
+    Prefix permittedPrefix = Prefix.parse("1.1.1.1/32");
+    ConnectedRoute connected =
+        ConnectedRoute.builder()
+            .setNetwork(permittedPrefix)
+            .setNextHopInterface("foo")
+            .setAdmin(1)
+            .build();
+    org.batfish.datamodel.StaticRoute staticDenied =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setNextHopInterface("foo")
+            .setAdmin(1)
+            .build();
+    org.batfish.datamodel.StaticRoute staticPermitted =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(permittedPrefix)
+            .setNextHopInterface("foo")
+            .setAdmin(1)
+            .build();
+    {
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertFalse(redistPolicy.process(connected, rb, eigrpProc, Direction.OUT));
+    }
+    {
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertFalse(redistPolicy.process(staticDenied, rb, eigrpProc, Direction.OUT));
+    }
+    {
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertTrue(redistPolicy.process(staticPermitted, rb, eigrpProc, Direction.OUT));
+      // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
+      // built, so first set other required fields.
+      rb.setNetwork(permittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      EigrpMetric expectedMetric =
+          ClassicMetric.builder()
+              .setValues(EigrpMetricValues.builder().setBandwidth(100000).setDelay(1e9).build())
+              .build();
+      assertThat(rb.build().getEigrpMetric(), equalTo(expectedMetric));
     }
   }
 
