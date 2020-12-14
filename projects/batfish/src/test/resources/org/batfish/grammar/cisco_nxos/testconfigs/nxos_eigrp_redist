@@ -4,6 +4,9 @@ hostname nxos_eigrp_redist
 !
 feature eigrp
 !
+vrf context vrf1
+  ! defined so it will be converted
+!
 ip prefix-list PL seq 5 permit 1.1.1.1/32
 !
 route-map RM permit 10
@@ -12,3 +15,6 @@ route-map RM permit 10
 router eigrp 1
   router-id 5.5.5.5
   redistribute static route-map RM
+  vrf vrf1
+    default-metric 1 2 3 4 5
+    redistribute static route-map RM

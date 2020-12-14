@@ -24,6 +24,7 @@ router eigrp EIGRP1234
   isolate
   passive-interface default
   no passive-interface default
+  default-metric 1 2 3 4 5
   redistribute bgp 1.3 route-map RM
   redistribute direct route-map RM
   redistribute eigrp EIGRP4321 route-map RM
@@ -43,6 +44,7 @@ router eigrp EIGRP1234
     passive-interface default
     no passive-interface default
     address-family ipv4 unicast
+      default-metric 5 4 3 2 1
       redistribute bgp 2 route-map RMV
       redistribute direct route-map RMV
       redistribute eigrp EIGRPVRF route-map RMV

@@ -920,13 +920,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     ImmutableList.Builder<Statement> statements = ImmutableList.builder();
     // Set metric to default value for redistributed route. May be overwritten in called route-maps.
-    // Default bandwidth and delay found here, and resulting metric verified in GNS3:
-    // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/eigrp/default-metric-eigrp.html
-    Statement setMetric =
-        new SetEigrpMetric(
-            new LiteralEigrpMetric(
-                EigrpMetricValues.builder().setBandwidth(100000).setDelay(1E9).build()));
-    statements.add(setMetric);
+    EigrpMetricValues defaultMetric =
+        Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
+            .filter(Objects::nonNull)
+            .map(EigrpVrfIpAddressFamilyConfiguration::getDefaultMetric)
+            .filter(Objects::nonNull)
+            .map(org.batfish.representation.cisco_nxos.EigrpMetric::toEigrpMetricValues)
+            .findFirst()
+            .orElseGet(
+                // Default bandwidth and delay found here, and resulting metric verified in GNS3:
+                // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/eigrp/default-metric-eigrp.html
+                () -> EigrpMetricValues.builder().setBandwidth(100000).setDelay(1E9).build());
+    statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
     redistPolicies.stream()
         .filter(policy -> getRouteMaps().containsKey(policy.getRouteMap()))
         .map(
@@ -3532,15 +3537,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               RouteMapSetMetricEigrp routeMapSetMetric) {
             return Stream.of(
                 new SetEigrpMetric(
-                    new LiteralEigrpMetric(
-                        EigrpMetricValues.builder()
-                            .setBandwidth(routeMapSetMetric.getBandwidth())
-                            // convert to picoseconds
-                            .setDelay(routeMapSetMetric.getDelayTensOfMicroseconds() * 1e7)
-                            .setReliability(routeMapSetMetric.getReliability())
-                            .setEffectiveBandwidth(routeMapSetMetric.getLoad())
-                            .setMtu(routeMapSetMetric.getMtu())
-                            .build())));
+                    new LiteralEigrpMetric(routeMapSetMetric.getMetric().toEigrpMetricValues())));
           }
 
           @Override
