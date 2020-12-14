@@ -17,22 +17,27 @@ public final class RouteMapSetMetricEigrp implements RouteMapSet {
     _mtu = mtu;
   }
 
+  /** Bandwidth in Kb/s */
   public long getBandwidth() {
     return _bandwidth;
   }
 
-  public long getDelay() {
+  /** Delay in tens of microseconds */
+  public long getDelayTensOfMicroseconds() {
     return _delay;
   }
 
+  /** Reliability from 0 to 255 (100 percent reliable) */
   public int getReliability() {
     return _reliability;
   }
 
+  /** Load from 1 to 255 (100 percent loaded) */
   public int getLoad() {
     return _load;
   }
 
+  /** MTU of the path from 1 to 16777215 */
   public long getMtu() {
     return _mtu;
   }
