@@ -5078,7 +5078,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                 .setUseUrg(true)
                 .build());
       } else {
-        warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
+        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
       }
     }
     String name = getFullText(ctx).trim();
