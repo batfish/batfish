@@ -99,6 +99,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
@@ -115,6 +116,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgpp_importContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppg_peerContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_co_multihopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coi_allowContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coi_remote_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_allowContext;
@@ -122,6 +124,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_local_portContext
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_max_prefixesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_peer_asContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_reflector_clientContext;
@@ -158,6 +161,13 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_address_or_slash32Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefix_listContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_rangeContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_post_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_pre_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.M_vsysContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Move_actionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Mr_securityContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
@@ -219,6 +229,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_staticContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sag_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sagd_filterContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sapp_ignoredContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sappg_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_descriptionContext;
@@ -288,13 +299,16 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_rule_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_protocolContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_source_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sservgrp_membersContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.St_commentsContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.St_descriptionContext;
@@ -318,6 +332,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vlan_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_ecmp_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrad_ebgpContext;
@@ -391,6 +406,7 @@ import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.Rulebase;
 import org.batfish.representation.palo_alto.SecurityRule;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.ServiceGroup;
@@ -425,6 +441,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
+
+  /** Should file at most one warning about ignored application statements */
+  private boolean _filedWarningApplicationStatementIgnored = false;
 
   private AddressGroup _currentAddressGroup;
   private AddressObject _currentAddressObject;
@@ -713,6 +732,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return text;
   }
 
+  /** Return the rulebase based on the {@link #_currentRuleScope current rulebase scope} */
+  @Nonnull
+  private Rulebase getRulebase() {
+    Rulebase rulebase;
+    if (_currentRuleScope == RulebaseId.DEFAULT) {
+      rulebase = _currentVsys.getRulebase();
+    } else if (_currentRuleScope == RulebaseId.PRE) {
+      rulebase = _currentVsys.getPreRulebase();
+    } else {
+      assert _currentRuleScope == RulebaseId.POST;
+      rulebase = _currentVsys.getPostRulebase();
+    }
+    return rulebase;
+  }
+
   /** A helper function to extract all variables from an optional list. */
   private static List<Variable_list_itemContext> variables(@Nullable Variable_listContext ctx) {
     if (ctx == null || ctx.variable_list_item() == null) {
@@ -727,6 +761,34 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       return ImmutableList.of();
     }
     return ctx.ip_prefix();
+  }
+
+  /** Helper function to move structures (identifiable by name) in a given map */
+  private void executeMove(
+      String name, @Nonnull Move_actionContext ctx, InsertOrderedMap<String, ?> map) {
+    if (!map.containsKey(name)) {
+      warn(ctx, String.format("Cannot execute move, %s does not exist", name));
+      return;
+    }
+    if (ctx.TOP() != null) {
+      map.moveFirst(name);
+    } else if (ctx.BOTTOM() != null) {
+      map.moveLast(name);
+    } else if (ctx.BEFORE() != null) {
+      String pivot = getText(ctx.name);
+      if (!map.containsKey(pivot)) {
+        warn(ctx, String.format("Cannot execute move, %s does not exist", pivot));
+        return;
+      }
+      map.moveBefore(name, pivot);
+    } else if (ctx.AFTER() != null) {
+      String pivot = getText(ctx.name);
+      if (!map.containsKey(pivot)) {
+        warn(ctx, String.format("Cannot execute move, %s does not exist", pivot));
+        return;
+      }
+      map.moveAfter(name, pivot);
+    }
   }
 
   @Override
@@ -867,6 +929,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterBgppgp_co_multihop(Bgppgp_co_multihopContext ctx) {
+    _currentBgpPeer.setMultihop(toInteger(ctx.num));
+  }
+
+  @Override
   public void exitBgppgp_coo_allow(Bgppgp_coo_allowContext ctx) {
     _currentBgpPeer.getConnectionOptions().setOutgoingAllow(toBoolean(ctx.yn));
   }
@@ -892,6 +959,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void exitBgppgp_la_ip(Bgppgp_la_ipContext ctx) {
     ConcreteInterfaceAddress address = toConcreteInterfaceAddress(ctx.interface_address());
     _currentBgpPeer.setLocalAddress(address.getIp());
+  }
+
+  @Override
+  public void exitBgppgp_max_prefixes(Bgppgp_max_prefixesContext ctx) {
+    warn(ctx, "Batfish does not limit the number of prefixes received over BGP");
   }
 
   @Override
@@ -1158,6 +1230,53 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterM_rulebase(M_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.DEFAULT;
+  }
+
+  @Override
+  public void exitM_rulebase(M_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterM_pre_rulebase(M_pre_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.PRE;
+  }
+
+  @Override
+  public void exitM_pre_rulebase(M_pre_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterM_post_rulebase(M_post_rulebaseContext ctx) {
+    _currentRuleScope = RulebaseId.POST;
+  }
+
+  @Override
+  public void exitM_post_rulebase(M_post_rulebaseContext ctx) {
+    _currentRuleScope = null;
+  }
+
+  @Override
+  public void enterM_vsys(M_vsysContext ctx) {
+    _currentVsys =
+        _currentConfiguration.getVirtualSystems().computeIfAbsent(getText(ctx.name), Vsys::new);
+  }
+
+  @Override
+  public void exitM_vsys(M_vsysContext ctx) {
+    _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void exitMr_security(Mr_securityContext ctx) {
+    String ruleName = getText(ctx.name);
+    executeMove(ruleName, ctx.action, getRulebase().getSecurityRules());
+  }
+
+  @Override
   public void enterOspf_area(Ospf_areaContext ctx) {
     _currentOspfArea =
         toIp(ctx, ctx.addr, "OSPF area-id")
@@ -1373,7 +1492,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       warn(
           ctx,
           String.format(
-              "Cannot have an address object and group with the same name '%s'. Ignoring the object definition.",
+              "Cannot have an address object and group with the same name '%s'. Ignoring the"
+                  + " object definition.",
               name));
       _currentAddressObject = new AddressObject(name);
     } else {
@@ -1435,7 +1555,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       warn(
           ctx,
           String.format(
-              "Cannot have an address object and group with the same name '%s'. Ignoring the group definition.",
+              "Cannot have an address object and group with the same name '%s'. Ignoring the group"
+                  + " definition.",
               name));
       _currentAddressGroup = new AddressGroup(name);
     } else {
@@ -1501,6 +1622,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSapp_ignored(Sapp_ignoredContext ctx) {
+    fileWarningApplicationStatementIgnored(ctx);
+  }
+
+  @Override
   public void enterS_zone_definition(S_zone_definitionContext ctx) {
     String name = getText(ctx.name);
     _currentZone = _currentVsys.getZones().computeIfAbsent(name, n -> new Zone(n, _currentVsys));
@@ -1538,8 +1664,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    String[] ips = getText(ctx.ip_range()).split("-");
-    _currentAddressObject.setIpRange(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
+    toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
   }
 
   @Override
@@ -1840,6 +1965,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitVr_definition(Vr_definitionContext ctx) {
     _currentVirtualRouter = null;
+  }
+
+  @Override
+  public void exitVr_ecmp_enable(Vr_ecmp_enableContext ctx) {
+    if (!toBoolean(ctx.yes_or_no())) {
+      warn(ctx, "Disabling of ECMP for IGP is not supported");
+    }
   }
 
   @Override
@@ -2271,15 +2403,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSrn_definition(Srn_definitionContext ctx) {
     String name = getText(ctx.name);
-    Rulebase rulebase;
-    if (_currentRuleScope == RulebaseId.DEFAULT) {
-      rulebase = _currentVsys.getRulebase();
-    } else if (_currentRuleScope == RulebaseId.PRE) {
-      rulebase = _currentVsys.getPreRulebase();
-    } else {
-      assert _currentRuleScope == RulebaseId.POST;
-      rulebase = _currentVsys.getPostRulebase();
-    }
+    Rulebase rulebase = getRulebase();
     _currentNatRule = rulebase.getNatRules().computeIfAbsent(name, NatRule::new);
 
     // Use constructed name so same-named defs across vsys are unique
@@ -2440,15 +2564,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSrs_definition(Srs_definitionContext ctx) {
     String name = getText(ctx.name);
-    Rulebase rulebase;
-    if (_currentRuleScope == RulebaseId.DEFAULT) {
-      rulebase = _currentVsys.getRulebase();
-    } else if (_currentRuleScope == RulebaseId.PRE) {
-      rulebase = _currentVsys.getPreRulebase();
-    } else {
-      assert _currentRuleScope == RulebaseId.POST;
-      rulebase = _currentVsys.getPostRulebase();
-    }
+    Rulebase rulebase = getRulebase();
     _currentSecurityRule =
         rulebase.getSecurityRules().computeIfAbsent(name, n -> new SecurityRule(n, _currentVsys));
 
@@ -2469,6 +2585,26 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentSecurityRule.setAction(LineAction.PERMIT);
     } else {
       _currentSecurityRule.setAction(LineAction.DENY);
+    }
+  }
+
+  @Override
+  public void exitSrs_rule_type(Srs_rule_typeContext ctx) {
+    if (ctx.INTERZONE() != null) {
+      _currentSecurityRule.setRuleType(RuleType.INTERZONE);
+    } else if (ctx.INTRAZONE() != null) {
+      if (_currentSecurityRule.getFrom().equals(_currentSecurityRule.getTo())) {
+        _currentSecurityRule.setRuleType(RuleType.INTRAZONE);
+      } else {
+        warn(
+            ctx,
+            "Error: Cannot set 'rule-type intrazone' for security rule with different source and"
+                + " destination zones.");
+      }
+    } else if (ctx.UNIVERSAL() != null) {
+      _currentSecurityRule.setRuleType(RuleType.UNIVERSAL);
+    } else {
+      warn(ctx, "Unsupported security rule-type");
     }
   }
 
@@ -2581,6 +2717,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSrs_tag(Srs_tagContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String tag = getText(var);
+      _currentSecurityRule.getTags().add(tag);
+    }
+  }
+
+  @Override
   public void exitSrs_to(Srs_toContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String zoneName = getText(var);
@@ -2656,6 +2800,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         assert item.range != null;
         _currentService.addSourcePorts(new SubRange(getText(item.range)));
       }
+    }
+  }
+
+  @Override
+  public void enterSserv_tag(Sserv_tagContext ctx) {
+    for (Variable_list_itemContext tag : variables(ctx.tags)) {
+      _currentService.addTag(getText(tag));
     }
   }
 
@@ -2873,6 +3024,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return Optional.of(ip.getIp());
   }
 
+  private @Nonnull Optional<Range<Ip>> toIpRange(Ip_rangeContext ctx) {
+    String[] ips = getText(ctx).split("-");
+    Ip lowIp = Ip.parse(ips[0]);
+    Ip highIp = Ip.parse(ips[1]);
+    if (lowIp.compareTo(highIp) >= 0) {
+      warn(ctx, "Invalid IP address range");
+      return Optional.empty();
+    }
+    return Optional.of(Range.closed(lowIp, highIp));
+  }
+
   /////////////////////////////////////////
   ///// Range-aware type conversions. /////
   /////////////////////////////////////////
@@ -3014,6 +3176,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     } else {
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+    }
+  }
+
+  private void fileWarningApplicationStatementIgnored(ParserRuleContext ctx) {
+    if (!_filedWarningApplicationStatementIgnored) {
+      _filedWarningApplicationStatementIgnored = true;
+      warn(
+          ctx,
+          "Application definitions only affect App-ID, so Batfish ignores custom application"
+              + " definitions.");
     }
   }
 

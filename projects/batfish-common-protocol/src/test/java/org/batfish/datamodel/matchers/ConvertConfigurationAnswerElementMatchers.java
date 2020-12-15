@@ -162,10 +162,12 @@ final class ConvertConfigurationAnswerElementMatchers {
                 _filename, _type, _structureName));
         return false;
       }
-      if (!_subMatcher.matches(byStructureName.get(_structureName).getDefinitionLines())) {
+      if (!_subMatcher.matches(
+          byStructureName.get(_structureName).getDefinitionLines().enumerate())) {
         mismatchDescription.appendText(
             String.format(
-                "File '%s' has no defined structure of type '%s' named '%s' matching definition lines '%s'",
+                "File '%s' has no defined structure of type '%s' named '%s' matching definition"
+                    + " lines '%s'",
                 _filename, _type, _structureName, _subMatcher));
         return false;
       }
@@ -300,6 +302,75 @@ final class ConvertConfigurationAnswerElementMatchers {
     }
   }
 
+  static final class HasReferenceWithUsage
+      extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
+
+    private final String _filename;
+
+    private final String _structureName;
+
+    private final String _type;
+
+    private final String _usage;
+
+    HasReferenceWithUsage(
+        @Nonnull String filename,
+        @Nonnull StructureType type,
+        @Nonnull String structureName,
+        @Nonnull StructureUsage usage) {
+      _filename = filename;
+      _type = type.getDescription();
+      _structureName = structureName;
+      _usage = usage.getDescription();
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(
+          String.format(
+              "A ConvertConfigurationAnswerElement for which file '%s' has a reference "
+                  + "to a structure of type '%s' named '%s'",
+              _filename, _type, _structureName));
+    }
+
+    @Override
+    protected boolean matchesSafely(
+        ConvertConfigurationAnswerElement item, Description mismatchDescription) {
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+          byFile = item.getReferencedStructures();
+      if (!byFile.containsKey(_filename)) {
+        mismatchDescription.appendText(String.format("File '%s' has no references", _filename));
+        return false;
+      }
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
+          byFile.get(_filename);
+      if (!byType.containsKey(_type)) {
+        mismatchDescription.appendText(
+            String.format(
+                "File '%s' has no references to structures of type '%s'", _filename, _type));
+        return false;
+      }
+      SortedMap<String, SortedMap<String, SortedSet<Integer>>> byStructureName = byType.get(_type);
+      if (!byStructureName.containsKey(_structureName)) {
+        mismatchDescription.appendText(
+            String.format(
+                "File '%s' has no references to structures of type '%s' named '%s'",
+                _filename, _type, _structureName));
+        return false;
+      }
+      SortedMap<String, SortedSet<Integer>> byUsage = byStructureName.get(_structureName);
+      if (!byUsage.containsKey(_usage)) {
+        mismatchDescription.appendText(
+            String.format(
+                "File '%s' has no references to structures of type '%s' named '%s' of "
+                    + "usage '%s'",
+                _filename, _type, _structureName, _usage));
+        return false;
+      }
+      return true;
+    }
+  }
+
   static final class HasUndefinedReferenceWithReferenceLines
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
 
@@ -372,7 +443,8 @@ final class ConvertConfigurationAnswerElementMatchers {
       if (!_subMatcher.matches(byUsage.get(_usage))) {
         mismatchDescription.appendText(
             String.format(
-                "File '%s' has no undefined reference of type '%s' named '%s' of usage '%s' matching reference lines '%s'",
+                "File '%s' has no undefined reference of type '%s' named '%s' of usage '%s'"
+                    + " matching reference lines '%s'",
                 _filename, _type, _structureName, _usage, _subMatcher));
         return false;
       }

@@ -1,0 +1,26 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname eigrp_distribute_list_prefix_list
+!
+feature eigrp
+!
+vrf context VRF
+  ! defined so it will be converted
+!
+router eigrp 1
+!
+ip prefix-list PL_IN seq 10 permit 1.1.1.0/24 ge 24
+ip prefix-list PL_OUT seq 10 permit 2.2.2.0/24 ge 24
+!
+interface Ethernet1/1
+  vrf member VRF
+  ip address 192.0.2.2/24
+  ip router eigrp 1
+  ip distribute-list eigrp 1 prefix-list PL_OUT out
+  ip distribute-list eigrp 1 prefix-list PL_IN in
+
+!
+interface Ethernet1/2
+  vrf member VRF
+  ip address 192.0.3.2/24
+  ip router eigrp 1

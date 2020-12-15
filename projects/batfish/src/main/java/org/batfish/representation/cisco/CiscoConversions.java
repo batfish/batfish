@@ -275,8 +275,10 @@ public class CiscoConversions {
             .count()
         > 1) {
       w.redFlag(
-          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for incoming BGP routes."
-              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list/distribute-list) for incoming BGP routes. When this"
+              + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
+              + " configured.");
     }
 
     // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
@@ -354,8 +356,10 @@ public class CiscoConversions {
             .count()
         > 1) {
       w.redFlag(
-          "Batfish does not support configuring more than one filter (route-map/prefix-list/distribute-list) for outgoing BGP routes."
-              + " When this occurs, only the route-map will be used, or the prefix-list if no route-map is configured.");
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list/distribute-list) for outgoing BGP routes. When this"
+              + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
+              + " configured.");
     }
     if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
       peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
@@ -1045,6 +1049,10 @@ public class CiscoConversions {
       return null;
     }
 
+    if (firstNonNull(proc.getShutdown(), Boolean.FALSE)) {
+      return null;
+    }
+
     newProcess.setAsNumber(proc.getAsn());
     newProcess.setMode(proc.getMode());
 
@@ -1071,12 +1079,12 @@ public class CiscoConversions {
      * Route redistribution modifies the configuration structure, so do this last to avoid having to
      * clean up configuration if another conversion step fails
      */
-    String eigrpExportPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
-    RoutingPolicy eigrpExportPolicy = new RoutingPolicy(eigrpExportPolicyName, c);
-    c.getRoutingPolicies().put(eigrpExportPolicyName, eigrpExportPolicy);
-    newProcess.setExportPolicy(eigrpExportPolicyName);
+    String redistributionPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
+    RoutingPolicy redistributionPolicy = new RoutingPolicy(redistributionPolicyName, c);
+    c.getRoutingPolicies().put(redistributionPolicyName, redistributionPolicy);
+    newProcess.setRedistributionPolicy(redistributionPolicyName);
 
-    eigrpExportPolicy
+    redistributionPolicy
         .getStatements()
         .addAll(
             eigrpRedistributionPoliciesToStatements(
@@ -1085,16 +1093,13 @@ public class CiscoConversions {
     return newProcess.build();
   }
 
-  /** Creates an {@link If} statement to allow EIGRP routes redistributed from supplied localAsn */
+  /** Creates a {@link BooleanExpr} statement that matches EIGRP routes with a given ASN */
   @Nonnull
-  private static If ifToAllowEigrpToOwnAsn(long localAsn) {
-    return new If(
-        new Conjunction(
-            ImmutableList.of(
-                new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
-                new MatchProcessAsn(localAsn))),
-        ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+  static BooleanExpr matchOwnAsn(long localAsn) {
+    return new Conjunction(
+        ImmutableList.of(
+            new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
+            new MatchProcessAsn(localAsn)));
   }
 
   /**
@@ -1292,7 +1297,8 @@ public class CiscoConversions {
           .getWarnings()
           .redFlag(
               String.format(
-                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are supported in dist-lists by Batfish",
+                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are"
+                      + " supported in dist-lists by Batfish",
                   vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
       return false;
     } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
@@ -1301,7 +1307,8 @@ public class CiscoConversions {
           .getWarnings()
           .redFlag(
               String.format(
-                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this dist-list will allow everything",
+                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this"
+                      + " dist-list will allow everything",
                   vrfName, ospfProcessId));
       return false;
     }
@@ -1378,7 +1385,8 @@ public class CiscoConversions {
       if (ospfSettings == null) {
         w.redFlag(
             String.format(
-                "Cannot attach inbound distribute list policy '%s' to interface '%s' not configured for OSPF.",
+                "Cannot attach inbound distribute list policy '%s' to interface '%s' not"
+                    + " configured for OSPF.",
                 ifaceName, iface.getName()));
       } else {
         ospfSettings.setInboundDistributeListPolicy(policyName);
@@ -1387,51 +1395,43 @@ public class CiscoConversions {
   }
 
   /**
-   * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
-   * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
+   * Generate an EIGRP policy from the provided {@param distributeLists} and any additional {@param
+   * extraConditions} that must be true for the policy to permit the route
+   *
+   * <p>Note that the list of distribute lists is allowed to have {@code null} elements (those will
+   * be skipped). Invalid (e.g., non-existent) distribute lists will be skipped as well.
    */
-  static List<If> clearFalseStatementsAndAddMatchOwnAsn(List<If> redistributeIfs, long ownAsn) {
-    List<Statement> emptyFalseStatements = ImmutableList.of();
-    List<If> redistributeIfsWithEmptyFalse =
-        redistributeIfs.stream()
-            .map(
-                redistributionStatement ->
-                    new If(
-                        redistributionStatement.getGuard(),
-                        redistributionStatement.getTrueStatements(),
-                        emptyFalseStatements))
-            .collect(Collectors.toList());
-
-    redistributeIfsWithEmptyFalse.add(ifToAllowEigrpToOwnAsn(ownAsn));
-
-    return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
-  }
-
-  /**
-   * Inserts an {@link If} generated from the provided distributeList to the beginning of
-   * existingStatements and creates a {@link RoutingPolicy} from the result
-   */
-  static RoutingPolicy insertDistributeListFilterAndGetPolicy(
+  static RoutingPolicy generateEigrpPolicy(
       @Nonnull Configuration c,
       @Nonnull CiscoConfiguration vsConfig,
-      @Nullable DistributeList distributeList,
-      @Nonnull List<If> existingStatements,
+      @Nonnull List<DistributeList> distributeLists,
+      @Nonnull List<BooleanExpr> extraConditions,
       @Nonnull String name) {
-    ImmutableList.Builder<Statement> combinedStatments = ImmutableList.builder();
-    if (distributeList != null && sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
-      combinedStatments.add(
-          new If(
-              new MatchPrefixSet(
-                  DestinationNetwork.instance(),
-                  new NamedPrefixSet(distributeList.getFilterName())),
-              ImmutableList.of(),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    ImmutableList.Builder<BooleanExpr> matchesBuilder = ImmutableList.builder();
+    for (DistributeList distributeList : distributeLists) {
+      if (distributeList == null || !sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
+        continue;
+      }
+      String filterName = distributeList.getFilterName();
+      if (distributeList.getFilterType() == DistributeListFilterType.ROUTE_MAP) {
+        matchesBuilder.add(new CallExpr(filterName));
+      } else {
+        // prefix-list or ACL
+        matchesBuilder.add(
+            new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(filterName)));
+      }
     }
-    combinedStatments.addAll(existingStatements);
+    matchesBuilder.addAll(extraConditions);
+
     return RoutingPolicy.builder()
         .setOwner(c)
         .setName(name)
-        .setStatements(combinedStatments.build())
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    new Conjunction(matchesBuilder.build()),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
         .build();
   }
 
@@ -1462,15 +1462,32 @@ public class CiscoConversions {
                   "Extended access lists are not supported in EIGRP distribute-lists: %s",
                   distributeList.getFilterName()));
       return false;
-    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
-      // if referred access-list is not defined, all prefixes will be allowed
-      vsConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "distribute-list refers an undefined access-list `%s`, it will not filter anything",
-                  distributeList.getFilterName()));
-      return false;
+    } else {
+      if (distributeList.getFilterType() == DistributeListFilterType.ROUTE_MAP) {
+        if (!c.getRoutingPolicies().containsKey(distributeList.getFilterName())) {
+          // if referred route-map is not defined, all prefixes will be allowed
+          vsConfig
+              .getWarnings()
+              .redFlag(
+                  String.format(
+                      "distribute-list refers an undefined route-map `%s`, it will not filter"
+                          + " anything",
+                      distributeList.getFilterName()));
+          return false;
+        }
+      } else {
+        if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
+          // if referred access-list is not defined, all prefixes will be allowed
+          vsConfig
+              .getWarnings()
+              .redFlag(
+                  String.format(
+                      "distribute-list refers an undefined access-list `%s`, it will not filter"
+                          + " anything",
+                      distributeList.getFilterName()));
+          return false;
+        }
+      }
     }
     return true;
   }
@@ -1499,11 +1516,10 @@ public class CiscoConversions {
       match =
           new MatchHeaderSpace(
               ((MatchHeaderSpace) matchService)
-                  .getHeaderspace()
-                  .toBuilder()
-                  .setSrcIps(srcIpSpace)
-                  .setDstIps(dstIpSpace)
-                  .build());
+                  .getHeaderspace().toBuilder()
+                      .setSrcIps(srcIpSpace)
+                      .setDstIps(dstIpSpace)
+                      .build());
     } else {
       match =
           new AndMatchExpr(

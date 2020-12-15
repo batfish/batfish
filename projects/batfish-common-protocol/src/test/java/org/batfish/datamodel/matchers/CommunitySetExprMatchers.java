@@ -170,7 +170,8 @@ public final class CommunitySetExprMatchers {
       description
           .appendText(
               String.format(
-                  "A CommunitySetExpr whose set of matching communities for the candidate set: '%s' matches:",
+                  "A CommunitySetExpr whose set of matching communities for the candidate set:"
+                      + " '%s' matches:",
                   CommunitySetExprMatchers.toString(_communityCandidates)))
           .appendDescriptionOf(_subMatcher);
     }

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.testing.EqualsTester;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.FlowDiff;
@@ -64,5 +65,69 @@ public final class MatchSessionStepTest {
     assertThat(clone.getDetail().getMatchCriteria(), equalTo(step.getDetail().getMatchCriteria()));
     assertThat(
         clone.getDetail().getTransformation(), equalTo(step.getDetail().getTransformation()));
+  }
+
+  @Test
+  public void testEquals() {
+    SessionScope sessionScope = new IncomingSessionScope(ImmutableSet.of("a"));
+    SessionScope sessionScope2 = new IncomingSessionScope(ImmutableSet.of("b"));
+    SessionMatchExpr matchCriteria =
+        new SessionMatchExpr(IpProtocol.ICMP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
+    SessionMatchExpr matchCriteria2 =
+        new SessionMatchExpr(IpProtocol.OSPF, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
+    Set<FlowDiff> transformation =
+        ImmutableSet.of(flowDiff(IpField.SOURCE, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")));
+    Set<FlowDiff> transformation2 =
+        ImmutableSet.of(flowDiff(IpField.DESTINATION, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2")));
+    new EqualsTester()
+        .addEqualityGroup(new Object())
+        .addEqualityGroup(
+            new MatchSessionStep(
+                MatchSessionStepDetail.builder()
+                    .setSessionScope(sessionScope)
+                    .setSessionAction(Accept.INSTANCE)
+                    .setMatchCriteria(matchCriteria)
+                    .setTransformation(transformation)
+                    .build()),
+            new MatchSessionStep(
+                MatchSessionStepDetail.builder()
+                    .setSessionScope(sessionScope)
+                    .setSessionAction(Accept.INSTANCE)
+                    .setMatchCriteria(matchCriteria)
+                    .setTransformation(transformation)
+                    .build()))
+        .addEqualityGroup(
+            new MatchSessionStep(
+                MatchSessionStepDetail.builder()
+                    .setSessionScope(sessionScope2)
+                    .setSessionAction(Accept.INSTANCE)
+                    .setMatchCriteria(matchCriteria)
+                    .setTransformation(transformation)
+                    .build()))
+        .addEqualityGroup(
+            new MatchSessionStep(
+                MatchSessionStepDetail.builder()
+                    .setSessionScope(sessionScope2)
+                    .setSessionAction(FibLookup.INSTANCE)
+                    .setMatchCriteria(matchCriteria)
+                    .setTransformation(transformation)
+                    .build()))
+        .addEqualityGroup(
+            new MatchSessionStep(
+                MatchSessionStepDetail.builder()
+                    .setSessionScope(sessionScope2)
+                    .setSessionAction(FibLookup.INSTANCE)
+                    .setMatchCriteria(matchCriteria2)
+                    .setTransformation(transformation)
+                    .build()))
+        .addEqualityGroup(
+            new MatchSessionStep(
+                MatchSessionStepDetail.builder()
+                    .setSessionScope(sessionScope2)
+                    .setSessionAction(FibLookup.INSTANCE)
+                    .setMatchCriteria(matchCriteria2)
+                    .setTransformation(transformation2)
+                    .build()))
+        .testEquals();
   }
 }

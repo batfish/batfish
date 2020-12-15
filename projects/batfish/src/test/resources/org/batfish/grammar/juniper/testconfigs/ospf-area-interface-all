@@ -1,0 +1,13 @@
+#
+set system host-name ospf-area-interface-all
+#
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/31
+set interfaces ge-0/0/1 unit 0 family inet address 10.0.1.2/31
+#
+set routing-instances ri instance-type forwarding
+set routing-instances ri interface ge-0/0/0.0
+set routing-instances ri interface ge-0/0/1.0
+set routing-instances ri protocols ospf area 0 interface all metric 111
+set routing-instances ri protocols ospf area 0 interface all interface-type p2p
+set routing-instances ri protocols ospf area 0 interface all hello-interval 222
+set routing-instances ri protocols ospf area 0 interface all dead-interval 333

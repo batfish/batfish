@@ -19,6 +19,7 @@ s_service_definition
         | sserv_port
         | sserv_protocol
         | sserv_source_port
+        | sserv_tag
     )*
 ;
 
@@ -45,4 +46,9 @@ sserv_protocol
 sserv_source_port
 :
     SOURCE_PORT variable_port_list
+;
+
+sserv_tag
+:
+    TAG tags = variable_list
 ;

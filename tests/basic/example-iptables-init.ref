@@ -124,24 +124,15 @@
         "configs/r1.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "definitionLines" : [
-                7,
-                8
-              ],
+              "definitionLines" : "7-8",
               "numReferrers" : 1
             },
             "Ethernet1" : {
-              "definitionLines" : [
-                4,
-                5
-              ],
+              "definitionLines" : "4-5",
               "numReferrers" : 1
             },
             "Ethernet2" : {
-              "definitionLines" : [
-                1,
-                2
-              ],
+              "definitionLines" : "1-2",
               "numReferrers" : 1
             }
           }
@@ -149,24 +140,15 @@
         "configs/r2.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "definitionLines" : [
-                7,
-                8
-              ],
+              "definitionLines" : "7-8",
               "numReferrers" : 1
             },
             "Ethernet1" : {
-              "definitionLines" : [
-                4,
-                5
-              ],
+              "definitionLines" : "4-5",
               "numReferrers" : 1
             },
             "Ethernet2" : {
-              "definitionLines" : [
-                1,
-                2
-              ],
+              "definitionLines" : "1-2",
               "numReferrers" : 1
             }
           }
@@ -174,24 +156,15 @@
         "configs/r3.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "definitionLines" : [
-                7,
-                8
-              ],
+              "definitionLines" : "7-8",
               "numReferrers" : 1
             },
             "Ethernet1" : {
-              "definitionLines" : [
-                4,
-                5
-              ],
+              "definitionLines" : "4-5",
               "numReferrers" : 1
             },
             "Ethernet2" : {
-              "definitionLines" : [
-                1,
-                2
-              ],
+              "definitionLines" : "1-2",
               "numReferrers" : 1
             }
           }
@@ -199,17 +172,11 @@
         "configs/z1-firewall.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "definitionLines" : [
-                4,
-                5
-              ],
+              "definitionLines" : "4-5",
               "numReferrers" : 1
             },
             "Ethernet1" : {
-              "definitionLines" : [
-                1,
-                2
-              ],
+              "definitionLines" : "1-2",
               "numReferrers" : 1
             }
           }
@@ -217,17 +184,11 @@
         "configs/z2-firewall.cfg" : {
           "interface" : {
             "Ethernet0" : {
-              "definitionLines" : [
-                4,
-                5
-              ],
+              "definitionLines" : "4-5",
               "numReferrers" : 1
             },
             "Ethernet1" : {
-              "definitionLines" : [
-                1,
-                2
-              ],
+              "definitionLines" : "1-2",
               "numReferrers" : 1
             }
           }

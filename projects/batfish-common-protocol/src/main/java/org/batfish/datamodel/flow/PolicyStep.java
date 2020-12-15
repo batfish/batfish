@@ -31,6 +31,22 @@ public class PolicyStep extends Step<PolicyStepDetail> {
       return _policy;
     }
 
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof PolicyStepDetail)) {
+        return false;
+      }
+      PolicyStepDetail that = (PolicyStepDetail) o;
+      return _policy.equals(that._policy);
+    }
+
+    @Override
+    public int hashCode() {
+      return _policy.hashCode();
+    }
+
     @JsonCreator
     private static PolicyStepDetail create(@Nullable @JsonProperty(PROP_POLICY) String policy) {
       checkArgument(policy != null);

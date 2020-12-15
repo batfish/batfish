@@ -1,0 +1,5 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname virtual-router-ecmp
+set network virtual-router VR ecmp enable yes
+set network virtual-router VR ecmp max-path 4
+set network virtual-router VR ecmp algorithm ip-hash use-port yes

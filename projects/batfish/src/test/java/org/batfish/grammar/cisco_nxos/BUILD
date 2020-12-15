@@ -11,10 +11,16 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
+        "//projects/batfish/src/test/resources:log4j_config",
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_nxos/bgp",
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_nxos/ospf",
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_nxos/snapshots/runtime_data",
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_nxos/testconfigs",
+    ],
+    tags = ["cpu:4"],
+    runtime_deps = [
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
         "//projects/batfish",

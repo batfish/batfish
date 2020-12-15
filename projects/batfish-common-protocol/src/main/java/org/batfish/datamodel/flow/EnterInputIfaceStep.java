@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
@@ -25,8 +26,8 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     private static final String PROP_INPUT_INTERFACE = "inputInterface";
     private static final String PROP_INPUT_VRF = "inputVrf";
 
-    private @Nonnull NodeInterfacePair _inputInterface;
-    private @Nullable String _inputVrf;
+    private final @Nonnull NodeInterfacePair _inputInterface;
+    private final @Nullable String _inputVrf;
 
     private EnterInputIfaceStepDetail(NodeInterfacePair inputInterface, @Nullable String inputVrf) {
       _inputInterface = inputInterface;
@@ -80,10 +81,24 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
       /** Only for use by {@link EnterInputIfaceStepDetail#builder()}. */
       private Builder() {}
     }
-  }
 
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof EnterInputIfaceStepDetail)) {
+        return false;
+      }
+      EnterInputIfaceStepDetail that = (EnterInputIfaceStepDetail) o;
+      return _inputInterface.equals(that._inputInterface)
+          && Objects.equals(_inputVrf, that._inputVrf);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_inputInterface, _inputVrf);
+    }
+  }
 
   public static Builder builder() {
     return new Builder();

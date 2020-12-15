@@ -122,6 +122,7 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily.Builder;
+import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -149,6 +150,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.representation.palo_alto.OspfAreaNssa.DefaultRouteType;
 import org.batfish.representation.palo_alto.OspfInterface.LinkType;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Vsys.NamespaceType;
 import org.batfish.representation.palo_alto.Zone.Type;
 import org.batfish.vendor.StructureUsage;
@@ -221,6 +223,24 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private final SortedMap<String, VirtualRouter> _virtualRouters;
 
   private final SortedMap<String, Vsys> _virtualSystems;
+
+  /**
+   * Temporary map for translating SecurityRules in each Vsys into their corresponding ExprAclLine,
+   * used in conversion. Maps Vsys name to map of rule name to ExprAclLine.
+   */
+  private transient Map<String, Map<String, ExprAclLine>> _securityRuleToExprAclLine;
+
+  /**
+   * Temporary map for translating NatRules in each Vsys into their corresponding Transformation,
+   * used in conversion. Maps Vsys name to map of rule name to Transformation.
+   */
+  private transient Map<String, Map<String, Transformation>> _natRuleToTransformation;
+
+  /**
+   * Temporary map for translating NatRules in each Vsys into their corresponding HeaderSpace
+   * BoolExprs, used in conversion. Maps Vsys name to map of rule name to List of BoolExpr.
+   */
+  private transient Map<String, Map<String, List<BoolExpr>>> _natRuleToHeaderSpaceBoolExprs;
 
   public PaloAltoConfiguration() {
     _cryptoProfiles = new LinkedList<>();
@@ -473,6 +493,164 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return missingItem == null;
   }
 
+  /**
+   * Build maps of converted nat rule for each Vsys. Populates transient maps of Vsys name->NatRule
+   * name->Transformation and HeaderSpace BoolExprs.
+   */
+  private void convertNatRules() {
+    ImmutableMap.Builder<String, Map<String, Transformation>> vsysToRuleToTransformation =
+        new ImmutableMap.Builder<>();
+    ImmutableMap.Builder<String, Map<String, List<BoolExpr>>> vsysToRuleToBoolExprs =
+        new ImmutableMap.Builder<>();
+
+    Vsys panorama = this.getPanorama();
+    Map<String, Transformation> panoramaTransformations =
+        panorama == null ? ImmutableMap.of() : convertVsysNatRulesToTransformation(panorama);
+    Map<String, List<BoolExpr>> panoramaHeaderSpaceBoolExprs =
+        panorama == null ? ImmutableMap.of() : convertVsysNatRulesToHeaderSpaceBoolExprs(panorama);
+
+    for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
+      String vsysName = entry.getKey();
+
+      // Transformations
+      Map<String, Transformation> ruleToTransformation = new HashMap<>();
+      Map<String, Transformation> vsysTransformations =
+          convertVsysNatRulesToTransformation(entry.getValue());
+      // Combine all relevant rules for this Vsys
+      ruleToTransformation.putAll(panoramaTransformations);
+      ruleToTransformation.putAll(vsysTransformations);
+      vsysToRuleToTransformation.put(vsysName, ImmutableMap.copyOf(ruleToTransformation));
+
+      // HeaderSpace BoolExprs
+      Map<String, List<BoolExpr>> ruleToHeaderSpaceBoolExpr = new HashMap<>();
+      Map<String, List<BoolExpr>> vsysHeaderSpaceBoolExprs =
+          convertVsysNatRulesToHeaderSpaceBoolExprs(entry.getValue());
+      // Combine all relevant rules for this Vsys
+      ruleToHeaderSpaceBoolExpr.putAll(panoramaHeaderSpaceBoolExprs);
+      ruleToHeaderSpaceBoolExpr.putAll(vsysHeaderSpaceBoolExprs);
+      vsysToRuleToBoolExprs.put(vsysName, ImmutableMap.copyOf(ruleToHeaderSpaceBoolExpr));
+    }
+
+    _natRuleToHeaderSpaceBoolExprs = vsysToRuleToBoolExprs.build();
+    _natRuleToTransformation = vsysToRuleToTransformation.build();
+  }
+
+  /** Convert NatRules in specified Vsys into a map of rule name to HeaderSpace BoolExprs. */
+  private Map<String, List<BoolExpr>> convertVsysNatRulesToHeaderSpaceBoolExprs(Vsys vsys) {
+    Map<String, List<BoolExpr>> ruleToBoolExprs = new HashMap<>();
+    addNatRulesToHeaderSpaceBoolExprsMap(vsys.getPreRulebase(), vsys, ruleToBoolExprs);
+    addNatRulesToHeaderSpaceBoolExprsMap(vsys.getRulebase(), vsys, ruleToBoolExprs);
+    addNatRulesToHeaderSpaceBoolExprsMap(vsys.getPostRulebase(), vsys, ruleToBoolExprs);
+    return ruleToBoolExprs;
+  }
+
+  /**
+   * Helper to add NatRules from specified Rulebase into specified map of rule name to List of
+   * HeaderSpace BoolExprs.
+   */
+  private void addNatRulesToHeaderSpaceBoolExprsMap(
+      Rulebase rulebase, Vsys vsys, Map<String, List<BoolExpr>> ruleToHeaderSpaceBoolExprs) {
+    for (Entry<String, NatRule> entry : rulebase.getNatRules().entrySet()) {
+      String name = entry.getKey();
+      NatRule rule = entry.getValue();
+      if (!rule.getDisabled() && !ruleToHeaderSpaceBoolExprs.containsKey(name)) {
+        ruleToHeaderSpaceBoolExprs.put(name, buildNatRuleHeaderSpaceBoolExprs(rule, vsys));
+      }
+    }
+  }
+
+  /**
+   * Get List of HeaderSpace BoolExprs for specified NatRule in specified Vsys. If no HeaderSpace
+   * BoolExprs are found {@link Optional#empty()} is returned instead.
+   */
+  private Optional<List<BoolExpr>> getNatHeaderSpaceBoolExprs(String vsysName, String ruleName) {
+    return Optional.ofNullable(
+        _natRuleToHeaderSpaceBoolExprs.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName));
+  }
+
+  /** Convert NatRules in specified Vsys into a map of rule name to Transformation. */
+  private Map<String, Transformation> convertVsysNatRulesToTransformation(Vsys vsys) {
+    Map<String, Transformation> ruleToTransformation = new HashMap<>();
+    addNatRulesToTransformationMap(vsys.getPreRulebase(), vsys, ruleToTransformation);
+    addNatRulesToTransformationMap(vsys.getRulebase(), vsys, ruleToTransformation);
+    addNatRulesToTransformationMap(vsys.getPostRulebase(), vsys, ruleToTransformation);
+    return ruleToTransformation;
+  }
+
+  /**
+   * Helper to add NatRules from specified Rulebase into specified map of rule name to
+   * Transformation.
+   */
+  private void addNatRulesToTransformationMap(
+      Rulebase rulebase, Vsys vsys, Map<String, Transformation> ruleToTransformation) {
+    for (Entry<String, NatRule> entry : rulebase.getNatRules().entrySet()) {
+      String name = entry.getKey();
+      NatRule rule = entry.getValue();
+      if (!rule.getDisabled() && !ruleToTransformation.containsKey(name)) {
+        convertRuleToTransformation(rule, vsys).ifPresent(t -> ruleToTransformation.put(name, t));
+      }
+    }
+  }
+
+  /**
+   * Get Transformation for specified NatRule in specified Vsys. If no Transformation is found
+   * {@link Optional#empty()} is returned instead.
+   */
+  private Optional<Transformation> getNatTransformation(String vsysName, String ruleName) {
+    return Optional.ofNullable(
+        _natRuleToTransformation.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName));
+  }
+
+  /**
+   * Build map of converted security rule for each Vsys. Populates transient map of Vsys name to map
+   * of SecurityRule name to corresponding ExprAclLine.
+   */
+  private void convertSecurityRules() {
+    ImmutableMap.Builder<String, Map<String, ExprAclLine>> vsysToRuleToExprAclLine =
+        new ImmutableMap.Builder<>();
+
+    Vsys panorama = this.getPanorama();
+    Map<String, ExprAclLine> panoramaRules =
+        panorama == null ? ImmutableMap.of() : convertVsysSecurityRules(panorama);
+
+    for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
+      Map<String, ExprAclLine> ruleToExprAclLine = new HashMap<>();
+      Map<String, ExprAclLine> vsysRules = convertVsysSecurityRules(entry.getValue());
+      String vsysName = entry.getKey();
+
+      // Combine all relevant rules for this Vsys
+      ruleToExprAclLine.putAll(panoramaRules);
+      ruleToExprAclLine.putAll(vsysRules);
+      vsysToRuleToExprAclLine.put(vsysName, ImmutableMap.copyOf(ruleToExprAclLine));
+    }
+
+    _securityRuleToExprAclLine = vsysToRuleToExprAclLine.build();
+  }
+
+  /** Convert SecurityRules in specified Vsys into a map of rule name to ExprAclLine. */
+  private Map<String, ExprAclLine> convertVsysSecurityRules(Vsys vsys) {
+    Map<String, ExprAclLine> ruleToExprAclLine = new HashMap<>();
+    addSecurityRulesToMap(vsys.getPreRulebase(), vsys, ruleToExprAclLine);
+    addSecurityRulesToMap(vsys.getRulebase(), vsys, ruleToExprAclLine);
+    addSecurityRulesToMap(vsys.getPostRulebase(), vsys, ruleToExprAclLine);
+    return ruleToExprAclLine;
+  }
+
+  /**
+   * Helper to add SecurityRules from specified Rulebase into specified map of rule name to
+   * ExprAclLine.
+   */
+  private void addSecurityRulesToMap(
+      Rulebase rulebase, Vsys vsys, Map<String, ExprAclLine> ruleToExprAclLine) {
+    for (Entry<String, SecurityRule> entry : rulebase.getSecurityRules().entrySet()) {
+      String name = entry.getKey();
+      SecurityRule rule = entry.getValue();
+      if (!rule.getDisabled() && !ruleToExprAclLine.containsKey(name)) {
+        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys));
+      }
+    }
+  }
+
   /** Convert vsys components to vendor independent model */
   private void convertVirtualSystems() {
     for (Vsys vsys : _virtualSystems.values()) {
@@ -490,7 +668,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllSecurityRules(vsys);
+      List<Map.Entry<SecurityRule, Vsys>> rules = getAllValidSecurityRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -600,8 +778,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .setName(crossZoneFilterName)
           .setLines(
               ImmutableList.of(
-                  ExprAclLine.REJECT_ALL
-                      .toBuilder()
+                  ExprAclLine.REJECT_ALL.toBuilder()
                       .setName("No interfaces in zone")
                       .setTraceElement(
                           emptyZoneRejectTraceElement(
@@ -613,21 +790,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
     List<AclLine> lines =
         rules.stream()
-            .filter(
-                e -> {
-                  SecurityRule rule = e.getKey();
-                  if (rule.getDisabled()) {
-                    return false;
-                  } else if (Sets.intersection(
-                          rule.getFrom(), ImmutableSet.of(fromZone.getName(), CATCHALL_ZONE_NAME))
-                      .isEmpty()) {
-                    return false;
-                  }
-                  return !Sets.intersection(
-                          rule.getTo(), ImmutableSet.of(toZone.getName(), CATCHALL_ZONE_NAME))
-                      .isEmpty();
-                })
-            .map(entry -> toIpAccessListLine(entry.getKey(), entry.getValue()))
+            .filter(e -> securityRuleApplies(fromZone.getName(), toZone.getName(), e.getKey(), _w))
+            .map(entry -> _securityRuleToExprAclLine.get(vsysName).get(entry.getKey().getName()))
             .collect(ImmutableList.toImmutableList());
     // Intrazone traffic is allowed by default.
     if (fromZone == toZone) {
@@ -647,12 +811,46 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
   }
 
+  @VisibleForTesting
+  static boolean securityRuleApplies(
+      String fromZoneName, String toZoneName, SecurityRule rule, Warnings warnings) {
+    if (rule.getDisabled()) {
+      return false;
+    }
+    boolean fromZoneInRuleFrom =
+        !Sets.intersection(rule.getFrom(), ImmutableSet.of(fromZoneName, CATCHALL_ZONE_NAME))
+            .isEmpty();
+    boolean toZoneInRuleTo =
+        !Sets.intersection(rule.getTo(), ImmutableSet.of(toZoneName, CATCHALL_ZONE_NAME)).isEmpty();
+
+    if (!fromZoneInRuleFrom || !toZoneInRuleTo) {
+      return false;
+    }
+
+    // rule-type doc:
+    // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
+    switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
+      case INTRAZONE:
+        return fromZoneName.equals(toZoneName);
+      case INTERZONE:
+        return !fromZoneName.equals(toZoneName);
+      case UNIVERSAL:
+        return true;
+      default:
+        warnings.redFlag(
+            String.format(
+                "Skipped unhandled rule type '%s' from zone %s to %s",
+                rule.getRuleType(), fromZoneName, toZoneName));
+        return false;
+    }
+  }
+
   /**
    * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
-   * Panorama.
+   * Panorama. Filters out invalid intrazone rules.
    */
   @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
-  private List<Map.Entry<SecurityRule, Vsys>> getAllSecurityRules(Vsys vsys) {
+  private List<Map.Entry<SecurityRule, Vsys>> getAllValidSecurityRules(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
             ? Stream.of()
@@ -667,7 +865,26 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         vsys.getRulebase().getSecurityRules().values().stream()
             .map(r -> new SimpleImmutableEntry<>(r, vsys));
 
-    return Stream.concat(Stream.concat(pre, rules), post).collect(ImmutableList.toImmutableList());
+    return Stream.concat(Stream.concat(pre, rules), post)
+        .filter(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Check if the intrazone security rule is valid, and log a warning if it is not. Returns true for
+   * non-intrazone rules.
+   */
+  @VisibleForTesting
+  static boolean checkIntrazoneValidityAndWarn(SecurityRule rule, Warnings w) {
+    if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
+      w.redFlag(
+          String.format(
+              "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
+                  + " %s vs %s",
+              rule.getName(), rule.getFrom(), rule.getTo()));
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -1025,7 +1242,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  /** Convert specified firewall rule into an {@link ExprAclLine}. */
+  /**
+   * Convert specified firewall rule into an {@link ExprAclLine}. This should only be called once
+   * per rule, during initial conversion (i.e. during {@code convertSecurityRules}).
+   */
   // Most of the conversion is fairly straight-forward: rules have actions, src and dest IP
   // constraints, and service (aka Protocol + Ports) constraints.
   //   However, services are a bit complicated when `service application-default` is used. In that
@@ -1139,7 +1359,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (group != null) {
       return Optional.of(
           new OrMatchExpr(
-              group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
+              group
+                  .getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
                   .stream()
                   // Don't add trace for children; we've already flattened intermediate app groups
                   .map(a -> aclLineMatchExprForApplication(a, null))
@@ -1272,8 +1493,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           case IP_PREFIX:
             return Prefix.parse(endpointValue).toIpSpace();
           case IP_RANGE:
-            String[] ips = endpointValue.split("-");
-            return IpRange.range(Ip.parse(ips[0]), Ip.parse(ips[1]));
+            Optional<IpSpace> ipSpace = rangeStringToIpSpace(endpointValue);
+            if (ipSpace.isPresent()) {
+              return ipSpace.get();
+            }
+            w.redFlag("Could not convert RuleEndpoint range to IpSpace: " + endpoint);
+            return EmptyIpSpace.INSTANCE;
           case REFERENCE:
             // Rely on undefined references to surface this issue (endpoint reference not defined)
             return EmptyIpSpace.INSTANCE;
@@ -1282,6 +1507,36 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             return EmptyIpSpace.INSTANCE;
         }
     }
+  }
+
+  /**
+   * Convert specified range string into an {@link Optional} {@link IpSpace}. If the range is not
+   * valid, {@link Optional#empty()} is returned. Assumes the supplied range string is a
+   * syntactically valid formatted range (should be guaranteed by the parser).
+   */
+  private Optional<IpSpace> rangeStringToIpSpace(String range) {
+    String[] ips = range.split("-");
+    Ip low = Ip.parse(ips[0]);
+    Ip high = Ip.parse(ips[1]);
+    if (low.compareTo(high) < 0) {
+      return Optional.of(IpRange.range(low, high));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Convert specified range string into an {@link Optional} {@link Range}. If the range is not
+   * valid, {@link Optional#empty()} is returned. Assumes the supplied range string is a
+   * syntactically valid formatted range (should be guaranteed by the parser).
+   */
+  private Optional<Range<Ip>> rangeStringToRange(String range) {
+    String[] ips = range.split("-");
+    Ip low = Ip.parse(ips[0]);
+    Ip high = Ip.parse(ips[1]);
+    if (low.compareTo(high) < 0) {
+      return Optional.of(Range.closed(low, high));
+    }
+    return Optional.empty();
   }
 
   /**
@@ -1369,8 +1624,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             Prefix prefix = Prefix.parse(endpointValue);
             return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
           case IP_RANGE:
-            String[] ips = endpointValue.split("-");
-            return ImmutableRangeSet.of(Range.closed(Ip.parse(ips[0]), Ip.parse(ips[1])));
+            Optional<Range<Ip>> range = rangeStringToRange(endpointValue);
+            if (range.isPresent()) {
+              return ImmutableRangeSet.of(range.get());
+            }
+            w.redFlag("Could not convert RuleEndpoint range to RangeSet: " + endpoint);
+            return ImmutableRangeSet.of();
           case REFERENCE:
             // Rely on undefined references to surface this issue (endpoint reference not defined)
             return ImmutableRangeSet.of();
@@ -1605,10 +1864,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Get a list of all {@link BoolExpr}s describing the header space matching the specified {@link
-   * NatRule}.
+   * Build and return a list of all {@link BoolExpr}s describing the header space matching the
+   * specified {@link NatRule}. This should only be called once per rule, during initial conversion
+   * (i.e. during {@code convertNatRules}).
    */
-  private List<BoolExpr> getNatRuleHeaderSpaceBoolExprs(NatRule rule, Vsys vsys) {
+  private List<BoolExpr> buildNatRuleHeaderSpaceBoolExprs(NatRule rule, Vsys vsys) {
     ImmutableList.Builder<BoolExpr> boolExprs = ImmutableList.builder();
     HeaderSpace.Builder headerSpace = HeaderSpace.builder();
 
@@ -1636,7 +1896,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       ImmutableList.Builder<BoolExpr> conditions = ImmutableList.builder();
       // Conditions under which to apply this NAT rule
-      conditions.addAll(getNatRuleHeaderSpaceBoolExprs(rule, vsys));
+      getNatHeaderSpaceBoolExprs(vsys.getName(), rule.getName()).ifPresent(conditions::addAll);
       // Only apply NAT if flow is exiting an interface in the to-zone
       conditions.add(
           new FibLookupOutgoingInterfaceIsOneOf(
@@ -1644,7 +1904,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       // Actions to take when NAT rule is matched: transformation, FIB lookup, return
       ImmutableList.Builder<Statement> actionsIfMatched = ImmutableList.builder();
-      convertRuleToTransformation(rule, vsys)
+      getNatTransformation(vsys.getName(), rule.getName())
           .ifPresent(transform -> actionsIfMatched.add(new ApplyTransformation(transform)));
       actionsIfMatched.add(new Return(new FibLookup(IngressInterfaceVrf.instance())));
 
@@ -1661,7 +1921,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Converts the given {@link NatRule} to a {@link Transformation} with a TRUE guard. There is no
    * need for a nontrivial guard because all transformations are applied in PBR, and the rule's
    * match conditions are converted to a {@link BoolExpr} condition on the packet policy line that
-   * applies the transformation.
+   * applies the transformation. This should only be called once per rule, during initial conversion
+   * (i.e. during {@code convertNatRules}).
    */
   private Optional<Transformation> convertRuleToTransformation(NatRule rule, Vsys vsys) {
     List<TransformationStep> transformationSteps =
@@ -1692,7 +1953,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // TODO: Check real behavior in this scenario
       _w.redFlag(
           String.format(
-              "NAT rule %s of VSYS %s will not apply source translation because its source translation pool is empty",
+              "NAT rule %s of VSYS %s will not apply source translation because its source"
+                  + " translation pool is empty",
               rule.getName(), vsys.getName()));
       return ImmutableList.of();
     }
@@ -1718,7 +1980,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // TODO: Check real behavior in this scenario
       _w.redFlag(
           String.format(
-              "NAT rule %s of VSYS %s will not apply destination translation because its destination translation pool is empty",
+              "NAT rule %s of VSYS %s will not apply destination translation because its"
+                  + " destination translation pool is empty",
               rule.getName(), vsys.getName()));
       return Optional.empty();
     }
@@ -1791,7 +2054,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       if (localAs != peerAs) {
         _w.redFlag(
             String.format(
-                "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing it",
+                "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing"
+                    + " it",
                 peer.getName(), peerAs, localAs));
         peerAs = localAs;
       }
@@ -1820,6 +2084,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .setGroup(pg.getName())
             .setLocalAs(localAs)
             .setPeerAddress(peer.getPeerAddress())
+            // Multihop (as batfish VI model understands it) is always on for PAN because of
+            // "number + 2" computation
+            // See https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClKkCAK
+            .setEbgpMultihop(true)
             .setRemoteAs(peerAs);
     if (peer.getLocalAddress() != null) {
       peerB.setLocalIp(peer.getLocalAddress());
@@ -2163,9 +2431,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     targetPostNat.clear();
     targetPostNat.putAll(postRulebaseNat);
     // Security post
-    // Note: using LinkedHashMaps to preserve insertion order
+    // Note: using InsertOrderedMap to preserve insertion order
     Map<String, SecurityRule> postRulebaseSecurity =
-        new LinkedHashMap<>(source.getPostRulebase().getSecurityRules());
+        new InsertOrderedMap<>(source.getPostRulebase().getSecurityRules());
     Map<String, SecurityRule> targetPostSecurity = target.getPostRulebase().getSecurityRules();
     postRulebaseSecurity.putAll(targetPostSecurity);
     targetPostSecurity.clear();
@@ -2338,7 +2606,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                             // already be associated with another device-group (should not happen)
                             _w.redFlag(
                                 String.format(
-                                    "Managed device '%s' cannot be associated with more than one device-group. Ignoring association with device-group '%s'.",
+                                    "Managed device '%s' cannot be associated with more than one"
+                                        + " device-group. Ignoring association with device-group"
+                                        + " '%s'.",
                                     deviceId, deviceGroupEntry.getKey()));
                           } else {
                             PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
@@ -2360,7 +2630,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           if (managedConfigurations.containsKey(deviceId)) {
                             _w.redFlag(
                                 String.format(
-                                    "Associating vsys on a managed device with different device-groups is not yet supported. Ignoring association with device-group '%s' for managed device '%s'.",
+                                    "Associating vsys on a managed device with different"
+                                        + " device-groups is not yet supported. Ignoring"
+                                        + " association with device-group '%s' for managed device"
+                                        + " '%s'.",
                                     deviceGroupEntry.getKey(), deviceId));
                             return;
                           }
@@ -2432,6 +2705,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     attachInterfacesToZones();
 
     convertNamespaces();
+
+    // Convert rules before using them in Vsys / Interfaces conversion
+    convertSecurityRules();
+    convertNatRules();
 
     // Handle converting items within virtual systems
     convertVirtualSystems();
@@ -2519,7 +2796,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           if (warn) {
             _w.redFlag(
                 String.format(
-                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3 data.",
+                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3"
+                        + " data.",
                     iface.getName(), nullVrf.getName()));
           }
         }

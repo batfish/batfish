@@ -11,6 +11,8 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeVniInterNodeEdges;
 import static org.batfish.common.topology.TopologyUtil.computeVniName;
+import static org.batfish.common.topology.TopologyUtil.isBorderToIspEdge;
+import static org.batfish.common.topology.TopologyUtil.isVirtualWireSameDevice;
 import static org.batfish.common.topology.TopologyUtil.unionLayer1PhysicalTopologies;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Ip.FIRST_CLASS_B_PRIVATE_IP;
@@ -33,6 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import java.util.Collections;
@@ -50,6 +53,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Configuration.Builder;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -291,17 +295,19 @@ public final class TopologyUtilTest {
 
     assertThat(
         computeVniInterNodeEdges(vxlanTopology).collect(ImmutableList.toImmutableList()),
-        containsInAnyOrder(new Layer2Edge(n1, n2, null), new Layer2Edge(n2, n1, null)));
+        containsInAnyOrder(new Layer2Edge(n1, n2), new Layer2Edge(n2, n1)));
   }
 
   @Test
   public void testComputeLayer2Topology_self_edge_optimization() {
     String c1Name = "c1";
     String c2Name = "c2";
+    String c3Name = "c3";
 
     String c1i1Name = "c1i1";
     String c2i1Name = "c2i1";
     String c2i2Name = "c2i2";
+    String c3i1Name = "c3i1";
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
     _ib.setOwner(c1).setVrf(v1).setActive(true);
@@ -317,7 +323,8 @@ public final class TopologyUtilTest {
     c2i2.setSwitchport(true);
     c2i2.setSwitchportMode(SwitchportMode.ACCESS);
     c2i2.setAccessVlan(1);
-    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+    Configuration c3 = _cb.setHostname(c3Name).build();
+    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
     {
       // c1i1 and c2i1 are connected in layer1.
       Layer1Topology layer1Topology = layer1Topology(c1Name, c1i1Name, c2Name, c2i1Name);
@@ -331,9 +338,7 @@ public final class TopologyUtilTest {
     }
     {
       // c1i1 is only connected to c3i1, leaving c2 without layer1 edges
-      String c3Name = "c3";
-      String c3i1Name = "c3i1";
-      Configuration c3 = _cb.setHostname(c3Name).build();
+
       Vrf v3 = _vb.setOwner(c3).build();
       _ib.setOwner(c3).setVrf(v3).setActive(true);
       _ib.setName(c3i1Name).build();
@@ -633,12 +638,15 @@ public final class TopologyUtilTest {
     i2.setSwitchportMode(SwitchportMode.ACCESS);
     i2.setAccessVlan(2);
 
+    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
+    ifacesByVlan.add(2, i1.getName());
+    ifacesByVlan.add(2, i2.getName());
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder::add);
+    computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
     assertThat(
         builder.build(),
-        equalTo(ImmutableSet.of(new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2, null))));
+        equalTo(ImmutableSet.of(new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2))));
   }
 
   @Test
@@ -668,13 +676,13 @@ public final class TopologyUtilTest {
             .setVlan(vlanId)
             .build());
 
+    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder::add);
+    computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
     assertThat(
         builder.build(),
-        equalTo(
-            ImmutableSet.of(new Layer2Edge(c1Name, irbName, null, c1Name, vniName, null, null))));
+        equalTo(ImmutableSet.of(new Layer2Edge(c1Name, irbName, null, c1Name, vniName, null))));
   }
 
   @Test
@@ -706,14 +714,17 @@ public final class TopologyUtilTest {
             .setVlan(vlanId)
             .build());
 
+    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
+    ifacesByVlan.add(vlanId, switchportName);
+
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder::add);
+    computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
     assertThat(
         builder.build(),
         equalTo(
             ImmutableSet.of(
-                new Layer2Edge(c1Name, vniName, null, c1Name, switchportName, vlanId, null))));
+                new Layer2Edge(c1Name, vniName, null, c1Name, switchportName, vlanId))));
   }
 
   @Test
@@ -880,6 +891,72 @@ public final class TopologyUtilTest {
     assertFalse(
         "n1:ia and n2:ic are NOT in the same broadcast domain",
         layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName));
+  }
+
+  /**
+   * Even though two interfaces are mis-configured (native VLANs differ) we should still make an
+   * edge to accurately model the mis-configuration that is present. Access ports will end up in the
+   * same broadcast domain even though one is vlan 5 on n1 and another vlan 6 on n2
+   */
+  @Test
+  public void testComputeLayer2TopologyMismatchedNativeVlans() {
+    String n1Name = "n1";
+    String n2Name = "n2";
+
+    String tr1Name = "tr1";
+    String access1Name = "acc1";
+    String tr2Name = "tr2";
+    String access2Name = "acc2";
+
+    // Nodes
+    Configuration n1 = _cb.setHostname(n1Name).build();
+    Configuration n2 = _cb.setHostname(n2Name).build();
+
+    // Interfaces
+    _ib.setActive(true).setSwitchport(true);
+    // n1 interfaces
+    _ib.setOwner(n1);
+    _ib.setName(tr1Name)
+        .setAccessVlan(null)
+        .setNativeVlan(5)
+        .setAllowedVlans(IntegerSpace.of(Range.closed(1, 1000)))
+        .setSwitchportMode(SwitchportMode.TRUNK)
+        .build();
+    // switchport access vlan 5
+    _ib.setName(access1Name)
+        .setNativeVlan(null)
+        .setAllowedVlans(null)
+        .setAccessVlan(5)
+        .setSwitchportMode(SwitchportMode.ACCESS)
+        .build();
+    // n2 interfaces
+    _ib.setOwner(n2);
+    _ib.setName(tr2Name)
+        .setAccessVlan(null)
+        .setNativeVlan(6)
+        .setAllowedVlans(IntegerSpace.of(Range.closed(1, 1000)))
+        .setSwitchportMode(SwitchportMode.TRUNK)
+        .build();
+    // switchport access vlan 6
+    _ib.setName(access2Name)
+        .setNativeVlan(null)
+        .setAllowedVlans(null)
+        .setAccessVlan(6)
+        .setSwitchportMode(SwitchportMode.ACCESS)
+        .build();
+
+    // Layer1
+    Layer1Topology layer1LogicalTopology = layer1Topology(n1Name, tr1Name, n2Name, tr2Name);
+
+    // Layer2
+    Layer2Topology layer2Topology =
+        computeLayer2Topology(
+            layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
+
+    assertTrue(
+        "acc1 and acc2 are in the same broadcast domain",
+        layer2Topology.inSameBroadcastDomain(
+            new Layer2Node(n1Name, access1Name, 5), new Layer2Node(n2Name, access2Name, 6)));
   }
 
   @Test
@@ -1598,6 +1675,97 @@ public final class TopologyUtilTest {
     assertThat(t.getEdges(), containsInAnyOrder(edge, edge.reverse()));
   }
 
+  /**
+   * Test that aggregate subinterfaces that have link-local addresses and are in the same broadcast
+   * domain get an L3 edge
+   */
+  @Test
+  public void testComputeLayer3Topology_SubInterfaceWithlinkLocalAddresses() {
+    _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = _cb.setHostname("c1").build();
+    Configuration c2 = _cb.setHostname("c2").build();
+    Ip ip = Ip.parse("169.254.0.1");
+    Interface i1 = _ib.setOwner(c1).setName("ae1").setType(InterfaceType.AGGREGATED).build();
+    Interface i1sub =
+        _ib.setOwner(c1)
+            .setName("ae1.1")
+            .setAddress(LinkLocalAddress.of(ip))
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .build();
+    Interface i2 = _ib.setOwner(c2).setName("ae2").setType(InterfaceType.AGGREGATED).build();
+    Interface i2sub =
+        _ib.setOwner(c2)
+            .setName("ae2.2")
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .setAddress(LinkLocalAddress.of(ip))
+            .build();
+
+    Layer1Topology layer1Topology =
+        new Layer1Topology(
+            Collections.singleton(
+                new Layer1Edge(
+                    new Layer1Node(c1.getHostname(), i1.getName()),
+                    new Layer1Node(c2.getHostname(), i2.getName()))));
+    Topology t =
+        computeRawLayer3Topology(
+            layer1Topology,
+            layer1Topology,
+            Layer2Topology.fromDomains(
+                ImmutableList.of(
+                    ImmutableSet.of(
+                        new Layer2Node(c1.getHostname(), i1sub.getName(), null),
+                        new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    Edge edge =
+        new Edge(
+            NodeInterfacePair.of(c1.getHostname(), i1sub.getName()),
+            NodeInterfacePair.of(c2.getHostname(), i2sub.getName()));
+    assertThat(t.getEdges(), containsInAnyOrder(edge, edge.reverse()));
+  }
+
+  /**
+   * Test that aggregate subinterfaces that have mis-matched, concrete (not link-local) addresses
+   * and are in the same broadcast domain do not get an L3 edge
+   */
+  @Test
+  public void testComputeLayer3Topology_SubInterfaceWithoutLinkLocalAddresses() {
+    _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = _cb.setHostname("c1").build();
+    Configuration c2 = _cb.setHostname("c2").build();
+    Interface i1 = _ib.setOwner(c1).setName("ae1").setType(InterfaceType.AGGREGATED).build();
+    Interface i1sub =
+        _ib.setOwner(c1)
+            .setName("ae1.1")
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24"))
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .build();
+    Interface i2 = _ib.setOwner(c2).setName("ae2").setType(InterfaceType.AGGREGATED).build();
+    Interface i2sub =
+        _ib.setOwner(c2)
+            .setName("ae2.2")
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24"))
+            .build();
+
+    Layer1Topology layer1Topology =
+        new Layer1Topology(
+            Collections.singleton(
+                new Layer1Edge(
+                    new Layer1Node(c1.getHostname(), i1.getName()),
+                    new Layer1Node(c2.getHostname(), i2.getName()))));
+    Topology t =
+        computeRawLayer3Topology(
+            layer1Topology,
+            layer1Topology,
+            Layer2Topology.fromDomains(
+                ImmutableList.of(
+                    ImmutableSet.of(
+                        new Layer2Node(c1.getHostname(), i1sub.getName(), null),
+                        new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
+            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+    assertThat(t.getEdges(), empty());
+  }
+
   @Test
   public void testComputeInitialTunnelTopology() {
     _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -1680,5 +1848,57 @@ public final class TopologyUtilTest {
     assertThat(
         unionLayer1PhysicalTopologies(Optional.of(topology1), Optional.of(topology2)),
         equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1, edge2, edge3)))));
+  }
+
+  @Test
+  public void testIsVirtualWire() {
+    // Not the same device
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("h1", "vasileft1"),
+                NodeInterfacePair.of("h2", "vasiright1"))));
+    // same device, not virtual wire
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(NodeInterfacePair.of("h1", "vasileft1"), NodeInterfacePair.of("h1", "eth0"))));
+    assertFalse(
+        isVirtualWireSameDevice(
+            new Edge(NodeInterfacePair.of("h1", "eth2"), NodeInterfacePair.of("h1", "eth0"))));
+    // same device, virtual wire
+    assertTrue(
+        isVirtualWireSameDevice(
+            new Edge(
+                NodeInterfacePair.of("h1", "vasileft1"),
+                NodeInterfacePair.of("h1", "vasiright1"))));
+  }
+
+  @Test
+  public void testIsBorderToIspEdge() {
+    Configuration border =
+        _cb.setHostname("border").setDeviceModel(DeviceModel.CISCO_UNSPECIFIED).build();
+    Configuration isp = _cb.setHostname("isp").setDeviceModel(DeviceModel.BATFISH_ISP).build();
+    Configuration other =
+        _cb.setHostname("other").setDeviceModel(DeviceModel.CISCO_UNSPECIFIED).build();
+
+    Layer1Edge borderIspEdge =
+        new Layer1Edge(border.getHostname(), "to-isp", isp.getHostname(), "to-border");
+    Layer1Edge borderOtherEdge =
+        new Layer1Edge(border.getHostname(), "to-other", other.getHostname(), "to-border");
+
+    assertTrue(
+        isBorderToIspEdge(
+            borderIspEdge, ImmutableMap.of(border.getHostname(), border, isp.getHostname(), isp)));
+
+    assertFalse(
+        isBorderToIspEdge(
+            borderOtherEdge,
+            ImmutableMap.of(border.getHostname(), border, other.getHostname(), other)));
+
+    // missing border node in configs
+    assertFalse(isBorderToIspEdge(borderIspEdge, ImmutableMap.of(isp.getHostname(), isp)));
+
+    // missing remote node in configs
+    assertFalse(isBorderToIspEdge(borderIspEdge, ImmutableMap.of(isp.getHostname(), isp)));
   }
 }

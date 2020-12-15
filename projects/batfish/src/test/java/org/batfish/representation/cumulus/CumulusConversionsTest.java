@@ -115,12 +115,14 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -355,60 +357,45 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testGetAcceptStatements() {
-    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1");
-    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1", Ip.parse("10.0.0.1"));
 
     {
-      // if no as set, do not set next-hop-self
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
+      // if no local-as set, do not set next-hop-self
+      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, null);
       assertNull(setNextHop);
     }
 
     {
       // if is not ibgp, do not set next-hop-self
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(20000L);
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
+      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, 20000L);
       assertNull(setNextHop);
     }
 
     {
       // if is ibgp but no address family set, do not set next-hop-self
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
-      assertNull(setNextHop);
-    }
-
-    {
-      // if is ibgp and has address family set but no neighbor configuration, do not set
-      // next-hop-self
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
-      bgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
-      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, bgpVrf);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
+      SetNextHop setNextHop = getSetNextHop(bgpNeighbor, 10000L);
       assertNull(setNextHop);
     }
 
     {
       // if is ibgp but neighbor configuration does not have next-hop-self set, do not set
       // next-hop-self
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       bgpNeighbor.setIpv4UnicastAddressFamily(new BgpNeighborIpv4UnicastAddressFamily());
 
-      assertNull(getSetNextHop(bgpNeighbor, bgpVrf));
+      assertNull(getSetNextHop(bgpNeighbor, 10000L));
     }
 
     {
       // if is ibgp and neighbor configuration has next-hop-self set, then getSetNextHop should
       // return null.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
-      assertNull(getSetNextHop(bgpNeighbor, bgpVrf));
+      assertNull(getSetNextHop(bgpNeighbor, 10000L));
     }
   }
 
@@ -541,7 +528,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(new BgpNetwork(prefix));
 
     // the method under test
     org.batfish.datamodel.BgpProcess viBgp =
@@ -557,6 +544,51 @@ public final class CumulusConversionsTest {
             .getRoutingPolicies()
             .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+  }
+
+  /** Test that networks statement routemaps are processed in VI. */
+  @Test
+  public void testToBgpProcess_vrfLevelNetworks_withRouteMap() {
+    // setup VI model
+    NetworkFactory nf = new NetworkFactory();
+    Configuration viConfig =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
+    nf.vrfBuilder().setOwner(viConfig).setName(DEFAULT_VRF_NAME).build();
+    String networkRouteMapName = "NETWORK_RM";
+    StandardCommunity community = StandardCommunity.of(1);
+    RoutingPolicy.builder()
+        .setName(networkRouteMapName)
+        .setOwner(viConfig)
+        .setStatements(
+            ImmutableList.of(
+                new SetCommunity(new LiteralCommunity(community)), ExitAccept.toStaticStatement()))
+        .build();
+    // setup VS model
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    BgpProcess bgpProcess = new BgpProcess();
+    vsConfig.setBgpProcess(bgpProcess);
+    vsConfig.setConfiguration(viConfig);
+    // Note that content of route map does not matter in VS land, only in VI land
+    vsConfig.getRouteMaps().put(networkRouteMapName, new RouteMap(networkRouteMapName));
+
+    // setup BgpVrf
+    Prefix prefix = Prefix.parse("1.2.3.0/24");
+    BgpVrf vrf = bgpProcess.getDefaultVrf();
+    vrf.setRouterId(Ip.parse("1.1.1.1"));
+    vrf.addNetwork(new BgpNetwork(prefix, networkRouteMapName));
+
+    // the method under test. In charge of creating peer export policies.
+    toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+
+    // the prefix is allowed to leave
+    AbstractRoute route = new ConnectedRoute(prefix, "dummy");
+    Builder builder = Bgpv4Route.builder();
+    assertTrue(
+        viConfig
+            .getRoutingPolicies()
+            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .process(route, builder.setNetwork(route.getNetwork()), Direction.OUT));
+    assertThat(builder.getCommunities(), contains(community));
   }
 
   /**
@@ -581,7 +613,7 @@ public final class CumulusConversionsTest {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
-    vrf.addNetwork(prefix);
+    vrf.addNetwork(new BgpNetwork(prefix));
     vrf.setDefaultIpv4Unicast(false);
 
     // the method under test
@@ -603,10 +635,8 @@ public final class CumulusConversionsTest {
   @Test
   public void testGenerateBgpCommonPeerConfig_rejectDefault() {
     Ip peerIp = Ip.parse("10.0.0.2");
-    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
-    neighbor.setRemoteAs(10000L);
-    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    neighbor.setPeerIp(peerIp);
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
 
     org.batfish.datamodel.BgpProcess newProc =
         new org.batfish.datamodel.BgpProcess(
@@ -668,10 +698,8 @@ public final class CumulusConversionsTest {
   public void testGenerateBgpCommonPeerConfig_defaultOriginate_unset() {
     // set bgp neighbor without default originate
     Ip peerIp = Ip.parse("10.0.0.2");
-    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
-    neighbor.setRemoteAs(10000L);
-    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    neighbor.setPeerIp(peerIp);
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
 
     org.batfish.datamodel.BgpProcess newProc =
         new org.batfish.datamodel.BgpProcess(
@@ -705,10 +733,8 @@ public final class CumulusConversionsTest {
   public void testGenerateBgpCommonPeerConfig_defaultOriginate_set() {
     // set bgp neighbor with default originate
     Ip peerIp = Ip.parse("10.0.0.2");
-    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
-    neighbor.setRemoteAs(10000L);
-    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    neighbor.setPeerIp(peerIp);
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
     BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily =
         new BgpNeighborIpv4UnicastAddressFamily();
     ipv4UnicastAddressFamily.setDefaultOriginate(true);
@@ -756,10 +782,8 @@ public final class CumulusConversionsTest {
   public void testGenerateBgpCommonPeerConfig_SetEbgpMultiHop() {
     // set bgp neighbor
     Ip peerIp = Ip.parse("10.0.0.2");
-    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor");
-    neighbor.setRemoteAs(10000L);
-    neighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-    neighbor.setPeerIp(peerIp);
+    BgpIpNeighbor neighbor = new BgpIpNeighbor("BgpNeighbor", peerIp);
+    neighbor.setRemoteAs(RemoteAs.internal());
     neighbor.setEbgpMultihop(3L);
 
     // set bgp process
@@ -844,9 +868,9 @@ public final class CumulusConversionsTest {
         new BgpNeighborL2vpnEvpnAddressFamily();
     bgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
     neighbor.setL2vpnEvpnAddressFamily(bgpNeighborL2vpnEvpnAddressFamily);
-    neighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+    neighbor.setRemoteAs(RemoteAs.external());
 
-    Long localAs = 101L;
+    long localAs = 101L;
     Ip routerId = Ip.parse("1.1.1.1");
 
     BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
@@ -897,7 +921,7 @@ public final class CumulusConversionsTest {
         new BgpNeighborL2vpnEvpnAddressFamily();
     bgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
     neighbor.setL2vpnEvpnAddressFamily(bgpNeighborL2vpnEvpnAddressFamily);
-    neighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+    neighbor.setRemoteAs(RemoteAs.external());
 
     BgpUnnumberedPeerConfig.Builder peerConfigBuilder =
         BgpUnnumberedPeerConfig.builder().setPeerInterface("swp1");
@@ -1039,7 +1063,7 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testComputeBgpNeighborImportRoutingPolicy() {
-    BgpNeighbor neighbor = new BgpIpNeighbor("neighbor");
+    BgpNeighbor neighbor = new BgpIpNeighbor("neighbor", Ip.parse("1.2.3.4"));
 
     BgpNeighborIpv4UnicastAddressFamily neighborIpv4UnicastFamily =
         new BgpNeighborIpv4UnicastAddressFamily();
@@ -1288,10 +1312,10 @@ public final class CumulusConversionsTest {
     bgpVrf.setAutonomousSystem(123L);
 
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
-    neighbor.setRemoteAs(123L);
+    neighbor.setRemoteAs(RemoteAs.explicit(123));
 
     assertThat(
-        inferClusterId(bgpVrf, newProc.getRouterId(), neighbor),
+        inferClusterId(bgpVrf, newProc.getRouterId(), neighbor, 123L),
         equalTo(Ip.parse("2.2.2.2").asLong()));
   }
 
@@ -1306,10 +1330,10 @@ public final class CumulusConversionsTest {
     bgpVrf.setClusterId(null);
 
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
-    neighbor.setRemoteAs(123L);
+    neighbor.setRemoteAs(RemoteAs.explicit(123));
 
     assertThat(
-        inferClusterId(bgpVrf, newProc.getRouterId(), neighbor),
+        inferClusterId(bgpVrf, newProc.getRouterId(), neighbor, 123L),
         equalTo(Ip.parse("1.1.1.1").asLong()));
   }
 
@@ -1324,9 +1348,9 @@ public final class CumulusConversionsTest {
     bgpVrf.setAutonomousSystem(2000L);
 
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
-    neighbor.setRemoteAs(123L);
+    neighbor.setRemoteAs(RemoteAs.explicit(123));
 
-    assertThat(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor), equalTo(null));
+    assertThat(inferClusterId(bgpVrf, newProc.getRouterId(), neighbor, 2000L), equalTo(null));
   }
 
   @Test
@@ -1823,7 +1847,7 @@ public final class CumulusConversionsTest {
     c.getVrfs().put(viVrf.getName(), viVrf);
 
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
-    neighbor.setRemoteAs(123L);
+    neighbor.setRemoteAs(RemoteAs.explicit(123));
 
     addBgpNeighbor(
         c,
@@ -1961,85 +1985,77 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testNextHopSelfAll() {
-    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1");
-    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1", Ip.parse("10.0.0.1"));
     {
       // If eBGP and next-hop-self is NOT set, then next-hop should not be self.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(20000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(false);
       ipv4af.setNextHopSelfAll(false);
-      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, 20000L), equalTo(null));
     }
 
     {
       // If eBGP and next-hop-self is set WITHOUT force, then next-hop should be self.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(20000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(false);
       assertThat(
-          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+          getSetNextHop(bgpNeighbor, 20000L), equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
 
     {
       // If eBGP and next-hop-self is set WITH force, then next-hop should be self.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(20000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(true);
       assertThat(
-          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+          getSetNextHop(bgpNeighbor, 20000L), equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
 
     {
       // If iBGP and next-hop-self NOT set, then next-hop should be null.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(false);
       ipv4af.setNextHopSelfAll(false);
-      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, 10000L), equalTo(null));
     }
 
     {
       // If iBGP and next-hop-self is set WITHOUT force, then next-hop should be null.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(false);
-      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, 10000L), equalTo(null));
     }
 
     {
       // If iBGP and next-hop-self is set WITH force, then next-hop should be self.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelf(true);
       ipv4af.setNextHopSelfAll(true);
       assertThat(
-          getSetNextHop(bgpNeighbor, bgpVrf), equalTo(new SetNextHop(SelfNextHop.getInstance())));
+          getSetNextHop(bgpNeighbor, 10000L), equalTo(new SetNextHop(SelfNextHop.getInstance())));
     }
 
     {
       // If iBGP and force is null, then next-hop should be null.
-      bgpNeighbor.setRemoteAs(10000L);
-      bgpVrf.setAutonomousSystem(10000L);
+      bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
       BgpNeighborIpv4UnicastAddressFamily ipv4af = new BgpNeighborIpv4UnicastAddressFamily();
       bgpNeighbor.setIpv4UnicastAddressFamily(ipv4af);
       ipv4af.setNextHopSelfAll(true);
-      assertThat(getSetNextHop(bgpNeighbor, bgpVrf), equalTo(null));
+      assertThat(getSetNextHop(bgpNeighbor, 10000L), equalTo(null));
     }
   }
 
@@ -2073,9 +2089,9 @@ public final class CumulusConversionsTest {
     BgpVrf vrf = bgpProcess.getDefaultVrf();
     vrf.setRouterId(Ip.parse("1.1.1.1"));
     vrf.setAutonomousSystem(20000L);
-    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1");
-    bgpNeighbor.setRemoteAs(10000L);
-    bgpNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
+    Ip peerIp = Ip.parse("10.0.0.1");
+    BgpNeighbor bgpNeighbor = new BgpIpNeighbor("10.0.0.1", peerIp);
+    bgpNeighbor.setRemoteAs(RemoteAs.explicit(10000));
     vrf.getNeighbors().put("10.0.0.1", bgpNeighbor);
 
     org.batfish.datamodel.BgpProcess newProc =
@@ -2083,7 +2099,7 @@ public final class CumulusConversionsTest {
             Ip.parse("10.0.0.1"), ConfigurationFormat.CUMULUS_NCLU);
 
     BgpActivePeerConfig.Builder peerConfigBuilder =
-        BgpActivePeerConfig.builder().setPeerAddress(Ip.parse("10.0.0.1"));
+        BgpActivePeerConfig.builder().setPeerAddress(peerIp);
 
     // Method under test
     generateBgpCommonPeerConfig(

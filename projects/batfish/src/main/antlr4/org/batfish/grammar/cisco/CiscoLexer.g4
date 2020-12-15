@@ -546,6 +546,11 @@ AGGREGATE_ADDRESS
    'aggregate-address'
 ;
 
+AGGREGATE_TIMER
+:
+   'aggregate-timer'
+;
+
 AGING
 :
    'aging'
@@ -981,6 +986,11 @@ ASIP_WEBADMIN
 ASN
 :
    'asn'
+;
+
+ASNOTATION
+:
+   'asnotation'
 ;
 
 ASPLAIN
@@ -1656,6 +1666,11 @@ BLOCK_ALLOCATION
 BLOGGERD
 :
    'bloggerd'
+;
+
+BOOLEAN
+:
+   'boolean'
 ;
 
 BOOT
@@ -2436,6 +2451,11 @@ CONNECTION
 CONNECTION_REUSE
 :
    'connection-reuse'
+;
+
+CONSISTENCY_CHECKER
+:
+   'consistency-checker'
 ;
 
 CONSOLE
@@ -3599,6 +3619,11 @@ DOS_PROFILE
    'dos-profile'
 ;
 
+DOT
+:
+   'dot'
+;
+
 DOT11
 :
    'dot11'
@@ -3827,6 +3852,11 @@ DYNAMIC_MCAST_OPTIMIZATION
 DYNAMIC_MCAST_OPTIMIZATION_THRESH
 :
    'dynamic-mcast-optimization-thresh'
+;
+
+DYNAMIC_MED_INTERVAL
+:
+   'dynamic-med-interval'
 ;
 
 E164
@@ -4553,6 +4583,11 @@ EXTEND
    'extend'
 ;
 
+EXTENDABLE
+:
+   'extendable'
+;
+
 EXTENDED
 :
    'extended'
@@ -4880,6 +4915,11 @@ FLOW_TOP_TALKERS
 FLOWCONTROL
 :
    'flowcontrol'
+;
+
+FLOWSPEC
+:
+   'flowspec'
 ;
 
 FLUSH_AT_ACTIVATION
@@ -6539,6 +6579,11 @@ JOIN_GROUP
     'join-group'
 ;
 
+JOIN_PRUNE_INTERVAL
+:
+    'join-prune-interval'
+;
+
 JUMBO
 :
    'jumbo'
@@ -7227,6 +7272,11 @@ LOOPGUARD
 LOTUSNOTES
 :
    'lotusnotes'
+;
+
+LOW
+:
+   'low'
 ;
 
 LPD
@@ -7999,6 +8049,11 @@ MISMATCH
    'mismatch'
 ;
 
+MKA
+:
+   'mka'
+;
+
 MLAG
 :
    'mlag'
@@ -8748,6 +8803,11 @@ NO_EXPORT
 NO_L4R_SHIM
 :
    'No l4r_shim'
+;
+
+NO_PAYLOAD
+:
+   'no-payload'
 ;
 
 NO_PREPEND
@@ -9560,6 +9620,11 @@ PERCENT_LITERAL
    'percent'
 ;
 
+PERCENTAGE
+:
+   'percentage'
+;
+
 PERIODIC
 :
    'periodic'
@@ -9738,6 +9803,11 @@ POLICY_MAP_INPUT
 POLICY_MAP_OUTPUT
 :
    'policy-map-output'
+;
+
+POLL
+:
+  'poll'
 ;
 
 POOL
@@ -9960,6 +10030,11 @@ PREFIX_LIST
        pushMode(M_Name);
      }
    }
+;
+
+PREFIX_PRIORITY
+:
+   'prefix-priority'
 ;
 
 PREFIX_SET
@@ -10497,6 +10572,11 @@ RECEIVE
    'receive'
 ;
 
+RECEIVE_ONLY
+:
+   'receive-only'
+;
+
 RECEIVE_WINDOW
 :
    'receive-window'
@@ -10567,6 +10647,11 @@ REDISTRIBUTE_INTERNAL
    'redistribute-internal'
 ;
 
+REDISTRIBUTED
+:
+   'redistributed'
+;
+
 REDISTRIBUTED_PREFIXES
 :
    'redistributed-prefixes'
@@ -10602,9 +10687,19 @@ REFLEXIVE_LIST
    'reflexive-list'
 ;
 
+REFRESH
+:
+   'refresh'
+;
+
 REGEX_MODE
 :
    'regex-mode'
+;
+
+REGEXP
+:
+   'regexp'
 ;
 
 REGISTER_RATE_LIMIT
@@ -11035,6 +11130,11 @@ ROUTE_LOOKUP
 ROUTE_MAP
 :
    'route-map' -> pushMode ( M_RouteMap )
+;
+
+ROUTE_MAP_CACHE
+:
+   'route-map-cache'
 ;
 
 ROUTE_ONLY
@@ -12579,6 +12679,11 @@ SUCCESS
    'success'
 ;
 
+SUMMARY
+:
+   'summary'
+;
+
 SUMMARY_ADDRESS
 :
    'summary-address'
@@ -12907,6 +13012,11 @@ TBRPF
 TCAM
 :
    'tcam'
+;
+
+TCN
+:
+   'tcn'
 ;
 
 TCP
@@ -14104,6 +14214,11 @@ UPDATE_DELAY
    'update-delay'
 ;
 
+UPDATE_GROUP
+:
+   'update-group'
+;
+
 UPDATE_SOURCE
 :
    'update-source' -> pushMode ( M_Interface )
@@ -14302,6 +14417,11 @@ V2C
 V3
 :
    'v3'
+;
+
+V3_QUERY_MAX_RESPONSE_TIME
+:
+   'v3-query-max-response-time'
 ;
 
 V4
@@ -16629,6 +16749,11 @@ M_Interface_NEWLINE
 M_Interface_NUMBER
 :
    DEC -> type ( DEC )
+;
+
+M_Interface_OVERLOAD
+:
+   'overload' -> type ( OVERLOAD ) , popMode
 ;
 
 M_Interface_PERIOD

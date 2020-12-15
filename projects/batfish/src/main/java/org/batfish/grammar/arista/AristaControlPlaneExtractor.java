@@ -864,6 +864,7 @@ import org.batfish.grammar.arista.AristaParser.Set_metric_type_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_next_hop_peer_address_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_next_hop_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_origin_rm_stanzaContext;
+import org.batfish.grammar.arista.AristaParser.Set_tag_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_weight_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Sntp_serverContext;
 import org.batfish.grammar.arista.AristaParser.Spanning_tree_portfastContext;
@@ -986,6 +987,7 @@ import org.batfish.representation.arista.RouteMapSetMetricLine;
 import org.batfish.representation.arista.RouteMapSetNextHopLine;
 import org.batfish.representation.arista.RouteMapSetNextHopPeerAddress;
 import org.batfish.representation.arista.RouteMapSetOriginTypeLine;
+import org.batfish.representation.arista.RouteMapSetTagLine;
 import org.batfish.representation.arista.RouteMapSetWeightLine;
 import org.batfish.representation.arista.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.arista.StandardAccessList;
@@ -3717,8 +3719,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String name = ctx.name.getText();
     RouteMap routeMap = _configuration.getRouteMaps().computeIfAbsent(name, RouteMap::new);
     _currentRouteMap = routeMap;
-    int num = toInteger(ctx.num);
-    LineAction action = toLineAction(ctx.rmt);
+    int num = ctx.num != null ? toInteger(ctx.num) : 10;
+    LineAction action = ctx.rmt != null ? toLineAction(ctx.rmt) : LineAction.PERMIT;
     RouteMapClause clause = _currentRouteMap.getClauses().get(num);
     if (clause == null) {
       clause = new RouteMapClause(action, name, num);
@@ -3727,8 +3729,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       warn(
           ctx,
           String.format(
-              "Route map '%s' already contains clause numbered '%d'. Duplicate clause will be merged with original clause.",
+              "Route map '%s' already contains clause numbered '%d'. Duplicate clause will be"
+                  + " merged with original clause.",
               _currentRouteMap.getName(), num));
+      // Yes, action can change if the line is reconfigured.
+      clause.setAction(action);
     }
     _currentRouteMapClause = clause;
     _configuration.defineStructure(ROUTE_MAP, name, ctx);
@@ -5073,7 +5078,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                 .setUseUrg(true)
                 .build());
       } else {
-        warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
+        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + feature.getText());
       }
     }
     String name = getFullText(ctx).trim();
@@ -7469,6 +7474,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     OriginExpr originExpr = toOriginExpr(ctx.origin_expr_literal());
     RouteMapSetLine line = new RouteMapSetOriginTypeLine(originExpr);
     _currentRouteMapClause.addSetLine(line);
+  }
+
+  @Override
+  public void exitSet_tag_rm_stanza(Set_tag_rm_stanzaContext ctx) {
+    long tag = toLong(ctx.tag);
+    _currentRouteMapClause.addSetLine(new RouteMapSetTagLine(tag));
   }
 
   @Override

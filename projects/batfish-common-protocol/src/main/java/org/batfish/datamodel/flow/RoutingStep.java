@@ -125,9 +125,6 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
     }
   }
 
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
-
   @JsonCreator
   private static RoutingStep jsonCreator(
       @Nullable @JsonProperty(PROP_DETAIL) RoutingStepDetail detail,

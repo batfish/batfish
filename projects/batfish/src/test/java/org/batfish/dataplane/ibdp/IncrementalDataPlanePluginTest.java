@@ -3,6 +3,10 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
+import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -19,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
@@ -32,7 +37,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
@@ -47,6 +51,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.GenericRib;
@@ -65,6 +70,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.BgpSessionInitiationResult;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -114,11 +120,18 @@ public class IncrementalDataPlanePluginTest {
   @Test(timeout = 5000)
   public void testComputeFixedPoint() throws IOException {
     SortedMap<String, Configuration> configurations = new TreeMap<>();
-    // creating configurations with no vrfs
-    configurations.put(
-        "h1", BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0"));
-    configurations.put(
-        "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
+    Configuration h1 =
+        BatfishTestUtils.createTestConfiguration("h1", ConfigurationFormat.HOST, "eth0");
+    configurations.put(h1.getHostname(), h1);
+    Vrf vrf1 = Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(h1).build();
+    h1.getAllInterfaces().get("eth0").setVrf(vrf1);
+
+    Configuration h2 =
+        BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0");
+    configurations.put(h2.getHostname(), h2);
+    Vrf vrf2 = Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(h2).build();
+    h2.getAllInterfaces().get("e0").setVrf(vrf2);
+
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
     batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
@@ -358,8 +371,7 @@ public class IncrementalDataPlanePluginTest {
     IncrementalBdpEngine engine =
         new IncrementalBdpEngine(
             // TODO: parametrize settings with different schedules
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+            new IncrementalDataPlaneSettings());
     Topology topology = new Topology(Collections.emptySortedSet());
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(
@@ -392,10 +404,7 @@ public class IncrementalDataPlanePluginTest {
             .build();
     vrf.getStaticRoutes().add(sr);
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
-    IncrementalBdpEngine engine =
-        new IncrementalBdpEngine(
-            new IncrementalDataPlaneSettings(),
-            new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false));
+    IncrementalBdpEngine engine = new IncrementalBdpEngine(new IncrementalDataPlaneSettings());
     ComputeDataPlaneResult dp =
         engine.computeDataPlane(configs, TopologyContext.builder().build(), Collections.emptySet());
 
@@ -499,12 +508,19 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be reachable because it is only one hop away from the initiator
-    assertTrue(
-        BgpTopologyUtils.isReachableBgpNeighbor(
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        BgpTopologyUtils.initiateBgpSession(
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    assertTrue(bgpSessionInitiationResult.isSuccessful());
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
+        hasHops(contains(hasNodeName("node1"), hasNodeName("node2"))));
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
+        hasHops(contains(hasNodeName("node2"), hasNodeName("node1"))));
   }
 
   @Test
@@ -533,12 +549,19 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be not be reachable because it is two hops away from the initiator
-    assertFalse(
-        BgpTopologyUtils.isReachableBgpNeighbor(
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        BgpTopologyUtils.initiateBgpSession(
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    assertFalse(bgpSessionInitiationResult.isSuccessful());
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
+        allOf(
+            hasDisposition(FlowDisposition.ACCEPTED),
+            hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3")))));
+    assertTrue(bgpSessionInitiationResult.getReverseTraces().isEmpty());
   }
 
   @Test
@@ -567,12 +590,19 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be reachable because multi-hops are allowed
-    assertTrue(
-        BgpTopologyUtils.isReachableBgpNeighbor(
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        BgpTopologyUtils.initiateBgpSession(
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    assertTrue(bgpSessionInitiationResult.isSuccessful());
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
+        hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3"))));
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
+        hasHops(contains(hasNodeName("node3"), hasNodeName("node2"), hasNodeName("node1"))));
   }
 
   @Test
@@ -603,12 +633,19 @@ public class IncrementalDataPlanePluginTest {
 
     // the neighbor should not be reachable even though multihops are allowed as traceroute would be
     // denied in on node 3
-    assertFalse(
-        BgpTopologyUtils.isReachableBgpNeighbor(
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        BgpTopologyUtils.initiateBgpSession(
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    assertFalse(bgpSessionInitiationResult.isSuccessful());
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
+        allOf(
+            hasDisposition(FlowDisposition.DENIED_IN),
+            hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3")))));
+    assertTrue(bgpSessionInitiationResult.getReverseTraces().isEmpty());
   }
 
   @Test
@@ -639,12 +676,19 @@ public class IncrementalDataPlanePluginTest {
 
     // neighbor should be reachable because ACL allows established connection back into node1 and
     // allows everything out
-    assertTrue(
-        BgpTopologyUtils.isReachableBgpNeighbor(
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        BgpTopologyUtils.initiateBgpSession(
             initiator,
             listener,
             source,
-            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology())));
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    assertTrue(bgpSessionInitiationResult.isSuccessful());
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
+        hasHops(contains(hasNodeName("node1"), hasNodeName("node2"), hasNodeName("node3"))));
+    assertThat(
+        Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
+        hasHops(contains(hasNodeName("node3"), hasNodeName("node2"), hasNodeName("node1"))));
   }
 
   /**

@@ -20,10 +20,8 @@ public final class ResolvedReachabilityParameters {
     private Set<String> _forbiddenTransitNodes;
     private AclLineMatchExpr _headerSpace;
     private boolean _ignoreFilters;
-    private int _maxChunkSize;
     private IpSpaceAssignment _sourceIpSpaceAssignment;
     private SrcNattedConstraint _srcNatted;
-    private boolean _specialize;
     private Set<String> _requiredTransitNodes;
 
     public ResolvedReachabilityParameters build() {
@@ -55,11 +53,6 @@ public final class ResolvedReachabilityParameters {
       return this;
     }
 
-    public Builder setMaxChunkSize(int maxChunkSize) {
-      _maxChunkSize = maxChunkSize;
-      return this;
-    }
-
     public Builder setRequiredTransitNodes(Set<String> nodes) {
       _requiredTransitNodes = ImmutableSet.copyOf(nodes);
       return this;
@@ -74,11 +67,6 @@ public final class ResolvedReachabilityParameters {
       _srcNatted = srcNatted;
       return this;
     }
-
-    public Builder setSpecialize(boolean specialize) {
-      _specialize = specialize;
-      return this;
-    }
   }
 
   private final SortedSet<FlowDisposition> _actions;
@@ -86,10 +74,8 @@ public final class ResolvedReachabilityParameters {
   private Set<String> _forbiddenTransitNodes;
   private final AclLineMatchExpr _headerSpace;
   private boolean _ignoreFilters;
-  private final int _maxChunkSize;
   private final IpSpaceAssignment _sourceIpSpaceByLocations;
   private final SrcNattedConstraint _srcNatted;
-  private final boolean _specialize;
   private final Set<String> _requiredTransitNodes;
 
   private ResolvedReachabilityParameters(Builder builder) {
@@ -98,10 +84,8 @@ public final class ResolvedReachabilityParameters {
     _forbiddenTransitNodes = builder._forbiddenTransitNodes;
     _headerSpace = builder._headerSpace;
     _ignoreFilters = builder._ignoreFilters;
-    _maxChunkSize = builder._maxChunkSize;
     _sourceIpSpaceByLocations = builder._sourceIpSpaceAssignment;
     _srcNatted = builder._srcNatted;
-    _specialize = builder._specialize;
     _requiredTransitNodes = builder._requiredTransitNodes;
   }
 
@@ -129,20 +113,12 @@ public final class ResolvedReachabilityParameters {
     return _ignoreFilters;
   }
 
-  public int getMaxChunkSize() {
-    return _maxChunkSize;
-  }
-
   public IpSpaceAssignment getSourceIpAssignment() {
     return _sourceIpSpaceByLocations;
   }
 
   public SrcNattedConstraint getSrcNatted() {
     return _srcNatted;
-  }
-
-  public boolean getSpecialize() {
-    return _specialize;
   }
 
   public Set<String> getRequiredTransitNodes() {

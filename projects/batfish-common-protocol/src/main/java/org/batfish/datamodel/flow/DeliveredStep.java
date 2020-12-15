@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkState;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -23,8 +24,8 @@ public final class DeliveredStep extends Step<DeliveredStepDetail> {
     private static final String PROP_OUTPUT_INTERFACE = "outputInterface";
     private static final String PROP_RESOLVED_NEXTHOP_IP = "resolvedNexthopIp";
 
-    private @Nonnull NodeInterfacePair _outputInterface;
-    private @Nullable Ip _resolvedNexthopIp;
+    private final @Nonnull NodeInterfacePair _outputInterface;
+    private final @Nullable Ip _resolvedNexthopIp;
 
     private DeliveredStepDetail(NodeInterfacePair outInterface, @Nullable Ip resolvedNexthopIp) {
       _outputInterface = outInterface;
@@ -49,6 +50,23 @@ public final class DeliveredStep extends Step<DeliveredStepDetail> {
     @Nullable
     public Ip getResolvedNexthopIp() {
       return _resolvedNexthopIp;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof DeliveredStepDetail)) {
+        return false;
+      }
+      DeliveredStepDetail that = (DeliveredStepDetail) o;
+      return _outputInterface.equals(that._outputInterface)
+          && Objects.equals(_resolvedNexthopIp, that._resolvedNexthopIp);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_outputInterface, _resolvedNexthopIp);
     }
 
     public static Builder builder() {
@@ -111,9 +129,6 @@ public final class DeliveredStep extends Step<DeliveredStepDetail> {
     /** Only for use by {@link DeliveredStep#builder()}. */
     private Builder() {}
   }
-
-  private static final String PROP_DETAIL = "detail";
-  private static final String PROP_ACTION = "action";
 
   @JsonCreator
   private static DeliveredStep jsonCreator(

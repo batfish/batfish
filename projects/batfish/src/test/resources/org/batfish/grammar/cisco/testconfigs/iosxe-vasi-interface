@@ -1,0 +1,9 @@
+!
+hostname iosxe-vasi-interface
+!
+interface vasileft1
+  description left
+  ip address 1.1.1.2/31
+interface vasiright1
+  description right
+  ip address 1.1.1.3/31

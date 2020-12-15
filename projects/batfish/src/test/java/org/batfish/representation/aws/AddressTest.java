@@ -14,7 +14,8 @@ public class AddressTest {
   @Test
   public void testConstructor() throws IOException {
     String text =
-        "{\"AllocationId\": \"eipalloc-c0da79fd\", \"Domain\": \"vpc\", \"PublicIp\": \"34.214.188.89\"}";
+        "{\"AllocationId\": \"eipalloc-c0da79fd\", \"Domain\": \"vpc\", \"PublicIp\":"
+            + " \"34.214.188.89\"}";
     assertThat(
         BatfishObjectMapper.mapper().readValue(text, Address.class),
         equalTo(new Address(Ip.parse("34.214.188.89"), null, null, "eipalloc-c0da79fd")));

@@ -443,6 +443,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor =
             BgpActivePeerConfig.builder().setPeerAddress(prefix.getStartIp()).setRemoteAs(remoteAs);
       }
+      neighbor.setDescription(ig.getDescription());
 
       // route reflection
       Ip declaredClusterId = ig.getClusterId();
@@ -711,7 +712,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nonnull
   private static List<If> getStaticRouteCommunitySetters(@Nonnull RoutingInstance ri) {
     MatchProtocol matchStatic = new MatchProtocol(RoutingProtocol.STATIC);
-    return ri.getRibs().get(RoutingInformationBase.RIB_IPV4_UNICAST).getStaticRoutes().values()
+    return ri
+        .getRibs()
+        .get(RoutingInformationBase.RIB_IPV4_UNICAST)
+        .getStaticRoutes()
+        .values()
         .stream()
         .filter(route -> !route.getCommunities().isEmpty())
         .map(
@@ -986,7 +991,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (iface.getBandwidth() == 0) {
         _w.pedantic(
             String.format(
-                "Cannot use IS-IS reference bandwidth for interface '%s' because interface bandwidth is 0.",
+                "Cannot use IS-IS reference bandwidth for interface '%s' because interface"
+                    + " bandwidth is 0.",
                 iface.getName()));
       } else {
         defaultCost = Math.max((long) (settings.getReferenceBandwidth() / iface.getBandwidth()), 1);
@@ -1175,9 +1181,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // chooses the correct
     // interface type...you should never have to set the interface type" (see
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/interface-type-edit-protocols-ospf.html)
-    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceType()));
+    ospfSettings.setNetworkType(toOspfNetworkType(vsIface.getOspfInterfaceTypeOrDefault()));
 
-    if (vsIface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+    if (vsIface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       // neighbors only for NBMA mode:
       // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/neighbor-edit-protocols-ospf.html
       ospfSettings.setNbmaNeighbors(
@@ -1206,7 +1212,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
-    if (iface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_DEAD_INTERVAL;
     }
     return DEFAULT_DEAD_INTERVAL;
@@ -1224,7 +1230,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (helloInterval != null) {
       return helloInterval;
     }
-    if (iface.getOspfInterfaceType() == OspfInterfaceType.NBMA) {
+    if (iface.getOspfInterfaceTypeOrDefault() == OspfInterfaceType.NBMA) {
       return DEFAULT_NBMA_HELLO_INTERVAL;
     }
     return DEFAULT_HELLO_INTERVAL;
@@ -2272,21 +2278,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   @Nonnull
   IpAccessList fwTermsToIpAccessList(
-      String aclName,
-      Collection<FwTerm> terms,
+      String createdAclName,
+      ConcreteFirewallFilter filter,
       @Nullable AclLineMatchExpr conjunctMatchExpr,
       JuniperStructureType aclType)
       throws VendorConversionException {
 
     List<ExprAclLine> lines =
-        terms.stream()
-            .flatMap(term -> convertFwTermToExprAclLines(aclName, term, aclType).stream())
+        filter.getTerms().values().stream()
+            .flatMap(term -> convertFwTermToExprAclLines(filter.getName(), term, aclType).stream())
             .collect(ImmutableList.toImmutableList());
 
     return IpAccessList.builder()
-        .setName(aclName)
+        .setName(createdAclName)
         .setLines(mergeIpAccessListLines(lines, conjunctMatchExpr))
-        .setSourceName(aclName)
+        .setSourceName(filter.getName())
         .setSourceType(aclType.getDescription())
         .build();
   }
@@ -2408,8 +2414,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       assert !filter.getFromZone().isPresent(); // not a security policy
 
       /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
-      return fwTermsToIpAccessList(
-          name, filter.getTerms().values(), null, JuniperStructureType.FIREWALL_FILTER);
+      return fwTermsToIpAccessList(name, filter, null, JuniperStructureType.FIREWALL_FILTER);
     } else {
       assert f instanceof CompositeFirewallFilter;
       CompositeFirewallFilter filter = (CompositeFirewallFilter) f;
@@ -2427,9 +2432,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   IpAccessList securityPolicyToIpAccessList(ConcreteFirewallFilter filter)
       throws VendorConversionException {
-    /*
-     * From zone is present if this is not a global security policy and if the from-zone is not junos-host.
-     */
+    // For cross-zone policies, create an ACL that contains purely the policy without the from-zone
+    // check. This is not used in the forwarding pipeline, but rather is for policy analysis only.
+    if (filter.getName().startsWith("zone~")) {
+      IpAccessList purelyPolicy =
+          fwTermsToIpAccessList(
+              String.format("~%s~pure", filter.getName()),
+              filter,
+              null,
+              JuniperStructureType.SECURITY_POLICY);
+      _c.getIpAccessLists().put(purelyPolicy.getName(), purelyPolicy);
+    }
+
+    // From zone is present if this is not a global security policy and if the from-zone is not
+    // junos-host.
     AclLineMatchExpr matchSrcInterface =
         filter
             .getFromZone()
@@ -2439,12 +2455,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         _masterLogicalSystem.getZones().get(zoneName).getInterfaces()))
             .orElse(null);
 
-    /* Return an ACL that is the logical AND of srcInterface filter and headerSpace filter */
+    // In the forwarding pipeline, the returned ACL has a logical AND of srcInterface filter and
+    // headerSpace filter.
     return fwTermsToIpAccessList(
-        filter.getName(),
-        filter.getTerms().values(),
-        matchSrcInterface,
-        JuniperStructureType.SECURITY_POLICY);
+        filter.getName(), filter, matchSrcInterface, JuniperStructureType.SECURITY_POLICY);
   }
 
   @Nullable
@@ -3435,6 +3449,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.BGP_ALLOW,
         JuniperStructureUsage.BGP_NEIGHBOR);
     markConcreteStructure(
+        JuniperStructureType.COMMUNITY,
+        JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY,
+        JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY,
+        JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY,
+        JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY);
+    markConcreteStructure(
         JuniperStructureType.FIREWALL_FILTER,
         JuniperStructureUsage.INTERFACE_FILTER,
         JuniperStructureUsage.INTERFACE_INCOMING_FILTER,
@@ -3639,7 +3659,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             name ->
                 _w.redFlag(
                     String.format(
-                        "community '%s' contains no literal communities, but is illegally used in 'then community' statement",
+                        "community '%s' contains no literal communities, but is illegally used in"
+                            + " 'then community' statement",
                         name)));
   }
 
@@ -3677,7 +3698,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (irbVlanIds.containsKey(l3Interface)) {
         _w.redFlag(
             String.format(
-                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned to vlan '%s'",
+                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned"
+                    + " to vlan '%s'",
                 l3Interface, vlanId, irbVlanIds.get(l3Interface)));
         continue;
       }
@@ -3692,14 +3714,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (es != null && (es.getSwitchportMode() != null || !es.getVlanMembers().isEmpty())) {
           _w.redFlag(
               String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan configuration under family ethernet-switching",
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan"
+                      + " configuration under family ethernet-switching",
                   memberIfName, vlanId));
           continue;
         }
         if (_indirectAccessPorts.containsKey(memberIfName)) {
           _w.redFlag(
               String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of vlan '%s'",
+                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of"
+                      + " vlan '%s'",
                   memberIfName, vlanId, _indirectAccessPorts.get(memberIfName).getName()));
           continue;
         }

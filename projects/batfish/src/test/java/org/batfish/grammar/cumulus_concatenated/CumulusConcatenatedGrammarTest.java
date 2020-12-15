@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_concatenated;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
@@ -43,14 +44,17 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -379,6 +383,33 @@ public class CumulusConcatenatedGrammarTest {
         outputRoute3.getCommunities().getCommunities(),
         containsInAnyOrder(
             StandardCommunity.of(2, 2), StandardCommunity.of(3, 3), StandardCommunity.of(4, 4)));
+  }
+
+  @Test
+  public void testSetCommunityContinue() throws IOException {
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.parse("10.20.30.0/31"))
+            .setTag(0L)
+            .build();
+    Configuration c = parseConfig("set_community_additive_continue");
+    RoutingPolicy rp1 = c.getRoutingPolicies().get("RM_SET_ADDITIVE_TEST_1");
+    Bgpv4Route inRoute =
+        base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(4, 4))).build();
+    Bgpv4Route outputRoute1 = processRouteIn(rp1, inRoute);
+    assertThat(
+        outputRoute1.getCommunities().getCommunities(),
+        containsInAnyOrder(
+            StandardCommunity.of(2, 2),
+            StandardCommunity.of(3, 3),
+            StandardCommunity.of(4, 4),
+            StandardCommunity.of(7, 7)));
   }
 
   @Test
@@ -744,5 +775,34 @@ public class CumulusConcatenatedGrammarTest {
     Long neighbor_iface_local_as =
         defaultVrf.getBgpProcess().getInterfaceNeighbors().get("bond2").getLocalAs();
     assertThat(neighbor_iface_local_as, equalTo(10L));
+  }
+
+  @Test
+  public void testLocalAsWarn() throws IOException {
+    String hostname = "local_as_test_warn";
+    IBatfish batfish = getBatfishForConfigurationNames(hostname);
+    String filename = "configs/" + hostname;
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    // should get two copies of this warning
+    assertThat(
+        pvcae.getWarnings().get(filename).getParseWarnings().stream()
+            .filter(
+                w ->
+                    w.getComment()
+                        .equals("local-as is supported only in 'no-prepend replace-as' mode"))
+            .count(),
+        equalTo(2L));
+  }
+
+  @Test
+  public void testRouteMapMatchTagNonBgp() throws IOException {
+    Configuration c = parseConfig("frr-match-tag-non-bgp");
+    RoutingPolicy policy = c.getRoutingPolicies().get("SET_METRIC");
+    // Don't crash
+    policy.process(
+        new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "iface"),
+        OspfExternalType2Route.builder(),
+        OUT);
   }
 }

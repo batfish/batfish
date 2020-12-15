@@ -10,8 +10,13 @@ junit_tests(
     srcs = glob([
         "**/*Test*.java",
     ]),
-    resources = ["//projects/batfish/src/test/resources/org/batfish/representation/aws"],
+    resources = [
+        "//projects/batfish/src/test/resources:log4j_config",
+        "//projects/batfish/src/test/resources/org/batfish/representation/aws",
+    ],
     runtime_deps = [
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
         "@maven//:org_mockito_mockito_inline",
     ],
     deps = [

@@ -1,6 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
@@ -62,6 +63,7 @@ import static org.batfish.representation.palo_alto.PaloAltoConfiguration.SHARED_
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeOutgoingFilterName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeServiceGroupMemberAclName;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
@@ -100,6 +102,7 @@ import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -122,6 +125,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -135,6 +139,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
@@ -237,6 +242,7 @@ import org.batfish.representation.palo_alto.RedistRule.RouteTableType;
 import org.batfish.representation.palo_alto.RedistRuleRefNameOrPrefix;
 import org.batfish.representation.palo_alto.RuleEndpoint;
 import org.batfish.representation.palo_alto.SecurityRule;
+import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
@@ -284,8 +290,9 @@ public final class PaloAltoGrammarTest {
     PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    Warnings parseWarnings = new Warnings();
     PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
+        new PaloAltoControlPlaneExtractor(src, parser, parseWarnings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
@@ -295,7 +302,7 @@ public final class PaloAltoGrammarTest {
     pac = SerializationUtils.clone(pac);
     pac.setAnswerElement(answerElement);
     pac.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
-    pac.setWarnings(new Warnings());
+    pac.setWarnings(parseWarnings);
     return pac;
   }
 
@@ -585,7 +592,15 @@ public final class PaloAltoGrammarTest {
         vsys.getAddressObjects().keySet(),
         equalTo(
             ImmutableSet.of(
-                "4.3.2.1", "addr0", "addr1", "addr2", "addr3", "addr4", "addr w spaces")));
+                "4.3.2.1",
+                "addr0",
+                "addr1",
+                "addr2",
+                "addr3",
+                "addr4",
+                "addr w spaces",
+                "addrBadRange1",
+                "addrBadRange2")));
 
     // check that we parse the name-only object right
     assertThat(addressObjects.get("addr0").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
@@ -607,6 +622,11 @@ public final class PaloAltoGrammarTest {
     assertThat(
         addressObjects.get("addr3").getIpSpace(),
         equalTo(IpRange.range(Ip.parse("1.1.1.1"), Ip.parse("1.1.1.2"))));
+
+    // check that we create an empty range for bad ranges and warn the user
+    assertThat(addressObjects.get("addrBadRange1").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(addressObjects.get("addrBadRange2").getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(c.getWarnings().getParseWarnings(), hasItem(hasComment("Invalid IP address range")));
 
     // check that ip spaces were inserted properly
     Configuration viConfig = c.toVendorIndependentConfigurations().get(0);
@@ -683,6 +703,20 @@ public final class PaloAltoGrammarTest {
     assertThat(applications.get("app2").getDescription(), equalTo("this is a description"));
     assertThat(
         applications.get("app w spaces").getDescription(), equalTo("this is another description"));
+  }
+
+  @Test
+  public void testApplicationsIgnoredStatements() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("application-ignored");
+
+    // Make sure the configured applications were discovered
+    assertThat(
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getApplications().keySet(), contains("APP1"));
+    assertThat(c.getVirtualSystems().get("vsys2").getApplications().keySet(), contains("APP2"));
+
+    // Should result in only one warning
+    ParseWarning warning = Iterables.getOnlyElement(c.getWarnings().getParseWarnings());
+    assertThat(warning.getComment(), containsStringIgnoringCase("application"));
   }
 
   @Test
@@ -2101,8 +2135,7 @@ public final class PaloAltoGrammarTest {
     assertThat(
         ifaceOutgoingFilter.getLines().get(0),
         equalTo(
-            ExprAclLine.REJECT_ALL
-                .toBuilder()
+            ExprAclLine.REJECT_ALL.toBuilder()
                 .setName("Not in a zone")
                 .setTraceElement(unzonedIfaceRejectTraceElement(ifaceName))
                 .build()));
@@ -2130,6 +2163,29 @@ public final class PaloAltoGrammarTest {
                   filter.getLines(),
                   contains(hasTraceElement(emptyZoneRejectTraceElement(vsysName, emptyZoneName))));
             });
+  }
+
+  @Test
+  public void testRulebaseRuleType() {
+    String hostname = "rulebase-rule-type";
+    PaloAltoConfiguration vendorConfig = parsePaloAltoConfig(hostname);
+
+    Map<String, SecurityRule> rules =
+        vendorConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules();
+
+    assertThat(rules.get("INTER").getRuleType(), equalTo(RuleType.INTERZONE));
+    assertThat(rules.get("INTRA").getRuleType(), equalTo(RuleType.INTRAZONE));
+    assertThat(rules.get("UNIVERSAL").getRuleType(), equalTo(RuleType.UNIVERSAL));
+    assertThat(rules.get("DEFAULT").getRuleType(), nullValue());
+
+    // the intrazone line should have been rejected -- which leaves this rule as default
+    assertThat(rules.get("BADINTRA").getRuleType(), nullValue());
+    assertThat(
+        vendorConfig.getWarnings().getParseWarnings(),
+        hasItem(
+            hasComment(
+                "Error: Cannot set 'rule-type intrazone' for security rule with different source"
+                    + " and destination zones.")));
   }
 
   @Test
@@ -2193,7 +2249,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testRulebaseIprange() {
+  public void testRulebaseIprange() throws IOException {
     String hostname = "rulebase-iprange";
     Configuration c = parseConfig(hostname);
 
@@ -2203,12 +2259,74 @@ public final class PaloAltoGrammarTest {
     // rule1: 11.11.11.11 should be allowed but 11.11.11.13 shouldn't be
     Flow rule1Permitted = createFlow("11.11.11.11", "33.33.33.33");
     Flow rule1Denied = createFlow("11.11.11.13", "33.33.33.33");
-
     assertThat(
         c,
         hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(rule1Permitted, if2name, c))));
     assertThat(
         c, hasInterface(if1name, hasOutgoingOriginalFlowFilter(rejects(rule1Denied, if2name, c))));
+
+    // Should have a warning about invalid ip range
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        contains(
+            String.format(
+                "Could not convert RuleEndpoint range to IpSpace: %s",
+                new RuleEndpoint(IP_RANGE, "11.11.11.13-11.11.11.12"))));
+  }
+
+  @Test
+  public void testRulebaseWarning() throws IOException {
+    String hostname = "rulebase-warning";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+
+    // Should have a warning about invalid ip ranges and empty translation pool
+    // Confirm we have only one warning for each, *no duplicates*
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toList()),
+        containsInAnyOrder(
+            // Security rule warning
+            String.format(
+                "Could not convert RuleEndpoint range to IpSpace: %s",
+                new RuleEndpoint(IP_RANGE, "11.11.11.13-11.11.11.12")),
+            // NAT rule warnings
+            String.format(
+                "Could not convert RuleEndpoint range to IpSpace: %s",
+                new RuleEndpoint(IP_RANGE, "10.0.2.11-10.0.2.1")),
+            String.format(
+                "Could not convert RuleEndpoint range to RangeSet: %s",
+                new RuleEndpoint(IP_RANGE, "192.168.1.101-192.168.1.1")),
+            "NAT rule NATRULE1 of VSYS vsys1 will not apply source translation because its source"
+                + " translation pool is empty"));
+  }
+
+  @Test
+  public void testNatIprange() throws IOException {
+    String hostname = "nat-iprange";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae.getWarnings().keySet(), hasItem(equalTo(hostname)));
+    Warnings warn = ccae.getWarnings().get(hostname);
+
+    // Should have warnings about invalid ip range and empty pool
+    assertThat(
+        warn.getRedFlagWarnings().stream().map(Warning::getText).collect(Collectors.toSet()),
+        containsInAnyOrder(
+            "NAT rule RULE1 of VSYS vsys1 will not apply source translation because its source"
+                + " translation pool is empty",
+            String.format(
+                "Could not convert RuleEndpoint range to RangeSet: %s",
+                new RuleEndpoint(IP_RANGE, "192.168.1.101-192.168.1.1"))));
   }
 
   @Test
@@ -2507,6 +2625,17 @@ public final class PaloAltoGrammarTest {
     IpAccessList sg1 = c.getIpAccessLists().get(serviceGroup1AclName);
     AclLine line1 = sg1.getLines().get(0);
     assertThat(line1.getName(), equalTo(service1.getSourceName()));
+
+    // Verify VS tags
+    PaloAltoConfiguration vsConfig = parsePaloAltoConfig(hostname);
+    assertThat(
+        vsConfig
+            .getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getServices()
+            .get("SERVICE 4")
+            .getTags(),
+        contains("TAG"));
   }
 
   @Test
@@ -3551,5 +3680,125 @@ public final class PaloAltoGrammarTest {
         equalTo(ConcreteInterfaceAddress.parse("192.168.3.1/24")));
     // Non /32 address should not be associated with loopback
     assertThat(interfaces2.get(eth_lo).getConcreteAddress(), nullValue());
+  }
+
+  @Test
+  public void testVirtualRouterEcmp() {
+    String hostname = "virtual-router-ecmp";
+    // Do not crash (i.e., no warnings generated)
+    parsePaloAltoConfig(hostname);
+  }
+
+  @Test
+  public void testSecurityRuleMove() {
+    String hostname = "move-rulebase-security";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertThat(
+        c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getSecurityRules().keySet(),
+        contains("RULE3", "RULE4", "RULE1", "RULE5", "RULE2"));
+    assertThat(
+        c.getVirtualSystems().get("MY_VSYS").getRulebase().getSecurityRules().keySet(),
+        contains("RULE7", "RULE6"));
+  }
+
+  @Test
+  public void testSecurityRuleTag() {
+    String hostname = "security-rule-tag";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    assertThat(
+        c.getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getRulebase()
+            .getSecurityRules()
+            .get("RULE1")
+            .getTags(),
+        contains("TAG"));
+  }
+
+  @Test
+  public void testBgpMultihopExtraction() {
+    String hostname = "bgp-multihop";
+    PaloAltoConfiguration vs = parsePaloAltoConfig(hostname);
+    assertThat(
+        vs.getVirtualRouters()
+            .get("vr1")
+            .getBgp()
+            .getPeerGroups()
+            .get("pg1")
+            .getPeers()
+            .get("peer1")
+            .getMultihop(),
+        equalTo(0));
+  }
+
+  @Test
+  public void testBgpMultihopConversion() {
+    String hostname = "bgp-multihop";
+    Configuration c = parseConfig(hostname);
+    assertTrue(
+        c.getVrfs()
+            .get("vr1")
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Prefix.parse("120.120.120.120/32"))
+            .getEbgpMultihop());
+  }
+
+  @Test
+  public void testDelete() throws IOException {
+    String hostname = "delete-line";
+    PaloAltoConfiguration vsConfig = parsePaloAltoConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        vsConfig
+            .getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getRulebase()
+            .getSecurityRules()
+            .get("RULE1")
+            .getSource(),
+        contains(new RuleEndpoint(REFERENCE, "addr2")));
+    String filename = "configs/" + hostname;
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr1"), 0));
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr2"), 1));
+  }
+
+  @Test
+  public void testDeleteAndMoveLines() throws IOException {
+    String hostname = "delete-and-move-lines";
+    PaloAltoConfiguration vsConfig = parsePaloAltoConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Check that rules were correctly re-arranged
+    assertThat(
+        vsConfig
+            .getVirtualSystems()
+            .get(DEFAULT_VSYS_NAME)
+            .getRulebase()
+            .getSecurityRules()
+            .keySet(),
+        contains("RULE2", "RULE1"));
+
+    // References are still as expected
+    String filename = "configs/" + hostname;
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr1"), 0));
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr2"), 1));
   }
 }

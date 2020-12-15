@@ -2,6 +2,7 @@ package org.batfish.question.bgpproperties;
 
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CLUSTER_ID;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CONFEDERATION;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.DESCRIPTION;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.EXPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IMPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
@@ -64,6 +65,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .setLocalIp(Ip.parse("1.1.1.1"))
             .setPeerAddress(Ip.parse("2.2.2.2"))
             .setConfederation(1L)
+            .setDescription("desc1")
             .setGroup("g1")
             .setIpv4UnicastAddressFamily(
                 Ipv4UnicastAddressFamily.builder()
@@ -81,6 +83,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .setLocalIp(Ip.parse("1.1.1.2"))
             .setPeerPrefix(Prefix.create(Ip.parse("3.3.3.0"), 24))
             .setConfederation(2L)
+            .setDescription("desc2")
             .setClusterId(Ip.parse("5.5.5.5").asLong())
             .setGroup("g2")
             .setIpv4UnicastAddressFamily(
@@ -99,6 +102,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .setLocalIp(Ip.parse("169.254.0.1"))
             .setPeerInterface("iface")
             .setConfederation(3L)
+            .setDescription("desc3")
             .setClusterId(Ip.parse("6.6.6.6").asLong())
             .setGroup("g3")
             .setIpv4UnicastAddressFamily(
@@ -148,6 +152,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(REMOTE_AS), LongSpace.of(200L).toString())
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.1"))
             .put(getColumnName(CONFEDERATION), 1L)
+            .put(getColumnName(DESCRIPTION), "desc1")
             .put(getColumnName(IS_PASSIVE), false)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), false)
             .put(getColumnName(CLUSTER_ID), null)
@@ -168,6 +173,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(REMOTE_AS), LongSpace.of(300L).toString())
             .put(getColumnName(LOCAL_IP), Ip.parse("1.1.1.2"))
             .put(getColumnName(CONFEDERATION), 2L)
+            .put(getColumnName(DESCRIPTION), "desc2")
             .put(getColumnName(IS_PASSIVE), true)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), true)
             .put(getColumnName(CLUSTER_ID), Ip.parse("5.5.5.5"))
@@ -186,6 +192,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .put(getColumnName(REMOTE_AS), LongSpace.of(400L).toString())
             .put(getColumnName(LOCAL_IP), null)
             .put(getColumnName(CONFEDERATION), 3L)
+            .put(getColumnName(DESCRIPTION), "desc3")
             .put(getColumnName(IS_PASSIVE), false)
             .put(getColumnName(ROUTE_REFLECTOR_CLIENT), true)
             .put(getColumnName(CLUSTER_ID), Ip.parse("6.6.6.6"))

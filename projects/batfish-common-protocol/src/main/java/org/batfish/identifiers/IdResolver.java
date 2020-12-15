@@ -19,25 +19,13 @@ public interface IdResolver {
 
   /** Retrieve the {@link AnswerId} corresponding to the provided input IDs. */
   @Nonnull
-  AnswerId getBaseAnswerId(
+  AnswerId getAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
-      QuestionSettingsId questionSettingsId,
       NodeRolesId networkNodeRolesId,
       @Nullable SnapshotId referenceSnapshotId,
       @Nullable AnalysisId analysisId);
-
-  /** Retrieve the {@link AnswerId} of the final answer corresponding to the provided input IDs. */
-  @Nonnull
-  AnswerId getFinalAnswerId(AnswerId baseAnswerId, Set<IssueSettingsId> issueSettingsIds);
-
-  /**
-   * Retrieve the {@link IssueSettingsId} assigned to {@code majorIssueType} under {@code
-   * networkId}. Returns {@link Optional#empty} if none assigned.
-   */
-  @Nonnull
-  Optional<IssueSettingsId> getIssueSettingsId(String majorIssueType, NetworkId networkId);
 
   /**
    * Retrieve the {@link NetworkId} assigned to {@code network}. Returns {@link Optional#empty} if
@@ -63,13 +51,6 @@ public interface IdResolver {
       String question, NetworkId networkId, @Nullable AnalysisId analysisId);
 
   /**
-   * Retrieve the {@link QuestionSettingsId} assigned to {@code questionClassId} under {@code
-   * networkId}. Returns {@link Optional#empty} if none assigned.
-   */
-  @Nonnull
-  Optional<QuestionSettingsId> getQuestionSettingsId(String questionClassId, NetworkId networkId);
-
-  /**
    * Retrieve the {@link SnapshotId} assigned to {@code snapshot} under {@code networkId}. Returns
    * {@link Optional#empty} if none assigned.
    */
@@ -86,12 +67,6 @@ public interface IdResolver {
    */
   boolean hasAnalysisId(String analysis, NetworkId networkId);
 
-  /**
-   * Return {@code true} iff some {@link IssueSettingsId} is assigned to {@code majorIssueType}
-   * under {@code networkId}.
-   */
-  boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId);
-
   /** Return {@code true} iff some {@link NetworkId} is assigned to {@code network}. */
   boolean hasNetworkId(String network);
 
@@ -104,12 +79,6 @@ public interface IdResolver {
    * question.
    */
   boolean hasQuestionId(String question, NetworkId networkId, @Nullable AnalysisId analysisId);
-
-  /**
-   * Return {@code true} iff some {@link QuestionSettingsId} is assigned to {@code questionClassId}
-   * under {@code networkId}.
-   */
-  boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId);
 
   /**
    * Return {@code true} iff some {@link SnapshotId} is assigned to {@code snapshot} under {@code

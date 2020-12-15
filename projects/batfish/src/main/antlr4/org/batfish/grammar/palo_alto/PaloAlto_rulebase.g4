@@ -8,6 +8,31 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
+m_rulebase
+:
+    RULEBASE m_rulebase_inner
+;
+
+m_post_rulebase
+:
+    POST_RULEBASE m_rulebase_inner
+;
+
+m_pre_rulebase
+:
+    PRE_RULEBASE m_rulebase_inner
+;
+
+m_rulebase_inner
+:
+    mr_security
+;
+
+mr_security
+:
+    SECURITY RULES name = variable action = move_action
+;
+
 s_rulebase
 :
     RULEBASE rulebase_inner
@@ -62,6 +87,7 @@ srs_definition
         | srs_source_user
         | srs_target
         | srs_to
+        | srs_tag
     )?
 ;
 
@@ -163,6 +189,11 @@ srs_source
 srs_source_user
 :
     SOURCE_USER ANY // only support user any so far
+;
+
+srs_tag
+:
+    TAG tags = variable_list
 ;
 
 srs_target

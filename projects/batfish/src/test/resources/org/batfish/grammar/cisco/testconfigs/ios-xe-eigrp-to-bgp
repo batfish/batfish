@@ -1,0 +1,13 @@
+!
+hostname ios-xe-eigrp-to-bgp
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ redistribute eigrp 1 route-map redist_eigrp
+ neighbor 2.2.2.2 remote-as 2
+!
+ip prefix-list redist_eigrp seq 5 permit 5.5.5.0/24
+!
+route-map redist_eigrp permit 10
+ match ip address prefix-list redist_eigrp
+!

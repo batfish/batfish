@@ -26,6 +26,13 @@ bgp_asn
     | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
 ;
 
+both_export_import
+:
+  BOTH
+  | EXPORT
+  | IMPORT
+;
+
 community
 :
    ACCEPT_OWN
@@ -251,12 +258,12 @@ null_rest_of_line
 ospf_route_type
 :
    (
-      EXTERNAL DEC?
+      EXTERNAL type = DEC?
    )
    | INTERNAL
    |
    (
-      NSSA_EXTERNAL DEC?
+      NSSA_EXTERNAL type = DEC?
    )
 ;
 
@@ -634,7 +641,7 @@ variable_community_name
 
 variable_distribute_list
 :
-  ~( NEWLINE | IN | OUT )+
+  ~( NEWLINE | GATEWAY | IN | OUT | PREFIX | ROUTE_MAP )+
 ;
 
 variable_hostname

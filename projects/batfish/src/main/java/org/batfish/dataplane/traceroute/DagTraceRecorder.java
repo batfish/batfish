@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.common.traceroute.TraceDag;
+import org.batfish.common.traceroute.TraceDagImpl;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.flow.Hop;
 
@@ -35,20 +36,16 @@ public class DagTraceRecorder implements TraceRecorder {
     _flow = flow;
   }
 
-  /**
-   * The key used to lookup Nodes in a TraceDag.
-   *
-   * <p>TODO: implement equals/hashCode for {@link Hop} instead of using JSON.
-   */
+  /** The key used to lookup Nodes in a TraceDagImpl. */
   @VisibleForTesting
   static final class NodeKey {
     private final @Nonnull Flow _initialFlow;
-    private final @Nonnull String _hopJson;
+    private final @Nonnull Hop _hop;
 
     @VisibleForTesting
     NodeKey(Flow initialFlow, Hop hop) {
       _initialFlow = initialFlow;
-      _hopJson = BatfishObjectMapper.writeStringRuntimeError(hop);
+      _hop = hop;
     }
 
     @Override
@@ -60,13 +57,21 @@ public class DagTraceRecorder implements TraceRecorder {
         return false;
       }
       NodeKey nodeKey = (NodeKey) o;
-      return _initialFlow.equals(nodeKey._initialFlow) && _hopJson.equals(nodeKey._hopJson);
+      return _initialFlow.equals(nodeKey._initialFlow) && _hop.equals(nodeKey._hop);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(_initialFlow, _hopJson);
+      int hash = _hashCode;
+      if (hash == 0) {
+        hash = Objects.hash(_initialFlow, _hop);
+        _hashCode = hash;
+      }
+      return hash;
     }
+
+    // Memoized hashcode;
+    private int _hashCode;
   }
 
   /**
@@ -209,8 +214,8 @@ public class DagTraceRecorder implements TraceRecorder {
           && _forbiddenBreadcrumbs.stream().noneMatch(breadcrumbs::contains);
     }
 
-    /** Convert a {@link Node} to a {@link TraceDag.Node}. */
-    private int buildTraceDagNode(Map<Node, Integer> cache, List<TraceDag.Node> traceDagNodes) {
+    /** Convert a {@link Node} to a {@link TraceDagImpl.Node}. */
+    private int buildTraceDagNode(Map<Node, Integer> cache, List<TraceDagImpl.Node> traceDagNodes) {
       @Nullable Integer nodeId = cache.get(this);
       if (nodeId != null) {
         return nodeId;
@@ -225,7 +230,7 @@ public class DagTraceRecorder implements TraceRecorder {
       nodeId = traceDagNodes.size();
       cache.put(this, nodeId);
       traceDagNodes.add(
-          new TraceDag.Node(
+          new TraceDagImpl.Node(
               hopInfo.getHop(),
               hopInfo.getFirewallSessionTraceInfo(),
               hopInfo.getDisposition(),
@@ -283,11 +288,11 @@ public class DagTraceRecorder implements TraceRecorder {
       buildRoot();
     }
     Map<Node, Integer> nodeIds = new HashMap<>();
-    List<TraceDag.Node> dagNodes = new ArrayList<>(_nodeMap.size());
+    List<TraceDagImpl.Node> dagNodes = new ArrayList<>(_nodeMap.size());
     List<Integer> rootIds =
         _roots.stream()
             .map(root -> root.buildTraceDagNode(nodeIds, dagNodes))
             .collect(ImmutableList.toImmutableList());
-    return _builtTraceDag = new TraceDag(dagNodes, rootIds);
+    return _builtTraceDag = new TraceDagImpl(dagNodes, rootIds);
   }
 }

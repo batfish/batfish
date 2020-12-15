@@ -130,7 +130,9 @@ public class EigrpTopologyUtils {
             if (iface.getConcreteAddress() == null
                 || iface.getEigrp() == null
                 || !iface.getEigrp().getEnabled()
-                || iface.getEigrp().getAsn() != proc.getAsn()) {
+                || iface.getEigrp().getAsn() != proc.getAsn()
+                // this shouldn't happen, but if it does, ignore the interface
+                || iface.getEigrp().getMetric().getValues().getBandwidth() == null) {
               continue;
             }
             // TODO: check if secondary addresses also participate in EIGRP neighbor relationships

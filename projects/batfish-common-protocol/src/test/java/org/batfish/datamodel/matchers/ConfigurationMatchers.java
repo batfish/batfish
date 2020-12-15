@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
-import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -236,7 +235,7 @@ public class ConfigurationMatchers {
    * Configuration}'s trackingGroups.
    */
   public static Matcher<Configuration> hasTrackingGroups(
-      @Nonnull Matcher<? super NavigableMap<String, TrackMethod>> subMatcher) {
+      @Nonnull Matcher<? super Map<String, TrackMethod>> subMatcher) {
     return new HasTrackingGroups(subMatcher);
   }
 

@@ -96,10 +96,11 @@ bgppg_peer
 :
     PEER name = bgp_peer_name
     (
-        bgppgp_connection_options
+        bgppgp_bfd
+        | bgppgp_connection_options
         | bgppgp_enable
         | bgppgp_local_address
-//        | bgppgp_max_prefixes
+        | bgppgp_max_prefixes
         | bgppgp_peer_address
         | bgppgp_peer_as
 //        | bgppgp_peering_type
@@ -107,11 +108,18 @@ bgppg_peer
     )?
 ;
 
+bgppgp_bfd
+:
+    BFD null_rest_of_line
+;
+
 bgppgp_connection_options
 :
     CONNECTION_OPTIONS
     (
         bgppgp_co_incoming_bgp_connection
+        | bgppgp_co_multihop
+        | bgppgp_co_null
         | bgppgp_co_outgoing_bgp_connection
     )
 ;
@@ -133,6 +141,23 @@ bgppgp_coi_allow
 bgppgp_coi_remote_port
 :
     REMOTE_PORT p = port_number
+;
+
+bgppgp_co_multihop
+:
+    MULTIHOP num = uint8 // 0-255
+;
+
+bgppgp_co_null
+:
+    (
+       HOLD_TIME
+       | IDLE_HOLD_TIME
+       | KEEP_ALIVE_INTERVAL
+       | MIN_ROUTE_ADV_INTERVAL
+       | OPEN_DELAY_TIME
+    )
+    null_rest_of_line
 ;
 
 bgppgp_co_outgoing_bgp_connection
@@ -166,6 +191,11 @@ bgppgp_local_address
         bgppgp_la_interface
         | bgppgp_la_ip
     )
+;
+
+bgppgp_max_prefixes
+:
+    MAX_PREFIXES num = uint16
 ;
 
 bgppgp_la_interface

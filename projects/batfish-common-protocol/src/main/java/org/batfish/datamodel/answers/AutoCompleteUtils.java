@@ -33,6 +33,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Protocol;
@@ -141,7 +142,7 @@ public final class AutoCompleteUtils {
         orderSuggestions(query, suggestions), maxSuggestions, MAX_SUGGESTIONS_PER_TYPE);
   }
 
-  /** Basic ordering logic, by suggestion type and then by suggestion text */
+  /** Basic ordering logic, by suggestion type, rank, and then by suggestion text */
   @VisibleForTesting
   static List<AutocompleteSuggestion> orderSuggestions(
       String query, List<AutocompleteSuggestion> suggestions) {
@@ -150,6 +151,8 @@ public final class AutoCompleteUtils {
         .sorted(
             // first order by suggestion type
             Comparator.comparing(AutocompleteSuggestion::getSuggestionType)
+                // then rank within the same type
+                .thenComparing(AutocompleteSuggestion::getRank)
                 // then by (inverse of) common prefix length
                 .thenComparing(
                     s ->
@@ -738,13 +741,18 @@ public final class AutoCompleteUtils {
           }
         case SOURCE_LOCATION:
           {
-            suggestions = autoCompleteSourceLocation(query, completionMetadata);
+            suggestions = autoCompleteSourceLocation(query, false, completionMetadata);
             break;
           }
         case STRUCTURE_NAME:
           {
             checkCompletionMetadata(completionMetadata, network, snapshot);
             suggestions = baseAutoComplete(query, completionMetadata.getStructureNames());
+            break;
+          }
+        case TRACEROUTE_SOURCE_LOCATION:
+          {
+            suggestions = autoCompleteSourceLocation(query, true, completionMetadata);
             break;
           }
         case VRF:
@@ -769,26 +777,50 @@ public final class AutoCompleteUtils {
     return suggestions;
   }
 
+  /**
+   * Returns a list of loactions that the match the query. The query can match on either the
+   * location (node, interface) or the human name of the node. When tracerouteSource is false,
+   * "natural" source locations (per location info) with IPs are considered. Otherwise, traceroute
+   * sources are considered. In the latter mode, natural sources are ranked higher.
+   */
   @Nonnull
   static List<AutocompleteSuggestion> autoCompleteSourceLocation(
-      String query, @Nullable CompletionMetadata completionMetadata) {
-    List<AutocompleteSuggestion> suggestions;
+      String query, boolean tracerouteSource, @Nullable CompletionMetadata completionMetadata) {
     checkNotNull(
-        completionMetadata.getSourceLocations(),
-        "cannot autocomplete source locations without LocationInfo");
-    Map<String, Optional<String>> locationsAndHumanNames =
-        completionMetadata.getSourceLocations().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    ToSpecifierString::toSpecifierString,
-                    location ->
-                        Optional.ofNullable(
-                            completionMetadata
-                                .getNodes()
-                                .get(location.getNodeName())
-                                .getHumanName())));
-    suggestions = stringAutoComplete(query, locationsAndHumanNames);
-    return suggestions;
+        completionMetadata, "Cannot autocomplete source locations without completion metadata");
+    checkNotNull(
+        completionMetadata.getLocations(),
+        "cannot autocomplete source locations without location metadata");
+    List<AutocompleteSuggestion> sourceSuggestions =
+        stringAutoComplete(query, getLocationsWithHumanNames(false, completionMetadata), 1);
+    if (!tracerouteSource) {
+      return sourceSuggestions;
+    }
+    List<AutocompleteSuggestion> tracerouteSourceSuggestions =
+        stringAutoComplete(query, getLocationsWithHumanNames(true, completionMetadata), 2);
+    return Streams.concat(sourceSuggestions.stream(), tracerouteSourceSuggestions.stream())
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a map from location to the (optional) human name of its node. When tracerouteSource is
+   * false, "natural" source locations (per location info) with IPs are considered. Otherwise,
+   * traceroute sources that are not source location with IPs are considered.
+   */
+  private static Map<String, Optional<String>> getLocationsWithHumanNames(
+      boolean tracerouteSource, CompletionMetadata completionMetadata) {
+    return (tracerouteSource
+            ? completionMetadata.getLocations().stream()
+                .filter(loc -> loc.isTracerouteSource() && !loc.isSourceWithIps())
+            : completionMetadata.getLocations().stream()
+                .filter(LocationCompletionMetadata::isSourceWithIps))
+        .map(LocationCompletionMetadata::getLocation)
+        .collect(
+            ImmutableMap.toImmutableMap(
+                ToSpecifierString::toSpecifierString,
+                location ->
+                    Optional.ofNullable(
+                        completionMetadata.getNodes().get(location.getNodeName()).getHumanName())));
   }
 
   /**
@@ -842,9 +874,21 @@ public final class AutoCompleteUtils {
    *
    * <p>The search is case-insensitive and looks for a substring match.
    */
+  @VisibleForTesting
   @Nonnull
-  public static List<AutocompleteSuggestion> stringAutoComplete(
+  static List<AutocompleteSuggestion> stringAutoComplete(
       @Nullable String query, Map<String, Optional<String>> stringsWithDescriptions) {
+    return stringAutoComplete(query, stringsWithDescriptions, AutocompleteSuggestion.DEFAULT_RANK);
+  }
+
+  /**
+   * Returns a list of suggestions based on query strings.
+   *
+   * <p>The search is case-insensitive and looks for a substring match.
+   */
+  @Nonnull
+  private static List<AutocompleteSuggestion> stringAutoComplete(
+      @Nullable String query, Map<String, Optional<String>> stringsWithDescriptions, int rank) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
 
@@ -855,7 +899,7 @@ public final class AutoCompleteUtils {
                     || s.getValue()
                         .map(hint -> hint.toLowerCase().contains(testQuery))
                         .orElse(false))
-        .map(s -> new AutocompleteSuggestion(s.getKey(), false, s.getValue().orElse(null)))
+        .map(s -> new AutocompleteSuggestion(s.getKey(), false, s.getValue().orElse(null), rank))
         .collect(ImmutableList.toImmutableList());
   }
 

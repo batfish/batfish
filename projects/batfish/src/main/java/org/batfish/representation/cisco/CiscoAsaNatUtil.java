@@ -237,7 +237,8 @@ final class CiscoAsaNatUtil {
       // these uses might result in unpredictable behavior.
       // https://www.cisco.com/c/en/us/td/docs/security/asa/asa-command-reference/I-R/cmdref2/n.html
       w.redFlag(
-          "Matching 'any' and shifting to an object or object group, or vice versa, is not supported.");
+          "Matching 'any' and shifting to an object or object group, or vice versa, is not"
+              + " supported.");
       return null;
     } else {
       // both matchAddress and shiftAddress are specified and are objects, object groups, or an
@@ -283,7 +284,8 @@ final class CiscoAsaNatUtil {
 
       if (matchPrefix.getPrefixLength() != shiftPrefix.getPrefixLength()) {
         w.redFlag(
-            "Matching and shifting objects do not have prefixes of equal length, which is not supported.");
+            "Matching and shifting objects do not have prefixes of equal length, which is not"
+                + " supported.");
         return null;
       }
     }

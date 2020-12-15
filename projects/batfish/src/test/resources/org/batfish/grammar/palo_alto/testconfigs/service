@@ -4,6 +4,7 @@ set service SERVICE1 protocol tcp port 1
 set service SERVICE2 protocol udp source-port 4,5-9
 set service SERVICE3 protocol udp port 5,6 source-port 9,10
 set service "SERVICE 4" protocol sctp
+set service "SERVICE 4" tag TAG
 
 set service-group SG1 members [ SERVICE1 SERVICE2 ]
 set service-group "SG 2" members [ SG1 SERVICE_UNDEFINED ]

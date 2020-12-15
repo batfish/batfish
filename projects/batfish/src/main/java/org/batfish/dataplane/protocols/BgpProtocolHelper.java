@@ -1,5 +1,6 @@
 package org.batfish.dataplane.protocols;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -60,15 +61,11 @@ public final class BgpProtocolHelper {
     // this will be set later during export policy transformation or after it is exported
     builder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
 
-    // sessionProperties represents incoming edge, so localNeighbor's IP is its headIp
-    Ip fromNeighborIp = sessionProperties.getHeadIp();
     RoutingProtocol routeProtocol = route.getProtocol();
-
-    builder.setReceivedFromIp(fromNeighborIp);
     RoutingProtocol outgoingProtocol =
         sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
     builder.setProtocol(outgoingProtocol);
-    builder.setSrcProtocol(route.getProtocol());
+    builder.setSrcProtocol(routeProtocol);
 
     // Clear a bunch of non-transitive attributes
     builder.setWeight(0);
@@ -142,17 +139,17 @@ public final class BgpProtocolHelper {
           route.getReceivedFromRouteReflectorClient();
       boolean sendingToRouteReflectorClient = af.getRouteReflectorClient();
       Ip remoteReceivedFromIp = route.getReceivedFromIp();
-      boolean remoteRouteOriginatedByRemoteNeighbor = Ip.ZERO.equals(remoteReceivedFromIp);
+      boolean routeOriginatedLocally = Ip.ZERO.equals(remoteReceivedFromIp);
       if (!remoteRouteReceivedFromRouteReflectorClient
           && !sendingToRouteReflectorClient
-          && !remoteRouteOriginatedByRemoteNeighbor) {
+          && !routeOriginatedLocally) {
         /*
          * Neither reflecting nor originating this iBGP route, so don't send
          */
         return null;
       }
       builder.addClusterList(route.getClusterList());
-      if (!remoteRouteOriginatedByRemoteNeighbor) {
+      if (!routeOriginatedLocally) {
         // we are reflecting, so we need to get the clusterid associated with the
         // remoteRoute
         Long newClusterId = localNeighbor.getClusterId();
@@ -197,6 +194,7 @@ public final class BgpProtocolHelper {
           boolean allowLocalAsIn,
           boolean isEbgp,
           BgpProcess toProcess,
+          Ip peerIp,
           @Nullable String peerInterface) {
     // skip routes containing peer's AS unless explicitly allowed
     if (!allowLocalAsIn && route.getAsPath().containsAs(localAs)) {
@@ -204,18 +202,14 @@ public final class BgpProtocolHelper {
     }
 
     RoutingProtocol targetProtocol = isEbgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
-    B builder = route.toBuilder();
+    String nhInt = firstNonNull(peerInterface, Route.UNSET_NEXT_HOP_INTERFACE);
 
-    if (peerInterface != null) {
-      builder.setNextHopInterface(peerInterface);
-    } else {
-      builder.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE);
-    }
-    builder.setAdmin(toProcess.getAdminCost(targetProtocol));
-    builder.setProtocol(targetProtocol);
-    builder.setSrcProtocol(targetProtocol);
-
-    return builder;
+    return route.toBuilder()
+        .setAdmin(toProcess.getAdminCost(targetProtocol))
+        .setNextHopInterface(nhInt)
+        .setProtocol(targetProtocol)
+        .setReceivedFromIp(peerIp)
+        .setSrcProtocol(targetProtocol);
   }
 
   /**
@@ -271,7 +265,7 @@ public final class BgpProtocolHelper {
          */
         .setOriginatorIp(routerId)
         .setOriginType(OriginType.INCOMPLETE)
-        .setReceivedFromIp(nextHopIp)
+        .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
         .setNonRouting(nonRouting);
   }
 
@@ -304,8 +298,9 @@ public final class BgpProtocolHelper {
         .setOriginType(OriginType.INCOMPLETE)
         // TODO: support customization of route preference
         .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
-        .setReceivedFromIp(protocol == RoutingProtocol.BGP ? nextHopIp : Ip.ZERO)
+        .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
         .setNextHopIp(nextHopIp)
+        .setMetric(route.getMetric())
         .setTag(routeDecorator.getAbstractRoute().getTag());
     // Let everything else default to unset/empty/etc.
   }

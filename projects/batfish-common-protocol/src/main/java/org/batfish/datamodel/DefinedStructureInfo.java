@@ -1,13 +1,14 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import java.io.Serializable;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 
 public class DefinedStructureInfo implements Serializable {
@@ -15,21 +16,41 @@ public class DefinedStructureInfo implements Serializable {
   private static final String PROP_DEFINITION_LINES = "definitionLines";
   private static final String PROP_NUM_REFERRERS = "numReferrers";
 
-  @Nonnull private SortedSet<Integer> _definitionLines;
+  @Nonnull private final RangeSet<Integer> _definitionLines;
   private int _numReferrers;
 
-  @JsonCreator
-  public DefinedStructureInfo(
-      @JsonProperty(PROP_DEFINITION_LINES) SortedSet<Integer> definitionLines,
-      @JsonProperty(PROP_NUM_REFERRERS) Integer numReferrers) {
-    checkArgument(numReferrers != null, "Missing %s", PROP_NUM_REFERRERS);
-    _definitionLines = firstNonNull(definitionLines, new TreeSet<>());
+  public DefinedStructureInfo() {
+    this(TreeRangeSet.create(), 0);
+  }
+
+  public DefinedStructureInfo(@Nonnull RangeSet<Integer> lines, int numReferrers) {
+    _definitionLines = lines;
     _numReferrers = numReferrers;
   }
 
+  @JsonCreator
+  private static DefinedStructureInfo jsonCreator(
+      @JsonProperty(PROP_DEFINITION_LINES) IntegerSpace definitionLines,
+      @JsonProperty(PROP_NUM_REFERRERS) Integer numReferrers) {
+    checkArgument(numReferrers != null, "Missing %s", PROP_NUM_REFERRERS);
+    return new DefinedStructureInfo(definitionLines.getRangeSet(), numReferrers);
+  }
+
   @JsonProperty(PROP_DEFINITION_LINES)
-  public SortedSet<Integer> getDefinitionLines() {
-    return _definitionLines;
+  public @Nonnull IntegerSpace getDefinitionLines() {
+    return IntegerSpace.of(_definitionLines);
+  }
+
+  public void addDefinitionLines(int line) {
+    _definitionLines.add(Range.singleton(line));
+  }
+
+  public void addDefinitionLines(IntStream lines) {
+    lines.forEach(l -> _definitionLines.add(Range.singleton(l)));
+  }
+
+  public void addDefinitionLines(Range<Integer> lines) {
+    _definitionLines.add(lines);
   }
 
   @JsonProperty(PROP_NUM_REFERRERS)

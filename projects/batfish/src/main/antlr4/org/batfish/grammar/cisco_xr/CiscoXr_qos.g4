@@ -641,190 +641,116 @@ os_service
    SERVICE service_specifier NEWLINE
 ;
 
-pm_class
-:
-   num = DEC? CLASS
-   (
-      TYPE
-      (
-         CONTROL_PLANE
-         | NETWORK_QOS
-         | PBR
-         | QOS
-         | QUEUING
-      ) name = variable_permissive
-      | name = variable_permissive
-   ) NEWLINE
-   (
-      pmc_null
-      | pmc_police
-      | pmc_service_policy
-   )*
-;
-
 pm_end_policy_map
 :
    END_POLICY_MAP NEWLINE
 ;
 
-pm_event
+pm_type_accounting
+:
+   TYPE ACCOUNTING mapname = variable NEWLINE
+   pm_type_null_tail*
+;
+
+pm_type_null_tail
+:
+     (
+         CLASS
+         | DESCRIPTION
+     )  null_rest_of_line
+;
+
+pm_type_control_subscriber
+:
+   TYPE CONTROL SUBSCRIBER mapname = variable NEWLINE
+   (
+      pmtcs_event
+      | pm_type_null_tail
+   )*
+;
+
+pm_type_pbr
+:
+   TYPE PBR mapname = variable NEWLINE
+   pm_type_null_tail*
+;
+
+pm_type_performance_traffic
+:
+   TYPE PERFORMANCE_TRAFFIC mapname = variable NEWLINE
+   pm_type_null_tail*
+;
+
+pm_type_qos
+:
+   (TYPE QOS)? mapname = variable NEWLINE
+   pm_type_null_tail*
+;
+
+pm_type_redirect
+:
+   TYPE REDIRECT mapname = variable NEWLINE
+   pm_type_null_tail*
+;
+
+pm_type_traffic
+:
+   TYPE TRAFFIC mapname = variable NEWLINE
+   pm_type_null_tail*
+;
+
+pmtcs_event
 :
    EVENT null_rest_of_line
    (
-      pm_event_class
+      pmtcse_class
    )*
 ;
 
-pm_event_class
+pmtcse_class
 :
-   DEC CLASS
+   CLASS
    (
-      ALWAYS
-      | classname = variable
-   ) DO_UNTIL_FAILURE NEWLINE
-   (
-      DEC
-      (
-         ACTIVATE SERVICE_TEMPLATE stname = variable
-         | AUTHENTICATE
-         | AUTHENTICATION_RESTART
-         | AUTHORIZE
-         | CLEAR_SESSION
-         | PAUSE
-         | RESTRICT
-         | RESUME
-         | TERMINATE
-      ) null_rest_of_line
-   )*
+      CLASS_DEFAULT
+      | TYPE CONTROL SUBSCRIBER classname = variable
+   )
+   pmtcsec_do?
+   NEWLINE
+   pmtcsec_tail*
 ;
 
-pm_ios_inspect
+pmtcsec_do
 :
-   INSPECT name = variable_permissive NEWLINE
-   (
-      pm_iosi_class_default
-      | pm_iosi_class_type_inspect
-   )*
+  DO_ALL
+  | DO_UNTIL_FAILURE
+  | DO_UNTIL_SUCCESS
 ;
 
-pm_iosi_class_default
+pmtcsec_tail
 :
-   CLASS CLASS_DEFAULT NEWLINE
-   (
-      pi_iosicd_drop
-      | pi_iosicd_pass
-   )*
+  DEC
+  (
+     pmtcsec_activate
+     | pmtcsec_null
+  )
 ;
 
-pm_iosi_class_type_inspect
+pmtcsec_activate
 :
-   CLASS TYPE INSPECT name = variable NEWLINE
-   (
-      pm_iosict_drop
-      | pm_iosict_inspect
-      | pm_iosict_pass
-   )*
+  ACTIVATE DYNAMIC_TEMPLATE dtname = variable NEWLINE
 ;
 
-pi_iosicd_drop
+pmtcsec_null
 :
-   DROP LOG? NEWLINE
-;
-
-pi_iosicd_pass
-:
-   PASS NEWLINE
-;
-
-pm_iosict_drop
-:
-   DROP LOG? NEWLINE
-;
-
-pm_iosict_inspect
-:
-   INSPECT NEWLINE
-;
-
-pm_iosict_pass
-:
-   PASS NEWLINE
-;
-
-pm_null
-:
-   NO?
-   (
-      CIR
-      | DESCRIPTION
-   ) null_rest_of_line
-;
-
-pm_parameters
-:
-   PARAMETERS NEWLINE
-   (
-      pmp_null
-   )*
-;
-
-pmc_null
-:
-   NO?
-   (
-      BANDWIDTH
-      | CONGESTION_CONTROL
-      | DBL
-      | DROP
-      | FAIR_QUEUE
-      | INSPECT
-      | MTU
-      | PASS
-      | PAUSE
-      | PRIORITY
-      | QUEUE_BUFFERS
-      | QUEUE_LIMIT
-      | RANDOM_DETECT
-      | SET
-      | SHAPE
-      | TRUST
-      | USER_STATISTICS
-   ) null_rest_of_line
-;
-
-pmc_police
-:
-   POLICE null_rest_of_line
-   (
-      pmcp_null
-   )*
-;
-
-pmc_service_policy
-:
-   SERVICE_POLICY name = variable NEWLINE
-;
-
-pmcp_null
-:
-   NO?
-   (
-      CONFORM_ACTION
-      | EXCEED_ACTION
-      | VIOLATE_ACTION
-   ) null_rest_of_line
-;
-
-pmp_null
-:
-   NO?
-   (
-      ID_MISMATCH
-      | ID_RANDOMIZATION
-      | MESSAGE_LENGTH
-      | PROTOCOL_VIOLATION
-      | TCP_INSPECTION
-   ) null_rest_of_line
+  (
+   AUTHENTICATE
+   | AUTHORIZE
+   | DEACTIVATE
+   | DISCONNECT
+   | MONITOR
+   | SET_TIMER
+   | STOP_TIMER
+) null_rest_of_line
 ;
 
 qm_null
@@ -898,39 +824,15 @@ s_policy_map
 :
    POLICY_MAP
    (
-      variable_policy_map_header
-      |
-      (
-         TYPE variable variable variable
-      )
-      |
-      (
-         TYPE
-         (
-            CONTROL_PLANE
-            | NETWORK_QOS
-            | PBR
-            | QUEUEING
-            | QUEUING
-            | QOS
-         ) mapname = variable
-         (
-            TEMPLATE template = variable
-         )?
-      )
-   ) NEWLINE
-   (
-      pm_class
-      | pm_end_policy_map
-      | pm_event
-      | pm_null
-      | pm_parameters
-   )*
-;
-
-s_policy_map_ios
-:
-   POLICY_MAP TYPE pm_ios_inspect
+      pm_type_accounting
+      | pm_type_control_subscriber
+      | pm_type_pbr
+      | pm_type_performance_traffic
+      | pm_type_qos
+      | pm_type_redirect
+      | pm_type_traffic
+   )
+   pm_end_policy_map?
 ;
 
 s_qos_mapping

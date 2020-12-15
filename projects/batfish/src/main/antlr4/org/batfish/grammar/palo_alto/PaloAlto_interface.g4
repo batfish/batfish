@@ -203,9 +203,11 @@ sniel3_mtu
 sniel3_null
 :
     (
-        LLDP
+        ADJUST_TCP_MSS
+        | LLDP
         | IPV6
         | NDP_PROXY
+        | NETFLOW_PROFILE
     )
     null_rest_of_line
 ;

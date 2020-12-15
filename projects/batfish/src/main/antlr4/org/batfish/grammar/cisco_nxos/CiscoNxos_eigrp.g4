@@ -30,6 +30,7 @@ re_common
 :
   rec_address_family
   | rec_autonomous_system
+  | rec_distance
   | rec_no
   | rec_passive_interface
   | rec_router_id
@@ -104,7 +105,26 @@ recaf_ipv6
 
 recaf_common
 :
-  recaf_router_id
+  recaf_default_metric
+  | recaf_eigrp
+  | recaf_network
+  | recaf_router_id
+;
+
+recaf_default_metric
+:
+  DEFAULT_METRIC bandwidth = uint32 delay = uint32 reliability = uint8 load = uint8 mtu = uint32 NEWLINE
+;
+
+recaf_eigrp
+:
+  // EIGRP keyword here is undocumented, but apparently works for backwards compatibility.
+  EIGRP recaf_router_id
+;
+
+recaf_network
+:
+  NETWORK network = ip_prefix NEWLINE
 ;
 
 recaf_router_id
@@ -125,6 +145,11 @@ recaf6_redistribute
 rec_autonomous_system
 :
   AUTONOMOUS_SYSTEM eigrp_asn NEWLINE
+;
+
+rec_distance
+:
+  DISTANCE internal = uint8 external = uint8 NEWLINE
 ;
 
 rec_no

@@ -472,7 +472,8 @@ public class PacketHeaderConstraints {
               .collect(ImmutableSet.toImmutableSet());
       checkArgument(
           !Sets.intersection(ipProtocols, resolvedIpProtocols).isEmpty(),
-          "Combination of given IP protocols (%s) and application protocols (%s) cannot be satisfied",
+          "Combination of given IP protocols (%s) and application protocols (%s) cannot be"
+              + " satisfied",
           ipProtocols,
           applications);
     }

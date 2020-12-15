@@ -148,12 +148,14 @@ public abstract class Route implements Serializable {
         destinationCidrBlock != null
             || destinationIpv6CidrBlock != null
             || destinationPrefixListId != null,
-        "At least one destination type (v4 CIDR, v6 CIDR, prefix list) must be present for a route");
+        "At least one destination type (v4 CIDR, v6 CIDR, prefix list) must be present for a"
+            + " route");
     checkArgument(
         destinationCidrBlock == null
             || destinationIpv6CidrBlock == null
             || destinationPrefixListId == null,
-        "At most one destination type (v4 CIDR, v6 CIDR, prefix list)  must be present for a route");
+        "At most one destination type (v4 CIDR, v6 CIDR, prefix list)  must be present for a"
+            + " route");
     checkArgument(stateStr != null, "State cannot be null for a route");
 
     State state = State.valueOf(stateStr.toUpperCase());

@@ -161,7 +161,8 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
             tracerouteEngine
                 .computeTracesAndReverseFlows(
                     ImmutableSet.of(fas._flow), fas._sessions, ignoreFilters)
-                .get(fas._flow).stream()
+                .get(fas._flow)
+                .stream()
                 .map(TraceAndReverseFlow::getTrace)
                 .collect(ImmutableList.toImmutableList()));
   }

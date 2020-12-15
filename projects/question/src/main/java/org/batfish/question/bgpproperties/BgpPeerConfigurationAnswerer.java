@@ -2,6 +2,7 @@ package org.batfish.question.bgpproperties;
 
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CLUSTER_ID;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.CONFEDERATION;
+import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.DESCRIPTION;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.EXPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IMPORT_POLICY;
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.IS_PASSIVE;
@@ -19,6 +20,7 @@ import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,6 +69,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
           CONFEDERATION,
           REMOTE_AS,
           COL_REMOTE_IP,
+          DESCRIPTION,
           ROUTE_REFLECTOR_CLIENT,
           CLUSTER_ID,
           PEER_GROUP,
@@ -106,7 +109,6 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     columnMetadatas.put(
         COL_REMOTE_IP,
         new ColumnMetadata(COL_REMOTE_IP, Schema.SELF_DESCRIBING, "Remote IP", true, false));
-
     // Check for unknown columns (present in BgpPeerPropertySpecifier but not COLUMN_ORDER)
     List<ColumnMetadata> unknownColumns =
         columnMetadatas.entrySet().stream()
@@ -116,9 +118,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
 
     // List the metadatas in order, with any unknown columns tacked onto the end of the table
     return Stream.concat(
-            COLUMN_ORDER.stream()
-                .filter(prop -> columnMetadatas.containsKey(prop))
-                .map(prop -> columnMetadatas.get(prop)),
+            COLUMN_ORDER.stream().map(columnMetadatas::get).filter(Objects::nonNull),
             unknownColumns.stream())
         .collect(ImmutableList.toImmutableList());
   }
@@ -207,7 +207,8 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
       } catch (ClassCastException e) {
         throw new BatfishException(
             String.format(
-                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for BGP peer '%s->%s-%s': %s",
+                "Type mismatch between property value ('%s') and Schema ('%s') for property '%s'"
+                    + " for BGP peer '%s->%s-%s': %s",
                 propertyDescriptor.getGetter().apply(peer),
                 propertyDescriptor.getSchema(),
                 property,

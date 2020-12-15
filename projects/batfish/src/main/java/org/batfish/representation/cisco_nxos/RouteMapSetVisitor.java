@@ -21,9 +21,13 @@ public interface RouteMapSetVisitor<T> {
 
   T visitRouteMapSetMetric(RouteMapSetMetric routeMapSetMetric);
 
+  T visitRouteMapSetMetricEigrp(RouteMapSetMetricEigrp routeMapSetMetric);
+
   T visitRouteMapSetMetricType(RouteMapSetMetricType routeMapSetMetricType);
 
   T visitRouteMapSetOrigin(RouteMapSetOrigin routeMapSetOrigin);
 
   T visitRouteMapSetTag(RouteMapSetTag routeMapSetTag);
+
+  T visitRouteMapSetWeight(RouteMapSetWeight routeMapSetWeight);
 }

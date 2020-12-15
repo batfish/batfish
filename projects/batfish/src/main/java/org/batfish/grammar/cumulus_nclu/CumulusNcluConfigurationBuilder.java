@@ -3,6 +3,7 @@ package org.batfish.grammar.cumulus_nclu;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
+import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BOND_SLAVE;
@@ -164,6 +165,7 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNetwork;
@@ -179,7 +181,6 @@ import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.Interface;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
-import org.batfish.representation.cumulus.RemoteAsType;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
@@ -443,28 +444,32 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     if (name.equals(LOOPBACK_INTERFACE_NAME)) {
       _w.redFlag(
           String.format(
-              "Loopback interface can only be configured via 'net add loopback' family of commands; following is invalid: %s",
+              "Loopback interface can only be configured via 'net add loopback' family of"
+                  + " commands; following is invalid: %s",
               getFullText(ctx)));
       return null;
     }
     if (_c.getBonds().containsKey(name)) {
       _w.redFlag(
           String.format(
-              "bond interface '%s' can only be configured via 'net add bond' family of commands; following is invalid: %s",
+              "bond interface '%s' can only be configured via 'net add bond' family of commands;"
+                  + " following is invalid: %s",
               name, getFullText(ctx)));
       return null;
     }
     if (_c.getVrfs().containsKey(name)) {
       _w.redFlag(
           String.format(
-              "VRF loopback interface '%s' can only be configured via 'net add vrf' family of commands; following is invalid: %s",
+              "VRF loopback interface '%s' can only be configured via 'net add vrf' family of"
+                  + " commands; following is invalid: %s",
               name, getFullText(ctx)));
       return null;
     }
     if (_c.getVxlans().containsKey(name)) {
       _w.redFlag(
           String.format(
-              "VXLAN interface '%s' can only be configured via 'net add vxlan' family of commands; following is invalid: %s",
+              "VXLAN interface '%s' can only be configured via 'net add vxlan' family of commands;"
+                  + " following is invalid: %s",
               name, getFullText(ctx)));
       return null;
     }
@@ -480,7 +485,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       } else {
         _w.redFlag(
             String.format(
-                "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond interface in: %s",
+                "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond"
+                    + " interface in: %s",
                 name, superInterfaceName, getFullText(ctx)));
         return null;
       }
@@ -588,7 +594,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         // Do not attach new BGP process to configuration since since line is invalid
         _w.redFlag(
             String.format(
-                "Must first create BGP process via 'net add bgp autonomous-system <number>' before: %s",
+                "Must first create BGP process via 'net add bgp autonomous-system <number>'"
+                    + " before: %s",
                 getFullText(ctx)));
       }
     }
@@ -678,7 +685,8 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     } else if (!_c.getVxlans().keySet().containsAll(names)) {
       _w.redFlag(
           String.format(
-              "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: %s",
+              "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id"
+                  + " <id>' before line: %s",
               getFullText(ctx.getParent())));
       _currentVxlans = ImmutableList.of();
     } else {
@@ -768,6 +776,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
           String.format(
               "Cannot create BGP neighbor for illegal abstract interface name '%s' in: %s",
               _currentBgpNeighborName, getFullText(ctx)));
+      _currentBgpNeighbor = new BgpPeerGroupNeighbor("dummy");
       return;
     }
 
@@ -796,13 +805,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       _currentBgpNeighbor = _currentBgpVrf.getNeighbors().get(_currentBgpNeighborName);
       return;
     }
-    BgpIpNeighbor ipNeighbor =
-        (BgpIpNeighbor)
-            _currentBgpVrf
-                .getNeighbors()
-                .computeIfAbsent(_currentBgpNeighborName, BgpIpNeighbor::new);
-    ipNeighbor.setPeerIp(peerIp);
-    _currentBgpNeighbor = ipNeighbor;
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(_currentBgpNeighborName, name -> new BgpIpNeighbor(name, peerIp));
   }
 
   @Override
@@ -1058,16 +1064,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @Override
   public void exitBnp_remote_as(Bnp_remote_asContext ctx) {
     assert _currentBgpNeighbor != null;
-    if (ctx.EXTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
-    } else if (ctx.INTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.INTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
+    if (ctx.as != null) {
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.explicit(parseLong(ctx.as.getText())));
+    } else if (ctx.EXTERNAL() != null) {
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.external());
     } else {
-      assert ctx.as != null;
-      _currentBgpNeighbor.setRemoteAsType(RemoteAsType.EXPLICIT);
-      _currentBgpNeighbor.setRemoteAs(toLong(ctx.as));
+      assert ctx.INTERNAL() != null;
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.internal());
     }
   }
 

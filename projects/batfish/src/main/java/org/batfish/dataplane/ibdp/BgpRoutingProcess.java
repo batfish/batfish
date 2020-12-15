@@ -2,22 +2,29 @@ package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
+import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -32,8 +39,13 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -46,10 +58,12 @@ import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
@@ -59,10 +73,12 @@ import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
+import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.Bgpv4Rib;
 import org.batfish.dataplane.rib.EvpnRib;
@@ -79,13 +95,13 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 @ParametersAreNonnullByDefault
 final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?, ?>> {
   /** Configuration for this process */
-  @Nonnull final BgpProcess _process;
+  @Nonnull private final BgpProcess _process;
   /** Parent node configuration */
   @Nonnull private final Configuration _c;
   /** Name of our VRF */
   @Nonnull private final String _vrfName;
   /** Reference to the parent {@link VirtualRouter} main RIB (read-only). */
-  @Nonnull private final Rib _mainRib;
+  @Nonnull private final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
   /** Current BGP topology */
   @Nonnull private BgpTopology _topology;
   /** Metadata about propagated prefixes to/from neighbors */
@@ -94,49 +110,35 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Route dependency tracker for BGP IPv4 aggregate routes */
   @Nonnull
   RouteDependencyTracker<Bgpv4Route, AbstractRoute> _bgpAggDeps = new RouteDependencyTracker<>();
-  /**
-   * Incoming messages into this router from each BGP neighbor that speaks IPv4 unicast address
-   * family
-   */
-  @Nonnull SortedMap<EdgeId, Queue<RouteAdvertisement<Bgpv4Route>>> _bgpv4IncomingRoutes;
+  /** All BGP neighbor that speaks IPv4 unicast address family that we know of */
+  @Nonnull ImmutableSortedSet<EdgeId> _bgpv4Edges;
   /**
    * Incoming EVPN type 3 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
    */
   @Nonnull @VisibleForTesting
   SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
-  /**
-   * Incoming EVPN type 5 advertisements into this router from each BGP neighbor that speaks EVPN
-   * address family
-   */
-  @Nonnull
-  private SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType5Route>>> _evpnType5IncomingRoutes;
 
   // RIBs and RIB delta builders
   /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
   @Nonnull Bgpv4Rib _ebgpv4Rib;
-  /**
-   * Helper RIB containing paths obtained with eBGP during current iteration. An Adj-RIB-in of sorts
-   * for IPv4 unicast
-   */
-  @Nonnull Bgpv4Rib _ebgpv4StagingRib;
   /** RIB containing paths obtained with iBGP, for IPv4 unicast */
   @Nonnull Bgpv4Rib _ibgpv4Rib;
 
-  // outgoing RIB deltas for the current round.
-  @Nonnull RibDelta<Bgpv4Route> _ebgpDelta = RibDelta.empty();
-  @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibBgpv4RouteDelta = RibDelta.empty();
-  @Nonnull RibDelta<Bgpv4Route> _bgpv4Delta = RibDelta.empty();
+  // outgoing RIB deltas for the current round (i.e., deltas generated in the previous round)
+  @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrev = RibDelta.empty();
+  @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
 
   /**
    * Helper RIB containing paths obtained with iBGP during current iteration. An Adj-RIB-in of sorts
    * for IPv4 unicast
    */
-  @Nonnull Bgpv4Rib _ibgpv4StagingRib;
   /** Combined BGP (both iBGP and eBGP) RIB, for IPv4 unicast */
   @Nonnull Bgpv4Rib _bgpv4Rib;
   /** Builder for constructing {@link RibDelta} which represent changes to {@link #_bgpv4Rib} */
-  @Nonnull Builder<Bgpv4Route> _bgpv4DeltaBuilder;
+  @Nonnull private Builder<Bgpv4Route> _bgpv4DeltaBuilder;
+  /** {@link RibDelta} representing changes to {@link #_ebgpv4Rib} in the current iteration */
+  @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaCurrent;
 
   /** eBGP RIB for EVPN type 3 routes */
   @Nonnull private EvpnRib<EvpnType3Route> _ebgpType3EvpnRib;
@@ -160,9 +162,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private RibDelta<EvpnType3Route> _evpnInitializationDelta;
 
   /** Delta builder for routes that must be propagated to the main RIB */
-  @Nonnull private RibDelta.Builder<BgpRoute<?, ?>> _changeSet = RibDelta.builder();
+  @Nonnull private RibDelta.Builder<BgpRoute<?, ?>> _toMainRib = RibDelta.builder();
 
-  /* Hacky way to not re-init the process across topology computations. Not a permanent solution */
+  /* Indicates whether this BGP process has been initialized. */
   private boolean _initialized = false;
 
   /**
@@ -172,11 +174,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private final Map<String, String> _rtVrfMapping;
 
   /** Mapping of routes to be redistributed. Maps source VRF to a set of routes to process */
-  @Nonnull
-  private Map<String, RibDelta<? extends AnnotatedRoute<AbstractRoute>>> _mainRibRoutesToProcess;
-
-  @Nonnull private BgpDelta<EvpnType5Route> _type5RoutesToSendForEveryone;
-  @Nonnull private Map<EdgeId, BgpDelta<EvpnType5Route>> _type5RoutesToSendPerNeighbor;
+  @Nonnull private Map<String, RibDelta<? extends AnnotatedRoute<AbstractRoute>>> _toRedistribute;
 
   /** Set of edges (sessions) that came up since previous topology update */
   private Set<EdgeId> _edgesWentUp = ImmutableSet.of();
@@ -185,6 +183,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * come up, we can easily send out the updates
    */
   @Nonnull private RibDelta<EvpnType3Route> _localType3Routes = RibDelta.empty();
+
+  private static final Logger LOGGER = LogManager.getLogger(BgpRoutingProcess.class);
 
   /**
    * Create a new BGP process
@@ -204,15 +204,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _process = process;
     _c = configuration;
     _vrfName = vrfName;
-    // TODO: really need to have a read-only RIB interface for safety
     _mainRib = mainRib;
     _topology = topology;
     _prefixTracer = prefixTracer;
 
     // Message queues start out empty
-    _bgpv4IncomingRoutes = ImmutableSortedMap.of();
+    _bgpv4Edges = ImmutableSortedSet.of();
     _evpnType3IncomingRoutes = ImmutableSortedMap.of();
-    _evpnType5IncomingRoutes = ImmutableSortedMap.of();
 
     // Initialize all RIBs
     BgpTieBreaker bestPathTieBreaker =
@@ -226,7 +224,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             bestPathTieBreaker,
             _process.getMultipathEbgp() ? null : 1,
             multiPathMatchMode,
-            false,
+            true,
             clusterListAsIgpCost);
     _ibgpv4Rib =
         new Bgpv4Rib(
@@ -234,7 +232,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             bestPathTieBreaker,
             _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
-            false,
+            true,
             clusterListAsIgpCost);
     _bgpv4Rib =
         new Bgpv4Rib(
@@ -242,18 +240,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             bestPathTieBreaker,
             _process.getMultipathEbgp() || _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
-            false,
+            true,
             clusterListAsIgpCost);
     _bgpv4DeltaBuilder = RibDelta.builder();
 
-    _mainRibRoutesToProcess = new HashMap<>(1);
+    _toRedistribute = new HashMap<>(1);
 
-    _ebgpv4StagingRib =
-        new Bgpv4Rib(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, false, clusterListAsIgpCost);
-    _ibgpv4StagingRib =
-        new Bgpv4Rib(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, false, clusterListAsIgpCost);
     // EVPN Ribs
     _ebgpType3EvpnRib =
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
@@ -261,6 +253,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
     _evpnType3Rib =
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
+    /*
+     TODO: type5 RIBs are currently unused. Correct implementation blocked on having local bgp
+       ribs
+    */
     _ebgpType5EvpnRib =
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
     _ibgpType5EvpnRib =
@@ -271,8 +267,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         new EvpnRib<>(_mainRib, bestPathTieBreaker, null, multiPathMatchMode, clusterListAsIgpCost);
     _evpnInitializationDelta = RibDelta.empty();
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
-    _type5RoutesToSendForEveryone = BgpDelta.empty();
-    _type5RoutesToSendPerNeighbor = new HashMap<>(0);
     assert _rtVrfMapping != null; // Avoid unused warning
   }
 
@@ -310,17 +304,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private void initBgpQueues(BgpTopology bgpTopology) {
     ValueGraph<BgpPeerConfigId, BgpSessionProperties> graph = bgpTopology.getGraph();
     // Create incoming message queues for sessions that exchange IPv4 unicast info
-    _bgpv4IncomingRoutes =
+    _bgpv4Edges =
         getEdgeIdStream(graph, BgpPeerConfig::getIpv4UnicastAddressFamily, Type.IPV4_UNICAST)
-            .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     // Create incoming message queues for sessions that exchange EVPN info
     _evpnType3IncomingRoutes =
         getEdgeIdStream(graph, BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
             .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
-    _evpnType5IncomingRoutes =
-        getEdgeIdStream(graph, BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
-            .collect(toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
-    assert _evpnType3IncomingRoutes.keySet().equals(_evpnType5IncomingRoutes.keySet());
   }
 
   /**
@@ -390,21 +380,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void executeIteration(Map<String, Node> allNodes) {
-    // Reinitialize staging RIBs, delta builders
-    _bgpv4DeltaBuilder = RibDelta.builder();
+    // Reinitialize delta builders
     _evpnDeltaBuilder = RibDelta.builder();
-    _changeSet = RibDelta.builder();
-    BgpTieBreaker bestPathTieBreaker =
-        firstNonNull(_process.getTieBreaker(), BgpTieBreaker.ARRIVAL_ORDER);
-    MultipathEquivalentAsPathMatchMode multiPathMatchMode =
-        firstNonNull(_process.getMultipathEquivalentAsPathMatchMode(), EXACT_PATH);
-    boolean clusterListAsIgpCost = _process.getClusterListAsIgpCost();
-    _ebgpv4StagingRib =
-        new Bgpv4Rib(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, false, clusterListAsIgpCost);
-    _ibgpv4StagingRib =
-        new Bgpv4Rib(
-            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, false, clusterListAsIgpCost);
 
     // TODO: optimize, don't recreate the map each iteration
     NetworkConfigurations nc =
@@ -421,49 +398,27 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       _evpnInitializationDelta = RibDelta.empty();
     }
 
-    // If we have any new edges, send out our RIB state to them.
+    /*
+     If we have any new edges, send out our RIB state to them.
+     EVPN only
+    */
     sendOutRoutesToNewEdges(_edgesWentUp, allNodes, nc);
-    _edgesWentUp = ImmutableSet.of();
 
-    // See computeType5DeltaFromMainRibRoutes for why this madness is needed
-    // If we have main RIB routes to process (from any VRF) and we have EVPN neighbors, then
-    // we make new type 5 routes and send them out
-    // TODO Everything is broken about type 5 routes
-    //    if (!_mainRibRoutesToProcess.isEmpty() && !_evpnType5IncomingRoutes.isEmpty()) {
-    //      for (String vrfName : _mainRibRoutesToProcess.keySet()) {
-    //        computeType5DeltaFromMainRibRoutes(vrfName, _mainRibRoutesToProcess.get(vrfName), nc);
-    //      }
-    //      _mainRibRoutesToProcess = new HashMap<>(1);
-    //    }
-    //    if (!_type5RoutesToSendForEveryone.isEmpty()) {
-    //      sendOutEvpnType5Routes(_type5RoutesToSendForEveryone, nc, allNodes);
-    //    }
-    //    _type5RoutesToSendForEveryone = BgpDelta.empty();
-    //    if (!_type5RoutesToSendPerNeighbor.isEmpty()) {
-    //      _type5RoutesToSendPerNeighbor
-    //          .keySet()
-    //          .forEach(
-    //              edge -> {
-    //                BgpPeerConfigId remoteConfigId = edge.tail();
-    //                BgpSessionProperties session = getSessionProperties(_topology, edge);
-    //                getNeighborBgpProcess(remoteConfigId, allNodes)
-    //                    .enqueueEvpnType5Routes(
-    //                        // Make sure to reverse the edge
-    //                        edge.reverse(),
-    //                        getEvpnTransformedRouteStream(
-    //                            edge, _type5RoutesToSendPerNeighbor.get(edge), nc, allNodes,
-    // session));
-    //              });
-    //      _type5RoutesToSendPerNeighbor = new HashMap<>(0);
-    //    }
     processBgpMessages(nc, allNodes);
+
+    // Clear new edges.
+    _edgesWentUp = ImmutableSet.of();
   }
 
   private void sendOutRoutesToNewEdges(
       Set<EdgeId> edgesWentUp, Map<String, Node> allNodes, NetworkConfigurations nc) {
     if (edgesWentUp.isEmpty()) {
+      // Nothing to do
       return;
     }
+
+    // Send out the state of our BGPv4 RIB to the neighbors
+
     // TODO: _localType3Routes is not enough
     //    Ideally we need to re-send all EVPN routes we have to new neighbors
     edgesWentUp.forEach(
@@ -486,7 +441,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   @Override
   public RibDelta<BgpRoute<?, ?>> getUpdatesForMainRib() {
-    return _changeSet.build();
+    RibDelta<BgpRoute<?, ?>> result = _toMainRib.build();
+    _toMainRib = RibDelta.builder();
+    return result;
   }
 
   @Override
@@ -497,32 +454,26 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Redistribute routes from {@code srcVrfName} into our VRF. */
   public void redistribute(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta, String srcVrfName) {
-    assert mainRibDelta != null; // unused
-    assert srcVrfName != null; // unused
-    assert _mainRibRoutesToProcess != null; // unused
-    // This is neither used nor cleared, so no-op for now.
-    // _mainRibRoutesToProcess.put(srcVrfName, mainRibDelta);
+    assert _toRedistribute.values().stream().allMatch(RibDelta::isEmpty);
+    _toRedistribute.put(srcVrfName, mainRibDelta);
   }
 
   @Override
   public boolean isDirty() {
     return
     // Message queues
-    !_bgpv4IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
-        || !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
-        || !_evpnType5IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
+    !_evpnType3IncomingRoutes.values().stream().allMatch(Queue::isEmpty)
         // Outgoing message deltas. We need to send these to neighbors.
-        || !_ebgpDelta.isEmpty()
-        || !_bgpv4Delta.isEmpty()
-        || !_mainRibBgpv4RouteDelta.isEmpty()
+        // The reason we look at PREV values is because
+        // endOfRound has been called BEFORE the isDirty check and we've already switched over.
+        || !_ebgpv4DeltaPrev.isEmpty()
+        || !_bgpv4DeltaPrev.isEmpty()
+        || _toRedistribute.values().stream().anyMatch(d -> !d.isEmpty())
         // Delta builders
-        || !_bgpv4DeltaBuilder.build().isEmpty()
-        || !_evpnDeltaBuilder.build().isEmpty()
+        || !_bgpv4DeltaBuilder.isEmpty()
+        || !_evpnDeltaBuilder.isEmpty()
         // Initialization state
-        || !_evpnInitializationDelta.isEmpty()
-        // Intermediate state
-        || !_type5RoutesToSendForEveryone.isEmpty()
-        || !_type5RoutesToSendPerNeighbor.isEmpty();
+        || !_evpnInitializationDelta.isEmpty();
   }
 
   /**
@@ -532,27 +483,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param allNodes map of all network nodes
    */
   private void processBgpMessages(NetworkConfigurations nc, Map<String, Node> allNodes) {
+    // Process IPv4 unicast messages
+    processBgpV4UnicastMessages(_topology, nc, allNodes);
+
     // Process EVPN messages and send out updates
     DeltaPair<EvpnType3Route> type3Delta = processEvpnType3Messages(nc, allNodes);
     sendOutEvpnType3Routes(type3Delta._toAdvertise, nc, allNodes);
-    _changeSet.from(
+    _toMainRib.from(
         importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ebgpDelta)));
-    _changeSet.from(
+    _toMainRib.from(
         importRibDelta(_evpnRib, importRibDelta(_evpnType3Rib, type3Delta._toMerge._ibgpDelta)));
-
-    // TODO Type 5 routes currently broken
-
-    //    DeltaPair<EvpnType5Route> type5Delta = processEvpnType5Messages(nc, allNodes);
-    //    sendOutEvpnType5Routes(type5Delta._toAdvertise, nc, allNodes);
-    //    // Merge EVPN routes into EVPN RIB and prepare for merging into main RIB
-    //    _changeSet.from(
-    //        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib,
-    // type5Delta._toMerge._ebgpDelta)));
-    //    _changeSet.from(
-    //        importRibDelta(_evpnRib, importRibDelta(_evpnType5Rib,
-    // type5Delta._toMerge._ibgpDelta)));
-
-    // TODO: migrate v4 route propagation here
   }
 
   /** Initialize the EVPN RIBs based on EVPN address family config */
@@ -591,7 +531,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               } else {
                 // Merge into our sibling VRF corresponding to the VNI
                 BgpRoutingProcess bgpRoutingProcess =
-                    n.getVirtualRouters().get(vniVrf.getName()).getBgpRoutingProcess();
+                    n.getVirtualRouter(vniVrf.getName())
+                        .map(VirtualRouter::getBgpRoutingProcess)
+                        .orElse(null);
                 checkArgument(
                     bgpRoutingProcess != null,
                     "Missing bgp process for vrf %s, node %s",
@@ -603,7 +545,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               }
             });
     _evpnInitializationDelta = initializationBuilder.build();
-    _changeSet.from(_evpnDeltaBuilder.build());
+    _toMainRib.from(_evpnDeltaBuilder.build());
   }
 
   /**
@@ -638,6 +580,431 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return type3RouteBuilder.build();
   }
 
+  /**
+   * Process BGP messages from neighbors, merge them into our own RIBs.
+   *
+   * @param bgpTopology the bgp peering relationships
+   */
+  void processBgpV4UnicastMessages(
+      BgpTopology bgpTopology, NetworkConfigurations nc, Map<String, Node> nodes) {
+    // Keep track of changes to the RIBs using delta builders, keyed by RIB type
+    Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltaBuilders = new IdentityHashMap<>();
+    ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
+    ribDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
+
+    // Process updates from each neighbor
+    for (EdgeId edgeId : _bgpv4Edges) {
+      pullV4UnicastMessages(
+          bgpTopology, nc, nodes, ribDeltaBuilders, edgeId, _edgesWentUp.contains(edgeId));
+    }
+
+    unstage(ribDeltaBuilders);
+  }
+
+  /** Merge ribs, in a specific order, into real ribs */
+  private void unstage(Map<Bgpv4Rib, Builder<Bgpv4Route>> ribDeltaBuilders) {
+    _ebgpv4DeltaCurrent = ribDeltaBuilders.get(_ebgpv4Rib).build();
+    RibDelta<Bgpv4Route> ibgpDelta = ribDeltaBuilders.get(_ibgpv4Rib).build();
+
+    // Note: keep ebgp before ibgp, as ebgp routes are often preferred, so less thrash
+    _bgpv4DeltaBuilder.from(importRibDelta(_bgpv4Rib, _ebgpv4DeltaCurrent));
+    _bgpv4DeltaBuilder.from(importRibDelta(_bgpv4Rib, ibgpDelta));
+    // Finally, prepare the delta we will feed into the main RIB
+    RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
+    LOGGER.debug("Got v4 routes: {}", bgpv4RibDelta);
+    _toMainRib.from(bgpv4RibDelta);
+  }
+
+  /** Pull v4Unicast routes from our neighbors' deltas, merge them into our own RIBs */
+  private void pullV4UnicastMessages(
+      BgpTopology bgpTopology,
+      NetworkConfigurations nc,
+      Map<String, Node> nodes,
+      Map<Bgpv4Rib, Builder<Bgpv4Route>> ribDeltas,
+      EdgeId edgeId,
+      boolean isNewSession) {
+
+    // Setup helper vars
+    BgpPeerConfigId remoteConfigId = edgeId.tail();
+    BgpPeerConfigId ourConfigId = edgeId.head();
+    BgpSessionProperties sessionProperties =
+        getBgpSessionProperties(bgpTopology, new EdgeId(remoteConfigId, ourConfigId));
+    BgpPeerConfig ourBgpConfig = requireNonNull(nc.getBgpPeerConfig(edgeId.head()));
+    assert ourBgpConfig.getIpv4UnicastAddressFamily() != null;
+    // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
+    boolean useRibGroups =
+        ourBgpConfig.getAppliedRibGroup() != null
+            && !ourBgpConfig.getAppliedRibGroup().getImportRibs().isEmpty();
+    Ip remoteIp = sessionProperties.getTailIp();
+
+    Bgpv4Rib targetRib = sessionProperties.isEbgp() ? _ebgpv4Rib : _ibgpv4Rib;
+    Builder<AnnotatedRoute<AbstractRoute>> perNeighborDeltaForRibGroups = RibDelta.builder();
+
+    BgpRoutingProcess neighborProcess = getNeighborBgpProcess(remoteConfigId, nodes);
+    Iterator<RouteAdvertisement<Bgpv4Route>> exportedRoutes =
+        neighborProcess
+            .getOutgoingRoutesForEdge(edgeId.reverse(), nodes, bgpTopology, nc, isNewSession)
+            .iterator();
+
+    // Process all routes from neighbor
+    while (exportedRoutes.hasNext()) {
+      // consume exported routes
+      RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.next();
+      Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
+
+      LOGGER.debug("{} Processing bgpv4 route {}", _c.getHostname(), remoteRoute);
+
+      Bgpv4Route.Builder transformedIncomingRouteBuilder =
+          transformBgpRouteOnImport(
+              remoteRoute,
+              sessionProperties.getHeadAs(),
+              ourBgpConfig
+                  .getIpv4UnicastAddressFamily()
+                  .getAddressFamilyCapabilities()
+                  .getAllowLocalAsIn(),
+              sessionProperties.isEbgp(),
+              _process,
+              sessionProperties.getTailIp(),
+              ourConfigId.getPeerInterface());
+      if (transformedIncomingRouteBuilder == null) {
+        // Route could not be imported for core protocol reasons
+        _prefixTracer.filtered(
+            remoteRoute.getNetwork(),
+            remoteConfigId.getHostname(),
+            remoteIp,
+            remoteConfigId.getVrfName(),
+            null,
+            IN);
+        continue;
+      }
+
+      // Process route through import policy, if one exists
+      String importPolicyName = ourBgpConfig.getIpv4UnicastAddressFamily().getImportPolicy();
+      boolean acceptIncoming = true;
+      // TODO: ensure there is always an import policy
+      if (importPolicyName != null) {
+        RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
+        if (importPolicy != null) {
+          acceptIncoming =
+              importPolicy.processBgpRoute(
+                  remoteRoute, transformedIncomingRouteBuilder, sessionProperties, IN);
+        }
+      }
+      if (!acceptIncoming) {
+        // Route could not be imported due to routing policy
+        _prefixTracer.filtered(
+            remoteRoute.getNetwork(),
+            remoteConfigId.getHostname(),
+            remoteIp,
+            remoteConfigId.getVrfName(),
+            importPolicyName,
+            IN);
+        continue;
+      }
+      Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
+
+      // If new route gets leaked to other VRFs via RibGroup, this VRF should be its
+      AnnotatedRoute<AbstractRoute> annotatedTransformedRoute =
+          annotateRoute(transformedIncomingRoute);
+
+      if (remoteRouteAdvert.isWithdrawn()) {
+        // Note this route was removed
+        ribDeltas.get(targetRib).remove(transformedIncomingRoute, Reason.WITHDRAW);
+        if (useRibGroups) {
+          perNeighborDeltaForRibGroups.remove(annotatedTransformedRoute, Reason.WITHDRAW);
+        }
+      } else {
+        // Merge into staging rib, note delta
+
+        ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
+        if (useRibGroups) {
+          perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
+        }
+        _prefixTracer.installed(
+            transformedIncomingRoute.getNetwork(),
+            remoteConfigId.getHostname(),
+            remoteIp,
+            remoteConfigId.getVrfName(),
+            importPolicyName);
+      }
+    }
+    // Apply rib groups if any
+    if (useRibGroups) {
+      RibGroup rg = ourBgpConfig.getAppliedRibGroup();
+      rg.getImportRibs()
+          .forEach(
+              rib ->
+                  nodes
+                      .get(_c.getHostname())
+                      .getVirtualRouterOrThrow(rib.getVrfName())
+                      .enqueueCrossVrfRoutes(
+                          new CrossVrfEdgeId(_vrfName, rib.getRibName()),
+                          perNeighborDeltaForRibGroups.build().getActions(),
+                          rg.getImportPolicy()));
+    }
+  }
+
+  private Stream<RouteAdvertisement<Bgpv4Route>> getOutgoingRoutesForEdge(
+      EdgeId edge,
+      Map<String, Node> allNodes,
+      BgpTopology bgpTopology,
+      NetworkConfigurations networkConfigurations,
+      boolean isNewSession) {
+    BgpSessionProperties session = BgpRoutingProcess.getBgpSessionProperties(bgpTopology, edge);
+
+    BgpPeerConfigId remoteConfigId = edge.tail();
+    BgpPeerConfigId ourConfigId = edge.head();
+    BgpPeerConfig ourConfig = networkConfigurations.getBgpPeerConfig(edge.head());
+    BgpPeerConfig remoteConfig = networkConfigurations.getBgpPeerConfig(edge.tail());
+
+    BgpRoutingProcess remoteBgpRoutingProcess = getNeighborBgpProcess(remoteConfigId, allNodes);
+
+    // Queue mainRib updates that were not introduced by BGP process (i.e., IGP routes)
+    // Also, do not double-export main RIB routes: filter out bgp routes.
+    Stream<RouteAdvertisement<Bgpv4Route>> mainRibExports =
+        (isNewSession
+                // Look at the entire main RIB if this session is new.
+                ? _mainRib.getTypedRoutes().stream().map(RouteAdvertisement::adding)
+                : _toRedistribute.values().stream().flatMap(RibDelta::getActions))
+            .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
+            .map(
+                adv -> {
+                  _prefixTracer.originated(adv.getRoute().getNetwork());
+                  Bgpv4Route bgpRoute =
+                      exportNonBgpRouteToBgp(adv.getRoute(), remoteConfigId, ourConfig, session);
+                  if (bgpRoute == null) {
+                    return null;
+                  }
+                  return RouteAdvertisement.<Bgpv4Route>builder()
+                      .setReason(adv.getReason())
+                      .setRoute(bgpRoute)
+                      .build();
+                })
+            .filter(Objects::nonNull);
+
+    // Needs to retain annotations since export policy will be run on routes from resulting delta.
+    Builder<AnnotatedRoute<Bgpv4Route>> bgpRibExports = RibDelta.builder();
+    /*
+     * By default only best-path routes from the BGP RIB that are **also installed in the main RIB**
+     * will be advertised to our neighbors.
+     *
+     * However, there are additional knobs that control re-advertisement behavior:
+     *
+     * 1. Advertise external: advertise best-path eBGP routes to iBGP peers regardless of whether
+     *    they are global BGP best-paths.
+     * 2. Advertise inactive: advertise best-path BGP routes to neighboring peers even if
+     *    they are not active in the main RIB.
+     */
+    if (session.getAdvertiseExternal()) {
+      if (isNewSession) {
+        bgpRibExports.from(
+            _ebgpv4Rib.getTypedRoutes().stream()
+                .map(this::annotateRoute)
+                .map(RouteAdvertisement::new));
+      } else {
+        importDeltaToBuilder(bgpRibExports, _ebgpv4DeltaPrev, _vrfName);
+      }
+    }
+
+    if (session.getAdvertiseInactive()) {
+      if (isNewSession) {
+        bgpRibExports.from(
+            _bgpv4Rib.getTypedRoutes().stream()
+                .map(this::annotateRoute)
+                .map(RouteAdvertisement::new));
+      } else {
+        importDeltaToBuilder(bgpRibExports, _bgpv4DeltaPrev, _vrfName);
+      }
+    } else {
+      // Default behavior
+      if (isNewSession) {
+        bgpRibExports.from(
+            // note: only best paths are advertised here
+            _bgpv4Rib.getBestPathRoutes().stream()
+                .map(this::annotateRoute)
+                .map(RouteAdvertisement::new));
+      } else {
+        bgpRibExports.from(
+            _bgpv4DeltaPrev
+                .getActions()
+                .map(
+                    r ->
+                        RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
+                            .setReason(r.getReason())
+                            .setRoute(annotateRoute(r.getRoute()))
+                            .build())
+                .filter(r -> _mainRib.containsRoute(r.getRoute()) || r.isWithdrawn()));
+      }
+    }
+
+    /*
+    * TODO: https://github.com/batfish/batfish/issues/704
+       Add path is broken for all intents and purposes.
+       Need support for additional-paths based on https://tools.ietf.org/html/rfc7911
+       AND the combination of vendor-specific knobs, none of which are currently supported.
+    */
+    if (session.getAdditionalPaths()) {
+      importDeltaToBuilder(bgpRibExports, _bgpv4DeltaPrev, _vrfName);
+    }
+
+    /*
+     * Export neighbor-specific generated routes.
+     * These skip peer export policy, so do not merge them into bgpRoutesToExport
+     */
+    assert ourConfig != null;
+    assert remoteConfig != null;
+    Stream<RouteAdvertisement<Bgpv4Route>> neighborGeneratedRoutes =
+        ourConfig.getGeneratedRoutes().stream()
+            .map(
+                r -> {
+                  // Activate route and convert to BGP if activated
+                  Bgpv4Route bgpv4Route =
+                      processNeighborSpecificGeneratedRoute(r, session.getHeadIp());
+                  if (bgpv4Route == null) {
+                    // Route was not activated
+                    return Optional.<Bgpv4Route>empty();
+                  }
+                  // Run pre-export transform, export policy, & post-export transform
+                  return transformBgpRouteOnExport(
+                      bgpv4Route,
+                      ourConfigId,
+                      remoteConfigId,
+                      ourConfig,
+                      remoteConfig,
+                      remoteBgpRoutingProcess,
+                      session,
+                      Type.IPV4_UNICAST);
+                })
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(RouteAdvertisement::new);
+
+    RibDelta<AnnotatedRoute<Bgpv4Route>> bgpRoutesToExport = bgpRibExports.build();
+
+    LOGGER.debug(
+        "{} exporting routes BEFORE export policy: {}", _c.getHostname(), bgpRoutesToExport);
+    if (LOGGER.isDebugEnabled()) {
+      ImmutableList<RouteAdvertisement<Bgpv4Route>> routeAdvertisements =
+          neighborGeneratedRoutes.collect(ImmutableList.toImmutableList());
+      LOGGER.debug(
+          "{} exporting routes AFTER routing policy: {}", _c.getHostname(), routeAdvertisements);
+      neighborGeneratedRoutes = routeAdvertisements.stream();
+    }
+
+    // Compute a set of advertisements that can be queued on remote VR
+    Stream<RouteAdvertisement<Bgpv4Route>> advertisementStream =
+        Stream.concat(
+            bgpRoutesToExport
+                .getActions()
+                .map(
+                    adv -> {
+                      Optional<Bgpv4Route> transformedRoute =
+                          transformBgpRouteOnExport(
+                              adv.getRoute().getRoute(),
+                              ourConfigId,
+                              remoteConfigId,
+                              ourConfig,
+                              remoteConfig,
+                              remoteBgpRoutingProcess,
+                              session,
+                              Type.IPV4_UNICAST);
+                      // REPLACE does not make sense across routers, update with WITHDRAW
+                      return transformedRoute
+                          .map(
+                              bgpv4Route ->
+                                  RouteAdvertisement.<Bgpv4Route>builder()
+                                      .setReason(
+                                          adv.getReason() == Reason.REPLACE
+                                              ? Reason.WITHDRAW
+                                              : adv.getReason())
+                                      .setRoute(bgpv4Route)
+                                      .build())
+                          .orElse(null);
+                    })
+                .filter(Objects::nonNull)
+                .distinct(),
+            mainRibExports);
+
+    if (LOGGER.isDebugEnabled()) {
+      ImmutableList<RouteAdvertisement<Bgpv4Route>> routeAdvertisements =
+          advertisementStream.collect(ImmutableList.toImmutableList());
+      LOGGER.debug(
+          "{} exporting routes AFTER routing policy: {}", _c.getHostname(), routeAdvertisements);
+      advertisementStream = routeAdvertisements.stream();
+    }
+
+    return Stream.concat(advertisementStream, neighborGeneratedRoutes);
+  }
+
+  /**
+   * Check whether given {@link GeneratedRoute} should be sent to a BGP neighbor. This checks
+   * activation conditions for the generated route, and converts it to a {@link Bgpv4Route}. No
+   * export policy computation is performed.
+   *
+   * @param generatedRoute route to process
+   * @return a new {@link Bgpv4Route} if the {@code generatedRoute} was activated.
+   */
+  @Nullable
+  private Bgpv4Route processNeighborSpecificGeneratedRoute(
+      @Nonnull GeneratedRoute generatedRoute, Ip nextHopIp) {
+    String policyName = generatedRoute.getGenerationPolicy();
+    RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
+    @Nullable
+    RoutingPolicy attrPolicy =
+        generatedRoute.getAttributePolicy() != null
+            ? _c.getRoutingPolicies().get(generatedRoute.getAttributePolicy())
+            : null;
+    GeneratedRoute.Builder builder =
+        GeneratedRouteHelper.activateGeneratedRoute(
+            generatedRoute, policy, _mainRib.getTypedRoutes());
+    return builder != null
+        ? BgpProtocolHelper.convertGeneratedRouteToBgp(
+            builder.build(), attrPolicy, _process.getRouterId(), nextHopIp, false)
+        : null;
+  }
+
+  /**
+   * This function creates BGP routes from generated routes that go into the BGP RIB, but cannot be
+   * imported into the main RIB. The purpose of these routes is to prevent the local router from
+   * accepting advertisements less desirable than the locally generated ones for a given network.
+   */
+  void initBgpAggregateRoutes(Collection<AbstractRoute> generatedRoutes) {
+    // first import aggregates
+    switch (_c.getConfigurationFormat()) {
+      case FLAT_JUNIPER:
+      case JUNIPER:
+      case JUNIPER_SWITCH:
+        return;
+        // $CASES-OMITTED$
+      default:
+        break;
+    }
+    for (AbstractRoute grAbstract : generatedRoutes) {
+      GeneratedRoute gr = (GeneratedRoute) grAbstract;
+
+      Bgpv4Route br =
+          BgpProtocolHelper.convertGeneratedRouteToBgp(
+              gr,
+              Optional.ofNullable(gr.getAttributePolicy())
+                  .map(p -> _c.getRoutingPolicies().get(p))
+                  .orElse(null),
+              _process.getRouterId(),
+              Ip.ZERO,
+              // Prevent route from being merged into the main RIB by marking it non-routing
+              true);
+      /* TODO: tests for this */
+      RibDelta<Bgpv4Route> d1 = _bgpv4Rib.mergeRouteGetDelta(br);
+      _bgpv4DeltaBuilder.from(d1);
+      if (!d1.isEmpty()) {
+        _bgpAggDeps.addRouteDependency(br, gr);
+      }
+    }
+  }
+
+  private <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(@Nonnull R route) {
+    return new AnnotatedRoute<>(route, _vrfName);
+  }
+
   /** Process incoming EVPN type 3 messages, across all neighbors */
   private DeltaPair<EvpnType3Route> processEvpnType3Messages(
       NetworkConfigurations nc, Map<String, Node> allNodes) {
@@ -649,21 +1016,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       deltaPair =
           deltaPair.union(
               processEvpnMessagesFromNeighbor(edge, queue, nc, allNodes, EvpnType3Route.class));
-    }
-    return deltaPair;
-  }
-
-  /** Process incoming EVPN type 5 messages, across all neighbors */
-  private DeltaPair<EvpnType5Route> processEvpnType5Messages(
-      NetworkConfigurations nc, Map<String, Node> allNodes) {
-    DeltaPair<EvpnType5Route> deltaPair = DeltaPair.empty();
-    for (Entry<EdgeId, Queue<RouteAdvertisement<EvpnType5Route>>> entry :
-        _evpnType5IncomingRoutes.entrySet()) {
-      EdgeId edge = entry.getKey();
-      Queue<RouteAdvertisement<EvpnType5Route>> queue = entry.getValue();
-      deltaPair =
-          deltaPair.union(
-              processEvpnMessagesFromNeighbor(edge, queue, nc, allNodes, EvpnType5Route.class));
     }
     return deltaPair;
   }
@@ -698,6 +1050,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   .getAllowLocalAsIn(),
               sessionProperties.isEbgp(),
               _process,
+              sessionProperties.getTailIp(),
               ourConfigId.getPeerInterface());
       if (transformedBuilder == null) {
         continue;
@@ -776,23 +1129,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               BgpSessionProperties session = getSessionProperties(_topology, edge);
               getNeighborBgpProcess(remoteConfigId, allNodes)
                   .enqueueEvpnType3Routes(
-                      // Make sure to reverse the edge
-                      edge.reverse(),
-                      getEvpnTransformedRouteStream(edge, evpnDelta, nc, allNodes, session));
-            });
-  }
-
-  /** Send out EVPN type 5 routes to our neighbors */
-  private void sendOutEvpnType5Routes(
-      BgpDelta<EvpnType5Route> evpnDelta, NetworkConfigurations nc, Map<String, Node> allNodes) {
-    _evpnType5IncomingRoutes
-        .keySet()
-        .forEach(
-            edge -> {
-              BgpPeerConfigId remoteConfigId = edge.tail();
-              BgpSessionProperties session = getSessionProperties(_topology, edge);
-              getNeighborBgpProcess(remoteConfigId, allNodes)
-                  .enqueueEvpnType5Routes(
                       // Make sure to reverse the edge
                       edge.reverse(),
                       getEvpnTransformedRouteStream(edge, evpnDelta, nc, allNodes, session));
@@ -959,14 +1295,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Bgpv4Route.Builder transformedOutgoingRouteBuilder =
         exportCandidate.getRoute() instanceof GeneratedRoute
             ? BgpProtocolHelper.convertGeneratedRouteToBgp(
-                    (GeneratedRoute) exportCandidate.getRoute(),
-                    Optional.ofNullable(
-                            ((GeneratedRoute) exportCandidate.getRoute()).getAttributePolicy())
-                        .map(p -> _c.getRoutingPolicies().get(p))
-                        .orElse(null),
-                    _process.getRouterId(),
-                    sessionProperties.getHeadIp(),
-                    false)
+                (GeneratedRoute) exportCandidate.getRoute(),
+                Optional.ofNullable(
+                        ((GeneratedRoute) exportCandidate.getRoute()).getAttributePolicy())
+                    .map(p -> _c.getRoutingPolicies().get(p))
+                    .orElse(null),
+                _process.getRouterId(),
+                sessionProperties.getHeadIp(),
+                false)
                 .toBuilder()
             : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
                 exportCandidate,
@@ -1017,6 +1353,210 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
+   * Initializes BGP RIBs prior to any dataplane iterations based on the external BGP advertisements
+   * coming into the network.
+   *
+   * <p>Note: assumes the external advertisements are pre-transformation and will run import policy
+   * on them, if present.
+   *
+   * @param externalAdverts a set of external BGP advertisements
+   * @param ipVrfOwners mapping of IPs to their owners in our network
+   */
+  void processExternalBgpAdvertisements(
+      Set<BgpAdvertisement> externalAdverts, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+
+    // Keep track of changes to the RIBs using delta builders, keyed by RIB type
+    Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltas = new IdentityHashMap<>();
+    ribDeltas.put(_ebgpv4Rib, RibDelta.builder());
+    ribDeltas.put(_ibgpv4Rib, RibDelta.builder());
+
+    Bgpv4Route.Builder outgoingRouteBuilder = new Bgpv4Route.Builder();
+    // Process each BGP advertisement
+    for (BgpAdvertisement advert : externalAdverts) {
+
+      // If it is not for us, ignore it
+      if (!advert.getDstNode().equals(_c.getHostname())) {
+        continue;
+      }
+
+      // If we don't own the IP for this advertisement, ignore it
+      Ip dstIp = advert.getDstIp();
+      Map<String, Set<String>> dstIpOwners = ipVrfOwners.get(dstIp);
+      String hostname = _c.getHostname();
+      if (dstIpOwners == null || !dstIpOwners.containsKey(hostname)) {
+        continue;
+      }
+
+      Ip srcIp = advert.getSrcIp();
+      // TODO: support passive and unnumbered bgp connections
+      Prefix srcPrefix = srcIp.toPrefix();
+      BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcPrefix);
+      if (neighbor == null) {
+        continue;
+      }
+
+      // Build a route based on the type of this advertisement
+      BgpAdvertisementType type = advert.getType();
+      boolean ebgp;
+      boolean received;
+      switch (type) {
+        case EBGP_RECEIVED:
+          ebgp = true;
+          received = true;
+          break;
+
+        case EBGP_SENT:
+          ebgp = true;
+          received = false;
+          break;
+
+        case IBGP_RECEIVED:
+          ebgp = false;
+          received = true;
+          break;
+
+        case IBGP_SENT:
+          ebgp = false;
+          received = false;
+          break;
+
+        case EBGP_ORIGINATED:
+        case IBGP_ORIGINATED:
+        default:
+          throw new BatfishException("Missing or invalid bgp advertisement type");
+      }
+
+      Bgpv4Rib targetRib = ebgp ? _ebgpv4Rib : _ibgpv4Rib;
+      RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+      int admin = _process.getAdminCost(targetProtocol);
+
+      if (received) {
+        Bgpv4Route.Builder builder = new Bgpv4Route.Builder();
+        builder.setAdmin(admin);
+        builder.setAsPath(advert.getAsPath());
+        builder.setClusterList(advert.getClusterList());
+        builder.setCommunities(advert.getCommunities());
+        builder.setLocalPreference(advert.getLocalPreference());
+        builder.setMetric(advert.getMed());
+        builder.setNetwork(advert.getNetwork());
+        builder.setNextHopIp(advert.getNextHopIp());
+        builder.setOriginatorIp(advert.getOriginatorIp());
+        builder.setOriginType(advert.getOriginType());
+        builder.setProtocol(targetProtocol);
+        // TODO: support external route reflector clients
+        builder.setReceivedFromIp(advert.getSrcIp());
+        builder.setReceivedFromRouteReflectorClient(false);
+        builder.setSrcProtocol(advert.getSrcProtocol());
+        // TODO: possibly support setting tag
+        builder.setWeight(advert.getWeight());
+        Bgpv4Route route = builder.build();
+        ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route));
+      } else {
+        long localPreference;
+        if (ebgp) {
+          localPreference = Bgpv4Route.DEFAULT_LOCAL_PREFERENCE;
+        } else {
+          localPreference = advert.getLocalPreference();
+        }
+        outgoingRouteBuilder.setAsPath(advert.getAsPath());
+        outgoingRouteBuilder.setCommunities(ImmutableSortedSet.copyOf(advert.getCommunities()));
+        outgoingRouteBuilder.setLocalPreference(localPreference);
+        outgoingRouteBuilder.setMetric(advert.getMed());
+        outgoingRouteBuilder.setNetwork(advert.getNetwork());
+        outgoingRouteBuilder.setNextHopIp(advert.getNextHopIp());
+        outgoingRouteBuilder.setOriginatorIp(advert.getOriginatorIp());
+        outgoingRouteBuilder.setOriginType(advert.getOriginType());
+        outgoingRouteBuilder.setProtocol(targetProtocol);
+        outgoingRouteBuilder.setReceivedFromIp(advert.getSrcIp());
+        // TODO:
+        // outgoingRouteBuilder.setReceivedFromRouteReflectorClient(...);
+        outgoingRouteBuilder.setSrcProtocol(advert.getSrcProtocol());
+        Bgpv4Route transformedOutgoingRoute = outgoingRouteBuilder.build();
+        Bgpv4Route.Builder transformedIncomingRouteBuilder = new Bgpv4Route.Builder();
+
+        // Incoming originatorIp
+        transformedIncomingRouteBuilder.setOriginatorIp(transformedOutgoingRoute.getOriginatorIp());
+
+        // Incoming receivedFromIp
+        transformedIncomingRouteBuilder.setReceivedFromIp(
+            transformedOutgoingRoute.getReceivedFromIp());
+
+        // Incoming clusterList
+        transformedIncomingRouteBuilder.addClusterList(transformedOutgoingRoute.getClusterList());
+
+        // Incoming receivedFromRouteReflectorClient
+        transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
+            transformedOutgoingRoute.getReceivedFromRouteReflectorClient());
+
+        // Incoming asPath
+        transformedIncomingRouteBuilder.setAsPath(transformedOutgoingRoute.getAsPath());
+
+        // Incoming communities
+        transformedIncomingRouteBuilder.addCommunities(
+            transformedOutgoingRoute.getCommunities().getCommunities());
+
+        // Incoming protocol
+        transformedIncomingRouteBuilder.setProtocol(targetProtocol);
+
+        // Incoming network
+        transformedIncomingRouteBuilder.setNetwork(transformedOutgoingRoute.getNetwork());
+
+        // Incoming nextHopIp
+        transformedIncomingRouteBuilder.setNextHopIp(transformedOutgoingRoute.getNextHopIp());
+
+        // Incoming originType
+        transformedIncomingRouteBuilder.setOriginType(transformedOutgoingRoute.getOriginType());
+
+        // Incoming localPreference
+        transformedIncomingRouteBuilder.setLocalPreference(
+            transformedOutgoingRoute.getLocalPreference());
+
+        // Incoming admin
+        transformedIncomingRouteBuilder.setAdmin(admin);
+
+        // Incoming metric
+        transformedIncomingRouteBuilder.setMetric(transformedOutgoingRoute.getMetric());
+
+        // Incoming srcProtocol
+        transformedIncomingRouteBuilder.setSrcProtocol(targetProtocol);
+        String importPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
+        // TODO: ensure there is always an import policy
+
+        if (ebgp
+            && transformedOutgoingRoute.getAsPath().containsAs(neighbor.getLocalAs())
+            && !neighbor
+                .getIpv4UnicastAddressFamily()
+                .getAddressFamilyCapabilities()
+                .getAllowLocalAsIn()) {
+          // skip routes containing peer's AS unless
+          // disable-peer-as-check (getAllowRemoteAsOut) is set
+          continue;
+        }
+
+        /*
+         * CREATE INCOMING ROUTE
+         */
+        boolean acceptIncoming = true;
+        if (importPolicyName != null) {
+          RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
+          if (importPolicy != null) {
+            // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
+            acceptIncoming =
+                importPolicy.process(transformedOutgoingRoute, transformedIncomingRouteBuilder, IN);
+          }
+        }
+        if (acceptIncoming) {
+          Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
+          ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
+        }
+      }
+    }
+
+    // Propagate received routes through all the RIBs
+    unstage(ribDeltas);
+  }
+
+  /**
    * Process EVPN routes that were received on a session in a different VRF, but must be merged into
    * our VRF
    */
@@ -1034,33 +1574,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       delta = rib.mergeRouteGetDelta(routeAdvertisement.getRoute());
     }
     // Queue up the routes to be merged into our main RIB
-    _changeSet.from(importRibDelta(_evpnRib, delta));
+    _toMainRib.from(importRibDelta(_evpnRib, delta));
     return delta;
-  }
-
-  /**
-   * Convert a BGP v4 route to a EVPN type 5 route. Resets most original attributes of the route,
-   * since
-   */
-  private static EvpnType5Route toEvpnType5Route(
-      Bgpv4Route route, RouteDistinguisher rd, ExtendedCommunity rt) {
-    return EvpnType5Route.builder()
-        .setNetwork(route.getNetwork())
-        .setAdmin(route.getAdministrativeCost())
-        // Intentionally skip AS-path and communities -- we are generating a new route
-        .addCommunity(rt) // add route target
-        .setLocalPreference(route.getLocalPreference())
-        .setMetric(route.getMetric())
-        .setNextHopInterface(route.getNextHopInterface())
-        .setNextHopIp(route.getNextHopIp())
-        .setOriginatorIp(route.getNextHopIp())
-        .setOriginType(route.getOriginType())
-        .setProtocol(route.getProtocol())
-        .setReceivedFromIp(route.getReceivedFromIp())
-        .setReceivedFromRouteReflectorClient(route.getReceivedFromRouteReflectorClient())
-        .setRouteDistinguisher(rd)
-        .setSrcProtocol(route.getSrcProtocol())
-        .build();
   }
 
   @Nonnull
@@ -1078,20 +1593,23 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _bgpv4Rib.getTypedRoutes(),
             _evpnRib.getTypedRoutes(),
             // Outgoing RIB deltas
-            _ebgpDelta,
-            _bgpv4Delta,
-            _mainRibBgpv4RouteDelta,
+            // The reason we look at PREV values is because
+            // endOfRound has been called BEFORE the isDirty check and we've already switched over.
+            _ebgpv4DeltaPrev,
+            _bgpv4DeltaPrev,
             // Message queues
-            _bgpv4IncomingRoutes,
             _evpnType3IncomingRoutes,
-            _evpnType5IncomingRoutes,
             // Delta builders
             _bgpv4DeltaBuilder.build(),
-            _evpnDeltaBuilder.build(),
-            // intermediate state
-            _type5RoutesToSendForEveryone,
-            _type5RoutesToSendPerNeighbor)
+            _evpnDeltaBuilder.build())
         .collect(toOrderedHashCode());
+  }
+
+  public void endOfRound() {
+    _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
+    _bgpv4DeltaBuilder = RibDelta.builder();
+    _ebgpv4DeltaPrev = _ebgpv4DeltaCurrent;
+    _toRedistribute = new HashMap<>();
   }
 
   /**
@@ -1105,27 +1623,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         process.getInterfaceNeighbors().values().stream());
   }
 
-  /**
-   * Message passing method between BGP processes. Take a collection of BGP {@link
-   * RouteAdvertisement}s and puts them onto a local queue corresponding to the session between
-   * given neighbors.
-   */
-  void enqueueBgpv4Routes(
-      @Nonnull EdgeId edgeId, @Nonnull Collection<RouteAdvertisement<Bgpv4Route>> routes) {
-    Queue<RouteAdvertisement<Bgpv4Route>> q = _bgpv4IncomingRoutes.get(edgeId);
-    assert q != null; // Invariant of the session being up
-    q.addAll(routes);
-  }
-
-  /**
-   * Message passing method between BGP processes. Take a stream of BGP {@link RouteAdvertisement}s
-   * and puts them onto a local queue corresponding to the session between given neighbors.
-   */
-  void enqueueBgpMessages(
-      @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<Bgpv4Route>> routes) {
-    Queue<RouteAdvertisement<Bgpv4Route>> q = _bgpv4IncomingRoutes.get(edgeId);
-    assert q != null; // Invariant of the session being up
-    routes.forEach(q::add);
+  static BgpSessionProperties getBgpSessionProperties(BgpTopology bgpTopology, EdgeId edge) {
+    // BGP topology edge guaranteed to exist since the session is established
+    Optional<BgpSessionProperties> session =
+        bgpTopology.getGraph().edgeValue(edge.tail(), edge.head());
+    return session.orElseThrow(
+        () -> new IllegalArgumentException(String.format("No BGP edge %s in BGP topology", edge)));
   }
 
   @Nonnull
@@ -1150,18 +1653,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     routes.forEach(q::add);
   }
 
-  /**
-   * Message passing method between BGP processes. Take a collection of BGP {@link
-   * RouteAdvertisement}s and puts them onto a local queue corresponding to the session between
-   * given neighbors.
-   */
-  private void enqueueEvpnType5Routes(
-      @Nonnull EdgeId edgeId, @Nonnull Stream<RouteAdvertisement<EvpnType5Route>> routes) {
-    Queue<RouteAdvertisement<EvpnType5Route>> q = _evpnType5IncomingRoutes.get(edgeId);
-    assert q != null; // Invariant of the session being up
-    routes.forEach(q::add);
-  }
-
   /** Return a BGP routing process for a given {@link BgpPeerConfigId} */
   @Nonnull
   private static BgpRoutingProcess getNeighborBgpProcess(
@@ -1169,8 +1660,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     BgpRoutingProcess proc =
         allNodes
             .get(id.getHostname())
-            .getVirtualRouters()
-            .get(id.getVrfName())
+            .getVirtualRouterOrThrow(id.getVrfName())
             .getBgpRoutingProcess();
     assert proc != null; // Otherwise our computation is really wrong
     return proc;
@@ -1180,9 +1670,25 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   private BgpRoutingProcess getVrfProcess(String vrf, Map<String, Node> allNodes) {
     BgpRoutingProcess proc =
-        allNodes.get(_c.getHostname()).getVirtualRouters().get(vrf).getBgpRoutingProcess();
+        allNodes.get(_c.getHostname()).getVirtualRouterOrThrow(vrf).getBgpRoutingProcess();
     assert proc != null;
     return proc;
+  }
+
+  /** Notifies the process an aggregate has been removed */
+  void removeAggregate(AbstractRoute route) {
+    // TODO: this is probably busted because it doesn't check e/iBGP ribs.
+    _bgpv4DeltaBuilder.from(_bgpAggDeps.deleteRoute(route, _bgpv4Rib));
+  }
+
+  /** Return a set of all bgpv4 routes */
+  public Set<Bgpv4Route> getV4Routes() {
+    return _bgpv4Rib.getTypedRoutes();
+  }
+
+  /** Return a set of all bgpv4 bestpath routes */
+  public Set<Bgpv4Route> getBestPathRoutes() {
+    return _bgpv4Rib.getBestPathRoutes();
   }
 
   /** Container for eBGP+iBGP RIB deltas */

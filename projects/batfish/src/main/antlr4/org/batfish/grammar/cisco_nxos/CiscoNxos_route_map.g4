@@ -184,6 +184,7 @@ rm_set
     | rms_metric_type
     | rms_origin
     | rms_tag
+    | rms_weight
   )
 ;
 
@@ -268,7 +269,7 @@ rms_local_preference
 
 rms_metric
 :
-  METRIC metric = uint32 NEWLINE
+  METRIC metric = uint32 (delay = uint32 reliability = uint8 load = uint8 mtu = uint32)? NEWLINE
 ;
 
 rms_metric_type
@@ -295,6 +296,11 @@ rms_origin
 rms_tag
 :
   TAG tag = uint32 NEWLINE
+;
+
+rms_weight
+:
+  WEIGHT weight = uint16 NEWLINE
 ;
 
 route_map_pbr_statistics

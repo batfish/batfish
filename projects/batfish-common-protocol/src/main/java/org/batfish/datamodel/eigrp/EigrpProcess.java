@@ -26,24 +26,32 @@ public final class EigrpProcess implements Serializable {
   private static final String PROP_MODE = "eigrpMode";
   private static final String PROP_NEIGHBORS = "neighbors";
   private static final String PROP_ROUTER_ID = "routerId";
+  private static final String PROP_INTERNAL_ADMIN_COST = "internalAdminCost";
+  private static final String PROP_EXTERNAL_ADMIN_COST = "externalAdminCost";
 
   private final long _asn;
-  @Nullable private final String _exportPolicy;
+  @Nullable private final String _redistributionPolicy;
   @Nonnull private final EigrpProcessMode _mode;
   @Nonnull private SortedMap<String, EigrpNeighborConfig> _neighbors;
   @Nonnull private final Ip _routerId;
+  private final int _internalAdminCost;
+  private final int _externalAdminCost;
 
   private EigrpProcess(
       long asn,
       @Nullable String exportPolicy,
       EigrpProcessMode mode,
       Ip routerId,
-      Map<String, EigrpNeighborConfig> neighbors) {
+      Map<String, EigrpNeighborConfig> neighbors,
+      int internalAdminCost,
+      int externalAdminCost) {
     _asn = asn;
-    _exportPolicy = exportPolicy;
+    _redistributionPolicy = exportPolicy;
     _mode = mode;
     _neighbors = ImmutableSortedMap.copyOf(neighbors);
     _routerId = routerId;
+    _internalAdminCost = internalAdminCost;
+    _externalAdminCost = externalAdminCost;
   }
 
   @JsonCreator
@@ -52,12 +60,22 @@ public final class EigrpProcess implements Serializable {
       @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
       @Nullable @JsonProperty(PROP_MODE) EigrpProcessMode mode,
       @Nullable @JsonProperty(PROP_NEIGHBORS) Map<String, EigrpNeighborConfig> neighbors,
-      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId) {
+      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
+      @Nullable @JsonProperty(PROP_INTERNAL_ADMIN_COST) Integer internalAdminCost,
+      @Nullable @JsonProperty(PROP_EXTERNAL_ADMIN_COST) Integer externalAdminCost) {
     checkArgument(asn != null, "Missing %s", PROP_ASN);
     checkArgument(mode != null, "Missing %s", PROP_MODE);
     checkArgument(routerId != null, "Missing %s", PROP_ROUTER_ID);
+    checkArgument(internalAdminCost != null, "Missing %s", PROP_INTERNAL_ADMIN_COST);
+    checkArgument(externalAdminCost != null, "Missing %s", PROP_EXTERNAL_ADMIN_COST);
     return new EigrpProcess(
-        asn, exportPolicy, mode, routerId, firstNonNull(neighbors, ImmutableMap.of()));
+        asn,
+        exportPolicy,
+        mode,
+        routerId,
+        firstNonNull(neighbors, ImmutableMap.of()),
+        internalAdminCost,
+        externalAdminCost);
   }
 
   public static Builder builder() {
@@ -76,8 +94,8 @@ public final class EigrpProcess implements Serializable {
    */
   @Nullable
   @JsonProperty(PROP_EXPORT_POLICY)
-  public String getExportPolicy() {
-    return _exportPolicy;
+  public String getRedistributionPolicy() {
+    return _redistributionPolicy;
   }
 
   /** @return All EIGRP neighbors in this process */
@@ -99,6 +117,14 @@ public final class EigrpProcess implements Serializable {
   @JsonProperty(PROP_MODE)
   public EigrpProcessMode getMode() {
     return _mode;
+  }
+
+  public int getInternalAdminCost() {
+    return _internalAdminCost;
+  }
+
+  public int getExternalAdminCost() {
+    return _externalAdminCost;
   }
 
   /** Add an {@link EigrpNeighborConfig} to this EIGRP process */
@@ -133,15 +159,24 @@ public final class EigrpProcess implements Serializable {
     }
     EigrpProcess that = (EigrpProcess) o;
     return _asn == that._asn
-        && Objects.equals(_exportPolicy, that._exportPolicy)
+        && Objects.equals(_redistributionPolicy, that._redistributionPolicy)
         && _mode == that._mode
         && _neighbors == that._neighbors
-        && _routerId.equals(that._routerId);
+        && _routerId.equals(that._routerId)
+        && _internalAdminCost == that._internalAdminCost
+        && _externalAdminCost == that._externalAdminCost;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_asn, _exportPolicy, _mode, _routerId, _neighbors);
+    return Objects.hash(
+        _asn,
+        _redistributionPolicy,
+        _mode,
+        _routerId,
+        _neighbors,
+        _internalAdminCost,
+        _externalAdminCost);
   }
 
   public static class Builder {
@@ -150,6 +185,9 @@ public final class EigrpProcess implements Serializable {
     @Nullable private EigrpProcessMode _mode;
     @Nullable private Map<String, EigrpNeighborConfig> _neighbors;
     @Nullable private Ip _routerId;
+    // The defaults are consistent across cisco variants
+    private int _internalAdminCost = 90;
+    private int _externalAdminCost = 170;
 
     private Builder() {}
 
@@ -159,7 +197,13 @@ public final class EigrpProcess implements Serializable {
       checkArgument(_mode != null, "Missing %s", PROP_MODE);
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
       return new EigrpProcess(
-          _asn, _exportPolicy, _mode, _routerId, firstNonNull(_neighbors, ImmutableMap.of()));
+          _asn,
+          _exportPolicy,
+          _mode,
+          _routerId,
+          firstNonNull(_neighbors, ImmutableMap.of()),
+          _internalAdminCost,
+          _externalAdminCost);
     }
 
     @Nonnull
@@ -169,7 +213,7 @@ public final class EigrpProcess implements Serializable {
     }
 
     @Nonnull
-    public Builder setExportPolicy(@Nullable String exportPolicy) {
+    public Builder setRedistributionPolicy(@Nullable String exportPolicy) {
       _exportPolicy = exportPolicy;
       return this;
     }
@@ -188,6 +232,16 @@ public final class EigrpProcess implements Serializable {
     @Nonnull
     public Builder setMode(EigrpProcessMode mode) {
       _mode = mode;
+      return this;
+    }
+
+    public Builder setInternalAdminCost(int internalAdminCost) {
+      _internalAdminCost = internalAdminCost;
+      return this;
+    }
+
+    public Builder setExternalAdminCost(int externalAdminCost) {
+      _externalAdminCost = externalAdminCost;
       return this;
     }
   }

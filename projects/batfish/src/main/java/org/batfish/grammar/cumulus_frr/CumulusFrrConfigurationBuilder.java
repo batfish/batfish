@@ -16,15 +16,13 @@ import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_NETWORK;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
-import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
-import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
-import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -152,6 +150,7 @@ import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
@@ -439,10 +438,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafi_network(Sbafi_networkContext ctx) {
-    _currentBgpVrf
-        .getIpv4Unicast()
-        .getNetworks()
-        .computeIfAbsent(Prefix.parse(ctx.IP_PREFIX().getText()), BgpNetwork::new);
+    @Nullable String routeMap = null;
+    if (ctx.rm != null) {
+      routeMap = getFullText(ctx.rm);
+      _c.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
+    }
+    Prefix prefix = toPrefix(ctx.network);
+    _currentBgpVrf.getIpv4Unicast().getNetworks().put(prefix, new BgpNetwork(prefix, routeMap));
   }
 
   @Override
@@ -483,9 +485,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighbor.setLocalAs(asn);
-    // TODO: Handle no-prepend and replace-as.
-    if (ctx.NO_PREPEND() != null || ctx.REPLACE_AS() != null) {
-      todo(ctx);
+    if (ctx.NO_PREPEND() == null || ctx.REPLACE_AS() == null) {
+      warn(ctx, "local-as is supported only in 'no-prepend replace-as' mode");
     }
   }
 
@@ -561,7 +562,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSb_network(Sb_networkContext ctx) {
-    _currentBgpVrf.addNetwork(toPrefix(ctx.prefix()));
+    @Nullable String routeMap = null;
+    if (ctx.rm != null) {
+      routeMap = getFullText(ctx.rm);
+      _c.referenceStructure(ROUTE_MAP, routeMap, BGP_NETWORK, ctx.getStart().getLine());
+    }
+    Prefix prefix = toPrefix(ctx.network);
+    _currentBgpVrf.addNetwork(new BgpNetwork(prefix, routeMap));
   }
 
   @Override
@@ -608,7 +615,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           warn(
               ctx,
               String.format(
-                  "vrf %s of interface %s does not match previously-defined vrf %s in interfaces file",
+                  "vrf %s of interface %s does not match previously-defined vrf %s in interfaces"
+                      + " file",
                   vrfName, name, interfacesInterface.getVrf()));
           _currentInterface = new FrrInterface("dummy", "dummy");
           return;
@@ -859,13 +867,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
-            .computeIfAbsent(
-                name,
-                (ipStr) -> {
-                  BgpIpNeighbor neighbor = new BgpIpNeighbor(ipStr);
-                  neighbor.setPeerIp(Ip.parse(ipStr));
-                  return neighbor;
-                });
+            .computeIfAbsent(name, (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)));
   }
 
   @Override
@@ -934,15 +936,15 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbnp_remote_as(Sbnp_remote_asContext ctx) {
+    assert _currentBgpNeighbor != null;
     if (ctx.autonomous_system() != null) {
-      _currentBgpNeighbor.setRemoteAsType(EXPLICIT);
-      _currentBgpNeighbor.setRemoteAs(parseLong(ctx.autonomous_system().getText()));
+      _currentBgpNeighbor.setRemoteAs(
+          RemoteAs.explicit(parseLong(ctx.autonomous_system().getText())));
     } else if (ctx.EXTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(EXTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
-    } else if (ctx.INTERNAL() != null) {
-      _currentBgpNeighbor.setRemoteAsType(INTERNAL);
-      _currentBgpNeighbor.setRemoteAs(null);
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.external());
+    } else {
+      assert ctx.INTERNAL() != null;
+      _currentBgpNeighbor.setRemoteAs(RemoteAs.internal());
     }
   }
 
@@ -1252,7 +1254,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       warn(
           ctx,
           String.format(
-              "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define expanded community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }
@@ -1279,7 +1282,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       warn(
           ctx,
           String.format(
-              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define standard community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }

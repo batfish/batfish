@@ -1,0 +1,88 @@
+{
+  "class" : "org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion",
+  "action" : "PERMIT",
+  "inputConstraints" : {
+    "asPath" : [ ],
+    "communities" : [ ],
+    "complementPrefix" : false,
+    "localPreference" : "",
+    "med" : "",
+    "prefix" : [
+      "1.1.1.0/24"
+    ]
+  },
+  "nodes" : "nodes",
+  "outputConstraints" : {
+    "asPath" : [ ],
+    "communities" : [ ],
+    "complementPrefix" : false,
+    "localPreference" : "",
+    "med" : "",
+    "prefix" : [
+      "2.2.2.0/24"
+    ]
+  },
+  "policies" : "policies",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Finds route announcements for which a route policy has a particular behavior.",
+    "instanceName" : "qname",
+    "longDescription" : "This question finds route announcements for which a route policy has a particular behavior. The behaviors can be: that the policy permits the route (`permit`) or that it denies the route (`deny`). Constraints can be imposed on the input route announcements of interest and, in the case of a `permit` action, also on the output route announcements of interest. Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, a (possibly different) answer will be found for each policy. This question currently supports common forms of matching on prefixes, communities, and AS-paths, as well as common forms of setting communities, the local preference, and the metric. It does not support other routing policy constructs. The question throws an exception if a route policy uses an unsupported construct.",
+    "orderedVariableNames" : [
+      "nodes",
+      "policies",
+      "inputConstraints",
+      "action",
+      "outputConstraints"
+    ],
+    "tags" : [
+      "routing"
+    ],
+    "variables" : {
+      "action" : {
+        "description" : "The behavior to be evaluated. Specify exactly one of `permit` or `deny`.",
+        "displayName" : "Action",
+        "optional" : true,
+        "type" : "string",
+        "value" : "permit"
+      },
+      "inputConstraints" : {
+        "description" : "Constraints on the set of input BGP route announcements to consider",
+        "displayName" : "Input Constraints",
+        "optional" : true,
+        "type" : "bgpRouteConstraints",
+        "value" : {
+          "prefix" : [
+            "1.1.1.0/24"
+          ]
+        }
+      },
+      "nodes" : {
+        "description" : "Only examine policies on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "nodes"
+      },
+      "outputConstraints" : {
+        "description" : "Constraints on the set of output BGP route announcements to consider",
+        "displayName" : "Output Constraints",
+        "optional" : true,
+        "type" : "bgpRouteConstraints",
+        "value" : {
+          "prefix" : [
+            "2.2.2.0/24"
+          ]
+        }
+      },
+      "policies" : {
+        "description" : "Only consider policies that match this specifier",
+        "displayName" : "Policies",
+        "optional" : true,
+        "type" : "routingPolicySpec",
+        "value" : "policies"
+      }
+    }
+  }
+}

@@ -21,7 +21,7 @@ public class IsisRedistributionPolicy extends RedistributionPolicy {
   private Prefix _summaryPrefix;
 
   public IsisRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol, RoutingProtocol.ISIS_ANY);
+    super(sourceProtocol);
   }
 
   public IsisLevel getLevel() {

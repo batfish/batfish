@@ -119,7 +119,8 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Interface::getAutoState,
                   Schema.BOOLEAN,
-                  "For VLAN interfaces, whether the operational status depends on member switchports"))
+                  "For VLAN interfaces, whether the operational status depends on member"
+                      + " switchports"))
           .put(
               BANDWIDTH,
               new PropertyDescriptor<>(
@@ -137,13 +138,15 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   Interface::getChannelGroup,
                   Schema.STRING,
-                  "Name of the aggregated interface (e.g., a port channel) to which this interface belongs"))
+                  "Name of the aggregated interface (e.g., a port channel) to which this interface"
+                      + " belongs"))
           .put(
               CHANNEL_GROUP_MEMBERS,
               new PropertyDescriptor<>(
                   Interface::getChannelGroupMembers,
                   Schema.list(Schema.STRING),
-                  "For aggregated interfaces (e.g., a port channel), names of constituent interfaces"))
+                  "For aggregated interfaces (e.g., a port channel), names of constituent"
+                      + " interfaces"))
           .put(
               DECLARED_NAMES,
               new PropertyDescriptor<>(

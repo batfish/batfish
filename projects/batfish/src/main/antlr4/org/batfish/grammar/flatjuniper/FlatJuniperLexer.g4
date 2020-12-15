@@ -6663,6 +6663,7 @@ F_InterfaceMediaType
    'vme' |
    'vsp' |
    'vt' |
+   'vtnet' |
    'xe' |
    'xt')
 ;

@@ -1,0 +1,8 @@
+#RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname security-rule-tag
+
+set rulebase security rules RULE1 from any
+set rulebase security rules RULE1 to [ z1 z2 ]
+set rulebase security rules RULE1 source any
+set rulebase security rules RULE1 destination any
+set rulebase security rules RULE1 tag TAG

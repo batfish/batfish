@@ -1,10 +1,15 @@
 package org.batfish.dataplane.rib;
 
-import static org.batfish.dataplane.rib.RouteAdvertisement.Reason.REPLACE;
+import static org.batfish.common.util.CollectionUtil.maxValues;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Streams;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -12,7 +17,6 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
-import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
@@ -41,23 +45,35 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
    */
   @Nonnull
   RibDelta<R> removeRouteGetDelta(R route, Reason reason) {
-    boolean removed = _root.remove(route.getNetwork(), route);
+    assert reason != Reason.ADD : "cannot remove a route with reason ADD";
+
+    Prefix network = route.getNetwork();
+    boolean removed = _root.remove(network, route);
     if (!removed) {
       return RibDelta.empty();
     }
 
-    Builder<R> b = RibDelta.builder();
-    b.remove(route, reason);
-    if (_root.get(route.getNetwork()).isEmpty() && _owner._backupRoutes != null) {
-      Set<? extends R> backups = _owner._backupRoutes.get(route.getNetwork());
-      if (backups.isEmpty()) {
-        return b.build();
-      }
-      // re-merge any backups we have
-      backups.forEach(r -> b.from(mergeRoute(r)));
+    RouteAdvertisement<R> removeRoute = new RouteAdvertisement<>(route, reason);
+
+    if (!_root.get(network).isEmpty()) {
+      // we still have a route for the network, so don't need to re-merge backups
+      return RibDelta.of(removeRoute);
     }
-    // Return new delta
-    return b.build();
+
+    @Nullable
+    Set<R> backups = _owner._backupRoutes == null ? null : _owner._backupRoutes.get(network);
+    if (backups == null || backups.isEmpty()) {
+      // no backup routes
+      return RibDelta.of(removeRoute);
+    }
+
+    // find the best backup route(s) to add
+    Collection<R> bestBackups = maxValues(backups, _owner::comparePreference);
+    _root.putAll(network, bestBackups);
+
+    return RibDelta.of(
+        Streams.concat(Stream.of(removeRoute), bestBackups.stream().map(RouteAdvertisement::adding))
+            .collect(ImmutableList.toImmutableList()));
   }
 
   /** Remove all routes from the tree */
@@ -131,7 +147,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     Set<R> routes = _root.get(route.getNetwork());
     if (routes.isEmpty()) {
       _root.put(route.getNetwork(), route);
-      return RibDelta.<R>builder().add(route).build();
+      return RibDelta.adding(route);
     }
     /*
      * Check if the route we are adding is preferred to the routes we already have.
@@ -148,7 +164,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     if (preferenceComparison == 0) { // equal preference, so add for multipath routing
       // Otherwise add the route
       if (_root.put(route.getNetwork(), route)) {
-        return RibDelta.<R>builder().add(route).build();
+        return RibDelta.adding(route);
       } else {
         return RibDelta.empty();
       }
@@ -159,7 +175,15 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
      * replace them with this one.
      */
     if (_root.replaceAll(route.getNetwork(), route)) {
-      return RibDelta.<R>builder().remove(routes, REPLACE).add(route).build();
+      // build the RibDelta directly, since we know the routes are distinct
+      List<RouteAdvertisement<R>> actions =
+          Streams.concat(
+                  routes.stream().map(RouteAdvertisement::replacing),
+                  Stream.of(RouteAdvertisement.adding(route)))
+              .collect(ImmutableList.toImmutableList());
+      assert actions.stream().map(RouteAdvertisement::getRoute).distinct().count() == actions.size()
+          : "replaced routes and added route should be distinct";
+      return RibDelta.of(actions);
     } else {
       return RibDelta.empty();
     }

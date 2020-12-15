@@ -9,7 +9,7 @@
       "ingressNode" : "(none)",
       "ingressVrf" : "default",
       "ipProtocol" : "HOPOPT",
-      "packetLength" : 0,
+      "packetLength" : 64,
       "srcIp" : "0.0.0.0",
       "state" : "NEW",
       "tag" : "tag",

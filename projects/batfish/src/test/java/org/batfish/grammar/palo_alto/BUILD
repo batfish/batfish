@@ -14,10 +14,12 @@ junit_tests(
         "//projects/batfish/src/test/resources/org/batfish/grammar/palo_alto/snapshots",
         "//projects/batfish/src/test/resources/org/batfish/grammar/palo_alto/testconfigs",
     ],
+    tags = ["cpu:4"],
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",
         "//projects/batfish/src/main/java/org/batfish/representation/palo_alto",

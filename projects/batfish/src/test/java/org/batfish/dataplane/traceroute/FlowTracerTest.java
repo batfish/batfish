@@ -143,14 +143,16 @@ public final class FlowTracerTest {
 
     List<TraceAndReverseFlow> traces = new ArrayList<>();
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, c.getHostname(), null, flow, traces::add);
     flowTracer.buildDeniedTrace(DENIED_IN);
     assertThat(
@@ -178,14 +180,16 @@ public final class FlowTracerTest {
     FirewallSessionTraceInfo sessionInfo =
         new FirewallSessionTraceInfo(
             "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionFlow, null);
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
     FlowTracer flowTracer =
         new FlowTracer(
             ctxt,
@@ -235,11 +239,11 @@ public final class FlowTracerTest {
     Interface ingressIface =
         nf.interfaceBuilder().setOwner(c).setVrf(vrf).setName(flow.getIngressInterface()).build();
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     // Accepting interface should be the one that owns the dst IP, not necessarily ingress interface
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
-                .setConfigs(ImmutableMap.of(c.getHostname(), c))
                 .setForwardingAnalysis(
                     MockForwardingAnalysis.builder()
                         .setAcceptedIps(
@@ -255,7 +259,8 @@ public final class FlowTracerTest {
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
     List<TraceAndReverseFlow> traces = new ArrayList<>();
     FlowTracer flowTracer =
         new FlowTracer(
@@ -379,12 +384,13 @@ public final class FlowTracerTest {
             .setDstPort(dstPort)
             .build();
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
     // Accepting interface should be the one that owns the dst IP
     String acceptingIfaceName = "acceptingIface";
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
-                .setConfigs(ImmutableMap.of(c.getHostname(), c))
                 .setForwardingAnalysis(
                     MockForwardingAnalysis.builder()
                         .setAcceptedIps(
@@ -399,7 +405,8 @@ public final class FlowTracerTest {
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
     List<TraceAndReverseFlow> traces = new ArrayList<>();
     FlowTracer flowTracer =
         new FlowTracer(
@@ -468,10 +475,11 @@ public final class FlowTracerTest {
             flowMatchingNewSession,
             null);
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
-                .setConfigs(ImmutableMap.of(c.getHostname(), c))
                 .setForwardingAnalysis(
                     MockForwardingAnalysis.builder()
                         .setAcceptedIps(
@@ -484,7 +492,8 @@ public final class FlowTracerTest {
             ImmutableSet.of(),
             ImmutableMap.of(
                 c.getHostname(), ImmutableMap.of(vrf.getName(), MockFib.builder().build())),
-            false);
+            false,
+            configs);
 
     {
       // Return flow matches session
@@ -584,14 +593,17 @@ public final class FlowTracerTest {
                                     .build())))))
             .build();
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib)),
-            false);
+            false,
+            configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, srcFib);
     List<TraceAndReverseFlow> finalTraces = traces.build();
@@ -647,14 +659,16 @@ public final class FlowTracerTest {
                         new FibEntry(FibNullRoute.INSTANCE, ImmutableList.of(nullRoute)))))
             .build();
     List<TraceAndReverseFlow> traces = new ArrayList<>();
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib, nextVrfName, nextFib)),
-            false);
+            false,
+            configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, srcFib);
 
@@ -725,14 +739,17 @@ public final class FlowTracerTest {
                             new FibNextVrf(vrf1Name), ImmutableList.of(vrf2NextVrfRoute)))))
             .build();
     List<TraceAndReverseFlow> traces = new ArrayList<>();
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(hostname, ImmutableMap.of(vrf1Name, fib1, vrf2Name, fib2)),
-            false);
+            false,
+            configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, fib1);
 
@@ -814,6 +831,7 @@ public final class FlowTracerTest {
                                     .setNextHopIp(Ip.parse("2.3.4.5"))
                                     .build())))))
             .build();
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
 
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
@@ -827,13 +845,13 @@ public final class FlowTracerTest {
                                     srcVrf.getName(),
                                     ImmutableMap.of("iface1", dstIp.toIpSpace()))))
                         .build())
-                .setConfigs(ImmutableMap.of(c.getHostname(), c))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib)),
-            false);
+            false,
+            configs);
     FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
     flowTracer.fibLookup(dstIp, hostname, srcFib);
     List<TraceAndReverseFlow> finalTraces = traces.build();
@@ -883,16 +901,18 @@ public final class FlowTracerTest {
     Transformation transformation =
         when(matchDst(new IpSpaceReference("ips"))).apply(assignDestinationIp(ip3, ip3)).build();
 
+    ImmutableMap<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder()
-                .setConfigs(ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2))
-                .build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
     Flow.Builder fb =
         Flow.builder()
             .setIngressNode(c1.getHostname())
@@ -1155,14 +1175,17 @@ public final class FlowTracerTest {
             .setIngressVrf(vrf.getName())
             .build();
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
 
     List<TraceAndReverseFlow> traces = new ArrayList<>();
     FlowTracer flowTracer =
@@ -1368,14 +1391,17 @@ public final class FlowTracerTest {
             .setIngressVrf(vrf.getName())
             .build();
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c.getHostname(), c)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
     String node = c.getHostname();
     Configuration currentConfig = ctxt.getConfigurations().get(node);
     Stack<Breadcrumb> breadcrumbs = new Stack<>();
@@ -1426,14 +1452,17 @@ public final class FlowTracerTest {
             .setIngressVrf(v1.getName())
             .build();
 
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c1.getHostname(), c1);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().setConfigs(ImmutableMap.of(c1.getHostname(), c1)).build(),
+            MockDataPlane.builder().build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
     FlowTracer flowTracer =
         initialFlowTracer(ctxt, c1.getHostname(), null, flow, traceAndReverseFlow -> {});
 
@@ -1489,17 +1518,17 @@ public final class FlowTracerTest {
                     ImmutableMap.of(
                         vrf.getName(), ImmutableMap.of(iface.getName(), dstIp.toIpSpace()))))
             .build();
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder()
-                .setConfigs(ImmutableMap.of(c.getHostname(), c))
-                .setForwardingAnalysis(forwardingAnalysis)
-                .build(),
+            MockDataPlane.builder().setForwardingAnalysis(forwardingAnalysis).build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
             ImmutableMap.of(),
-            false);
+            false,
+            configs);
 
     // There's a sanity check in FlowTracer constructor that requires there to be a PolicyStep or
     // TransformationStep if the current and original flows don't match. Doesn't matter if this

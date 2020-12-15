@@ -27,7 +27,6 @@ import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -40,11 +39,9 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.role.NodeRolesData;
@@ -109,13 +106,6 @@ public interface StorageProvider {
   Layer1Topology loadLayer1Topology(NetworkId network, SnapshotId snapshot);
 
   /**
-   * Returns the {@link MajorIssueConfig} for the given network and majorIssueType. Returns {@code
-   * null} if none exists.
-   */
-  @Nullable
-  MajorIssueConfig loadMajorIssueConfig(NetworkId network, IssueSettingsId majorIssueType);
-
-  /**
    * Returns the {@link SnapshotRuntimeData} of the network provided in the given snapshot
    *
    * @param network The name of the network
@@ -141,19 +131,6 @@ public interface StorageProvider {
    */
   @Nonnull
   String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId) throws IOException;
-
-  /**
-   * Stores the {@link MajorIssueConfig} into the given network. Will replace any previously-stored
-   * {@link MajorIssueConfig}s
-   *
-   * @param network The name of the network
-   * @param majorIssueType The type of the {@link MajorIssueConfig}
-   * @param majorIssueConfig The {@link MajorIssueConfig} to be stored
-   * @throws IOException if there is an error writing writing the config
-   */
-  void storeMajorIssueConfig(
-      NetworkId network, IssueSettingsId majorIssueType, MajorIssueConfig majorIssueConfig)
-      throws IOException;
 
   /**
    * Stores the configuration information into the given snapshot. Will replace any
@@ -251,32 +228,8 @@ public interface StorageProvider {
       String questionStr, NetworkId network, QuestionId question, @Nullable AnalysisId analysis)
       throws IOException;
 
-  /**
-   * Return the JSON-serialized settings for the {@code questionClassId} under the specified {@code
-   * networkId}, or {@code null} if no custom settings exist.
-   *
-   * @param networkId The ID of the network
-   * @param questionSettingsId The ID of the question class
-   * @throws IOException if there is an error trying to read the settings
-   */
-  @Nullable
-  String loadQuestionSettings(NetworkId networkId, QuestionSettingsId questionSettingsId)
-      throws IOException;
-
   /** Returns {@code true} iff the specified network question exists. */
   boolean checkNetworkExists(NetworkId network);
-
-  /**
-   * Write the JSON-serialized settings for the specified question class for the specified network.
-   *
-   * @param networkId The name of the network
-   * @param questionSettingsId The ID of the question class
-   * @param settings The settings to write
-   * @throws IOException if there is an error writing the settings
-   */
-  void storeQuestionSettings(
-      String settings, NetworkId networkId, QuestionSettingsId questionSettingsId)
-      throws IOException;
 
   /**
    * Retrieve the question class ID associated with the given question.

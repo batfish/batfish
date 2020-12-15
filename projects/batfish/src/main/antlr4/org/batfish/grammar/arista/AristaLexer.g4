@@ -110,7 +110,7 @@ ACCESS_GROUP
 ACCESS_LIST
 :
    'access-list'
-   {_enableAclNum = true; _enableDec = false;_inAccessList = true;}
+   {_enableAclNum = true; _enableDec = false;}
 
 ;
 
@@ -389,6 +389,11 @@ AGE
    'age'
 ;
 
+AGING
+:
+   'aging'
+;
+
 AGGREGATE
 :
    'aggregate'
@@ -442,6 +447,11 @@ ALARM
 ALARM_REPORT
 :
    'alarm-report'
+;
+
+ALERT
+:
+   'alert'
 ;
 
 ALERT_GROUP
@@ -1151,6 +1161,11 @@ BFD_ECHO
    'bfd-echo'
 ;
 
+BFD_INSTANCE
+:
+   'bfd-instance'
+;
+
 BFD_TEMPLATE
 :
    'bfd-template'
@@ -1271,6 +1286,11 @@ BOOTPS
    'bootps'
 ;
 
+BORDER
+:
+   'border'
+;
+
 BORDER_ROUTER
 :
    'border-router'
@@ -1331,6 +1351,11 @@ BROADCAST_FILTER
    'broadcast-filter'
 ;
 
+BSR
+:
+   'bsr'
+;
+
 BSR_BORDER
 :
    'bsr-border'
@@ -1374,6 +1399,11 @@ BUNDLE
 BURST_SIZE
 :
    'burst-size'
+;
+
+BYPASS
+:
+    'bypass'
 ;
 
 BYTES
@@ -1456,6 +1486,11 @@ CAPABILITY
    'capability'
 ;
 
+CAPACITY
+:
+   'capacity'
+;
+
 CAPTIVE
 :
    'captive'
@@ -1491,6 +1526,16 @@ CASE
    'case'
 ;
 
+CAUSE
+:
+   'cause'
+;
+
+CCAP_CORE
+:
+   'ccap-core'
+;
+
 CDP
 :
    'cdp'
@@ -1499,6 +1544,11 @@ CDP
 CDP_URL
 :
    'cdp-url'
+;
+
+CEILING
+:
+  'ceiling'
 ;
 
 CENTRALIZED_LICENSING_ENABLE
@@ -1807,6 +1857,11 @@ CONFORM_ACTION
    'conform-action'
 ;
 
+CONGESTION_DROPS
+:
+   'congestion-drops'
+;
+
 CONGESTION_CONTROL
 :
    'congestion-control'
@@ -1840,6 +1895,11 @@ CONNECTION_REUSE
 CONSOLE
 :
    'console'
+;
+
+CONSORTIUM
+:
+   'consortium'
 ;
 
 CONTACT
@@ -2118,6 +2178,11 @@ D30_GGRP_DEFAULT
    'd30-ggrp-default'
 ;
 
+DAD
+:
+   'dad'
+;
+
 DAEMON
 :
    'daemon'
@@ -2276,6 +2341,11 @@ DEFAULT_ROLE
 DEFAULT_ROUTER
 :
    'default-router'
+;
+
+DEFAULT_ROUTE
+:
+   'default-route'
 ;
 
 DEFAULT_TASKGROUP
@@ -2553,6 +2623,11 @@ DEVICE_ID
    'device-id'
 ;
 
+DISCARDS
+:
+   'discards'
+;
+
 DISCRIMINATOR
 :
    'discriminator'
@@ -2638,6 +2713,11 @@ DIRECT
    'direct'
 ;
 
+DIRECT_INSTALL
+:
+   'direct-install'
+;
+
 DIRECT_INWARD_DIAL
 :
    'direct-inward-dial'
@@ -2721,6 +2801,16 @@ DNS_DOMAIN
 DNS_SERVER
 :
    'dns-server'
+;
+
+DNS_SERVERS
+:
+   'dns-servers'
+;
+
+DNS_SUFFIXES
+:
+   'dns-suffixes'
 ;
 
 DNSIX
@@ -3078,6 +3168,11 @@ EF
    'ef'
 ;
 
+EFP
+:
+   'EFP'
+;
+
 EFS
 :
    'efs'
@@ -3151,6 +3246,11 @@ ENABLED
 ENCAPSULATION
 :
    'encapsulation'
+;
+
+ENCODING
+:
+   'encoding'
 ;
 
 ENCODING_WEIGHTED
@@ -3442,6 +3542,11 @@ ETHERNET_SERVICES
    'ethernet-services'
 ;
 
+ETHERTYPE
+:
+   'ethertype'
+;
+
 ETYPE
 :
    'etype'
@@ -3535,6 +3640,11 @@ EXIT_ADDRESS_FAMILY
 EXIT_VRF
 :
    'exit-vrf'
+;
+
+EXPIRE
+:
+   'expire'
 ;
 
 EXPLICIT_NULL
@@ -3699,6 +3809,11 @@ FAST_REROUTE
    'fast-reroute'
 ;
 
+FASTDROP
+:
+   'fastdrop'
+;
+
 FAX
 :
    'fax'
@@ -3714,6 +3829,11 @@ FDL
 	'fdl'
 ;
 
+FEATURE
+:
+   'feature'
+;
+
 FEC
 :
    'fec'
@@ -3727,6 +3847,11 @@ FEX
 FEX_FABRIC
 :
    'fex-fabric'
+;
+
+FIB
+:
+   'fib'
 ;
 
 FIBER_NODE
@@ -4039,6 +4164,11 @@ GRANT
    'grant'
 ;
 
+GRATUITOUS
+:
+   'gratuitous'
+;
+
 GRE
 :
    'gre'
@@ -4152,6 +4282,11 @@ GTP_PRIME
 GTP_U
 :
    'gtp-u'
+;
+
+GUARANTEED
+:
+   'guaranteed'
 ;
 
 GUARD
@@ -4366,7 +4501,12 @@ HOST_REDIRECT
 
 HOST_ROUTE
 :
-'host-route'
+   'host-route'
+;
+
+HOST_ROUTES
+:
+   'host-routes'
 ;
 
 HOST_TOS_REDIRECT
@@ -4543,6 +4683,11 @@ IEC
    'iec'
 ;
 
+IEEE
+:
+   'ieee'
+;
+
 IEEE_MMS_SSL
 :
    'ieee-mms-ssl'
@@ -4571,6 +4716,11 @@ IFMAP
 IFMIB
 :
    'ifmib'
+;
+
+IFP
+:
+   'IFP'
 ;
 
 IGMP
@@ -4801,6 +4951,11 @@ INSTALL
 INSTALL_MAP
 :
    'install-map'
+;
+
+INSTALL_OIFS
+:
+   'install-oifs'
 ;
 
 INSTANCE
@@ -5035,6 +5190,11 @@ JOIN_GROUP
     'join-group'
 ;
 
+JOIN_PRUNE
+:
+    'join-prune'
+;
+
 JOIN_PRUNE_COUNT
 :
     'join-prune-count'
@@ -5255,6 +5415,16 @@ LAST_AS
    'last-as'
 ;
 
+LAST_LISTENER_QUERY_COUNT
+:
+  'last-listener-query-count'
+;
+
+LAST_LISTENER_QUERY_INTERVAL
+:
+  'last-listener-query-interval'
+;
+
 LAST_MEMBER_QUERY_COUNT
 :
    'last-member-query-count'
@@ -5293,6 +5463,11 @@ LE
 LEARNED
 :
    'learned'
+;
+
+LEARNING
+:
+   'learning'
 ;
 
 LEASE
@@ -5400,6 +5575,11 @@ LINK_BANDWIDTH
    'link-bandwidth'
 ;
 
+LINK_CHANGE
+:
+   'link-change'
+;
+
 LINK_DEBOUNCE
 :
    'link-debounce'
@@ -5413,6 +5593,11 @@ LINK_FAIL
 LINK_FAULT_SIGNALING
 :
    'link-fault-signaling'
+;
+
+LINK_STATUS
+:
+   'link-status'
 ;
 
 LINK_TYPE
@@ -5763,6 +5948,11 @@ MAIN_CPU
 MAINTENANCE
 :
   'maintenance'
+;
+
+MANAGED_CONFIG_FLAG
+:
+   'managed-config-flag'
 ;
 
 MANAGEMENT
@@ -6235,6 +6425,11 @@ MINIMUM_LINKS
    'minimum-links'
 ;
 
+MINIMUM_THRESHOLD
+:
+   'minimum-threshold'
+;
+
 MINPOLL
 :
    'minpoll'
@@ -6414,6 +6609,11 @@ MSCHAPV2
 MSDP
 :
    'msdp'
+;
+
+MSEC
+:
+  'msec'
 ;
 
 MSEXCH_ROUTING
@@ -6741,6 +6941,11 @@ NETWORK_DELAY
    'network-delay'
 ;
 
+NETWORK_POLICY
+:
+   'network-policy'
+;
+
 NETWORK_QOS
 :
    'network-qos'
@@ -6906,6 +7111,16 @@ NON_CLIENT_NRT
    'non-client-nrt'
 ;
 
+NON_DR
+:
+   'non-dr'
+;
+
+NON_ECT
+:
+   'non-ect'
+;
+
 NON_MLAG
 :
    'non-mlag'
@@ -6919,6 +7134,11 @@ NONE
 NONEGOTIATE
 :
    'nonegotiate'
+;
+
+NORMAL
+:
+   'normal'
 ;
 
 NOS
@@ -7126,6 +7346,11 @@ OPTION_MISSING
    'option-missing'
 ;
 
+OPTIONAL
+:
+   'optional'
+;
+
 OPTIONS
 :
    'options'
@@ -7186,6 +7411,11 @@ OTHER_ACCESS
    'other-access'
 ;
 
+OTHER_CONFIG_FLAG
+:
+   'other-config-flag'
+;
+
 OUT
 :
    'out'
@@ -7204,6 +7434,11 @@ OUT_OF_BAND
 OUTBOUND_ACL_CHECK
 :
    'outbound-acl-check'
+;
+
+OUTER
+:
+   'outer'
 ;
 
 OUTPUT
@@ -7644,6 +7879,11 @@ POLICY_MAP
 POOL
 :
    'pool'
+;
+
+POP
+:
+   'pop'
 ;
 
 POP2
@@ -8096,6 +8336,11 @@ QUERY_ONLY
    'query-only'
 ;
 
+QUERY_RESPONSE_INTERVAL
+:
+   'query-response-interval'
+;
+
 QUERY_TIMEOUT
 :
    'query-timeout'
@@ -8146,6 +8391,11 @@ QUIT
    'quit'
 ;
 
+RA
+:
+   'ra'
+;
+
 RADIUS
 :
    'radius'
@@ -8191,6 +8441,11 @@ RANGE
    'range'
 ;
 
+RATE
+:
+   'rate'
+;
+
 RATE_LIMIT
 :
    'rate-limit'
@@ -8229,6 +8484,11 @@ RD
 RE_MAIL_CK
 :
    're-mail-ck'
+;
+
+REACHABLE_TIME
+:
+   'reachable-time'
 ;
 
 REACHABLE_VIA
@@ -8354,6 +8614,11 @@ REDUNDANCY
 REDUNDANCY_GROUP
 :
    'redundancy-group'
+;
+
+REED_SOLOMON
+:
+   'reed-solomon'
 ;
 
 REFERENCE_BANDWIDTH
@@ -8539,6 +8804,11 @@ REQUEST_DATA_SIZE
 REQUIRE_WPA
 :
    'require-wpa'
+;
+
+REQUIRED
+:
+   'required'
 ;
 
 RESOLUTION
@@ -8737,6 +9007,11 @@ RO
    [rR] [oO]
 ;
 
+ROBUSTNESS
+:
+   'robustness'
+;
+
 ROBUSTNESS_VARIABLE
 :
    'robustness-variable'
@@ -8850,6 +9125,11 @@ ROUTER_LSA
 ROUTER_MAC
 :
    'router-mac'
+;
+
+ROUTER_PREFERENCE
+:
+   'router-preference'
 ;
 
 ROUTER_SOLICITATION
@@ -9015,6 +9295,11 @@ RXSPEED
 SA_FILTER
 :
    'sa-filter'
+;
+
+SAMPLED
+:
+   'sampled'
 ;
 
 SAMPLES_OF_HISTORY_KEPT
@@ -9370,6 +9655,11 @@ SHARED_SECONDARY_SECRET
 SHARED_SECRET
 :
    'shared-secret'
+;
+
+SHIFT
+:
+   'shift'
 ;
 
 SHORT_TXT
@@ -9925,6 +10215,11 @@ STREETADDRESS
    'streetaddress' -> pushMode ( M_Description )
 ;
 
+STRICT
+:
+   'strict'
+;
+
 STRICTHOSTKEYCHECK
 :
    'stricthostkeycheck'
@@ -9933,6 +10228,11 @@ STRICTHOSTKEYCHECK
 STRING
 :
    'string'
+;
+
+STRIP
+:
+   'strip'
 ;
 
 STS_1
@@ -10160,6 +10460,11 @@ SYSTEMOWNER
    'SystemOwner'
 ;
 
+TABLE
+:
+   'table'
+;
+
 TABLE_MAP
 :
    'table-map'
@@ -10329,6 +10634,11 @@ THRESHOLD
    'threshold'
 ;
 
+THRESHOLDS
+:
+   'thresholds'
+;
+
 TIE_BREAK
 :
    'tie-break'
@@ -10429,6 +10739,11 @@ TM_VOQ_COLLECTION
    'tm-voq-collection'
 ;
 
+TO
+:
+   'to'
+;
+
 TOKEN
 :
    'token'
@@ -10454,6 +10769,11 @@ TRACE
    'trace'
 ;
 
+TRACER
+:
+   'tracer'
+;
+
 TRACEROUTE
 :
    'traceroute'
@@ -10469,9 +10789,19 @@ TRACKED
    'tracked'
 ;
 
+TRACKER
+:
+   'tracker'
+;
+
 TRADITIONAL
 :
    'traditional'
+;
+
+TRAFFIC_CLASS
+:
+   'traffic-class'
 ;
 
 TRAFFIC_ENG
@@ -10534,6 +10864,11 @@ TRANSMIT
    'transmit'
 ;
 
+TRANSMITTER
+:
+   'transmitter'
+;
+
 TRANSPORT
 :
    'transport'
@@ -10552,6 +10887,11 @@ TRANSPORT_MODE
 TRAP
 :
    'trap'
+;
+
+TRAP_NEW_MASTER
+:
+   'trap-new-master'
 ;
 
 TRAP_SOURCE
@@ -10577,6 +10917,11 @@ TRIGGER
 TRIMODE
 :
    'trimode'
+;
+
+TRUNCATION
+:
+   'truncation'
 ;
 
 TRUNK
@@ -10629,6 +10974,11 @@ TTL_EXCEEDED
    'ttl-exceeded'
 ;
 
+TTL_EXCEPTION
+:
+   'ttl-exception'
+;
+
 TTY
 :
    'tty'
@@ -10667,6 +11017,11 @@ TUNNEL_RIB
 TUNNELED
 :
    'tunneled'
+;
+
+TWENTY_FIVE_GBASE_CR
+:
+   '25gbase-cr'
 ;
 
 TX_QUEUE
@@ -10714,6 +11069,11 @@ UDP_PORT
    'udp-port'
 ;
 
+UDP_TIMEOUT
+:
+   'udp-timeout'
+;
+
 UNAUTHORIZED
 :
    'unauthorized'
@@ -10734,9 +11094,19 @@ UNIDIRECTIONAL
    'unidirectional'
 ;
 
+UNIX_SOCKET
+:
+   'unix-socket'
+;
+
 UNIQUE
 :
    'unique'
+;
+
+UNKNOWN_UNICAST
+:
+   'unknown-unicast'
 ;
 
 UNREACHABLE
@@ -10764,9 +11134,19 @@ UPDATE_DELAY
    'update-delay'
 ;
 
+UPDATE_INTERVAL
+:
+   'update-interval'
+;
+
 UPDATE_SOURCE
 :
    'update-source' -> pushMode ( M_Interface )
+;
+
+UPLINK_FAILURE_DETECTION
+:
+   'uplink-failure-detection'
 ;
 
 UPLINKFAST
@@ -10822,6 +11202,16 @@ USE
 USE_ACL
 :
    'use-acl'
+;
+
+USE_CONFIG_SESSION
+:
+   'use-config-session'
+;
+
+USE_GLOBAL
+:
+   'use-global'
 ;
 
 USE_IPV4_ACL
@@ -10959,6 +11349,16 @@ VAP_ENABLE
    'vap-enable'
 ;
 
+VENDOR_OPTION
+:
+   'vendor-option'
+;
+
+VERIFICATION
+:
+   'verification'
+;
+
 VERIFY
 :
    'verify'
@@ -11012,6 +11412,11 @@ VIRTUAL_TEMPLATE
 VFI
 :
    'vfi'
+;
+
+VFP
+:
+   'VFP'
 ;
 
 VLAN
@@ -11171,6 +11576,16 @@ VXLAN
    'vxlan'
 ;
 
+VXLAN_ENCAPSULATION
+:
+  'vxlan-encapsulation'
+;
+
+VXLAN_VTEP_LEARN
+:
+  'vxlan-vtep-learn'
+;
+
 WAIT_FOR
 :
   'wait-for'
@@ -11321,6 +11736,11 @@ WIDEBAND
    'wideband'
 ;
 
+WINDOW
+:
+   'window'
+;
+
 WINDOW_SIZE
 :
    'window-size'
@@ -11404,6 +11824,26 @@ X25
 XCONNECT
 :
    'xconnect'
+;
+
+XCVR_MISCONFIGURED
+:
+  'xcvr-misconfigured'
+;
+
+XCVR_OVERHEAT
+:
+  'xcvr-overheat'
+;
+
+XCVR_POWER_UNSUPPORTED
+:
+  'xcvr-power-unsupported'
+;
+
+XCVR_UNSUPPORTED
+:
+  'xcvr-unsupported'
 ;
 
 XDMCP
@@ -11712,7 +12152,6 @@ NEWLINE
     _enableDec = true;
     _enableRegex = false;
     _enableAclNum = false;
-    _inAccessList = false;
   }
 ;
 

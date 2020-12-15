@@ -1,0 +1,42 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_interface_eigrp
+!
+feature eigrp
+!
+vrf context VRF
+  ! defined so it will be converted
+!
+router eigrp 1
+  ! defined so it will be converted
+!
+router eigrp EIGRP2
+  autonomous-system 2
+!
+router eigrp 3
+  autonomous-system 4
+!
+interface Ethernet1/1
+  vrf member VRF
+  ip address 192.0.2.2/24
+  ip router eigrp 1
+  ip bandwidth eigrp 1 300
+  ip delay eigrp 1 400
+  ip eigrp 1 bfd
+  ip eigrp 1 bfd disable
+  ip hold-time eigrp 1 100
+  ip hello-interval eigrp 1 200
+  ip passive-interface eigrp 1
+!
+interface Ethernet1/2
+  ip address 192.0.3.2/24
+  ip router eigrp EIGRP2
+!
+interface Ethernet1/3
+  ip address 192.0.3.3/24
+  ip router eigrp 3
+!
+interface Ethernet1/4
+  vrf member VRF
+  ip address 192.0.3.4/24
+  ip router eigrp 3

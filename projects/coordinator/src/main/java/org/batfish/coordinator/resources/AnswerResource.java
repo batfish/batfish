@@ -64,7 +64,8 @@ public final class AnswerResource {
       return Response.status(Status.NOT_FOUND)
           .entity(
               String.format(
-                  "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
+                  "Answer not found for question %s on network: %s, snapshot: %s,"
+                      + " referenceSnapshot: %s, analysis: %s",
                   _questionName,
                   _network,
                   filterAnswerBean.snapshot,
@@ -106,7 +107,8 @@ public final class AnswerResource {
       return Response.status(Status.NOT_FOUND)
           .entity(
               String.format(
-                  "Answer not found for question %s on network: %s, snapshot: %s, referenceSnapshot: %s, analysis: %s",
+                  "Answer not found for question %s on network: %s, snapshot: %s,"
+                      + " referenceSnapshot: %s, analysis: %s",
                   _questionName, _network, snapshot, referenceSnapshot, _analysis))
           .build();
     }

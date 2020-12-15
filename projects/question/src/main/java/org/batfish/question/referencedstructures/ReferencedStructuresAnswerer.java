@@ -114,7 +114,8 @@ public class ReferencedStructuresAnswerer extends Answerer {
     return new TableMetadata(
         columnMetadata,
         String.format(
-            "A structure of type ${%s} named ${%s} is referred to in the context ${%s} at line(s) ${%s}",
+            "A structure of type ${%s} named ${%s} is referred to in the context ${%s} at line(s)"
+                + " ${%s}",
             COL_STRUCTURE_TYPE, COL_STRUCTURE_NAME, COL_CONTEXT, COL_SOURCE_LINES));
   }
 }

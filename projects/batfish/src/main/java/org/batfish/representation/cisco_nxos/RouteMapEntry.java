@@ -32,9 +32,11 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapSetIpNextHop _setIpNextHop;
   private @Nullable RouteMapSetLocalPreference _setLocalPreference;
   private @Nullable RouteMapSetMetric _setMetric;
+  private @Nullable RouteMapSetMetricEigrp _setMetricEigrp;
   private @Nullable RouteMapSetMetricType _setMetricType;
   private @Nullable RouteMapSetOrigin _setOrigin;
   private @Nullable RouteMapSetTag _setTag;
+  private @Nullable RouteMapSetWeight _setWeight;
 
   public RouteMapEntry(int sequence) {
     _sequence = sequence;
@@ -146,6 +148,10 @@ public final class RouteMapEntry implements Serializable {
     return _setMetric;
   }
 
+  public @Nullable RouteMapSetMetricEigrp getSetMetricEigrp() {
+    return _setMetricEigrp;
+  }
+
   public @Nullable RouteMapSetMetricType getSetMetricType() {
     return _setMetricType;
   }
@@ -164,14 +170,21 @@ public final class RouteMapEntry implements Serializable {
             _setIpNextHop,
             _setLocalPreference,
             _setMetric,
+            _setMetricEigrp,
             _setMetricType,
             _setOrigin,
-            _setTag)
+            _setTag,
+            _setWeight)
         .filter(Objects::nonNull);
   }
 
   public @Nullable RouteMapSetTag getSetTag() {
     return _setTag;
+  }
+
+  @Nullable
+  public RouteMapSetWeight getSetWeight() {
+    return _setWeight;
   }
 
   public void setAction(LineAction action) {
@@ -260,6 +273,10 @@ public final class RouteMapEntry implements Serializable {
     _setMetric = setMetric;
   }
 
+  public void setSetMetricEigrp(@Nullable RouteMapSetMetricEigrp setMetricEigrp) {
+    _setMetricEigrp = setMetricEigrp;
+  }
+
   public void setSetMetricType(@Nullable RouteMapSetMetricType setMetricType) {
     _setMetricType = setMetricType;
   }
@@ -270,5 +287,9 @@ public final class RouteMapEntry implements Serializable {
 
   public void setSetTag(@Nullable RouteMapSetTag setTag) {
     _setTag = setTag;
+  }
+
+  public void setSetWeight(RouteMapSetWeight routeMapSetWeight) {
+    _setWeight = routeMapSetWeight;
   }
 }

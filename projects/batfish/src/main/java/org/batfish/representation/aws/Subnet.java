@@ -615,7 +615,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
           if (attachment == null) {
             warnings.redFlag(
                 String.format(
-                    "Transit gateway VPC attachment between %s and %s not found. Needed for route: %s",
+                    "Transit gateway VPC attachment between %s and %s not found. Needed for route:"
+                        + " %s",
                     _vpcId, route.getTarget(), route));
             return;
           }
@@ -647,8 +648,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
             // router,  which will then send it to NAT, and so on. Nevertheless, we add this route
             // instead of ignoring it because it is the correct model and users expect routes in AWS
             // and Batfish to line up.
-            nexthopInterfaceName =
-                interfaceNameToRemote(awsConfiguration.getNode(natGateway.getId()));
+            nexthopInterfaceName = instancesInterfaceName(_subnetId);
             nextHopIp = natGateway.getPrivateIp();
           } else {
             nexthopInterfaceName =

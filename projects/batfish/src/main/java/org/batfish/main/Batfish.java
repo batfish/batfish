@@ -12,6 +12,7 @@ import static org.batfish.common.runtime.SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNT
 import static org.batfish.common.util.CompletionMetadataUtils.getFilterNames;
 import static org.batfish.common.util.CompletionMetadataUtils.getInterfaces;
 import static org.batfish.common.util.CompletionMetadataUtils.getIps;
+import static org.batfish.common.util.CompletionMetadataUtils.getLocationCompletionMetadata;
 import static org.batfish.common.util.CompletionMetadataUtils.getMlagIds;
 import static org.batfish.common.util.CompletionMetadataUtils.getNodes;
 import static org.batfish.common.util.CompletionMetadataUtils.getPrefixes;
@@ -39,6 +40,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.hash.Hashing;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.opentracing.References;
@@ -119,24 +121,31 @@ import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.common.util.CompletionMetadataUtils;
 import org.batfish.common.util.isp.IspModelingUtils;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpAdvertisement;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EvpnRoute;
+import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
@@ -151,7 +160,6 @@ import org.batfish.datamodel.answers.ConvertStatus;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.InitStepAnswerElement;
-import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
@@ -159,6 +167,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpTopologyUtils;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
@@ -167,6 +176,7 @@ import org.batfish.datamodel.ospf.OspfTopologyUtils;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
@@ -184,11 +194,9 @@ import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
 import org.batfish.identifiers.IdResolver;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.job.BatfishJobExecutor;
@@ -494,7 +502,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     _idResolver.getQuestionId(questionName, containerName, analysisName);
                 checkArgument(
                     questionIdOpt.isPresent(),
-                    "Question '%s' for analysis '%s' for network '%s' was deleted in the middle of this operation",
+                    "Question '%s' for analysis '%s' for network '%s' was deleted in the middle of"
+                        + " this operation",
                     questionName,
                     containerName,
                     analysisName);
@@ -587,6 +596,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       span.finish();
     }
 
+    LOGGER.info("Answering question {}", question.getClass().getSimpleName());
     if (GlobalTracer.get().scopeManager().activeSpan() != null) {
       Span activeSpan = GlobalTracer.get().scopeManager().activeSpan();
       activeSpan
@@ -606,7 +616,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // Ensures configurations are parsed and ready
     loadConfigurations(getSnapshot());
-    // TODO: why doesn't this check diff and load diff configurations?
+    if (diff) {
+      loadConfigurations(getReferenceSnapshot());
+    }
 
     Span initQuestionSpan = GlobalTracer.get().buildSpan("Init question env").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -637,10 +649,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     answer.setQuestion(question);
 
     if (exception == null) {
+      LOGGER.info("Question answered successfully");
       // success
       answer.setStatus(AnswerStatus.SUCCESS);
       answer.addAnswerElement(answerElement);
     } else {
+      LOGGER.warn("Question execution failed", exception);
       // failure
       answer.setStatus(AnswerStatus.FAILURE);
       answer.addAnswerElement(exception.getBatfishStackTrace());
@@ -735,8 +749,60 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Warnings.forLogger(settings.getLogger());
   }
 
+  private static final NetworkSnapshot DUMMY_SNAPSHOT =
+      new NetworkSnapshot(
+          new NetworkId("__BATFISH_DUMMY_NETWORK"), new SnapshotId("__BATFISH_DUMMY_SNAPSHOT"));
+  private static final DataPlane DUMMY_DATAPLANE =
+      new DataPlane() {
+        @Override
+        public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
+          return null;
+        }
+
+        @Override
+        public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+          return null;
+        }
+
+        @Override
+        public Map<String, Map<String, Fib>> getFibs() {
+          return null;
+        }
+
+        @Override
+        public ForwardingAnalysis getForwardingAnalysis() {
+          return null;
+        }
+
+        @Override
+        public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+            getRibs() {
+          return null;
+        }
+
+        @Override
+        public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+            getPrefixTracingInfoSummary() {
+          return null;
+        }
+
+        @Override
+        public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
+          return null;
+        }
+      };
+
   @Override
   public DataPlaneAnswerElement computeDataPlane(NetworkSnapshot snapshot) {
+    // If already present, invalidate a dataplane for this snapshot.
+    // (unlikely, only when devs force recomputation)
+    _cachedDataPlanes.invalidate(snapshot);
+
+    // Reserve space for the new dataplane in the in-memory cache by inserting and invalidating a
+    // dummy value.
+    _cachedDataPlanes.put(DUMMY_SNAPSHOT, DUMMY_DATAPLANE);
+    _cachedDataPlanes.invalidate(DUMMY_SNAPSHOT);
+
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(snapshot);
     saveDataPlane(snapshot, result);
     return result._answerElement;
@@ -815,7 +881,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Integer vlanNumber = null;
       // Populate vlanInterface and nonVlanInterfaces, and initialize
       // vlanMemberCounts:
-      for (Interface iface : c.getAllInterfaces().values()) {
+      for (Interface iface : c.getActiveInterfaces().values()) {
         if ((iface.getInterfaceType() == InterfaceType.VLAN)
             && ((vlanNumber = CommonUtil.getInterfaceVlanNumber(iface.getName())) != null)) {
           vlanInterfaces.put(vlanNumber, iface);
@@ -973,23 +1039,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return nodeRolesData.nodeRoleDimensionFor(dimension);
   }
 
-  /**
-   * Returns the {@link MajorIssueConfig} for the given major issue type.
-   *
-   * <p>If the corresponding file is not found or it cannot be deserealized, return an empty object.
-   */
-  @Override
-  public MajorIssueConfig getMajorIssueConfig(String majorIssueType) {
-    Optional<IssueSettingsId> issueSetingsIdOpt =
-        _idResolver.getIssueSettingsId(majorIssueType, _settings.getContainer());
-    if (!issueSetingsIdOpt.isPresent()) {
-      return new MajorIssueConfig(majorIssueType, ImmutableMap.of());
-    }
-    MajorIssueConfig loaded =
-        _storage.loadMajorIssueConfig(_settings.getContainer(), issueSetingsIdOpt.get());
-    return loaded != null ? loaded : new MajorIssueConfig(majorIssueType, ImmutableMap.of());
-  }
-
   @Override
   public Map<String, String> getQuestionTemplates(boolean verbose) {
     if (_settings.getCoordinatorHost() == null) {
@@ -1108,7 +1157,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!_storage.hasParseEnvironmentBgpTablesAnswerElement(snapshot)) {
         computeEnvironmentBgpTables(snapshot);
       }
-      if (dp) {
+      if (dp && _cachedDataPlanes.getIfPresent(snapshot) == null) {
         if (!_storage.hasDataPlane(snapshot)) {
           computeDataPlane(snapshot);
         }
@@ -1429,29 +1478,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     SnapshotId referenceSnapshot = _settings.getDiffQuestion() ? _referenceSnapshot : null;
     NetworkId networkId = _settings.getContainer();
     AnalysisId analysisId = _settings.getAnalysisName();
-    QuestionSettingsId questionSettingsId;
-    try {
-      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-      questionSettingsId =
-          _idResolver
-              .getQuestionSettingsId(questionClassId, networkId)
-              .orElse(QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID);
-    } catch (IOException e) {
-      throw new IOException("Failed to retrieve question settings ID", e);
-    }
     NodeRolesId networkNodeRolesId =
         _idResolver
             .getNetworkNodeRolesId(networkId)
             .orElse(NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID);
     AnswerId baseAnswerId =
-        _idResolver.getBaseAnswerId(
-            networkId,
-            _snapshot,
-            questionId,
-            questionSettingsId,
-            networkNodeRolesId,
-            referenceSnapshot,
-            analysisId);
+        _idResolver.getAnswerId(
+            networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot, analysisId);
 
     _storage.storeAnswerMetadata(
         AnswerMetadataUtil.computeAnswerMetadata(answer, _logger), baseAnswerId);
@@ -1752,6 +1785,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  private void postProcessEigrpCosts(Map<String, Configuration> configurations) {
+    configurations.values().stream()
+        .flatMap(c -> c.getAllInterfaces().values().stream())
+        .filter(
+            iface ->
+                iface.getEigrp() != null
+                    && (iface.getInterfaceType() == InterfaceType.AGGREGATED
+                        || iface.getInterfaceType() == InterfaceType.AGGREGATE_CHILD))
+        .forEach(
+            iface -> {
+              EigrpMetricValues metricValues = iface.getEigrp().getMetric().getValues();
+              if (metricValues.getBandwidth() == null) {
+                // only set bandwidth if it's not explicitly configured for EIGRP
+                Double bw = iface.getBandwidth();
+                assert bw != null; // all bandwidths should be finalized at this point
+                metricValues.setBandwidth(bw.longValue() / 1000); // convert to kbps
+              }
+            });
+  }
+
   private void postProcessOspfCosts(Map<String, Configuration> configurations) {
     configurations
         .values()
@@ -1793,7 +1846,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public TracerouteEngine getTracerouteEngine(NetworkSnapshot snapshot) {
     return new TracerouteEngineImpl(
-        loadDataPlane(snapshot), _topologyProvider.getLayer3Topology(snapshot));
+        loadDataPlane(snapshot),
+        _topologyProvider.getLayer3Topology(snapshot),
+        loadConfigurations(snapshot));
   }
 
   /** Function that processes an interface blacklist across all configurations */
@@ -2016,6 +2071,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkConfigurations nc = NetworkConfigurations.of(configurations);
     OspfTopologyUtils.initNeighborConfigs(nc);
     postProcessOspfCosts(configurations);
+    postProcessEigrpCosts(configurations); // must be after postProcessAggregatedInterfaces
     EigrpTopologyUtils.initNeighborConfigs(nc);
   }
 
@@ -2037,7 +2093,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         getFilterNames(configurations),
         getInterfaces(configurations),
         getIps(configurations),
-        CompletionMetadataUtils.getSourceLocationsWithSrcIps(getLocationInfo(snapshot)),
+        getLocationCompletionMetadata(getLocationInfo(snapshot), configurations),
         getMlagIds(configurations),
         getNodes(configurations),
         getPrefixes(configurations),
@@ -2434,7 +2490,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!commonNodes.isEmpty()) {
       internetWarnings.redFlag(
           String.format(
-              "Cannot add internet and ISP nodes because nodes with the following names already exist in the snapshot: %s",
+              "Cannot add internet and ISP nodes because nodes with the following names already"
+                  + " exist in the snapshot: %s",
               commonNodes));
       return;
     }
@@ -2608,6 +2665,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         jobs =
             makeParseVendorConfigurationsJobs(
                 snapshot, keyedConfigText, ConfigurationFormat.UNKNOWN);
+        // Java parallel streams are not self-balancing in large networks, so shuffle the jobs.
+        Collections.shuffle(jobs);
       } finally {
         makeJobsSpan.finish();
       }
@@ -3157,29 +3216,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     NetworkId networkId = _settings.getContainer();
     QuestionId questionId = _settings.getQuestionName();
     AnalysisId analysisId = _settings.getAnalysisName();
-    QuestionSettingsId questionSettingsId;
-    try {
-      String questionClassId = _storage.loadQuestionClassId(networkId, questionId, analysisId);
-      questionSettingsId =
-          _idResolver
-              .getQuestionSettingsId(questionClassId, networkId)
-              .orElse(QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID);
-    } catch (IOException e) {
-      throw new BatfishException("Failed to retrieve question settings ID", e);
-    }
     NodeRolesId networkNodeRolesId =
         _idResolver
             .getNetworkNodeRolesId(networkId)
             .orElse(NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID);
     AnswerId baseAnswerId =
-        _idResolver.getBaseAnswerId(
-            networkId,
-            _snapshot,
-            questionId,
-            questionSettingsId,
-            networkNodeRolesId,
-            referenceSnapshot,
-            analysisId);
+        _idResolver.getAnswerId(
+            networkId, _snapshot, questionId, networkNodeRolesId, referenceSnapshot, analysisId);
     _storage.storeAnswer(structuredAnswerString, baseAnswerId);
   }
 
@@ -3195,23 +3238,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Write answer if WorkItem was answering a question
     if (_settings.getQuestionName() != null) {
       writeJsonAnswer(answerOutput);
-    }
-  }
-
-  @Override
-  public @Nullable String loadQuestionSettings(@Nonnull Question question) {
-    String questionClassId = question.getName();
-    NetworkId networkId = _settings.getContainer();
-    Optional<QuestionSettingsId> questionSettingsIdOpt =
-        _idResolver.getQuestionSettingsId(questionClassId, networkId);
-    if (!questionSettingsIdOpt.isPresent()) {
-      return null;
-    }
-    try {
-      return _storage.loadQuestionSettings(_settings.getContainer(), questionSettingsIdOpt.get());
-    } catch (IOException e) {
-      throw new BatfishException(
-          String.format("Failed to read question settings for question: '%s'", questionClassId), e);
     }
   }
 

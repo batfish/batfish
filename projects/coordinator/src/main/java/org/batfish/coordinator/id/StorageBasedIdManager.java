@@ -8,11 +8,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.Id;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.identifiers.StorageBasedIdResolver;
 import org.batfish.storage.StorageProvider;
@@ -55,12 +53,6 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
   }
 
   @Override
-  public void assignIssueSettingsId(
-      String majorIssueType, NetworkId networkId, IssueSettingsId issueSettingsId) {
-    writeId(issueSettingsId, majorIssueType, networkId);
-  }
-
-  @Override
   public void assignNetwork(String network, NetworkId networkId) {
     writeId(networkId, network);
   }
@@ -78,12 +70,6 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
       @Nullable AnalysisId analysisId) {
     Id[] ancestors = analysisId != null ? new Id[] {networkId, analysisId} : new Id[] {networkId};
     writeId(questionId, question, ancestors);
-  }
-
-  @Override
-  public void assignQuestionSettingsId(
-      String questionClassId, NetworkId networkId, QuestionSettingsId questionSettingsId) {
-    writeId(questionSettingsId, questionClassId, networkId);
   }
 
   @Override
@@ -119,11 +105,6 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
   }
 
   @Override
-  public @Nonnull IssueSettingsId generateIssueSettingsId() {
-    return new IssueSettingsId(uuid());
-  }
-
-  @Override
   public @Nonnull NetworkId generateNetworkId() {
     return new NetworkId(uuid());
   }
@@ -136,11 +117,6 @@ public class StorageBasedIdManager extends StorageBasedIdResolver implements IdM
   @Override
   public @Nonnull QuestionId generateQuestionId() {
     return new QuestionId(uuid());
-  }
-
-  @Override
-  public @Nonnull QuestionSettingsId generateQuestionSettingsId() {
-    return new QuestionSettingsId(uuid());
   }
 
   @Override

@@ -53,6 +53,11 @@ ADDRESS_FAMILY_IDENTIFIER
     'address-family-identifier'
 ;
 
+ADJUST_TCP_MSS
+:
+    'adjust-tcp-mss'
+;
+
 ADMIN_DIST
 :
     'admin-dist'
@@ -98,6 +103,11 @@ AES_256_GCM
     'aes-256-gcm'
 ;
 
+AFTER
+:
+    'after'
+;
+
 AGGREGATE
 :
     'aggregate'
@@ -116,6 +126,11 @@ AGGREGATE_GROUP
 AGGREGATE_MED
 :
     'aggregate-med'
+;
+
+ALGORITHM
+:
+    'algorithm'
 ;
 
 ALLOW
@@ -193,6 +208,11 @@ AUTO
     'auto'
 ;
 
+BEFORE
+:
+    'before'
+;
+
 BFD
 :
     'bfd'
@@ -211,6 +231,11 @@ BOTH
 BOTNET
 :
     'botnet'
+;
+
+BOTTOM
+:
+    'bottom'
 ;
 
 BROADCAST
@@ -303,6 +328,11 @@ DEAD_COUNTS
     'dead-counts'
 ;
 
+DEFAULT
+:
+    'default'
+;
+
 DEFAULT_GATEWAY
 :
     'default-gateway'
@@ -316,6 +346,11 @@ DEFAULT_LOCAL_PREFERENCE
 DEFAULT_ROUTE
 :
     'default-route'
+;
+
+DELETE
+:
+    'delete'
 ;
 
 DENY
@@ -416,6 +451,11 @@ DYNAMIC_IP_AND_PORT
 EBGP
 :
     'ebgp'
+;
+
+ECMP
+:
+    'ecmp'
 ;
 
 EGP
@@ -618,6 +658,10 @@ HIP_PROFILES
     'hip-profiles'
 ;
 
+HOLD_TIME:
+    'hold-time'
+;
+
 HOSTNAME
 :
     'hostname'
@@ -641,6 +685,11 @@ IBGP
 ICMP
 :
     'icmp'
+;
+
+IDLE_HOLD_TIME
+:
+    'idle-hold-time'
 ;
 
 IETF
@@ -736,6 +785,11 @@ IPV4
 IPV6
 :
     'ipv6'
+;
+
+KEEP_ALIVE_INTERVAL
+:
+    'keep-alive-interval'
 ;
 
 LAYER2
@@ -838,6 +892,16 @@ MATCH
     'match'
 ;
 
+MAX_PATH
+:
+    'max-path'
+;
+
+MAX_PREFIXES
+:
+    'max-prefixes'
+;
+
 MD5
 :
     'md5'
@@ -851,6 +915,11 @@ MED
 MESHED_CLIENT
 :
     'meshed-client'
+;
+
+MIN_ROUTE_ADV_INTERVAL
+:
+    'min-route-adv-interval'
 ;
 
 MINUTES
@@ -873,6 +942,11 @@ MGT_CONFIG
     'mgt-config'
 ;
 
+MOVE
+:
+    'move'
+;
+
 MTU
 :
     'mtu'
@@ -881,6 +955,11 @@ MTU
 MULTICAST
 :
     'multicast'
+;
+
+MULTIHOP
+:
+    'multihop'
 ;
 
 NAT
@@ -966,6 +1045,11 @@ NTP_SERVERS
 NULL
 :
     'null'
+;
+
+OPEN_DELAY_TIME
+:
+    'open-delay-time'
 ;
 
 ORIGIN
@@ -1478,6 +1562,11 @@ TO
     'to'
 ;
 
+TOP
+:
+    'top'
+;
+
 TRANSFERS_FILES
 :
     'transfers-files'
@@ -1672,6 +1761,11 @@ LINE_COMMENT
         | '!'
     )
     F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+;
+
+NETFLOW_PROFILE
+:
+    'netflow-profile'
 ;
 
 NEWLINE

@@ -26,11 +26,14 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
@@ -99,6 +102,17 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   /**
+   * Converts {@link Set} to {@link ImmutableSet}. The order of the returned set is the iteration
+   * order of the given set.
+   */
+  private static <T> ImmutableSet<T> toImmutableSet(@Nullable Set<T> set) {
+    if (set == null || set.isEmpty()) {
+      return ImmutableSet.of();
+    }
+    return ImmutableSet.copyOf(set);
+  }
+
+  /**
    * Applies sanity checks and finishing touches to the given {@link Configuration}.
    *
    * <p>Sanity checks such as asserting that required properties hold.
@@ -122,21 +136,40 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
+    c.setAuthenticationKeyChains(toImmutableMap(c.getAuthenticationKeyChains()));
     c.setCommunityLists(verifyAndToImmutableMap(c.getCommunityLists(), CommunityList::getName, w));
     c.setCommunityMatchExprs(toImmutableMap(c.getCommunityMatchExprs()));
     c.setCommunitySetExprs(toImmutableMap(c.getCommunitySetExprs()));
     c.setCommunitySetMatchExprs(toImmutableMap(c.getCommunitySetMatchExprs()));
     c.setCommunitySets(toImmutableMap(c.getCommunitySets()));
+    c.setDnsServers(toImmutableSet(c.getDnsServers()));
+    c.setGeneratedReferenceBooks(toImmutableMap(c.getGeneratedReferenceBooks()));
+    c.setIkePhase1Keys(toImmutableMap(c.getIkePhase1Keys()));
+    c.setIkePhase1Policies(toImmutableMap(c.getIkePhase1Policies()));
+    c.setIkePhase1Proposals(toImmutableMap(c.getIkePhase1Proposals()));
     c.setInterfaces(verifyAndToImmutableMap(c.getAllInterfaces(), Interface::getName, w));
-    c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
-    c.setIpSpaces(toImmutableMap(c.getIpSpaces()));
     c.setIp6AccessLists(verifyAndToImmutableMap(c.getIp6AccessLists(), Ip6AccessList::getName, w));
+    c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
+    c.setIpsecPeerConfigs(toImmutableMap(c.getIpsecPeerConfigs()));
+    c.setIpsecPhase2Policies(toImmutableMap(c.getIpsecPhase2Policies()));
+    c.setIpsecPhase2Proposals(toImmutableMap(c.getIpsecPhase2Proposals()));
+    c.setIpSpaceMetadata(toImmutableMap(c.getIpSpaceMetadata()));
+    c.setIpSpaces(toImmutableMap(c.getIpSpaces()));
+    c.setLoggingServers(toImmutableSet(c.getLoggingServers()));
+    c.setMlags(verifyAndToImmutableMap(c.getMlags(), Mlag::getId, w));
+    c.setNtpServers(toImmutableSet(c.getNtpServers()));
+    c.setPacketPolicies(verifyAndToImmutableMap(c.getPacketPolicies(), PacketPolicy::getName, w));
     c.setRouteFilterLists(
         verifyAndToImmutableMap(c.getRouteFilterLists(), RouteFilterList::getName, w));
     c.setRoute6FilterLists(
         verifyAndToImmutableMap(c.getRoute6FilterLists(), Route6FilterList::getName, w));
     c.setRoutingPolicies(
         verifyAndToImmutableMap(c.getRoutingPolicies(), RoutingPolicy::getName, w));
+    c.setSnmpTrapServers(toImmutableSet(c.getSnmpTrapServers()));
+    c.setTacacsServers(toImmutableSet(c.getTacacsServers()));
+    c.setTrackingGroups(toImmutableMap(c.getTrackingGroups()));
+    c.setVrfs(verifyAndToImmutableMap(c.getVrfs(), Vrf::getName, w));
+    c.setZones(toImmutableMap(c.getZones()));
     verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
   }

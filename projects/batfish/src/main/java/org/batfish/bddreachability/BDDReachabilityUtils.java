@@ -144,7 +144,7 @@ public final class BDDReachabilityUtils {
     return ImmutableTable.copyOf(Tables.transpose(edgeTable));
   }
 
-  static void forwardFixpoint(
+  public static void forwardFixpoint(
       Table<StateExpr, StateExpr, Transition> forwardEdgeTable, Map<StateExpr, BDD> reachable) {
     fixpoint(reachable, forwardEdgeTable, Transition::transitForward);
   }

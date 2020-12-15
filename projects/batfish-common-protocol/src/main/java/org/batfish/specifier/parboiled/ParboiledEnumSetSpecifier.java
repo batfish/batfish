@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.specifier.EnumSetSpecifier;
 import org.parboiled.errors.InvalidInputError;
@@ -22,37 +23,72 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
   @ParametersAreNonnullByDefault
   private static final class EnumValueSets<T> {
-    @Nonnull private final Set<T> _including;
-    @Nonnull private final Set<T> _excluding;
+    /** The values that are included in this enum set. If null, unspecified. */
+    @Nullable private final Set<T> _including;
+
+    /** The values that are excluded from this enum set. If null, unspecified. */
+    @Nullable private final Set<T> _excluding;
+
     @Nonnull private final Collection<T> _allValues;
     @Nonnull private final Map<T, Set<T>> _groupValues;
 
     EnumValueSets(Collection<T> allValues, Map<T, Set<T>> groupValues) {
-      this(ImmutableSet.of(), ImmutableSet.of(), allValues, groupValues);
+      this(null, null, allValues, groupValues);
     }
 
     EnumValueSets(
-        Set<T> including, Set<T> excluding, Collection<T> allValues, Map<T, Set<T>> groupValues) {
-      _including = ImmutableSet.copyOf(including);
-      _excluding = ImmutableSet.copyOf(excluding);
+        @Nullable Set<T> including,
+        @Nullable Set<T> excluding,
+        Collection<T> allValues,
+        Map<T, Set<T>> groupValues) {
+      _including = including != null ? ImmutableSet.copyOf(including) : null;
+      _excluding = excluding != null ? ImmutableSet.copyOf(excluding) : null;
       _allValues = allValues;
       _groupValues = groupValues;
     }
 
     EnumValueSets<T> addIncluding(Set<T> values) {
+      // If unspecified, and we add something, this is initial specification.
+      // Otherwise, add to existing.
       return new EnumValueSets<>(
-          ImmutableSet.<T>builder().addAll(values).addAll(_including).build(),
+          ImmutableSet.<T>builder()
+              .addAll(values)
+              .addAll(_including != null ? _including : ImmutableSet.of())
+              .build(),
           _excluding,
           _allValues,
           _groupValues);
     }
 
     EnumValueSets<T> addExcluding(Set<T> values) {
+      // If unspecified, and we add something, this is initial specification.
+      // Otherwise, add to existing.
       return new EnumValueSets<>(
           _including,
-          ImmutableSet.<T>builder().addAll(values).addAll(_excluding).build(),
+          ImmutableSet.<T>builder()
+              .addAll(values)
+              .addAll(_excluding != null ? _excluding : ImmutableSet.of())
+              .build(),
           _allValues,
           _groupValues);
+    }
+
+    @Nonnull
+    Set<T> actualExcluding() {
+      if (_excluding == null) {
+        // No exclusions specified, exclude nothing.
+        return ImmutableSet.of();
+      }
+      return _excluding;
+    }
+
+    @Nonnull
+    Set<T> actualIncluding() {
+      if (_including == null) {
+        // No inclusions specified, include everything.
+        return ImmutableSet.copyOf(_allValues);
+      }
+      return _including;
     }
 
     /**
@@ -62,10 +98,11 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
      * sets, the semantics is that the most specific wins. E.g., (bgp, !ebgp) = (ibgp).
      */
     Set<T> toValues() {
-      Set<T> including = _including.isEmpty() ? ImmutableSet.copyOf(_allValues) : _including;
+      Set<T> including = actualIncluding();
+      Set<T> excluding = actualExcluding();
 
-      Set<T> leftOverIncluding = computeLeftoverValues(including, _excluding);
-      Set<T> leftOverExcluding = computeLeftoverValues(_excluding, including);
+      Set<T> leftOverIncluding = computeLeftoverValues(including, excluding);
+      Set<T> leftOverExcluding = computeLeftoverValues(excluding, including);
 
       return Sets.difference(leftOverIncluding, leftOverExcluding);
     }
@@ -96,12 +133,22 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
       return leftOverSet.build();
     }
 
-    EnumValueSets<T> union(EnumValueSets<T> sets2) {
-      return new EnumValueSets<>(
-          Sets.union(_including, sets2._including),
-          Sets.union(_excluding, sets2._excluding),
-          _allValues,
-          _groupValues);
+    /**
+     * Combine two enum sets clauses separated by a comma. Note that though we call this union
+     * syntax, it's not: {@code a,!b} would then mean {@code a} union {@code everything but b} -
+     * which would be everything.
+     */
+    EnumValueSets<T> combine(EnumValueSets<T> sets2) {
+      assert sets2._allValues.equals(_allValues);
+      assert sets2._groupValues.equals(_groupValues);
+      EnumValueSets<T> ret = this;
+      if (sets2._including != null) {
+        ret = addIncluding(sets2._including);
+      }
+      if (sets2._excluding != null) {
+        ret = addExcluding(sets2._excluding);
+      }
+      return ret;
     }
   }
 
@@ -146,7 +193,7 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
       return unionEnumSetAstNode
           .getLeft()
           .accept(this)
-          .union(unionEnumSetAstNode.getRight().accept(this));
+          .combine(unionEnumSetAstNode.getRight().accept(this));
     }
   }
 

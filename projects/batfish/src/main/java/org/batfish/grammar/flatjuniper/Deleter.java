@@ -21,6 +21,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
+import org.batfish.grammar.hierarchical.StatementTree;
 
 /**
  * Flat Juniper pre-processor that removes parse tree nodes corresponding to deleted lines, as well
@@ -38,7 +39,7 @@ public class Deleter extends FlatJuniperParserBaseListener {
    * Each time a 'deactivate' or 'set' parse-tree is encountered:
    * - record the words following 'deactivate' or 'set'
    * - build out the deactivate (or set) StatementTree, using each word as a key.
-   * - add the parse-tree to the set of parse-trees stored at the node correpsonding to the last word
+   * - add the parse-tree to the set of parse-trees stored at the node corresponding to the last word
    *
    * Each time a 'delete' parse-tree is encountered:
    * - record the words following 'delete'

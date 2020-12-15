@@ -36,7 +36,7 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
    * Result of computing the dataplane. Combines a {@link DataPlane} and {@link TopologyContainer}
    * with a {@link DataPlaneAnswerElement}
    */
-  public static final class ComputeDataPlaneResult {
+  public static class ComputeDataPlaneResult {
     public final DataPlaneAnswerElement _answerElement;
     public final DataPlane _dataPlane;
     public final TopologyContainer _topologies;

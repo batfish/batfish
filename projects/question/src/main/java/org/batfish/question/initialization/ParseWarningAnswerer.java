@@ -158,11 +158,12 @@ class ParseWarningAnswerer extends Answerer {
     String textDesc =
         question.getAggregateDuplicates()
             ? String.format(
-                "Warning for ${%s} when the Batfish parser was in state ${%s}. Optional comment: ${%s}.",
+                "Warning for ${%s} when the Batfish parser was in state ${%s}. Optional comment:"
+                    + " ${%s}.",
                 COL_TEXT, COL_PARSER_CONTEXT, COL_COMMENT)
             : String.format(
-                "File ${%s}: warning at line ${%s}: ${%s} when the Batfish parser was in state ${%s}."
-                    + " Optional comment: ${%s}.",
+                "File ${%s}: warning at line ${%s}: ${%s} when the Batfish parser was in state"
+                    + " ${%s}. Optional comment: ${%s}.",
                 COL_FILENAME, COL_LINE, COL_TEXT, COL_PARSER_CONTEXT, COL_COMMENT);
 
     return new TableMetadata(columnMetadata.build(), textDesc);

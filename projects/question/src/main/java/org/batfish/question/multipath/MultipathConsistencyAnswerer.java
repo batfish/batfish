@@ -68,7 +68,9 @@ public class MultipathConsistencyAnswerer extends Answerer {
             AclIpSpace.union(
                 SpecifierFactories.getIpSpaceSpecifierOrDefault(
                         headerConstraints.getDstIps(), InferFromLocationIpSpaceSpecifier.INSTANCE)
-                    .resolve(ImmutableSet.of(), ctxt).getEntries().stream()
+                    .resolve(ImmutableSet.of(), ctxt)
+                    .getEntries()
+                    .stream()
                     .map(Entry::getIpSpace)
                     .collect(ImmutableList.toImmutableList())),
             UniverseIpSpace.INSTANCE);

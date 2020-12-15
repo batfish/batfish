@@ -12,6 +12,7 @@ import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.C
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_NODE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_OUTPUT_ROUTE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_POLICY_NAME;
+import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -42,6 +43,7 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -73,6 +75,16 @@ public class TestRoutePoliciesAnswererTest {
         new MockBatfish(
             ImmutableSortedMap.of(HOSTNAME, baseConfig),
             ImmutableSortedMap.of(HOSTNAME, deltaConfig));
+  }
+
+  /** Test that we handle potential nulls in question parameters */
+  @Test
+  public void testConstructorWithNullsInQuestion() {
+    TestRoutePoliciesAnswerer answerer =
+        new TestRoutePoliciesAnswerer(
+            new TestRoutePoliciesQuestion(Direction.IN, ImmutableList.of(), null, null), _batfish);
+    assertEquals(answerer.getNodeSpecifier(), AllNodesNodeSpecifier.INSTANCE);
+    assertEquals(answerer.getPolicySpecifier(), ALL_ROUTING_POLICIES);
   }
 
   @Test

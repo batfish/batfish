@@ -102,8 +102,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
     }
 
     checkArgument(
-        route1
-            .toBuilder()
+        route1.toBuilder()
             .setAsPath(route2.getAsPath())
             .setCommunities(route2.getCommunities())
             .setLocalPreference(route2.getLocalPreference())

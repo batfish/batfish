@@ -1,0 +1,14 @@
+{
+  "type" : "ebgp_sent",
+  "network" : "4.0.0.0/8",
+  "nextHopIp" : "10.14.22.4",
+  "srcIp" : "10.14.22.4",
+  "dstNode" : "as1border2",
+  "dstIp" : "10.14.22.1",
+  "srcProtocol" : "AGGREGATE",
+  "originType" : "egp",
+  "asPath" : [ [ 1239 ] ],
+  "communities" : [ 262145 ],
+  "dstVrf":"default",
+  "clusterList":[]
+}

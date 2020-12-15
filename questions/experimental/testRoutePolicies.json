@@ -22,7 +22,7 @@
             "nodes": {
                 "description": "Only examine filters on nodes matching this specifier",
                 "type": "nodeSpec",
-                "value": ".*",
+                "optional": true,
                 "displayName": "Nodes"
             },
             "direction": {
@@ -33,8 +33,8 @@
             },
             "policies": {
                 "description": "Only consider policies that match this specifier",
-                "type": "string",
-                "value": ".*",
+                "type": "routingPolicySpec",
+                "optional": true,
                 "displayName": "Policies"
             },
             "inputRoutes": {

@@ -125,6 +125,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -152,6 +153,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.main.Batfish;
@@ -159,6 +161,8 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
 import org.batfish.representation.arista.MlagConfiguration;
+import org.batfish.representation.arista.RouteMap;
+import org.batfish.representation.arista.RouteMapClause;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -1786,8 +1790,9 @@ public class AristaGrammarTest {
   @Test
   public void testParseAclShowRunAll() {
     Configuration c = parseConfig("arista_acl_show_run_all");
-    // Tests that the ACL parses.
+    // Tests that the ACLs parse.
     assertThat(c, hasIpAccessList("SOME_ACL", hasLines(hasSize(1))));
+    assertThat(c, hasIpAccessList("SOME_EXT_ACL", hasLines(hasSize(1))));
   }
 
   @Test
@@ -1993,6 +1998,26 @@ public class AristaGrammarTest {
       assertThat(ipv6m, notNullValue());
       assertThat(ipv6m.getRouteMapIn(), equalTo("A-IPV6MC_IN"));
     }
+  }
+
+  @Test
+  public void testParseBgpShowRunAll4() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_show_run_all_4");
+    assertThat(c.getAristaBgp().getVrfs().keySet(), containsInAnyOrder("default", "VRF10"));
+    AristaBgpVrf defaultVrf = c.getAristaBgp().getDefaultVrf();
+    assertThat(defaultVrf.getV4neighbors().keySet(), empty());
+    /// vrf
+    AristaBgpVrf vrf = c.getAristaBgp().getVrfs().get("VRF10");
+    Ip neighborIp = Ip.parse("10.2.3.4");
+    assertThat(vrf.getV4neighbors().keySet(), contains(neighborIp));
+    /// pg
+    AristaBgpPeerGroupNeighbor pg = c.getAristaBgp().getPeerGroup("SOME_GROUP");
+    assertThat(pg, notNullValue());
+    assertThat(pg.getGenericAddressFamily().getRouteMapIn(), equalTo("SOME_IMPORT"));
+    assertThat(pg.getGenericAddressFamily().getRouteMapOut(), equalTo("SOME_EXPORT"));
+    assertThat(defaultVrf.getV4UnicastAf().getPeerGroup("SOME_GROUP").getRouteMapIn(), nullValue());
+    assertThat(
+        defaultVrf.getV4UnicastAf().getPeerGroup("SOME_GROUP").getRouteMapOut(), nullValue());
   }
 
   @Test
@@ -2343,9 +2368,160 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testRouteMapExtraction() {
+    AristaConfiguration c = parseVendorConfig("route_map");
+    assertThat(c.getRouteMaps(), hasKeys("map1", "DANAIL_PETROV_20201103", "ACTION_CHANGES"));
+    {
+      RouteMap rm = c.getRouteMaps().get("DANAIL_PETROV_20201103");
+      assertThat(rm.getClauses(), hasKeys(10));
+      RouteMapClause clause = rm.getClauses().get(10);
+      assertThat(clause.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(clause.getMatchList(), hasSize(1));
+      assertThat(clause.getSetList(), hasSize(1));
+    }
+    {
+      RouteMap rm = c.getRouteMaps().get("ACTION_CHANGES");
+      assertThat(rm.getClauses(), hasKeys(10));
+      RouteMapClause clause = rm.getClauses().get(10);
+      // Action changed from permit to deny
+      assertThat(clause.getAction(), equalTo(LineAction.DENY));
+      // Clauses were merged
+      assertThat(clause.getMatchList(), hasSize(1));
+      assertThat(clause.getSetList(), hasSize(1));
+    }
+  }
+
+  @Test
   public void testRouteMapParsing() {
     // Don't crash
     parseConfig("route_map");
+  }
+
+  private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
+    Bgpv4Route.Builder builder = route.toBuilder();
+    assertTrue(routingPolicy.process(route, builder, Direction.IN));
+    return builder.build();
+  }
+
+  private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
+    assertFalse(
+        routingPolicy.process(
+            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+  }
+
+  @Test
+  public void testRouteMapExhaustive() {
+    Configuration c = parseConfig("arista_route_map_exhaustive");
+    assertThat(c.getRoutingPolicies(), hasKey("RM"));
+    RoutingPolicy rm = c.getRoutingPolicies().get("RM");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setTag(0L)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setMetric(0L)
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("192.0.2.254"))
+            .setNetwork(Prefix.ZERO)
+            .build();
+    // There are 8 paths through the route-map, let's test them all.
+    // 10 deny tag 1, continue                OR    fall-through
+    // 20 permit community 0:2, continue      OR    fall-through
+    // 30 deny 1.2.3.4/32, terminate          OR   40 terminate
+    {
+      // false false false -> 40 only
+      Bgpv4Route after = processRouteIn(rm, base);
+      assertThat(after.getTag(), not(equalTo(10L)));
+      assertThat(after.getCommunities(), not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // false false true -> 30 only
+      assertRoutingPolicyDeniesRoute(
+          rm, base.toBuilder().setNetwork(Prefix.parse("1.2.3.4/32")).build());
+    }
+    {
+      // false true false -> 20, 40
+      Bgpv4Route after =
+          processRouteIn(
+              rm,
+              base.toBuilder().setCommunities(CommunitySet.of(StandardCommunity.of(2))).build());
+      assertThat(after.getTag(), not(equalTo(10L)));
+      assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(20))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // false true true -> 20, 30
+      assertRoutingPolicyDeniesRoute(
+          rm,
+          base.toBuilder()
+              .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+              .setNetwork(Prefix.parse("1.2.3.4/32"))
+              .build());
+    }
+    {
+      // true false false -> 10, 40
+      Bgpv4Route after = processRouteIn(rm, base.toBuilder().setTag(1L).build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // true false true -> 10, 30
+      assertRoutingPolicyDeniesRoute(
+          rm, base.toBuilder().setTag(1L).setNetwork(Prefix.parse("1.2.3.4/32")).build());
+    }
+    {
+      // true true false -> 10, 20, 40
+      Bgpv4Route after =
+          processRouteIn(
+              rm,
+              base.toBuilder()
+                  .setTag(1L)
+                  .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+                  .build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(20))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // true true true -> 10, 20, 30
+      assertRoutingPolicyDeniesRoute(
+          rm,
+          base.toBuilder()
+              .setTag(1L)
+              .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+              .setNetwork(Prefix.parse("1.2.3.4/32"))
+              .build());
+    }
+  }
+
+  @Test
+  public void testRouteMapNakedContinue() {
+    Configuration c = parseConfig("arista_route_map_naked_continue");
+    assertThat(c.getRoutingPolicies(), hasKey("RM"));
+    RoutingPolicy rm = c.getRoutingPolicies().get("RM");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setTag(0L)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setMetric(0L)
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("192.0.2.254"))
+            .setNetwork(Prefix.ZERO)
+            .build();
+    Bgpv4Route after = processRouteIn(rm, base);
+    assertThat(after.getMetric(), equalTo(3L));
+    assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(1))));
   }
 
   @Test

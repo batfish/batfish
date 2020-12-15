@@ -120,7 +120,8 @@ public class WorkQueueMgr {
         if (currentParsingWork == null) {
           throw new BatfishException(
               String.format(
-                  "Cannot queue dataplane work for %s: Status is %s but no incomplete parsing work exists",
+                  "Cannot queue dataplane work for %s: Status is %s but no incomplete parsing work"
+                      + " exists",
                   wDetails.getSnapshotId(), metadata.getProcessingStatus()));
         }
         return currentParsingWork;
@@ -130,7 +131,8 @@ public class WorkQueueMgr {
         // we get here only when currentDataplaningWork is null; by virtue of the calling context
         throw new BatfishException(
             String.format(
-                "Cannot queue dataplane work for %s: Status is %s but no incomplete dataplaning work exists",
+                "Cannot queue dataplane work for %s: Status is %s but no incomplete dataplaning"
+                    + " work exists",
                 wDetails.getSnapshotId(), metadata.getProcessingStatus()));
       case DATAPLANED:
       case DATAPLANING_FAIL:

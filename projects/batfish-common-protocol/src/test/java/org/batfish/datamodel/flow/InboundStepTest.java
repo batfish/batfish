@@ -2,6 +2,7 @@ package org.batfish.datamodel.flow;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.testing.EqualsTester;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.flow.InboundStep.InboundStepDetail;
 import org.junit.Test;
@@ -34,5 +35,16 @@ public final class InboundStepTest {
     assertEquals(step.getAction(), clone.getAction());
     assertEquals(step.getDetail().getInterface(), clone.getDetail().getInterface());
     assertEquals(clone.getDetail().getInterface(), iface);
+  }
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(new Object())
+        .addEqualityGroup(
+            InboundStep.builder().setDetail(new InboundStepDetail("i")).build(),
+            InboundStep.builder().setDetail(new InboundStepDetail("i")).build())
+        .addEqualityGroup(InboundStep.builder().setDetail(new InboundStepDetail("j")).build())
+        .testEquals();
   }
 }

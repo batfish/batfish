@@ -118,7 +118,9 @@ public class CumulusInterfacesGrammarTest {
     CumulusInterfacesConfiguration interfaces = parse(input);
     assertThat(interfaces.getInterfaces(), hasKeys("swp1"));
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1").getDefinitionLines(),
+        getDefinedStructureInfo(CumulusStructureType.INTERFACE, "swp1")
+            .getDefinitionLines()
+            .enumerate(),
         contains(1));
     assertThat(
         getStructureReferences(

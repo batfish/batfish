@@ -66,10 +66,10 @@ public class EigrpTopologyUtilsTest {
     vrf.addEigrpProcess(
         EigrpProcess.builder()
             .setAsNumber(1L)
-            .setExportPolicy("ep")
+            .setRedistributionPolicy("ep")
             .setMode(EigrpProcessMode.NAMED)
             .setRouterId(Ip.parse("1.1.1.1"))
-            .setExportPolicy("policy")
+            .setRedistributionPolicy("policy")
             .build());
 
     EigrpTopologyUtils.initNeighborConfigs(

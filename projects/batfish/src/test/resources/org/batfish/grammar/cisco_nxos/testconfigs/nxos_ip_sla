@@ -9,6 +9,10 @@ ip sla 30
   tcp-connect 1.1.1.1 5555 control enable
   udp-echo example.com 45555 control disable source-ip 2.2.2.2 source-port 5555
   udp-jitter example.com 5555 codec g729a codec-numpackets 8888 codec-size 67 advantage-factor 3 control enable source-ip 1.1.1.1 source-port 4444
+  vrf ext
+  threshold 1000
+  timeout 1000
+  frequency 2
 ip sla schedule 30 life forever start-time now
 ip sla reaction-trigger 45 46
 ip sla reaction-configuration 30 react connectionLoss threshold-type consecutive 3 action-type triggerOnly

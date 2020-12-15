@@ -429,8 +429,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       OspfNeighborConfigId ospfNeighborId, Map<String, Node> allNodes) {
     return allNodes
         .get(ospfNeighborId.getHostname())
-        .getVirtualRouters()
-        .get(ospfNeighborId.getVrfName())
+        .getVirtualRouterOrThrow(ospfNeighborId.getVrfName())
         .getOspfProcesses()
         .get(ospfNeighborId.getProcName());
   }
@@ -549,8 +548,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     }
     // Transform the route
     return Optional.of(
-        route
-            .toBuilder()
+        route.toBuilder()
             .setMetric(route.getMetric() + incrementalCost)
             .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
             // Clear any non-routing or non-forwarding bit
@@ -633,8 +631,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @VisibleForTesting
   OspfIntraAreaRoute.Builder transformIntraAreaRouteOnImport(
       OspfIntraAreaRoute route, long incrementalCost) {
-    return route
-        .toBuilder()
+    return route.toBuilder()
         .setMetric(route.getMetric() + incrementalCost)
         .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
         // Clear any non-routing or non-forwarding bit
@@ -857,8 +854,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             r ->
                 r.toBuilder()
                     .setRoute(
-                        r.getRoute()
-                            .toBuilder()
+                        r.getRoute().toBuilder()
                             .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
                             .setNextHopIp(nextHopIp)
                             .build())
@@ -947,8 +943,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             r ->
                 r.toBuilder()
                     .setRoute(
-                        r.getRoute()
-                            .toBuilder()
+                        r.getRoute().toBuilder()
                             .setArea(areaConfig.getAreaNumber())
                             .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
                             .setNextHopIp(nextHopIp)
@@ -1068,8 +1063,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             applyDistributeList(_c, _vrfName, ifaceName, ospfRouteBuilder);
             type1deltaBuilder.from(
                 processRouteAdvertisement(
-                    routeAdvertisement
-                        .toBuilder()
+                    routeAdvertisement.toBuilder()
                         .setRoute((OspfExternalType1Route) ospfRouteBuilder.build())
                         .build(),
                     _type1Rib));
@@ -1108,8 +1102,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             applyDistributeList(_c, _vrfName, headIfaceName, ospfRouteBuilder);
             type2deltaBuilder.from(
                 processRouteAdvertisement(
-                    routeAdvertisement
-                        .toBuilder()
+                    routeAdvertisement.toBuilder()
                         .setRoute((OspfExternalType2Route) ospfRouteBuilder.build())
                         .build(),
                     _type2Rib));
@@ -1247,8 +1240,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
               return r.toBuilder()
                   .setRoute(
                       (OspfExternalType1Route)
-                          route
-                              .toBuilder()
+                          route.toBuilder()
                               /*
                               Override the metric but only for "summary" routes that cross an area boundary.
                               area == NO_AREA means we generated this route locally, so it can't be summarized (?)
@@ -1286,8 +1278,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
               return r.toBuilder()
                   .setRoute(
                       (OspfExternalType2Route)
-                          route
-                              .toBuilder()
+                          route.toBuilder()
                               .setArea(
                                   // TODO: verify area setting logic
                                   route.getArea() == OspfRoute.NO_AREA

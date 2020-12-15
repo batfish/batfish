@@ -11,24 +11,13 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public AnswerId getBaseAnswerId(
+  public AnswerId getAnswerId(
       NetworkId networkId,
       SnapshotId snapshotId,
       QuestionId questionId,
-      QuestionSettingsId questionSettingsId,
       NodeRolesId networkNodeRolesId,
       SnapshotId referenceSnapshotId,
       AnalysisId analysisId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public AnswerId getFinalAnswerId(AnswerId baseAnswerId, Set<IssueSettingsId> issueSettingsIds) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Optional<IssueSettingsId> getIssueSettingsId(String majorIssueType, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 
@@ -49,12 +38,6 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public Optional<QuestionSettingsId> getQuestionSettingsId(
-      String questionClassId, NetworkId networkId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Optional<SnapshotId> getSnapshotId(String snapshot, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
@@ -70,11 +53,6 @@ public class TestIdResolver implements IdResolver {
   }
 
   @Override
-  public boolean hasIssueSettingsId(String majorIssueType, NetworkId networkId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public boolean hasNetworkId(String network) {
     throw new UnsupportedOperationException();
   }
@@ -86,11 +64,6 @@ public class TestIdResolver implements IdResolver {
 
   @Override
   public boolean hasQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean hasQuestionSettingsId(String questionClassId, NetworkId networkId) {
     throw new UnsupportedOperationException();
   }
 

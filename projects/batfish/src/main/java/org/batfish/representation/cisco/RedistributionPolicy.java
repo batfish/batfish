@@ -7,22 +7,15 @@ import org.batfish.datamodel.RoutingProtocol;
 
 public abstract class RedistributionPolicy implements Serializable {
 
-  protected final RoutingProtocol _destinationProtocol;
-
   protected String _routeMap;
 
   protected final RoutingProtocol _sourceProtocol;
 
   protected final Map<String, Object> _specialAttributes;
 
-  public RedistributionPolicy(RoutingProtocol sourceProtocol, RoutingProtocol destinationProtocol) {
+  public RedistributionPolicy(RoutingProtocol sourceProtocol) {
     _sourceProtocol = sourceProtocol;
-    _destinationProtocol = destinationProtocol;
     _specialAttributes = new TreeMap<>();
-  }
-
-  public RoutingProtocol getDestinationProtocol() {
-    return _destinationProtocol;
   }
 
   public String getRouteMap() {

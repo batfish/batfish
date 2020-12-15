@@ -113,7 +113,8 @@ public final class SearchFiltersQuestion extends Question {
     } else {
       throw new BatfishException(
           String.format(
-              "Unrecognized action '%s'. Must be one of 'permit', 'deny', or 'matchLine <line index>'.",
+              "Unrecognized action '%s'. Must be one of 'permit', 'deny', or 'matchLine <line"
+                  + " index>'.",
               type));
     }
   }

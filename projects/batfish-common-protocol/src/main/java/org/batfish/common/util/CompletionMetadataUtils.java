@@ -5,10 +5,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.IpCompletionRelevance;
+import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -20,6 +22,8 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.NamedStructurePropertySpecifier;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 
@@ -231,17 +235,63 @@ public final class CompletionMetadataUtils {
     return routingPolicyNames.build();
   }
 
-  public static Set<Location> getSourceLocationsWithSrcIps(
-      Map<Location, LocationInfo> locationInfo) {
+  public static Set<LocationCompletionMetadata> getLocationCompletionMetadata(
+      Map<Location, LocationInfo> locationInfo, Map<String, Configuration> configurations) {
     IpSpaceToBDD toBdd = new BDDPacket().getDstIpSpaceToBDD();
     return locationInfo.entrySet().stream()
-        .filter(
+        .map(
             entry -> {
+              Location location = entry.getKey();
               LocationInfo info = entry.getValue();
-              return info.isSource() && !toBdd.visit(info.getSourceIps()).isZero();
+
+              // must be a source per location info and must have a source IP
+              boolean isSource = info.isSource() && !toBdd.visit(info.getSourceIps()).isZero();
+
+              boolean isTracerouteSource = isTracerouteSource(location, configurations);
+
+              if (isSource || isTracerouteSource) {
+                return new LocationCompletionMetadata(location, isSource, isTracerouteSource);
+              }
+              return null;
             })
-        .map(Entry::getKey)
+        .filter(Objects::nonNull)
         .collect(ImmutableSet.toImmutableSet());
+  }
+
+  /**
+   * Judges if a location is a valid traceroute source. To be deemed a traceroute source, the
+   * location must be active and, if it is an InterfaceLocation, must have a concrete
+   * InterfaceAddress.
+   *
+   * <p>The function will return false for anything but an InterfaceLocation or
+   * InterfaceLinkLocation.
+   */
+  // TODO: possible to share this logic with TR logic?
+  @VisibleForTesting
+  static boolean isTracerouteSource(Location location, Map<String, Configuration> configurations) {
+    Configuration config = configurations.get(location.getNodeName());
+    @Nullable
+    String ifaceName =
+        location instanceof InterfaceLocation
+            ? ((InterfaceLocation) location).getInterfaceName()
+            : location instanceof InterfaceLinkLocation
+                ? ((InterfaceLinkLocation) location).getInterfaceName()
+                : null;
+    @Nullable Interface iface = ifaceName != null ? config.getAllInterfaces().get(ifaceName) : null;
+
+    return iface != null
+        && iface.getActive()
+        && !iface.getSwitchport() // ignore L2 interfaces
+        && ((location instanceof InterfaceLinkLocation
+                // packets can enter (InterfaceLinkLocation) interfaces that are not loopback and
+                // have either LLA or a concrete address with prefix size < 32
+                && !iface.isLoopback()
+                && (!iface.getAllLinkLocalAddresses().isEmpty()
+                    || iface.getAllConcreteAddresses().stream()
+                        .anyMatch(address -> address.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH)))
+            || (location instanceof InterfaceLocation
+                // packets can start (InterfaceLocation) at any interfaces with an IP address
+                && !iface.getAllAddresses().isEmpty()));
   }
 
   public static Set<String> getStructureNames(Map<String, Configuration> configurations) {

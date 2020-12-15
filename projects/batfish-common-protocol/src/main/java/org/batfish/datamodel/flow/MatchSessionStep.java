@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.collect.ImmutableSet;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +18,7 @@ import org.batfish.datamodel.flow.MatchSessionStep.MatchSessionStepDetail;
 
 /** A {@link Step} for when a {@link Flow} matches a session. */
 @JsonTypeName("MatchSession")
-public class MatchSessionStep extends Step<MatchSessionStepDetail> {
+public final class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
   public static final class MatchSessionStepDetail {
     private static final String PROP_INCOMING_INTERFACES = "incomingInterfaces";
@@ -26,10 +27,10 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
     private static final String PROP_MATCH_CRITERIA = "matchCriteria";
     private static final String PROP_TRANSFORMATION = "transformation";
 
-    @Nonnull private final SessionScope _sessionScope;
-    @Nonnull private final SessionAction _sessionAction;
-    @Nonnull private final SessionMatchExpr _matchCriteria;
-    private final Set<FlowDiff> _transformation;
+    private final @Nonnull SessionScope _sessionScope;
+    private final @Nonnull SessionAction _sessionAction;
+    private final @Nonnull SessionMatchExpr _matchCriteria;
+    private final @Nonnull Set<FlowDiff> _transformation;
 
     private MatchSessionStepDetail(
         @Nonnull SessionScope sessionScope,
@@ -92,8 +93,28 @@ public class MatchSessionStep extends Step<MatchSessionStepDetail> {
     }
 
     @JsonProperty(PROP_TRANSFORMATION)
+    @Nonnull
     public Set<FlowDiff> getTransformation() {
       return _transformation;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof MatchSessionStepDetail)) {
+        return false;
+      }
+      MatchSessionStepDetail that = (MatchSessionStepDetail) o;
+      return _sessionScope.equals(that._sessionScope)
+          && _sessionAction.equals(that._sessionAction)
+          && _matchCriteria.equals(that._matchCriteria)
+          && Objects.equals(_transformation, that._transformation);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(_sessionScope, _sessionAction, _matchCriteria, _transformation);
     }
 
     public static Builder builder() {

@@ -125,11 +125,11 @@ public final class FlowEvaluator {
     public Action visitApplyTransformation(ApplyTransformation transformation) {
       _currentFlow =
           TransformationEvaluator.eval(
-                  transformation.getTransformation(),
-                  _currentFlow.build(),
-                  _srcInterface,
-                  _availableAcls,
-                  _namedIpSpaces)
+              transformation.getTransformation(),
+              _currentFlow.build(),
+              _srcInterface,
+              _availableAcls,
+              _namedIpSpaces)
               .getOutputFlow()
               .toBuilder();
       return null;

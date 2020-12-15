@@ -233,10 +233,45 @@ public class NatGatewayTest {
   @Test
   public void testComputePostTransformationIllegalPacketFilter() {
     Ip privateIp = Ip.parse("10.10.10.10");
-    IpAccessList filter =
-        computePostTransformationIllegalPacketFilter(privateIp, Prefix.parse("10.10.10.0/24"));
+    IpAccessList filter = computePostTransformationIllegalPacketFilter(privateIp);
 
-    // is in the NAT's subnet
+    // denied: it has the same ip has the nat
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcIp(privateIp)
+                    .setSrcPort(345)
+                    .setDstIp(Ip.parse("2.2.2.2"))
+                    .setDstPort(80)
+                    .build(),
+                "a",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    // denied: it wasn't transformed (as its dst IP is that of the NAT)
+    assertThat(
+        filter
+            .filter(
+                Flow.builder()
+                    .setIngressNode("a")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcIp(Ip.parse("1.1.1.11"))
+                    .setSrcPort(345)
+                    .setDstIp(privateIp)
+                    .setDstPort(80)
+                    .build(),
+                "a",
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(LineAction.DENY));
+
+    // allowed: it is in the NAT's subnet
     assertThat(
         filter
             .filter(
@@ -245,33 +280,16 @@ public class NatGatewayTest {
                     .setIpProtocol(IpProtocol.TCP)
                     .setSrcIp(Ip.parse("10.10.10.11"))
                     .setSrcPort(345)
-                    .setDstIp(privateIp)
+                    .setDstIp(Ip.parse("2.2.2.2"))
                     .setDstPort(80)
                     .build(),
                 "a",
                 ImmutableMap.of(),
                 ImmutableMap.of())
             .getAction(),
-        equalTo(LineAction.DENY));
+        equalTo(LineAction.PERMIT));
 
-    // has the same ip has the nat
-    assertThat(
-        filter
-            .filter(
-                Flow.builder()
-                    .setIngressNode("a")
-                    .setIpProtocol(IpProtocol.TCP)
-                    .setSrcPort(345)
-                    .setDstIp(privateIp)
-                    .setDstPort(80)
-                    .build(),
-                "a",
-                ImmutableMap.of(),
-                ImmutableMap.of())
-            .getAction(),
-        equalTo(LineAction.DENY));
-
-    // legal packet
+    // allowed: coming from outside
     assertThat(
         filter
             .filter(

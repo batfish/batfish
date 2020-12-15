@@ -80,7 +80,10 @@ public final class PaloAltoBidirectionalBehaviorTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    return new TracerouteEngineImpl(dp, batfish.getTopologyProvider().getLayer3Topology(snapshot));
+    return new TracerouteEngineImpl(
+        dp,
+        batfish.getTopologyProvider().getLayer3Topology(snapshot),
+        batfish.loadConfigurations(snapshot));
   }
 
   private void assertForwardDropped(String hostname) throws IOException {

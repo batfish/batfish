@@ -19,9 +19,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -481,6 +483,44 @@ public class Bgpv4RibTest {
     _bestPathRib.mergeRoute(bestPath);
 
     assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+  }
+
+  /** We should not merge routes for which next hop is unreachable */
+  @Test
+  public void testRejectNextHopUnreachable() {
+    Rib mainRib = new Rib();
+    Bgpv4Rib bgpRib = new Bgpv4Rib(mainRib, BgpTieBreaker.ARRIVAL_ORDER, 1, null, false, false);
+    Bgpv4Route route =
+        _rb.setProtocol(RoutingProtocol.IBGP)
+            .setClusterList(ImmutableSet.of())
+            .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .build();
+    assertTrue(bgpRib.mergeRouteGetDelta(route).isEmpty());
+
+    // Now try with a route to NH
+    mainRib.mergeRoute(
+        new AnnotatedRoute<>(new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "eth0"), "vrf"));
+    assertThat(bgpRib.mergeRouteGetDelta(route).getRoutes(), contains(route));
+  }
+
+  /**
+   * Accept routes with next link-local next hops, even when there is no route to it in the main
+   * rib.
+   */
+  @Test
+  public void testAcceptLinkLocalNextHopEvenWhenUnreachable() {
+    Rib mainRib = new Rib();
+    Bgpv4Rib bgpRib = new Bgpv4Rib(mainRib, BgpTieBreaker.ARRIVAL_ORDER, 1, null, false, false);
+    Bgpv4Route route =
+        _rb.setProtocol(RoutingProtocol.IBGP)
+            .setClusterList(ImmutableSet.of())
+            .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("169.254.0.1"))
+            .setNextHopInterface("eth0")
+            .build();
+
+    assertThat(bgpRib.mergeRouteGetDelta(route).getRoutes(), contains(route));
   }
 
   //////////////////////////////////////////////////////////////////////////////////

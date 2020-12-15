@@ -3,7 +3,6 @@ package org.batfish.specifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /** Identifies the {@link Location} of the link of an interface in the network. */
@@ -55,7 +54,7 @@ public final class InterfaceLinkLocation implements Location {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_interfaceName, _nodeName);
+    return 31 * 31 * getClass().hashCode() + 31 * _interfaceName.hashCode() + _nodeName.hashCode();
   }
 
   @Override

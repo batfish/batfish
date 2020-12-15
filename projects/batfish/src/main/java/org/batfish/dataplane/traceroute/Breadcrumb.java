@@ -39,6 +39,13 @@ class Breadcrumb {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_node, _vrf, _flow, _ingressInterface);
+    int hash = _hashCode;
+    if (hash == 0) {
+      hash = Objects.hash(_node, _vrf, _flow, _ingressInterface);
+      _hashCode = hash;
+    }
+    return hash;
   }
+
+  private int _hashCode;
 }

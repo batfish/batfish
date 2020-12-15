@@ -125,10 +125,16 @@ i_hsrp
 :
   HSRP
   (
-    ih_delay
+    | ih_bfd
+    | ih_delay
     | ih_group
     | ih_version
   )
+;
+
+ih_bfd
+:
+  BFD NEWLINE
 ;
 
 ih_delay
@@ -381,11 +387,18 @@ i_ip
     i_ip_access_group
     | i_ip_address
     | i_ip_authentication
+    | i_ip_bandwidth
+    | i_ip_delay
+    | i_ip_distribute_list
     | i_ip_dhcp
+    | i_ip_eigrp
     | i_ip_forward
+    | i_ip_hello_interval
+    | i_ip_hold_time
     | i_ip_igmp
     | i_ip_null
     | i_ip_ospf
+    | i_ip_passive_interface
     | i_ip_pim
     | i_ip_policy
     | i_ip_port
@@ -443,6 +456,18 @@ i_ip_address_concrete
   )* NEWLINE
 ;
 
+i_ip_bandwidth
+:
+  // bandwidth 1 - 2,560,000,000 kb/s
+  BANDWIDTH EIGRP router_eigrp_process_tag bw = interface_bandwidth_kbps NEWLINE
+;
+
+i_ip_delay
+:
+  // delay 1 - 16,777,215 (2^24) tens of microseconds
+  DELAY EIGRP router_eigrp_process_tag delay = interface_delay_10us NEWLINE
+;
+
 i_ip_address_dhcp
 :
   DHCP NEWLINE
@@ -456,6 +481,36 @@ i_ip_dhcp
 i_ip_dhcp_relay
 :
   RELAY ADDRESS ip_address NEWLINE
+;
+
+i_ip_distribute_list
+:
+  DISTRIBUTE_LIST EIGRP router_eigrp_process_tag
+  (
+    iipdl_prefix_list
+    | iipdl_route_map
+  )
+;
+
+iipdl_prefix_list
+:
+  PREFIX_LIST prefixlist = ip_prefix_list_name (IN | OUT) NEWLINE
+;
+
+iipdl_route_map
+:
+  ROUTE_MAP routemap = route_map_name (IN | OUT) NEWLINE
+;
+
+i_ip_eigrp
+:
+  EIGRP tag = router_eigrp_process_tag
+  i_ip_eigrp_bfd
+;
+
+i_ip_eigrp_bfd
+:
+  BFD DISABLE? NEWLINE
 ;
 
 i_ip_forward
@@ -486,6 +541,16 @@ iipi_null
   ) null_rest_of_line
 ;
 
+i_ip_hello_interval
+:
+  HELLO_INTERVAL EIGRP tag = router_eigrp_process_tag time = uint16 NEWLINE
+;
+
+i_ip_hold_time
+:
+  HOLD_TIME EIGRP tag = router_eigrp_process_tag time = uint16 NEWLINE
+;
+
 i_ip_null
 :
   (
@@ -512,6 +577,11 @@ i_ip_ospf
     | iipo_passive_interface
     | iipo_priority
   )
+;
+
+i_ip_passive_interface
+:
+  PASSIVE_INTERFACE EIGRP router_eigrp_process_tag NEWLINE
 ;
 
 i_ip_pim

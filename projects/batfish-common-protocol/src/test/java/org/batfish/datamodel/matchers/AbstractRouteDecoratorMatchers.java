@@ -13,6 +13,7 @@ import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNext
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNextHopIp;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasPrefix;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasProtocol;
+import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasTag;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonForwarding;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonRouting;
 import org.hamcrest.Matcher;
@@ -117,6 +118,22 @@ public final class AbstractRouteDecoratorMatchers {
    */
   public static HasProtocol hasProtocol(RoutingProtocol expectedProtocol) {
     return new HasProtocol(equalTo(expectedProtocol));
+  }
+
+  /**
+   * A {@link Matcher} that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRouteDecorator}'s tag.
+   */
+  public static @Nonnull HasTag hasTag(Matcher<? super Long> subMatcher) {
+    return new HasTag(subMatcher);
+  }
+
+  /**
+   * A {@link Matcher} that matches if the {@link AbstractRouteDecorator}'s tag is {@code
+   * expectedTag}.
+   */
+  public static @Nonnull HasTag hasTag(long expectedTag) {
+    return hasTag(equalTo(expectedTag));
   }
 
   /**

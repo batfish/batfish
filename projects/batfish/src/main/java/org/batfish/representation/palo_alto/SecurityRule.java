@@ -1,8 +1,10 @@
 package org.batfish.representation.palo_alto;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
@@ -13,6 +15,12 @@ import org.batfish.datamodel.LineAction;
 /** PAN datamodel component containing security rule configuration */
 @ParametersAreNonnullByDefault
 public final class SecurityRule implements Serializable {
+
+  public enum RuleType {
+    INTERZONE,
+    INTRAZONE,
+    UNIVERSAL
+  }
 
   // Name of the rule
   @Nonnull private final String _name;
@@ -42,6 +50,11 @@ public final class SecurityRule implements Serializable {
   // Applications
   @Nonnull private final SortedSet<String> _applications;
 
+  // Rule type
+  @Nullable private RuleType _ruleType;
+
+  @Nonnull private final Set<String> _tags;
+
   public SecurityRule(String name, Vsys vsys) {
     _action = LineAction.DENY;
     _applications = new TreeSet<>();
@@ -53,6 +66,7 @@ public final class SecurityRule implements Serializable {
     _source = new LinkedList<>();
     _negateSource = false;
     _to = new TreeSet<>();
+    _tags = new HashSet<>(1);
     _name = name;
     _vsys = vsys;
   }
@@ -123,8 +137,18 @@ public final class SecurityRule implements Serializable {
   }
 
   @Nonnull
+  public Set<String> getTags() {
+    return _tags;
+  }
+
+  @Nonnull
   public Vsys getVsys() {
     return _vsys;
+  }
+
+  @Nullable
+  public RuleType getRuleType() {
+    return _ruleType;
   }
 
   public void setAction(LineAction action) {
@@ -137,5 +161,9 @@ public final class SecurityRule implements Serializable {
 
   public void setDisabled(boolean disabled) {
     _disabled = disabled;
+  }
+
+  public void setRuleType(@Nullable RuleType ruleType) {
+    _ruleType = ruleType;
   }
 }

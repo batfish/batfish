@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_allowas_in
+feature bgp
+!
+router bgp 1
+  neighbor 1.1.1.1
+      remote-as 2
+      address-family ipv4 unicast
+          allowas-in
+  neighbor 2.2.2.2
+      remote-as 2
+      address-family ipv4 unicast
+          allowas-in 2
+  neighbor 3.3.3.3
+      remote-as 2
+      address-family ipv4 unicast
+!

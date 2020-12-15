@@ -20,7 +20,6 @@ null_block
       | AS_PATH_SET
       | ATM
       | BASH
-      | BGP DISABLE_ADVERTISEMENT
       | BLOGGERD
       | BSD_CLIENT
       | BSD_USERNAME
@@ -456,7 +455,6 @@ null_inner
       | PROVISION
       | RANDOM
       | RANDOM_DETECT
-      | RD
       | REACT
       | REAL
       | RECEIVE
@@ -471,7 +469,6 @@ null_inner
       | RETRIES
       | REVISION
       | RING
-      | ROUTE_TARGET
       | RP_ADDRESS
       | SA_FILTER
       | SATELLITE
@@ -677,7 +674,6 @@ null_single
             | ICMP
             | IGMP
             | LOAD_SHARING
-            | LOCAL
             | MFIB
             | MFWD
             | MOBILE
@@ -725,7 +721,6 @@ null_single
             | FIREWALL
             | HOP_LIMIT
             | HOST
-            | LOCAL
             | MFIB
             | MFIB_MODE
             | MLD
@@ -863,11 +858,9 @@ null_single
       | QUIT
       | RADIUS_COMMON_PW
       | RADIUS_SERVER
-      | RD
       | RESOURCE
       | RESOURCE_POOL
       | NO ROUTE
-      | ROUTE_TARGET
       | RTR
       | SAT
       | SCHEDULE

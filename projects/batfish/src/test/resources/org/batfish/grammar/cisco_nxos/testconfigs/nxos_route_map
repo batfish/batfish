@@ -145,6 +145,9 @@ route-map set_local_preference permit 10
 route-map set_metric permit 10
   set metric 1
 
+route-map set_metric_eigrp permit 10
+  set metric 1 2 3 4 5
+
 route-map set_metric_type_external permit 10
   set metric-type external
 
@@ -169,6 +172,9 @@ route-map set_origin_incomplete permit 10
 route-map set_tag permit 10
   set tag 1
 
+route-map set_weight permit 10
+  set weight 1
+
 !!! Matches with undefined references
 route-map match_undefined_access_list permit 10
   match ip address acl_undefined
@@ -191,26 +197,25 @@ route-map continue_from_deny_to_permit permit 20
 
 route-map continue_from_permit_to_fall_off permit 10
   continue 20
-route-map continue_from_permit_to_fall_off permit 20
+route-map continue_from_permit_to_fall_off deny 20
   ! use untagged route to test fall-off
   match tag 10 11
 
 route-map continue_from_permit_and_set_to_fall_off permit 10
   set metric 10
   continue 20
-route-map continue_from_permit_and_set_to_fall_off permit 20
+route-map continue_from_permit_and_set_to_fall_off deny 20
   match tag 10
 
-route-map continue_from_set_to_match_on_set_field permit 10
+route-map continue_from_set_to_match_on_set_field deny 10
   set metric 10
   continue 20
 route-map continue_from_set_to_match_on_set_field permit 20
   match metric 10
-route-map continue_from_set_to_match_on_set_field deny 30
 
 route-map reach_continue_target_without_match permit 10
   match tag 10
   continue 30
-route-map reach_continue_target_without_match permit 20
+route-map reach_continue_target_without_match deny 20
   match tag 10
 route-map reach_continue_target_without_match permit 30

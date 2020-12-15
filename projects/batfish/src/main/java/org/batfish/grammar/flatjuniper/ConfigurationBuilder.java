@@ -14,6 +14,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GR
 import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GROUP_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
@@ -75,11 +76,15 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
@@ -2682,6 +2687,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterPo_community(Po_communityContext ctx) {
     String name = ctx.name.getText();
+    _configuration.defineFlattenedStructure(COMMUNITY, name, ctx, _parser);
     Map<String, NamedCommunity> communityLists = _currentLogicalSystem.getNamedCommunities();
     _currentCommunityList = communityLists.computeIfAbsent(name, NamedCommunity::new);
   }
@@ -2854,6 +2860,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     name = ctx.name.getText();
     _currentRoutingInstance =
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
+    _currentRoutingInstance.getGlobalMasterInterface().setParent(_currentMasterInterface);
     _configuration.defineFlattenedStructure(ROUTING_INSTANCE, name, ctx, _parser);
   }
 
@@ -3211,7 +3218,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       case INLINED:
         _w.redFlag(
             String.format(
-                "Not attaching the address book %s to zone %s because an inline address book is defined",
+                "Not attaching the address book %s to zone %s because an inline address book is"
+                    + " defined",
                 _currentAddressBook.getName(), zone.getName()));
         break;
       default:
@@ -3444,7 +3452,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       case ATTACHED:
         _w.redFlag(
             String.format(
-                "Ignoring attached address book %s to zone %s because an inline address book is defined",
+                "Ignoring attached address book %s to zone %s because an inline address book is"
+                    + " defined",
                 _currentZone.getAddressBook().getName(), _currentZone.getName()));
         _currentAddressBook =
             _currentZone.initInlinedAddressBook(_currentLogicalSystem.getGlobalAddressBook());
@@ -3626,8 +3635,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
-        oldHeaderSpace
-            .toBuilder()
+        oldHeaderSpace.toBuilder()
             .setDstPorts(
                 ImmutableSet.<SubRange>builder()
                     .addAll(oldHeaderSpace.getDstPorts())
@@ -3641,8 +3649,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
-        oldHeaderSpace
-            .toBuilder()
+        oldHeaderSpace.toBuilder()
             .setIpProtocols(
                 ImmutableSet.<IpProtocol>builder()
                     .addAll(oldHeaderSpace.getIpProtocols())
@@ -3659,8 +3666,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             : SubRange.singleton(getPortNumber(ctx.port()));
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
-        oldHeaderSpace
-            .toBuilder()
+        oldHeaderSpace.toBuilder()
             .setSrcPorts(
                 ImmutableSet.<SubRange>builder()
                     .addAll(oldHeaderSpace.getSrcPorts())
@@ -4814,6 +4820,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitPopsf_community(Popsf_communityContext ctx) {
     String name = ctx.name.getText();
     _currentPsTerm.getFroms().addFromCommunity(new PsFromCommunity(name));
+    _configuration.referenceStructure(
+        COMMUNITY, name, POLICY_STATEMENT_FROM_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -4972,6 +4980,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsThenCommunityAdd then = new PsThenCommunityAdd(name, _configuration);
     _currentPsThens.add(then);
+    _configuration.referenceStructure(
+        COMMUNITY, name, POLICY_STATEMENT_THEN_ADD_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -4979,6 +4989,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsThenCommunityDelete then = new PsThenCommunityDelete(name);
     _currentPsThens.add(then);
+    _configuration.referenceStructure(
+        COMMUNITY, name, POLICY_STATEMENT_THEN_DELETE_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -4986,6 +4998,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsThenCommunitySet then = new PsThenCommunitySet(name, _configuration);
     _currentPsThens.add(then);
+    _configuration.referenceStructure(
+        COMMUNITY, name, POLICY_STATEMENT_THEN_SET_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -5093,6 +5107,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRi_interface(Ri_interfaceContext ctx) {
     Interface iface = initInterface(ctx.id);
     iface.setRoutingInstance(_currentRoutingInstance.getName());
+    iface.setParent(_currentRoutingInstance.getGlobalMasterInterface());
     _configuration.referenceStructure(
         INTERFACE, iface.getName(), ROUTING_INSTANCE_INTERFACE, getLine(ctx.id.getStop()));
   }

@@ -565,18 +565,6 @@
       },
       {
         "Structure_Type" : "crypto ipsec transform-set",
-        "Structure_Name" : "ESP-3DES-MD5",
-        "Source_Lines" : {
-          "filename" : "configs/cisco_crypto",
-          "lines" : [
-            168,
-            169,
-            170
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "crypto ipsec transform-set",
         "Structure_Name" : "IPSEC_AES_256",
         "Source_Lines" : {
           "filename" : "configs/cisco_crypto",
@@ -868,8 +856,8 @@
         "Source_Lines" : {
           "filename" : "configs/cisco_misc",
           "lines" : [
-            177,
-            178
+            179,
+            180
           ]
         }
       },
@@ -1171,26 +1159,6 @@
           "filename" : "configs/cisco_style_acl2",
           "lines" : [
             1
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "track",
-        "Structure_Name" : "1",
-        "Source_Lines" : {
-          "filename" : "configs/cisco_track",
-          "lines" : [
-            4
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "track",
-        "Structure_Name" : "2",
-        "Source_Lines" : {
-          "filename" : "configs/cisco_track",
-          "lines" : [
-            5
           ]
         }
       },
@@ -2782,6 +2750,36 @@
             14,
             15,
             16
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "community",
+        "Structure_Name" : "COMM_ALL",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_extended_community",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "community",
+        "Structure_Name" : "COMM_NON_CUST",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_extended_community",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "community",
+        "Structure_Name" : "COMM_REGEX",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_extended_community",
+          "lines" : [
+            7
           ]
         }
       },

@@ -117,7 +117,9 @@ public enum Statements {
           break;
 
         case SetReadIntermediateBgpAttributes:
-          environment.setReadFromIntermediateBgpAttributes(true);
+          if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+            environment.setReadFromIntermediateBgpAttributes(true);
+          }
           break;
 
         case SetWriteIntermediateBgpAttributes:
@@ -126,8 +128,12 @@ public enum Statements {
             if (environment.getIntermediateBgpAttributes() == null) {
               BgpRoute.Builder<?, ?> bgpRouteBuilder = (Builder<?, ?>) environment.getOutputRoute();
               AbstractRoute or = environment.getOriginalRoute();
-              environment.setIntermediateBgpAttributes(
-                  bgpRouteBuilder.newBuilder().setMetric(or.getMetric()).setTag(or.getTag()));
+              Builder<?, ?> intermediateBgpAttributes =
+                  bgpRouteBuilder.newBuilder().setMetric(or.getMetric()).setTag(or.getTag());
+              if (or instanceof BgpRoute) {
+                intermediateBgpAttributes.setCommunities(((BgpRoute<?, ?>) or).getCommunities());
+              }
+              environment.setIntermediateBgpAttributes(intermediateBgpAttributes);
             }
           }
           break;

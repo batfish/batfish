@@ -133,7 +133,9 @@ public class TestFiltersAnswerer extends Answerer {
     IpSpace dstIps =
         SpecifierFactories.getIpSpaceSpecifierOrDefault(
                 constraints.getDstIps(), new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE))
-            .resolve(ImmutableSet.of(), context).getEntries().stream()
+            .resolve(ImmutableSet.of(), context)
+            .getEntries()
+            .stream()
             .findFirst()
             .map(Entry::getIpSpace)
             .orElse(UniverseIpSpace.INSTANCE);

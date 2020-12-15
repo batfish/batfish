@@ -24,6 +24,7 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwidth;
+import org.batfish.datamodel.matchers.ParseVendorConfigurationAnswerElementMatchers.HasParseWarning;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasEigrpProcesses;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasIsisProcess;
 import org.batfish.datamodel.ospf.OspfProcess;
@@ -124,6 +126,15 @@ public final class DataModelMatchers {
    */
   public static @Nonnull Matcher<Interface> hasOutgoingFilterName(@Nullable String expectedName) {
     return hasOutgoingFilter(IpAccessListMatchers.hasName(expectedName));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@link ParseVendorConfigurationAnswerElement}
+   * has a parse warning with comment matched by {@code subMatcher}.
+   */
+  public static Matcher<ParseVendorConfigurationAnswerElement> hasParseWarning(
+      @Nonnull String filename, @Nonnull Matcher<? super String> subMatcher) {
+    return new HasParseWarning(filename, subMatcher);
   }
 
   /**
@@ -330,6 +341,20 @@ public final class DataModelMatchers {
       @Nonnull String structureName,
       @Nonnull StructureUsage usage) {
     return new ConvertConfigurationAnswerElementMatchers.HasUndefinedReferenceWithUsage(
+        filename, type, structureName, usage);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
+   * reference in {@code filename} to a structure of type {@code type} named {@code structureName}
+   * of usage type {@code usage}.
+   */
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasReferencedStructure(
+      @Nonnull String filename,
+      @Nonnull StructureType type,
+      @Nonnull String structureName,
+      @Nonnull StructureUsage usage) {
+    return new ConvertConfigurationAnswerElementMatchers.HasReferenceWithUsage(
         filename, type, structureName, usage);
   }
 

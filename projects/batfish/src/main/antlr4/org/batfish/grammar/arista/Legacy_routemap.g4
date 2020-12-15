@@ -208,7 +208,8 @@ rm_stanza
 
 route_map_stanza
 :
-   ROUTE_MAP name = variable rmt = access_list_action num = DEC NEWLINE
+   // Both action and number are optional but number must come with action
+   ROUTE_MAP name = variable (rmt = access_list_action (num = DEC)?)? NEWLINE
    rm_stanza*
 ;
 

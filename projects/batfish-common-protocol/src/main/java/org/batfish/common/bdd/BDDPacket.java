@@ -1,5 +1,6 @@
 package org.batfish.common.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDInteger.makeFromIndex;
 import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
@@ -20,6 +21,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 
 /**
@@ -34,7 +36,7 @@ public class BDDPacket {
    * will reduce time spent garbage collecting for large computations, but will waste memory for
    * smaller ones.
    */
-  private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 10000;
+  private static final int JFACTORY_INITIAL_NODE_TABLE_SIZE = 1_000_000;
 
   /*
    * The ratio of node table size to node cache size to preserve when resizing. The default
@@ -94,6 +96,7 @@ public class BDDPacket {
   private final BDDPairing _swapSourceAndDestinationPairing;
   private final IpSpaceToBDD _dstIpSpaceToBDD;
   private final IpSpaceToBDD _srcIpSpaceToBDD;
+  private final @Nonnull BDD _saneFlow;
 
   // Generating flow preference for representative flow picking
   private final Supplier<BDDFlowConstraintGenerator> _flowConstraintGeneratorSupplier =
@@ -167,6 +170,8 @@ public class BDDPacket {
 
     _dstIpSpaceToBDD = new MemoizedIpSpaceToBDD(_dstIp, ImmutableMap.of());
     _srcIpSpaceToBDD = new MemoizedIpSpaceToBDD(_srcIp, ImmutableMap.of());
+
+    _saneFlow = saneIpFlow();
   }
 
   /*
@@ -238,19 +243,36 @@ public class BDDPacket {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
-    if (bdd.isZero()) {
+    BDD saneBDD = bdd.and(_saneFlow);
+    if (saneBDD.isZero()) {
       return Optional.empty();
     }
-    BDD representativeBDD =
-        BDDRepresentativePicker.pickRepresentative(
-            bdd, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
+
+    BDD representativeBDD = getFlowBDD(saneBDD, preference);
 
     if (representativeBDD.isZero()) {
       // Should not be possible if the preference is well-formed.
-      return Optional.of(getRepresentativeFlow(bdd));
+      return Optional.of(getRepresentativeFlow(saneBDD));
     }
 
     return Optional.of(getRepresentativeFlow(representativeBDD));
+  }
+
+  /**
+   * Restrict a BDD according to a given flow preference.
+   *
+   * @param bdd a BDD representing a set of packet headers
+   * @param preference a FlowPreference representing flow preference
+   * @return A BDD restricted to more preferred flows. Note that the return value is NOT a full
+   *     assignment.
+   */
+  public @Nonnull BDD getFlowBDD(BDD bdd, FlowPreference preference) {
+    BDD saneBDD = bdd.and(_saneFlow);
+    if (saneBDD.isZero()) {
+      return saneBDD;
+    }
+    return BDDRepresentativePicker.pickRepresentative(
+        saneBDD, _flowConstraintGeneratorSupplier.get().generateFlowPreference(preference));
   }
 
   /**
@@ -265,8 +287,16 @@ public class BDDPacket {
     return getFlow(bdd, FlowPreference.DEBUGGING);
   }
 
-  public Flow.Builder getRepresentativeFlow(BDD bdd) {
-    return getFromFromAssignment(bdd.minAssignmentBits());
+  /**
+   * Returns a {@link Flow.Builder} corresponding to one assignment of the given {@link BDD}.
+   *
+   * @throws IllegalArgumentException if there are no assignments of the given {@link BDD} that
+   *     correspond to valid L3 flows.
+   */
+  public @Nonnull Flow.Builder getRepresentativeFlow(BDD bdd) {
+    BDD saneBDD = bdd.and(_saneFlow);
+    checkArgument(!saneBDD.isZero(), "The input set of flows does not contain any valid flows");
+    return getFromFromAssignment(saneBDD.minAssignmentBits());
   }
 
   public Flow.Builder getFromFromAssignment(BitSet bits) {
@@ -436,6 +466,18 @@ public class BDDPacket {
         && _dscp.equals(other._dscp)
         && _ecn.equals(other._ecn)
         && _fragmentOffset.equals(other._fragmentOffset);
+  }
+
+  /**
+   * Returns a BDD representing known constraints on all sane IP flows. For example, all IP Packets
+   * are at least 20 bytes long, and all TCP packets are at least 40 bytes.
+   */
+  private BDD saneIpFlow() {
+    BDD ipPacketsAreAtLeast20Long = _packetLength.geq(20);
+    BDD validIcmp = _ipProtocol.value(IpProtocol.ICMP).impWith(_packetLength.geq(64));
+    BDD validUdp = _ipProtocol.value(IpProtocol.UDP).impWith(_packetLength.geq(28));
+    BDD validTcp = _ipProtocol.value(IpProtocol.TCP).impWith(_packetLength.geq(40));
+    return BDDOps.andNull(ipPacketsAreAtLeast20Long, validIcmp, validTcp, validUdp);
   }
 
   public BDD restrict(BDD bdd, Prefix pfx) {

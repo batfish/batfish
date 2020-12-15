@@ -379,7 +379,8 @@ public class JuniperConfigurationTest {
         config.getWarnings().getPedanticWarnings(),
         contains(
             new Warning(
-                "Cannot use IS-IS reference bandwidth for interface 'iface' because interface bandwidth is 0.",
+                "Cannot use IS-IS reference bandwidth for interface 'iface' because interface"
+                    + " bandwidth is 0.",
                 TAG_PEDANTIC)));
   }
 
@@ -752,8 +753,9 @@ public class JuniperConfigurationTest {
     JuniperConfiguration config = createConfig();
     FwTerm term = new FwTerm("term");
     term.getThens().add(FwThenAccept.INSTANCE);
-    List<FwTerm> terms = ImmutableList.of(term);
-    IpAccessList acl = config.fwTermsToIpAccessList("acl", terms, null, FIREWALL_FILTER);
+    ConcreteFirewallFilter filter = new ConcreteFirewallFilter("acl", Family.INET);
+    filter.getTerms().put(term.getName(), term);
+    IpAccessList acl = config.fwTermsToIpAccessList("acl", filter, null, FIREWALL_FILTER);
 
     assertThat(acl.getLines(), hasSize(1));
 

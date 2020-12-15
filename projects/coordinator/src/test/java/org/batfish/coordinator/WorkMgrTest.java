@@ -10,7 +10,6 @@ import static org.batfish.coordinator.WorkMgr.updateRuntimeData;
 import static org.batfish.coordinator.WorkMgrTestUtils.createSnapshot;
 import static org.batfish.coordinator.WorkMgrTestUtils.setupQuestionAndAnswer;
 import static org.batfish.identifiers.NodeRolesId.DEFAULT_NETWORK_NODE_ROLES_ID;
-import static org.batfish.identifiers.QuestionSettingsId.DEFAULT_QUESTION_SETTINGS_ID;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -92,8 +91,6 @@ import org.batfish.datamodel.answers.AnswerMetadata;
 import org.batfish.datamodel.answers.AnswerMetadataUtil;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.Issue;
-import org.batfish.datamodel.answers.MajorIssueConfig;
-import org.batfish.datamodel.answers.MinorIssueConfig;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.answers.StringAnswerElement;
@@ -102,7 +99,6 @@ import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
-import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -113,11 +109,9 @@ import org.batfish.datamodel.table.TableView;
 import org.batfish.datamodel.table.TableViewRow;
 import org.batfish.identifiers.AnalysisId;
 import org.batfish.identifiers.AnswerId;
-import org.batfish.identifiers.IssueSettingsId;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.NodeRolesId;
 import org.batfish.identifiers.QuestionId;
-import org.batfish.identifiers.QuestionSettingsId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
@@ -1356,23 +1350,11 @@ public final class WorkMgrTest {
     QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId).get();
 
     AnswerId baseAnswerId1 =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId1,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId1, DEFAULT_NETWORK_NODE_ROLES_ID, null, analysisId);
     AnswerId baseAnswerId2 =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId2,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId2, DEFAULT_NETWORK_NODE_ROLES_ID, null, analysisId);
     Answer answer1 = new Answer();
     Answer answer2 = new Answer();
     String answer1Text = "foo1";
@@ -1444,23 +1426,11 @@ public final class WorkMgrTest {
     QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId).get();
 
     AnswerId baseAnswerId1 =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId1,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId1, DEFAULT_NETWORK_NODE_ROLES_ID, null, analysisId);
     AnswerId baseAnswerId2 =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId2,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId2, DEFAULT_NETWORK_NODE_ROLES_ID, null, analysisId);
     Answer answer1 = new Answer();
     Answer answer2 = new Answer();
     String answer1Text = "foo1";
@@ -1491,91 +1461,6 @@ public final class WorkMgrTest {
     assertThat(answers1.keySet(), containsInAnyOrder(question1Name, question2Name));
     assertThat(answers2.keySet(), containsInAnyOrder(question1Name));
     assertThat(answers3.keySet(), containsInAnyOrder(question1Name, question2Name));
-  }
-
-  /** Test that we return good answers when some questions are bad */
-  @Test
-  public void testGetAnalysisAnswersAndMetadataPartial() throws IOException {
-    String containerName = "container1";
-    String testrigName = "testrig1";
-    String analysisName = "analysis1";
-
-    String question1Name = "question1";
-    String question1Content = BatfishObjectMapper.writeString(new TestQuestion());
-
-    String question2Name = "question2";
-    String question2Content = "bogus"; // bad content
-
-    _manager.initNetwork(containerName, null);
-    Map<String, String> questionsToAdd =
-        ImmutableMap.of(question1Name, question1Content, question2Name, question2Content);
-
-    _manager.configureAnalysis(
-        containerName, true, analysisName, questionsToAdd, Lists.newArrayList(), null);
-    NetworkId networkId = _idManager.getNetworkId(containerName).get();
-    SnapshotId snapshotId = _idManager.generateSnapshotId();
-    _idManager.assignSnapshot(testrigName, networkId, snapshotId);
-    AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
-    QuestionId questionId1 = _idManager.getQuestionId(question1Name, networkId, analysisId).get();
-    QuestionId questionId2 = _idManager.getQuestionId(question2Name, networkId, analysisId).get();
-
-    AnswerId baseAnswerId1 =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId1,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
-    AnswerId baseAnswerId2 =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId2,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
-    Answer answer1 = new Answer();
-    Answer answer2 = new Answer();
-    String answer1Text = "foo1";
-    String answer2Text = "foo2";
-    answer1.addAnswerElement(new StringAnswerElement(answer1Text));
-    answer2.addAnswerElement(new StringAnswerElement(answer2Text));
-    String answer1Str = BatfishObjectMapper.writeString(answer1);
-    String answer2Str = BatfishObjectMapper.writeString(answer2);
-    AnswerMetadata answerMetadata1 =
-        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
-    AnswerMetadata answerMetadata2 =
-        AnswerMetadataUtil.computeAnswerMetadata(answer1, Main.getLogger());
-    _storage.storeAnswer(answer1Str, baseAnswerId1);
-    _storage.storeAnswer(answer2Str, baseAnswerId2);
-    _storage.storeAnswerMetadata(answerMetadata1, baseAnswerId1);
-    _storage.storeAnswerMetadata(answerMetadata2, baseAnswerId2);
-
-    assertThat(
-        _manager.getAnalysisAnswers(
-            containerName, testrigName, null, analysisName, ImmutableSet.of()),
-        equalTo(
-            ImmutableMap.of(
-                question1Name,
-                BatfishObjectMapper.mapper().writeValueAsString(answer1),
-                question2Name,
-                BatfishObjectMapper.mapper()
-                    .writeValueAsString(
-                        Answer.failureAnswer(
-                            "Could not convert raw question text [bogus] to JSON", null)))));
-
-    assertThat(
-        _manager.getAnalysisAnswersMetadata(
-            containerName, testrigName, null, analysisName, ImmutableSet.of()),
-        equalTo(
-            ImmutableMap.of(
-                question1Name,
-                answerMetadata1,
-                question2Name,
-                AnswerMetadata.forStatus(AnswerStatus.FAILURE))));
   }
 
   @Test
@@ -1629,14 +1514,8 @@ public final class WorkMgrTest {
     AnalysisId analysisId = _idManager.getAnalysisId(analysisName, networkId).get();
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId).get();
     AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, analysisId);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     String answerStr = BatfishObjectMapper.writeString(answer);
@@ -1655,7 +1534,6 @@ public final class WorkMgrTest {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
-    Question question = new TestQuestion();
     String questionName = "question1";
     _manager.initNetwork(networkName, null);
     _manager.configureAnalysis(
@@ -1663,8 +1541,6 @@ public final class WorkMgrTest {
     NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
 
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(containsString(questionName));
@@ -1693,14 +1569,8 @@ public final class WorkMgrTest {
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, analysisId).get();
     AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            analysisId);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, analysisId);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
@@ -1721,15 +1591,12 @@ public final class WorkMgrTest {
     String networkName = "network1";
     String snapshotName = "snapshot1";
     String analysisName = "analysis1";
-    Question question = new TestQuestion();
     String questionName = "question1";
     _manager.initNetwork(networkName, null);
     NetworkId networkId = _idManager.getNetworkId(networkName).get();
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     // the analysis id is not assigned, so the analysis is effectively missing
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
 
     _thrown.expect(IllegalArgumentException.class);
     _thrown.expectMessage(containsString(analysisName));
@@ -1750,14 +1617,8 @@ public final class WorkMgrTest {
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
     AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            null);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
@@ -1785,14 +1646,8 @@ public final class WorkMgrTest {
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
     AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            null);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
@@ -1821,24 +1676,16 @@ public final class WorkMgrTest {
     SnapshotId snapshotId = _idManager.generateSnapshotId();
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
-    QuestionSettingsId questionSettingsId = new QuestionSettingsId("blah");
-    _idManager.assignQuestionSettingsId(question.getName(), networkId, questionSettingsId);
-    AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            null);
+    AnswerId answerId =
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
     Answer answer = new Answer();
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));
     AnswerMetadata answerMetadata =
         AnswerMetadataUtil.computeAnswerMetadata(answer, Main.getLogger());
-    _storage.storeAnswerMetadata(answerMetadata, baseAnswerId);
+    _storage.storeAnswerMetadata(answerMetadata, answerId);
     String answerStr = BatfishObjectMapper.writeString(answer);
-    _storage.storeAnswer(answerStr, baseAnswerId);
+    _storage.storeAnswer(answerStr, answerId);
     // remove question
     _idManager.deleteQuestion(questionName, networkId, null);
 
@@ -2746,185 +2593,6 @@ public final class WorkMgrTest {
   }
 
   @Test
-  public void testApplyIssuesConfiguration() throws IOException {
-    String network = "network1";
-    NetworkId networkId = new NetworkId(network);
-    SnapshotId snapshotId = new SnapshotId("snapshot1");
-    String question = "question2Name";
-    QuestionId questionId = new QuestionId(question);
-    SnapshotId referenceSnapshotId = null;
-    AnalysisId analysisId = null;
-    Answer oldAnswer = new Answer();
-    String col = "Issue";
-    String major = "maj";
-    String minor = "min";
-    int newSeverity = 6;
-    oldAnswer.setStatus(AnswerStatus.SUCCESS);
-    TableAnswerElement oldTable =
-        new TableAnswerElement(
-            new TableMetadata(ImmutableList.of(new ColumnMetadata(col, Schema.ISSUE, "desc"))));
-    oldTable.addRow(Row.of(col, new Issue("blah", 1, new Issue.Type(major, minor))));
-    oldTable.addExcludedRow(
-        Row.of(col, new Issue("blorp", 1, new Issue.Type(major, minor))), "exc");
-    oldAnswer.setAnswerElements(ImmutableList.of(oldTable));
-    AnswerMetadata oldAnswerMetadata =
-        AnswerMetadataUtil.computeAnswerMetadata(oldAnswer, _manager.getLogger());
-    _manager.initNetwork(network, null);
-    Question testQuestion = new TestQuestion();
-    testQuestion.setExclusions(
-        ImmutableList.of(
-            new Exclusion(
-                "exc",
-                BatfishObjectMapper.mapper()
-                    .valueToTree(
-                        Row.of(col, new Issue("blorp", 1, new Issue.Type(major, minor)))))));
-    String questionContent = BatfishObjectMapper.writeString(testQuestion);
-    _storage.storeQuestion(questionContent, networkId, questionId, analysisId);
-    _idManager.assignQuestion(question, networkId, questionId, null);
-    AnswerId answerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            null);
-    _storage.storeAnswer(BatfishObjectMapper.writeString(oldAnswer), answerId);
-    _storage.storeAnswerMetadata(oldAnswerMetadata, answerId);
-    Map<String, MajorIssueConfig> majorIssueConfigs =
-        ImmutableMap.of(
-            major,
-            new MajorIssueConfig(
-                major,
-                ImmutableList.of(new MinorIssueConfig(minor, newSeverity, "http://example.com"))));
-    AnswerId finalAnswerId = new AnswerId("finalAnswerId");
-    _manager.applyIssuesConfiguration(
-        majorIssueConfigs,
-        networkId,
-        snapshotId,
-        questionId,
-        answerId,
-        finalAnswerId,
-        referenceSnapshotId,
-        analysisId);
-    AnswerMetadata newAnswerMetadata = _storage.loadAnswerMetadata(finalAnswerId);
-
-    // The answer metadata now on disk should have changed
-    assertThat(newAnswerMetadata, not(equalTo(oldAnswerMetadata)));
-
-    Answer newAnswer =
-        BatfishObjectMapper.mapper()
-            .readValue(_storage.loadAnswer(finalAnswerId), new TypeReference<Answer>() {});
-    TableAnswerElement newTable = (TableAnswerElement) newAnswer.getAnswerElements().get(0);
-
-    // The answer's rows should have changed.
-    assertThat(newTable.getRowsList(), not(equalTo(oldTable.getRowsList())));
-
-    // The answer should no longer have excluded rows.
-    assertThat(newTable.getExcludedRows(), emptyIterable());
-  }
-
-  @Test
-  public void testApplyRowIssuesConfigurationNonIssue() {
-    String col = "col";
-    Row oldRow = Row.of(col, "foo");
-    Set<String> issueColumns = ImmutableSet.of();
-    Map<String, MajorIssueConfig> issueConfigs = ImmutableMap.of();
-
-    assertThat(
-        _manager.applyRowIssuesConfiguration(oldRow, issueColumns, issueConfigs), equalTo(oldRow));
-  }
-
-  @Test
-  public void testApplyRowIssuesConfigurationNoMatchMajorIssue() {
-    String col = "col";
-    String major = "major";
-    String otherMajor = "otherMajor";
-    String minor = "minor";
-    Row oldRow = Row.of(col, new Issue("explanation", 5, new Issue.Type(major, minor)));
-    Set<String> issueColumns = ImmutableSet.of(col);
-    Map<String, MajorIssueConfig> issueConfigs =
-        ImmutableMap.of(
-            otherMajor,
-            new MajorIssueConfig(
-                otherMajor, ImmutableList.of(new MinorIssueConfig(minor, 6, "example.com"))));
-
-    assertThat(
-        _manager.applyRowIssuesConfiguration(oldRow, issueColumns, issueConfigs), equalTo(oldRow));
-  }
-
-  @Test
-  public void testApplyRowIssuesConfigurationNoMatchMinorIssue() {
-    String col = "col";
-    String major = "major";
-    String otherMinor = "otherMinor";
-    String minor = "minor";
-    Row oldRow = Row.of(col, new Issue("explanation", 5, new Issue.Type(major, minor)));
-    Set<String> issueColumns = ImmutableSet.of(col);
-    Map<String, MajorIssueConfig> issueConfigs =
-        ImmutableMap.of(
-            major,
-            new MajorIssueConfig(
-                major, ImmutableList.of(new MinorIssueConfig(otherMinor, 6, "example.com"))));
-
-    assertThat(
-        _manager.applyRowIssuesConfiguration(oldRow, issueColumns, issueConfigs), equalTo(oldRow));
-  }
-
-  @Test
-  public void testApplyRowIssuesConfigurationMatch() {
-    String col = "col";
-    String major = "major";
-    String minor = "minor";
-    Issue oldIssue = new Issue("explanation", 5, new Issue.Type(major, minor));
-    Row oldRow = Row.of(col, oldIssue);
-    int newSeverity = 6;
-    String newUrl = "example.com";
-    Issue newIssue = new Issue(oldIssue.getExplanation(), newSeverity, oldIssue.getType(), newUrl);
-    Set<String> issueColumns = ImmutableSet.of(col);
-    Map<String, MajorIssueConfig> issueConfigs =
-        ImmutableMap.of(
-            major,
-            new MajorIssueConfig(major, ImmutableList.of(new MinorIssueConfig(minor, 6, newUrl))));
-
-    assertThat(
-        _manager.applyRowIssuesConfiguration(oldRow, issueColumns, issueConfigs),
-        equalTo(Row.of(col, newIssue)));
-  }
-
-  @Test
-  public void testAnswerIssueConfigMatchesConfiguredIssuesMissingMinorMatches() {
-    String major = "major";
-    String minor = "minor";
-    MajorIssueConfig answerIssueConfig =
-        new MajorIssueConfig(major, ImmutableMap.of(minor, new MinorIssueConfig(minor, 1, null)));
-    Map<String, MajorIssueConfig> configuredMajorIssues =
-        ImmutableMap.of(major, new MajorIssueConfig(major, ImmutableMap.of()));
-
-    assertThat(
-        _manager.answerIssueConfigMatchesConfiguredIssues(answerIssueConfig, configuredMajorIssues),
-        equalTo(true));
-  }
-
-  @Test
-  public void testAnswerIssueConfigMatchesConfiguredIssuesDifferntMinorNoMatch() {
-    String major = "major";
-    String minor = "minor";
-    MajorIssueConfig answerIssueConfig =
-        new MajorIssueConfig(major, ImmutableMap.of(minor, new MinorIssueConfig(minor, 1, null)));
-    Map<String, MajorIssueConfig> configuredMajorIssues =
-        ImmutableMap.of(
-            major,
-            new MajorIssueConfig(
-                major, ImmutableMap.of(minor, new MinorIssueConfig(minor, 2, null))));
-
-    assertThat(
-        _manager.answerIssueConfigMatchesConfiguredIssues(answerIssueConfig, configuredMajorIssues),
-        equalTo(false));
-  }
-
-  @Test
   public void testDeleteSnapshotAbsent() {
     String network = "network1";
     String snapshot = "snapshot1";
@@ -3043,33 +2711,6 @@ public final class WorkMgrTest {
     uploadTestSnapshot(network, snapshot);
   }
 
-  @Test
-  public void testWriteQuestionSettings() throws IOException {
-    String network = "network1";
-    String questionClassId = "foo";
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network).get();
-
-    // no QuestionSettingsId for questionClassId at first
-    assertFalse(_idManager.hasQuestionSettingsId(questionClassId, networkId));
-
-    _manager.writeQuestionSettings(
-        network, questionClassId, ImmutableList.of(), BatfishObjectMapper.mapper().readTree("{}"));
-
-    // Should have QuestionSettingsId now
-    assertTrue(_idManager.hasQuestionSettingsId(questionClassId, networkId));
-
-    QuestionSettingsId questionSettingsId =
-        _idManager.getQuestionSettingsId(questionClassId, networkId).get();
-    _manager.writeQuestionSettings(
-        network, questionClassId, ImmutableList.of(), BatfishObjectMapper.mapper().readTree("{}"));
-
-    // QuestionSettingsId should change after subsequent write
-    assertThat(
-        _idManager.getQuestionSettingsId(questionClassId, networkId),
-        not(equalTo(questionSettingsId)));
-  }
-
   private void uploadTestSnapshot(String network, String snapshot) throws IOException {
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, _folder);
   }
@@ -3082,36 +2723,6 @@ public final class WorkMgrTest {
   private void uploadTestSnapshot(String network, String snapshot, String fileName, String content)
       throws IOException {
     WorkMgrTestUtils.uploadTestSnapshot(network, snapshot, fileName, content, _folder);
-  }
-
-  @Test
-  public void testPutMajorIssueConfig() throws IOException {
-    String network = "network1";
-    String majorIssueType = "type1";
-    _manager.initNetwork(network, null);
-    NetworkId networkId = _idManager.getNetworkId(network).get();
-
-    // no ID should exist at first
-    assertFalse(_idManager.hasIssueSettingsId(majorIssueType, networkId));
-
-    _manager.putMajorIssueConfig(
-        network, majorIssueType, new MajorIssueConfig(majorIssueType, ImmutableList.of()));
-
-    // There should be an ID now
-    assertTrue(_idManager.hasIssueSettingsId(majorIssueType, networkId));
-
-    IssueSettingsId issueSettingsId =
-        _idManager.getIssueSettingsId(majorIssueType, networkId).get();
-
-    _manager.putMajorIssueConfig(
-        network,
-        majorIssueType,
-        new MajorIssueConfig(
-            majorIssueType, ImmutableList.of(new MinorIssueConfig("foo", null, null))));
-
-    // The ID should have changed
-    assertThat(
-        _idManager.getIssueSettingsId(majorIssueType, networkId), not(equalTo(issueSettingsId)));
   }
 
   @Test
@@ -3185,14 +2796,8 @@ public final class WorkMgrTest {
     _idManager.assignSnapshot(snapshotName, networkId, snapshotId);
     QuestionId questionId = _idManager.getQuestionId(questionName, networkId, null).get();
     AnswerId baseAnswerId =
-        _idManager.getBaseAnswerId(
-            networkId,
-            snapshotId,
-            questionId,
-            DEFAULT_QUESTION_SETTINGS_ID,
-            DEFAULT_NETWORK_NODE_ROLES_ID,
-            null,
-            null);
+        _idManager.getAnswerId(
+            networkId, snapshotId, questionId, DEFAULT_NETWORK_NODE_ROLES_ID, null, null);
     Answer answer = new Answer();
     answer.setStatus(AnswerStatus.SUCCESS);
     answer.addAnswerElement(new TableAnswerElement(MOCK_TABLE_METADATA));

@@ -51,8 +51,6 @@ public abstract class AristaBaseLexer extends BatfishLexer {
   protected boolean _enableCommunityListNum = false;
   protected boolean _enableRegex = false;
 
-  protected boolean _inAccessList = false;
-
   private int _lastTokenType = -1;
   private int _secondToLastTokenType = -1;
 
@@ -65,7 +63,6 @@ public abstract class AristaBaseLexer extends BatfishLexer {
     sb.append("_enableIpAddress: " + _enableIpAddress + "\n");
     sb.append("_enableIpv6Address: " + _enableIpv6Address + "\n");
     sb.append("_enableRegex: " + _enableRegex + "\n");
-    sb.append("_inAccessList: " + _inAccessList + "\n");
     return sb.toString();
   }
 }

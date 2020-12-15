@@ -11,6 +11,8 @@ policy-map type qos pm_qos_out
 policy-map type queuing pm_queuing_in
 policy-map type queuing pm_queuing_out
 
+vrf context management
+
 interface Ethernet1/1
   no cdp enable
   no shutdown
@@ -130,3 +132,6 @@ interface Ethernet100/100
   no switchport
   no udld disable
   vtp
+
+interface mgmt0
+  vrf member management

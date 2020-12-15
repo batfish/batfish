@@ -5,42 +5,42 @@ set device-group DG1 devices 00000001
 set device-group DG1 address ADDR1 ip-netmask 192.168.1.1
 set device-group DG1 address ADDR1 description "netmask 1 DG1"
 set device-group DG1 address ADDR2-override ip-netmask 192.168.1.2
-set device-group DG1 pre-rulebase security rules RULE_DG to any
-set device-group DG1 pre-rulebase security rules RULE_DG from any
-set device-group DG1 pre-rulebase security rules RULE_DG source ADDR2-override
-set device-group DG1 pre-rulebase security rules RULE_DG destination any
-set device-group DG1 pre-rulebase security rules RULE_DG application any
-set device-group DG1 pre-rulebase security rules RULE_DG action allow
-set device-group DG1 post-rulebase security rules RULE_DG to any
-set device-group DG1 post-rulebase security rules RULE_DG from any
-set device-group DG1 post-rulebase security rules RULE_DG source ADDR3-shared
-set device-group DG1 post-rulebase security rules RULE_DG destination any
-set device-group DG1 post-rulebase security rules RULE_DG application any
-set device-group DG1 post-rulebase security rules RULE_DG action allow
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG to any
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG from any
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG source ADDR2-override
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG destination any
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG application any
+set device-group DG1 pre-rulebase security rules PRE_RULE_DG action allow
+set device-group DG1 post-rulebase security rules POST_RULE_DG to any
+set device-group DG1 post-rulebase security rules POST_RULE_DG from any
+set device-group DG1 post-rulebase security rules POST_RULE_DG source ADDR3-shared
+set device-group DG1 post-rulebase security rules POST_RULE_DG destination any
+set device-group DG1 post-rulebase security rules POST_RULE_DG application any
+set device-group DG1 post-rulebase security rules POST_RULE_DG action allow
 # This rule comes before allow rule alphabetically but should be processed last
-set device-group DG1 post-rulebase security rules 2nd_RULE_DG to any
-set device-group DG1 post-rulebase security rules 2nd_RULE_DG from any
-set device-group DG1 post-rulebase security rules 2nd_RULE_DG source any
-set device-group DG1 post-rulebase security rules 2nd_RULE_DG destination any
-set device-group DG1 post-rulebase security rules 2nd_RULE_DG application any
-set device-group DG1 post-rulebase security rules 2nd_RULE_DG action deny
+set device-group DG1 post-rulebase security rules 2nd_POST_RULE_DG to any
+set device-group DG1 post-rulebase security rules 2nd_POST_RULE_DG from any
+set device-group DG1 post-rulebase security rules 2nd_POST_RULE_DG source any
+set device-group DG1 post-rulebase security rules 2nd_POST_RULE_DG destination any
+set device-group DG1 post-rulebase security rules 2nd_POST_RULE_DG application any
+set device-group DG1 post-rulebase security rules 2nd_POST_RULE_DG action deny
 
 set shared address ADDR2-override ip-netmask 192.168.2.2
 set shared address ADDR2-override description "netmask 2 shared"
 set shared address ADDR3-shared ip-netmask 192.168.2.3
 set shared address ADDR3-shared description "netmask 3 shared"
-set shared pre-rulebase security rules RULE_SHARED to any
-set shared pre-rulebase security rules RULE_SHARED from any
-set shared pre-rulebase security rules RULE_SHARED source ADDR2-override
-set shared pre-rulebase security rules RULE_SHARED destination any
-set shared pre-rulebase security rules RULE_SHARED application any
-set shared pre-rulebase security rules RULE_SHARED action deny
-set shared post-rulebase security rules RULE_SHARED to any
-set shared post-rulebase security rules RULE_SHARED from any
-set shared post-rulebase security rules RULE_SHARED source ADDR3-shared
-set shared post-rulebase security rules RULE_SHARED destination any
-set shared post-rulebase security rules RULE_SHARED application any
-set shared post-rulebase security rules RULE_SHARED action deny
+set shared pre-rulebase security rules PRE_RULE_SHARED to any
+set shared pre-rulebase security rules PRE_RULE_SHARED from any
+set shared pre-rulebase security rules PRE_RULE_SHARED source ADDR2-override
+set shared pre-rulebase security rules PRE_RULE_SHARED destination any
+set shared pre-rulebase security rules PRE_RULE_SHARED application any
+set shared pre-rulebase security rules PRE_RULE_SHARED action deny
+set shared post-rulebase security rules POST_RULE_SHARED to any
+set shared post-rulebase security rules POST_RULE_SHARED from any
+set shared post-rulebase security rules POST_RULE_SHARED source ADDR3-shared
+set shared post-rulebase security rules POST_RULE_SHARED destination any
+set shared post-rulebase security rules POST_RULE_SHARED application any
+set shared post-rulebase security rules POST_RULE_SHARED action deny
 
 # Network configuration required to make device 00000001 allow traffic through
 set template T1 config devices localhost.localdomain vsys vsys1 zone Z1 network layer3 ethernet1/1

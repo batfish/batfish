@@ -96,10 +96,8 @@ public class BgpRoutingProcessTest {
   public void testInitRibsEmpty() {
     // iBGP
     assertThat(_routingProcess._ibgpv4Rib.getRoutes(), empty());
-    assertThat(_routingProcess._ibgpv4StagingRib.getRoutes(), empty());
     // eBGP
     assertThat(_routingProcess._ebgpv4Rib.getRoutes(), empty());
-    assertThat(_routingProcess._ebgpv4StagingRib.getRoutes(), empty());
     // Combined bgp
     assertThat(_routingProcess._bgpv4Rib.getRoutes(), empty());
   }
@@ -189,7 +187,7 @@ public class BgpRoutingProcessTest {
 
     Node node = new Node(_c);
     BgpRoutingProcess defaultProc =
-        node.getVirtualRouters().get(DEFAULT_VRF_NAME).getBgpRoutingProcess();
+        node.getVirtualRouterOrThrow(DEFAULT_VRF_NAME).getBgpRoutingProcess();
 
     // Test
     defaultProc.initLocalEvpnRoutes(node);
@@ -211,8 +209,7 @@ public class BgpRoutingProcessTest {
                 .build()));
     // Sibling VRF, for vni2
     assertThat(
-        node.getVirtualRouters()
-            .get("vrf2")
+        node.getVirtualRouterOrThrow("vrf2")
             .getBgpRoutingProcess()
             .getUpdatesForMainRib()
             .getRoutesStream()
@@ -409,7 +406,7 @@ public class BgpRoutingProcessTest {
 
     Node node = new Node(_c);
     BgpRoutingProcess routingProcNode1 =
-        node.getVirtualRouters().get(DEFAULT_VRF_NAME).getBgpRoutingProcess();
+        node.getVirtualRouterOrThrow(DEFAULT_VRF_NAME).getBgpRoutingProcess();
 
     /////////// Node 2
 
@@ -441,7 +438,7 @@ public class BgpRoutingProcessTest {
     bgp2.getActiveNeighbors().put(localIp.toPrefix(), node2Peer);
     Node node2 = new Node(c2);
     BgpRoutingProcess routingProcNode2 =
-        node2.getVirtualRouters().get(DEFAULT_VRF_NAME).getBgpRoutingProcess();
+        node2.getVirtualRouterOrThrow(DEFAULT_VRF_NAME).getBgpRoutingProcess();
     routingProcNode2.initialize(node2);
 
     /*

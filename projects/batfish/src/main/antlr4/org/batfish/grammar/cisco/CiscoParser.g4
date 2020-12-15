@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_nat, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 
 options {
@@ -1130,62 +1130,6 @@ ip_domain_null
    ) null_rest_of_line
 ;
 
-ip_nat_destination
-:
-   IP NAT INSIDE DESTINATION LIST acl = variable POOL pool = variable NEWLINE
-;
-
-ip_nat_null
-:
-   IP NAT (
-      LOG
-      | TRANSLATION
-   ) null_rest_of_line
-;
-
-ip_nat_pool
-:
-   IP NAT POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
-   (
-      NETMASK mask = IP_ADDRESS
-      | PREFIX_LENGTH prefix_length = DEC
-   )? NEWLINE
-;
-
-ip_nat_pool_range
-:
-   IP NAT POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
-   (
-      RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
-   )+
-;
-
-ip_nat_source
-:
-   IP NAT (INSIDE | OUTSIDE) SOURCE
-   (
-      (
-         LIST acl = variable POOL pool = variable
-      )
-      |
-      (
-         STATIC local = IP_ADDRESS global = IP_ADDRESS
-      )
-      |
-      (
-         STATIC NETWORK local = IP_ADDRESS global = IP_ADDRESS
-         (
-            mask = IP_ADDRESS
-            | FORWARD_SLASH prefix = DEC
-         )
-      )
-   )
-   (
-      ADD_ROUTE
-      | NO_ALIAS
-   )* NEWLINE
-;
-
 ip_probe_null
 :
    NO?
@@ -1267,6 +1211,7 @@ ip_sla_null
       | TIMEOUT
       | TOS
       | UDP_JITTER
+      | VRF
    ) null_rest_of_line
 ;
 
@@ -1867,11 +1812,44 @@ null_af_multicast_tail
    NSF NEWLINE
 ;
 
+vrfd_af_export
+:
+   EXPORT
+   (
+      IPV4
+      | IPV6
+   )?
+   (
+      MULTICAST
+      | UNICAST
+   )?
+   ( prefix_limit = DEC )?
+   MAP name = variable
+   NEWLINE
+;
+
+vrfd_af_import
+:
+   IMPORT
+   vrfd_af_import_map
+;
+
+vrfd_af_import_map
+:
+   MAP name = variable NEWLINE
+;
+
+vrfd_af_route_target
+:
+   ROUTE_TARGET type = both_export_import rt = route_target NEWLINE
+;
+
 vrfd_af_null
 :
    NO?
    (
       MAXIMUM
+      | MDT
    ) null_rest_of_line
 ;
 
@@ -2644,6 +2622,12 @@ s_interface_line
    NO? INTERFACE BREAKOUT null_rest_of_line
 ;
 
+s_ip
+:
+  IP
+  ip_local
+;
+
 s_ip_default_gateway
 :
    NO? IP DEFAULT_GATEWAY
@@ -2685,6 +2669,16 @@ s_ip_domain_name
    )? NEWLINE
 ;
 
+ip_local
+:
+  LOCAL ipl_policy
+;
+
+ipl_policy
+:
+  POLICY ROUTE_MAP name = variable NEWLINE
+;
+
 s_ip_name_server
 :
    IP NAME_SERVER
@@ -2697,15 +2691,6 @@ s_ip_name_server
    (
       USE_VRF vrf = variable
    )? NEWLINE
-;
-
-s_ip_nat
-:
-   ip_nat_destination
-   | ip_nat_null
-   | ip_nat_pool
-   | ip_nat_pool_range
-   | ip_nat_source
 ;
 
 s_ip_nbar
@@ -2788,6 +2773,22 @@ s_ipsla
       | ipsla_responder
       | ipsla_schedule
    )*
+;
+
+s_ipv6
+:
+  IPV6
+  ipv6_local
+;
+
+ipv6_local
+:
+  LOCAL ipv6l_policy
+;
+
+ipv6l_policy
+:
+  POLICY ROUTE_MAP name = variable NEWLINE
 ;
 
 s_l2
@@ -3206,6 +3207,7 @@ s_track
   (
     track_block
     | track_interface
+    | track_ip
     | track_list
   )
 ;
@@ -3352,8 +3354,10 @@ s_vrf_definition
    (
       vrfd_address_family
       | vrfd_description
-      | vrfd_rd
+      | vrfd_no
       | vrfd_null
+      | vrfd_rd
+      | vrfd_route_target
    )*
    (
       EXIT_VRF NEWLINE
@@ -3692,6 +3696,7 @@ stanza
    // do not move below s_interface
    s_interface_line
    | s_interface
+   | s_ip
    | s_ip_access_list_eth
    | s_ip_access_list_session
    | s_ip_default_gateway
@@ -3710,8 +3715,9 @@ stanza
    | s_ip_tacacs_source_interface
    | s_ip_wccp
    | s_ipc
-   | s_ipv6_router_ospf
    | s_ipsla
+   | s_ipv6
+   | s_ipv6_router_ospf
    | s_key
    | s_l2
    | s_l2tp_class
@@ -4011,17 +4017,103 @@ track_interface
   INTERFACE interface_name LINE_PROTOCOL NEWLINE
 ;
 
-track_list
+track_ip
 :
-  LIST null_rest_of_line track_list_null*
+  IP null_rest_of_line track_ip_null*
 ;
 
-track_list_null
+track_ip_null
 :
   (
-    DELAY
-    | OBJECT
+    DEFAULT
+    | DELAY
   ) null_rest_of_line
+;
+
+track_list
+:
+  LIST
+  (
+     tl_boolean
+     | tl_threshold
+  )
+;
+
+tl_boolean
+:
+  BOOLEAN
+  (
+    AND
+    | OR
+  )
+  NEWLINE
+  tlb_tail*
+;
+
+tl_threshold
+:
+   THRESHOLD
+   (
+      tlt_percentage
+      | tlt_weight
+   )
+;
+
+tlb_tail
+:
+  tl_null_tail
+  | tl_object_tail
+;
+
+tlt_percentage
+:
+   PERCENTAGE NEWLINE
+   (
+       tl_null_tail
+       | tl_object_tail
+       | tlt_null_tail
+   )*
+;
+
+tlt_weight
+:
+   WEIGHT NEWLINE
+   (
+       tl_null_tail
+       | tltw_object_tail
+       | tlt_null_tail
+   )*
+;
+
+// common null tail for track list
+tl_null_tail
+:
+  (
+     DEFAULT
+     | DELAY
+  )
+  null_rest_of_line
+;
+
+// common null tail for track list threshold
+tlt_null_tail
+:
+  THRESHOLD null_rest_of_line
+;
+
+tl_object_tail
+:
+    tl_object NEWLINE
+;
+
+tl_object
+:
+    OBJECT name = variable
+;
+
+tltw_object_tail
+:
+  tl_object WEIGHT DEC NEWLINE
 ;
 
 ts_common
@@ -4584,62 +4676,6 @@ vpn_null
    ) null_rest_of_line
 ;
 
-vrfc_address_family
-:
-   ADDRESS_FAMILY (IPV4 | IPV6) UNICAST NEWLINE
-   (
-      vrfc_route_target
-   )*
-;
-
-vrfc_ip_route
-:
-   IP ROUTE ip_route_tail
-;
-
-vrfc_rd
-:
-   RD (AUTO | route_distinguisher) NEWLINE
-;
-
-vrfc_route_target
-:
-   ROUTE_TARGET (IMPORT | EXPORT | BOTH) (AUTO | route_target) EVPN? NEWLINE
-;
-
-vrfc_shutdown
-:
-   NO? SHUTDOWN NEWLINE
-;
-
-vrfc_vni
-:
-   VNI vni = DEC NEWLINE
-;
-
-
-vrfc_null
-:
-   NO?
-   (
-      (
-         IP
-         (
-            AMT
-            | AUTO_DISCARD
-            | DOMAIN_LIST
-            | DOMAIN_NAME
-            | IGMP
-            | MROUTE
-            | MSDP
-            | NAME_SERVER
-            | PIM
-         )
-      )
-      | MDT
-   ) null_rest_of_line
-;
-
 vrfd_address_family
 :
    ADDRESS_FAMILY
@@ -4655,7 +4691,10 @@ vrfd_address_family
       MAX_ROUTE DEC
    )? NEWLINE
    (
-      vrfd_af_null
+      vrfd_af_export
+      | vrfd_af_import
+      | vrfd_af_null
+      | vrfd_af_route_target
    )*
    (
       EXIT_ADDRESS_FAMILY NEWLINE
@@ -4667,18 +4706,32 @@ vrfd_description
    description_line
 ;
 
+vrfd_no
+:
+   NO vrfd_no_null
+;
+
+vrfd_no_null
+:
+  (
+    AUTO_IMPORT
+    | IPV4 MULTICAST
+  ) null_rest_of_line
+;
+
+vrfd_null
+:
+   AUTO_IMPORT null_rest_of_line
+;
+
 vrfd_rd
 :
    RD (AUTO | rd = route_distinguisher) NEWLINE
 ;
 
-vrfd_null
+vrfd_route_target
 :
-   NO?
-   (
-      AUTO_IMPORT
-      | ROUTE_TARGET
-   ) null_rest_of_line
+   ROUTE_TARGET type = both_export_import rt = route_target NEWLINE
 ;
 
 vrrp_interface

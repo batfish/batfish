@@ -296,7 +296,8 @@ public final class F5BigipStructuredGrammarTest {
                                 structureName -> {
                                   String msg =
                                       String.format(
-                                          "Reference to '%s' of type '%s' should not be undefined because '%s' is a builtin.",
+                                          "Reference to '%s' of type '%s' should not be undefined"
+                                              + " because '%s' is a builtin.",
                                           structureName, type.getDescription(), structureName);
                                   assertThat(msg, nameToBuiltin.apply(structureName), nullValue());
                                   assertThat(
@@ -3328,7 +3329,8 @@ public final class F5BigipStructuredGrammarTest {
         "The incoming filter should have specific handling for flows to an enabled virtual",
         matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipEnabled)));
     assertTrue(
-        "The incoming filter should have specific handling for flows to an implicitly-enabled virtual",
+        "The incoming filter should have specific handling for flows to an implicitly-enabled"
+            + " virtual",
         matchesNonTrivially(incomingFilter, createHttpFlow(hostname, ipImplicitlyEnabled)));
 
     assertThat(arpIps, not(containsIp(ipDisabled)));
@@ -3371,7 +3373,8 @@ public final class F5BigipStructuredGrammarTest {
     assertTrue(
         "Flow with correct IpProtocol TCP is matched by incoming transformation",
         eval(incomingTransformation, matchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
-            .getTraceSteps().stream()
+            .getTraceSteps()
+            .stream()
             .map(Step::getDetail)
             .filter(Predicates.instanceOf(TransformationStepDetail.class))
             .map(TransformationStepDetail.class::cast)
@@ -3379,7 +3382,8 @@ public final class F5BigipStructuredGrammarTest {
     assertFalse(
         "Flow with incorrect IpProtocol UDP is not matched by incoming transformation",
         eval(incomingTransformation, nonMatchingFlow, "dummy", ImmutableMap.of(), ImmutableMap.of())
-            .getTraceSteps().stream()
+            .getTraceSteps()
+            .stream()
             .map(Step::getDetail)
             .filter(Predicates.instanceOf(TransformationStepDetail.class))
             .map(TransformationStepDetail.class::cast)

@@ -20,7 +20,7 @@ public class HeaderSpaceMatchesTest {
   private static final int _fragmentOffset = 5;
   private static final int _icmpCode = 5;
   private static final int _icmpType = 5;
-  private static final int _packetLength = 5;
+  private static final int _packetLength = 75;
   private static final Ip _srcIp = Ip.parse("1.1.1.1");
   private static final int _srcPort = 22;
   private static final TcpFlags _tcpFlags = TcpFlags.builder().setAck(true).build();
@@ -75,8 +75,8 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         dstIps -> HeaderSpace.builder().setDstIps(dstIps).build(),
         dstIps -> HeaderSpace.builder().setNotDstIps(dstIps).build(),
-        new IpIpSpace(_dstIp),
-        new IpIpSpace(Ip.parse("3.3.3.3")));
+        IpIpSpace.create(_dstIp),
+        IpIpSpace.create(Ip.parse("3.3.3.3")));
   }
 
   @Test
@@ -155,8 +155,8 @@ public class HeaderSpaceMatchesTest {
     testMatches(
         srcIps -> HeaderSpace.builder().setSrcIps(srcIps).build(),
         srcIps -> HeaderSpace.builder().setNotSrcIps(srcIps).build(),
-        new IpIpSpace(_srcIp),
-        new IpIpSpace(Ip.parse("3.3.3.3")));
+        IpIpSpace.create(_srcIp),
+        IpIpSpace.create(Ip.parse("3.3.3.3")));
   }
 
   @Test
@@ -173,11 +173,11 @@ public class HeaderSpaceMatchesTest {
   public void testSrcOrDestIpsMatchers() {
     // _flow goes from 1.1.1.1 to 2.2.2.2; either should work.
     HeaderSpace withSrcIpAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(_srcIp)).build();
+        HeaderSpace.builder().setSrcOrDstIps(IpIpSpace.create(_srcIp)).build();
     HeaderSpace withDstIpAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(_dstIp)).build();
+        HeaderSpace.builder().setSrcOrDstIps(IpIpSpace.create(_dstIp)).build();
     HeaderSpace withOtherIpAsSrcOrDst =
-        HeaderSpace.builder().setSrcOrDstIps(new IpIpSpace(Ip.parse("3.3.3.3"))).build();
+        HeaderSpace.builder().setSrcOrDstIps(IpIpSpace.create(Ip.parse("3.3.3.3"))).build();
     assertThat(withSrcIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(true));
     assertThat(withDstIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(true));
     assertThat(withOtherIpAsSrcOrDst.matches(_sshFlow, _namedIpSpaces), equalTo(false));

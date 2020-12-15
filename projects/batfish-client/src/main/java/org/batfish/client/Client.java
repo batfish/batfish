@@ -2,6 +2,7 @@ package org.batfish.client;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
+import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -661,6 +662,14 @@ public class Client extends AbstractClient implements IClient {
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
         break;
+      case ROUTING_POLICY_SPEC:
+        if (!value.isTextual()) {
+          throw new BatfishException(
+              String.format("A Batfish %s must be a JSON string", expectedType.getName()));
+        }
+        SpecifierFactories.getRoutingPolicySpecifierOrDefault(
+            value.textValue(), ALL_ROUTING_POLICIES);
+        break;
       case ROUTING_PROTOCOL_SPEC:
         if (!value.isTextual()) {
           throw new BatfishException(
@@ -756,8 +765,9 @@ public class Client extends AbstractClient implements IClient {
         break;
       case interactive:
         System.err.println(
-            "This is not a supported client for Batfish. Please use pybatfish following the "
-                + "instructions in the README: https://github.com/batfish/batfish/#how-do-i-get-started");
+            "This is not a supported client for Batfish. Please use pybatfish following the"
+                + " instructions in the README:"
+                + " https://github.com/batfish/batfish/#how-do-i-get-started");
         try {
           _reader =
               LineReaderBuilder.builder()
@@ -1356,7 +1366,8 @@ public class Client extends AbstractClient implements IClient {
     if (_currTestrig == null) {
       _logger.errorf("Active snapshot is not set.\n");
       _logger.errorf(
-          "Specify snapshot on command line (-%s <snapshotdir>) or use command (%s <snapshotdir>)\n",
+          "Specify snapshot on command line (-%s <snapshotdir>) or use command (%s"
+              + " <snapshotdir>)\n",
           Settings.ARG_SNAPSHOT_DIR, Command.INIT_SNAPSHOT.commandName());
       return false;
     }

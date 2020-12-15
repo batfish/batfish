@@ -78,10 +78,8 @@ public final class ReachabilityParametersResolver {
         .setForbiddenTransitNodes(forbiddenTransitNodes)
         .setHeaderSpace(resolver.resolveHeaderSpace())
         .setIgnoreFilters(params.getIgnoreFilters())
-        .setMaxChunkSize(params.getMaxChunkSize())
         .setSourceIpSpaceAssignment(resolver.resolveSourceIpSpaceAssignment())
         .setSrcNatted(params.getSrcNatted())
-        .setSpecialize(params.getSpecialize())
         .setRequiredTransitNodes(requiredTransitNodes)
         .build();
   }
@@ -98,8 +96,11 @@ public final class ReachabilityParametersResolver {
   IpSpace resolveDestinationIpSpace() throws InvalidReachabilityParametersException {
     IpSpace destinationIpSpace =
         AclIpSpace.union(
-            _params.getDestinationIpSpaceSpecifier().resolve(ImmutableSet.of(), _context)
-                .getEntries().stream()
+            _params
+                .getDestinationIpSpaceSpecifier()
+                .resolve(ImmutableSet.of(), _context)
+                .getEntries()
+                .stream()
                 .map(Entry::getIpSpace)
                 .collect(ImmutableList.toImmutableList()));
 
@@ -124,7 +125,10 @@ public final class ReachabilityParametersResolver {
     // resolve the IpSpaceSpecifier, and filter out entries with empty IpSpaces
     IpSpaceAssignment sourceIpSpaceAssignment =
         IpSpaceAssignment.of(
-            _params.getSourceIpSpaceSpecifier().resolve(sourceLocations, _context).getEntries()
+            _params
+                .getSourceIpSpaceSpecifier()
+                .resolve(sourceLocations, _context)
+                .getEntries()
                 .stream()
                 .filter(
                     entry ->

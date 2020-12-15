@@ -3,29 +3,38 @@
     {
       "class" : "org.batfish.datamodel.answers.IncrementalBdpAnswerElement",
       "bgpBestPathRibRoutesByIteration" : {
-        "1" : 60,
-        "2" : 70,
-        "3" : 76,
-        "4" : 76,
-        "5" : 76,
-        "6" : 76
+        "1" : 20,
+        "2" : 38,
+        "3" : 58,
+        "4" : 64,
+        "5" : 68,
+        "6" : 72,
+        "7" : 74,
+        "8" : 74,
+        "9" : 74
       },
       "bgpMultipathRibRoutesByIteration" : {
-        "1" : 92,
-        "2" : 108,
-        "3" : 120,
-        "4" : 120,
-        "5" : 120,
-        "6" : 120
+        "1" : 20,
+        "2" : 42,
+        "3" : 86,
+        "4" : 96,
+        "5" : 102,
+        "6" : 112,
+        "7" : 114,
+        "8" : 114,
+        "9" : 114
       },
-      "dependentRoutesIterations" : 6,
+      "dependentRoutesIterations" : 9,
       "mainRibRoutesByIteration" : {
-        "1" : 269,
-        "2" : 289,
-        "3" : 337,
-        "4" : 339,
-        "5" : 339,
-        "6" : 339
+        "1" : 209,
+        "2" : 265,
+        "3" : 311,
+        "4" : 321,
+        "5" : 327,
+        "6" : 337,
+        "7" : 339,
+        "8" : 339,
+        "9" : 339
       },
       "ospfInternalIterations" : 3,
       "version" : "0.36.0",

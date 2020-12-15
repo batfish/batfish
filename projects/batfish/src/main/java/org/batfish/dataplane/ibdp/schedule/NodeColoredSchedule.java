@@ -20,7 +20,11 @@ import org.jgrapht.graph.AsUndirectedGraph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 
-public class NodeColoredSchedule extends IbdpSchedule {
+/**
+ * Allows nodes to process/exchange routes only if they are of the same "graph color" (i.e., do not
+ * have any protocol adjacencies)
+ */
+public final class NodeColoredSchedule extends IbdpSchedule {
 
   public enum Coloring {
     GREEDY,

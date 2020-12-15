@@ -5,8 +5,10 @@ import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
@@ -25,6 +27,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasM
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
@@ -64,7 +67,6 @@ import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressTyp
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
-import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTag;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportIps;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasBumTransportMethod;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddress;
@@ -88,8 +90,12 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAU
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborExportPolicyName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborImportPolicyName;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpRedistributionPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfMaxMetricRouterLsa.DEFAULT_OSPF_MAX_METRIC;
@@ -116,6 +122,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -162,6 +169,9 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.EigrpExternalRoute;
+import org.batfish.datamodel.EigrpInternalRoute;
+import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
 import org.batfish.datamodel.GeneratedRoute;
@@ -205,7 +215,12 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.matchers.HsrpGroupMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
@@ -230,17 +245,14 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprEvalua
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetNextHop;
-import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
+import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.ParserBatfishException;
@@ -260,6 +272,8 @@ import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
+import org.batfish.representation.cisco_nxos.DistributeList;
+import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfIpv4AddressFamilyConfiguration;
@@ -291,6 +305,7 @@ import org.batfish.representation.cisco_nxos.Lacp;
 import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
+import org.batfish.representation.cisco_nxos.NameServer;
 import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
@@ -337,9 +352,11 @@ import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
 import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
+import org.batfish.representation.cisco_nxos.RouteMapSetMetricEigrp;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.RouteMapSetWeight;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
 import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.StaticRoute;
@@ -637,6 +654,9 @@ public final class CiscoNxosGrammarTest {
           ipv4u.getRedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2")),
           equalTo(
               new RedistributionPolicy(RoutingProtocolInstance.ospf("OSPF_PROC2"), "OSPF_MAP2")));
+      assertThat(
+          ipv4u.getRedistributionPolicy(RoutingProtocolInstance.eigrp("EIGRP")),
+          equalTo(new RedistributionPolicy(RoutingProtocolInstance.eigrp("EIGRP"), "EIGRP_MAP")));
 
       BgpVrfIpv6AddressFamilyConfiguration ipv6u = vrf.getIpv6UnicastAddressFamily();
       assertThat(ipv6u, notNullValue());
@@ -677,25 +697,6 @@ public final class CiscoNxosGrammarTest {
   public void testBgpNextHopUnchanged() throws IOException {
     Configuration c = parseConfig("nxos_bgp_nh_unchanged");
     RoutingPolicy nhipUnchangedPolicy = c.getRoutingPolicies().get("NHIP-UNCHANGED");
-
-    // assert on the structure of routing policy
-    Statement defaultPermitStatement =
-        new If(
-            BooleanExprs.CALL_EXPR_CONTEXT,
-            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
-    Statement defaultDenyStatement =
-        new If(
-            BooleanExprs.CALL_EXPR_CONTEXT,
-            ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-    assertThat(
-        nhipUnchangedPolicy.getStatements(),
-        equalTo(
-            ImmutableList.of(
-                new SetNextHop(UnchangedNextHop.getInstance()),
-                defaultPermitStatement,
-                defaultDenyStatement)));
 
     // assert on the behavior of routing policy
     Ip originalNhip = Ip.parse("12.12.12.12");
@@ -758,6 +759,132 @@ public final class CiscoNxosGrammarTest {
             .get(Ip.parse("1.2.3.0"))
             .getIpv4UnicastAddressFamily()
             .getDefaultOriginate());
+  }
+
+  @Test
+  public void testBgpRedistFromEigrpConversion() throws IOException {
+    // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
+    Configuration c = parseConfig("nxos_bgp_eigrp_redistribution");
+    RoutingPolicy bgpExportPolicy =
+        c.getRoutingPolicies().get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+    int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
+    Prefix matchRm = Prefix.parse("5.5.5.0/24");
+    Prefix noMatchRm = Prefix.parse("5.5.5.0/30");
+    Ip bgpRouterId = Ip.parse("1.1.1.1");
+    Ip bgpPeerId = Ip.parse("2.2.2.2");
+    Ip nextHopIp = Ip.parse("3.3.3.3"); // not actually in config, just made up
+    BgpSessionProperties.Builder spb =
+        BgpSessionProperties.builder().setTailAs(1L).setTailIp(bgpPeerId).setHeadIp(nextHopIp);
+    BgpSessionProperties ibgpSessionProps =
+        spb.setHeadAs(1L).setSessionType(SessionType.IBGP).build();
+    BgpSessionProperties ebgpSessionProps =
+        spb.setHeadAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+
+    // Create eigrp routes to redistribute
+    EigrpInternalRoute.Builder internalRb =
+        EigrpInternalRoute.builder()
+            .setProcessAsn(1L)
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                    .build());
+    EigrpRoute matchEigrp = internalRb.setNetwork(matchRm).build();
+    EigrpRoute noMatchEigrp = internalRb.setNetwork(noMatchRm).build();
+
+    {
+      // Redistribute matching EIGRP route into EBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.BGP)
+                  .setAdmin(ebgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setMetric(matchEigrp.getMetric())
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(Ip.ZERO)
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .build()));
+    }
+    {
+      // Redistribute nonmatching EIGRP route to EBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT));
+    }
+    {
+      // Redistribute matching EIGRP route to IBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.IBGP)
+                  .setAdmin(ibgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setMetric(matchEigrp.getMetric())
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(Ip.ZERO)
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP)
+                  .build()));
+    }
+    {
+      // Redistribute nonmatching EIGRP route to IBGP
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT));
+    }
+    {
+      // Ensure external EIGRP route can also match routing policy
+      EigrpRoute matchEigrpEx =
+          EigrpExternalRoute.builder()
+              .setProcessAsn(1L)
+              .setDestinationAsn(2L)
+              .setEigrpMetric(
+                  ClassicMetric.builder()
+                      .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                      .build())
+              .setNetwork(matchRm)
+              .build();
+      Bgpv4Route.Builder rb =
+          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT));
+      assertThat(
+          rb.build(),
+          equalTo(
+              Bgpv4Route.builder()
+                  .setNetwork(matchRm)
+                  .setProtocol(RoutingProtocol.BGP)
+                  .setAdmin(ebgpAdmin)
+                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                  .setMetric(matchEigrpEx.getMetric())
+                  .setNextHopIp(nextHopIp)
+                  .setReceivedFromIp(Ip.ZERO)
+                  .setOriginatorIp(bgpRouterId)
+                  .setOriginType(OriginType.INCOMPLETE)
+                  .setSrcProtocol(RoutingProtocol.EIGRP_EX)
+                  .build()));
+    }
   }
 
   @Test
@@ -1288,22 +1415,32 @@ public final class CiscoNxosGrammarTest {
         EigrpVrfConfiguration vrf = proc.getVrf(DEFAULT_VRF_NAME);
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), nullValue());
+        assertThat(vrf.getDistanceInternal(), nullValue());
+        assertThat(vrf.getDistanceExternal(), nullValue());
         assertThat(vrf.getRouterId(), equalTo(Ip.parse("5.5.5.5")));
 
         assertThat(vrf.getV4AddressFamily(), nullValue());
         assertThat(vrf.getV6AddressFamily(), nullValue());
         EigrpVrfIpv4AddressFamilyConfiguration vrfV4 = vrf.getVrfIpv4AddressFamily();
         assertThat(vrfV4, notNullValue());
+        assertThat(
+            vrfV4.getDefaultMetric(),
+            equalTo(new org.batfish.representation.cisco_nxos.EigrpMetric(1, 2, 3, 4, 5)));
         assertThat(vrfV4.getRedistributionPolicies(), hasSize(8));
       }
       {
         EigrpVrfConfiguration vrf = proc.getVrf("VRF");
         assertThat(vrf, notNullValue());
         assertThat(vrf.getAsn(), equalTo(12345));
+        assertThat(vrf.getDistanceInternal(), equalTo(20));
+        assertThat(vrf.getDistanceExternal(), equalTo(22));
         assertThat(vrf.getRouterId(), nullValue());
 
         EigrpVrfIpv4AddressFamilyConfiguration v4 = vrf.getV4AddressFamily();
         assertThat(v4, notNullValue());
+        assertThat(
+            v4.getDefaultMetric(),
+            equalTo(new org.batfish.representation.cisco_nxos.EigrpMetric(5, 4, 3, 2, 1)));
         assertThat(v4.getRedistributionPolicies(), hasSize(4));
 
         EigrpVrfIpv6AddressFamilyConfiguration v6 = vrf.getV6AddressFamily();
@@ -1338,6 +1475,12 @@ public final class CiscoNxosGrammarTest {
       assertThat(v.getEigrpProcesses(), hasKeys(123L));
       EigrpProcess p123 = v.getEigrpProcesses().get(123L);
       assertThat(p123.getRouterId(), equalTo(Ip.parse("1.2.3.5")));
+      assertThat(
+          p123.getInternalAdminCost(),
+          equalTo(EigrpProcessConfiguration.DEFAULT_DISTANCE_INTERNAL));
+      assertThat(
+          p123.getExternalAdminCost(),
+          equalTo(EigrpProcessConfiguration.DEFAULT_DISTANCE_EXTERNAL));
     }
     {
       org.batfish.datamodel.Vrf v = c.getVrfs().get(MANAGEMENT_VRF_NAME);
@@ -1348,6 +1491,83 @@ public final class CiscoNxosGrammarTest {
       assertThat(v.getEigrpProcesses(), hasKeys(12345L));
       EigrpProcess p12345 = v.getEigrpProcesses().get(12345L);
       assertThat(p12345.getRouterId(), equalTo(Ip.parse("98.98.98.98")));
+      assertThat(p12345.getInternalAdminCost(), equalTo(20));
+      assertThat(p12345.getExternalAdminCost(), equalTo(22));
+    }
+  }
+
+  @Test
+  public void testEigrpRedistributionPolicy() throws Exception {
+    String hostname = "nxos_eigrp_redist";
+    Configuration c = parseConfig(hostname);
+    RoutingPolicy redistPolicy =
+        c.getRoutingPolicies().get(eigrpRedistributionPolicyName("default", 1));
+    EigrpProcess eigrpProc = c.getDefaultVrf().getEigrpProcesses().get(1L);
+    // vrf1 config is the same except it has a default-metric set
+    RoutingPolicy vrfRedistPolicy =
+        c.getRoutingPolicies().get(eigrpRedistributionPolicyName("vrf1", 1));
+    EigrpProcess vrfEigrpProc = c.getVrfs().get("vrf1").getEigrpProcesses().get(1L);
+
+    // Redistribution policy should permit static routes to 1.1.1.1/32.
+    // Redistributed routes should have default EIGRP metric: bw 100000 kbps, delay 1E9 ps.
+    Prefix permittedPrefix = Prefix.parse("1.1.1.1/32");
+    ConnectedRoute connected =
+        ConnectedRoute.builder()
+            .setNetwork(permittedPrefix)
+            .setNextHopInterface("foo")
+            .setAdmin(1)
+            .build();
+    org.batfish.datamodel.StaticRoute staticDenied =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setNextHopInterface("foo")
+            .setAdmin(1)
+            .build();
+    org.batfish.datamodel.StaticRoute staticPermitted =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setNetwork(permittedPrefix)
+            .setNextHopInterface("foo")
+            .setAdmin(1)
+            .build();
+    {
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertFalse(redistPolicy.process(connected, rb, eigrpProc, Direction.OUT));
+    }
+    {
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertFalse(redistPolicy.process(staticDenied, rb, eigrpProc, Direction.OUT));
+    }
+    {
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertTrue(redistPolicy.process(staticPermitted, rb, eigrpProc, Direction.OUT));
+      // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
+      // built, so first set other required fields.
+      rb.setNetwork(permittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      EigrpMetric expectedMetric =
+          ClassicMetric.builder()
+              .setValues(EigrpMetricValues.builder().setBandwidth(100000).setDelay(1e9).build())
+              .build();
+      assertThat(rb.build().getEigrpMetric(), equalTo(expectedMetric));
+    }
+    {
+      // Make sure VRF redistribution policy correctly applies its default metric
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertTrue(vrfRedistPolicy.process(staticPermitted, rb, vrfEigrpProc, Direction.OUT));
+      // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
+      // built, so first set other required fields.
+      rb.setNetwork(permittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      EigrpMetric expectedMetric =
+          ClassicMetric.builder()
+              .setValues(
+                  EigrpMetricValues.builder()
+                      .setBandwidth(1)
+                      .setDelay(2e7)
+                      .setReliability(3)
+                      .setEffectiveBandwidth(4)
+                      .setMtu(5)
+                      .build())
+              .build();
+      assertThat(rb.build().getEigrpMetric(), equalTo(expectedMetric));
     }
   }
 
@@ -1913,7 +2133,8 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         warnings.getRedFlagWarnings().get(0).getText(),
         equalTo(
-            "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data shows speed 200000000 bps. Configured value will be used."));
+            "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data shows"
+                + " speed 200000000 bps. Configured value will be used."));
   }
 
   @Test
@@ -1970,7 +2191,8 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         warnings.getRedFlagWarnings().get(0).getText(),
         equalTo(
-            "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime data shows bandwidth 200000000 bps. Configured value will be used."));
+            "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime data"
+                + " shows bandwidth 200000000 bps. Configured value will be used."));
   }
 
   @Test
@@ -2420,13 +2642,16 @@ public final class CiscoNxosGrammarTest {
         eth11,
         allOf(
             hasDescription(
-                "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing whitespace"),
+                "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing"
+                    + " whitespace"),
             hasMtu(9216)));
     assertTrue(eth11.getAutoState());
     assertThat(eth11.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
     assertThat(eth11.getIncomingFilter(), IpAccessListMatchers.hasName("acl_in"));
     assertThat(eth11.getOutgoingFilter(), IpAccessListMatchers.hasName("acl_out"));
     // TODO: convert and test delay
+
+    assertThat(c, hasInterface("mgmt0", hasBandwidth(1e9)));
   }
 
   @Test
@@ -2434,14 +2659,15 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_interface_properties");
     assertThat(
         vc.getInterfaces(),
-        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet100/100"));
+        hasKeys("Ethernet1/1", "Ethernet1/2", "Ethernet1/3", "Ethernet100/100", "mgmt0"));
     {
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getDelayTensOfMicroseconds(), equalTo(10));
       assertThat(
           iface.getDescription(),
           equalTo(
-              "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing whitespace"));
+              "here is a description with punctuation! and IP address 1.2.3.4/24 and trailing"
+                  + " whitespace"));
       assertThat(iface.getDhcpRelayAddresses(), contains(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.5")));
       assertThat(iface.getEigrp(), equalTo("100"));
       assertThat(iface.getIpAccessGroupIn(), equalTo("acl_in"));
@@ -3962,7 +4188,8 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         c.getDnsServers(),
-        containsInAnyOrder("192.0.2.1", "192.0.2.2", "192.0.2.3", "dead:beef::1"));
+        containsInAnyOrder(
+            "192.0.2.1", "192.0.2.2", "192.0.2.3", "dead:beef::1", "192.0.2.99", "192.0.2.100"));
   }
 
   @Test
@@ -3971,13 +4198,18 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(
-        vc.getIpNameServersByUseVrf(),
-        equalTo(
-            ImmutableMap.of(
-                DEFAULT_VRF_NAME,
-                ImmutableList.of("192.0.2.2", "192.0.2.1", "dead:beef::1"),
-                "management",
-                ImmutableList.of("192.0.2.3"))));
+        vc.getDefaultVrf().getNameServers(),
+        contains(
+            new NameServer("192.0.2.2", null),
+            new NameServer("192.0.2.1", null),
+            new NameServer("dead:beef::1", null),
+            new NameServer("192.0.2.3", MANAGEMENT_VRF_NAME)));
+    assertThat(
+        vc.getVrfs().get("other_vrf").getNameServers(),
+        contains(
+            new NameServer("192.0.2.99", MANAGEMENT_VRF_NAME),
+            new NameServer("192.0.2.100", null)));
+    assertThat(vc.getVrfs().get(MANAGEMENT_VRF_NAME).getNameServers(), empty());
   }
 
   @Test
@@ -5774,6 +6006,20 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testPortChannelSubinterfaceConversion() throws IOException {
+    String hostname = "port_channel_subinterface";
+    Configuration c = parseConfig(hostname);
+    org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("port-channel1.1");
+    assertThat(iface, isActive());
+    assertThat(iface, hasInterfaceType(InterfaceType.AGGREGATE_CHILD));
+    // Should inherit bandwidth from parent portchannel
+    assertThat(iface, hasBandwidth(200E6));
+    assertThat(
+        iface, hasDependencies(contains(new Dependency("port-channel1", DependencyType.BIND))));
+    assertThat(iface, hasChannelGroupMembers(empty()));
+  }
+
+  @Test
   public void testRipParsing() throws IOException {
     parseConfig("nxos_rip");
     // don't crash.
@@ -5793,66 +6039,124 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         c.getRoutingPolicies(),
         hasKeys(
+            "empty_pbr_statistics", // really empty, it has no first term
             "empty_deny",
+            computeRoutingPolicyName("empty_deny", 10),
             "empty_permit",
-            "empty_pbr_statistics",
+            computeRoutingPolicyName("empty_permit", 10),
             "match_as_number",
+            computeRoutingPolicyName("match_as_number", 10),
             "match_as_path",
+            computeRoutingPolicyName("match_as_path", 10),
             "match_community_standard",
+            computeRoutingPolicyName("match_community_standard", 10),
             "match_community_expanded",
+            computeRoutingPolicyName("match_community_expanded", 10),
             "match_interface",
+            computeRoutingPolicyName("match_interface", 10),
             "match_ip_address",
+            computeRoutingPolicyName("match_ip_address", 10),
             "match_ip_address_prefix_list",
+            computeRoutingPolicyName("match_ip_address_prefix_list", 10),
             "match_ipv6_address",
+            computeRoutingPolicyName("match_ipv6_address", 10),
             "match_ipv6_address_prefix_list",
+            computeRoutingPolicyName("match_ipv6_address_prefix_list", 10),
             "match_metric",
+            computeRoutingPolicyName("match_metric", 10),
             "match_route_type_external",
+            computeRoutingPolicyName("match_route_type_external", 10),
             "match_route_type_internal",
+            computeRoutingPolicyName("match_route_type_internal", 10),
             "match_route_type_local",
+            computeRoutingPolicyName("match_route_type_local", 10),
             "match_route_type_nssa_external",
+            computeRoutingPolicyName("match_route_type_nssa_external", 10),
             "match_route_type_type_1",
+            computeRoutingPolicyName("match_route_type_type_1", 10),
             "match_route_type_type_2",
+            computeRoutingPolicyName("match_route_type_type_2", 10),
             "match_route_types",
+            computeRoutingPolicyName("match_route_types", 10),
             "match_route_types_unsupported",
+            computeRoutingPolicyName("match_route_types_unsupported", 10),
             "match_source_protocol_connected",
+            computeRoutingPolicyName("match_source_protocol_connected", 10),
             "match_source_protocol_static",
+            computeRoutingPolicyName("match_source_protocol_static", 10),
             "match_tag",
+            computeRoutingPolicyName("match_tag", 10),
             "match_vlan",
+            computeRoutingPolicyName("match_vlan", 10),
             "set_as_path_prepend_last_as",
+            computeRoutingPolicyName("set_as_path_prepend_last_as", 10),
             "set_as_path_prepend_literal_as",
+            computeRoutingPolicyName("set_as_path_prepend_literal_as", 10),
             "set_comm_list_expanded",
+            computeRoutingPolicyName("set_comm_list_expanded", 10),
             "set_comm_list_standard",
+            computeRoutingPolicyName("set_comm_list_standard", 10),
             "set_comm_list_standard_single",
+            computeRoutingPolicyName("set_comm_list_standard_single", 10),
             "set_community",
+            computeRoutingPolicyName("set_community", 10),
             "set_community_additive",
+            computeRoutingPolicyName("set_community_additive", 10),
             "set_ip_next_hop_literal",
+            computeRoutingPolicyName("set_ip_next_hop_literal", 10),
             "set_ip_next_hop_literal2",
+            computeRoutingPolicyName("set_ip_next_hop_literal2", 10),
             "set_ip_next_hop_unchanged",
+            computeRoutingPolicyName("set_ip_next_hop_unchanged", 10),
             "set_ipv6_next_hop_unchanged",
+            computeRoutingPolicyName("set_ipv6_next_hop_unchanged", 10),
             "set_local_preference",
+            computeRoutingPolicyName("set_local_preference", 10),
             "set_metric",
+            computeRoutingPolicyName("set_metric", 10),
+            "set_metric_eigrp",
+            computeRoutingPolicyName("set_metric_eigrp", 10),
             "set_metric_type_external",
+            computeRoutingPolicyName("set_metric_type_external", 10),
             "set_metric_type_internal",
+            computeRoutingPolicyName("set_metric_type_internal", 10),
             "set_metric_type_type_1",
+            computeRoutingPolicyName("set_metric_type_type_1", 10),
             "set_metric_type_type_2",
+            computeRoutingPolicyName("set_metric_type_type_2", 10),
             "set_origin_egp",
+            computeRoutingPolicyName("set_origin_egp", 10),
             "set_origin_igp",
+            computeRoutingPolicyName("set_origin_igp", 10),
             "set_origin_incomplete",
+            computeRoutingPolicyName("set_origin_incomplete", 10),
             "set_tag",
+            computeRoutingPolicyName("set_tag", 10),
+            "set_weight",
+            computeRoutingPolicyName("set_weight", 10),
             "match_undefined_access_list",
+            computeRoutingPolicyName("match_undefined_access_list", 10),
             "match_undefined_community_list",
+            computeRoutingPolicyName("match_undefined_community_list", 10),
             "match_undefined_prefix_list",
+            computeRoutingPolicyName("match_undefined_prefix_list", 10),
             "continue_skip_deny",
+            computeRoutingPolicyName("continue_skip_deny", 10),
             computeRoutingPolicyName("continue_skip_deny", 30),
             "continue_from_deny_to_permit",
+            computeRoutingPolicyName("continue_from_deny_to_permit", 10),
             computeRoutingPolicyName("continue_from_deny_to_permit", 20),
             "continue_from_permit_to_fall_off",
+            computeRoutingPolicyName("continue_from_permit_to_fall_off", 10),
             computeRoutingPolicyName("continue_from_permit_to_fall_off", 20),
             "continue_from_permit_and_set_to_fall_off",
+            computeRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 10),
             computeRoutingPolicyName("continue_from_permit_and_set_to_fall_off", 20),
             "continue_from_set_to_match_on_set_field",
+            computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 10),
             computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20),
             "reach_continue_target_without_match",
+            computeRoutingPolicyName("reach_continue_target_without_match", 10),
             computeRoutingPolicyName("reach_continue_target_without_match", 30)));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
@@ -5924,11 +6228,13 @@ public final class CiscoNxosGrammarTest {
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_interface");
-      assertRoutingPolicyDeniesRoute(rp, base);
-      Bgpv4Route routeConnected = base.toBuilder().setNetwork(Prefix.parse("192.0.2.1/24")).build();
-      assertRoutingPolicyPermitsRoute(rp, routeConnected);
-      Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("192.0.2.1/32")).build();
-      assertRoutingPolicyPermitsRoute(rp, routeDirect);
+      // TODO Should deny base route after implementing next hop matching (right now permits all).
+      //  https://github.com/batfish/batfish/issues/6502
+      //      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route routeNextHopIp = base.toBuilder().setNextHopIp(Ip.parse("192.0.2.1")).build();
+      assertRoutingPolicyPermitsRoute(rp, routeNextHopIp);
+      Bgpv4Route routeNextHopIface = base.toBuilder().setNextHopInterface("loopback0").build();
+      assertRoutingPolicyPermitsRoute(rp, routeNextHopIface);
     }
     // Skip match ip address - not relevant to routing
     {
@@ -6069,36 +6375,9 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyPermitsRoute(rp, route);
     }
     {
+      // match vlan is for pbr, doesn't apply for toBooleanExpr
       RoutingPolicy rp = c.getRoutingPolicies().get("match_vlan");
-      assertRoutingPolicyDeniesRoute(rp, base);
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/24")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.1.1/32")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeDirect);
-      }
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/24")).build();
-        assertRoutingPolicyDeniesRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.2.1/32")).build();
-        assertRoutingPolicyDeniesRoute(rp, routeDirect);
-      }
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/24")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.3.1/32")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeDirect);
-      }
-      {
-        Bgpv4Route routeConnected =
-            base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/24")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeConnected);
-        Bgpv4Route routeDirect = base.toBuilder().setNetwork(Prefix.parse("10.0.4.1/32")).build();
-        assertRoutingPolicyPermitsRoute(rp, routeDirect);
-      }
+      assertRoutingPolicyPermitsRoute(rp, base);
     }
 
     // sets
@@ -6190,6 +6469,44 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = processRouteIn(rp, base);
       assertThat(route.getMetric(), equalTo(1L));
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_metric_eigrp");
+
+      EigrpMetric originalMetric =
+          ClassicMetric.builder()
+              .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+              .build();
+      EigrpRoute routeBefore =
+          EigrpInternalRoute.builder()
+              .setAdmin(90)
+              .setNetwork(Prefix.ZERO)
+              .setEigrpMetric(originalMetric)
+              .setProcessAsn(1L)
+              .build();
+      EigrpExternalRoute.Builder builder =
+          EigrpExternalRoute.builder()
+              .setAdmin(90)
+              .setNetwork(Prefix.ZERO)
+              .setDestinationAsn(1L)
+              .setProcessAsn(1L)
+              .setNetwork(Prefix.ZERO);
+      assertTrue(
+          rp.process(
+              routeBefore,
+              builder,
+              EigrpProcess.builder()
+                  .setAsNumber(1L)
+                  .setMode(EigrpProcessMode.CLASSIC)
+                  .setRouterId(Ip.ZERO)
+                  .build(),
+              Direction.IN));
+      EigrpExternalRoute routAfter = builder.build();
+      assertThat(routAfter.getEigrpMetric().getValues().getBandwidth(), equalTo(1L));
+      assertThat(routAfter.getEigrpMetric().getValues().getDelay(), equalTo((long) 2e7));
+      assertThat(routAfter.getEigrpMetric().getValues().getReliability(), equalTo(3));
+      assertThat(routAfter.getEigrpMetric().getValues().getEffectiveBandwidth(), equalTo(4));
+      assertThat(routAfter.getEigrpMetric().getValues().getMtu(), equalTo(5L));
+    }
     // TODO: test set metric-type external
     // TODO: test set metric-type internal
     {
@@ -6222,6 +6539,11 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route route = processRouteIn(rp, base);
       assertThat(route.getTag(), equalTo(1L));
     }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_weight");
+      Bgpv4Route route = processRouteIn(rp, base);
+      assertThat(route.getWeight(), equalTo(1));
+    }
 
     // matches with undefined references
     // TODO: match ip address (undefined) - relevant to routing?
@@ -6248,17 +6570,15 @@ public final class CiscoNxosGrammarTest {
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_permit_to_fall_off");
-      // TODO: verify
-      // should deny everything without tag 10
-      assertRoutingPolicyDeniesRoute(rp, base);
-      assertRoutingPolicyPermitsRoute(rp, base.toBuilder().setTag(10L).build());
+      // should permit everything without tag 10 or 11
+      assertRoutingPolicyPermitsRoute(rp, base);
+      assertRoutingPolicyDeniesRoute(rp, base.toBuilder().setTag(10L).build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_permit_and_set_to_fall_off");
-      // TODO: verify
-      // should deny everything without tag 10
-      assertRoutingPolicyDeniesRoute(rp, base);
-      assertThat(processRouteIn(rp, base.toBuilder().setTag(10L).build()), hasMetric(10L));
+      // should permit everything that does not have tag 10
+      assertThat(processRouteIn(rp, base), hasMetric(10L));
+      assertRoutingPolicyDeniesRoute(rp, base.toBuilder().setTag(10L).build());
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("continue_from_set_to_match_on_set_field");
@@ -6320,6 +6640,7 @@ public final class CiscoNxosGrammarTest {
             "set_ipv6_next_hop_unchanged",
             "set_local_preference",
             "set_metric",
+            "set_metric_eigrp",
             "set_metric_type_external",
             "set_metric_type_internal",
             "set_metric_type_type_1",
@@ -6328,6 +6649,7 @@ public final class CiscoNxosGrammarTest {
             "set_origin_igp",
             "set_origin_incomplete",
             "set_tag",
+            "set_weight",
             "match_undefined_access_list",
             "match_undefined_community_list",
             "match_undefined_prefix_list",
@@ -6685,6 +7007,18 @@ public final class CiscoNxosGrammarTest {
       assertThat(set.getMetric(), equalTo(1L));
     }
     {
+      RouteMap rm = vc.getRouteMaps().get("set_metric_eigrp");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetMetricEigrp set = entry.getSetMetricEigrp();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(
+          set.getMetric(),
+          equalTo(new org.batfish.representation.cisco_nxos.EigrpMetric(1, 2, 3, 4, 5)));
+    }
+    {
       RouteMap rm = vc.getRouteMaps().get("set_metric_type_external");
       assertThat(rm.getEntries().keySet(), contains(10));
       RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
@@ -6764,6 +7098,16 @@ public final class CiscoNxosGrammarTest {
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
       assertThat(set.getTag(), equalTo(1L));
     }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_weight");
+      assertThat(rm.getEntries().keySet(), contains(10));
+      RouteMapEntry entry = getOnlyElement(rm.getEntries().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSequence(), equalTo(10));
+      RouteMapSetWeight set = entry.getSetWeight();
+      assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
+      assertThat(set.getWeight(), equalTo(1));
+    }
 
     // continue extraction
     {
@@ -6789,7 +7133,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().keySet(), contains(10, 20));
       assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
-      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L, 11L));
     }
@@ -6799,21 +7143,19 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
       assertThat(rm.getEntries().get(10).getSetMetric().getMetric(), equalTo(10L));
-      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("continue_from_set_to_match_on_set_field");
-      assertThat(rm.getEntries().keySet(), contains(10, 20, 30));
-      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().keySet(), contains(10, 20));
+      assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(20));
       assertThat(rm.getEntries().get(10).getSetMetric().getMetric(), equalTo(10L));
       assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchMetric().getMetric(), equalTo(10L));
-      assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.DENY));
-      assertThat(rm.getEntries().get(30).getContinue(), nullValue());
     }
     {
       RouteMap rm = vc.getRouteMaps().get("reach_continue_target_without_match");
@@ -6821,11 +7163,102 @@ public final class CiscoNxosGrammarTest {
       assertThat(rm.getEntries().get(10).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(10).getContinue(), equalTo(30));
       assertThat(rm.getEntries().get(10).getMatchTag().getTags(), contains(10L));
-      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.PERMIT));
+      assertThat(rm.getEntries().get(20).getAction(), equalTo(LineAction.DENY));
       assertThat(rm.getEntries().get(20).getContinue(), nullValue());
       assertThat(rm.getEntries().get(20).getMatchTag().getTags(), contains(10L));
       assertThat(rm.getEntries().get(30).getAction(), equalTo(LineAction.PERMIT));
       assertThat(rm.getEntries().get(30).getContinue(), nullValue());
+    }
+  }
+
+  @Test
+  public void testRouteMapExhaustive() throws IOException {
+    Configuration c = parseConfig("nxos_route_map_exhaustive");
+    assertThat(c.getRoutingPolicies(), hasKey("RM"));
+    RoutingPolicy rm = c.getRoutingPolicies().get("RM");
+    Bgpv4Route base =
+        Bgpv4Route.builder()
+            .setTag(0L)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .setMetric(0L) // 30 match metric 3
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("192.0.2.254"))
+            .setNetwork(Prefix.ZERO)
+            .build();
+    // There are 8 paths through the route-map, let's test them all.
+    // 10 deny tag 1, continue                OR    fall-through
+    // 20 permit community 0:2, continue      OR    fall-through
+    // 30 deny metric 3, terminate            OR   40 terminate
+    {
+      // false false false -> 40 only
+      Bgpv4Route after = processRouteIn(rm, base);
+      assertThat(after.getTag(), not(equalTo(10L)));
+      assertThat(after.getCommunities(), not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // false false true -> 30 only
+      assertRoutingPolicyDeniesRoute(rm, base.toBuilder().setMetric(3).build());
+    }
+    {
+      // false true false -> 20, 40
+      Bgpv4Route after =
+          processRouteIn(
+              rm,
+              base.toBuilder().setCommunities(CommunitySet.of(StandardCommunity.of(2))).build());
+      assertThat(after.getTag(), not(equalTo(10L)));
+      assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(20))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // false true true -> 20, 30
+      assertRoutingPolicyDeniesRoute(
+          rm,
+          base.toBuilder()
+              .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+              .setMetric(3)
+              .build());
+    }
+    {
+      // true false false -> 10, 40
+      Bgpv4Route after = processRouteIn(rm, base.toBuilder().setTag(1L).build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), not(equalTo(CommunitySet.of(StandardCommunity.of(20)))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // true false true -> 10, 30
+      assertRoutingPolicyDeniesRoute(rm, base.toBuilder().setTag(1L).setMetric(3).build());
+    }
+    {
+      // true true false -> 10, 20, 40
+      Bgpv4Route after =
+          processRouteIn(
+              rm,
+              base.toBuilder()
+                  .setTag(1L)
+                  .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+                  .build());
+      assertThat(after.getTag(), equalTo(10L));
+      assertThat(after.getCommunities(), equalTo(CommunitySet.of(StandardCommunity.of(20))));
+      assertThat(after.getMetric(), not(equalTo(30L)));
+      assertThat(after.getLocalPreference(), equalTo(40L));
+    }
+    {
+      // true true true -> 10, 20, 30
+      assertRoutingPolicyDeniesRoute(
+          rm,
+          base.toBuilder()
+              .setTag(1L)
+              .setCommunities(CommunitySet.of(StandardCommunity.of(2)))
+              .setMetric(3)
+              .build());
     }
   }
 
@@ -7536,5 +7969,276 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testWordLexing() {
     assertThat(parseVendorConfig("nxos_word"), notNullValue());
+  }
+
+  @Test
+  public void testBgpAllowAsInExtraction() {
+    String hostname = "nxos_bgp_allowas_in";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("1.1.1.1"))
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        equalTo(3));
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("2.2.2.2"))
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        equalTo(2));
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getNeighbors()
+            .get(Ip.parse("3.3.3.3"))
+            .getIpv4UnicastAddressFamily()
+            .getAllowAsIn(),
+        nullValue());
+  }
+
+  @Test
+  public void testInterfaceEigrpPropertiesExtraction() {
+    String hostname = "nxos_interface_eigrp";
+    // TODO: test other properties (hold time, hello interval)
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    {
+      // Interface with custom EIGRP BW, delay, passive-interface
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(iface.getEigrp(), equalTo("1"));
+      assertThat(iface.getEigrpBandwidth(), equalTo(300));
+      assertThat(iface.getEigrpDelay(), equalTo(400));
+      assertTrue(iface.getEigrpPassive());
+    }
+    {
+      // Interface with no custom EIGRP configurations
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertThat(iface.getEigrp(), equalTo("EIGRP2"));
+      assertNull(iface.getEigrpBandwidth());
+      assertNull(iface.getEigrpDelay());
+      assertFalse(iface.getEigrpPassive());
+    }
+  }
+
+  @Test
+  public void testInterfaceEigrpPropertiesConversion() throws IOException {
+    String hostname = "nxos_interface_eigrp";
+    Configuration c = parseConfig(hostname);
+    {
+      /*
+      interface Ethernet1/1
+        vrf member VRF
+        ip address 192.0.2.2/24
+        ip router eigrp 1
+        ip bandwidth eigrp 1 300
+        ip delay eigrp 1 400
+        ip hold-time eigrp 1 100
+        ip hello-interval eigrp 1 200
+        ip passive-interface eigrp 1
+       */
+      String ifaceName = "Ethernet1/1";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(
+          iface.getBandwidth(), equalTo(getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET)));
+      EigrpInterfaceSettings eigrp = iface.getEigrp();
+      assertNotNull(eigrp);
+      assertThat(eigrp.getMetric().getValues().getBandwidth(), equalTo(300L));
+      // EIGRP metric values have delay in ps (1e-12); config has it in tens of µs (1e-5)
+      assertThat(eigrp.getMetric().getValues().getDelay(), equalTo((long) (400 * 1e7)));
+      assertTrue(eigrp.getPassive());
+    }
+    {
+      /*
+      router eigrp EIGRP2
+        autonomous-system 2
+      interface Ethernet1/2
+        ip address 192.0.3.2/24
+        ip router eigrp EIGRP2
+       */
+      String ifaceName = "Ethernet1/2";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      Double defaultBw = getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET);
+      assertThat(iface.getBandwidth(), equalTo(defaultBw));
+      EigrpInterfaceSettings eigrp = iface.getEigrp();
+      assertNotNull(eigrp);
+      assertThat(eigrp.getAsn(), equalTo(2L));
+      // EIGRP metric values have bandwidth in kb/s; VI config has it in bits/s
+      assertThat(
+          eigrp.getMetric().getValues().getBandwidth(), equalTo(defaultBw.longValue() / 1000));
+      assertThat(
+          eigrp.getMetric().getValues().getDelay(),
+          equalTo((long) (defaultDelayTensOfMicroseconds(CiscoNxosInterfaceType.ETHERNET) * 1e7)));
+      assertFalse(eigrp.getPassive());
+    }
+    {
+      /*
+      router eigrp 3
+        autonomous-system 4
+      interface Ethernet1/3
+        ip address 192.0.3.3/24
+        ip router eigrp 3
+       */
+      // Since Ethernet1/3 is in the default vrf, autononomous-system 4 should override process tag
+      String ifaceName = "Ethernet1/3";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(iface.getEigrp().getAsn(), equalTo(4L));
+    }
+    {
+      /*
+      router eigrp 3
+        autonomous-system 4
+      interface Ethernet1/4
+        vrf member VRF
+        ip address 192.0.3.4/24
+        ip router eigrp 3
+       */
+      // Since Ethernet1/4 is not in the default vrf, autononomous-system 4 should be ignored
+      String ifaceName = "Ethernet1/4";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertThat(iface.getEigrp().getAsn(), equalTo(3L));
+    }
+  }
+
+  @Test
+  public void testEigrpNetworkStatements() throws IOException {
+    /*
+    Tests undocumented-but-permitted IOS-like syntax for declaring networks in router eigrp stanza:
+    router eigrp 1
+      network 1.1.1.0/24
+     */
+    String hostname = "nxos_eigrp_network_statements";
+    Configuration c = parseConfig(hostname);
+    /*
+    Interfaces Ethernet1/1 - Ethernet1/4 should match EIGRP processes 1-4.
+    - Ethernet1/1 has network 10.10.10.1/24 in default VRF
+      - Process 1 has network 10.10.10.0/24 at top level
+    - Ethernet1/2 has network 11.11.11.1/24 in default VRF
+      - Process 2 has network 11.11.0.0/16 in ipv4 address family stanza
+    - Ethernet1/3 has network 12.12.12.1/24 in vrf VRF1
+      - Process 3 has network 12.12.12.0/30 in VRF1 stanza
+    - Ethernet1/4 has network 13.13.13.1/24 in vrf VRF1
+      - Process 4 has network 13.13.13.1/32 in VRF1 ipv4 address family stanza
+     */
+    for (int i = 1; i < 5; i++) {
+      String ifaceName = "Ethernet1/" + i;
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      EigrpInterfaceSettings eigrp = iface.getEigrp();
+      assertNotNull(eigrp);
+      assertThat(eigrp.getAsn(), equalTo((long) i));
+    }
+    {
+      /*
+      Interface Ethernet1/5 should NOT match process 5. It has network 14.14.14.1/24 in vrf VRF.
+      Process 5 has:
+      - matching network 14.14.14.0/24 at top level (matches default vrf only)
+      - matching network 14.14.14.0/24 for vrf VRF2
+      - non-matching network 14.14.14.2/32 for vrf VRF1
+       */
+      String ifaceName = "Ethernet1/5";
+      org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+      assertNull(iface.getEigrp());
+    }
+  }
+
+  @Test
+  public void testEigrpDistributeListWithPrefixListExtraction() {
+    String hostname = "eigrp_distribute_list_prefix_list";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    {
+      // Interface with custom EIGRP BW, delay, distribute lists
+      Interface iface = vc.getInterfaces().get("Ethernet1/1");
+      assertThat(
+          iface.getEigrpInboundDistributeList(),
+          equalTo(new DistributeList("PL_IN", DistributeListFilterType.PREFIX_LIST)));
+      assertThat(
+          iface.getEigrpOutboundDistributeList(),
+          equalTo(new DistributeList("PL_OUT", DistributeListFilterType.PREFIX_LIST)));
+    }
+    {
+      // Interface with no custom EIGRP configurations
+      Interface iface = vc.getInterfaces().get("Ethernet1/2");
+      assertNull(iface.getEigrpInboundDistributeList());
+      assertNull(iface.getEigrpOutboundDistributeList());
+    }
+  }
+
+  @Test
+  public void testEigrpDistributeListWithPrefixListConversion() throws IOException {
+    String hostname = "eigrp_distribute_list_prefix_list";
+    Configuration c = parseConfig(hostname);
+    Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
+    // helper builder
+    EigrpInternalRoute.Builder builder =
+        EigrpInternalRoute.builder()
+            .setAdmin(90)
+            .setEigrpMetric(
+                ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build())
+            .setProcessAsn(1L);
+    {
+      String ifaceName = "Ethernet1/1";
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, "VRF", 1);
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, "VRF", 1);
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      // Allow only routes permitted by prefix list
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+      assertFalse(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      // Allow only routes permitted by prefix list
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+      assertFalse(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
+    {
+      // This interface has no distribute lists; should permit all traffic.
+      String ifaceName = "Ethernet1/2";
+      String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, "VRF", 1);
+      String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, "VRF", 1);
+      EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
+      assertThat(eigrpSettings.getImportPolicy(), equalTo(importPolicyName));
+      assertThat(eigrpSettings.getExportPolicy(), equalTo(exportPolicyName));
+
+      RoutingPolicy importPolicy = policies.get(importPolicyName);
+      assertTrue(
+          importPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.IN));
+
+      RoutingPolicy exportPolicy = policies.get(exportPolicyName);
+      assertTrue(
+          exportPolicy.process(
+              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+              EigrpInternalRoute.builder(),
+              Direction.OUT));
+    }
   }
 }

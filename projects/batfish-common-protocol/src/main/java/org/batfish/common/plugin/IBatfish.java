@@ -26,7 +26,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
-import org.batfish.datamodel.answers.MajorIssueConfig;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.flow.Trace;
@@ -83,9 +82,6 @@ public interface IBatfish extends IPluginConsumer {
   DataPlanePlugin getDataPlanePlugin();
 
   Environment getEnvironment();
-
-  /** Get the configuration of the major issue type {@code majorIssueType} if its present */
-  MajorIssueConfig getMajorIssueConfig(String majorIssueType);
 
   @Nonnull
   NetworkSnapshot getSnapshot();
@@ -193,9 +189,6 @@ public interface IBatfish extends IPluginConsumer {
 
   Set<Flow> bddMultipathConsistency(
       NetworkSnapshot snapshot, MultipathConsistencyParameters parameters);
-
-  @Nullable
-  String loadQuestionSettings(@Nonnull Question question);
 
   /** Performs bidirectional reachability analysis. */
   @Nonnull

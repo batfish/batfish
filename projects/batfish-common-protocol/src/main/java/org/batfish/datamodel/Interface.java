@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -920,14 +919,14 @@ public final class Interface extends ComparableStructure<String> {
     _declaredNames = ImmutableSortedSet.of();
     _dependencies = ImmutableSet.of();
     _dhcpRelayAddresses = ImmutableList.of();
-    _hsrpGroups = new TreeMap<>();
+    _hsrpGroups = ImmutableSortedMap.of();
     _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
     _owner = owner;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _vrfName = Configuration.DEFAULT_VRF_NAME;
-    _vrrpGroups = new TreeMap<>();
+    _vrrpGroups = ImmutableSortedMap.of();
   }
 
   @Override

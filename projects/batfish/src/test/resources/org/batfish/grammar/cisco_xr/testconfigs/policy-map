@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname policy-map
+!
+class-map type control subscriber match-any PPP
+ match protocol ppp
+ end-class-map
+!
+policy-map type control subscriber POLICY-MAP
+ event session-start match-first
+  class type control subscriber PPP do-until-failure
+   10 activate dynamic-template TEMPLATE1
+  !
+  class class-default
+  class type control subscriber PPP do-all
+  class type control subscriber PPP do-until-success
+ !
+end-policy-map
+!
+interface Bundle-Ether1.1
+ service-policy type control subscriber POLICY-MAP
+!
+! other policy-map definitions
+policy-map PM
+policy-map type accounting PM
+policy-map type pbr PM
+policy-map type performance-traffic PM
+policy-map type qos PM
+policy-map type redirect PM
+policy-map type traffic PM

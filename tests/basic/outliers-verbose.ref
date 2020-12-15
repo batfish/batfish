@@ -2742,7 +2742,7 @@
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
-                "enforceFirstAs" : false,
+                "enforceFirstAs" : true,
                 "group" : "as1",
                 "ipv4UnicastAddressFamily" : {
                   "addressFamilyCapabilities" : {
@@ -2769,7 +2769,7 @@
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
-                "enforceFirstAs" : false,
+                "enforceFirstAs" : true,
                 "group" : "bad-ebgp",
                 "ipv4UnicastAddressFamily" : {
                   "addressFamilyCapabilities" : {
@@ -2795,7 +2795,7 @@
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
-                "enforceFirstAs" : false,
+                "enforceFirstAs" : true,
                 "group" : "xanadu",
                 "ipv4UnicastAddressFamily" : {
                   "addressFamilyCapabilities" : {
@@ -2821,7 +2821,7 @@
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
                 "ebgpMultihop" : false,
-                "enforceFirstAs" : false,
+                "enforceFirstAs" : true,
                 "group" : "as2",
                 "ipv4UnicastAddressFamily" : {
                   "addressFamilyCapabilities" : {

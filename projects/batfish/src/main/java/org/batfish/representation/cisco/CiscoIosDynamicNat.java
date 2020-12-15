@@ -137,8 +137,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
                     HeaderSpace origHeader =
                         ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
                     HeaderSpace headerSpace =
-                        origHeader
-                            .toBuilder()
+                        origHeader.toBuilder()
                             .setDstIps(origHeader.getSrcIps())
                             .setSrcIps((IpSpace) null)
                             .build();

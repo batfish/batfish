@@ -109,7 +109,8 @@ public class WorkMgrService {
                       : Integer.parseInt(maxSuggestions));
       if (answer == null) {
         return failureResponse(
-            "There was a problem getting Autocomplete suggestions - network or snapshot does not exist!");
+            "There was a problem getting Autocomplete suggestions - network or snapshot does not"
+                + " exist!");
       }
 
       List<String> serializedSuggestions =
@@ -1088,7 +1089,7 @@ public class WorkMgrService {
 
       return successResponse(response.put(CoordConsts.SVC_KEY_ANSWER, answerStr));
     } catch (IllegalArgumentException | AccessControlException e) {
-      _logger.errorf("WMS:getAnswerRows exception: %s\n", e.getMessage());
+      _logger.errorf("WMS:getAnswerRows2 exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
       String stackTrace = Throwables.getStackTraceAsString(e);

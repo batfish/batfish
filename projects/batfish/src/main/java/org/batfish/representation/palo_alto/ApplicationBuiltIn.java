@@ -53,6 +53,17 @@ public final class ApplicationBuiltIn {
                   .addPorts(80, 5192, 5190)
                   .build())
           .build();
+  public static final Application BFD =
+      Application.builder("bfd")
+          .setDescription("built-in application bfd")
+          .addService(
+              Service.builder("bfd")
+                  .setIpProtocol(IpProtocol.UDP)
+                  .addPort(3784)
+                  .addPort(3785)
+                  .addPort(4784)
+                  .build())
+          .build();
   public static final Application BGP =
       Application.builder("bgp")
           .setDescription("built-in application bgp")
@@ -107,6 +118,12 @@ public final class ApplicationBuiltIn {
   public static final Application GNUTELLA =
       // No well-known ports, DPI only
       Application.builder("gnutella").setDescription("built-in application gnutella").build();
+
+  public static final Application GRE =
+      Application.builder("gre")
+          .setDescription("built-in application gre")
+          .addService(Service.builder("gre").setIpProtocol(IpProtocol.GRE).build())
+          .build();
 
   public static final Application GOOGLE_BASE =
       Application.builder("google-base")
@@ -246,6 +263,11 @@ public final class ApplicationBuiltIn {
                   .addPorts(443)
                   .build())
           .build();
+  public static final Application PIM =
+      Application.builder("pim")
+          .setDescription("built-in application pim")
+          .addService(Service.builder("pim").setIpProtocol(IpProtocol.PIM).build())
+          .build();
   public static final Application PING =
       Application.builder("ping")
           .setDescription("built-in application ping")
@@ -305,6 +327,14 @@ public final class ApplicationBuiltIn {
           .addService(
               Service.builder("snmp udp").setIpProtocol(IpProtocol.UDP).addPorts(161).build())
           .build();
+  public static final Application SNMP_TRAP =
+      Application.builder("snmp-trap")
+          .setDescription("built-in application snmp-trap")
+          .addService(
+              Service.builder("snmp-trap tcp").setIpProtocol(IpProtocol.TCP).addPorts(162).build())
+          .addService(
+              Service.builder("snmp-trap udp").setIpProtocol(IpProtocol.UDP).addPorts(162).build())
+          .build();
   public static final Application SOAP =
       Application.builder("soap")
           .setDescription("built-in application soap")
@@ -328,6 +358,34 @@ public final class ApplicationBuiltIn {
               Service.builder("stun tcp").setIpProtocol(IpProtocol.TCP).addPort(3478).build())
           .addService(
               Service.builder("stun udp").setIpProtocol(IpProtocol.UDP).addPort(3478).build())
+          .build();
+  public static final Application SYSLOG =
+      Application.builder("syslog")
+          .setDescription("built-in application syslog")
+          .addService(
+              Service.builder("syslog tcp")
+                  .setIpProtocol(IpProtocol.TCP)
+                  .addPort(1468)
+                  .addPort(1514)
+                  .addPort(6514)
+                  .build())
+          .addService(
+              Service.builder("syslog udp")
+                  .setIpProtocol(IpProtocol.UDP)
+                  .addPort(514)
+                  .addPort(1514)
+                  .build())
+          .build();
+  public static final Application TACACS =
+      Application.builder("tacacs")
+          .setDescription("built-in application tacacs")
+          .addService(Service.builder("tacacs").setIpProtocol(IpProtocol.TCP).addPort(49).build())
+          .build();
+  public static final Application TACACS_PLUS =
+      Application.builder("tacacs-plus")
+          .setDescription("built-in application tacacs-plus")
+          .addService(
+              Service.builder("tacacs-plus").setIpProtocol(IpProtocol.TCP).addPort(49).build())
           .build();
   public static final Application TRACEROUTE =
       Application.builder("traceroute")
@@ -377,6 +435,7 @@ public final class ApplicationBuiltIn {
           AMAZON_CLOUD_DRIVE_UPLOADING,
           AOL_MESSAGEBOARD_POSTING,
           AOL_PROXY,
+          BFD,
           BGP,
           BOXNET,
           CISCO_SPARK_BASE,
@@ -385,6 +444,7 @@ public final class ApplicationBuiltIn {
           FINGER,
           FTP,
           GNUTELLA,
+          GRE,
           GOOGLE_BASE,
           GOPHER,
           ICMP,
@@ -402,6 +462,7 @@ public final class ApplicationBuiltIn {
           OSPF,
           PAN_DB_CLOUD,
           PC_ANYWHERE,
+          PIM,
           PING,
           POP3,
           RPC,
@@ -409,10 +470,14 @@ public final class ApplicationBuiltIn {
           RTP_BASE,
           SMTP,
           SNMP,
+          SNMP_TRAP,
           SOAP,
           SSH,
           SSL,
           STUN,
+          SYSLOG,
+          TACACS,
+          TACACS_PLUS,
           TRACEROUTE,
           WEB_BROWSING,
           WEBEX,

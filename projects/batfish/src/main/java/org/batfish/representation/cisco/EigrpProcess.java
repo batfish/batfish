@@ -26,6 +26,9 @@ public class EigrpProcess implements Serializable {
   private final EigrpProcessMode _mode;
   private final Set<IpWildcard> _wildcardNetworks;
   private final Set<Prefix> _networks;
+  @Nullable private DistributeList _inboundGlobalDistributeList;
+  @Nullable private DistributeList _outboundGlobalDistributeList;
+  @Nonnull private Map<String, DistributeList> _inboundInterfaceDistributeLists;
   @Nonnull private Map<String, DistributeList> _outboundInterfaceDistributeLists;
   private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
   private final @Nonnull String _vrfName;
@@ -35,6 +38,7 @@ public class EigrpProcess implements Serializable {
   private @Nullable EigrpMetric _defaultMetric;
   @Nullable private Ip _routerId;
   private boolean _passiveInterfaceDefault;
+  @Nullable private Boolean _shutdown;
 
   public EigrpProcess(@Nullable Long asn, EigrpProcessMode mode, @Nonnull String vrfName) {
     _asn = asn;
@@ -43,7 +47,8 @@ public class EigrpProcess implements Serializable {
     _interfacePassiveStatus = new TreeMap<>();
     _mode = mode;
     _networks = new TreeSet<>();
-    _outboundInterfaceDistributeLists = new HashMap<>();
+    _inboundInterfaceDistributeLists = new HashMap<>(0);
+    _outboundInterfaceDistributeLists = new HashMap<>(0);
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _vrfName = vrfName;
     _wildcardNetworks = new TreeSet<>();
@@ -119,6 +124,30 @@ public class EigrpProcess implements Serializable {
     return _networks;
   }
 
+  @Nullable
+  public DistributeList getInboundGlobalDistributeList() {
+    return _inboundGlobalDistributeList;
+  }
+
+  public void setInboundGlobalDistributeList(@Nullable DistributeList inboundGlobalDistributeList) {
+    _inboundGlobalDistributeList = inboundGlobalDistributeList;
+  }
+
+  @Nullable
+  public DistributeList getOutboundGlobalDistributeList() {
+    return _outboundGlobalDistributeList;
+  }
+
+  public void setOutboundGlobalDistributeList(
+      @Nullable DistributeList outboundGlobalDistributeList) {
+    _outboundGlobalDistributeList = outboundGlobalDistributeList;
+  }
+
+  @Nonnull
+  public Map<String, DistributeList> getInboundInterfaceDistributeLists() {
+    return _inboundInterfaceDistributeLists;
+  }
+
   @Nonnull
   public Map<String, DistributeList> getOutboundInterfaceDistributeLists() {
     return _outboundInterfaceDistributeLists;
@@ -143,6 +172,15 @@ public class EigrpProcess implements Serializable {
 
   public void setRouterId(@Nullable Ip routerId) {
     _routerId = routerId;
+  }
+
+  @Nullable
+  public Boolean getShutdown() {
+    return _shutdown;
+  }
+
+  public void setShutdown(boolean shutdown) {
+    _shutdown = shutdown;
   }
 
   public Set<IpWildcard> getWildcardNetworks() {

@@ -12,9 +12,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Range;
 import java.util.SortedMap;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -40,17 +42,17 @@ public class DefinedStructuresAnswererTest {
                   "type1",
                   ImmutableSortedMap.of(
                       "name1",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(1), 1),
+                      new DefinedStructureInfo(ImmutableRangeSet.of(Range.singleton(1)), 1),
                       "name2",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(2), 1))),
+                      new DefinedStructureInfo(ImmutableRangeSet.of(Range.singleton(2)), 1))),
               "file2",
               ImmutableSortedMap.of(
                   "type1",
                   ImmutableSortedMap.of(
                       "name2",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(1), 1),
+                      new DefinedStructureInfo(ImmutableRangeSet.of(Range.singleton(1)), 1),
                       "name3",
-                      new DefinedStructureInfo(ImmutableSortedSet.of(2), 1))));
+                      new DefinedStructureInfo(ImmutableRangeSet.of(Range.singleton(2)), 1))));
 
   // Hostname -> Files that make up that host.
   private static final Multimap<String, String> FILE_MAP =

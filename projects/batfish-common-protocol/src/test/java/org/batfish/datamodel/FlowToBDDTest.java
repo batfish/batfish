@@ -19,7 +19,7 @@ public class FlowToBDDTest {
           .setDscp(5)
           .setEcn(3)
           .setFragmentOffset(4)
-          .setPacketLength(11)
+          .setPacketLength(71)
           .build();
   private static final BDDPacket PACKET = new BDDPacket();
 
@@ -76,8 +76,7 @@ public class FlowToBDDTest {
   @Test
   public void testFlowHeadersToBddTcp() {
     Flow flow =
-        BASE_FLOW
-            .toBuilder()
+        BASE_FLOW.toBuilder()
             .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(22)
             .setDstPort(55)

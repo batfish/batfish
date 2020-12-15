@@ -7,3 +7,7 @@ ip name-server 192.0.2.2
 ip name-server 192.0.2.1 dead:beef::1
 
 ip name-server 192.0.2.3 use-vrf management
+
+vrf context other_vrf
+  ip name-server 192.0.2.99 use-vrf management
+  ip name-server 192.0.2.100

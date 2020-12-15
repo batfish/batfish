@@ -1,6 +1,8 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -10,9 +12,6 @@ import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.batfish.representation.cumulus.RemoteAsType.EXPLICIT;
-import static org.batfish.representation.cumulus.RemoteAsType.EXTERNAL;
-import static org.batfish.representation.cumulus.RemoteAsType.INTERNAL;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -75,6 +74,7 @@ import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
 import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
 import org.batfish.representation.cumulus.BgpNetwork;
@@ -212,6 +212,19 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().keySet(),
         contains(Prefix.parse("1.2.3.4/24")));
+  }
+
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastNetworkWithRouteMap() {
+    parseLines(
+        "router bgp 1",
+        "address-family ipv4 unicast",
+        "network 1.2.3.4/24 route-map FOO",
+        "exit-address-family");
+    Prefix prefix = Prefix.parse("1.2.3.4/24");
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().get(prefix),
+        equalTo(new BgpNetwork(prefix, "FOO")));
   }
 
   @Test
@@ -603,7 +616,7 @@ public class CumulusFrrGrammarTest {
     assertThat(neighbors.keySet(), contains("foo"));
     BgpNeighbor foo = neighbors.get("foo");
     assertThat(foo, isA(BgpPeerGroupNeighbor.class));
-    assertThat(foo.getRemoteAs(), equalTo(2L));
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2L)));
   }
 
   @Test
@@ -627,8 +640,7 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
     BgpNeighbor foo = neighbors.get("n");
-    assertThat(foo.getRemoteAsType(), equalTo(EXPLICIT));
-    assertThat(foo.getRemoteAs(), equalTo(2L));
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
   }
 
   @Test
@@ -637,8 +649,7 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
     BgpNeighbor foo = neighbors.get("n");
-    assertThat(foo.getRemoteAsType(), equalTo(EXTERNAL));
-    assertNull(foo.getRemoteAs());
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.external()));
   }
 
   @Test
@@ -647,8 +658,7 @@ public class CumulusFrrGrammarTest {
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("n"));
     BgpNeighbor foo = neighbors.get("n");
-    assertThat(foo.getRemoteAsType(), equalTo(INTERNAL));
-    assertNull(foo.getRemoteAs());
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.internal()));
   }
 
   @Test
@@ -667,7 +677,7 @@ public class CumulusFrrGrammarTest {
     assertThat(neighbors.keySet(), contains("1.2.3.4"));
     BgpNeighbor neighbor = neighbors.get("1.2.3.4");
     assertThat(neighbor, isA(BgpIpNeighbor.class));
-    assertThat(neighbor.getRemoteAs(), equalTo(2L));
+    assertThat(neighbor.getRemoteAs(), equalTo(RemoteAs.explicit(2L)));
   }
 
   @Test
@@ -786,7 +796,7 @@ public class CumulusFrrGrammarTest {
     _frr.getVrfs().put("NAME", new Vrf("NAME"));
     parse("vrf NAME\n exit-vrf\n");
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines(),
+        getDefinedStructureInfo(CumulusStructureType.VRF, "NAME").getDefinitionLines().enumerate(),
         contains(1, 2));
   }
 
@@ -846,7 +856,9 @@ public class CumulusFrrGrammarTest {
     assertThat(entry2.getAction(), equalTo(LineAction.DENY));
 
     assertThat(
-        getDefinedStructureInfo(CumulusStructureType.ROUTE_MAP, name).getDefinitionLines(),
+        getDefinedStructureInfo(CumulusStructureType.ROUTE_MAP, name)
+            .getDefinitionLines()
+            .enumerate(),
         equalTo(ImmutableSet.of(1, 2)));
   }
 
@@ -1155,7 +1167,7 @@ public class CumulusFrrGrammarTest {
     // Check that the AS-path access list definition was registered
     DefinedStructureInfo definedStructureInfo =
         getDefinedStructureInfo(CumulusStructureType.IP_AS_PATH_ACCESS_LIST, name);
-    assertThat(definedStructureInfo.getDefinitionLines(), contains(1, 2));
+    assertThat(definedStructureInfo.getDefinitionLines().enumerate(), contains(1, 2));
   }
 
   @Test
@@ -1316,6 +1328,15 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _config.getBgpProcess().getDefaultVrf().getNetworks(),
         equalTo(ImmutableMap.of(network, new BgpNetwork(network))));
+  }
+
+  @Test
+  public void testBgpNetworkWithRouteMap() {
+    Prefix network = Prefix.parse("10.0.0.0/8");
+    parseLines("router bgp 10000", "network 10.0.0.0/8 route-map FOO");
+    assertThat(
+        _config.getBgpProcess().getDefaultVrf().getNetworks(),
+        equalTo(ImmutableMap.of(network, new BgpNetwork(network, "FOO"))));
   }
 
   @Test
@@ -1989,6 +2010,42 @@ public class CumulusFrrGrammarTest {
                     .setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setAdmin(20)
                     .setLocalPreference(100)
+                    .setMetric(22)
                     .build())));
+  }
+
+  @Test
+  public void testStaticRouteNetworkStatementInteraction_behavior() throws IOException {
+    String snapshotName = "static-route-network-statement";
+    List<String> configurationNames =
+        ImmutableList.of("frr-t1-r1", "frr-t1-r2", "frr-t2-r1", "frr-t2-r2");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(SNAPSHOTS_PREFIX + snapshotName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    assertThat(
+        batfish.getTopologyProvider().getBgpTopology(snapshot).getGraph().edges(), hasSize(8));
+
+    assertThat(
+        dp.getRibs().get("frr-t2-r1").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.13.80.0/21")))));
+
+    assertThat(
+        dp.getRibs().get("frr-t2-r2").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.13.80.0/21")))));
+
+    assertThat(
+        dp.getRibs().get("frr-t2-r1").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.8.0.0/20")))));
+
+    assertThat(
+        dp.getRibs().get("frr-t2-r2").get(DEFAULT_VRF_NAME).getRoutes(),
+        hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.8.0.0/20")))));
   }
 }

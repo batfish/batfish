@@ -17,11 +17,11 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType.PORT_CHANNEL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
+import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultSpeed;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
@@ -114,6 +114,10 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisMetricType;
@@ -170,6 +174,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
@@ -187,6 +192,7 @@ import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -194,6 +200,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
@@ -203,6 +210,7 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
+import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -332,6 +340,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
   }
 
+  private static @Nonnull Statement callInContext(String routingPolicyName) {
+    return new If(
+        new CallExpr(routingPolicyName),
+        ImmutableList.of(ROUTE_MAP_PERMIT_STATEMENT),
+        ImmutableList.of(ROUTE_MAP_DENY_STATEMENT));
+  }
+
   public static @Nonnull String toJavaRegex(String ciscoRegex) {
     String withoutQuotes;
     if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
@@ -399,7 +414,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
   private @Nullable String _ipDomainName;
-  private Map<String, List<String>> _ipNameServersByUseVrf;
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, Ipv6AccessList> _ipv6AccessLists;
   private final @Nonnull Map<String, Ipv6PrefixList> _ipv6PrefixLists;
@@ -434,7 +448,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _ipAccessLists = new HashMap<>();
     _ipAsPathAccessLists = new HashMap<>();
     _ipCommunityLists = new HashMap<>();
-    _ipNameServersByUseVrf = new HashMap<>();
     _ipPrefixLists = new HashMap<>();
     _ipv6AccessLists = new HashMap<>();
     _ipv6PrefixLists = new HashMap<>();
@@ -695,6 +708,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       exportConditions.add(ospf);
     }
 
+    // Export EIGRP routes that should be redistributed.
+    List<RedistributionPolicy> eigrpPolicies =
+        ipv4af == null
+            ? ImmutableList.of()
+            : ipv4af.getRedistributionPolicies(NxosRoutingProtocol.EIGRP);
+    for (RedistributionPolicy eigrpPolicy : eigrpPolicies) {
+      /* TODO: how do we match on source tag (aka EIGRP process tag)? */
+      String routeMap = eigrpPolicy.getRouteMap();
+      RouteMap map = _routeMaps.get(routeMap);
+      List<BooleanExpr> conditions =
+          ImmutableList.of(
+              new Disjunction(
+                  new MatchProtocol(RoutingProtocol.EIGRP),
+                  new MatchProtocol(RoutingProtocol.EIGRP_EX)),
+              redistributeDefaultRoute,
+              bgpRedistributeWithEnvironmentExpr(
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
+      Conjunction eigrp = new Conjunction(conditions);
+      eigrp.setComment("Redistribute EIGRP routes into BGP");
+      exportConditions.add(eigrp);
+    }
+
     // Now we add all the per-network export policies.
     if (ipv4af != null) {
       ipv4af
@@ -832,23 +867,104 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               vrfName, procName));
       return;
     }
-    Ip routerId = vrfConfig.getRouterId();
-    if (routerId == null) {
-      routerId =
-          inferRouterId(
-              v.getName(), _c.getAllInterfaces(v.getName()), _w, "EIGRP process " + procName);
-    }
-    EigrpProcess.Builder proc = EigrpProcess.builder().setAsNumber(asn).setRouterId(routerId);
-    proc.setMode(vrfConfig.getAsn() != null ? EigrpProcessMode.CLASSIC : EigrpProcessMode.NAMED);
     if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {
       // TODO: figure out what this does and handle it.
       _w.redFlag(
           String.format(
               "VRF %s already has an EIGRP process for autonomous-system number %s. Skipping %s",
               vrfName, asn, procName));
-    } else {
-      v.addEigrpProcess(proc.build());
+      return;
     }
+    Ip routerId = vrfConfig.getRouterId();
+    if (routerId == null) {
+      routerId =
+          inferRouterId(
+              v.getName(), _c.getAllInterfaces(v.getName()), _w, "EIGRP process " + procName);
+    }
+    EigrpProcess.Builder proc =
+        EigrpProcess.builder()
+            .setAsNumber(asn)
+            .setInternalAdminCost(
+                firstNonNull(
+                    vrfConfig.getDistanceInternal(),
+                    EigrpProcessConfiguration.DEFAULT_DISTANCE_INTERNAL))
+            .setExternalAdminCost(
+                firstNonNull(
+                    vrfConfig.getDistanceExternal(),
+                    EigrpProcessConfiguration.DEFAULT_DISTANCE_EXTERNAL))
+            .setRouterId(routerId);
+    proc.setMode(EigrpProcessMode.CLASSIC);
+    String redistPolicyName = eigrpRedistributionPolicyName(vrfName, asn);
+    if (createEigrpRedistributionPolicy(vrfConfig, redistPolicyName)) {
+      proc.setRedistributionPolicy(redistPolicyName);
+    }
+    v.addEigrpProcess(proc.build());
+  }
+
+  /**
+   * Creates an EIGRP redistribution policy for the given {@link EigrpVrfConfiguration} with the
+   * given {@code policyName}. Doesn't create a policy if the VRF has no redistribution.
+   *
+   * @return {@code true} if a policy was created
+   */
+  private boolean createEigrpRedistributionPolicy(
+      EigrpVrfConfiguration vrfConfig, String policyName) {
+    Set<NxosRoutingProtocol> supportedProtocols = ImmutableSet.of(NxosRoutingProtocol.STATIC);
+    List<RedistributionPolicy> redistPolicies =
+        Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
+            .filter(Objects::nonNull)
+            .flatMap(eigrpAf -> eigrpAf.getRedistributionPolicies().stream())
+            .filter(
+                redistPolicy -> {
+                  if (supportedProtocols.contains(redistPolicy.getInstance().getProtocol())) {
+                    return true;
+                  }
+                  _w.redFlag(
+                      String.format(
+                          "Redistribution from %s into EIGRP is not supported",
+                          redistPolicy.getInstance().getProtocol()));
+                  return false;
+                })
+            .collect(ImmutableList.toImmutableList());
+    if (redistPolicies.isEmpty()) {
+      return false;
+    }
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    // Set metric to default value for redistributed route. May be overwritten in called route-maps.
+    EigrpMetricValues defaultMetric =
+        Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
+            .filter(Objects::nonNull)
+            .map(EigrpVrfIpAddressFamilyConfiguration::getDefaultMetric)
+            .filter(Objects::nonNull)
+            .map(org.batfish.representation.cisco_nxos.EigrpMetric::toEigrpMetricValues)
+            .findFirst()
+            .orElseGet(
+                // Default bandwidth and delay found here, and resulting metric verified in GNS3:
+                // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/eigrp/default-metric-eigrp.html
+                () -> EigrpMetricValues.builder().setBandwidth(100000).setDelay(1E9).build());
+    statements.add(new SetEigrpMetric(new LiteralEigrpMetric(defaultMetric)));
+    redistPolicies.stream()
+        .filter(policy -> getRouteMaps().containsKey(policy.getRouteMap()))
+        .map(
+            policy -> {
+              List<Statement> routeMapCallExpr = ImmutableList.of(call(policy.getRouteMap()));
+              NxosRoutingProtocol protocol = policy.getInstance().getProtocol();
+              switch (protocol) {
+                  // If adding support for a new protocol, also add it to supportedProtocols above
+                case STATIC:
+                  return new If(new MatchProtocol(RoutingProtocol.STATIC), routeMapCallExpr);
+                default:
+                  return null;
+              }
+            })
+        .filter(Objects::nonNull)
+        .forEach(statements::add);
+    RoutingPolicy.builder()
+        .setName(policyName)
+        .setOwner(_c)
+        .setStatements(statements.build())
+        .build();
+    return true;
   }
 
   private void convertInterface(Interface iface) {
@@ -1028,8 +1144,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private void convertIpNameServers() {
     _c.setDnsServers(
-        _ipNameServersByUseVrf.values().stream()
+        _vrfs.values().stream()
+            .map(Vrf::getNameServers)
             .flatMap(Collection::stream)
+            .map(NameServer::getName)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
   }
 
@@ -1440,10 +1558,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _ipDomainName;
   }
 
-  public @Nonnull Map<String, List<String>> getIpNameServersByUseVrf() {
-    return _ipNameServersByUseVrf;
-  }
-
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
   }
@@ -1761,7 +1875,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         && iface.getShutdown() == null) {
       _w.redFlag(
           String.format(
-              "Non-switchport interface %s missing explicit (no) shutdown, so setting administratively active arbitrarily",
+              "Non-switchport interface %s missing explicit (no) shutdown, so setting"
+                  + " administratively active arbitrarily",
               ifaceName));
     }
 
@@ -1853,7 +1968,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     newIfaceBuilder.setAutoState(iface.getAutostate());
 
     CiscoNxosInterfaceType type = iface.getType();
-    newIfaceBuilder.setType(toInterfaceType(type, parent != null));
+    InterfaceType viType = toInterfaceType(type, parent != null);
+    newIfaceBuilder.setType(viType);
 
     Optional<InterfaceRuntimeData> runtimeData =
         Optional.ofNullable(_hostname)
@@ -1869,7 +1985,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       if (runtimeSpeed != null && !speed.equals(runtimeSpeed)) {
         _w.redFlag(
             String.format(
-                "Interface %s:%s has configured speed %.0f bps but runtime data shows speed %.0f bps. Configured value will be used.",
+                "Interface %s:%s has configured speed %.0f bps but runtime data shows speed %.0f"
+                    + " bps. Configured value will be used.",
                 getHostname(), ifaceName, speed, runtimeSpeed));
       }
     } else if (runtimeSpeed != null) {
@@ -1885,7 +2002,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       if (runtimeBandwidth != null && !finalBandwidth.equals(runtimeBandwidth)) {
         _w.redFlag(
             String.format(
-                "Interface %s:%s has configured bandwidth %.0f bps but runtime data shows bandwidth %.0f bps. Configured value will be used.",
+                "Interface %s:%s has configured bandwidth %.0f bps but runtime data shows"
+                    + " bandwidth %.0f bps. Configured value will be used.",
                 getHostname(), ifaceName, finalBandwidth, runtimeBandwidth));
       }
     } else if (speedMbps != null) {
@@ -1907,8 +2025,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       _portChannelMembers.put(portChannel, ifaceName);
     }
 
-    // port-channels
-    if (type == PORT_CHANNEL) {
+    // port-channels (and not port-channel subinterfaces)
+    if (viType == InterfaceType.AGGREGATED) {
       Collection<String> members = _portChannelMembers.get(ifaceName);
       newIfaceBuilder.setChannelGroupMembers(members);
       newIfaceBuilder.setDependencies(
@@ -1942,8 +2060,187 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     newIface.setVrf(vrf);
 
+    String processTag = iface.getEigrp();
+    EigrpProcessConfiguration eigrpProcess = _eigrpProcesses.get(processTag);
+    if (newIface.getAddress() != null
+        && newIface.getAddress() instanceof ConcreteInterfaceAddress) {
+      // Check if this iface is included in an EIGRP process via a network statement.
+      // (Secondary addresses do not count for network statement inclusion.)
+      Ip ifaceIp = ((ConcreteInterfaceAddress) newIface.getAddress()).getIp();
+      for (Entry<String, EigrpProcessConfiguration> e : _eigrpProcesses.entrySet()) {
+        EigrpProcessConfiguration process = e.getValue();
+        if (eigrpProcess == process) {
+          // already matched this one based on interface's process tag
+          continue;
+        }
+        EigrpVrfConfiguration eigrpVrf = process.getVrf(vrfName);
+        if (eigrpVrf != null
+            && Stream.of(eigrpVrf.getV4AddressFamily(), eigrpVrf.getVrfIpv4AddressFamily())
+                .filter(Objects::nonNull)
+                .flatMap(ipv4Af -> ipv4Af.getNetworks().stream())
+                .anyMatch(network -> network.containsIp(ifaceIp))) {
+          // Found a process on interface
+          if (eigrpProcess != null) {
+            // TODO Support interfaces with multiple EIGRP processes
+            _w.redFlag(
+                String.format(
+                    "Interface %s matches multiple EIGRP processes. Only process %s will be used.",
+                    iface.getName(), processTag));
+            break;
+          }
+          eigrpProcess = process;
+          processTag = e.getKey();
+        }
+      }
+    }
+    if (eigrpProcess != null) {
+      // Find process ASN for this interface. If an ASN is explicitly configured for the interface's
+      // VRF, it takes precedence over process ASN (which is just process tag interpreted as ASN).
+      Integer asn =
+          Optional.ofNullable(eigrpProcess.getVrf(vrfName))
+              .map(EigrpVrfConfiguration::getAsn)
+              .orElse(eigrpProcess.getAsn());
+      if (asn != null) {
+        String importPolicyName = eigrpNeighborImportPolicyName(ifaceName, vrfName, asn);
+        String exportPolicyName = eigrpNeighborExportPolicyName(ifaceName, vrfName, asn);
+        generateEigrpPolicy(_c, this, iface.getEigrpInboundDistributeList(), importPolicyName);
+        generateEigrpPolicy(_c, this, iface.getEigrpOutboundDistributeList(), exportPolicyName);
+
+        newIface.setEigrp(
+            EigrpInterfaceSettings.builder()
+                .setAsn(asn.longValue())
+                .setEnabled(true)
+                .setImportPolicy(importPolicyName)
+                .setExportPolicy(exportPolicyName)
+                .setMetric(computeEigrpMetricForInterface(iface))
+                .setPassive(iface.getEigrpPassive())
+                .build());
+      }
+    }
+
     newIface.setOwner(_c);
     return newIface;
+  }
+
+  /**
+   * Generate an EIGRP policy from the provided {@link DistributeList distributeList} and add it to
+   * the given VI {@link Configuration}. If {@code distributeList} is null, generates a policy that
+   * permits all routes.
+   *
+   * <p>TODO Verify that all routes should be permitted in the absence of a distribute-list
+   */
+  static void generateEigrpPolicy(
+      @Nonnull Configuration c,
+      @Nonnull CiscoNxosConfiguration vsConfig,
+      @Nullable DistributeList distributeList,
+      @Nonnull String name) {
+    RoutingPolicy.Builder routingPolicy = RoutingPolicy.builder().setOwner(c).setName(name);
+    ImmutableList.Builder<Statement> statements = ImmutableList.builder();
+    if (distributeList == null || !sanityCheckEigrpDistributeList(distributeList, vsConfig)) {
+      statements.add(Statements.ExitAccept.toStaticStatement());
+    } else {
+      // only prefix-list-based distribute-lists are supported and will pass sanityCheck
+      assert distributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST;
+      BooleanExpr matchDistributeList =
+          new MatchPrefixSet(
+              DestinationNetwork.instance(), new NamedPrefixSet(distributeList.getFilterName()));
+      statements.add(
+          new If(
+              matchDistributeList,
+              ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    }
+    // Building routing policy with owner c will add it to c's routing policies
+    routingPolicy.setStatements(statements.build()).build();
+  }
+
+  /**
+   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
+   * Returns false if it refers to a route-map, which is not yet supported for distribute-lists, or
+   * a prefix-list that does not exist.
+   *
+   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
+   * distributeList} is not found to be valid for conversion to routing policy.
+   *
+   * @param distributeList {@link DistributeList distributeList} to be validated
+   * @param vsConfig Vendor specific {@link CiscoNxosConfiguration configuration}
+   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
+   *     policy
+   */
+  static boolean sanityCheckEigrpDistributeList(
+      @Nonnull DistributeList distributeList, @Nonnull CiscoNxosConfiguration vsConfig) {
+    switch (distributeList.getFilterType()) {
+      case ROUTE_MAP:
+        vsConfig
+            .getWarnings()
+            .redFlag(
+                String.format(
+                    "Route-maps are not supported in EIGRP distribute-lists: %s",
+                    distributeList.getFilterName()));
+        return false;
+      case PREFIX_LIST:
+        if (vsConfig.getIpPrefixLists().containsKey(distributeList.getFilterName())) {
+          return true;
+        }
+        vsConfig
+            .getWarnings()
+            .redFlag(
+                String.format(
+                    "distribute-list references an undefined prefix-list `%s`, it will not filter"
+                        + " anything",
+                    distributeList.getFilterName()));
+        return false;
+      default:
+        throw new IllegalStateException(
+            String.format(
+                "Unrecognized distribute-list filter type %s", distributeList.getFilterType()));
+    }
+  }
+
+  public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, int asn) {
+    return String.format("~EIGRP_IMPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
+  }
+
+  public static String eigrpNeighborExportPolicyName(String ifaceName, String vrfName, int asn) {
+    return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
+  }
+
+  public static String eigrpRedistributionPolicyName(String vrfName, int asn) {
+    return String.format("~EIGRP_EXPORT_POLICY:%s:%s~", vrfName, asn);
+  }
+
+  @Nonnull
+  private EigrpMetric computeEigrpMetricForInterface(Interface iface) {
+    // configuredBw is in kb/s
+    Integer configuredBw =
+        Optional.ofNullable(iface.getEigrpBandwidth()).orElse(iface.getBandwidth());
+    Long bw = null;
+    if (configuredBw != null) {
+      bw = configuredBw.longValue();
+    } else {
+      Double defaultBw = getDefaultBandwidth(iface.getType());
+      if (defaultBw != null) {
+        // default bandwidth is in bits per second
+        bw = (long) (defaultBw / 1000);
+      }
+    }
+    // Bandwidth can be null for port-channels and port-channel subinterfaces (will be calculated
+    // later). CiscoNxosInterfaceType.PORT_CHANNEL includes both.
+    assert bw != null || iface.getType() == CiscoNxosInterfaceType.PORT_CHANNEL;
+    int delayTensOfMicroseconds =
+        Stream.of(
+                iface.getEigrpDelay(),
+                iface.getDelayTensOfMicroseconds(),
+                defaultDelayTensOfMicroseconds(iface.getType()))
+            .filter(Objects::nonNull)
+            .findFirst()
+            .orElse(null);
+    EigrpMetricValues values =
+        EigrpMetricValues.builder()
+            .setDelay(delayTensOfMicroseconds * 1e7) // convert to picoseconds
+            .setBandwidth(bw)
+            .build();
+    return ClassicMetric.builder().setValues(values).build();
   }
 
   private @Nonnull InterfaceType toInterfaceType(
@@ -2607,6 +2904,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertRouteMap(RouteMap routeMap) {
+    if (routeMap.getEntries().isEmpty()) {
+      // Denies everything
+      RoutingPolicy.builder()
+          .setName(routeMap.getName())
+          .setOwner(_c)
+          .setStatements(ImmutableList.of(ROUTE_MAP_DENY_STATEMENT))
+          .build();
+      return;
+    }
+
     /*
      * High-level overview:
      * - Group route-map entries into disjoint intervals, where each entry that is the target of a
@@ -2617,6 +2924,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
      *     interval started by its target.
      *   - False branch of an entry at the end of an interval calls the RoutingPolicy for the next
      *     interval.
+     * - The top-level RoutingPolicy that corresponds to the route-map just calls the first
+     *   interval and does a context-appropriate return based on that result.
      */
     String routeMapName = routeMap.getName();
 
@@ -2642,10 +2951,19 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // sequence -> next sequence if no match, or null if last sequence
     Map<Integer, Integer> noMatchNextBySeq = noMatchNextBySeqBuilder.build();
 
+    // Build the top-level RoutingPolicy that corresponds to the route-map. All it does is call
+    // the first interval and return its result in a context-appropriate way.
+    int firstSequence = routeMap.getEntries().firstEntry().getKey();
+    String firstSequenceRoutingPolicyName = computeRoutingPolicyName(routeMapName, firstSequence);
+    RoutingPolicy.builder()
+        .setName(routeMapName)
+        .setOwner(_c)
+        .setStatements(ImmutableList.of(callInContext(firstSequenceRoutingPolicyName)))
+        .build();
+
     /*
      * Initially:
-     * - set the name of the generated routing policy for the route-map
-     * - initialize the statement queue
+     * - initialize the statement queue to default deny for the very first statement
      * For each entry in the route-map:
      * - If the current entry is the start of a new interval:
      *   - Build the RoutingPolicy for the previous interval.
@@ -2656,12 +2974,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
      *     - If there were no continue statements, the final interval is the single policy for the
      *       whole route-map.
      */
-    String currentRoutingPolicyName = routeMap.getName();
-    ImmutableList.Builder<Statement> currentRoutingPolicyStatements = ImmutableList.builder();
+    String currentRoutingPolicyName = firstSequenceRoutingPolicyName;
+    ImmutableList.Builder<Statement> currentRoutingPolicyStatements =
+        ImmutableList.<Statement>builder()
+            .add(Statements.SetLocalDefaultActionReject.toStaticStatement());
     for (RouteMapEntry currentEntry : routeMap.getEntries().values()) {
       int currentSequence = currentEntry.getSequence();
       if (continueTargets.contains(currentSequence)) {
-        // finalize the routing policy consisting of queued statements up to this point
+        // Finalize the routing policy consisting of queued statements up to this point. The last
+        // statement includes a call to the next statement if not matched.
         RoutingPolicy.builder()
             .setName(currentRoutingPolicyName)
             .setOwner(_c)
@@ -2676,8 +2997,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           toStatement(routeMapName, currentEntry, noMatchNextBySeq, continueTargets));
     }
     // finalize last routing policy
-    // TODO: do default action, which changes when continuing from a permit
-    currentRoutingPolicyStatements.add(ROUTE_MAP_DENY_STATEMENT);
+    currentRoutingPolicyStatements.add(Statements.ReturnLocalDefaultAction.toStaticStatement());
     RoutingPolicy.builder()
         .setName(currentRoutingPolicyName)
         .setOwner(_c)
@@ -2722,27 +3042,31 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     Integer continueTarget = entry.getContinue();
     LineAction action = entry.getAction();
-    Statement finalTrueStatement;
 
-    // final action if matched
-    if (continueTarget != null) {
+    if (continueTarget == null) {
+      // No continue: on match, return the action.
+      if (action == LineAction.PERMIT) {
+        trueStatements.add(Statements.ReturnTrue.toStaticStatement());
+      } else {
+        assert action == LineAction.DENY;
+        trueStatements.add(Statements.ReturnFalse.toStaticStatement());
+      }
+    } else {
+      // Continue: on match, change the default.
+      if (action == LineAction.PERMIT) {
+        trueStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
+      } else {
+        assert action == LineAction.DENY;
+        trueStatements.add(Statements.SetLocalDefaultActionReject.toStaticStatement());
+      }
       if (continueTargets.contains(continueTarget)) {
-        // TODO: verify correct semantics: possibly, should add two statements in this case; first
-        // should set default action to permit/deny if this is a permit/deny entry, and second
-        // should call policy for next entry.
-        finalTrueStatement = call(computeRoutingPolicyName(routeMapName, continueTarget));
+        trueStatements.add(call(computeRoutingPolicyName(routeMapName, continueTarget)));
       } else {
         // invalid continue target, so just deny
         // TODO: verify actual behavior
-        finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
+        trueStatements.add(Statements.ReturnFalse.toStaticStatement());
       }
-    } else if (action == LineAction.PERMIT) {
-      finalTrueStatement = ROUTE_MAP_PERMIT_STATEMENT;
-    } else {
-      assert action == LineAction.DENY;
-      finalTrueStatement = ROUTE_MAP_DENY_STATEMENT;
     }
-    trueStatements.add(finalTrueStatement);
 
     // final action if not matched
     Integer noMatchNext = noMatchNextBySeq.get(entry.getSequence());
@@ -2928,6 +3252,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetricEigrp(
+              RouteMapSetMetricEigrp routeMapSetMetric) {
+            // Not applicable to PBR
+            return null;
+          }
+
+          @Override
           public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetMetricType(
               RouteMapSetMetricType routeMapSetMetricType) {
             // Not applicable to PBR
@@ -2947,6 +3278,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             // Not applicable to PBR
             return null;
           }
+
+          @Override
+          public org.batfish.datamodel.packet_policy.Statement visitRouteMapSetWeight(
+              RouteMapSetWeight routeMapSetWeight) {
+            // Not applicable to PBR
+            return null;
+          }
         };
     List<org.batfish.datamodel.packet_policy.Statement> trueStatements =
         entry
@@ -2956,12 +3294,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             .collect(ImmutableList.toImmutableList());
     if (trueStatements.size() > 1) {
       _w.redFlag(
-          "Multiple set statements are not allowed in a single route map statement. Choosing the first one");
+          "Multiple set statements are not allowed in a single route map statement. Choosing the"
+              + " first one");
       trueStatements = ImmutableList.of(trueStatements.get(0));
     }
     if (guardBoolExprs.size() > 1) {
       _w.redFlag(
-          "Multiple match conditions are not allowed in a single route map statement. Choosing the first one");
+          "Multiple match conditions are not allowed in a single route map statement. Choosing the"
+              + " first one");
     }
     return new org.batfish.datamodel.packet_policy.If(guardBoolExprs.get(0), trueStatements);
   }
@@ -3006,34 +3346,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public BooleanExpr visitRouteMapMatchInterface(
               RouteMapMatchInterface routeMapMatchInterface) {
-            // TODO: ignore shutdown interfaces?
-            // TODO: ignore blacklisted interfaces?
-            // TODO: HSRP addresses? Only if elected?
-            return new Disjunction(
-                new MatchPrefixSet(
-                    DestinationNetwork.instance(),
-                    new ExplicitPrefixSet(
-                        new PrefixSpace(
-                            routeMapMatchInterface.getNames().stream()
-                                .map(_interfaces::get)
-                                .filter(Objects::nonNull)
-                                .flatMap(
-                                    iface ->
-                                        Stream.concat(
-                                            Stream.of(iface.getAddress()),
-                                            iface.getSecondaryAddresses().stream()))
-                                .filter(Objects::nonNull)
-                                .map(InterfaceAddressWithAttributes::getAddress)
-                                .filter(ConcreteInterfaceAddress.class::isInstance)
-                                .map(ConcreteInterfaceAddress.class::cast)
-                                .flatMap(
-                                    address ->
-                                        address.getPrefix().getPrefixLength() <= 30
-                                            ? Stream.of(
-                                                address.getPrefix(), address.getIp().toPrefix())
-                                            : Stream.of(address.getPrefix()))
-                                .map(PrefixRange::fromPrefix)
-                                .collect(ImmutableList.toImmutableList())))));
+            // Matches any routes that have their next hop out one of the configured interfaces.
+            // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_rpm.html
+            // TODO: Implement MatchNextHopInterface/Ip
+            // https://github.com/batfish/batfish/issues/6502
+            return BooleanExprs.TRUE;
           }
 
           @Override
@@ -3138,11 +3455,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
           @Override
           public BooleanExpr visitRouteMapMatchVlan(RouteMapMatchVlan routeMapMatchVlan) {
-            return visitRouteMapMatchInterface(
-                new RouteMapMatchInterface(
-                    routeMapMatchVlan.getVlans().stream()
-                        .map(vlan -> String.format("Vlan%d", vlan))
-                        .collect(ImmutableSet.toImmutableSet())));
+            // Ignore, as it only applies to PBR and has no effect on route filtering/redistribution
+            return BooleanExprs.TRUE;
           }
         });
   }
@@ -3228,6 +3542,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           }
 
           @Override
+          public Stream<Statement> visitRouteMapSetMetricEigrp(
+              RouteMapSetMetricEigrp routeMapSetMetric) {
+            return Stream.of(
+                new SetEigrpMetric(
+                    new LiteralEigrpMetric(routeMapSetMetric.getMetric().toEigrpMetricValues())));
+          }
+
+          @Override
           public Stream<Statement> visitRouteMapSetMetricType(
               RouteMapSetMetricType routeMapSetMetricType) {
             switch (routeMapSetMetricType.getMetricType()) {
@@ -3257,6 +3579,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public Stream<Statement> visitRouteMapSetTag(RouteMapSetTag routeMapSetTag) {
             return Stream.of(new SetTag(new LiteralLong(routeMapSetTag.getTag())));
+          }
+
+          @Override
+          public Stream<Statement> visitRouteMapSetWeight(RouteMapSetWeight routeMapSetWeight) {
+            return Stream.of(new SetWeight(new LiteralInt(routeMapSetWeight.getWeight())));
           }
         });
   }

@@ -115,6 +115,54 @@
         }
       },
       {
+        "File_Name" : "configs/aruba_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "\"",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/aruba_crypto",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/aruba_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "bar",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/aruba_crypto",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/aruba_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "baz",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/aruba_crypto",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/aruba_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "foo",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/aruba_crypto",
+          "lines" : [
+            5
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/asa_acl",
         "Struct_Type" : "object-group network",
         "Ref_Name" : "drawbridge_hosts",
@@ -849,6 +897,140 @@
       {
         "File_Name" : "configs/cisco_crypto",
         "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-3DES-MD5-trans",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            101
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-3DES-SHA",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            101,
+            105,
+            111
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-3DES-SHA-TRANS",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            101
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-AES-128-MD5",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-AES-128-SHA",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-AES-192-MD5",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-AES-192-SHA",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-AES-256-MD5",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-AES-256-SHA",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-DES-MD5",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
+        "Ref_Name" : "ESP-DES-SHA",
+        "Context" : "crypto dynamic-map transform-set",
+        "Lines" : {
+          "filename" : "configs/cisco_crypto",
+          "lines" : [
+            105
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_crypto",
+        "Struct_Type" : "crypto ipsec transform-set",
         "Ref_Name" : "bleep",
         "Context" : "crypto map ipsec-isakmp transform-set",
         "Lines" : {
@@ -1196,6 +1378,19 @@
       },
       {
         "File_Name" : "configs/cisco_interface",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "limit-access-to-1Gbps",
+        "Context" : "interface service-instance service-policy",
+        "Lines" : {
+          "filename" : "configs/cisco_interface",
+          "lines" : [
+            209,
+            210
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_interface",
         "Struct_Type" : "route-map",
         "Ref_Name" : "SITEMAP",
         "Context" : "interface ip vrf sitemap",
@@ -1443,7 +1638,7 @@
         "Lines" : {
           "filename" : "configs/cisco_misc",
           "lines" : [
-            206
+            208
           ]
         }
       },
@@ -1455,7 +1650,7 @@
         "Lines" : {
           "filename" : "configs/cisco_misc",
           "lines" : [
-            208
+            210
           ]
         }
       },
@@ -1467,7 +1662,7 @@
         "Lines" : {
           "filename" : "configs/cisco_misc",
           "lines" : [
-            195
+            197
           ]
         }
       },
@@ -1480,6 +1675,30 @@
           "filename" : "configs/cisco_misc",
           "lines" : [
             42
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "V4POLICY",
+        "Context" : "ip local policy route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            107
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/cisco_misc",
+        "Struct_Type" : "route-map",
+        "Ref_Name" : "V6POLICY",
+        "Context" : "ipv6 local policy route-map",
+        "Lines" : {
+          "filename" : "configs/cisco_misc",
+          "lines" : [
+            108
           ]
         }
       },
@@ -2186,6 +2405,18 @@
         }
       },
       {
+        "File_Name" : "configs/cisco_system",
+        "Struct_Type" : "policy-map",
+        "Ref_Name" : "POLICY",
+        "Context" : "system service-policy",
+        "Lines" : {
+          "filename" : "configs/cisco_system",
+          "lines" : [
+            21
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cisco_track",
         "Struct_Type" : "interface",
         "Ref_Name" : "GigabitEthernet0/0",
@@ -2722,7 +2953,8 @@
         "Lines" : {
           "filename" : "configs/ios_standby",
           "lines" : [
-            12
+            12,
+            21
           ]
         }
       },
@@ -4228,10 +4460,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 343 results",
+      "notes" : "Found 362 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 343
+      "numResults" : 362
     }
   }
 ]

@@ -45,6 +45,8 @@ public class BgpProcess implements Serializable {
 
   private Map<Prefix6, DynamicIpv6BgpPeerGroup> _dynamicIpv6PeerGroups;
 
+  private @Nullable Boolean _enforceFirstAs;
+
   private Map<Prefix, BgpNetwork> _ipNetworks;
 
   private Map<Ip, IpBgpPeerGroup> _ipPeerGroups;
@@ -58,8 +60,6 @@ public class BgpProcess implements Serializable {
   private Integer _maximumPaths;
 
   private Integer _maximumPathsEbgp;
-
-  private Integer _maximumPathsEibgp;
 
   private Integer _maximumPathsIbgp;
 
@@ -201,6 +201,15 @@ public class BgpProcess implements Serializable {
     return _dynamicIpv6PeerGroups;
   }
 
+  @Nullable
+  public Boolean getEnforceFirstAs() {
+    return _enforceFirstAs;
+  }
+
+  public void setEnforceFirstAs(@Nullable Boolean enforceFirstAs) {
+    _enforceFirstAs = enforceFirstAs;
+  }
+
   public Map<Prefix, BgpNetwork> getIpNetworks() {
     return _ipNetworks;
   }
@@ -227,10 +236,6 @@ public class BgpProcess implements Serializable {
 
   public Integer getMaximumPathsEbgp() {
     return _maximumPathsEbgp;
-  }
-
-  public Integer getMaximumPathsEibgp() {
-    return _maximumPathsEibgp;
   }
 
   public Integer getMaximumPathsIbgp() {
@@ -279,10 +284,6 @@ public class BgpProcess implements Serializable {
 
   public void setMaximumPathsEbgp(Integer maximumPathsEbgp) {
     _maximumPathsEbgp = maximumPathsEbgp;
-  }
-
-  public void setMaximumPathsEibgp(Integer maximumPathsEibgp) {
-    _maximumPathsEibgp = maximumPathsEibgp;
   }
 
   public void setMaximumPathsIbgp(Integer maximumPathsIbgp) {

@@ -34,7 +34,8 @@ public class OspfProcessPropertySpecifier extends PropertySpecifier {
               new PropertyDescriptor<>(
                   OspfProcess::isAreaBorderRouter,
                   Schema.BOOLEAN,
-                  "Whether this process is at the area border (with at least one interface in Area 0 and one in another area)"))
+                  "Whether this process is at the area border (with at least one interface in Area"
+                      + " 0 and one in another area)"))
           // will go from Long to String --> area Ids are not integral anyway
           .put(
               AREAS,

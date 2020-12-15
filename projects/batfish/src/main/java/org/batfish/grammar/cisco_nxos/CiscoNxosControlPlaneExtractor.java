@@ -89,6 +89,10 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BUILT_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_INSTANCE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_REDISTRIBUTE_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW_EXPORTER_SOURCE;
@@ -97,6 +101,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.FLOW
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_CHANNEL_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_ACCESS_GROUP_OUT;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_EIGRP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_HELLO_INTERVAL_EIGRP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_HOLD_TIME_EIGRP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_IGMP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_IP_PIM_JP_POLICY_ROUTE_MAP;
@@ -189,7 +196,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Ints;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -268,6 +274,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_specContex
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_port_spec_port_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Acllal4udp_source_portContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Allowas_in_max_occurrencesContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.As_path_regexContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_execContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Banner_motdContext;
@@ -314,8 +321,14 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_encapsulationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_concreteContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_address_dhcpContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_bandwidthContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_delayContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_dhcp_relayContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_eigrpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_forwardContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_hello_intervalContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_hold_timeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_passive_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ip_proxy_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.I_ipv6_address_concreteContext;
@@ -355,6 +368,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihg_trackContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ihgam_key_chainContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip6r_ospfv3Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iip_port_access_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipdl_prefix_listContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipdl_route_mapContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipi_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_bfdContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Iipo_costContext;
@@ -431,6 +446,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Maximum_pathsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_destinationContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Monitor_session_source_vlanContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Name_serverContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.No_sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ntp_serverContext;
@@ -549,10 +565,12 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_no_isolateContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Re_vrfContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_autonomous_systemContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_distanceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_no_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf4_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf6_redistributeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_default_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv4Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rip_instanceContext;
@@ -577,6 +595,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_metric_typeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_originContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_tagContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rms_weightContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_last_asContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsapp_literalContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rmsipnh_literalContext;
@@ -706,6 +725,9 @@ import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
+import org.batfish.representation.cisco_nxos.DistributeList;
+import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
+import org.batfish.representation.cisco_nxos.EigrpMetric;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfIpAddressFamilyConfiguration;
@@ -740,6 +762,7 @@ import org.batfish.representation.cisco_nxos.Layer3Options;
 import org.batfish.representation.cisco_nxos.LiteralIpAddressSpec;
 import org.batfish.representation.cisco_nxos.LiteralPortSpec;
 import org.batfish.representation.cisco_nxos.LoggingServer;
+import org.batfish.representation.cisco_nxos.NameServer;
 import org.batfish.representation.cisco_nxos.NtpServer;
 import org.batfish.representation.cisco_nxos.Nve;
 import org.batfish.representation.cisco_nxos.Nve.HostReachabilityProtocol;
@@ -789,9 +812,11 @@ import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cisco_nxos.RouteMapSetIpNextHopUnchanged;
 import org.batfish.representation.cisco_nxos.RouteMapSetLocalPreference;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetric;
+import org.batfish.representation.cisco_nxos.RouteMapSetMetricEigrp;
 import org.batfish.representation.cisco_nxos.RouteMapSetMetricType;
 import org.batfish.representation.cisco_nxos.RouteMapSetOrigin;
 import org.batfish.representation.cisco_nxos.RouteMapSetTag;
+import org.batfish.representation.cisco_nxos.RouteMapSetWeight;
 import org.batfish.representation.cisco_nxos.RoutingProtocolInstance;
 import org.batfish.representation.cisco_nxos.SnmpCommunity;
 import org.batfish.representation.cisco_nxos.SnmpServer;
@@ -813,6 +838,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     implements BatfishListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
+  private static final IntegerSpace BGP_ALLOWAS_IN = IntegerSpace.of(Range.closed(1, 10));
   private static final LongSpace BGP_ASN_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
       IntegerSpace.of(Range.closed(2, 255));
@@ -1623,7 +1649,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(
           ctx,
           String.format(
-              "Cannot define expanded community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define expanded community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }
@@ -1670,7 +1697,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(
           ctx,
           String.format(
-              "Cannot define standard community-list '%s' because another community-list with that name but a different type already exists.",
+              "Cannot define standard community-list '%s' because another community-list with that"
+                  + " name but a different type already exists.",
               name));
       return;
     }
@@ -2009,19 +2037,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitIp_name_server(Ip_name_serverContext ctx) {
-    String vrf;
+    String useVrf = null;
     if (ctx.vrf != null) {
       Optional<String> vrfOrErr = toString(ctx, ctx.vrf);
       if (!vrfOrErr.isPresent()) {
         return;
       }
-      vrf = vrfOrErr.get();
-    } else {
-      vrf = DEFAULT_VRF_NAME;
+      useVrf = vrfOrErr.get();
     }
-    List<String> existingServers =
-        _c.getIpNameServersByUseVrf().computeIfAbsent(vrf, v -> new LinkedList<>());
-    ctx.servers.stream().map(ParserRuleContext::getText).forEach(existingServers::add);
+    for (Name_serverContext server : ctx.servers) {
+      _currentVrf.addNameServer(new NameServer(getFullText(server), useVrf));
+    }
   }
 
   @Override
@@ -3096,7 +3122,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
         warn(
             ctx,
-            "Cannot enable ingress replication bgp under VNI without host-reachability protocol bgp");
+            "Cannot enable ingress replication bgp under VNI without host-reachability protocol"
+                + " bgp");
         return;
       }
       _currentNveVnis.forEach(
@@ -3106,7 +3133,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       if (_currentNves.stream().anyMatch(nve -> nve.getHostReachabilityProtocol() != null)) {
         warn(
             ctx,
-            "Cannot enable ingress replication static under VNI without unset host-reachability protocol");
+            "Cannot enable ingress replication static under VNI without unset host-reachability"
+                + " protocol");
         return;
       }
       _currentNveVnis.forEach(
@@ -3154,7 +3182,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .anyMatch(nve -> nve.getHostReachabilityProtocol() != HostReachabilityProtocol.BGP)) {
       warn(
           ctx,
-          "Cannot configure Ingress replication protocol BGP for nve without host reachability protocol bgp.");
+          "Cannot configure Ingress replication protocol BGP for nve without host reachability"
+              + " protocol bgp.");
       return;
     }
     _currentNves.forEach(
@@ -3195,7 +3224,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         warn(
             ctx,
             String.format(
-                "Cannot create object-group '%s' of type ip address because an object-group of a different type already exists with that name.",
+                "Cannot create object-group '%s' of type ip address because an object-group of a"
+                    + " different type already exists with that name.",
                 name));
         _currentObjectGroupIpAddress = new ObjectGroupIpAddress("dummy");
         return;
@@ -3770,10 +3800,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_n_af_allowas_in(Rb_n_af_allowas_inContext ctx) {
-    if (ctx.num != null) {
-      todo(ctx);
-    }
-    _currentBgpVrfNeighborAddressFamily.setAllowAsIn(true);
+    /*
+    Default value for allowas-in, if unspecified, is 3
+    https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/command_references/configuration_commands/b_Using_N9K_Config_Commands/b_N9K_Bookmap_chapter_00.html#wp2015222148
+    */
+    Optional<Integer> value = ctx.num == null ? Optional.of(3) : toInteger(ctx, ctx.num);
+    value.ifPresent(_currentBgpVrfNeighborAddressFamily::setAllowAsIn);
   }
 
   @Override
@@ -4109,6 +4141,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRec_distance(Rec_distanceContext ctx) {
+    _currentEigrpVrf.setDistanceInternal(toInteger(ctx.internal));
+    _currentEigrpVrf.setDistanceExternal(toInteger(ctx.external));
+  }
+
+  @Override
   public void exitRec_no_router_id(Rec_no_router_idContext ctx) {
     _currentEigrpVrf.setRouterId(null);
   }
@@ -4137,6 +4175,23 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRecaf_ipv6(Recaf_ipv6Context ctx) {
     _currentEigrpVrfIpAf = _currentEigrpVrf.getVrfIpv4AddressFamily();
+  }
+
+  @Override
+  public void exitRecaf_default_metric(Recaf_default_metricContext ctx) {
+    EigrpMetric defaultMetric =
+        new EigrpMetric(
+            toLong(ctx.bandwidth),
+            toLong(ctx.delay),
+            toInteger(ctx.reliability),
+            toInteger(ctx.load),
+            toLong(ctx.mtu));
+    _currentEigrpVrfIpAf.setDefaultMetric(defaultMetric);
+  }
+
+  @Override
+  public void exitRecaf_network(CiscoNxosParser.Recaf_networkContext ctx) {
+    _currentEigrpVrfIpAf.addNetwork(toPrefix(ctx.network));
   }
 
   @Override
@@ -5065,7 +5120,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         warn(
             ctx,
             String.format(
-                "Cannot set channel-group because interface '%s' has settings that do not conform to those of interface '%s'",
+                "Cannot set channel-group because interface '%s' has settings that do not conform"
+                    + " to those of interface '%s'",
                 incompatibleInterface.get().getName(), referenceIface.getName()));
         return;
       }
@@ -5130,6 +5186,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitI_ip_bandwidth(I_ip_bandwidthContext ctx) {
+    Integer bandwidth = toBandwidth(ctx, ctx.bw);
+    _currentInterfaces.forEach(iface -> iface.setEigrpBandwidth(bandwidth));
+  }
+
+  @Override
+  public void exitI_ip_delay(I_ip_delayContext ctx) {
+    toIntegerInSpace(
+            ctx, ctx.delay, INTERFACE_DELAY_10US_RANGE, "Interface delay (tens of microseconds)")
+        .ifPresent(delay -> _currentInterfaces.forEach(iface -> iface.setEigrpDelay(delay)));
+  }
+
+  @Override
   public void exitI_ip_address_dhcp(I_ip_address_dhcpContext ctx) {
     _currentInterfaces.forEach(
         iface -> {
@@ -5146,8 +5215,77 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitIipdl_prefix_list(Iipdl_prefix_listContext ctx) {
+    Optional<String> prefixList = toString(ctx, ctx.prefixlist);
+    if (!prefixList.isPresent()) {
+      return;
+    }
+    _c.referenceStructure(
+        IP_PREFIX_LIST,
+        prefixList.get(),
+        ctx.IN() == null
+            ? EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT
+            : EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        ctx.prefixlist.getStart().getLine());
+    DistributeList distributeList =
+        new DistributeList(prefixList.get(), DistributeListFilterType.PREFIX_LIST);
+    if (ctx.IN() != null) {
+      _currentInterfaces.forEach(iface -> iface.setEigrpInboundDistributeList(distributeList));
+    } else {
+      _currentInterfaces.forEach(iface -> iface.setEigrpOutboundDistributeList(distributeList));
+    }
+  }
+
+  @Override
+  public void exitIipdl_route_map(Iipdl_route_mapContext ctx) {
+    Optional<String> routeMap = toString(ctx, ctx.routemap);
+    if (!routeMap.isPresent()) {
+      return;
+    }
+    _c.referenceStructure(
+        ROUTE_MAP,
+        routeMap.get(),
+        ctx.IN() == null ? EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT : EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        ctx.routemap.getStart().getLine());
+    DistributeList distributeList =
+        new DistributeList(routeMap.get(), DistributeListFilterType.ROUTE_MAP);
+    if (ctx.IN() != null) {
+      _currentInterfaces.forEach(iface -> iface.setEigrpInboundDistributeList(distributeList));
+    } else {
+      _currentInterfaces.forEach(iface -> iface.setEigrpOutboundDistributeList(distributeList));
+    }
+  }
+
+  @Override
+  public void exitI_ip_eigrp(I_ip_eigrpContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.tag);
+    maybeName.ifPresent(
+        name ->
+            _c.referenceStructure(
+                ROUTER_EIGRP, name, INTERFACE_IP_EIGRP, ctx.getStart().getLine()));
+  }
+
+  @Override
   public void exitI_ip_forward(I_ip_forwardContext ctx) {
     _currentInterfaces.forEach(i -> i.setIpForward(true));
+  }
+
+  @Override
+  public void exitI_ip_hello_interval(I_ip_hello_intervalContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.tag);
+    maybeName.ifPresent(
+        name ->
+            _c.referenceStructure(
+                ROUTER_EIGRP, name, INTERFACE_IP_HELLO_INTERVAL_EIGRP, ctx.getStart().getLine()));
+  }
+
+  @Override
+  public void exitI_ip_hold_time(I_ip_hold_timeContext ctx) {
+    Optional<String> maybeName = toString(ctx, ctx.tag);
+    maybeName.ifPresent(
+        name ->
+            _c.referenceStructure(
+                ROUTER_EIGRP, name, INTERFACE_IP_HOLD_TIME_EIGRP, ctx.getStart().getLine()));
   }
 
   @Override
@@ -5175,6 +5313,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           iface.setIpv6AddressDhcp(true);
           iface.getIpv6AddressSecondaries().clear();
         });
+  }
+
+  @Override
+  public void exitI_ip_passive_interface(I_ip_passive_interfaceContext ctx) {
+    _currentInterfaces.forEach(iface -> iface.setEigrpPassive(true));
   }
 
   @Override
@@ -5437,7 +5580,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             vni -> vni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC)) {
       warn(
           ctx,
-          "Please remove ingress replication static under VNIs before configuring host reachability bgp.");
+          "Please remove ingress replication static under VNIs before configuring host"
+              + " reachability bgp.");
       return;
     }
     _currentNves.forEach(nve -> nve.setHostReachabilityProtocol(HostReachabilityProtocol.BGP));
@@ -5729,6 +5873,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           names.add(name);
         });
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(names.build()));
+    warn(ctx, "Route-map match interface is not supported and will be ignored.");
   }
 
   @Override
@@ -5959,7 +6104,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRms_metric(Rms_metricContext ctx) {
-    _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(toLong(ctx.metric)));
+    if (ctx.delay == null) {
+      _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(toLong(ctx.metric)));
+    } else {
+      _currentRouteMapEntry.setSetMetricEigrp(
+          new RouteMapSetMetricEigrp(
+              new EigrpMetric(
+                  toLong(ctx.metric),
+                  toLong(ctx.delay),
+                  toInteger(ctx.reliability),
+                  toInteger(ctx.load),
+                  toLong(ctx.mtu))));
+    }
   }
 
   @Override
@@ -6000,6 +6156,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitRms_tag(Rms_tagContext ctx) {
     _currentRouteMapEntry.setSetTag(new RouteMapSetTag(toLong(ctx.tag)));
+  }
+
+  @Override
+  public void exitRms_weight(Rms_weightContext ctx) {
+    _currentRouteMapEntry.setSetWeight(new RouteMapSetWeight(toInteger(ctx.weight)));
   }
 
   @Override
@@ -6326,6 +6487,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Tcp_flags_maskContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, TCP_FLAGS_MASK_RANGE, "tcp-flags-mask");
+  }
+
+  private Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Allowas_in_max_occurrencesContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, BGP_ALLOWAS_IN, "bgp allowas-in");
   }
 
   private int toInteger(Tcp_port_numberContext ctx) {

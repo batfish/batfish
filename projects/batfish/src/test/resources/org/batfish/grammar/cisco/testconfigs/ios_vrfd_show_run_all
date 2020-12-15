@@ -1,0 +1,21 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios_vrfd_show_run_all
+!
+version 15.5
+!
+vrf definition VRF2
+ no ipv4 multicast multitopology
+ !
+ address-family ipv4
+  import map SOME_RM
+  mdt preference pim mldp
+  mdt overlay bgp shared-tree-prune-delay 60
+  mdt overlay bgp source-tree-prune-delay 30
+  route-target export 65000:1
+  route-target import 65001:2
+  route-target import 65001:3
+ exit-address-family
+ ! Keep this last so we know parsing didn't bail
+ rd 65000:1
+!
