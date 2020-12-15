@@ -105,9 +105,15 @@ recaf_ipv6
 
 recaf_common
 :
-  recaf_eigrp
+  recaf_default_metric
+  | recaf_eigrp
   | recaf_network
   | recaf_router_id
+;
+
+recaf_default_metric
+:
+  DEFAULT_METRIC bandwidth = uint32 delay = uint32 reliability = uint8 load = uint8 mtu = uint32 NEWLINE
 ;
 
 recaf_eigrp
