@@ -570,6 +570,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_no_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rec_router_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf4_redistributeContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf6_redistributeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_default_metricContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv4Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Recaf_ipv6Context;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Rip_instanceContext;
@@ -726,6 +727,7 @@ import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.DistributeList;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
+import org.batfish.representation.cisco_nxos.EigrpMetric;
 import org.batfish.representation.cisco_nxos.EigrpProcessConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.EigrpVrfIpAddressFamilyConfiguration;
@@ -4176,6 +4178,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void exitRecaf_default_metric(Recaf_default_metricContext ctx) {
+    EigrpMetric defaultMetric =
+        new EigrpMetric(
+            toLong(ctx.bandwidth),
+            toLong(ctx.delay),
+            toInteger(ctx.reliability),
+            toInteger(ctx.load),
+            toLong(ctx.mtu));
+    _currentEigrpVrfIpAf.setDefaultMetric(defaultMetric);
+  }
+
+  @Override
   public void exitRecaf_network(CiscoNxosParser.Recaf_networkContext ctx) {
     _currentEigrpVrfIpAf.addNetwork(toPrefix(ctx.network));
   }
@@ -6095,11 +6109,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else {
       _currentRouteMapEntry.setSetMetricEigrp(
           new RouteMapSetMetricEigrp(
-              toLong(ctx.metric),
-              toLong(ctx.delay),
-              toInteger(ctx.reliability),
-              toInteger(ctx.load),
-              toLong(ctx.mtu)));
+              new EigrpMetric(
+                  toLong(ctx.metric),
+                  toLong(ctx.delay),
+                  toInteger(ctx.reliability),
+                  toInteger(ctx.load),
+                  toLong(ctx.mtu))));
     }
   }
 

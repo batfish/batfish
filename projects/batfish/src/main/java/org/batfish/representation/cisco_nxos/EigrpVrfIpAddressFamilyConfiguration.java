@@ -25,6 +25,12 @@ public abstract class EigrpVrfIpAddressFamilyConfiguration implements Serializab
     _redistributionPolicies = new HashMap<>();
   }
 
+  /** Return default metric if configured. */
+  @Nullable
+  public EigrpMetric getDefaultMetric() {
+    return _defaultMetric;
+  }
+
   public final @Nonnull Set<Prefix> getNetworks() {
     return ImmutableSet.copyOf(_networks);
   }
@@ -52,11 +58,17 @@ public abstract class EigrpVrfIpAddressFamilyConfiguration implements Serializab
     _networks.add(network);
   }
 
+  /** Set the default metric values for the given instance. */
+  public final void setDefaultMetric(EigrpMetric defaultMetric) {
+    _defaultMetric = defaultMetric;
+  }
+
   /** Set the redistribution policy for the given instance. */
   public final void setRedistributionPolicy(RoutingProtocolInstance instance, String routeMap) {
     _redistributionPolicies.put(instance, new RedistributionPolicy(instance, routeMap));
   }
 
+  @Nullable private EigrpMetric _defaultMetric;
   private final Set<Prefix> _networks;
   private final Map<RoutingProtocolInstance, RedistributionPolicy> _redistributionPolicies;
 }

@@ -1423,6 +1423,9 @@ public final class CiscoNxosGrammarTest {
         assertThat(vrf.getV6AddressFamily(), nullValue());
         EigrpVrfIpv4AddressFamilyConfiguration vrfV4 = vrf.getVrfIpv4AddressFamily();
         assertThat(vrfV4, notNullValue());
+        assertThat(
+            vrfV4.getDefaultMetric(),
+            equalTo(new org.batfish.representation.cisco_nxos.EigrpMetric(1, 2, 3, 4, 5)));
         assertThat(vrfV4.getRedistributionPolicies(), hasSize(8));
       }
       {
@@ -1435,6 +1438,9 @@ public final class CiscoNxosGrammarTest {
 
         EigrpVrfIpv4AddressFamilyConfiguration v4 = vrf.getV4AddressFamily();
         assertThat(v4, notNullValue());
+        assertThat(
+            v4.getDefaultMetric(),
+            equalTo(new org.batfish.representation.cisco_nxos.EigrpMetric(5, 4, 3, 2, 1)));
         assertThat(v4.getRedistributionPolicies(), hasSize(4));
 
         EigrpVrfIpv6AddressFamilyConfiguration v6 = vrf.getV6AddressFamily();
@@ -1497,6 +1503,10 @@ public final class CiscoNxosGrammarTest {
     RoutingPolicy redistPolicy =
         c.getRoutingPolicies().get(eigrpRedistributionPolicyName("default", 1));
     EigrpProcess eigrpProc = c.getDefaultVrf().getEigrpProcesses().get(1L);
+    // vrf1 config is the same except it has a default-metric set
+    RoutingPolicy vrfRedistPolicy =
+        c.getRoutingPolicies().get(eigrpRedistributionPolicyName("vrf1", 1));
+    EigrpProcess vrfEigrpProc = c.getVrfs().get("vrf1").getEigrpProcesses().get(1L);
 
     // Redistribution policy should permit static routes to 1.1.1.1/32.
     // Redistributed routes should have default EIGRP metric: bw 100000 kbps, delay 1E9 ps.
@@ -1536,6 +1546,26 @@ public final class CiscoNxosGrammarTest {
       EigrpMetric expectedMetric =
           ClassicMetric.builder()
               .setValues(EigrpMetricValues.builder().setBandwidth(100000).setDelay(1e9).build())
+              .build();
+      assertThat(rb.build().getEigrpMetric(), equalTo(expectedMetric));
+    }
+    {
+      // Make sure VRF redistribution policy correctly applies its default metric
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertTrue(vrfRedistPolicy.process(staticPermitted, rb, vrfEigrpProc, Direction.OUT));
+      // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
+      // built, so first set other required fields.
+      rb.setNetwork(permittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      EigrpMetric expectedMetric =
+          ClassicMetric.builder()
+              .setValues(
+                  EigrpMetricValues.builder()
+                      .setBandwidth(1)
+                      .setDelay(2e7)
+                      .setReliability(3)
+                      .setEffectiveBandwidth(4)
+                      .setMtu(5)
+                      .build())
               .build();
       assertThat(rb.build().getEigrpMetric(), equalTo(expectedMetric));
     }
@@ -6984,11 +7014,9 @@ public final class CiscoNxosGrammarTest {
       assertThat(entry.getSequence(), equalTo(10));
       RouteMapSetMetricEigrp set = entry.getSetMetricEigrp();
       assertThat(entry.getSets().collect(onlyElement()), equalTo(set));
-      assertThat(set.getBandwidth(), equalTo(1L));
-      assertThat(set.getDelayTensOfMicroseconds(), equalTo(2L));
-      assertThat(set.getReliability(), equalTo(3));
-      assertThat(set.getLoad(), equalTo(4));
-      assertThat(set.getMtu(), equalTo(5L));
+      assertThat(
+          set.getMetric(),
+          equalTo(new org.batfish.representation.cisco_nxos.EigrpMetric(1, 2, 3, 4, 5)));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("set_metric_type_external");
