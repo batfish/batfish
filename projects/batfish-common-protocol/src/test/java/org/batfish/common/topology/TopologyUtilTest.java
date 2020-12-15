@@ -896,7 +896,7 @@ public final class TopologyUtilTest {
   /**
    * Even though two interfaces are mis-configured (native VLANs differ) we should still make an
    * edge to accurately model the mis-configuration that is present. Access ports will end up in the
-   * saem broadcast domain even though one is vlan 5 on n1 and another vlan 6 on n2
+   * same broadcast domain even though one is vlan 5 on n1 and another vlan 6 on n2
    */
   @Test
   public void testComputeLayer2TopologyMismatchedNativeVlans() {
