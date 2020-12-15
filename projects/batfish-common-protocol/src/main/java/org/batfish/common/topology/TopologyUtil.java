@@ -40,6 +40,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -93,12 +94,13 @@ public final class TopologyUtil {
       }
       if (i1.getNativeVlan() != null && trunkWithNativeVlanAllowed(i2)) {
         // This frame will not be tagged by i1, and i2 accepts untagged frames.
+        assert i2.getNativeVlan() != null; // invariant of trunkWithNativeVlanAllowed
         edges.accept(
             new Layer2Edge(
                 node1,
-                node1Ranges.getRange(i1.getNativeVlan()),
+                Range.singleton(i1.getNativeVlan()),
                 node2,
-                node2Ranges.getRange(i2.getNativeVlan())));
+                Range.singleton(i2.getNativeVlan())));
       }
     } else if (i1Tag != null) {
       // i1 is a tagged layer-3 interface, and the other side is a trunk. The only possible edge is
@@ -316,9 +318,20 @@ public final class TopologyUtil {
     InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
     for (Interface i : config.getActiveInterfaces().values()) {
       if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-        i.getAllowedVlans()
+        IntegerSpace allowedVlansNoNative =
+            i.getAllowedVlans()
+                .difference(
+                    i.getNativeVlan() != null
+                        ? IntegerSpace.of(i.getNativeVlan())
+                        : IntegerSpace.EMPTY);
+        allowedVlansNoNative
             .getRanges()
             .forEach(vlanRange -> ifacesByVlan.add(vlanRange, i.getName()));
+        // special handling for native VLAN to avoid conflating edges for tagged and non-tagged
+        // packets
+        if (i.getNativeVlan() != null) {
+          ifacesByVlan.add(i.getNativeVlan(), i.getName());
+        }
       } else if (i.getSwitchportMode() == SwitchportMode.ACCESS && i.getAccessVlan() != null) {
         ifacesByVlan.add(i.getAccessVlan(), i.getName());
       } else if (i.getSwitchportMode() == SwitchportMode.NONE && i.getVlan() != null) {

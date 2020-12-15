@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import java.util.Collections;
@@ -890,6 +891,72 @@ public final class TopologyUtilTest {
     assertFalse(
         "n1:ia and n2:ic are NOT in the same broadcast domain",
         layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName));
+  }
+
+  /**
+   * Even though two interfaces are mis-configured (native VLANs differ) we should still make an
+   * edge to accurately model the mis-configuration that is present. Access ports will end up in the
+   * saem broadcast domain even though one is vlan 5 on n1 and another vlan 6 on n2
+   */
+  @Test
+  public void testComputeLayer2TopologyMismatchedNativeVlans() {
+    String n1Name = "n1";
+    String n2Name = "n2";
+
+    String tr1Name = "tr1";
+    String access1Name = "acc1";
+    String tr2Name = "tr2";
+    String access2Name = "acc2";
+
+    // Nodes
+    Configuration n1 = _cb.setHostname(n1Name).build();
+    Configuration n2 = _cb.setHostname(n2Name).build();
+
+    // Interfaces
+    _ib.setActive(true).setSwitchport(true);
+    // n1 interfaces
+    _ib.setOwner(n1);
+    _ib.setName(tr1Name)
+        .setAccessVlan(null)
+        .setNativeVlan(5)
+        .setAllowedVlans(IntegerSpace.of(Range.closed(1, 1000)))
+        .setSwitchportMode(SwitchportMode.TRUNK)
+        .build();
+    // switchport access vlan 5
+    _ib.setName(access1Name)
+        .setNativeVlan(null)
+        .setAllowedVlans(null)
+        .setAccessVlan(5)
+        .setSwitchportMode(SwitchportMode.ACCESS)
+        .build();
+    // n2 interfaces
+    _ib.setOwner(n2);
+    _ib.setName(tr2Name)
+        .setAccessVlan(null)
+        .setNativeVlan(6)
+        .setAllowedVlans(IntegerSpace.of(Range.closed(1, 1000)))
+        .setSwitchportMode(SwitchportMode.TRUNK)
+        .build();
+    // switchport access vlan 6
+    _ib.setName(access2Name)
+        .setNativeVlan(null)
+        .setAllowedVlans(null)
+        .setAccessVlan(6)
+        .setSwitchportMode(SwitchportMode.ACCESS)
+        .build();
+
+    // Layer1
+    Layer1Topology layer1LogicalTopology = layer1Topology(n1Name, tr1Name, n2Name, tr2Name);
+
+    // Layer2
+    Layer2Topology layer2Topology =
+        computeLayer2Topology(
+            layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
+
+    assertTrue(
+        "acc1 and acc2 are in the same broadcast domain",
+        layer2Topology.inSameBroadcastDomain(
+            new Layer2Node(n1Name, access1Name, 5), new Layer2Node(n2Name, access2Name, 6)));
   }
 
   @Test
