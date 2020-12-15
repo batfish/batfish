@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import java.util.Collections;
@@ -294,17 +295,19 @@ public final class TopologyUtilTest {
 
     assertThat(
         computeVniInterNodeEdges(vxlanTopology).collect(ImmutableList.toImmutableList()),
-        containsInAnyOrder(new Layer2Edge(n1, n2, null), new Layer2Edge(n2, n1, null)));
+        containsInAnyOrder(new Layer2Edge(n1, n2), new Layer2Edge(n2, n1)));
   }
 
   @Test
   public void testComputeLayer2Topology_self_edge_optimization() {
     String c1Name = "c1";
     String c2Name = "c2";
+    String c3Name = "c3";
 
     String c1i1Name = "c1i1";
     String c2i1Name = "c2i1";
     String c2i2Name = "c2i2";
+    String c3i1Name = "c3i1";
     Configuration c1 = _cb.setHostname(c1Name).build();
     Vrf v1 = _vb.setOwner(c1).build();
     _ib.setOwner(c1).setVrf(v1).setActive(true);
@@ -320,7 +323,8 @@ public final class TopologyUtilTest {
     c2i2.setSwitchport(true);
     c2i2.setSwitchportMode(SwitchportMode.ACCESS);
     c2i2.setAccessVlan(1);
-    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+    Configuration c3 = _cb.setHostname(c3Name).build();
+    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2, c3Name, c3);
     {
       // c1i1 and c2i1 are connected in layer1.
       Layer1Topology layer1Topology = layer1Topology(c1Name, c1i1Name, c2Name, c2i1Name);
@@ -334,9 +338,7 @@ public final class TopologyUtilTest {
     }
     {
       // c1i1 is only connected to c3i1, leaving c2 without layer1 edges
-      String c3Name = "c3";
-      String c3i1Name = "c3i1";
-      Configuration c3 = _cb.setHostname(c3Name).build();
+
       Vrf v3 = _vb.setOwner(c3).build();
       _ib.setOwner(c3).setVrf(v3).setActive(true);
       _ib.setName(c3i1Name).build();
@@ -636,12 +638,15 @@ public final class TopologyUtilTest {
     i2.setSwitchportMode(SwitchportMode.ACCESS);
     i2.setAccessVlan(2);
 
+    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
+    ifacesByVlan.add(2, i1.getName());
+    ifacesByVlan.add(2, i2.getName());
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder::add);
+    computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
     assertThat(
         builder.build(),
-        equalTo(ImmutableSet.of(new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2, null))));
+        equalTo(ImmutableSet.of(new Layer2Edge(c1Name, i1Name, 2, c1Name, i2Name, 2))));
   }
 
   @Test
@@ -671,13 +676,13 @@ public final class TopologyUtilTest {
             .setVlan(vlanId)
             .build());
 
+    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder::add);
+    computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
     assertThat(
         builder.build(),
-        equalTo(
-            ImmutableSet.of(new Layer2Edge(c1Name, irbName, null, c1Name, vniName, null, null))));
+        equalTo(ImmutableSet.of(new Layer2Edge(c1Name, irbName, null, c1Name, vniName, null))));
   }
 
   @Test
@@ -709,14 +714,17 @@ public final class TopologyUtilTest {
             .setVlan(vlanId)
             .build());
 
+    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
+    ifacesByVlan.add(vlanId, switchportName);
+
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
-    computeLayer2SelfEdges(c1, builder::add);
+    computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
     assertThat(
         builder.build(),
         equalTo(
             ImmutableSet.of(
-                new Layer2Edge(c1Name, vniName, null, c1Name, switchportName, vlanId, null))));
+                new Layer2Edge(c1Name, vniName, null, c1Name, switchportName, vlanId))));
   }
 
   @Test
@@ -883,6 +891,72 @@ public final class TopologyUtilTest {
     assertFalse(
         "n1:ia and n2:ic are NOT in the same broadcast domain",
         layer2Topology.inSameBroadcastDomain(n1Name, iaName, n2Name, icName));
+  }
+
+  /**
+   * Even though two interfaces are mis-configured (native VLANs differ) we should still make an
+   * edge to accurately model the mis-configuration that is present. Access ports will end up in the
+   * same broadcast domain even though one is vlan 5 on n1 and another vlan 6 on n2
+   */
+  @Test
+  public void testComputeLayer2TopologyMismatchedNativeVlans() {
+    String n1Name = "n1";
+    String n2Name = "n2";
+
+    String tr1Name = "tr1";
+    String access1Name = "acc1";
+    String tr2Name = "tr2";
+    String access2Name = "acc2";
+
+    // Nodes
+    Configuration n1 = _cb.setHostname(n1Name).build();
+    Configuration n2 = _cb.setHostname(n2Name).build();
+
+    // Interfaces
+    _ib.setActive(true).setSwitchport(true);
+    // n1 interfaces
+    _ib.setOwner(n1);
+    _ib.setName(tr1Name)
+        .setAccessVlan(null)
+        .setNativeVlan(5)
+        .setAllowedVlans(IntegerSpace.of(Range.closed(1, 1000)))
+        .setSwitchportMode(SwitchportMode.TRUNK)
+        .build();
+    // switchport access vlan 5
+    _ib.setName(access1Name)
+        .setNativeVlan(null)
+        .setAllowedVlans(null)
+        .setAccessVlan(5)
+        .setSwitchportMode(SwitchportMode.ACCESS)
+        .build();
+    // n2 interfaces
+    _ib.setOwner(n2);
+    _ib.setName(tr2Name)
+        .setAccessVlan(null)
+        .setNativeVlan(6)
+        .setAllowedVlans(IntegerSpace.of(Range.closed(1, 1000)))
+        .setSwitchportMode(SwitchportMode.TRUNK)
+        .build();
+    // switchport access vlan 6
+    _ib.setName(access2Name)
+        .setNativeVlan(null)
+        .setAllowedVlans(null)
+        .setAccessVlan(6)
+        .setSwitchportMode(SwitchportMode.ACCESS)
+        .build();
+
+    // Layer1
+    Layer1Topology layer1LogicalTopology = layer1Topology(n1Name, tr1Name, n2Name, tr2Name);
+
+    // Layer2
+    Layer2Topology layer2Topology =
+        computeLayer2Topology(
+            layer1LogicalTopology, VxlanTopology.EMPTY, ImmutableMap.of(n1Name, n1, n2Name, n2));
+
+    assertTrue(
+        "acc1 and acc2 are in the same broadcast domain",
+        layer2Topology.inSameBroadcastDomain(
+            new Layer2Node(n1Name, access1Name, 5), new Layer2Node(n2Name, access2Name, 6)));
   }
 
   @Test
