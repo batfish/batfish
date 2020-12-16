@@ -2,19 +2,29 @@
 !
 hostname nxos_eigrp_redist
 !
+feature bgp
 feature eigrp
 !
 vrf context vrf1
   ! defined so it will be converted
 !
-ip prefix-list PL seq 5 permit 1.1.1.1/32
+ip prefix-list redist_static seq 5 permit 1.1.1.1/32
+ip prefix-list redist_bgp seq 5 permit 2.2.2.2/32
 !
-route-map RM permit 10
- match ip address prefix-list PL
+route-map redist_static permit 10
+ match ip address prefix-list redist_static
+route-map redist_bgp permit 10
+ match ip address prefix-list redist_bgp
 !
 router eigrp 1
   router-id 5.5.5.5
-  redistribute static route-map RM
+  redistribute static route-map redist_static
+  redistribute bgp 1 route-map redist_bgp
   vrf vrf1
     default-metric 1 2 3 4 5
-    redistribute static route-map RM
+    redistribute static route-map redist_static
+    ! This is allowed but should have no effect because there is no router bgp 2
+    redistribute bgp 2 route-map redist_bgp
+
+router bgp 1
+  ! defined so it will be converted
