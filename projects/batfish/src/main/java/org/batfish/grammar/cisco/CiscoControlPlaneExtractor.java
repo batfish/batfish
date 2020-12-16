@@ -284,6 +284,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REA
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_IMPORT_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_REDIRECT_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_SERVICE_LIST;
@@ -1023,7 +1024,10 @@ import org.batfish.grammar.cisco.CiscoParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_exportContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_import_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_rdContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_route_targetContext;
@@ -1170,6 +1174,7 @@ import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.Vrf;
+import org.batfish.representation.cisco.VrfAddressFamily;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
@@ -1455,6 +1460,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private User _currentUser;
 
   private String _currentVrf;
+
+  @Nullable private VrfAddressFamily _currentVrfAddressFamily;
 
   private VrrpGroup _currentVrrpGroup;
 
@@ -8926,12 +8933,50 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterVrfd_address_family(Vrfd_address_familyContext ctx) {
+    // NOTE: following IOS XE conventions here, where UNICAST is optional (i.e., ipv4 == ipv4
+    // unicast)
+    if (ctx.IPV4() != null && ctx.MULTICAST() == null) {
+      _currentVrfAddressFamily = currentVrf().getOrCreateIpv4UnicastAddressFamily();
+    } else {
+      // Everything else (ipv6, multicast) is (so far) unsupported, so make a dummy value
+      _currentVrfAddressFamily = new VrfAddressFamily();
+    }
+  }
+
+  @Override
+  public void exitVrfd_address_family(Vrfd_address_familyContext ctx) {
+    _currentVrfAddressFamily = null;
+  }
+
+  @Override
   public void exitVrfd_route_target(Vrfd_route_targetContext ctx) {
     if (ctx.type.BOTH() != null || ctx.type.IMPORT() != null) {
-      currentVrf().setRouteImportTarget(toRouteTarget(ctx.rt));
-    } else if (ctx.type.BOTH() != null || ctx.type.EXPORT() != null) {
-      currentVrf().setRouteExportTarget(toRouteTarget(ctx.rt));
+      currentVrf().getGenericAddressFamilyConfig().addRouteTargetImport(toRouteTarget(ctx.rt));
     }
+    if (ctx.type.BOTH() != null || ctx.type.EXPORT() != null) {
+      currentVrf().getGenericAddressFamilyConfig().addRouteTargetExport(toRouteTarget(ctx.rt));
+    }
+  }
+
+  @Override
+  public void exitVrfd_af_route_target(Vrfd_af_route_targetContext ctx) {
+    assert _currentVrfAddressFamily != null;
+    if (ctx.type.BOTH() != null || ctx.type.IMPORT() != null) {
+      _currentVrfAddressFamily.addRouteTargetImport(toRouteTarget(ctx.rt));
+    }
+    if (ctx.type.BOTH() != null || ctx.type.EXPORT() != null) {
+      _currentVrfAddressFamily.addRouteTargetExport(toRouteTarget(ctx.rt));
+    }
+  }
+
+  @Override
+  public void exitVrfd_af_import_map(Vrfd_af_import_mapContext ctx) {
+    assert _currentVrfAddressFamily != null;
+    String name = ctx.name.getText();
+    _currentVrfAddressFamily.setImportMap(name);
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, VRF_DEFINITION_ADDRESS_FAMILY_IMPORT_MAP, ctx.getStart().getLine());
   }
 
   @Override
