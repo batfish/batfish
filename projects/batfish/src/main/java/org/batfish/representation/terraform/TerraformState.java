@@ -41,10 +41,15 @@ public class TerraformState implements TerraformFileContent {
 
   @Nullable
   static TerraformResource specialize(StateResource resource, Warnings warnings) {
+    if (resource.getInstances().size() == 0) {
+      // no instances -- skip
+      return resource;
+    }
     if (resource.getInstances().size() != 1) {
       warnings.redFlag(
-          "Skipping %s because it has multiple instances, which I don't know how to handle.",
-          resource.getCommon().getName());
+          String.format(
+              "Skipping %s because it has multiple instances, which I don't know how to handle.",
+              resource.getCommon().getName()));
       return resource;
     }
     return TerraformResource.create(

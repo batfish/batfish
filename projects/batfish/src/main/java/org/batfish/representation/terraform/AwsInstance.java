@@ -73,7 +73,6 @@ class AwsInstance extends AwsResource {
           JSON_KEY_SECURITY_GROUPS,
           JSON_KEY_PRIMARY_NETWORK_INTERFACE_ID,
           JSON_KEY_NETWORK_INTERFACE,
-          JSON_KEY_SECONDARY_PRIVATE_IPS,
           JSON_KEY_PRIVATE_IP,
           JSON_KEY_PUBLIC_IP);
 
@@ -105,9 +104,11 @@ class AwsInstance extends AwsResource {
         publicIP.isEmpty() ? null : Ip.parse(publicIP),
         attributes.get(JSON_KEY_PRIMARY_NETWORK_INTERFACE_ID).toString(),
         getNetworkInterfaces(attributes, common.getName()),
-        getStrings(attributes, JSON_KEY_SECONDARY_PRIVATE_IPS).stream()
-            .map(Ip::parse)
-            .collect(ImmutableList.toImmutableList()),
+        attributes.containsKey(JSON_KEY_SECONDARY_PRIVATE_IPS)
+            ? getStrings(attributes, JSON_KEY_SECONDARY_PRIVATE_IPS).stream()
+                .map(Ip::parse)
+                .collect(ImmutableList.toImmutableList())
+            : ImmutableList.of(),
         Status.fromString(attributes.get(JSON_KEY_INSTANCE_STATE).toString()),
         getStrings(attributes, JSON_KEY_SECURITY_GROUPS),
         getStrings(attributes, JSON_KEY_VPC_SECURITY_GROUP_IDS),
