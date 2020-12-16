@@ -418,6 +418,7 @@ import org.batfish.representation.cisco.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.VrfAddressFamily;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -3809,16 +3810,41 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosVrfDefinition() {
     CiscoConfiguration vc = parseCiscoConfig("ios-vrf-definition", ConfigurationFormat.CISCO_IOS);
-    assertThat(
-        vc.getVrfs().get("vrf1").getRouteDistinguisher(),
-        equalTo(RouteDistinguisher.from(1111, 11L)));
-    assertThat(
-        vc.getVrfs().get("vrf1").getRouteImportTarget(),
-        equalTo(ExtendedCommunity.target(2222, 22)));
-    assertThat(
-        vc.getVrfs().get("vrf1").getRouteExportTarget(),
-        equalTo(ExtendedCommunity.target(2222, 23)));
-    // TODO: extract (and test) RD/RT config at address family level
+    {
+      org.batfish.representation.cisco.Vrf vrf = vc.getVrfs().get("vrf1");
+      assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(1111, 11L)));
+      assertThat(
+          vrf.getGenericAddressFamilyConfig().getRouteTargetImport(),
+          contains(ExtendedCommunity.target(2222, 22)));
+      assertThat(
+          vrf.getGenericAddressFamilyConfig().getRouteTargetExport(),
+          contains(ExtendedCommunity.target(2222, 23)));
+      VrfAddressFamily ipv4UnicastAddressFamily = vrf.getIpv4UnicastAddressFamily();
+      assertThat(
+          ipv4UnicastAddressFamily.getRouteTargetImport(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(3333, 31), ExtendedCommunity.target(3333, 32)));
+      assertThat(
+          ipv4UnicastAddressFamily.getRouteTargetExport(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(3333, 31), ExtendedCommunity.target(3333, 33)));
+      assertThat(ipv4UnicastAddressFamily.getImportMap(), equalTo("RT_MAP"));
+    }
+    {
+      org.batfish.representation.cisco.Vrf vrf = vc.getVrfs().get("vrf2");
+      assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(2222, 22L)));
+      VrfAddressFamily genericAF = vrf.getGenericAddressFamilyConfig();
+      ExtendedCommunity rt = ExtendedCommunity.target(2222, 77);
+      assertThat(genericAF.getRouteTargetImport(), contains(rt));
+      assertThat(genericAF.getRouteTargetExport(), contains(rt));
+      VrfAddressFamily ipv4 = vrf.getIpv4UnicastAddressFamily();
+      assertThat(ipv4.getRouteTargetImport(), empty());
+      assertThat(ipv4.getRouteTargetExport(), empty());
+      // Test inheritance
+      ipv4.inherit(genericAF);
+      assertThat(ipv4.getRouteTargetImport(), contains(rt));
+      assertThat(ipv4.getRouteTargetExport(), contains(rt));
+    }
   }
 
   @Test

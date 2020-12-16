@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,7 +10,6 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public final class Vrf implements Serializable {
   @Nonnull private final Map<Long, EigrpProcess> _eigrpProcesses;
@@ -20,13 +20,17 @@ public final class Vrf implements Serializable {
   @Nonnull private Map<String, OspfProcess> _ospfProcesses;
   @Nullable private RipProcess _ripProcess;
   @Nullable private RouteDistinguisher _routeDistinguisher;
-  @Nullable private ExtendedCommunity _routeExportTarget;
-  @Nullable private ExtendedCommunity _routeImportTarget;
+
   private boolean _shutdown;
   @Nonnull private final Set<StaticRoute> _staticRoutes;
   @Nullable private Integer _vni;
 
+  @Nonnull private final Map<AddressFamilyType, VrfAddressFamily> _addressFamilies;
+  @Nonnull private final VrfAddressFamily _genericAddressFamily;
+
   public Vrf(@Nonnull String name) {
+    _addressFamilies = new HashMap<>(4);
+    _genericAddressFamily = new VrfAddressFamily();
     _eigrpProcesses = new TreeMap<>();
     _name = name;
     // Ensure that processes are in insertion order.
@@ -54,6 +58,28 @@ public final class Vrf implements Serializable {
     return _isisProcess;
   }
 
+  /** Configuration available under address-family ipv4 (unicast). */
+  @Nullable
+  public VrfAddressFamily getIpv4UnicastAddressFamily() {
+    return _addressFamilies.get(AddressFamilyType.IPV4_UNICAST);
+  }
+
+  @Nonnull
+  public VrfAddressFamily getOrCreateIpv4UnicastAddressFamily() {
+    return _addressFamilies.computeIfAbsent(
+        AddressFamilyType.IPV4_UNICAST, k -> new VrfAddressFamily());
+  }
+
+  /**
+   * This represents AF commands that can be typed at the VRF level. Individual AF configs can
+   * inherit these if unset at the AF level. Note that not all commands can be typed at the VRF
+   * level. We rely on the parser/extractor to avoid impossible configurations.
+   */
+  @Nonnull
+  public VrfAddressFamily getGenericAddressFamilyConfig() {
+    return _genericAddressFamily;
+  }
+
   @Nonnull
   public String getName() {
     return _name;
@@ -77,24 +103,6 @@ public final class Vrf implements Serializable {
   @Nullable
   public RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
-  }
-
-  /**
-   * The route target value to attach to VPN routes originating from this VRF. Will be {@code null}
-   * if it must be auto-derived.
-   */
-  @Nullable
-  public ExtendedCommunity getRouteExportTarget() {
-    return _routeExportTarget;
-  }
-
-  /**
-   * Routes that contain this route target community should be merged into this VRF. Will be {@code
-   * null} if it must be auto-derived.
-   */
-  @Nullable
-  public ExtendedCommunity getRouteImportTarget() {
-    return _routeImportTarget;
   }
 
   /** Is this VRF shutdown (not used for routing/forwarding) */
@@ -131,14 +139,6 @@ public final class Vrf implements Serializable {
 
   public void setRouteDistinguisher(@Nullable RouteDistinguisher routeDistinguisher) {
     _routeDistinguisher = routeDistinguisher;
-  }
-
-  public void setRouteExportTarget(@Nullable ExtendedCommunity routeExportTarget) {
-    _routeExportTarget = routeExportTarget;
-  }
-
-  public void setRouteImportTarget(@Nullable ExtendedCommunity routeImportTarget) {
-    _routeImportTarget = routeImportTarget;
   }
 
   public void setShutdown(boolean shutdown) {
