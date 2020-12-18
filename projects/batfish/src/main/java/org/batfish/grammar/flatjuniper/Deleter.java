@@ -131,6 +131,9 @@ public class Deleter extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
+    if (_deletedStatements.isEmpty()) {
+      return;
+    }
     // Replace the list of children with a new list containing only those nodes not marked for
     // deletion.
     ctx.children =
@@ -146,7 +149,7 @@ public class Deleter extends FlatJuniperParserBaseListener {
 
   /*
    * - Build out a path in tree, using each word as a key.
-   * - Add ctx to the set of parse-trees stored at the node correpsonding to the last word
+   * - Add ctx to the set of parse-trees stored at the node corresponding to the last word
    */
   private void addStatementToTree(StatementTree tree, ParseTree ctx) {
     StatementTree subtree = tree;
@@ -184,6 +187,6 @@ public class Deleter extends FlatJuniperParserBaseListener {
   private final @Nonnull StatementTree _deactivateStatementTree;
   private final @Nonnull StatementTree _setStatementTree;
   private List<String> _words;
-  private Set<ParseTree> _deletedStatements;
-  private Multimap<StatementTree, ParseTree> _statementsByTree;
+  private final Set<ParseTree> _deletedStatements;
+  private final Multimap<StatementTree, ParseTree> _statementsByTree;
 }
