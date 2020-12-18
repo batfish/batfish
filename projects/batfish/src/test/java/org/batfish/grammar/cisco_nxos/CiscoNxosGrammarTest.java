@@ -1508,54 +1508,68 @@ public final class CiscoNxosGrammarTest {
         c.getRoutingPolicies().get(eigrpRedistributionPolicyName("vrf1", 1));
     EigrpProcess vrfEigrpProc = c.getVrfs().get("vrf1").getEigrpProcesses().get(1L);
 
-    // Redistribution policy should permit static routes to 1.1.1.1/32.
-    // Redistributed routes should have default EIGRP metric: bw 100000 kbps, delay 1E9 ps.
-    Prefix permittedPrefix = Prefix.parse("1.1.1.1/32");
-    ConnectedRoute connected =
-        ConnectedRoute.builder()
-            .setNetwork(permittedPrefix)
-            .setNextHopInterface("foo")
-            .setAdmin(1)
-            .build();
+    /*
+    Redistribution policy should permit:
+    - static routes to 1.1.1.1/32
+    - BGP routes to 2.2.2.2/32
+    */
+    Prefix staticPermittedPrefix = Prefix.parse("1.1.1.1/32");
+    Prefix bgpPermittedPrefix = Prefix.parse("2.2.2.2/32");
+    org.batfish.datamodel.StaticRoute.Builder staticRb =
+        org.batfish.datamodel.StaticRoute.builder().setNextHopInterface("foo").setAdmin(1);
     org.batfish.datamodel.StaticRoute staticDenied =
-        org.batfish.datamodel.StaticRoute.builder()
-            .setNetwork(Prefix.parse("2.2.2.2/32"))
-            .setNextHopInterface("foo")
-            .setAdmin(1)
-            .build();
+        staticRb.setNetwork(bgpPermittedPrefix).build();
     org.batfish.datamodel.StaticRoute staticPermitted =
-        org.batfish.datamodel.StaticRoute.builder()
-            .setNetwork(permittedPrefix)
-            .setNextHopInterface("foo")
+        staticRb.setNetwork(staticPermittedPrefix).build();
+    Bgpv4Route.Builder bgpRb =
+        Bgpv4Route.builder()
             .setAdmin(1)
+            .setOriginatorIp(Ip.parse("3.3.3.3"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.IBGP);
+    Bgpv4Route bgpDenied = bgpRb.setNetwork(staticPermittedPrefix).build();
+    Bgpv4Route bgpPermitted = bgpRb.setNetwork(bgpPermittedPrefix).build();
+
+    // Redistributed routes should have default EIGRP metric: bw 100000 kbps, delay 1E9 ps.
+    EigrpMetric defaultMetric =
+        ClassicMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(100000).setDelay(1e9).build())
             .build();
     {
-      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
-      assertFalse(redistPolicy.process(connected, rb, eigrpProc, Direction.OUT));
-    }
-    {
+      // Redistribution policy denies static route that doesn't match static_redist route-map
       EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
       assertFalse(redistPolicy.process(staticDenied, rb, eigrpProc, Direction.OUT));
     }
     {
+      // Redistribution policy permits static route that matches static_redist route-map
       EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
       assertTrue(redistPolicy.process(staticPermitted, rb, eigrpProc, Direction.OUT));
       // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
       // built, so first set other required fields.
-      rb.setNetwork(permittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
-      EigrpMetric expectedMetric =
-          ClassicMetric.builder()
-              .setValues(EigrpMetricValues.builder().setBandwidth(100000).setDelay(1e9).build())
-              .build();
-      assertThat(rb.build().getEigrpMetric(), equalTo(expectedMetric));
+      rb.setNetwork(staticPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
     }
     {
-      // Make sure VRF redistribution policy correctly applies its default metric
+      // Redistribution policy denies BGP route that doesn't match bgp_redist route-map
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertFalse(redistPolicy.process(bgpDenied, rb, eigrpProc, Direction.OUT));
+    }
+    {
+      // Redistribution policy permits BGP route that matches bgp_redist route-map
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertTrue(redistPolicy.process(bgpPermitted, rb, eigrpProc, Direction.OUT));
+      // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
+      // built, so first set other required fields.
+      rb.setNetwork(bgpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
+    }
+    {
+      // Make sure VRF redistribution policy correctly applies default-metric 1 2 3 4 5
       EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
       assertTrue(vrfRedistPolicy.process(staticPermitted, rb, vrfEigrpProc, Direction.OUT));
       // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
       // built, so first set other required fields.
-      rb.setNetwork(permittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      rb.setNetwork(staticPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
       EigrpMetric expectedMetric =
           ClassicMetric.builder()
               .setValues(
@@ -1568,6 +1582,12 @@ public final class CiscoNxosGrammarTest {
                       .build())
               .build();
       assertThat(rb.build().getEigrpMetric(), equalTo(expectedMetric));
+    }
+    {
+      // Make sure VRF redistribution policy does not redistribute BGP routes, since no BGP process
+      // has ASN 2 (and vrf1 EIGRP config has `redistribute bgp 2 route-map bgp_redist`)
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      assertFalse(vrfRedistPolicy.process(bgpPermitted, rb, vrfEigrpProc, Direction.OUT));
     }
   }
 
