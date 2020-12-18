@@ -80,14 +80,16 @@ public class EigrpRoutingProcessTest {
             .setProcessAsn(1L)
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setDestinationAsn(2L)
-            .setEigrpMetric(metric);
+            .setEigrpMetric(metric)
+            .setTag(3L);
     _internalRouteBuilder =
         EigrpInternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setAdmin(222)
             .setProcessAsn(1L)
             .setNextHopIp(Ip.parse("1.1.1.1"))
-            .setEigrpMetric(metric);
+            .setEigrpMetric(metric)
+            .setTag(3L);
   }
 
   @Test
@@ -134,10 +136,17 @@ public class EigrpRoutingProcessTest {
         _routingProcess.transformAndFilterExternalRouteFromNeighbor(routeIn, _ifaceMetric, ip, rp);
     assertTrue(maybeRoute.isPresent());
     EigrpExternalRoute route = maybeRoute.get();
-    assertThat(route.getNextHopIp(), equalTo(ip));
-    assertThat(route.getAdministrativeCost(), equalTo(_process.getExternalAdminCost()));
-    assertThat(route.getEigrpMetric(), equalTo(routeIn.getEigrpMetric().add(_ifaceMetric)));
-    assertThat(route.getProcessAsn(), equalTo(_process.getAsn()));
+    EigrpExternalRoute expected =
+        EigrpExternalRoute.builder()
+            .setNextHopIp(ip)
+            .setAdmin(_process.getExternalAdminCost())
+            .setEigrpMetric(routeIn.getEigrpMetric().add(_ifaceMetric))
+            .setProcessAsn(_process.getAsn())
+            .setTag(routeIn.getTag())
+            .setNetwork(routeIn.getNetwork())
+            .setDestinationAsn(routeIn.getDestinationAsn())
+            .build();
+    assertThat(route, equalTo(expected));
   }
 
   @Test

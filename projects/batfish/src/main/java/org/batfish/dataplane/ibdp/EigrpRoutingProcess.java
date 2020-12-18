@@ -399,7 +399,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
             .setNextHopIp(nextHopIp)
             .setDestinationAsn(route.getDestinationAsn())
             .setEigrpMetric(newMetric)
-            .setNetwork(route.getNetwork());
+            .setNetwork(route.getNetwork())
+            .setTag(route.getTag());
     return filterRouteOnImport(route, routeBuilder, importPolicy);
   }
 
