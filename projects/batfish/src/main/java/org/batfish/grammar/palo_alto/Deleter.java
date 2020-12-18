@@ -92,6 +92,9 @@ public class Deleter extends PaloAltoParserBaseListener {
 
   @Override
   public void exitPalo_alto_configuration(Palo_alto_configurationContext ctx) {
+    if (_deletedStatements.isEmpty()) {
+      return;
+    }
     // Replace the list of children with a new list containing only those nodes not marked for
     // deletion.
     ctx.children =
