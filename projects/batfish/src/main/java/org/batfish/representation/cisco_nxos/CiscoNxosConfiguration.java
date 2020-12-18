@@ -909,7 +909,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    */
   private boolean createEigrpRedistributionPolicy(
       EigrpVrfConfiguration vrfConfig, String policyName) {
-    Set<NxosRoutingProtocol> supportedProtocols = ImmutableSet.of(NxosRoutingProtocol.STATIC);
+    Set<NxosRoutingProtocol> supportedProtocols =
+        ImmutableSet.of(NxosRoutingProtocol.BGP, NxosRoutingProtocol.STATIC);
     List<RedistributionPolicy> redistPolicies =
         Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
             .filter(Objects::nonNull)
@@ -947,12 +948,24 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .filter(policy -> getRouteMaps().containsKey(policy.getRouteMap()))
         .map(
             policy -> {
-              List<Statement> routeMapCallExpr = ImmutableList.of(call(policy.getRouteMap()));
-              NxosRoutingProtocol protocol = policy.getInstance().getProtocol();
-              switch (protocol) {
+              switch (policy.getInstance().getProtocol()) {
                   // If adding support for a new protocol, also add it to supportedProtocols above
+                case BGP:
+                  assert policy.getInstance().getTag() != null;
+                  long asn = Long.parseLong(policy.getInstance().getTag());
+                  if (_bgpGlobalConfiguration.getLocalAs() != asn) {
+                    // NXOS won't let you configure multiple BGP processes, but it will let you
+                    // "redistribute bgp 1" in EIGRP even if there is no BGP process with ASN 1.
+                    return null;
+                  }
+                  BooleanExpr matchBgp =
+                      new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
+                  Statement setTag = new SetTag(new LiteralLong(asn));
+                  return new If(matchBgp, ImmutableList.of(setTag, call(policy.getRouteMap())));
                 case STATIC:
-                  return new If(new MatchProtocol(RoutingProtocol.STATIC), routeMapCallExpr);
+                  return new If(
+                      new MatchProtocol(RoutingProtocol.STATIC),
+                      ImmutableList.of(call(policy.getRouteMap())));
                 default:
                   return null;
               }
