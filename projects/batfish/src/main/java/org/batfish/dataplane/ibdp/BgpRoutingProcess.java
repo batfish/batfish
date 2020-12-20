@@ -97,7 +97,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Configuration for this process */
   @Nonnull private final BgpProcess _process;
   /** Parent node configuration */
-  @Nonnull private final Configuration _c;
+  @Deprecated @Nonnull private final Configuration _c;
+
+  @Nonnull private final RoutingPolicies _policies;
+  @Nonnull private final String _hostname;
   /** Name of our VRF */
   @Nonnull private final String _vrfName;
   /** Reference to the parent {@link VirtualRouter} main RIB (read-only). */
@@ -203,6 +206,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       PrefixTracer prefixTracer) {
     _process = process;
     _c = configuration;
+    _hostname = configuration.getHostname();
+    _policies = RoutingPolicies.from(configuration);
     _vrfName = vrfName;
     _mainRib = mainRib;
     _topology = topology;
@@ -334,13 +339,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return Streams.concat(
             _process.getActiveNeighbors().entrySet().stream()
                 .filter(e -> familyExtractor.apply(e.getValue()) != null)
-                .map(e -> new BgpPeerConfigId(_c.getHostname(), _vrfName, e.getKey(), false)),
+                .map(e -> new BgpPeerConfigId(_hostname, _vrfName, e.getKey(), false)),
             _process.getPassiveNeighbors().entrySet().stream()
                 .filter(e -> familyExtractor.apply(e.getValue()) != null)
-                .map(e -> new BgpPeerConfigId(_c.getHostname(), _vrfName, e.getKey(), true)),
+                .map(e -> new BgpPeerConfigId(_hostname, _vrfName, e.getKey(), true)),
             _process.getInterfaceNeighbors().entrySet().stream()
                 .filter(e -> familyExtractor.apply(e.getValue()) != null)
-                .map(e -> new BgpPeerConfigId(_c.getHostname(), _vrfName, e.getKey())))
+                .map(e -> new BgpPeerConfigId(_hostname, _vrfName, e.getKey())))
         .filter(graph.nodes()::contains) // avoid missing node exceptions
         .flatMap(
             id ->
@@ -538,7 +543,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                     bgpRoutingProcess != null,
                     "Missing bgp process for vrf %s, node %s",
                     vniVrf.getName(),
-                    _c.getHostname());
+                    _hostname);
                 initializationBuilder.from(
                     bgpRoutingProcess.processCrossVrfEvpnRoute(
                         new RouteAdvertisement<>(route), EvpnType3Route.class));
@@ -652,7 +657,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.next();
       Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
 
-      LOGGER.debug("{} Processing bgpv4 route {}", _c.getHostname(), remoteRoute);
+      LOGGER.debug("{} Processing bgpv4 route {}", _hostname, remoteRoute);
 
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
           transformBgpRouteOnImport(
@@ -683,7 +688,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       boolean acceptIncoming = true;
       // TODO: ensure there is always an import policy
       if (importPolicyName != null) {
-        RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
+        RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(
@@ -735,7 +740,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           .forEach(
               rib ->
                   nodes
-                      .get(_c.getHostname())
+                      .get(_hostname)
                       .getVirtualRouterOrThrow(rib.getVrfName())
                       .enqueueCrossVrfRoutes(
                           new CrossVrfEdgeId(_vrfName, rib.getRibName()),
@@ -881,13 +886,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     RibDelta<AnnotatedRoute<Bgpv4Route>> bgpRoutesToExport = bgpRibExports.build();
 
-    LOGGER.debug(
-        "{} exporting routes BEFORE export policy: {}", _c.getHostname(), bgpRoutesToExport);
+    LOGGER.debug("{} exporting routes BEFORE export policy: {}", _hostname, bgpRoutesToExport);
     if (LOGGER.isDebugEnabled()) {
       ImmutableList<RouteAdvertisement<Bgpv4Route>> routeAdvertisements =
           neighborGeneratedRoutes.collect(ImmutableList.toImmutableList());
-      LOGGER.debug(
-          "{} exporting routes AFTER routing policy: {}", _c.getHostname(), routeAdvertisements);
+      LOGGER.debug("{} exporting routes AFTER routing policy: {}", _hostname, routeAdvertisements);
       neighborGeneratedRoutes = routeAdvertisements.stream();
     }
 
@@ -928,8 +931,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     if (LOGGER.isDebugEnabled()) {
       ImmutableList<RouteAdvertisement<Bgpv4Route>> routeAdvertisements =
           advertisementStream.collect(ImmutableList.toImmutableList());
-      LOGGER.debug(
-          "{} exporting routes AFTER routing policy: {}", _c.getHostname(), routeAdvertisements);
+      LOGGER.debug("{} exporting routes AFTER routing policy: {}", _hostname, routeAdvertisements);
       advertisementStream = routeAdvertisements.stream();
     }
 
@@ -948,11 +950,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private Bgpv4Route processNeighborSpecificGeneratedRoute(
       @Nonnull GeneratedRoute generatedRoute, Ip nextHopIp) {
     String policyName = generatedRoute.getGenerationPolicy();
-    RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
+    RoutingPolicy policy = policyName != null ? _policies.get(policyName).orElse(null) : null;
     @Nullable
     RoutingPolicy attrPolicy =
         generatedRoute.getAttributePolicy() != null
-            ? _c.getRoutingPolicies().get(generatedRoute.getAttributePolicy())
+            ? _policies.get(generatedRoute.getAttributePolicy()).orElse(null)
             : null;
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
@@ -968,7 +970,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * imported into the main RIB. The purpose of these routes is to prevent the local router from
    * accepting advertisements less desirable than the locally generated ones for a given network.
    */
+  @SuppressWarnings("deprecation")
   void initBgpAggregateRoutes(Collection<AbstractRoute> generatedRoutes) {
+    // TODO: get rid of ConfigurationFormat switching. Source of known bugs.
     // first import aggregates
     switch (_c.getConfigurationFormat()) {
       case FLAT_JUNIPER:
@@ -985,9 +989,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       Bgpv4Route br =
           BgpProtocolHelper.convertGeneratedRouteToBgp(
               gr,
-              Optional.ofNullable(gr.getAttributePolicy())
-                  .map(p -> _c.getRoutingPolicies().get(p))
-                  .orElse(null),
+              Optional.ofNullable(gr.getAttributePolicy()).flatMap(_policies::get).orElse(null),
               _process.getRouterId(),
               Ip.ZERO,
               // Prevent route from being merged into the main RIB by marking it non-routing
@@ -1060,7 +1062,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       String importPolicyName = ourBgpConfig.getEvpnAddressFamily().getImportPolicy();
       boolean acceptIncoming = true;
       if (importPolicyName != null) {
-        RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
+        RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(route, transformedBuilder, sessionProperties, IN);
@@ -1212,7 +1214,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         ourConfigId);
     String exportPolicyName = addressFamily.getExportPolicy();
     assert exportPolicyName != null; // Conversion guarantee
-    RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(exportPolicyName);
+    RoutingPolicy exportPolicy = _policies.get(exportPolicyName).orElse(null);
     assert exportPolicy != null; // Conversion guarantee
 
     B transformedOutgoingRouteBuilder =
@@ -1288,8 +1290,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       @Nonnull BgpPeerConfig ourConfig,
       @Nonnull BgpSessionProperties sessionProperties) {
 
-    RoutingPolicy exportPolicy =
-        _c.getRoutingPolicies().get(ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
+    String exportPolicyName =
+        Optional.ofNullable(ourConfig.getIpv4UnicastAddressFamily())
+            .map(AddressFamily::getExportPolicy)
+            .orElse(null);
+    if (exportPolicyName == null) {
+      return null;
+    }
+    RoutingPolicy exportPolicy = _policies.getOrThrow(exportPolicyName);
     RoutingProtocol protocol =
         sessionProperties.isEbgp() ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
     Bgpv4Route.Builder transformedOutgoingRouteBuilder =
@@ -1298,7 +1306,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 (GeneratedRoute) exportCandidate.getRoute(),
                 Optional.ofNullable(
                         ((GeneratedRoute) exportCandidate.getRoute()).getAttributePolicy())
-                    .map(p -> _c.getRoutingPolicies().get(p))
+                    .flatMap(_policies::get)
                     .orElse(null),
                 _process.getRouterId(),
                 sessionProperties.getHeadIp(),
@@ -1326,7 +1334,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           remoteConfigId.getHostname(),
           remoteIp,
           remoteConfigId.getVrfName(),
-          ourConfig.getIpv4UnicastAddressFamily().getExportPolicy(),
+          exportPolicyName,
           Direction.OUT);
       return null;
     }
@@ -1347,7 +1355,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         remoteConfigId.getHostname(),
         remoteIp,
         remoteConfigId.getVrfName(),
-        ourConfig.getIpv4UnicastAddressFamily().getExportPolicy());
+        exportPolicyName);
 
     return transformedOutgoingRoute;
   }
@@ -1375,14 +1383,14 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     for (BgpAdvertisement advert : externalAdverts) {
 
       // If it is not for us, ignore it
-      if (!advert.getDstNode().equals(_c.getHostname())) {
+      if (!advert.getDstNode().equals(_hostname)) {
         continue;
       }
 
       // If we don't own the IP for this advertisement, ignore it
       Ip dstIp = advert.getDstIp();
       Map<String, Set<String>> dstIpOwners = ipVrfOwners.get(dstIp);
-      String hostname = _c.getHostname();
+      String hostname = _hostname;
       if (dstIpOwners == null || !dstIpOwners.containsKey(hostname)) {
         continue;
       }
@@ -1538,7 +1546,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
          */
         boolean acceptIncoming = true;
         if (importPolicyName != null) {
-          RoutingPolicy importPolicy = _c.getRoutingPolicies().get(importPolicyName);
+          RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
           if (importPolicy != null) {
             // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
             acceptIncoming =
@@ -1670,7 +1678,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   private BgpRoutingProcess getVrfProcess(String vrf, Map<String, Node> allNodes) {
     BgpRoutingProcess proc =
-        allNodes.get(_c.getHostname()).getVirtualRouterOrThrow(vrf).getBgpRoutingProcess();
+        allNodes.get(_hostname).getVirtualRouterOrThrow(vrf).getBgpRoutingProcess();
     assert proc != null;
     return proc;
   }
