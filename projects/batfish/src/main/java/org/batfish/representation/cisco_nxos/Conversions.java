@@ -55,6 +55,7 @@ import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsnValue;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
@@ -88,6 +89,12 @@ final class Conversions {
   }
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
+
+  private static final Statement ROUTE_MAP_DENY_STATEMENT =
+      new If(
+          BooleanExprs.CALL_EXPR_CONTEXT,
+          ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   /**
    * Computes the router ID on Cisco NX-OS.
@@ -420,15 +427,9 @@ final class Conversions {
       EvpnAddressFamily.Builder evpnFamilyBuilder =
           EvpnAddressFamily.builder().setPropagateUnmatched(false);
 
-      evpnFamilyBuilder.setAddressFamilyCapabilities(
-          getAddressFamilyCapabilities(neighborL2VpnAf, false));
-      // set import policy
-      String inboundMap = neighborL2VpnAf.getInboundRouteMap();
       evpnFamilyBuilder
-          .setImportPolicy(
-              inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)
-                  ? inboundMap
-                  : null)
+          .setAddressFamilyCapabilities(getAddressFamilyCapabilities(neighborL2VpnAf, false))
+          .setImportPolicy(routeMapOrRejectAll(neighborL2VpnAf.getInboundRouteMap(), c))
           .setRouteReflectorClient(
               firstNonNull(neighborL2VpnAf.getRouteReflectorClient(), Boolean.FALSE));
       if (vrfL2VpnAf != null) {
@@ -696,7 +697,7 @@ final class Conversions {
 
     if (af.getInboundRouteMap() != null) {
       // Call inbound route-map if set.
-      ret.addStatement(new CallStatement(af.getInboundRouteMap()));
+      ret.addStatement(new CallStatement(routeMapOrRejectAll(af.getInboundRouteMap(), c)));
     } else {
       // Accept everything if not.
       ret.addStatement(Statements.ExitAccept.toStaticStatement());
@@ -715,6 +716,27 @@ final class Conversions {
         .setSendCommunity(firstNonNull(naf.getSendCommunityStandard(), Boolean.FALSE))
         .setSendExtendedCommunity(firstNonNull(naf.getSendCommunityExtended(), Boolean.FALSE))
         .build();
+  }
+
+  /**
+   * Implements the NX-OS behavior for undefined route-maps when used in BGP import/export policies.
+   *
+   * <p>Always returns {@code mapName}, and guarantees that the returned map will exist in {@code c}
+   * if non-null.
+   */
+  private static @Nullable String routeMapOrRejectAll(@Nullable String mapName, Configuration c) {
+    if (mapName == null) {
+      return mapName;
+    }
+    if (!c.getRoutingPolicies().containsKey(mapName)) {
+      // For undefined route-map, generate a route-map that denies everything.
+      RoutingPolicy.builder()
+          .setName(mapName)
+          .addStatement(ROUTE_MAP_DENY_STATEMENT)
+          .setOwner(c)
+          .build();
+    }
+    return mapName;
   }
 
   /** Get export statements for EVPN address family */
@@ -742,8 +764,8 @@ final class Conversions {
 
     // Export policy generated for outbound route-map (if any)
     String outboundMap = naf.getOutboundRouteMap();
-    if (outboundMap != null && configuration.getRoutingPolicies().containsKey(outboundMap)) {
-      peerExportConditions.add(new CallExpr(outboundMap));
+    if (outboundMap != null) {
+      peerExportConditions.add(new CallExpr(routeMapOrRejectAll(outboundMap, configuration)));
     }
 
     return statementsBuilder.build();
@@ -803,8 +825,8 @@ final class Conversions {
 
     // Export policy generated for route-map (if any)
     String outboundMap = naf.getOutboundRouteMap();
-    if (outboundMap != null && configuration.getRoutingPolicies().containsKey(outboundMap)) {
-      peerExportConditions.add(new CallExpr(outboundMap));
+    if (outboundMap != null) {
+      peerExportConditions.add(new CallExpr(routeMapOrRejectAll(outboundMap, configuration)));
     }
 
     return statementsBuilder.build();
