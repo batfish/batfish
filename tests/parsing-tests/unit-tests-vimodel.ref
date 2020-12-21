@@ -74463,6 +74463,54 @@
           }
         },
         "routingPolicies" : {
+          "EG_CCC~undefined" : {
+            "name" : "EG_CCC~undefined",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          },
+          "IN_BBB~undefined" : {
+            "name" : "IN_BBB~undefined",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
@@ -74686,8 +74734,17 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "EG_CCC~undefined"
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
@@ -74712,7 +74769,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
-                "calledPolicyName" : "IN_BBB"
+                "calledPolicyName" : "IN_BBB~undefined"
               }
             ]
           }
@@ -74755,7 +74812,13 @@
                       "sendExtendedCommunity" : true
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
+                    "exportPolicySources" : [
+                      "EG_CCC~undefined"
+                    ],
                     "importPolicy" : "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~",
+                    "importPolicySources" : [
+                      "IN_BBB~undefined"
+                    ],
                     "routeReflectorClient" : false
                   },
                   "localAs" : 1,

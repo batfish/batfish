@@ -1,0 +1,20 @@
+feature bgp
+!
+hostname nxos-bgp-receiver-2
+!
+interface Ethernet2
+  no switchport
+  no shutdown
+  ip address 192.168.2.2/30
+!
+ip route 3.3.3.3/32 Null0
+!
+router bgp 1
+  router-id 192.168.2.2
+  address-family ipv4 unicast
+    network 3.3.3.3/32
+  !
+  neighbor 192.168.2.1
+    remote-as 1
+    address-family ipv4 unicast
+!
