@@ -164,7 +164,8 @@ s_applications
 :
    APPLICATIONS
    (
-      a_application
+      apply
+      | a_application
       | a_application_set
    )
 ;
