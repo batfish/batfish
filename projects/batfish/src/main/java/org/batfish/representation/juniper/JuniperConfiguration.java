@@ -101,6 +101,7 @@ import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -2590,7 +2591,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  private static String generateInstanceImportPolicyName(String vrfName) {
+  public static String generateInstanceImportPolicyName(String vrfName) {
     return String.format("~INSTANCE_IMPORT_POLICY_%s~", vrfName);
   }
 
@@ -3335,9 +3336,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         List<String> referencedVrfs = getVrfsReferencedByPolicies(ri.getInstanceImports());
         initDefaultRejectPolicy();
         RoutingPolicy instanceImportPolicy = buildInstanceImportRoutingPolicy(ri, _c, riName);
-
-        vrf.setCrossVrfImportVrfs(referencedVrfs);
-        vrf.setCrossVrfImportPolicy(instanceImportPolicy.getName());
+        for (String referencedVrf : referencedVrfs) {
+          vrf.addVrfLeakingConfig(
+              VrfLeakingConfig.builder()
+                  .setLeakAsBgp(false)
+                  .setImportFromVrf(referencedVrf)
+                  .setImportPolicy(instanceImportPolicy.getName())
+                  .build());
+        }
         _c.getRoutingPolicies().put(instanceImportPolicy.getName(), instanceImportPolicy);
       }
 

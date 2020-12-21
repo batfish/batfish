@@ -71376,8 +71376,7 @@
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
-            ],
-            "crossVrfImportPolicy" : "~INSTANCE_IMPORT_POLICY_default~"
+            ]
           }
         }
       },

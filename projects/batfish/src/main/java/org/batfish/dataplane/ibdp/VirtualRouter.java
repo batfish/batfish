@@ -65,6 +65,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
@@ -371,17 +372,15 @@ public final class VirtualRouter {
    * their main ribs to {@link #_crossVrfIncomingRoutes}.
    */
   void initCrossVrfImports() {
-    if (_vrf.getCrossVrfImportPolicy() == null || _vrf.getCrossVrfImportVrfs() == null) {
-      return;
-    }
-    for (String vrfToImport : _vrf.getCrossVrfImportVrfs()) {
-      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(vrfToImport);
-      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
+    for (VrfLeakingConfig leakConfig : _vrf.getVrfLeakConfigs()) {
+      String importFromVrf = leakConfig.getImportFromVrf();
+      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(importFromVrf);
+      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(importFromVrf, RibId.DEFAULT_RIB_NAME);
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
           exportingVR._mainRib.getTypedRoutes().stream().map(RouteAdvertisement::new),
-          _vrf.getCrossVrfImportPolicy());
+          leakConfig.getImportPolicy());
     }
   }
 
@@ -1251,17 +1250,18 @@ public final class VirtualRouter {
    * routes in {@link #_crossVrfIncomingRoutes}.
    */
   void queueCrossVrfImports() {
-    if (_vrf.getCrossVrfImportPolicy() == null || _vrf.getCrossVrfImportVrfs() == null) {
-      return;
-    }
-    for (String vrfToImport : _vrf.getCrossVrfImportVrfs()) {
-      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(vrfToImport);
-      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(vrfToImport, RibId.DEFAULT_RIB_NAME);
+    for (VrfLeakingConfig leakConfig : _vrf.getVrfLeakConfigs()) {
+      if (leakConfig.leakAsBgp()) {
+        continue;
+      }
+      String importFromVrf = leakConfig.getImportFromVrf();
+      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(importFromVrf);
+      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(importFromVrf, RibId.DEFAULT_RIB_NAME);
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
           exportingVR._mainRibDeltaPrevRound.getActions(),
-          _vrf.getCrossVrfImportPolicy());
+          leakConfig.getImportPolicy());
     }
   }
 
