@@ -74463,8 +74463,8 @@
           }
         },
         "routingPolicies" : {
-          "EG_CCC" : {
-            "name" : "EG_CCC",
+          "EG_CCC~undefined" : {
+            "name" : "EG_CCC~undefined",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -74487,8 +74487,8 @@
               }
             ]
           },
-          "IN_BBB" : {
-            "name" : "IN_BBB",
+          "IN_BBB~undefined" : {
+            "name" : "IN_BBB~undefined",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -74742,7 +74742,7 @@
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "EG_CCC"
+                      "calledPolicyName" : "EG_CCC~undefined"
                     }
                   ]
                 },
@@ -74769,7 +74769,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
-                "calledPolicyName" : "IN_BBB"
+                "calledPolicyName" : "IN_BBB~undefined"
               }
             ]
           }
@@ -74813,11 +74813,11 @@
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                     "exportPolicySources" : [
-                      "EG_CCC"
+                      "EG_CCC~undefined"
                     ],
                     "importPolicy" : "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~",
                     "importPolicySources" : [
-                      "IN_BBB"
+                      "IN_BBB~undefined"
                     ],
                     "routeReflectorClient" : false
                   },

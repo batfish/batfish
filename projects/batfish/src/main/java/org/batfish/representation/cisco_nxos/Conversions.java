@@ -721,22 +721,22 @@ final class Conversions {
   /**
    * Implements the NX-OS behavior for undefined route-maps when used in BGP import/export policies.
    *
-   * <p>Always returns {@code mapName}, and guarantees that the returned map will exist in {@code c}
-   * if non-null.
+   * <p>Always returns {@code null} when given a null {@code mapName}, and non-null otherwise.
    */
   private static @Nullable String routeMapOrRejectAll(@Nullable String mapName, Configuration c) {
-    if (mapName == null) {
+    if (mapName == null || c.getRoutingPolicies().containsKey(mapName)) {
       return mapName;
     }
-    if (!c.getRoutingPolicies().containsKey(mapName)) {
+    String undefinedName = mapName + "~undefined";
+    if (!c.getRoutingPolicies().containsKey(undefinedName)) {
       // For undefined route-map, generate a route-map that denies everything.
       RoutingPolicy.builder()
-          .setName(mapName)
+          .setName(undefinedName)
           .addStatement(ROUTE_MAP_DENY_STATEMENT)
           .setOwner(c)
           .build();
     }
-    return mapName;
+    return undefinedName;
   }
 
   /** Get export statements for EVPN address family */
