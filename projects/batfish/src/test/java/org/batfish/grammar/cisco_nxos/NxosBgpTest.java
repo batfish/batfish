@@ -21,24 +21,32 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.main.BatfishTestUtils.getBatfishForTextConfigs;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Ip;
@@ -117,6 +125,61 @@ public class NxosBgpTest {
         c, hasVrf("enabled", hasBgpProcess(hasMultipathEquivalentAsPathMatchMode(PATH_LENGTH))));
   }
 
+  /**
+   * Tests undefined route-map behavior in a simple 3-node IBGP network.
+   *
+   * <p>The sender is the hub and there are receivers 1 and 2. Sender originates 1.1.1.1/32, R1
+   * originates 2.2.2.2/32 and R2 originates 3.3.3.3/32. The configuration on R1 and R2 is trivial
+   * and just sets up an IBGP link with no filtering.
+   *
+   * <p>The sender used undefined export/import maps to R1, and defined export/import maps to R2
+   * that permit anything.
+   *
+   * <p>Expected behavior: 1) R1 learns no bgp routes (nothing is exported), nor does S learn the
+   * route it originates (nothing is imported). 2) R2 learns 1.1.1.1/32, and S learns 3.3.3.3/32.
+   */
+  @Test
+  public void testRouteMapUndefined() throws IOException {
+    Set<AbstractRoute> undefined =
+        parseDpAndGetRib(
+                "nxos-bgp-route-map-undefined",
+                "nxos-bgp-receiver-1",
+                "nxos-bgp-sender",
+                "nxos-bgp-receiver-2")
+            .stream()
+            .filter(r -> r instanceof Bgpv4Route)
+            .collect(Collectors.toSet());
+    // undefined export map -> no bgp routes on that receiver-1
+    assertThat(undefined, empty());
+    Set<AbstractRoute> defined =
+        parseDpAndGetRib(
+                "nxos-bgp-route-map-undefined",
+                "nxos-bgp-receiver-2",
+                "nxos-bgp-sender",
+                "nxos-bgp-receiver-1")
+            .stream()
+            .filter(r -> r instanceof Bgpv4Route)
+            .collect(Collectors.toSet());
+    // defined export map -> the network generated locally is sent to receiver-2
+    assertThat(
+        defined,
+        contains(allOf(instanceOf(Bgpv4Route.class), hasPrefix(Prefix.parse("1.1.1.1/32")))));
+    Set<AbstractRoute> sender =
+        parseDpAndGetRib(
+                "nxos-bgp-route-map-undefined",
+                "nxos-bgp-sender",
+                "nxos-bgp-receiver-1",
+                "nxos-bgp-receiver-2")
+            .stream()
+            .filter(r -> r instanceof Bgpv4Route)
+            .collect(Collectors.toSet());
+    // undefined import map -> network generated locally on receiver-1 is not present (2.2.2.2/32)
+    // defined import map -> network generated locally on receiver-2 is present (3.3.3.3/32)
+    assertThat(
+        sender,
+        contains(allOf(instanceOf(Bgpv4Route.class), hasPrefix(Prefix.parse("3.3.3.3/32")))));
+  }
+
   @Test
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxos-bgp-vrf");
@@ -171,10 +234,10 @@ public class NxosBgpTest {
     assertThat(neighbor.getLocalIp(), equalTo(Ip.parse("1.2.3.4")));
   }
 
-  private Batfish getBatfishForSnapshot(String snapshot, String... configurationNames)
+  private Batfish getBatfishForSnapshot(String snapshot, Collection<String> configurationNames)
       throws IOException {
     String[] names =
-        Arrays.stream(configurationNames)
+        configurationNames.stream()
             .map(s -> Paths.get(TEST_SNAPSHOTS_PREFIX, snapshot, "configs", s).toString())
             .toArray(String[]::new);
     Batfish batfish = getBatfishForTextConfigs(_folder, names);
@@ -182,9 +245,14 @@ public class NxosBgpTest {
   }
 
   private Set<AbstractRoute> parseDpAndGetRib(
-      String snapshotName, String hubName, String listenerName) throws IOException {
+      String snapshotName, String listenerName, String... otherDevices) throws IOException {
 
-    Batfish batfish = getBatfishForSnapshot(snapshotName, hubName, listenerName);
+    List<String> allConfigs =
+        ImmutableList.<String>builder()
+            .add(listenerName)
+            .addAll(Arrays.asList(otherDevices))
+            .build();
+    Batfish batfish = getBatfishForSnapshot(snapshotName, allConfigs);
     batfish.loadConfigurations(batfish.getSnapshot());
     batfish.computeDataPlane(batfish.getSnapshot()); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
@@ -197,7 +265,7 @@ public class NxosBgpTest {
   public void testDefaultOriginate() throws Exception {
     Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib(
-            "nxos-bgp-default-route", "nxos-bgp-default-originate", "ios-bgp-listener");
+            "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-default-originate");
     assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.ZERO)));
   }
 
@@ -205,7 +273,7 @@ public class NxosBgpTest {
   @Test
   public void testDefaultInformationOriginateNoRedistribute() throws Exception {
     Set<AbstractRoute> listenerRoutes =
-        parseDpAndGetRib("nxos-bgp-default-route", "nxos-bgp-default-inf-only", "ios-bgp-listener");
+        parseDpAndGetRib("nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-default-inf-only");
     assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
@@ -214,7 +282,7 @@ public class NxosBgpTest {
   public void testStaticRedistributionNoDefaultInformationOriginate() throws Exception {
     Set<AbstractRoute> listenerRoutes =
         parseDpAndGetRib(
-            "nxos-bgp-default-route", "nxos-bgp-static-redist-only", "ios-bgp-listener");
+            "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-static-redist-only");
     assertThat(listenerRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
@@ -223,12 +291,12 @@ public class NxosBgpTest {
   public void testDefaultInformationOriginateRedistribute() throws Exception {
     Set<AbstractRoute> outboundAllowRoutes =
         parseDpAndGetRib(
-            "nxos-bgp-default-route", "nxos-bgp-default-inf-working", "ios-bgp-listener");
+            "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-default-inf-working");
     assertThat(outboundAllowRoutes, hasItem(hasPrefix(Prefix.ZERO)));
 
     Set<AbstractRoute> outboundBlockRoutes =
         parseDpAndGetRib(
-            "nxos-bgp-default-route", "nxos-bgp-default-inf-working", "ios-bgp-listener-2");
+            "nxos-bgp-default-route", "ios-bgp-listener-2", "nxos-bgp-default-inf-working");
     assertThat(outboundBlockRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
@@ -237,12 +305,12 @@ public class NxosBgpTest {
   public void testDefaultNetwork() throws Exception {
     Set<AbstractRoute> outboundAllowRoutes =
         parseDpAndGetRib(
-            "nxos-bgp-default-route", "nxos-bgp-network-statement", "ios-bgp-listener");
+            "nxos-bgp-default-route", "ios-bgp-listener", "nxos-bgp-network-statement");
     assertThat(outboundAllowRoutes, hasItem(hasPrefix(Prefix.ZERO)));
 
     Set<AbstractRoute> outboundBlockRoutes =
         parseDpAndGetRib(
-            "nxos-bgp-default-route", "nxos-bgp-network-statement", "ios-bgp-listener-2");
+            "nxos-bgp-default-route", "ios-bgp-listener-2", "nxos-bgp-network-statement");
     assertThat(outboundBlockRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 }
