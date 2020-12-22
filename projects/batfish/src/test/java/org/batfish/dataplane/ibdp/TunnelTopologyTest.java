@@ -36,40 +36,40 @@ public class TunnelTopologyTest {
 
   public SortedMap<String, Configuration> twoNodeNetwork(boolean withBlockingAcl) {
     NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder _cb = nf.configurationBuilder();
-    Interface.Builder _ib = nf.interfaceBuilder();
-    _cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration _c1;
-    Configuration _c2;
-    _c1 = _cb.setHostname("c1").build();
-    _c2 = _cb.setHostname("c2").build();
-    Ip _underlayIp1 = Ip.parse("4.4.4.1");
-    Ip _underlayIp2 = Ip.parse("4.4.4.2");
+    Configuration.Builder cb = nf.configurationBuilder();
+    Interface.Builder ib = nf.interfaceBuilder();
+    cb.setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1;
+    Configuration c2;
+    c1 = cb.setHostname("c1").build();
+    c2 = cb.setHostname("c2").build();
+    Ip underlayIp1 = Ip.parse("4.4.4.1");
+    Ip underlayIp2 = Ip.parse("4.4.4.2");
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("1.1.1.2");
     int subnetMask = 24;
 
-    Vrf vrf1 = nf.vrfBuilder().setOwner(_c1).build();
-    _ib.setOwner(_c1)
+    Vrf vrf1 = nf.vrfBuilder().setOwner(c1).build();
+    ib.setOwner(c1)
         .setAddress(ConcreteInterfaceAddress.create(ip1, subnetMask))
         .setType(InterfaceType.TUNNEL)
         .setTunnelConfig(
             TunnelConfiguration.builder()
-                .setSourceAddress(_underlayIp1)
-                .setDestinationAddress(_underlayIp2)
+                .setSourceAddress(underlayIp1)
+                .setDestinationAddress(underlayIp2)
                 .build())
         .setName("t1")
         .setVrf(vrf1)
         .build();
-    _ib.setOwner(_c1)
-        .setAddress(ConcreteInterfaceAddress.create(_underlayIp1, subnetMask))
+    ib.setOwner(c1)
+        .setAddress(ConcreteInterfaceAddress.create(underlayIp1, subnetMask))
         .setType(InterfaceType.PHYSICAL)
         .setIncomingFilter(
             withBlockingAcl
                 ? IpAccessList.builder()
                     .setName("REJECT_ALL")
                     .setLines(REJECT_ALL)
-                    .setOwner(_c1)
+                    .setOwner(c1)
                     .build()
                 : IpAccessList.builder()
                     .setName("ALLOW_GRE_REJECT_REST")
@@ -81,26 +81,26 @@ public class TunnelTopologyTest {
         .setName("u1")
         .setVrf(vrf1)
         .build();
-    Vrf vrf2 = nf.vrfBuilder().setOwner(_c2).build();
-    _ib.setOwner(_c2)
+    Vrf vrf2 = nf.vrfBuilder().setOwner(c2).build();
+    ib.setOwner(c2)
         .setAddress(ConcreteInterfaceAddress.create(ip2, subnetMask))
         .setType(InterfaceType.TUNNEL)
         .setTunnelConfig(
             TunnelConfiguration.builder()
-                .setSourceAddress(_underlayIp2)
-                .setDestinationAddress(_underlayIp1)
+                .setSourceAddress(underlayIp2)
+                .setDestinationAddress(underlayIp1)
                 .build())
         .setName("t2")
         .setVrf(vrf2)
         .build();
-    _ib.setOwner(_c2)
-        .setAddress(ConcreteInterfaceAddress.create(_underlayIp2, subnetMask))
+    ib.setOwner(c2)
+        .setAddress(ConcreteInterfaceAddress.create(underlayIp2, subnetMask))
         .setType(InterfaceType.PHYSICAL)
         .setName("u2")
         .setVrf(vrf2)
         .build();
 
-    return ImmutableSortedMap.of(_c1.getHostname(), _c1, _c2.getHostname(), _c2);
+    return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
   }
 
   /**
