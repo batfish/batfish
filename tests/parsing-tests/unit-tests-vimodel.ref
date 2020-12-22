@@ -70988,43 +70988,6 @@
           }
         },
         "routingPolicies" : {
-          "POLICY" : {
-            "name" : "POLICY",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "Return"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                }
-              }
-            ]
-          },
           "~AGGREGATE_ROUTE_POLICY:10.0.0.0/8~" : {
             "name" : "~AGGREGATE_ROUTE_POLICY:10.0.0.0/8~",
             "statements" : [
@@ -71169,30 +71132,6 @@
               }
             ]
           },
-          "~DEFAULT_REJECT_POLICY~" : {
-            "name" : "~DEFAULT_REJECT_POLICY~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                  "type" : "CallExprContext"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
-                  }
-                ]
-              }
-            ]
-          },
           "~GENERATED_ROUTE_POLICY:10.0.1.0/24~" : {
             "name" : "~GENERATED_ROUTE_POLICY:10.0.1.0/24~",
             "statements" : [
@@ -71218,39 +71157,6 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                 "type" : "SetDefaultActionAccept"
-              }
-            ]
-          },
-          "~INSTANCE_IMPORT_POLICY_default~" : {
-            "name" : "~INSTANCE_IMPORT_POLICY_default~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
-                "defaultPolicy" : "~DEFAULT_REJECT_POLICY~"
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.FirstMatchChain",
-                  "subroutines" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "POLICY"
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
               }
             ]
           }
@@ -71376,8 +71282,7 @@
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
-            ],
-            "crossVrfImportPolicy" : "~INSTANCE_IMPORT_POLICY_default~"
+            ]
           }
         }
       },

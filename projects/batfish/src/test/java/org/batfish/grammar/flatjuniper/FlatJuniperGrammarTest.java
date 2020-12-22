@@ -135,6 +135,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_S
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.generateInstanceImportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilterTerm;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingSecurityPolicyTerm;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
@@ -269,6 +270,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -5223,7 +5225,16 @@ public final class FlatJuniperGrammarTest {
      * they were referenced, ignoring second reference to VRF1, not including undefined MYSTERY_VRF.
      */
     Vrf defaultVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
-    assertThat(defaultVrf.getCrossVrfImportVrfs(), contains("VRF3", "VRF1", "VRF2"));
+    VrfLeakingConfig.Builder leakConfigBuilder =
+        VrfLeakingConfig.builder()
+            .setLeakAsBgp(false)
+            .setImportPolicy(generateInstanceImportPolicyName(DEFAULT_VRF_NAME));
+    assertThat(
+        defaultVrf.getVrfLeakConfigs(),
+        containsInAnyOrder(
+            leakConfigBuilder.setImportFromVrf("VRF3").build(),
+            leakConfigBuilder.setImportFromVrf("VRF1").build(),
+            leakConfigBuilder.setImportFromVrf("VRF2").build()));
 
     /*
     Test instance import policy behavior.
@@ -5232,7 +5243,7 @@ public final class FlatJuniperGrammarTest {
     The only thing in the arguments to process that should get checked is source VRF.
     */
     RoutingPolicy instanceImportPolicy =
-        c.getRoutingPolicies().get(defaultVrf.getCrossVrfImportPolicy());
+        c.getRoutingPolicies().get(generateInstanceImportPolicyName(DEFAULT_VRF_NAME));
     StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdmin(5).build();
     assertThat(
         instanceImportPolicy.process(new AnnotatedRoute<>(sr, "VRF1"), null, null), equalTo(true));

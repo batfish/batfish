@@ -44,6 +44,9 @@ public class Vrf extends ComparableStructure<String> {
     @Nullable private Configuration _owner;
     @Nonnull private Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
 
+    @Nonnull
+    private ImmutableList.Builder<VrfLeakingConfig> _vrfLeakingConfigs = ImmutableList.builder();
+
     private Builder(Supplier<String> nameGenerator) {
       _nameGenerator = nameGenerator;
     }
@@ -56,6 +59,7 @@ public class Vrf extends ComparableStructure<String> {
         _owner.getVrfs().put(name, vrf);
       }
       vrf.setEigrpProcesses(_eigrpProcesses);
+      vrf.setVrfLeakConfigs(_vrfLeakingConfigs.build());
       return vrf;
     }
 
@@ -73,6 +77,11 @@ public class Vrf extends ComparableStructure<String> {
       _owner = owner;
       return this;
     }
+
+    public Builder addVrfLeakingConfig(@Nonnull VrfLeakingConfig c) {
+      _vrfLeakingConfigs.add(c);
+      return this;
+    }
   }
 
   private static final String PROP_BGP_PROCESS = "bgpProcess";
@@ -80,8 +89,6 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_HAS_ORIGINATING_SESSIONS = "hasOriginatingSessions";
   private static final String PROP_FIREWALL_SESSION_VRF_INFO = "firewallSessionVrfInfo";
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
-  private static final String PROP_CROSS_VRF_IMPORT_POLICY = "crossVrfImportPolicy";
-  private static final String PROP_CROSS_VRF_IMPORT_VRFS = "crossVrfImportVrfs";
   private static final String PROP_ISIS_PROCESS = "isisProcess";
   private static final String PROP_EIGRP_PROCESSES = "eigrpProcesses";
   private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
@@ -89,6 +96,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
+  private static final String PROP_VRF_LEAKING_CONFIGS = "vrfLeakingConfigs";
 
   public static @Nonnull Builder builder() {
     return new Builder(null);
@@ -105,8 +113,6 @@ public class Vrf extends ComparableStructure<String> {
   private NavigableSet<GeneratedRoute6> _generatedIpv6Routes;
   private NavigableSet<GeneratedRoute> _generatedRoutes;
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
-  @Nullable private String _crossVrfImportPolicy;
-  @Nullable private List<String> _crossVrfImportVrfs;
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
   @Nonnull private SortedMap<String, OspfProcess> _ospfProcesses;
@@ -115,6 +121,7 @@ public class Vrf extends ComparableStructure<String> {
   private SortedSet<StaticRoute> _staticRoutes;
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
+  private List<VrfLeakingConfig> _vrfLeakConfigs;
 
   public Vrf(@Nonnull String name) {
     super(name);
@@ -127,6 +134,7 @@ public class Vrf extends ComparableStructure<String> {
     _staticRoutes = new TreeSet<>();
     _layer2Vnis = ImmutableMap.of();
     _layer3Vnis = ImmutableMap.of();
+    _vrfLeakConfigs = ImmutableList.of();
   }
 
   @JsonCreator
@@ -198,20 +206,6 @@ public class Vrf extends ComparableStructure<String> {
     return _eigrpProcesses;
   }
 
-  /** Name of policy used to filter incoming routes leaked from other VRFs */
-  @Nullable
-  @JsonProperty(PROP_CROSS_VRF_IMPORT_POLICY)
-  public String getCrossVrfImportPolicy() {
-    return _crossVrfImportPolicy;
-  }
-
-  /** Names of other VRFs that leak routes into this one */
-  @Nullable
-  @JsonProperty(PROP_CROSS_VRF_IMPORT_VRFS)
-  public List<String> getCrossVrfImportVrfs() {
-    return _crossVrfImportVrfs;
-  }
-
   /** IS-IS routing process for this VRF. */
   @JsonProperty(PROP_ISIS_PROCESS)
   public IsisProcess getIsisProcess() {
@@ -279,6 +273,22 @@ public class Vrf extends ComparableStructure<String> {
             .build();
   }
 
+  @JsonProperty(PROP_VRF_LEAKING_CONFIGS)
+  public List<VrfLeakingConfig> getVrfLeakConfigs() {
+    return _vrfLeakConfigs;
+  }
+
+  public void addVrfLeakingConfig(@Nonnull VrfLeakingConfig c) {
+    _vrfLeakConfigs =
+        ImmutableList.<VrfLeakingConfig>builder().addAll(_vrfLeakConfigs).add(c).build();
+  }
+
+  /** For Builder (or Jackson) use only */
+  @JsonProperty(PROP_VRF_LEAKING_CONFIGS)
+  private void setVrfLeakConfigs(@Nullable List<VrfLeakingConfig> vrfLeakConfigs) {
+    _vrfLeakConfigs = ImmutableList.copyOf(firstNonNull(vrfLeakConfigs, ImmutableList.of()));
+  }
+
   public void setAppliedRibGroups(Map<RoutingProtocol, RibGroup> appliedRibGroups) {
     _appliedRibGroups = ImmutableSortedMap.copyOf(appliedRibGroups);
   }
@@ -328,16 +338,6 @@ public class Vrf extends ComparableStructure<String> {
             .putAll(_eigrpProcesses)
             .put(proc.getAsn(), proc)
             .build();
-  }
-
-  @JsonProperty(PROP_CROSS_VRF_IMPORT_POLICY)
-  public void setCrossVrfImportPolicy(@Nonnull String crossVrfImportPolicy) {
-    _crossVrfImportPolicy = crossVrfImportPolicy;
-  }
-
-  @JsonProperty(PROP_CROSS_VRF_IMPORT_VRFS)
-  public void setCrossVrfImportVrfs(@Nonnull List<String> crossVrfImportVrfs) {
-    _crossVrfImportVrfs = ImmutableList.copyOf(crossVrfImportVrfs);
   }
 
   @JsonProperty(PROP_ISIS_PROCESS)
