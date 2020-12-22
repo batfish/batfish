@@ -804,27 +804,39 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedDataPlanes.invalidate(DUMMY_SNAPSHOT);
 
     ComputeDataPlaneResult result = getDataPlanePlugin().computeDataPlane(snapshot);
-    saveDataPlane(snapshot, result);
-    return result._answerElement;
+    DataPlaneAnswerElement answerElement = result._answerElement;
+    DataPlane dataplane = result._dataPlane;
+    TopologyContainer topologyContainer = result._topologies;
+    result = null; // let it be garbage collected.
+
+    saveDataPlane(snapshot, dataplane, topologyContainer);
+    return answerElement;
   }
 
   /* Write the dataplane to disk and cache, and write the answer element to disk.
    */
-  private void saveDataPlane(NetworkSnapshot snapshot, ComputeDataPlaneResult result) {
-    _cachedDataPlanes.put(snapshot, result._dataPlane);
+  private void saveDataPlane(
+      NetworkSnapshot snapshot, DataPlane dataplane, TopologyContainer topologies) {
+    _cachedDataPlanes.put(snapshot, dataplane);
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
     Span writeDataplane = GlobalTracer.get().buildSpan("Writing data plane").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(writeDataplane)) {
       assert scope != null; // avoid unused warning
-      _storage.storeDataPlane(result._dataPlane, snapshot);
-      TopologyContainer topologies = result._topologies;
+      LOGGER.info("Storing DataPlane");
+      _storage.storeDataPlane(dataplane, snapshot);
+      LOGGER.info("Storing BGP Topology");
       _storage.storeBgpTopology(topologies.getBgpTopology(), snapshot);
+      LOGGER.info("Storing EIGRP Topology");
       _storage.storeEigrpTopology(topologies.getEigrpTopology(), snapshot);
+      LOGGER.info("Storing Layer2 Topology");
       _storage.storeLayer2Topology(topologies.getLayer2Topology(), snapshot);
+      LOGGER.info("Storing Layer3 Topology");
       _storage.storeLayer3Topology(topologies.getLayer3Topology(), snapshot);
+      LOGGER.info("Storing OSPF Topology");
       _storage.storeOspfTopology(topologies.getOspfTopology(), snapshot);
+      LOGGER.info("Storing VxLAN Topology");
       _storage.storeVxlanTopology(topologies.getVxlanTopology(), snapshot);
     } catch (IOException e) {
       throw new BatfishException("Failed to save data plane", e);
