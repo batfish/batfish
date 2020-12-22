@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.VrfLeakingConfig.Builder;
 import org.junit.Test;
 
@@ -20,6 +21,17 @@ public class VrfLeakingConfigTest {
             .setLeakAsBgp(false)
             .build();
     assertThat(SerializationUtils.clone(val), equalTo(val));
+  }
+
+  @Test
+  public void testJsonSerialization() {
+    VrfLeakingConfig val =
+        VrfLeakingConfig.builder()
+            .setImportFromVrf("vrf1")
+            .setImportPolicy("policy")
+            .setLeakAsBgp(false)
+            .build();
+    assertThat(BatfishObjectMapper.clone(val, VrfLeakingConfig.class), equalTo(val));
   }
 
   @Test

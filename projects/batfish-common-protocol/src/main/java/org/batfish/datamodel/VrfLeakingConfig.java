@@ -1,7 +1,10 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
@@ -24,13 +27,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * <p><b>Note on BGP leaking: please see {@link #leakAsBgp()} for full explanation of semantics</b>
  */
 @ParametersAreNonnullByDefault
-public class VrfLeakingConfig implements Serializable {
+public final class VrfLeakingConfig implements Serializable {
 
   /**
    * Name of the import policy to apply to imported routes when leaking. If {@code null} no policy
    * is applied, all routes are allowed.
    */
   @Nullable
+  @JsonProperty(PROP_IMPORT_POLICY)
   public String getImportPolicy() {
     return _importPolicy;
   }
@@ -41,6 +45,7 @@ public class VrfLeakingConfig implements Serializable {
    * <p>If {@link #leakAsBgp()} is set, the source VRF <b>must</b> have a BGP process/RIBs.
    */
   @Nonnull
+  @JsonProperty(PROP_IMPORT_FROM_VRF)
   public String getImportFromVrf() {
     return _importFromVrf;
   }
@@ -54,6 +59,7 @@ public class VrfLeakingConfig implements Serializable {
    * follows the Juniper model, where routes are simply copied from the main RIB of one routing
    * instance (read: VRF) into another, with appropriate src-VRF annotation.
    */
+  @JsonProperty(PROP_LEAK_AS_BGP)
   public boolean leakAsBgp() {
     return _leakAsBgp;
   }
@@ -99,6 +105,23 @@ public class VrfLeakingConfig implements Serializable {
     _importPolicy = builder._importPolicy;
     _importFromVrf = builder._importFromVrf;
     _leakAsBgp = builder._leakAsBgp;
+  }
+
+  private static final String PROP_IMPORT_FROM_VRF = "importFromVrf";
+  private static final String PROP_IMPORT_POLICY = "importPolicy";
+  private static final String PROP_LEAK_AS_BGP = "leakAsBgp";
+
+  @JsonCreator
+  private static VrfLeakingConfig create(
+      @Nullable @JsonProperty(PROP_IMPORT_FROM_VRF) String importFromVrf,
+      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
+      @Nullable @JsonProperty(PROP_LEAK_AS_BGP) Boolean leakAsBgp) {
+    checkArgument(importFromVrf != null, String.format("Missing %s", PROP_IMPORT_FROM_VRF));
+    return builder()
+        .setImportFromVrf(importFromVrf)
+        .setImportPolicy(importPolicy)
+        .setLeakAsBgp(firstNonNull(leakAsBgp, Boolean.FALSE))
+        .build();
   }
 
   @ParametersAreNonnullByDefault

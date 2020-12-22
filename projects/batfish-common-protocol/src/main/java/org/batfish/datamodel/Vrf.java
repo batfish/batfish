@@ -96,6 +96,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
+  private static final String PROP_VRF_LEAKING_CONFIGS = "vrfLeakingConfigs";
 
   public static @Nonnull Builder builder() {
     return new Builder(null);
@@ -272,7 +273,8 @@ public class Vrf extends ComparableStructure<String> {
             .build();
   }
 
-  public Collection<VrfLeakingConfig> getVrfLeakConfigs() {
+  @JsonProperty(PROP_VRF_LEAKING_CONFIGS)
+  public List<VrfLeakingConfig> getVrfLeakConfigs() {
     return _vrfLeakConfigs;
   }
 
@@ -281,9 +283,10 @@ public class Vrf extends ComparableStructure<String> {
         ImmutableList.<VrfLeakingConfig>builder().addAll(_vrfLeakConfigs).add(c).build();
   }
 
-  /** For Builder use only */
-  private void setVrfLeakConfigs(List<VrfLeakingConfig> vrfLeakConfigs) {
-    _vrfLeakConfigs = vrfLeakConfigs;
+  /** For Builder (or Jackson) use only */
+  @JsonProperty(PROP_VRF_LEAKING_CONFIGS)
+  private void setVrfLeakConfigs(@Nullable List<VrfLeakingConfig> vrfLeakConfigs) {
+    _vrfLeakConfigs = ImmutableList.copyOf(firstNonNull(vrfLeakConfigs, ImmutableList.of()));
   }
 
   public void setAppliedRibGroups(Map<RoutingProtocol, RibGroup> appliedRibGroups) {
