@@ -67363,36 +67363,6 @@
             "                  (rog_discard",
             "                    DISCARD:'discard'))))))))",
             "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_routing_options",
-            "            ROUTING_OPTIONS:'routing-options'",
-            "            (ro_instance_import",
-            "              INSTANCE_IMPORT:'instance-import'",
-            "              name = (variable",
-            "                text = VARIABLE:'POLICY'))))))",
-            "    NEWLINE:'\\n')",
-            "  (set_line",
-            "    SET:'set'",
-            "    (set_line_tail",
-            "      (statement",
-            "        (s_common",
-            "          (s_policy_options",
-            "            POLICY_OPTIONS:'policy-options'",
-            "            (po_policy_statement",
-            "              POLICY_STATEMENT:'policy-statement'",
-            "              name = (variable",
-            "                text = VARIABLE:'POLICY')",
-            "              (pops_common",
-            "                (pops_then",
-            "                  THEN:'then'",
-            "                  (popst_common",
-            "                    (popst_accept",
-            "                      ACCEPT:'accept')))))))))",
-            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -81795,14 +81765,7 @@
             }
           }
         },
-        "configs/juniper_routing_options" : {
-          "policy-statement" : {
-            "POLICY" : {
-              "definitionLines" : "20",
-              "numReferrers" : 1
-            }
-          }
-        },
+        "configs/juniper_routing_options" : { },
         "configs/juniper_routing_policy" : {
           "interface" : {
             "ge-0/0/0" : {
@@ -88144,11 +88107,6 @@
             "AGGREGATE_ROUTE_POLICY" : {
               "aggregate route policy" : [
                 9
-              ]
-            },
-            "POLICY" : {
-              "routing-options instance-import" : [
-                17
               ]
             }
           }

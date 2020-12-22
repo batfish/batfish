@@ -65,6 +65,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -750,9 +751,15 @@ public class VirtualRouterTest {
 
     // Create VRFs in configuration and set up cross-VRF import VRF and policy for empty one
     nf.vrfBuilder().setOwner(c).setName(vrfWithRoutesName).build();
-    Vrf emptyVrf = nf.vrfBuilder().setOwner(c).setName(emptyVrfName).build();
-    emptyVrf.setCrossVrfImportVrfs(ImmutableList.of(vrfWithRoutesName));
-    emptyVrf.setCrossVrfImportPolicy(importPolicyName);
+    nf.vrfBuilder()
+        .setOwner(c)
+        .setName(emptyVrfName)
+        .addVrfLeakingConfig(
+            VrfLeakingConfig.builder()
+                .setImportFromVrf(vrfWithRoutesName)
+                .setImportPolicy(importPolicyName)
+                .build())
+        .build();
 
     // Create a Node based on the configuration and get its VirtualRouters
     Node n = new Node(c);
