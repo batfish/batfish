@@ -45,6 +45,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
@@ -890,14 +891,13 @@ public final class TopologyUtil {
     if (tailTunnel.getTunnelConfig() == null || headTunnel.getTunnelConfig() == null) {
       return false;
     }
-    // TODO: see if traceroute flow needs to be customized (ICMP ping? some GRE port?
-    //   something else?)
     Flow flow =
         Flow.builder()
             .setIngressNode(src.getHostname())
             .setIngressVrf(tailTunnel.getVrfName())
             .setSrcIp(tailTunnel.getTunnelConfig().getSourceAddress())
             .setDstIp(tailTunnel.getTunnelConfig().getDestinationAddress())
+            .setIpProtocol(IpProtocol.GRE)
             .build();
     SortedMap<Flow, List<TraceAndReverseFlow>> tracerouteResult =
         tracerouteEngine.computeTracesAndReverseFlows(ImmutableSet.of(flow), false);
