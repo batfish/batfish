@@ -312,7 +312,9 @@ public final class VirtualRouter {
   private void initEigrp() {
     _eigrpProcesses =
         _vrf.getEigrpProcesses().values().stream()
-            .map(eigrpProcess -> new EigrpRoutingProcess(eigrpProcess, _name, _c))
+            .map(
+                eigrpProcess ->
+                    new EigrpRoutingProcess(eigrpProcess, _name, RoutingPolicies.from(_c)))
             .collect(ImmutableMap.toImmutableMap(EigrpRoutingProcess::getAsn, Function.identity()));
     _eigrpProcesses.values().forEach(p -> p.initialize(_node));
   }

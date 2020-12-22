@@ -61,8 +61,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   /** Parent process containing configuration */
   @Nonnull private final EigrpProcess _process;
-  /** Configuration containing the process */
-  @Nonnull private final Configuration _configuration;
+  /** All routing policies present at our parent node */
+  @Nonnull private final RoutingPolicies _routingPolicies;
   /** Name of the VRF in which this process resides */
   @Nonnull private final String _vrfName;
   /** Our AS number */
@@ -103,14 +103,14 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   /** Set of edges in the topology that are new in the current iteration */
   private Collection<EigrpEdge> _edgesWentUp = ImmutableSet.of();
 
-  EigrpRoutingProcess(final EigrpProcess process, final String vrfName, final Configuration c) {
+  EigrpRoutingProcess(EigrpProcess process, String vrfName, RoutingPolicies policies) {
     _process = process;
     _asn = process.getAsn();
     _externalRib = new EigrpExternalRib();
     _internalRib = new EigrpInternalRib();
     _rib = new EigrpRib();
     _vrfName = vrfName;
-    _configuration = c;
+    _routingPolicies = policies;
     _topology = EigrpTopology.EMPTY;
     _initializationDelta = RibDelta.empty();
     _queuedForRedistribution = RibDelta.empty();
@@ -219,7 +219,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       return;
     }
     RoutingPolicy exportPolicy =
-        _configuration.getRoutingPolicies().get(_process.getRedistributionPolicy());
+        _routingPolicies.get(_process.getRedistributionPolicy()).orElse(null);
     if (exportPolicy == null) {
       return;
     }
@@ -291,7 +291,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     @Nullable
     RoutingPolicy importPolicy =
         Optional.ofNullable(localEigrpIface.getImportPolicy())
-            .map(_configuration.getRoutingPolicies()::get)
+            .flatMap(_routingPolicies::get)
             .orElse(null);
     while (!queue.isEmpty()) {
       RouteAdvertisement<EigrpInternalRoute> ra = queue.remove();
@@ -364,7 +364,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       @Nullable
       RoutingPolicy importPolicy =
           Optional.ofNullable(localIface.getEigrp().getImportPolicy())
-              .map(_configuration.getRoutingPolicies()::get)
+              .flatMap(_routingPolicies::get)
               .orElse(null);
       Optional<EigrpExternalRoute> transformedRoute =
           transformAndFilterExternalRouteFromNeighbor(
@@ -546,10 +546,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     EigrpNeighborConfig neighborConfig =
         _process.getNeighbors().get(neighborConfigId.getInterfaceName());
     assert neighborConfig != null;
-    RoutingPolicy exportPolicy =
-        _configuration.getRoutingPolicies().get(neighborConfig.getExportPolicy());
-    assert exportPolicy != null;
-    return exportPolicy;
+    return _routingPolicies.getOrThrow(neighborConfig.getExportPolicy());
   }
 
   /**
