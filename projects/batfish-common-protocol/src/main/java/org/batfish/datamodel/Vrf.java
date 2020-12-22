@@ -8,15 +8,15 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -45,7 +45,7 @@ public class Vrf extends ComparableStructure<String> {
     @Nonnull private Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
 
     @Nonnull
-    private ImmutableSet.Builder<VrfLeakingConfig> _vrfLeakingConfigs = ImmutableSet.builder();
+    private ImmutableList.Builder<VrfLeakingConfig> _vrfLeakingConfigs = ImmutableList.builder();
 
     private Builder(Supplier<String> nameGenerator) {
       _nameGenerator = nameGenerator;
@@ -120,7 +120,7 @@ public class Vrf extends ComparableStructure<String> {
   private SortedSet<StaticRoute> _staticRoutes;
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
-  private Set<VrfLeakingConfig> _vrfLeakConfigs;
+  private List<VrfLeakingConfig> _vrfLeakConfigs;
 
   public Vrf(@Nonnull String name) {
     super(name);
@@ -133,7 +133,7 @@ public class Vrf extends ComparableStructure<String> {
     _staticRoutes = new TreeSet<>();
     _layer2Vnis = ImmutableMap.of();
     _layer3Vnis = ImmutableMap.of();
-    _vrfLeakConfigs = ImmutableSet.of();
+    _vrfLeakConfigs = ImmutableList.of();
   }
 
   @JsonCreator
@@ -278,11 +278,11 @@ public class Vrf extends ComparableStructure<String> {
 
   public void addVrfLeakingConfig(@Nonnull VrfLeakingConfig c) {
     _vrfLeakConfigs =
-        ImmutableSet.<VrfLeakingConfig>builder().addAll(_vrfLeakConfigs).add(c).build();
+        ImmutableList.<VrfLeakingConfig>builder().addAll(_vrfLeakConfigs).add(c).build();
   }
 
   /** For Builder use only */
-  private void setVrfLeakConfigs(Set<VrfLeakingConfig> vrfLeakConfigs) {
+  private void setVrfLeakConfigs(List<VrfLeakingConfig> vrfLeakConfigs) {
     _vrfLeakConfigs = vrfLeakConfigs;
   }
 
