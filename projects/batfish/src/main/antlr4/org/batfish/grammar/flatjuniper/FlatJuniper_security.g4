@@ -447,7 +447,8 @@ s_security
 :
    SECURITY
    (
-      se_address_book
+      apply
+      | se_address_book
       | se_authentication_key_chain
       | se_certificates
       | se_ike

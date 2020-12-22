@@ -84,16 +84,6 @@ filter
    )?
 ;
 
-i_apply_groups
-:
-   apply_groups
-;
-
-i_apply_groups_except
-:
-   apply_groups_except
-;
-
 i_arp_resp
 :
    ARP_RESP
