@@ -16,6 +16,7 @@ public final class Node {
 
   private final Configuration _c;
   private final SortedMap<String, VirtualRouter> _virtualRouters;
+  @Nonnull private final RoutingPolicies _routingPolicies;
 
   /**
    * Create a new node based on the configuration. Initializes virtual routers based on {@link
@@ -23,7 +24,7 @@ public final class Node {
    *
    * @param configuration the {@link Configuration} backing this node
    */
-  public Node(@Nonnull Configuration configuration) {
+  public Node(Configuration configuration) {
     _c = configuration;
     ImmutableSortedMap.Builder<String, VirtualRouter> b = ImmutableSortedMap.naturalOrder();
     for (String vrfName : _c.getVrfs().keySet()) {
@@ -31,12 +32,19 @@ public final class Node {
       b.put(vrfName, vr);
     }
     _virtualRouters = b.build();
+    _routingPolicies = RoutingPolicies.from(configuration);
   }
 
   /** @return The {@link Configuration} backing this Node */
   @Nonnull
   public Configuration getConfiguration() {
     return _c;
+  }
+
+  /** Returns all routing policies present in the configuration of this node. */
+  @Nonnull
+  public RoutingPolicies getRoutingPolicies() {
+    return _routingPolicies;
   }
 
   /** Return the list of virtual routers at this node */

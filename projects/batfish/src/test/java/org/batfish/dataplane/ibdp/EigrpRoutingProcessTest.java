@@ -48,9 +48,7 @@ public class EigrpRoutingProcessTest {
             .setMode(EigrpProcessMode.CLASSIC)
             .setRouterId(Ip.ZERO)
             .build();
-    _routingProcess =
-        new EigrpRoutingProcess(
-            _process, "vrf", new Configuration("host", ConfigurationFormat.CISCO_IOS));
+    _routingProcess = new EigrpRoutingProcess(_process, "vrf", RoutingPolicies.from(_c));
     _ifaceMetric =
         ClassicMetric.builder()
             .setValues(
