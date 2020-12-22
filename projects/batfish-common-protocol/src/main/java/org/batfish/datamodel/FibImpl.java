@@ -91,10 +91,10 @@ public final class FibImpl implements Fib {
 
   public FibImpl(@Nonnull GenericRib<? extends AbstractRouteDecorator> rib) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
-    rib.getRoutes()
+    rib.getTypedRoutes()
         .forEach(
             r -> {
-              Set<FibEntry> s = resolveRoute(rib, r);
+              Set<FibEntry> s = resolveRoute(rib, r.getAbstractRoute());
               _root.putAll(r.getNetwork(), s);
             });
     initSuppliers();

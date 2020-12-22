@@ -376,7 +376,15 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     if (node._elements.containsAll(elements)) {
       return false;
     }
-    node._elements = ImmutableSet.<T>builder().addAll(node._elements).addAll(elements).build();
+    if (node._elements.isEmpty()) {
+      node._elements = ImmutableSet.copyOf(elements);
+    } else {
+      node._elements =
+          ImmutableSet.<T>builderWithExpectedSize(node._elements.size() + elements.size())
+              .addAll(node._elements)
+              .addAll(elements)
+              .build();
+    }
     return true;
   }
 
