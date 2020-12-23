@@ -41,8 +41,8 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
     return _vrf;
   }
 
-  public void setVrf(@Nullable String _vrf) {
-    this._vrf = _vrf;
+  public void setVrf(@Nullable String vrf) {
+    _vrf = vrf;
   }
 
   /**
