@@ -6243,7 +6243,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterIpnios_static_addr(Ipnios_static_addrContext ctx) {
+  public void exitIpnios_static_addr(Ipnios_static_addrContext ctx) {
     CiscoIosStaticNat staticNat = new CiscoIosStaticNat();
     _currentIosSourceNat = staticNat;
     Entry<Ip, Ip> e = toIosNatLocalGlobalIps(ctx.ips);
@@ -6257,12 +6257,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIpnios_static_addr(Ipnios_static_addrContext ctx) {
-    _currentIosSourceNat = null;
-  }
-
-  @Override
-  public void enterIpnios_static_network(Ipnios_static_networkContext ctx) {
+  public void exitIpnios_static_network(Ipnios_static_networkContext ctx) {
     CiscoIosStaticNat staticNat = new CiscoIosStaticNat();
     _currentIosSourceNat = staticNat;
     int prefixLength;
@@ -6308,13 +6303,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIpnis_static(Ipnis_staticContext ctx) {
     if (ctx.VRF() != null) {
-      warn(ctx, "vrf specification in 'ip nat inside source static' is not supported");
+      // Defined in ipnios_static_addr or ipnios_static_network, one of which must precede VRF
+      assert _currentIosSourceNat != null;
+      _currentIosSourceNat.setVrf(ctx.vrfname.getText());
     }
     if (ctx.ROUTE_MAP() != null) {
       _configuration.referenceStructure(
           ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
       warn(ctx, "route-map specification in 'ip nat inside source static' is not supported");
     }
+    _currentIosSourceNat = null;
   }
 
   @Override
@@ -6329,8 +6327,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIpnos_static(Ipnos_staticContext ctx) {
     if (ctx.VRF() != null) {
-      warn(ctx, "vrf specification in 'ip nat outside source static' is not supported");
+      // Defined in ipnios_static_addr or ipnios_static_network, one of which must precede VRF
+      assert _currentIosSourceNat != null;
+      _currentIosSourceNat.setVrf(ctx.vrfname.getText());
     }
+    _currentIosSourceNat = null;
   }
 
   @Override

@@ -5413,68 +5413,118 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-nat-static");
     String insideIntf = "Ethernet1";
     String outsideIntf = "Ethernet2";
-    Prefix nat1Local = Prefix.parse("1.1.1.1/32");
-    Prefix nat3Local = Prefix.parse("1.1.3.0/24");
-    Prefix nat2Local = Prefix.parse("1.1.2.0/14");
-    Prefix nat4Local = Prefix.parse("7.7.7.7/32");
-    Prefix nat1Global = Prefix.parse("2.2.2.2/32");
-    Prefix nat2Global = Prefix.parse("2.2.2.0/14");
-    Prefix nat4Global = Prefix.parse("6.6.6.6/32");
-    Prefix nat3Global = Prefix.parse("2.2.3.0/24");
-
+    String vrfInsideIntf = "Ethernet3";
+    String vrfOutsideIntf = "Ethernet4";
+    assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
     assertThat(c, hasInterface(insideIntf, notNullValue()));
     assertThat(c, hasInterface(outsideIntf, notNullValue()));
+    assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
+    MatchSrcInterface matchSrcIfaceInside = matchSrcInterface(insideIntf, vrfInsideIntf);
 
-    Interface inside = c.getAllInterfaces().get(insideIntf);
-    assertThat(inside.getIncomingTransformation(), nullValue());
-    assertThat(inside.getOutgoingTransformation(), nullValue());
+    {
+      // NAT in default VRF
+      Prefix nat1Local = Prefix.parse("1.1.1.1/32");
+      Prefix nat3Local = Prefix.parse("1.1.3.0/24");
+      Prefix nat2Local = Prefix.parse("1.1.2.0/14");
+      Prefix nat4Local = Prefix.parse("7.7.7.7/32");
+      Prefix nat1Global = Prefix.parse("2.2.2.2/32");
+      Prefix nat2Global = Prefix.parse("2.2.2.0/14");
+      Prefix nat4Global = Prefix.parse("6.6.6.6/32");
+      Prefix nat3Global = Prefix.parse("2.2.3.0/24");
 
-    Interface outside = c.getAllInterfaces().get(outsideIntf);
-    assertThat(outside.getIncomingTransformation(), notNullValue());
-    assertThat(outside.getOutgoingTransformation(), notNullValue());
+      Interface inside = c.getAllInterfaces().get(insideIntf);
+      assertThat(inside.getIncomingTransformation(), nullValue());
+      assertThat(inside.getOutgoingTransformation(), nullValue());
 
-    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
-    Transformation inDestinationTransformation =
-        when(matchDst(nat1Global))
-            .apply(shiftDestinationIp(nat1Local))
-            .setOrElse(
-                when(matchDst(nat3Global))
-                    .apply(shiftDestinationIp(nat3Local))
-                    .setOrElse(
-                        when(matchDst(nat2Global)).apply(shiftDestinationIp(nat2Local)).build())
-                    .build())
-            .build();
+      Interface outside = c.getAllInterfaces().get(outsideIntf);
+      assertThat(outside.getIncomingTransformation(), notNullValue());
+      assertThat(outside.getOutgoingTransformation(), notNullValue());
 
-    Transformation inTransformation =
-        when(matchSrc(nat4Global))
-            .apply(shiftSourceIp(nat4Local))
-            .setAndThen(inDestinationTransformation)
-            .setOrElse(inDestinationTransformation)
-            .build();
+      Transformation inDestinationTransformation =
+          when(matchDst(nat1Global))
+              .apply(shiftDestinationIp(nat1Local))
+              .setOrElse(
+                  when(matchDst(nat3Global))
+                      .apply(shiftDestinationIp(nat3Local))
+                      .setOrElse(
+                          when(matchDst(nat2Global)).apply(shiftDestinationIp(nat2Local)).build())
+                      .build())
+              .build();
 
-    assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+      Transformation inTransformation =
+          when(matchSrc(nat4Global))
+              .apply(shiftSourceIp(nat4Local))
+              .setAndThen(inDestinationTransformation)
+              .setOrElse(inDestinationTransformation)
+              .build();
 
-    Transformation outDestinationTransformation =
-        when(and(matchDst(nat4Local), matchIface)).apply(shiftDestinationIp(nat4Global)).build();
+      assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
-    Transformation outTransformation =
-        when(and(matchSrc(nat1Local), matchIface))
-            .apply(shiftSourceIp(nat1Global))
-            .setAndThen(outDestinationTransformation)
-            .setOrElse(
-                when(and(matchSrc(nat3Local), matchIface))
-                    .apply(shiftSourceIp(nat3Global))
-                    .setAndThen(outDestinationTransformation)
-                    .setOrElse(
-                        when(and(matchSrc(nat2Local), matchIface))
-                            .apply(shiftSourceIp(nat2Global))
-                            .setAndThen(outDestinationTransformation)
-                            .setOrElse(outDestinationTransformation)
-                            .build())
-                    .build())
-            .build();
+      Transformation outDestinationTransformation =
+          when(and(matchDst(nat4Local), matchSrcIfaceInside))
+              .apply(shiftDestinationIp(nat4Global))
+              .build();
 
-    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+      Transformation outTransformation =
+          when(and(matchSrc(nat1Local), matchSrcIfaceInside))
+              .apply(shiftSourceIp(nat1Global))
+              .setAndThen(outDestinationTransformation)
+              .setOrElse(
+                  when(and(matchSrc(nat3Local), matchSrcIfaceInside))
+                      .apply(shiftSourceIp(nat3Global))
+                      .setAndThen(outDestinationTransformation)
+                      .setOrElse(
+                          when(and(matchSrc(nat2Local), matchSrcIfaceInside))
+                              .apply(shiftSourceIp(nat2Global))
+                              .setAndThen(outDestinationTransformation)
+                              .setOrElse(outDestinationTransformation)
+                              .build())
+                      .build())
+              .build();
+
+      assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+    }
+    {
+      // NAT on vrf1 interfaces
+      Prefix insideLocal = Prefix.parse("3.3.3.3/32");
+      Prefix insideGlobal = Prefix.parse("4.4.4.4/32");
+      Prefix outsideLocal = Prefix.parse("9.9.9.9/32");
+      Prefix outsideGlobal = Prefix.parse("8.8.8.8/32");
+
+      Interface inside = c.getAllInterfaces().get(vrfInsideIntf);
+      assertThat(inside.getIncomingTransformation(), nullValue());
+      assertThat(inside.getOutgoingTransformation(), nullValue());
+
+      Interface outside = c.getAllInterfaces().get(vrfOutsideIntf);
+      assertThat(outside.getIncomingTransformation(), notNullValue());
+      assertThat(outside.getOutgoingTransformation(), notNullValue());
+
+      Transformation inDestinationTransformation =
+          when(matchDst(insideGlobal)).apply(shiftDestinationIp(insideLocal)).build();
+
+      Transformation inTransformation =
+          when(matchSrc(outsideGlobal))
+              .apply(shiftSourceIp(outsideLocal))
+              .setAndThen(inDestinationTransformation)
+              .setOrElse(inDestinationTransformation)
+              .build();
+
+      assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+
+      Transformation outDestinationTransformation =
+          when(and(matchDst(outsideLocal), matchSrcIfaceInside))
+              .apply(shiftDestinationIp(outsideGlobal))
+              .build();
+
+      Transformation outTransformation =
+          when(and(matchSrc(insideLocal), matchSrcIfaceInside))
+              .apply(shiftSourceIp(insideGlobal))
+              .setAndThen(outDestinationTransformation)
+              .setOrElse(outDestinationTransformation)
+              .build();
+
+      assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+    }
   }
 
   @Test

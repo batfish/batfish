@@ -1885,7 +1885,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else if (!ciscoAsaNats.isEmpty()) {
       generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
     } else if (!ciscoIosNats.isEmpty()) {
-      generateCiscoIosNatTransformations(ifaceName, newIface, ipAccessLists, c);
+      generateCiscoIosNatTransformations(ifaceName, vrfName, newIface, ipAccessLists, c);
     }
 
     String routingPolicyName = iface.getRoutingPolicy();
@@ -1980,6 +1980,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void generateCiscoIosNatTransformations(
       String ifaceName,
+      String vrfName,
       org.batfish.datamodel.Interface newIface,
       Map<String, IpAccessList> ipAccessLists,
       Configuration c) {
@@ -1992,12 +1993,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       outgoingNats.addAll(getCiscoIosNats());
     }
 
+    // whether this interface is in the default VRF
+    boolean inDefaultVrf = vrfName.equals(Configuration.DEFAULT_VRF_NAME);
+
     // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
     // can be modified independently but not jointly. A single CiscoIosNat can represent an incoming
     // NAT, an outgoing NAT, or both.
 
     Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats =
         incomingNats.stream()
+            // Filter to NAT rules that apply to this interface's VRF
+            .filter(nat -> inDefaultVrf ? nat.getVrf() == null : vrfName.equals(nat.getVrf()))
             .map(
                 nat ->
                     new SimpleEntry<>(nat, nat.toIncomingTransformation(ipAccessLists, _natPools)))
@@ -2010,6 +2016,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats =
         outgoingNats.stream()
+            // Filter to NAT rules that apply to this interface's VRF
+            .filter(nat -> inDefaultVrf ? nat.getVrf() == null : vrfName.equals(nat.getVrf()))
             .map(
                 nat ->
                     new SimpleEntry<>(
