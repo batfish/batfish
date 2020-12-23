@@ -5365,47 +5365,82 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-nat-dynamic");
     String insideIntf = "Ethernet1";
     String outsideIntf = "Ethernet2";
-    Ip nat1PoolFirst = Ip.parse("3.3.3.1");
-    Ip nat1PoolLast = Ip.parse("3.3.3.254");
-    Ip nat2PoolFirst = Ip.parse("3.3.4.1");
-    Ip nat2PoolLast = Ip.parse("3.3.4.254");
-    Ip nat3PoolFirst = Ip.parse("4.4.4.1");
-    Ip nat3PoolLast = Ip.parse("4.4.4.254");
-    String nat1AclName = "10";
-    String nat2AclName = computeDynamicDestinationNatAclName("11");
-    String nat3AclName = "22";
-
+    String vrfInsideIntf = "Ethernet3";
+    String vrfOutsideIntf = "Ethernet4";
     assertThat(c, hasInterface(insideIntf, notNullValue()));
     assertThat(c, hasInterface(outsideIntf, notNullValue()));
+    assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
+    assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
+    MatchSrcInterface matchSrcInside = matchSrcInterface(insideIntf, vrfInsideIntf);
 
-    Interface inside = c.getAllInterfaces().get(insideIntf);
-    assertThat(inside.getIncomingTransformation(), nullValue());
-    assertThat(inside.getOutgoingTransformation(), nullValue());
+    {
+      // NAT in default VRF
+      Ip nat1PoolFirst = Ip.parse("3.3.3.1");
+      Ip nat1PoolLast = Ip.parse("3.3.3.254");
+      Ip nat2PoolFirst = Ip.parse("3.3.4.1");
+      Ip nat2PoolLast = Ip.parse("3.3.4.254");
+      Ip nat3PoolFirst = Ip.parse("4.4.4.1");
+      Ip nat3PoolLast = Ip.parse("4.4.4.254");
+      String nat1AclName = "10";
+      String nat2AclName = computeDynamicDestinationNatAclName("11");
+      String nat3AclName = "22";
 
-    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+      Interface inside = c.getAllInterfaces().get(insideIntf);
+      assertThat(inside.getIncomingTransformation(), nullValue());
+      assertThat(inside.getOutgoingTransformation(), nullValue());
 
-    Interface outside = c.getAllInterfaces().get(outsideIntf);
+      Interface outside = c.getAllInterfaces().get(outsideIntf);
 
-    Transformation inTransformation =
-        when(permittedByAcl(nat3AclName))
-            .apply(assignSourceIp(nat3PoolFirst, nat3PoolLast))
-            .build();
+      Transformation inTransformation =
+          when(permittedByAcl(nat3AclName))
+              .apply(assignSourceIp(nat3PoolFirst, nat3PoolLast))
+              .build();
 
-    assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+      assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
-    Transformation destTransformation =
-        when(and(permittedByAcl(nat2AclName), matchIface))
-            .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
-            .build();
+      Transformation destTransformation =
+          when(and(permittedByAcl(nat2AclName), matchSrcInside))
+              .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
+              .build();
 
-    Transformation outTransformation =
-        when(and(permittedByAcl(nat1AclName), matchIface))
-            .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
-            .setAndThen(destTransformation)
-            .setOrElse(destTransformation)
-            .build();
+      Transformation outTransformation =
+          when(and(permittedByAcl(nat1AclName), matchSrcInside))
+              .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
+              .setAndThen(destTransformation)
+              .setOrElse(destTransformation)
+              .build();
 
-    assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+      assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+    }
+    {
+      // NAT in default VRF
+      Ip insidePoolFirst = Ip.parse("5.5.5.1");
+      Ip insidePoolLast = Ip.parse("5.5.5.254");
+      Ip outsidePoolFirst = Ip.parse("6.6.6.1");
+      Ip outsidePoolLast = Ip.parse("6.6.6.254");
+      String insideAclName = "12";
+      String outsideAclName = "23";
+
+      Interface inside = c.getAllInterfaces().get(vrfInsideIntf);
+      assertThat(inside.getIncomingTransformation(), nullValue());
+      assertThat(inside.getOutgoingTransformation(), nullValue());
+
+      Interface outside = c.getAllInterfaces().get(vrfOutsideIntf);
+
+      Transformation inTransformation =
+          when(permittedByAcl(outsideAclName))
+              .apply(assignSourceIp(outsidePoolFirst, outsidePoolLast))
+              .build();
+
+      assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+
+      Transformation outTransformation =
+          when(and(permittedByAcl(insideAclName), matchSrcInside))
+              .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
+              .build();
+
+      assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+    }
   }
 
   @Test

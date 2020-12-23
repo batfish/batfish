@@ -675,6 +675,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ipnc_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipni_destinationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnios_static_addrContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnios_static_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Ipnios_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnioss_local_globalContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipniossm_extendableContext;
 import org.batfish.grammar.cisco.CiscoParser.Ipnis_listContext;
@@ -6278,6 +6279,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIpnios_vrf(Ipnios_vrfContext ctx) {
+    assert _currentIosSourceNat != null;
+    _currentIosSourceNat.setVrf(ctx.vrfname.getText());
+    super.exitIpnios_vrf(ctx);
+  }
+
+  @Override
   public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
     // Adding a route via NAT is not currently supported
     // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
@@ -6302,11 +6310,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIpnis_static(Ipnis_staticContext ctx) {
-    if (ctx.VRF() != null) {
-      // Defined in ipnios_static_addr or ipnios_static_network, one of which must precede VRF
-      assert _currentIosSourceNat != null;
-      _currentIosSourceNat.setVrf(ctx.vrfname.getText());
-    }
     if (ctx.ROUTE_MAP() != null) {
       _configuration.referenceStructure(
           ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
@@ -6326,11 +6329,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIpnos_static(Ipnos_staticContext ctx) {
-    if (ctx.VRF() != null) {
-      // Defined in ipnios_static_addr or ipnios_static_network, one of which must precede VRF
-      assert _currentIosSourceNat != null;
-      _currentIosSourceNat.setVrf(ctx.vrfname.getText());
-    }
     _currentIosSourceNat = null;
   }
 
