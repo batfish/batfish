@@ -12579,6 +12579,11 @@ STREETADDRESS
    'streetaddress' -> pushMode ( M_Description )
 ;
 
+STRICT
+:
+   'strict'
+;
+
 STRICTHOSTKEYCHECK
 :
    'stricthostkeycheck'
