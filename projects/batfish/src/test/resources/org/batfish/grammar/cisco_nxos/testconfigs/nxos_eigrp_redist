@@ -10,21 +10,30 @@ vrf context vrf1
 !
 ip prefix-list redist_static seq 5 permit 1.1.1.1/32
 ip prefix-list redist_bgp seq 5 permit 2.2.2.2/32
+ip prefix-list redist_direct seq 5 permit 3.3.3.3/24 le 32
 !
 route-map redist_static permit 10
  match ip address prefix-list redist_static
 route-map redist_bgp permit 10
  match ip address prefix-list redist_bgp
+route-map redist_direct permit 10
+ match ip address prefix-list redist_direct
+!
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 3.3.3.3/24
 !
 router eigrp 1
   router-id 5.5.5.5
   redistribute static route-map redist_static
   redistribute bgp 1 route-map redist_bgp
+  redistribute direct route-map redist_direct
   vrf vrf1
     default-metric 1 2 3 4 5
     redistribute static route-map redist_static
     ! This is allowed but should have no effect because there is no router bgp 2
     redistribute bgp 2 route-map redist_bgp
-
+!
 router bgp 1
   ! defined so it will be converted

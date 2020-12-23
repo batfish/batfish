@@ -910,7 +910,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private boolean createEigrpRedistributionPolicy(
       EigrpVrfConfiguration vrfConfig, String policyName) {
     Set<NxosRoutingProtocol> supportedProtocols =
-        ImmutableSet.of(NxosRoutingProtocol.BGP, NxosRoutingProtocol.STATIC);
+        ImmutableSet.of(
+            NxosRoutingProtocol.BGP, NxosRoutingProtocol.DIRECT, NxosRoutingProtocol.STATIC);
     List<RedistributionPolicy> redistPolicies =
         Stream.of(vrfConfig.getV4AddressFamily(), vrfConfig.getVrfIpv4AddressFamily())
             .filter(Objects::nonNull)
@@ -962,6 +963,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                       new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
                   Statement setTag = new SetTag(new LiteralLong(asn));
                   return new If(matchBgp, ImmutableList.of(setTag, call(policy.getRouteMap())));
+                case DIRECT:
+                  return new If(
+                      new MatchProtocol(RoutingProtocol.CONNECTED),
+                      ImmutableList.of(call(policy.getRouteMap())));
                 case STATIC:
                   return new If(
                       new MatchProtocol(RoutingProtocol.STATIC),
