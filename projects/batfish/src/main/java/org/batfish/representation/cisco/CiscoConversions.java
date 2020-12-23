@@ -94,6 +94,7 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -253,6 +254,33 @@ public class CiscoConversions {
     }
   }
 
+  private static final Statement ROUTE_MAP_DENY_STATEMENT =
+      new If(
+          BooleanExprs.CALL_EXPR_CONTEXT,
+          ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+
+  /**
+   * Implements the IOS behavior for undefined route-maps when used in BGP import/export policies.
+   *
+   * <p>Always returns {@code null} when given a null {@code mapName}, and non-null otherwise.
+   */
+  private static @Nullable String routeMapOrRejectAll(@Nullable String mapName, Configuration c) {
+    if (mapName == null || c.getRoutingPolicies().containsKey(mapName)) {
+      return mapName;
+    }
+    String undefinedName = mapName + "~undefined";
+    if (!c.getRoutingPolicies().containsKey(undefinedName)) {
+      // For undefined route-map, generate a route-map that denies everything.
+      RoutingPolicy.builder()
+          .setName(undefinedName)
+          .addStatement(ROUTE_MAP_DENY_STATEMENT)
+          .setOwner(c)
+          .build();
+    }
+    return undefinedName;
+  }
+
   /**
    * Returns the name of a {@link RoutingPolicy} to be used as the BGP import policy for the given
    * {@link LeafBgpPeerGroup}, or {@code null} if no constraints are imposed on the peer's inbound
@@ -282,9 +310,9 @@ public class CiscoConversions {
     }
 
     // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
-    if (inboundRouteMapName != null && c.getRoutingPolicies().containsKey(inboundRouteMapName)) {
+    if (inboundRouteMapName != null) {
       // Inbound route-map is defined. Use that as the BGP import policy.
-      return inboundRouteMapName;
+      return routeMapOrRejectAll(inboundRouteMapName, c);
     }
 
     String exportRouteFilter = null;
@@ -361,8 +389,8 @@ public class CiscoConversions {
               + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
               + " configured.");
     }
-    if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
-      peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
+    if (outboundRouteMapName != null) {
+      peerExportConjuncts.add(new CallExpr(routeMapOrRejectAll(outboundRouteMapName, c)));
     } else if (outboundPrefixListName != null
         && c.getRouteFilterLists().containsKey(outboundPrefixListName)) {
       peerExportConjuncts.add(
