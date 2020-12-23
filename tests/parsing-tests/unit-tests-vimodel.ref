@@ -22266,6 +22266,54 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
+          "as1_to_as2~undefined" : {
+            "name" : "as1_to_as2~undefined",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          },
+          "as2_to_as1~undefined" : {
+            "name" : "as2_to_as1~undefined",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
@@ -22454,8 +22502,17 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "as1_to_as2~undefined"
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
@@ -22533,6 +22590,13 @@
                       "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.2~",
+                    "exportPolicySources" : [
+                      "as1_to_as2~undefined"
+                    ],
+                    "importPolicy" : "as2_to_as1~undefined",
+                    "importPolicySources" : [
+                      "as2_to_as1~undefined"
+                    ],
                     "routeReflectorClient" : false
                   },
                   "localAs" : 1,
@@ -23266,6 +23330,30 @@
         "defaultInboundAction" : "PERMIT",
         "deviceType" : "ROUTER",
         "routingPolicies" : {
+          "blarp~undefined" : {
+            "name" : "blarp~undefined",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
@@ -23447,8 +23535,17 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                      "calledPolicyName" : "blarp~undefined"
+                    }
+                  ]
                 },
                 "trueStatements" : [
                   {
@@ -23496,6 +23593,9 @@
                       "sendExtendedCommunity" : false
                     },
                     "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
+                    "exportPolicySources" : [
+                      "blarp~undefined"
+                    ],
                     "routeReflectorClient" : false
                   },
                   "localAs" : 12345,
