@@ -6245,8 +6245,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIpnios_static_addr(Ipnios_static_addrContext ctx) {
-    CiscoIosStaticNat staticNat = new CiscoIosStaticNat();
-    _currentIosSourceNat = staticNat;
+    assert _currentIosSourceNat instanceof CiscoIosStaticNat;
+    CiscoIosStaticNat staticNat = (CiscoIosStaticNat) _currentIosSourceNat;
     Entry<Ip, Ip> e = toIosNatLocalGlobalIps(ctx.ips);
     staticNat.setLocalNetwork(Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH));
     staticNat.setGlobalNetwork(Prefix.create(e.getValue(), Prefix.MAX_PREFIX_LENGTH));
@@ -6259,8 +6259,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIpnios_static_network(Ipnios_static_networkContext ctx) {
-    CiscoIosStaticNat staticNat = new CiscoIosStaticNat();
-    _currentIosSourceNat = staticNat;
+    assert _currentIosSourceNat instanceof CiscoIosStaticNat;
+    CiscoIosStaticNat staticNat = (CiscoIosStaticNat) _currentIosSourceNat;
     int prefixLength;
     if (ctx.mask != null) {
       Ip mask = toIp(ctx.mask);
@@ -6309,6 +6309,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterIpnis_static(Ipnis_staticContext ctx) {
+    // Note that this NAT is not added to the configuration until its local & global IPs are set
+    _currentIosSourceNat = new CiscoIosStaticNat();
+  }
+
+  @Override
   public void exitIpnis_static(Ipnis_staticContext ctx) {
     if (ctx.ROUTE_MAP() != null) {
       _configuration.referenceStructure(
@@ -6325,6 +6331,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ROUTE_MAP, ctx.mapname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
     _configuration.referenceStructure(
         NAT_POOL, ctx.pname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void enterIpnos_static(Ipnos_staticContext ctx) {
+    // Note that this NAT is not added to the configuration until its local & global IPs are set
+    _currentIosSourceNat = new CiscoIosStaticNat();
   }
 
   @Override
