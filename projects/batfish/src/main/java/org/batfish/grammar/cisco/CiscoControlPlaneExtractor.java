@@ -6250,11 +6250,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Entry<Ip, Ip> e = toIosNatLocalGlobalIps(ctx.ips);
     staticNat.setLocalNetwork(Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH));
     staticNat.setGlobalNetwork(Prefix.create(e.getValue(), Prefix.MAX_PREFIX_LENGTH));
-    staticNat.setAction(
-        _currentIosNatDirection == Direction.INSIDE
-            ? RuleAction.SOURCE_INSIDE
-            : RuleAction.SOURCE_OUTSIDE);
-    _configuration.getCiscoIosNats().add(staticNat);
+    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
   }
 
   @Override
@@ -6271,10 +6267,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Entry<Ip, Ip> e = toIosNatLocalGlobalIps(ctx.ips);
     staticNat.setLocalNetwork(Prefix.create(e.getKey(), prefixLength));
     staticNat.setGlobalNetwork(Prefix.create(e.getValue(), prefixLength));
-    staticNat.setAction(
-        _currentIosNatDirection == Direction.INSIDE
-            ? RuleAction.SOURCE_INSIDE
-            : RuleAction.SOURCE_OUTSIDE);
     _configuration.getCiscoIosNats().add(_currentIosSourceNat);
   }
 
@@ -6312,6 +6304,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterIpnis_static(Ipnis_staticContext ctx) {
     // Note that this NAT is not added to the configuration until its local & global IPs are set
     _currentIosSourceNat = new CiscoIosStaticNat();
+    _currentIosSourceNat.setAction(RuleAction.SOURCE_INSIDE);
   }
 
   @Override
@@ -6337,6 +6330,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterIpnos_static(Ipnos_staticContext ctx) {
     // Note that this NAT is not added to the configuration until its local & global IPs are set
     _currentIosSourceNat = new CiscoIosStaticNat();
+    _currentIosSourceNat.setAction(RuleAction.SOURCE_OUTSIDE);
   }
 
   @Override
