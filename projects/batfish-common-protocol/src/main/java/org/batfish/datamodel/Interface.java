@@ -1528,8 +1528,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ADDRESS_METADATA)
-  // Jackson and builder use only
-  private void setAddressMetadata(
+  public void setAddressMetadata(
       @Nullable SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata) {
     _addressMetadata =
         ImmutableSortedMap.copyOf(firstNonNull(addressMetadata, ImmutableSortedMap.of()));
