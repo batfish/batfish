@@ -90,10 +90,12 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     try {
       thisAcl = Integer.parseInt(_aclName);
     } catch (NumberFormatException ignored) {
+      // expected
     }
     try {
       otherAcl = Integer.parseInt(other._aclName);
     } catch (NumberFormatException ignored) {
+      // expected
     }
     if (thisAcl != 0 && otherAcl != 0) {
       return Integer.compare(otherAcl, thisAcl);
