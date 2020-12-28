@@ -1722,13 +1722,13 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testConvertSetInterfaceIpAddress() {
-    parseLines("interface eth1", "ip address 1.1.1.1/30");
+    parseLines("interface eth1", "ip address 1.1.1.1/24");
     Configuration c = _config.toVendorIndependentConfigurations().get(0);
     assertThat(c.getAllInterfaces(), hasKey("eth1"));
     Interface e1 = c.getAllInterfaces().get("eth1");
     Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> metadata = e1.getAddressMetadata();
-    assertThat(metadata, hasKey(ConcreteInterfaceAddress.parse("1.1.1.1/30")));
-    ConnectedRouteMetadata e1Metadata = metadata.get(ConcreteInterfaceAddress.parse("1.1.1.1/30"));
+    assertThat(metadata, hasKey(ConcreteInterfaceAddress.parse("1.1.1.1/24")));
+    ConnectedRouteMetadata e1Metadata = metadata.get(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
     assertThat(e1Metadata.getGenerateLocalRoutes(), equalTo(Boolean.FALSE));
   }
 
