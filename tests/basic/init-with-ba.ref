@@ -571,6 +571,10 @@
             "as2" : {
               "definitionLines" : "91",
               "numReferrers" : 4
+            },
+            "as3" : {
+              "definitionLines" : "109",
+              "numReferrers" : 0
             }
           },
           "interface" : {
@@ -1646,7 +1650,7 @@
           "route-map" : {
             "filter-bogons" : {
               "bgp inbound route-map" : [
-                109
+                110
               ]
             }
           }
@@ -2118,7 +2122,7 @@
           "route-map" : {
             "filter-bogons" : {
               "bgp inbound route-map" : [
-                109
+                110
               ]
             }
           }

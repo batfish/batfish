@@ -5,6 +5,7 @@ import static com.google.common.collect.Maps.immutableEntry;
 import static org.batfish.common.bdd.IpAccessListToBdd.toBdds;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -68,6 +70,8 @@ public final class BDDOutgoingOriginalFlowFilterManager {
 
   private final BDD _falseBdd;
   private final BDD _trueBdd;
+  private final Supplier<BDD> _outgoingOriginalFlowFiltersConstraint =
+      Suppliers.memoize(this::computeOutgoingOriginalFlowFiltersConstraint);
 
   private BDDOutgoingOriginalFlowFilterManager(
       BDDFiniteDomain<String> finiteDomain,
@@ -214,6 +218,10 @@ public final class BDDOutgoingOriginalFlowFilterManager {
    * backwards transition will not erase vars.
    */
   public BDD outgoingOriginalFlowFiltersConstraint() {
+    return _outgoingOriginalFlowFiltersConstraint.get();
+  }
+
+  private BDD computeOutgoingOriginalFlowFiltersConstraint() {
     return getInterfaceBDDs().keySet().stream()
         .map(this::constraintForIface)
         .reduce(BDD::and)
