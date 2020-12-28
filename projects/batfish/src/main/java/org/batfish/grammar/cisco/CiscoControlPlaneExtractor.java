@@ -6274,7 +6274,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIpnios_vrf(Ipnios_vrfContext ctx) {
     assert _currentIosSourceNat != null;
     _currentIosSourceNat.setVrf(ctx.vrfname.getText());
-    super.exitIpnios_vrf(ctx);
   }
 
   @Override
