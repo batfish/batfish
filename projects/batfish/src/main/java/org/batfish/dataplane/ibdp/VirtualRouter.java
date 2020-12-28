@@ -609,9 +609,12 @@ public final class VirtualRouter {
   @VisibleForTesting
   static boolean shouldGenerateLocalRoute(
       int prefixLength, @Nullable ConnectedRouteMetadata connectedRouteMetadata) {
-    return (connectedRouteMetadata != null
-            && Boolean.TRUE.equals(connectedRouteMetadata.getGenerateLocalRoutes()))
-        || prefixLength < Prefix.MAX_PREFIX_LENGTH;
+    if (connectedRouteMetadata != null && connectedRouteMetadata.getGenerateLocalRoutes() != null) {
+      // Use the metadata if set.
+      return connectedRouteMetadata.getGenerateLocalRoutes();
+    }
+    // If the metadata are not provided or no value for generate local routes, use Batfish default.
+    return prefixLength < Prefix.MAX_PREFIX_LENGTH;
   }
 
   /** Generate a connected route for a given address (and associated metadata). */

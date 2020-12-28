@@ -53,8 +53,10 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DefinedStructureInfo;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
@@ -1716,6 +1718,18 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _frr.getInterfaces().get("eth1").getIpAddresses(),
         equalTo(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/30"))));
+  }
+
+  @Test
+  public void testConvertSetInterfaceIpAddress() {
+    parseLines("interface eth1", "ip address 1.1.1.1/24");
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
+    assertThat(c.getAllInterfaces(), hasKey("eth1"));
+    Interface e1 = c.getAllInterfaces().get("eth1");
+    Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> metadata = e1.getAddressMetadata();
+    assertThat(metadata, hasKey(ConcreteInterfaceAddress.parse("1.1.1.1/24")));
+    ConnectedRouteMetadata e1Metadata = metadata.get(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
+    assertThat(e1Metadata.getGenerateLocalRoutes(), equalTo(Boolean.FALSE));
   }
 
   @Test

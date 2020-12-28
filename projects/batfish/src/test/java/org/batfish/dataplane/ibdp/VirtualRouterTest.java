@@ -850,6 +850,10 @@ public class VirtualRouterTest {
     assertFalse(
         shouldGenerateLocalRoute(
             Prefix.MAX_PREFIX_LENGTH, ConnectedRouteMetadata.builder().build()));
+    assertFalse(
+        shouldGenerateLocalRoute(
+            Prefix.MAX_PREFIX_LENGTH,
+            ConnectedRouteMetadata.builder().setGenerateLocalRoutes(false).build()));
     assertTrue(
         shouldGenerateLocalRoute(
             Prefix.MAX_PREFIX_LENGTH,
@@ -857,6 +861,9 @@ public class VirtualRouterTest {
 
     assertTrue(shouldGenerateLocalRoute(24, null));
     assertTrue(shouldGenerateLocalRoute(24, ConnectedRouteMetadata.builder().build()));
+    assertFalse(
+        shouldGenerateLocalRoute(
+            24, ConnectedRouteMetadata.builder().setGenerateLocalRoutes(false).build()));
     assertTrue(
         shouldGenerateLocalRoute(
             24, ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()));

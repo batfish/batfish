@@ -44,6 +44,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -133,6 +134,25 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                 iface.setAddress(LINK_LOCAL_ADDRESS);
                 iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
               }
+            });
+
+    // FRR does not generate local routes for connected routes.
+    c.getAllInterfaces()
+        .values()
+        .forEach(
+            i -> {
+              ImmutableSortedMap.Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata>
+                  metadata = ImmutableSortedMap.naturalOrder();
+              for (InterfaceAddress a : i.getAllAddresses()) {
+                if (!(a instanceof ConcreteInterfaceAddress)) {
+                  continue;
+                }
+                ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
+                metadata.put(
+                    address,
+                    ConnectedRouteMetadata.builder().setGenerateLocalRoutes(false).build());
+              }
+              i.setAddressMetadata(metadata.build());
             });
 
     initVrfStaticRoutes(c);
