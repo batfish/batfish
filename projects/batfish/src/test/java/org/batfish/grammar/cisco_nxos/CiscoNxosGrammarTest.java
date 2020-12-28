@@ -1512,9 +1512,11 @@ public final class CiscoNxosGrammarTest {
     Redistribution policy should permit:
     - static routes to 1.1.1.1/32
     - BGP routes to 2.2.2.2/32
+    - direct (connected) routes to 3.3.3.3/32
     */
     Prefix staticPermittedPrefix = Prefix.parse("1.1.1.1/32");
     Prefix bgpPermittedPrefix = Prefix.parse("2.2.2.2/32");
+    Prefix connectedPermittedPrefix = Prefix.parse("3.3.3.3/32");
     org.batfish.datamodel.StaticRoute.Builder staticRb =
         org.batfish.datamodel.StaticRoute.builder().setNextHopInterface("foo").setAdmin(1);
     org.batfish.datamodel.StaticRoute staticDenied =
@@ -1529,6 +1531,10 @@ public final class CiscoNxosGrammarTest {
             .setProtocol(RoutingProtocol.IBGP);
     Bgpv4Route bgpDenied = bgpRb.setNetwork(staticPermittedPrefix).build();
     Bgpv4Route bgpPermitted = bgpRb.setNetwork(bgpPermittedPrefix).build();
+    ConnectedRoute connectedDenied =
+        ConnectedRoute.builder().setNetwork(Prefix.ZERO).setNextHopInterface("Ethernet1").build();
+    ConnectedRoute connectedPermitted =
+        connectedDenied.toBuilder().setNetwork(connectedPermittedPrefix).build();
 
     // Redistributed routes should have default EIGRP metric: bw 100000 kbps, delay 1E9 ps.
     EigrpMetric defaultMetric =
@@ -1562,6 +1568,15 @@ public final class CiscoNxosGrammarTest {
       // built, so first set other required fields.
       rb.setNetwork(bgpPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
       assertThat(rb.build().getEigrpMetric(), equalTo(defaultMetric));
+    }
+    {
+      // Redistribution policy correctly denies/permits connected routes
+      assertFalse(
+          redistPolicy.process(
+              connectedDenied, EigrpExternalRoute.builder(), eigrpProc, Direction.OUT));
+      assertTrue(
+          redistPolicy.process(
+              connectedPermitted, EigrpExternalRoute.builder(), eigrpProc, Direction.OUT));
     }
     {
       // Make sure VRF redistribution policy correctly applies default-metric 1 2 3 4 5
