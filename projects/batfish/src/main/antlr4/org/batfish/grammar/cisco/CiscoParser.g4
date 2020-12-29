@@ -4014,7 +4014,12 @@ track_block_type_null
 
 track_interface
 :
-  INTERFACE interface_name LINE_PROTOCOL NEWLINE
+  INTERFACE interface_name
+  (
+     IP ROUTING
+     | LINE_PROTOCOL
+  )
+  NEWLINE
 ;
 
 track_ip

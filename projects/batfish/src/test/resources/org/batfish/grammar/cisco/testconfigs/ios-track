@@ -23,3 +23,4 @@ track 5 ip route 0.0.0.0 0.0.0.0 reachability
 track 6 ip sla 1
   default delay
 !
+track 7 interface Dialer1 ip routing
