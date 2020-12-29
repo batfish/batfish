@@ -3774,6 +3774,7 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, TRACK, "4", 1));
     assertThat(ccae, hasNumReferrers(filename, TRACK, "5", 0));
     assertThat(ccae, hasNumReferrers(filename, TRACK, "6", 0));
+    assertThat(ccae, hasNumReferrers(filename, TRACK, "7", 0));
   }
 
   @Test
