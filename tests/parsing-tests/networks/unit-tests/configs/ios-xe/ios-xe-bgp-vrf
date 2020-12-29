@@ -1,0 +1,21 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname ios-xe-bgp-vrf
+!
+! https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_bgp/configuration/xe-16-8/irg-xe-16-8-book/irg-event-vpn-import.html
+!
+vrf definition vrf-A
+ rd 45000:1
+ route-target both 45000:100
+ address-family ipv4 unicast
+ exit-address-family
+!
+interface FastEthernet 1/1
+ vrf forwarding vrf-A
+ ip address 10.4.8.149 255.255.255.0
+ no shutdown
+!
+router bgp 45000
+ address-family ipv4 vrf vrf-A
+ import path selection all
+ import path limit 3
+!
