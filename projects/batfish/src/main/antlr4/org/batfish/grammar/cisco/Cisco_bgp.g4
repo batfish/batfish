@@ -53,6 +53,7 @@ address_family_rb_stanza
    (
       additional_paths_rb_stanza
       | aggregate_address_rb_stanza
+      | bgp_af_import
       | bgp_tail
       | neighbor_flat_rb_stanza
       | no_neighbor_activate_rb_stanza
@@ -141,6 +142,37 @@ as_path_multipath_relax_rb_stanza
 auto_summary_bgp_tail
 :
    NO? AUTO_SUMMARY NEWLINE
+;
+
+bgp_af_import
+:
+   IMPORT bgp_af_import_path
+;
+
+bgp_af_import_path
+:
+   PATH
+   (
+      bgp_afip_limit
+      | bgp_afip_selection
+   )
+;
+
+bgp_afip_limit
+:
+   // No effect on Batfish models, just BGP convergence time
+   LIMIT num = DEC NEWLINE
+;
+
+bgp_afip_selection
+:
+   // No effect on Batfish models, just BGP convergence time
+   SELECTION
+   (
+      ALL
+      | BESTPATH STRICT?
+      | MULTIPATH STRICT?
+   ) NEWLINE
 ;
 
 //confederations are not currently implemented

@@ -39889,6 +39889,132 @@
           }
         }
       },
+      "ios-xe-bgp-vrf" : {
+        "configurationFormat" : "CISCO_IOS",
+        "name" : "ios-xe-bgp-vrf",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceType" : "ROUTER",
+        "interfaces" : {
+          "FastEthernet1/1" : {
+            "name" : "FastEthernet1/1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "10.4.8.149/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E8,
+            "declaredNames" : [
+              "FastEthernet1/1"
+            ],
+            "mtu" : 1500,
+            "prefix" : "10.4.8.149/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E8,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "vrf-A"
+          }
+        },
+        "routingPolicies" : {
+          "~BGP_COMMON_EXPORT_POLICY:default~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          },
+          "~BGP_COMMON_EXPORT_POLICY:vrf-A~" : {
+            "name" : "~BGP_COMMON_EXPORT_POLICY:vrf-A~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "bgp",
+                    "ibgp"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnFalse"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "ios-xe-bgp-vrf",
+            "logging" : {
+              "on" : true
+            }
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "0.0.0.0",
+              "clusterListAsIgpCost" : false,
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          },
+          "vrf-A" : {
+            "name" : "vrf-A",
+            "bgpProcess" : {
+              "ebgpAdminCost" : 20,
+              "ibgpAdminCost" : 200,
+              "routerId" : "10.4.8.149",
+              "clusterListAsIgpCost" : false,
+              "multipathEbgp" : false,
+              "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
+              "multipathIbgp" : false,
+              "tieBreaker" : "ARRIVAL_ORDER"
+            }
+          }
+        }
+      },
       "ios_banner" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "ios_banner",
