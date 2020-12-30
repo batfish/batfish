@@ -98,10 +98,13 @@ def junit_tests(name, srcs, skip_pmd = False, **kwargs):
 
     lib_kwargs = dict(**kwargs)  # have to remove non-java_library args
     lib_kwargs.pop("size", "")
+    lib_tags = lib_kwargs.pop("tags", [])
+    lib_tags.append("pmd_test")
     java_library(
         name = name + "_pmdlib",
         srcs = srcs,
         testonly = True,
+        tags = lib_tags,
         **lib_kwargs
     )
     pmd_test(
