@@ -537,7 +537,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       EigrpNeighborConfigId neighborConfigId, EigrpExternalRoute route) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
     EigrpExternalRoute.Builder builder = route.toBuilder();
-    boolean allowed = exportPolicy.process(route, builder, Direction.OUT);
+    boolean allowed = exportPolicy.process(route, builder, _process, Direction.OUT);
     return allowed ? Optional.of(builder.build()) : Optional.empty();
   }
 
