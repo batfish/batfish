@@ -522,7 +522,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     }
   }
 
-  /** Checks if a given {@link EigrpRoute} is allowed to be sent to from a given neighbor */
+  /** Checks if a given {@link EigrpRoute} is allowed to be sent out to a given neighbor */
   private boolean allowedByExportPolicy(
       EigrpNeighborConfigId neighborConfigId, EigrpRoute eigrpRoute) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
