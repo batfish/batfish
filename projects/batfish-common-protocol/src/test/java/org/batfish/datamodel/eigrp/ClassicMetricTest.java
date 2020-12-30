@@ -53,8 +53,30 @@ public class ClassicMetricTest {
             .setValues(
                 EigrpMetricValues.builder().setBandwidth(128).setDelay(84_000_000_000L).build())
             .build();
-    // Cost and RIB metric are equivalent for classic metrics
-    assertThat(cm.cost().longValue(), equalTo(22150400L));
-    assertThat(cm.ribMetric(), equalTo(22150400L));
+    // In this example, the metric is not affected by precision issues beween V1 and V2.
+    assertThat(cm.ribMetric(EigrpMetricVersion.V1), equalTo(22150400L));
+    assertThat(cm.ribMetric(EigrpMetricVersion.V2), equalTo(22150400L));
+  }
+
+  @Test
+  public void testComputeCostDifferentVersions() {
+    // Example taken from lab validation on IOS-XE vs NX-OS.
+    // set metric 900 100 255 1 1500
+    // + 1 * 10us for the receiving interface.
+    ClassicMetric cm =
+        ClassicMetric.builder()
+            .setValues(
+                EigrpMetricValues.builder()
+                    .setBandwidth(900)
+                    .setDelay((100 + 1) * 10_000_000L)
+                    .setEffectiveBandwidth(1)
+                    .setReliability(255)
+                    .setMtu(1500)
+                    .build())
+            .build();
+    // V1 lower value - aka, lower precision on bandwidth.
+    assertThat(cm.ribMetric(EigrpMetricVersion.V1), equalTo(2870272L));
+    // V2 higher value - aka, higher precision on bandwidth.
+    assertThat(cm.ribMetric(EigrpMetricVersion.V2), equalTo(2870300L));
   }
 }

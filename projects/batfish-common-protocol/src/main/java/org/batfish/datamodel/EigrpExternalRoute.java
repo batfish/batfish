@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.hash;
-import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,6 +10,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 
 /** Represents an external EIGRP route */
 public class EigrpExternalRoute extends EigrpRoute {
@@ -28,11 +28,21 @@ public class EigrpExternalRoute extends EigrpRoute {
       long destinationAsn,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric,
+      @Nonnull EigrpMetricVersion metricVersion,
       long processAsn,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(admin, network, nextHopIp, metric, processAsn, tag, nonForwarding, nonRouting);
+    super(
+        admin,
+        network,
+        nextHopIp,
+        metric,
+        metricVersion,
+        processAsn,
+        tag,
+        nonForwarding,
+        nonRouting);
     _destinationAsn = destinationAsn;
   }
 
@@ -43,15 +53,26 @@ public class EigrpExternalRoute extends EigrpRoute {
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
+      @Nullable @JsonProperty(PROP_EIGRP_METRIC_VERSION) EigrpMetricVersion metricVersion,
       @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn,
       @Nullable @JsonProperty(PROP_TAG) Long tag) {
     checkArgument(admin != null, "EIGRP route: missing %s", PROP_ADMINISTRATIVE_COST);
     checkArgument(destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
     checkArgument(metric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+    checkArgument(metricVersion != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC_VERSION);
     checkArgument(processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
     checkArgument(tag != null, "EIGRP route: missing %s", PROP_TAG);
     return new EigrpExternalRoute(
-        network, admin, destinationAsn, nextHopIp, metric, processAsn, tag, false, false);
+        network,
+        admin,
+        destinationAsn,
+        nextHopIp,
+        metric,
+        metricVersion,
+        processAsn,
+        tag,
+        false,
+        false);
   }
 
   @JsonProperty(PROP_DESTINATION_ASN)
@@ -79,13 +100,16 @@ public class EigrpExternalRoute extends EigrpRoute {
       checkArgument(getNetwork() != null, "EIGRP route: missing %s", PROP_NETWORK);
       checkArgument(_destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
       checkArgument(_eigrpMetric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+      checkArgument(
+          _eigrpMetricVersion != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC_VERSION);
       checkArgument(_processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
       return new EigrpExternalRoute(
           getNetwork(),
           getAdmin(),
           _destinationAsn,
           getNextHopIp(),
-          requireNonNull(_eigrpMetric),
+          _eigrpMetric,
+          _eigrpMetricVersion,
           _processAsn,
           getTag(),
           getNonForwarding(),
@@ -115,6 +139,7 @@ public class EigrpExternalRoute extends EigrpRoute {
         // EigrpExternalRoute properties
         .setDestinationAsn(getDestinationAsn())
         .setEigrpMetric(getEigrpMetric())
+        .setEigrpMetricVersion(getEigrpMetricVersion())
         .setProcessAsn(getProcessAsn());
   }
 
@@ -130,6 +155,7 @@ public class EigrpExternalRoute extends EigrpRoute {
     return _admin == rhs._admin
         && Objects.equals(_destinationAsn, rhs._destinationAsn)
         && _metric.equals(rhs._metric)
+        && _metricVersion == rhs._metricVersion
         && _network.equals(rhs._network)
         && _nextHopIp.equals(rhs._nextHopIp)
         && _processAsn == rhs._processAsn
@@ -149,6 +175,7 @@ public class EigrpExternalRoute extends EigrpRoute {
         getNonRouting(),
         _destinationAsn,
         _metric,
+        _metricVersion,
         _processAsn);
   }
 

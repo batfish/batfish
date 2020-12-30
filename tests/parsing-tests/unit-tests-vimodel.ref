@@ -27358,6 +27358,7 @@
                 "exportPolicy" : "~EIGRP_EXPORT_POLICY:default:5~",
                 "externalAdminCost" : 170,
                 "internalAdminCost" : 90,
+                "metricVersion" : "V1",
                 "routerId" : "100.1.1.1"
               }
             }

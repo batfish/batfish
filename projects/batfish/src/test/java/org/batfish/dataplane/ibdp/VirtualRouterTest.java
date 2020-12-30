@@ -69,6 +69,7 @@ import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpTopology;
 import org.batfish.datamodel.eigrp.WideMetric;
 import org.batfish.datamodel.isis.IsisEdge;
@@ -138,6 +139,7 @@ public class VirtualRouterTest {
                 WideMetric.builder()
                     .setValues(EigrpMetricValues.builder().setBandwidth(1E8).setDelay(1D).build())
                     .build())
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setProcessAsn(2L)
             .build(),
         EigrpInternalRoute.builder()
@@ -146,6 +148,7 @@ public class VirtualRouterTest {
                 ClassicMetric.builder()
                     .setValues(EigrpMetricValues.builder().setBandwidth(1E8).setDelay(1D).build())
                     .build())
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setProcessAsn(2L)
             .build(),
         GeneratedRoute.builder().setNetwork(Prefix.parse("1.0.4.0/24")).setAdmin(1).build(),

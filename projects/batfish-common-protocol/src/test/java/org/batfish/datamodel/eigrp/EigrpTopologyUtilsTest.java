@@ -68,6 +68,7 @@ public class EigrpTopologyUtilsTest {
             .setAsNumber(1L)
             .setRedistributionPolicy("ep")
             .setMode(EigrpProcessMode.NAMED)
+            .setMetricVersion(EigrpMetricVersion.V1)
             .setRouterId(Ip.parse("1.1.1.1"))
             .setRedistributionPolicy("policy")
             .build());
@@ -130,6 +131,7 @@ public class EigrpTopologyUtilsTest {
     vrf.addEigrpProcess(
         EigrpProcess.builder()
             .setAsNumber(1L)
+            .setMetricVersion(EigrpMetricVersion.V1)
             .setMode(EigrpProcessMode.NAMED)
             .setRouterId(Ip.parse("1.1.1.1"))
             .build());
@@ -158,6 +160,7 @@ public class EigrpTopologyUtilsTest {
         EigrpProcess.builder()
             .setAsNumber(1L)
             .setMode(EigrpProcessMode.NAMED)
+            .setMetricVersion(EigrpMetricVersion.V1)
             .setRouterId(Ip.parse("1.1.1.4"))
             .build());
     return ImmutableMap.of(conf1.getHostname(), conf1, conf2.getHostname(), conf2);

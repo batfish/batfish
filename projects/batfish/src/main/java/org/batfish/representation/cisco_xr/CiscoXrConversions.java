@@ -84,6 +84,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
@@ -1413,7 +1414,8 @@ public class CiscoXrConversions {
   static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
       EigrpProcess proc, String vrfName, Configuration c, CiscoXrConfiguration oldConfig) {
     org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
-        org.batfish.datamodel.eigrp.EigrpProcess.builder();
+        org.batfish.datamodel.eigrp.EigrpProcess.builder()
+            .setMetricVersion(/* TODO: investigate XR metric. */ EigrpMetricVersion.V1);
 
     if (proc.getAsn() == null) {
       oldConfig.getWarnings().redFlag("Invalid EIGRP process");

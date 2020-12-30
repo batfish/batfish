@@ -118,6 +118,7 @@ import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisMetricType;
@@ -892,7 +893,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 firstNonNull(
                     vrfConfig.getDistanceExternal(),
                     EigrpProcessConfiguration.DEFAULT_DISTANCE_EXTERNAL))
-            .setRouterId(routerId);
+            .setRouterId(routerId)
+            .setMetricVersion(EigrpMetricVersion.V2);
     proc.setMode(EigrpProcessMode.CLASSIC);
     String redistPolicyName = eigrpRedistributionPolicyName(vrfName, asn);
     if (createEigrpRedistributionPolicy(vrfConfig, redistPolicyName)) {

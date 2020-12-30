@@ -260,6 +260,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
                 .setAdmin(
                     RoutingProtocol.EIGRP.getDefaultAdministrativeCost(c.getConfigurationFormat()))
                 .setEigrpMetric(iface.getEigrp().getMetric())
+                .setEigrpMetricVersion(_process.getMetricVersion())
                 .setNetwork(prefix)
                 .setProcessAsn(_asn)
                 .build();
@@ -322,6 +323,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
         EigrpInternalRoute.builder()
             .setAdmin(_process.getInternalAdminCost())
             .setEigrpMetric(newMetric)
+            .setEigrpMetricVersion(_process.getMetricVersion())
             .setNetwork(route.getNetwork())
             .setNextHopIp(nextHopIp)
             .setProcessAsn(_asn);
@@ -399,6 +401,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
             .setNextHopIp(nextHopIp)
             .setDestinationAsn(route.getDestinationAsn())
             .setEigrpMetric(newMetric)
+            .setEigrpMetricVersion(_process.getMetricVersion())
             .setNetwork(route.getNetwork())
             .setTag(route.getTag());
     return filterRouteOnImport(route, routeBuilder, importPolicy);
@@ -519,7 +522,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     }
   }
 
-  /** Checks if a given {@link EigrpRoute} is allowed to be sent out from a given neighbor */
+  /** Checks if a given {@link EigrpRoute} is allowed to be sent out to a given neighbor */
   private boolean allowedByExportPolicy(
       EigrpNeighborConfigId neighborConfigId, EigrpRoute eigrpRoute) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
@@ -531,10 +534,10 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * Optional#empty()} if the route should not be sent to the remote neighbor.
    */
   private Optional<EigrpExternalRoute> filterAndTransformExternalRoute(
-      EigrpNeighborConfigId neighborConfigId, EigrpRoute route) {
+      EigrpNeighborConfigId neighborConfigId, EigrpExternalRoute route) {
     RoutingPolicy exportPolicy = getOwnExportPolicy(neighborConfigId);
-    EigrpExternalRoute.Builder builder = (EigrpExternalRoute.Builder) route.toBuilder();
-    boolean allowed = exportPolicy.process(route, builder, Direction.OUT);
+    EigrpExternalRoute.Builder builder = route.toBuilder();
+    boolean allowed = exportPolicy.process(route, builder, _process, Direction.OUT);
     return allowed ? Optional.of(builder.build()) : Optional.empty();
   }
 
@@ -559,7 +562,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   private EigrpExternalRoute computeEigrpExportRoute(
       RoutingPolicy exportPolicy, AnnotatedRoute<AbstractRoute> potentialExportRoute) {
     AbstractRoute unannotatedPotentialRoute = potentialExportRoute.getRoute();
-    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
+    EigrpExternalRoute.Builder outputRouteBuilder =
+        EigrpExternalRoute.builder().setEigrpMetricVersion(_process.getMetricVersion());
     // Set the metric to match the route metric by default for EIGRP into EIGRP
     if (unannotatedPotentialRoute instanceof EigrpRoute) {
       outputRouteBuilder.setEigrpMetric(((EigrpRoute) unannotatedPotentialRoute).getEigrpMetric());
