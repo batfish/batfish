@@ -89,6 +89,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.routing_policy.Common;
@@ -1101,7 +1102,7 @@ public class CiscoConversions {
         return null;
       }
     }
-    newProcess.setRouterId(routerId);
+    newProcess.setRouterId(routerId).setMetricVersion(EigrpMetricVersion.V1);
 
     /*
      * Route redistribution modifies the configuration structure, so do this last to avoid having to

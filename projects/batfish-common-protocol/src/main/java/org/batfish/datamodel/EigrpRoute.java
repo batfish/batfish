@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,15 +8,18 @@ import com.google.common.primitives.UnsignedLong;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 
 /** Represents an EIGRP route, internal or external */
 public abstract class EigrpRoute extends AbstractRoute {
 
   static final String PROP_EIGRP_METRIC = "eigrp-metric";
+  static final String PROP_EIGRP_METRIC_VERSION = "eigrp-metric-version";
   static final String PROP_PROCESS_ASN = "process-asn";
 
   protected final int _admin;
   @Nonnull protected final EigrpMetric _metric;
+  @Nonnull protected final EigrpMetricVersion _metricVersion;
   @Nonnull protected final Ip _nextHopIp;
 
   /** AS number of the EIGRP process that installed this route in the RIB */
@@ -27,22 +29,23 @@ public abstract class EigrpRoute extends AbstractRoute {
       int admin,
       Prefix network,
       @Nullable Ip nextHopIp,
-      @Nullable EigrpMetric metric,
+      @Nonnull EigrpMetric metric,
+      @Nonnull EigrpMetricVersion metricVersion,
       long processAsn,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
     super(network, admin, tag, nonRouting, nonForwarding);
-    checkArgument(metric != null, "Cannot create EIGRP route: missing %s", PROP_EIGRP_METRIC);
     _admin = admin;
     _metric = metric;
+    _metricVersion = metricVersion;
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _processAsn = processAsn;
   }
 
   @JsonIgnore
   public final UnsignedLong getCompositeCost() {
-    return _metric.cost();
+    return _metric.cost(_metricVersion);
   }
 
   @JsonProperty(PROP_EIGRP_METRIC)
@@ -51,9 +54,15 @@ public abstract class EigrpRoute extends AbstractRoute {
     return _metric;
   }
 
+  @JsonProperty(PROP_EIGRP_METRIC_VERSION)
+  @Nonnull
+  public final EigrpMetricVersion getEigrpMetricVersion() {
+    return _metricVersion;
+  }
+
   @Override
   public final Long getMetric() {
-    return _metric.ribMetric();
+    return _metric.ribMetric(_metricVersion);
   }
 
   @Nonnull
@@ -82,6 +91,7 @@ public abstract class EigrpRoute extends AbstractRoute {
       extends AbstractRouteBuilder<B, R> {
     @Nullable protected Long _destinationAsn;
     @Nullable protected EigrpMetric _eigrpMetric;
+    @Nullable protected EigrpMetricVersion _eigrpMetricVersion;
     @Nullable protected Long _processAsn;
 
     public B setDestinationAsn(@Nonnull Long destinationAsn) {
@@ -91,6 +101,11 @@ public abstract class EigrpRoute extends AbstractRoute {
 
     public B setEigrpMetric(@Nonnull EigrpMetric metric) {
       _eigrpMetric = metric;
+      return getThis();
+    }
+
+    public B setEigrpMetricVersion(@Nonnull EigrpMetricVersion version) {
+      _eigrpMetricVersion = version;
       return getThis();
     }
 

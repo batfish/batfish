@@ -77,7 +77,18 @@ public final class ClassicMetric implements EigrpMetric {
   }
 
   @Override
-  public UnsignedLong cost() {
+  public UnsignedLong cost(EigrpMetricVersion version) {
+    switch (version) {
+      case V1:
+        return costV1();
+      case V2:
+        return costV2();
+      default:
+        throw new IllegalArgumentException("Unsupported version " + version);
+    }
+  }
+
+  private UnsignedLong costV1() {
     checkState(_values.getBandwidth() != null, "Cannot calculate cost before bandwidth is set");
     long scaledBw = BANDWIDTH_FACTOR / _values.getBandwidth();
     long metric =
@@ -93,9 +104,24 @@ public final class ClassicMetric implements EigrpMetric {
     return UnsignedLong.valueOf(metric);
   }
 
+  private UnsignedLong costV2() {
+    checkState(_values.getBandwidth() != null, "Cannot calculate cost before bandwidth is set");
+    long scaledBw = 256L * BANDWIDTH_FACTOR / _values.getBandwidth();
+    long metricBw = (_k1 * scaledBw) + (_k2 * scaledBw) / (256 - _values.getEffectiveBandwidth());
+    long metricDelay =
+        // Scale delay from picoseconds to 10s of microseconds
+        // Do that first, to avoid overflow
+        256L * _k3 * (_values.getDelay() / PICO_TO_TENS_OF_MS_FACTOR);
+    long metric = metricBw + metricDelay;
+    if (_k5 != 0) {
+      metric = metric * ((long) _k5 / ((long) _values.getReliability() + _k4));
+    }
+    return UnsignedLong.valueOf(metric);
+  }
+
   @Override
-  public long ribMetric() {
-    return cost().longValue();
+  public long ribMetric(EigrpMetricVersion version) {
+    return cost(version).longValue();
   }
 
   @Override

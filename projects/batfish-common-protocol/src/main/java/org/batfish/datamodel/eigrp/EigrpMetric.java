@@ -13,14 +13,14 @@ import java.io.Serializable;
 })
 public interface EigrpMetric extends Serializable {
 
-  /** Return metric as a single value, used for route preference tie breaking. */
-  UnsignedLong cost();
+  /** Return the metric as a single value, used for route preference tie breaking. */
+  UnsignedLong cost(EigrpMetricVersion version);
 
   /**
-   * Return metric as a single value, scaled as needed to fit into a 4-byte value. Used for route
-   * preference tie breaking.
+   * Return metric as a single value, scaled as needed to fit into a 4-byte value. Used as a metric
+   * expected to be seen in the main RIB.
    */
-  long ribMetric();
+  long ribMetric(EigrpMetricVersion version);
 
   /**
    * Check if this metric and {@code other} are compatible, i.e., have the same type and k values

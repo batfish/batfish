@@ -4,6 +4,7 @@ import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -15,6 +16,7 @@ public class EigrpExternalRouteTest {
         EigrpExternalRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setMetric(1L)
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setDestinationAsn(1L)
             .setEigrpMetric(
                 ClassicMetric.builder()

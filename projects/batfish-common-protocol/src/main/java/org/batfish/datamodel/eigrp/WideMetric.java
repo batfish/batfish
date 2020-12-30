@@ -100,7 +100,19 @@ public final class WideMetric implements EigrpMetric {
   }
 
   @Override
-  public UnsignedLong cost() {
+  public UnsignedLong cost(EigrpMetricVersion version) {
+    switch (version) {
+      case V1:
+        return costV1();
+      case V2:
+        /* TODO */
+        return costV1();
+      default:
+        throw new IllegalArgumentException("Unsupported version " + version);
+    }
+  }
+
+  private UnsignedLong costV1() {
     checkState(_values.getBandwidth() != null, "Cannot calculate cost before bandwidth is set");
     UnsignedLong scaledBw =
         UnsignedLong.valueOf(BANDWIDTH_FACTOR)
@@ -137,8 +149,8 @@ public final class WideMetric implements EigrpMetric {
   }
 
   @Override
-  public long ribMetric() {
-    return cost().dividedBy(UnsignedLong.valueOf(_ribScale)).longValue();
+  public long ribMetric(EigrpMetricVersion version) {
+    return cost(version).dividedBy(UnsignedLong.valueOf(_ribScale)).longValue();
   }
 
   @Override

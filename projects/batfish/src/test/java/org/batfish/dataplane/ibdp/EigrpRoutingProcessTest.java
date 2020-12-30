@@ -17,6 +17,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -46,6 +47,7 @@ public class EigrpRoutingProcessTest {
         EigrpProcess.builder()
             .setAsNumber(1)
             .setMode(EigrpProcessMode.CLASSIC)
+            .setMetricVersion(EigrpMetricVersion.V1)
             .setRouterId(Ip.ZERO)
             .build();
     _routingProcess = new EigrpRoutingProcess(_process, "vrf", RoutingPolicies.from(_c));
@@ -79,6 +81,7 @@ public class EigrpRoutingProcessTest {
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setDestinationAsn(2L)
             .setEigrpMetric(metric)
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setTag(3L);
     _internalRouteBuilder =
         EigrpInternalRoute.builder()
@@ -87,6 +90,7 @@ public class EigrpRoutingProcessTest {
             .setProcessAsn(1L)
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setEigrpMetric(metric)
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setTag(3L);
   }
 
@@ -139,6 +143,7 @@ public class EigrpRoutingProcessTest {
             .setNextHopIp(ip)
             .setAdmin(_process.getExternalAdminCost())
             .setEigrpMetric(routeIn.getEigrpMetric().add(_ifaceMetric))
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setProcessAsn(_process.getAsn())
             .setTag(routeIn.getTag())
             .setNetwork(routeIn.getNetwork())

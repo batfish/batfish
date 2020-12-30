@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 
 /** Represents an internal EIGRP route */
 public class EigrpInternalRoute extends EigrpRoute {
@@ -19,10 +20,20 @@ public class EigrpInternalRoute extends EigrpRoute {
       @Nullable Prefix network,
       @Nullable Ip nextHopIp,
       @Nonnull EigrpMetric metric,
+      @Nonnull EigrpMetricVersion metricVersion,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(admin, network, nextHopIp, metric, processAsn, tag, nonForwarding, nonRouting);
+    super(
+        admin,
+        network,
+        nextHopIp,
+        metric,
+        metricVersion,
+        processAsn,
+        tag,
+        nonForwarding,
+        nonRouting);
   }
 
   @JsonCreator
@@ -32,12 +43,15 @@ public class EigrpInternalRoute extends EigrpRoute {
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
+      @Nullable @JsonProperty(PROP_EIGRP_METRIC_VERSION) EigrpMetricVersion metricVersion,
       @Nullable @JsonProperty(PROP_TAG) Long tag) {
-    checkArgument(admin != null, "EIGRP rooute: missing %s", PROP_ADMINISTRATIVE_COST);
+    checkArgument(admin != null, "EIGRP route: missing %s", PROP_ADMINISTRATIVE_COST);
     checkArgument(metric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+    checkArgument(metricVersion != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC_VERSION);
     checkArgument(processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
     checkArgument(tag != null, "EIGRP route: missing %s", PROP_TAG);
-    return new EigrpInternalRoute(admin, processAsn, network, nextHopIp, metric, tag, false, false);
+    return new EigrpInternalRoute(
+        admin, processAsn, network, nextHopIp, metric, metricVersion, tag, false, false);
   }
 
   public static Builder builder() {
@@ -58,6 +72,8 @@ public class EigrpInternalRoute extends EigrpRoute {
     public EigrpInternalRoute build() {
       checkArgument(getNetwork() != null, "EIGRP route: missing %s", PROP_NETWORK);
       checkArgument(_eigrpMetric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
+      checkArgument(
+          _eigrpMetricVersion != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC_VERSION);
       checkArgument(_processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
       checkArgument(
           getMetric() == 0, "EIGRP route: cannot set metric directly, use setEigrpMetric instead");
@@ -67,6 +83,7 @@ public class EigrpInternalRoute extends EigrpRoute {
           getNetwork(),
           getNextHopIp(),
           _eigrpMetric,
+          _eigrpMetricVersion,
           getTag(),
           getNonForwarding(),
           getNonRouting());
@@ -94,6 +111,7 @@ public class EigrpInternalRoute extends EigrpRoute {
         .setNonRouting(getNonRouting())
         // EigrpInternalRoute properties
         .setEigrpMetric(getEigrpMetric())
+        .setEigrpMetricVersion(getEigrpMetricVersion())
         .setProcessAsn(getProcessAsn());
   }
 
@@ -113,6 +131,7 @@ public class EigrpInternalRoute extends EigrpRoute {
         && _tag == rhs._tag
         && _processAsn == rhs._processAsn
         && _metric.equals(rhs._metric)
+        && _metricVersion == rhs._metricVersion
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting();
   }
@@ -126,6 +145,7 @@ public class EigrpInternalRoute extends EigrpRoute {
         _tag,
         _processAsn,
         _metric,
+        _metricVersion,
         getNonForwarding(),
         getNonRouting());
   }
