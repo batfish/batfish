@@ -366,6 +366,7 @@ import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
+import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
@@ -1825,7 +1826,8 @@ public final class CiscoGrammarTest {
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
-    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
+    EigrpExternalRoute.Builder outputRouteBuilder =
+        EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V1);
     outputRouteBuilder
         .setDestinationAsn(1L)
         .setNetwork(Prefix.parse("1.0.0.0/32"))
@@ -1843,6 +1845,7 @@ public final class CiscoGrammarTest {
         EigrpInternalRoute.builder()
             .setAdmin(90)
             .setEigrpMetric(originalMetric)
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setNetwork(outputRouteBuilder.getNetwork())
             .setProcessAsn(1L)
             .build();
@@ -1870,7 +1873,8 @@ public final class CiscoGrammarTest {
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
-    EigrpExternalRoute.Builder outputRouteBuilder = EigrpExternalRoute.builder();
+    EigrpExternalRoute.Builder outputRouteBuilder =
+        EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V1);
     outputRouteBuilder
         .setDestinationAsn(asn)
         .setNetwork(Prefix.parse("1.0.0.0/32"))
@@ -2812,6 +2816,7 @@ public final class CiscoGrammarTest {
             EigrpExternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.30.0/24"))
                 .setEigrpMetric(metric)
+                .setEigrpMetricVersion(EigrpMetricVersion.V1)
                 .setProcessAsn(2L)
                 .setDestinationAsn(5L)
                 .build(),
@@ -2827,6 +2832,7 @@ public final class CiscoGrammarTest {
             EigrpExternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.30.0/24"))
                 .setEigrpMetric(metric)
+                .setEigrpMetricVersion(EigrpMetricVersion.V1)
                 .setProcessAsn(1L)
                 .setDestinationAsn(5L)
                 .build(),
@@ -2838,6 +2844,7 @@ public final class CiscoGrammarTest {
             EigrpExternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.31.0/24"))
                 .setEigrpMetric(metric)
+                .setEigrpMetricVersion(EigrpMetricVersion.V1)
                 .setProcessAsn(1L)
                 .setDestinationAsn(5L)
                 .build(),
@@ -2849,6 +2856,7 @@ public final class CiscoGrammarTest {
             EigrpInternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.30.0/24"))
                 .setEigrpMetric(metric)
+                .setEigrpMetricVersion(EigrpMetricVersion.V1)
                 .setProcessAsn(1L)
                 .build(),
             EigrpExternalRoute.builder(),
@@ -2860,6 +2868,7 @@ public final class CiscoGrammarTest {
             EigrpExternalRoute.builder()
                 .setNetwork(Prefix.parse("172.21.30.0/24"))
                 .setEigrpMetric(metric)
+                .setEigrpMetricVersion(EigrpMetricVersion.V1)
                 .setProcessAsn(3L)
                 .setDestinationAsn(5L)
                 .build(),
@@ -2943,6 +2952,7 @@ public final class CiscoGrammarTest {
                 ClassicMetric.builder()
                     .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
                     .build())
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setProcessAsn(1L);
     {
       String ifaceName = "GigabitEthernet0/0";
@@ -3063,6 +3073,7 @@ public final class CiscoGrammarTest {
                 ClassicMetric.builder()
                     .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
                     .build())
+            .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setProcessAsn(1L);
     {
       String ifaceName = "GigabitEthernet0/0";
@@ -4062,7 +4073,8 @@ public final class CiscoGrammarTest {
             .setEigrpMetric(
                 ClassicMetric.builder()
                     .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
-                    .build());
+                    .build())
+            .setEigrpMetricVersion(EigrpMetricVersion.V1);
     EigrpRoute matchEigrp = internalRb.setNetwork(matchRm).build();
     EigrpRoute noMatchEigrp = internalRb.setNetwork(noMatchRm).build();
 
@@ -4136,6 +4148,7 @@ public final class CiscoGrammarTest {
                   ClassicMetric.builder()
                       .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
                       .build())
+              .setEigrpMetricVersion(EigrpMetricVersion.V1)
               .setNetwork(matchRm)
               .build();
       Bgpv4Route.Builder rb =
@@ -6947,6 +6960,7 @@ public final class CiscoGrammarTest {
                 org.batfish.datamodel.eigrp.EigrpProcess.builder()
                     .setAsNumber(1)
                     .setMode(EigrpProcessMode.CLASSIC)
+                    .setMetricVersion(EigrpMetricVersion.V1)
                     .setRouterId(Ip.ZERO)
                     .build(),
                 Direction.OUT));

@@ -2238,7 +2238,8 @@ public class Client extends AbstractClient implements IClient {
         }
       } catch (JsonProcessingException e) {
         _logger.errorf(
-            "Error deserializing answer %s: %s\n", testOutput, Throwables.getStackTraceAsString(e));
+            "Error deserializing answer %s: %s\n",
+            testOutput.substring(0, 2048), Throwables.getStackTraceAsString(e));
       } catch (Exception e) {
         _logger.errorf(
             "Exception in comparing test results: %s\n", Throwables.getStackTraceAsString(e));
