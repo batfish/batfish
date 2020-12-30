@@ -5376,15 +5376,17 @@ public final class CiscoGrammarTest {
 
     {
       // NAT in default VRF
-      Ip nat1PoolFirst = Ip.parse("3.3.3.1");
-      Ip nat1PoolLast = Ip.parse("3.3.3.254");
-      Ip nat2PoolFirst = Ip.parse("3.3.4.1");
-      Ip nat2PoolLast = Ip.parse("3.3.4.254");
-      Ip nat3PoolFirst = Ip.parse("4.4.4.1");
-      Ip nat3PoolLast = Ip.parse("4.4.4.254");
-      String nat1AclName = "10";
-      String nat2AclName = computeDynamicDestinationNatAclName("11");
-      String nat3AclName = "22";
+      Ip insideSrcPoolFirst = Ip.parse("3.3.3.1");
+      Ip insideSrcPoolLast = Ip.parse("3.3.3.254");
+      Ip insideDstPoolFirst = Ip.parse("3.3.4.1");
+      Ip insideDstPoolLast = Ip.parse("3.3.4.254");
+      Ip outsideSrcPoolFirst = Ip.parse("4.4.4.1");
+      Ip outsideSrcPoolLast = Ip.parse("4.4.4.254");
+      Ip insideSrcIfaceAddr = Ip.parse("1.1.1.1");
+      String insideSrcPoolAcl = "10";
+      String insideSrcIfaceAcl = "13";
+      String insideDstPoolAcl = computeDynamicDestinationNatAclName("11");
+      String outsideSrcPoolAcl = "22";
 
       Interface inside = c.getAllInterfaces().get(insideIntf);
       assertThat(inside.getIncomingTransformation(), nullValue());
@@ -5393,22 +5395,27 @@ public final class CiscoGrammarTest {
       Interface outside = c.getAllInterfaces().get(outsideIntf);
 
       Transformation inTransformation =
-          when(permittedByAcl(nat3AclName))
-              .apply(assignSourceIp(nat3PoolFirst, nat3PoolLast))
+          when(permittedByAcl(outsideSrcPoolAcl))
+              .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
               .build();
 
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation destTransformation =
-          when(and(permittedByAcl(nat2AclName), matchSrcInside))
-              .apply(assignDestinationIp(nat2PoolFirst, nat2PoolLast))
+          when(and(permittedByAcl(insideDstPoolAcl), matchSrcInside))
+              .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
               .build();
 
       Transformation outTransformation =
-          when(and(permittedByAcl(nat1AclName), matchSrcInside))
-              .apply(assignSourceIp(nat1PoolFirst, nat1PoolLast))
+          when(and(permittedByAcl(insideSrcPoolAcl), matchSrcInside))
+              .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
               .setAndThen(destTransformation)
-              .setOrElse(destTransformation)
+              .setOrElse(
+                  when(and(permittedByAcl(insideSrcIfaceAcl), matchSrcInside))
+                      .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
+                      .setAndThen(destTransformation)
+                      .setOrElse(destTransformation)
+                      .build())
               .build();
 
       assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
@@ -5600,10 +5607,11 @@ public final class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipniss", 4));
-    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnisr", 4));
-    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 5));
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnisr", 8));
+    assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 7));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnosr", 4));
-    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "p1", 4));
+    assertThat(ccae, hasNumReferrers(filename, NAT_POOL, "p1", 12));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "10", 6));
   }
 
   @Test
