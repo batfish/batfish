@@ -1,0 +1,35 @@
+hostname sender
+!
+interface GigabitEthernet2
+ ip address 3.3.3.3 255.255.255.0
+!
+router eigrp 1
+ default-metric 200 20 0 0 1500
+ distribute-list DL_OUT out
+ network 3.3.3.0 0.0.0.255
+ redistribute static
+!
+ip access-list standard DL_OUT
+ permit 128.0.64.0 0.255.0.255
+!
+ip route 128.0.0.0 255.255.128.0 Null0
+ip route 128.0.64.0 255.255.192.0 Null0
+ip route 128.0.64.0 255.255.224.0 Null0
+ip route 128.0.64.0 255.255.240.0 Null0
+ip route 128.0.64.0 255.255.248.0 Null0
+ip route 128.0.64.0 255.255.252.0 Null0
+ip route 128.0.64.0 255.255.254.0 Null0
+ip route 128.0.64.0 255.255.255.0 Null0
+ip route 128.0.64.1 255.255.255.255 Null0
+ip route 128.0.64.2 255.255.255.254 Null0
+ip route 128.0.64.4 255.255.255.252 Null0
+ip route 128.0.64.8 255.255.255.248 Null0
+ip route 128.0.64.16 255.255.255.240 Null0
+ip route 128.0.64.32 255.255.255.224 Null0
+ip route 128.0.64.64 255.255.255.192 Null0
+ip route 128.0.64.128 255.255.255.128 Null0
+ip route 128.0.96.0 255.255.224.0 Null0
+ip route 128.0.127.0 255.255.255.0 Null0
+ip route 128.0.128.0 255.255.128.0 Null0
+ip route 128.1.64.0 255.255.255.255 Null0
+!

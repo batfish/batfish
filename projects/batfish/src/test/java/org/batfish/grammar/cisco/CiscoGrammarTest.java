@@ -1388,8 +1388,11 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/8"))));
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.1.0.0/16"))));
+    // NB this route-map permits /7 because matching standard ip access-list on a network
+    // is just matching the network address against the src IP.
+    assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/7"))));
     assertThat(
-        c, hasRouteFilterList("10", RouteFilterListMatchers.rejects(Prefix.parse("10.0.0.0/7"))));
+        c, hasRouteFilterList("10", RouteFilterListMatchers.rejects(Prefix.parse("11.0.0.0/8"))));
     assertThat(
         c,
         hasIpAccessList(
@@ -1690,6 +1693,46 @@ public final class CiscoGrammarTest {
     Set<AbstractRoute> r2Routes = dp.getRibs().get("r2").get(DEFAULT_VRF_NAME).getRoutes();
     assertThat(r1Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("8.8.8.8/32")))));
     assertThat(r2Routes, hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("7.7.7.7/32")))));
+  }
+
+  @Test
+  public void testIosEigrpFilterList() throws IOException {
+    String testrigName = "eigrp-distribute-list-wildcard";
+    List<String> configurationNames = ImmutableList.of("sender", "receiver");
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    Set<Prefix> receivedEigrpRoutes =
+        dp.getRibs().get("receiver").get(DEFAULT_VRF_NAME).getRoutes().stream()
+            .filter(r -> r instanceof EigrpRoute)
+            .map(AbstractRoute::getNetwork)
+            .collect(ImmutableSet.toImmutableSet());
+    assertThat(
+        receivedEigrpRoutes,
+        containsInAnyOrder(
+            Prefix.parse("128.0.64.0/18"),
+            Prefix.parse("128.0.64.0/19"),
+            Prefix.parse("128.0.64.0/20"),
+            Prefix.parse("128.0.64.0/21"),
+            Prefix.parse("128.0.64.0/22"),
+            Prefix.parse("128.0.64.0/23"),
+            Prefix.parse("128.0.64.0/24"),
+            Prefix.parse("128.0.64.1/32"),
+            Prefix.parse("128.0.64.2/31"),
+            Prefix.parse("128.0.64.4/30"),
+            Prefix.parse("128.0.64.8/29"),
+            Prefix.parse("128.0.64.16/28"),
+            Prefix.parse("128.0.64.32/27"),
+            Prefix.parse("128.0.64.64/26"),
+            Prefix.parse("128.0.64.128/25"),
+            Prefix.parse("128.1.64.0/32")));
   }
 
   /**

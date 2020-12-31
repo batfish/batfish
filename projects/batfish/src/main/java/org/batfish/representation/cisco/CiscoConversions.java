@@ -1635,12 +1635,10 @@ public class CiscoConversions {
      */
     IpWildcard srcIpWildcard =
         ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
-    Prefix prefix = srcIpWildcard.toPrefix();
 
-    return new RouteFilterLine(
-        action,
-        IpWildcard.create(prefix),
-        new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
+    // A standard ACL is simply a wildcard on the network address, and does not filter on the
+    // prefix length at all (beyond the prefix length implied by the unmasked bits in wildcard).
+    return new RouteFilterLine(action, srcIpWildcard, new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
   }
 
   /**
