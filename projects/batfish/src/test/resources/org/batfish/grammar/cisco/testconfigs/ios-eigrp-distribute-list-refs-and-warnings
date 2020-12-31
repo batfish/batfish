@@ -5,6 +5,10 @@ access-list 1 permit 172.21.30.0 0.0.0.255
 !
 access-list 2 permit 172.21.30.0 0.0.0.255
 !
+access-list 3 permit 172.21.30.0 0.0.0.255
+!
+access-list 4 permit 172.21.30.0 0.0.0.255
+!
 interface GigabitEthernet0/0
  ip address 2.2.2.2 255.255.255.0
 !
@@ -12,8 +16,8 @@ router eigrp 1
   distribute-list 1 out GigabitEthernet0/0
   distribute-list 2 out
 
-  distribute-list 1 in GigabitEthernet0/0
-  distribute-list 2 in
+  distribute-list 3 in GigabitEthernet0/0
+  distribute-list 4 in
 !
 !
 ip prefix-list PL_IN permit 0.0.0.0/0 le 32
