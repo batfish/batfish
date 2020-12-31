@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -4128,7 +4129,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // distribute lists
       if (vrf.getEigrpProcesses().values().stream()
           .flatMap(
-              eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
+              eigrpProcess ->
+                  Streams.concat(
+                      Stream.of(
+                              eigrpProcess.getInboundGlobalDistributeList(),
+                              eigrpProcess.getOutboundGlobalDistributeList())
+                          .filter(Objects::nonNull),
+                      eigrpProcess.getInboundInterfaceDistributeLists().values().stream(),
+                      eigrpProcess.getOutboundInterfaceDistributeLists().values().stream()))
           .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
         return true;
       }

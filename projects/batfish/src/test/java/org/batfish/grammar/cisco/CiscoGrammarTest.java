@@ -2892,8 +2892,10 @@ public final class CiscoGrammarTest {
 
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 2));
-    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "2", 2));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "2", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "3", 1));
+    assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "4", 1));
     assertThat(ccae, hasNumReferrers(filename, INTERFACE, "GigabitEthernet0/0", 9));
 
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "PL_IN", 3));
@@ -2915,6 +2917,13 @@ public final class CiscoGrammarTest {
         pvcae,
         hasParseWarning(
             filename, containsString("Gateways in distribute-list are not supported for EIGRP")));
+
+    // Also check that all ACLs used as distribute lists are converted
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(c, notNullValue());
+    assertThat(
+        c.getRouteFilterLists(),
+        hasKeys("1", "2", "3", "4", "PL_GW_IN", "PL_GW_OUT", "PL_IN", "PL_OUT"));
   }
 
   @Test
