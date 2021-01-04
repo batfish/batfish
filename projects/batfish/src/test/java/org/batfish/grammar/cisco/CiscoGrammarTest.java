@@ -416,6 +416,9 @@ import org.batfish.representation.cisco.BgpRedistributionPolicy;
 import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoIosDynamicNat;
+import org.batfish.representation.cisco.CiscoIosNat;
+import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
@@ -5456,7 +5459,74 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDynamicNat() throws IOException {
+  public void testIosDynamicNatExtraction() throws IOException {
+    CiscoConfiguration c = parseCiscoConfig("ios-nat-dynamic", ConfigurationFormat.CISCO_IOS);
+    assertThat(c.getCiscoIosNats(), hasSize(6));
+    List<CiscoIosNat> nats = c.getCiscoIosNats();
+    {
+      assertThat(nats.get(0), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(0);
+      assertThat(nat.getAclName(), equalTo("10"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("in-src-nat-pool"));
+      assertThat(nat.getOverload(), equalTo(true));
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(1), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(1);
+      assertThat(nat.getAclName(), equalTo("13"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), equalTo("Ethernet10"));
+      assertThat(nat.getNatPool(), nullValue());
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(2), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(2);
+      assertThat(nat.getAclName(), equalTo("11"));
+      assertThat(nat.getAction(), equalTo(RuleAction.DESTINATION_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("in-dst-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(3), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(3);
+      assertThat(nat.getAclName(), equalTo("22"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(4), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(4);
+      assertThat(nat.getAclName(), equalTo("12"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-in-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+    {
+      assertThat(nats.get(5), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(5);
+      assertThat(nat.getAclName(), equalTo("23"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+  }
+
+  @Test
+  public void testIosDynamicNatConversion() throws IOException {
     Configuration c = parseConfig("ios-nat-dynamic");
     String insideIntf = "Ethernet1";
     String outsideIntf = "Ethernet2";

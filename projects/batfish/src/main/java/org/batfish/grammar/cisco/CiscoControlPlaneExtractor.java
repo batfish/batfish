@@ -6225,6 +6225,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           NAT_POOL, ctx.pool.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
       nat.setNatPool(pool);
     }
+    nat.setOverload(ctx.OVERLOAD() != null);
     _currentIosSourceNat = nat;
     _configuration.getCiscoIosNats().add(_currentIosSourceNat);
   }

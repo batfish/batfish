@@ -53,6 +53,11 @@ public class CiscoIosDynamicNatTest {
       diffIface.setInterface("diffIface");
       et.addEqualityGroup(diffIface);
     }
+    {
+      CiscoIosDynamicNat overload = baseNat();
+      overload.setOverload(true);
+      et.addEqualityGroup(overload);
+    }
     et.testEquals();
   }
 

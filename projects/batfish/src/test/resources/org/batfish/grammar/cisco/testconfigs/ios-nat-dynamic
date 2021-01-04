@@ -35,7 +35,7 @@ ip nat pool out-src-nat-pool 4.4.4.1 4.4.4.254 prefix-length 24
 ip nat pool vrf-in-src-nat-pool 5.5.5.1 5.5.5.254 prefix-length 24
 ip nat pool vrf-out-src-nat-pool 6.6.6.1 6.6.6.254 prefix-length 24
 
-ip nat inside source list 10 pool in-src-nat-pool
+ip nat inside source list 10 pool in-src-nat-pool overload
 ip nat inside source list 13 interface Ethernet10
 ip nat inside destination list 11 pool in-dst-nat-pool
 ip nat outside source list 22 pool out-src-nat-pool
