@@ -286,7 +286,8 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
 
   @Override
   public Optional<StaticRoute> toRoute() {
-    // TODO Create a route if it's a valid NAT in default VRF with add-route set
+    // TODO Create a route this NAT is in default VRF and has add-route set
+    // TODO Check if a route is still created if the NAT is invalid per isMalformed
     return Optional.empty();
   }
 }
