@@ -3363,7 +3363,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(c, staticRoute));
+            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(staticRoute));
           }
 
           // convert rip process
