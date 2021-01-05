@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "EosRoutingTableLexer.java",
+        "EosRoutingTableLexer.tokens",
         "EosRoutingTableParser.java",
         "EosRoutingTableParserBaseListener.java",
         "EosRoutingTableParserListener.java",

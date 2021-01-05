@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "NxosRoutingTableLexer.java",
+        "NxosRoutingTableLexer.tokens",
         "NxosRoutingTableParser.java",
         "NxosRoutingTableParserBaseListener.java",
         "NxosRoutingTableParserListener.java",

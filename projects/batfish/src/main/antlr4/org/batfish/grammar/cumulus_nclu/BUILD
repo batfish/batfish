@@ -25,6 +25,7 @@ genrule(
     ]),
     outs = [
         "CumulusNcluLexer.java",
+        "CumulusNcluLexer.tokens",
         "CumulusNcluParser.java",
         "CumulusNcluParserBaseListener.java",
         "CumulusNcluParserListener.java",

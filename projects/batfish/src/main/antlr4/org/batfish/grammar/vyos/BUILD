@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "VyosLexer.java",
+        "VyosLexer.tokens",
         "VyosParser.java",
         "VyosParserBaseListener.java",
         "VyosParserListener.java",
