@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.DEFAULT_STATIC_ROUTE_DISTANCE;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,6 +39,7 @@ public class CiscoIosStaticNat extends CiscoIosNat {
     }
     CiscoIosStaticNat other = (CiscoIosStaticNat) o;
     return (getAction() == other.getAction())
+        && (getAddRoute() == other.getAddRoute())
         && Objects.equals(getVrf(), other.getVrf())
         && Objects.equals(_localNetwork, other._localNetwork)
         && Objects.equals(_globalNetwork, other._globalNetwork);
@@ -44,7 +47,7 @@ public class CiscoIosStaticNat extends CiscoIosNat {
 
   @Override
   public int hashCode() {
-    return Objects.hash(getAction(), _localNetwork, _globalNetwork, getVrf());
+    return Objects.hash(getAction(), getAddRoute(), _localNetwork, _globalNetwork, getVrf());
   }
 
   public Prefix getLocalNetwork() {
@@ -119,5 +122,22 @@ public class CiscoIosStaticNat extends CiscoIosNat {
     }
 
     return Optional.of(Transformation.when(matchExpr).apply(step));
+  }
+
+  @Override
+  public Optional<StaticRoute> toRoute() {
+    if (!getAddRoute() || getVrf() != null) {
+      return Optional.empty();
+    }
+    assert getAction() == RuleAction.SOURCE_OUTSIDE; // only valid option for add-route
+    return Optional.of(
+        new StaticRoute(
+            _localNetwork,
+            _globalNetwork.getStartIp(),
+            null,
+            DEFAULT_STATIC_ROUTE_DISTANCE,
+            null,
+            null,
+            false));
   }
 }

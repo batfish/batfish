@@ -6296,22 +6296,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
     // TODO Once ipnos_route_map is supported, we should assert _currentIosSourceNat != null
-    if (_currentIosSourceNat == null || _currentIosSourceNat.getVrf() != null) {
-      // add-route has no effect outside of the default VRF
-      return;
+    if (_currentIosSourceNat != null) {
+      _currentIosSourceNat.setAddRoute(true);
     }
     if (_currentIosSourceNat instanceof CiscoIosDynamicNat) {
       todo(ctx);
-    } else if (_currentIosSourceNat instanceof CiscoIosStaticNat) {
-      CiscoIosStaticNat staticNat = (CiscoIosStaticNat) _currentIosSourceNat;
-      assert staticNat.getAction() == RuleAction.SOURCE_OUTSIDE; // only valid option for add-route
-      assert staticNat.getGlobalNetwork() != null && staticNat.getLocalNetwork() != null;
-      Prefix prefix = staticNat.getLocalNetwork();
-      Ip nextHopIp = staticNat.getGlobalNetwork().getStartIp();
-      StaticRoute route =
-          new StaticRoute(
-              prefix, nextHopIp, null, DEFAULT_STATIC_ROUTE_DISTANCE, null, null, false);
-      _configuration.getDefaultVrf().getStaticRoutes().add(route);
     }
   }
 
