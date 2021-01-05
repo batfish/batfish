@@ -2281,6 +2281,11 @@ LOCAL
   'local'
 ;
 
+LOCAL_LABELED_ROUTE
+:
+  'local-labeled-route'
+;
+
 LOCAL_AS
 :
   [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
@@ -2702,6 +2707,11 @@ MINPOLL
 MISSING_AS_WORST
 :
   'missing-as-worst'
+;
+
+MIXED
+:
+  'mixed'
 ;
 
 MLD
