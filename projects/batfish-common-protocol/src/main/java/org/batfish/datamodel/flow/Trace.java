@@ -76,7 +76,6 @@ public final class Trace {
    *   <li>All hops but the last must end with {@link ExitOutputIfaceStep}. (The last may).
    * </ul>
    */
-  @Nonnull
   @VisibleForTesting
   static boolean validateHops(@Nonnull List<Hop> hops) {
     for (int i = 0; i < hops.size(); ++i) {
