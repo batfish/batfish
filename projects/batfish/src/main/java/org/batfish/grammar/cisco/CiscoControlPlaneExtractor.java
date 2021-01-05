@@ -8,6 +8,7 @@ import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco.CiscoAsaNat.ANY_INTERFACE;
+import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
@@ -1184,9 +1185,6 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     implements BatfishListener, ControlPlaneExtractor {
-
-  public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
-
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";

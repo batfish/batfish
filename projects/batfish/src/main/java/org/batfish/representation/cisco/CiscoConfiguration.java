@@ -194,6 +194,8 @@ import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
 public final class CiscoConfiguration extends VendorConfiguration {
+  public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
+
   @VisibleForTesting
   public static final TraceElement PERMIT_TRAFFIC_FROM_DEVICE =
       TraceElement.of("Matched traffic originating from this device");

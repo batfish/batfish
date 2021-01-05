@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.DEFAULT_STATIC_ROUTE_DISTANCE;
+import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 
 import java.util.Map;
 import java.util.Objects;
