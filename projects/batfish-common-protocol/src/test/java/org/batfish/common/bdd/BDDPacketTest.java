@@ -63,6 +63,8 @@ public class BDDPacketTest {
     BDDPacket pkt = new BDDPacket();
     BDDPacketLength length = pkt.getPacketLength();
     BDDIpProtocol protocol = pkt.getIpProtocol();
+    BDDInteger srcPort = pkt.getSrcPort();
+    BDDInteger dstPort = pkt.getDstPort();
     assertThat(pkt.getFlow(length.value(19)), equalTo(Optional.empty()));
     assertThat(
         pkt.getFlow(length.value(27).and(protocol.value(IpProtocol.UDP))),
@@ -72,6 +74,18 @@ public class BDDPacketTest {
         equalTo(Optional.empty()));
     assertThat(
         pkt.getFlow(length.value(63).and(protocol.value(IpProtocol.ICMP))),
+        equalTo(Optional.empty()));
+    assertThat(
+        pkt.getFlow(srcPort.value(0).and(protocol.value(IpProtocol.TCP))),
+        equalTo(Optional.empty()));
+    assertThat(
+        pkt.getFlow(dstPort.value(0).and(protocol.value(IpProtocol.TCP))),
+        equalTo(Optional.empty()));
+    assertThat(
+        pkt.getFlow(srcPort.value(0).and(protocol.value(IpProtocol.UDP))),
+        equalTo(Optional.empty()));
+    assertThat(
+        pkt.getFlow(dstPort.value(0).and(protocol.value(IpProtocol.UDP))),
         equalTo(Optional.empty()));
   }
 

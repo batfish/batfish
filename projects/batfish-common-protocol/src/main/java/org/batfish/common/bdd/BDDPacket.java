@@ -174,6 +174,11 @@ public class BDDPacket {
     _saneFlow = saneIpFlow();
   }
 
+  public @Nonnull BDD getSaneFlowConstraint() {
+    // Make a copy, just in case the caller does something silly like try to free it.
+    return _saneFlow.id();
+  }
+
   /*
    * Helper function that builds a map from BDD variable index
    * to some more meaningful name. Helpful for debugging.
@@ -475,8 +480,14 @@ public class BDDPacket {
   private BDD saneIpFlow() {
     BDD ipPacketsAreAtLeast20Long = _packetLength.geq(20);
     BDD validIcmp = _ipProtocol.value(IpProtocol.ICMP).impWith(_packetLength.geq(64));
-    BDD validUdp = _ipProtocol.value(IpProtocol.UDP).impWith(_packetLength.geq(28));
-    BDD validTcp = _ipProtocol.value(IpProtocol.TCP).impWith(_packetLength.geq(40));
+    BDD validUdp =
+        _ipProtocol
+            .value(IpProtocol.UDP)
+            .impWith(_packetLength.geq(28).and(_srcPort.geq(1)).and(_dstPort.geq(1)));
+    BDD validTcp =
+        _ipProtocol
+            .value(IpProtocol.TCP)
+            .impWith(_packetLength.geq(40).and(_srcPort.geq(1)).and(_dstPort.geq(1)));
     return BDDOps.andNull(ipPacketsAreAtLeast20Long, validIcmp, validTcp, validUdp);
   }
 
