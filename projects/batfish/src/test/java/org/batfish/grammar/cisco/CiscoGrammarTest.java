@@ -161,6 +161,7 @@ import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
+import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -5659,6 +5660,39 @@ public final class CiscoGrammarTest {
                     .build())
             .build();
     assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+  }
+
+  @Test
+  public void testIosNatAddRoute() throws IOException {
+    String hostname = "ios-nat-add-route";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // ip nat outside source static 10.10.10.10 1.1.1.1 add-route
+    // ip nat outside source static 2.2.2.2 3.3.3.3 add-route
+    Prefix global1 = Prefix.parse("10.10.10.10/32");
+    Prefix local1 = Prefix.parse("1.1.1.1/32");
+    Prefix global2 = Prefix.parse("2.2.2.2/32");
+    Prefix local2 = Prefix.parse("3.3.3.3/32");
+    StaticRoute.Builder rb =
+        StaticRoute.builder().setAdmin(DEFAULT_STATIC_ROUTE_DISTANCE).setTag(-1L);
+    StaticRoute rule1Route = rb.setNetwork(local1).setNextHopIp(global1.getStartIp()).build();
+    StaticRoute rule2Route = rb.setNetwork(local2).setNextHopIp(global2.getStartIp()).build();
+    Set<StaticRoute> defaultVrfStaticRoutes = c.getDefaultVrf().getStaticRoutes();
+    assertThat(defaultVrfStaticRoutes, allOf(hasItem(rule1Route), hasItem(rule2Route)));
+
+    // Rule 1's global IP is routable (via iface Ethernet2), but rule 2's global IP isn't.
+    // The RIB should therefore have a route corresponding to rule 1, but none for rule 2.
+    Set<AbstractRoute> routes =
+        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    assertThat(routes, allOf(hasItem(rule1Route), not(hasItem(rule2Route))));
+
+    // Should see that add-route has no effect outside the default VRF.
+    // ip nat outside source static 11.11.11.11 4.4.4.4 vrf vrf1 add-route
+    Set<StaticRoute> vrf1StaticRoutes = c.getVrfs().get("vrf1").getStaticRoutes();
+    assertThat(vrf1StaticRoutes, not(hasItem(hasPrefix(Prefix.parse("4.4.4.4/32")))));
   }
 
   /** Tests for the syntactic variants we parse and that we link references. */

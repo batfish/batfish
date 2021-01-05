@@ -1185,7 +1185,7 @@ import org.batfish.vendor.VendorConfiguration;
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     implements BatfishListener, ControlPlaneExtractor {
 
-  private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
+  public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
@@ -6295,9 +6295,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
-    // Adding a route via NAT is not currently supported
-    // https://www.cisco.com/c/en/us/support/docs/ip/network-address-translation-nat/13773-2.html
-    todo(ctx);
+    // TODO Once ipnos_route_map is supported, we should assert _currentIosSourceNat != null
+    if (_currentIosSourceNat == null || _currentIosSourceNat.getVrf() != null) {
+      // add-route has no effect outside of the default VRF
+      return;
+    }
+    if (_currentIosSourceNat instanceof CiscoIosDynamicNat) {
+      todo(ctx);
+    } else if (_currentIosSourceNat instanceof CiscoIosStaticNat) {
+      CiscoIosStaticNat staticNat = (CiscoIosStaticNat) _currentIosSourceNat;
+      assert staticNat.getAction() == RuleAction.SOURCE_OUTSIDE; // only valid option for add-route
+      assert staticNat.getGlobalNetwork() != null && staticNat.getLocalNetwork() != null;
+      Prefix prefix = staticNat.getLocalNetwork();
+      Ip nextHopIp = staticNat.getGlobalNetwork().getStartIp();
+      StaticRoute route =
+          new StaticRoute(
+              prefix, nextHopIp, null, DEFAULT_STATIC_ROUTE_DISTANCE, null, null, false);
+      _configuration.getDefaultVrf().getStaticRoutes().add(route);
+    }
   }
 
   @Override
