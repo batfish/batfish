@@ -68,6 +68,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     }
     CiscoIosDynamicNat other = (CiscoIosDynamicNat) o;
     return (getAction() == other.getAction())
+        && (getAddRoute() == other.getAddRoute())
         && Objects.equals(getVrf(), other.getVrf())
         && Objects.equals(_aclName, other._aclName)
         && Objects.equals(_interface, other._interface)
@@ -76,7 +77,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aclName, getAction(), _interface, _natPool, getVrf());
+    return Objects.hash(_aclName, getAction(), getAddRoute(), _interface, _natPool, getVrf());
   }
 
   @Override
@@ -281,5 +282,12 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     }
 
     return false;
+  }
+
+  @Override
+  public Optional<StaticRoute> toRoute() {
+    // TODO Create a route if this NAT is in default VRF and has add-route set
+    // TODO Check if a route is still created if the NAT is invalid per isMalformed
+    return Optional.empty();
   }
 }

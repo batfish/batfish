@@ -194,6 +194,8 @@ import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
 public final class CiscoConfiguration extends VendorConfiguration {
+  public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
+
   @VisibleForTesting
   public static final TraceElement PERMIT_TRAFFIC_FROM_DEVICE =
       TraceElement.of("Matched traffic originating from this device");
@@ -2014,6 +2016,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
+  private List<org.batfish.datamodel.StaticRoute> generateIosNatAddRouteRoutes() {
+    return getCiscoIosNats().stream()
+        .map(CiscoIosNat::toRoute)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(CiscoConversions::toStaticRoute)
+        .collect(ImmutableList.toImmutableList());
+  }
+
   private void applyZoneFilter(
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
     if (getIOSSecurityZoneName(iface) != null) {
@@ -3363,7 +3374,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(c, staticRoute));
+            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(staticRoute));
+          }
+          // For the default VRF, also convert static routes created by add-route in NAT rules
+          if (vrf == getDefaultVrf()) {
+            newVrf.getStaticRoutes().addAll(generateIosNatAddRouteRoutes());
           }
 
           // convert rip process

@@ -21,6 +21,7 @@ import org.batfish.datamodel.transformation.Transformation;
 public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializable {
 
   private RuleAction _action;
+  private boolean _addRoute;
   @Nullable private String _vrf;
 
   /**
@@ -33,6 +34,18 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
 
   public final void setAction(RuleAction action) {
     _action = action;
+  }
+
+  /**
+   * The add-route option installs a static route to the local IP via the global IP (for {@link
+   * RuleAction#SOURCE_OUTSIDE} only). <b>Only works on default VRF, otherwise no effect.</b>
+   */
+  public boolean getAddRoute() {
+    return _addRoute;
+  }
+
+  public void setAddRoute(boolean addRoute) {
+    _addRoute = addRoute;
   }
 
   /** Which VRF this NAT is in */
@@ -74,6 +87,12 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
       Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
       Map<String, Interface> interfaces);
+
+  /**
+   * Creates the {@link StaticRoute} that will be added due to this NAT, if any (only possible if
+   * {@link #getAddRoute() add-route} is set).
+   */
+  public abstract Optional<StaticRoute> toRoute();
 
   @Override
   public abstract boolean equals(@Nullable Object o);
