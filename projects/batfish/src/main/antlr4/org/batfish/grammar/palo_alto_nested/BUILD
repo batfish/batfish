@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "PaloAltoNestedLexer.java",
+        "PaloAltoNestedLexer.tokens",
         "PaloAltoNestedParser.java",
         "PaloAltoNestedParserBaseListener.java",
         "PaloAltoNestedParserListener.java",

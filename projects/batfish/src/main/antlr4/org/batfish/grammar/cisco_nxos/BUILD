@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "CiscoNxosLexer.java",
+        "CiscoNxosLexer.tokens",
         "CiscoNxosParser.java",
         "CiscoNxosParserBaseListener.java",
         "CiscoNxosParserListener.java",
