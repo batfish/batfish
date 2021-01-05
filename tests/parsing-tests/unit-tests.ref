@@ -77322,12 +77322,6 @@
               "Line" : 4,
               "Parser_Context" : "[ipn_pool_range ipn_pool s_ip_nat stanza cisco_configuration]",
               "Text" : "prefix-length 32  \n range 10.1.2.3 10.1.2.4"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 13,
-              "Parser_Context" : "[ipnosm_add_route ipnos_static ipno_source ipn_outside s_ip_nat stanza cisco_configuration]",
-              "Text" : "add-route"
             }
           ]
         },

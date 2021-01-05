@@ -1521,7 +1521,7 @@ public class CiscoConversions {
     return true;
   }
 
-  static org.batfish.datamodel.StaticRoute toStaticRoute(Configuration c, StaticRoute staticRoute) {
+  static org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute staticRoute) {
     String nextHopInterface = staticRoute.getNextHopInterface();
     if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
       nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
