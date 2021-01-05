@@ -23,6 +23,7 @@ genrule(
         "*.g4",
     ]),
     outs = [
+        "AristaLexer.tokens",
         "AristaLexer.java",
         "AristaParser.java",
         "AristaParserBaseListener.java",

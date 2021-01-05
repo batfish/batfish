@@ -25,6 +25,7 @@ genrule(
     ]),
     outs = [
         "F5BigipImishLexer.java",
+        "F5BigipImishLexer.tokens",
         "F5BigipImishParser.java",
         "F5BigipImishParserBaseListener.java",
         "F5BigipImishParserListener.java",

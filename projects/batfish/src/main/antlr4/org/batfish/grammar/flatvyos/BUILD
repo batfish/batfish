@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "FlatVyosLexer.java",
+        "FlatVyosLexer.tokens",
         "FlatVyosParser.java",
         "FlatVyosParserBaseListener.java",
         "FlatVyosParserListener.java",

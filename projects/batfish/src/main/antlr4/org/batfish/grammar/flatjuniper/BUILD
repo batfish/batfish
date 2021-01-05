@@ -25,6 +25,7 @@ genrule(
     ]),
     outs = [
         "FlatJuniperLexer.java",
+        "FlatJuniperLexer.tokens",
         "FlatJuniperParser.java",
         "FlatJuniperParserBaseListener.java",
         "FlatJuniperParserListener.java",

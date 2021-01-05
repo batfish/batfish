@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "MrvLexer.java",
+        "MrvLexer.tokens",
         "MrvParser.java",
         "MrvParserBaseListener.java",
         "MrvParserListener.java",

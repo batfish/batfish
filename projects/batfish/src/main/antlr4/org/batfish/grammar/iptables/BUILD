@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "IptablesLexer.java",
+        "IptablesLexer.tokens",
         "IptablesParser.java",
         "IptablesParserBaseListener.java",
         "IptablesParserListener.java",

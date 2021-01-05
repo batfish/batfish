@@ -24,6 +24,7 @@ genrule(
     ]),
     outs = [
         "IosRoutingTableLexer.java",
+        "IosRoutingTableLexer.tokens",
         "IosRoutingTableParser.java",
         "IosRoutingTableParserBaseListener.java",
         "IosRoutingTableParserListener.java",
