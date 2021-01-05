@@ -3582,7 +3582,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     } else if (ctx.EIBGP() != null) {
       _currentBgpVrfIpAddressFamily.setMaximumPathsEbgp(limit);
       _currentBgpVrfIpAddressFamily.setMaximumPathsIbgp(limit);
+    } else if (ctx.MIXED() != null) {
+      if (limit != 1) {
+        warn(ctx, "maximum-paths mixed is not supported");
+      }
     } else {
+      // EBGP
       _currentBgpVrfIpAddressFamily.setMaximumPathsEbgp(limit);
     }
   }
