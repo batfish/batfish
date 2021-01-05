@@ -328,6 +328,7 @@ rb_afip_maximum_paths
   (
     EIBGP
     | IBGP
+    | MIXED
   )? numpaths = maximum_paths NEWLINE
 ;
 
@@ -587,7 +588,8 @@ rb_n_address_family
 
 rb_n_af_inner
 :
-  rb_n_af_advertise_map
+  rb_n_af_advertise
+  | rb_n_af_advertise_map
   | rb_n_advertisement_interval
   | rb_n_af_allowas_in
   | rb_n_af_as_override
@@ -610,6 +612,10 @@ rb_n_af_inner
   | rb_n_af_suppress_inactive
   | rb_n_af_unsuppress_map
   | rb_n_af_weight
+;
+rb_n_af_advertise
+:
+  ADVERTISE LOCAL_LABELED_ROUTE NEWLINE
 ;
 
 rb_n_af_advertise_map

@@ -19,6 +19,7 @@ router bgp 1
     redistribute direct route-map BLOBB
     maximum-paths 32
     maximum-paths ibgp 32
+    maximum-paths mixed 1
     network 1.2.3.0/24 route-map BLIBB
     nexthop trigger-delay critical 3000 non-critical 10000
   address-family ipv6 unicast
@@ -33,6 +34,7 @@ router bgp 1
       route-map EG_CCC out
       send-community both
       soft-reconfiguration inbound
+      advertise local-labeled-route
   template peer-policy PEER_POLICY
     next-hop-self
     soft-reconfiguration inbound
