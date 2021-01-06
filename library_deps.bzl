@@ -2,7 +2,7 @@
 BATFISH_MAVEN_ARTIFACTS = [
     "com.fasterxml.jackson.core:jackson-annotations:2.10.5",
     "com.fasterxml.jackson.core:jackson-core:2.10.5",
-    "com.fasterxml.jackson.core:jackson-databind:2.10.5",
+    "com.fasterxml.jackson.core:jackson-databind:2.10.5.1",
     "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.10.5",
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.10.5",
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.5",
