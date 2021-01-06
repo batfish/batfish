@@ -1132,8 +1132,15 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String name = toName(np);
     int port = toPort(np);
     _c.referenceStructure(NODE, name, POOL_MEMBER, np.getStart().getLine());
-    _currentPoolMember =
-        _currentPool.getMembers().computeIfAbsent(np.getText(), n -> new PoolMember(n, name, port));
+    if (port == 0) {
+      warn(ctx, "0 is not a valid port");
+      _currentPoolMember = new PoolMember("dummy", name, 1);
+    } else {
+      _currentPoolMember =
+          _currentPool
+              .getMembers()
+              .computeIfAbsent(np.getText(), n -> new PoolMember(n, name, port));
+    }
   }
 
   @Override
@@ -3169,6 +3176,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private void todo(ParserRuleContext ctx) {
     // Just print first line of unsupported feature
     _w.todo(ctx, getFullText(ctx).split("\n", -1)[0], _parser);
+  }
+
+  private void warn(ParserRuleContext ctx, String message) {
+    // Just print first line of unsupported feature
+    _w.addWarning(ctx, getFullText(ctx).split("\n", -1)[0], _parser, message);
   }
 
   private @Nullable IpProtocol toIpProtocol(Ip_protocolContext ctx) {

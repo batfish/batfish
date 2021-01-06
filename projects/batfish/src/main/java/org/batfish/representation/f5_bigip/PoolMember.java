@@ -1,5 +1,7 @@
 package org.batfish.representation.f5_bigip;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,6 +12,7 @@ import org.batfish.datamodel.Ip6;
 public final class PoolMember implements Serializable {
 
   public PoolMember(String name, String node, int port) {
+    checkArgument(port > 0 && port <= 65535, "Invalid port %s", port);
     _name = name;
     _node = node;
     _port = port;
