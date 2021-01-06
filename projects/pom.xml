@@ -437,7 +437,7 @@
           <version>${dependency-check-plugin.version}</version>
           <configuration>
             <skip>true</skip>
-            <failBuildOnCVSS>8</failBuildOnCVSS>
+            <failBuildOnCVSS>4</failBuildOnCVSS>
           </configuration>
         </plugin>
       </plugins>
