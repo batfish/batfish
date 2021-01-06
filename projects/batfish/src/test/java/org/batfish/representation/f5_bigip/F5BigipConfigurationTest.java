@@ -73,11 +73,11 @@ public class F5BigipConfigurationTest {
 
   @Test
   public void testToAddressGroupPool() {
-    PoolMember m1 = new PoolMember("m1", null, 0);
+    PoolMember m1 = new PoolMember("m1", null, 1);
     m1.setAddress(Ip.parse("1.1.1.1"));
 
     // null address
-    PoolMember m2 = new PoolMember("m2", null, 0);
+    PoolMember m2 = new PoolMember("m2", null, 1);
 
     Pool p1 = new Pool("p1");
     p1.getMembers().put(m1.getName(), m1);
@@ -97,7 +97,7 @@ public class F5BigipConfigurationTest {
 
   @Test
   public void testToAddressGroupPoolNoAddresses() {
-    PoolMember m1 = new PoolMember("m1", null, 0);
+    PoolMember m1 = new PoolMember("m1", null, 1);
     Pool p1 = new Pool("p1");
     p1.getMembers().put(m1.getName(), m1);
 
