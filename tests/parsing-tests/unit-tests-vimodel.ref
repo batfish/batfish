@@ -18742,6 +18742,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:192.154.2.0/24~",
                 "metric" : 0,
                 "network" : "192.154.2.0/24",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
@@ -26299,6 +26300,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:aVrfWithInnerStatements:192.168.0.0/16~",
                 "metric" : 0,
                 "network" : "192.168.0.0/16",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1,
                 "attributePolicySources" : [
@@ -26329,6 +26331,7 @@
                       "discard" : false,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
+                      "nextHopInterface" : "null_interface",
                       "nextHopIp" : "AUTO/NONE(-1l)",
                       "tag" : -1
                     }
@@ -36956,6 +36959,8 @@
                 "class" : "org.batfish.datamodel.KernelRoute",
                 "administrativeCost" : 0,
                 "network" : "192.0.2.9/32",
+                "nextHopInterface" : "null_interface",
+                "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
             ]
@@ -40827,6 +40832,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
                 "metric" : 0,
                 "network" : "1.0.0.0/8",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
@@ -41642,6 +41648,7 @@
                     "generationPolicy" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
                     "metric" : 0,
                     "network" : "0.0.0.0/0",
+                    "nextHopInterface" : "null_interface",
                     "nextHopIp" : "AUTO/NONE(-1l)",
                     "tag" : -1
                   }
@@ -66042,6 +66049,7 @@
                 "generationPolicy" : "~SUMMARY1_2_0_0_16~",
                 "metric" : 100,
                 "network" : "1.2.0.0/16",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
@@ -71444,6 +71452,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:10.0.0.0/8~",
                 "metric" : 0,
                 "network" : "10.0.0.0/8",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               },
@@ -71458,6 +71467,7 @@
                 "generationPolicy" : "~GENERATED_ROUTE_POLICY:10.0.1.0/24~",
                 "metric" : 0,
                 "network" : "10.0.1.0/24",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               },
@@ -71476,6 +71486,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:20.0.0.0/8~",
                 "metric" : 0,
                 "network" : "20.0.0.0/8",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               },
@@ -71495,6 +71506,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:30.0.0.0/8~",
                 "metric" : 0,
                 "network" : "30.0.0.0/8",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               },
@@ -71506,6 +71518,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:35.0.0.0/8~",
                 "metric" : 0,
                 "network" : "35.0.0.0/8",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               },
@@ -71517,6 +71530,7 @@
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:40.0.0.0/8~",
                 "metric" : 0,
                 "network" : "40.0.0.0/8",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "tag" : -1
               }
@@ -77447,7 +77461,7 @@
                 "administrativeCost" : 10,
                 "metric" : 10,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "dynamic",
+                "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "nextVrf" : "vr2",
                 "tag" : -1
