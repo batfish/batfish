@@ -2587,6 +2587,9 @@ public final class FlatJuniperGrammarTest {
     // Physical interface should have default bandwidth (1E9), unit 3840.
     assertThat(c, hasInterface("ge-1/0/0", hasBandwidth(physicalBandwidth)));
     assertThat(c, hasInterface("ge-1/0/0.0", hasBandwidth(3840)));
+
+    // Management interfaces have bandwidth 1 Gbps.
+    assertThat(c, hasInterface("em0", hasBandwidth(1e9)));
   }
 
   @Test
