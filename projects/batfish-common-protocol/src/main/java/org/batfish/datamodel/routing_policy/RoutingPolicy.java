@@ -220,7 +220,7 @@ public class RoutingPolicy implements Serializable {
   public boolean processBgpRoute(
       AbstractRouteDecorator inputRoute,
       BgpRoute.Builder<?, ?> outputRoute,
-      BgpSessionProperties sessionProperties,
+      @Nullable BgpSessionProperties sessionProperties,
       Direction direction) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     return process(inputRoute, outputRoute, sessionProperties, null, direction);

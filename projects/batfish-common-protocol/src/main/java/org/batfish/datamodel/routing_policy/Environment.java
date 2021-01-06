@@ -92,7 +92,7 @@ public class Environment {
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
-      BgpSessionProperties bgpSessionProperties,
+      @Nullable BgpSessionProperties bgpSessionProperties,
       boolean buffered,
       boolean callExprContext,
       boolean callStatementContext,
@@ -318,7 +318,7 @@ public class Environment {
 
   public static final class Builder {
     private Map<String, AsPathAccessList> _asPathAccessLists;
-    private BgpSessionProperties _bgpSessionProperties;
+    @Nullable private BgpSessionProperties _bgpSessionProperties;
     private boolean _buffered;
     private boolean _callExprContext;
     private boolean _callStatementContext;
@@ -353,7 +353,7 @@ public class Environment {
       return this;
     }
 
-    public Builder setBgpSessionProperties(BgpSessionProperties bgpSessionProperties) {
+    public Builder setBgpSessionProperties(@Nullable BgpSessionProperties bgpSessionProperties) {
       _bgpSessionProperties = bgpSessionProperties;
       return this;
     }
