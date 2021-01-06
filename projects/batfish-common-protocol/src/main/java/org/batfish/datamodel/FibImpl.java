@@ -22,6 +22,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVisitor;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 
 @ParametersAreNonnullByDefault
 public final class FibImpl implements Fib {
@@ -75,14 +80,6 @@ public final class FibImpl implements Fib {
   }
 
   private static final int MAX_DEPTH = 10;
-
-  private static @Nullable String getNextVrf(AbstractRoute route) {
-    return route instanceof StaticRoute ? ((StaticRoute) route).getNextVrf() : null;
-  }
-
-  private static boolean isNextVrfRoute(AbstractRoute route) {
-    return getNextVrf(route) != null;
-  }
 
   /** This trie is the source of truth for all resolved FIB routes */
   @Nonnull private final PrefixTrieMultiMap<FibEntry> _root;
@@ -145,19 +142,36 @@ public final class FibImpl implements Fib {
       ResolutionTreeNode node,
       Stack<AbstractRoute> stack,
       ImmutableCollection.Builder<FibEntry> entriesBuilder) {
+    AbstractRoute route = node.getRoute();
     if (node.getChildren().isEmpty() && node.getFinalNextHopIp() != null) {
-      String nextHopInterface = node.getRoute().getNextHopInterface();
-      String nextVrf = getNextVrf(node.getRoute());
       FibAction fibAction =
-          nextVrf != null
-              ? new FibNextVrf(nextVrf)
-              : nextHopInterface.equals(Interface.NULL_INTERFACE_NAME)
-                  ? FibNullRoute.INSTANCE
-                  : new FibForward(node.getFinalNextHopIp(), nextHopInterface);
+          new NextHopVisitor<FibAction>() {
+
+            @Override
+            public FibAction visitNextHopIp(NextHopIp nextHopIp) {
+              throw new IllegalStateException(
+                  String.format("FIB resolution failed to reach an interface route for %s", route));
+            }
+
+            @Override
+            public FibAction visitNextHopInterface(NextHopInterface nextHopInterface) {
+              return new FibForward(node.getFinalNextHopIp(), nextHopInterface.getInterfaceName());
+            }
+
+            @Override
+            public FibAction visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+              return FibNullRoute.INSTANCE;
+            }
+
+            @Override
+            public FibAction visitNextHopVrf(NextHopVrf nextHopVrf) {
+              return new FibNextVrf(nextHopVrf.getVrfName());
+            }
+          }.visit(route.getNextHop());
       entriesBuilder.add(new FibEntry(fibAction, ImmutableList.copyOf(stack)));
       return;
     }
-    stack.push(node.getRoute());
+    stack.push(route);
     for (ResolutionTreeNode child : node.getChildren()) {
       collectEntries(child, stack, entriesBuilder);
     }
@@ -216,61 +230,69 @@ public final class FibImpl implements Fib {
       return;
     }
 
-    if (isNextVrfRoute(route)) {
-      ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
-      return;
-    }
+    new NextHopVisitor<Void>() {
 
-    if (!Route.UNSET_NEXT_HOP_INTERFACE.equals(route.getNextHopInterface())) {
-      Ip finalNextHopIp =
-          route.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)
-              ? mostRecentNextHopIp
-              : route.getNextHopIp();
-      ResolutionTreeNode.withParent(route, treeNode, finalNextHopIp);
-    } else {
-      Ip nextHopIp = route.getNextHopIp();
-      if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-        // TODO: Declare this using some warning mechanism
-        // https://github.com/batfish/batfish/issues/1469
-        return;
-      }
-      Set<? extends AbstractRouteDecorator> nextHopLongestPrefixMatchRoutes =
-          rib.longestPrefixMatch(nextHopIp, maxPrefixLength);
+      @Override
+      public Void visitNextHopIp(NextHopIp nextHopIp) {
+        Set<? extends AbstractRouteDecorator> nextHopLongestPrefixMatchRoutes =
+            rib.longestPrefixMatch(nextHopIp.getIp(), maxPrefixLength);
 
-      /* Filter out any non-forwarding routes from the matches */
-      Set<AbstractRoute> forwardingRoutes =
-          nextHopLongestPrefixMatchRoutes.stream()
-              .map(AbstractRouteDecorator::getAbstractRoute)
-              .filter(r -> !r.getNonForwarding())
-              .collect(ImmutableSet.toImmutableSet());
+        /* Filter out any non-forwarding routes from the matches */
+        Set<AbstractRoute> forwardingRoutes =
+            nextHopLongestPrefixMatchRoutes.stream()
+                .map(AbstractRouteDecorator::getAbstractRoute)
+                .filter(r -> !r.getNonForwarding())
+                .collect(ImmutableSet.toImmutableSet());
 
-      if (forwardingRoutes.isEmpty()) {
-        // Re-resolve *this route* with a less specific prefix match
-        seenNetworks.remove(route.getNetwork());
-        buildResolutionTree(
-            rib,
-            route,
-            mostRecentNextHopIp,
-            seenNetworks,
-            depth + 1,
-            maxPrefixLength - 1,
-            parentRoute,
-            treeNode);
-      } else {
-        // We have at least one valid longest-prefix match
-        for (AbstractRoute nextHopLongestPrefixMatchRoute : forwardingRoutes) {
+        if (forwardingRoutes.isEmpty()) {
+          // Re-resolve *this route* with a less specific prefix match
+          seenNetworks.remove(route.getNetwork());
           buildResolutionTree(
               rib,
-              nextHopLongestPrefixMatchRoute,
-              nextHopIp,
-              newSeenNetworks,
-              depth + 1,
-              Prefix.MAX_PREFIX_LENGTH,
               route,
-              ResolutionTreeNode.withParent(nextHopLongestPrefixMatchRoute, treeNode, null));
+              mostRecentNextHopIp,
+              seenNetworks,
+              depth + 1,
+              maxPrefixLength - 1,
+              parentRoute,
+              treeNode);
+        } else {
+          // We have at least one valid longest-prefix match
+          for (AbstractRoute nextHopLongestPrefixMatchRoute : forwardingRoutes) {
+            buildResolutionTree(
+                rib,
+                nextHopLongestPrefixMatchRoute,
+                nextHopIp.getIp(),
+                newSeenNetworks,
+                depth + 1,
+                Prefix.MAX_PREFIX_LENGTH,
+                route,
+                ResolutionTreeNode.withParent(nextHopLongestPrefixMatchRoute, treeNode, null));
+          }
         }
+        return null;
       }
-    }
+
+      @Override
+      public Void visitNextHopInterface(NextHopInterface nextHopInterface) {
+        Ip finalNextHopIp =
+            nextHopInterface.getIp() == null ? mostRecentNextHopIp : route.getNextHopIp();
+        ResolutionTreeNode.withParent(route, treeNode, finalNextHopIp);
+        return null;
+      }
+
+      @Override
+      public Void visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+        ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+        return null;
+      }
+
+      @Override
+      public Void visitNextHopVrf(NextHopVrf nextHopVrf) {
+        ResolutionTreeNode.withParent(route, treeNode, Route.UNSET_ROUTE_NEXT_HOP_IP);
+        return null;
+      }
+    }.visit(route.getNextHop());
   }
 
   @Nonnull

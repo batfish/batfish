@@ -5,6 +5,7 @@ import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -28,6 +29,17 @@ final class AbstractRouteDecoratorMatchersImpl {
     @Override
     protected Long featureValueOf(AbstractRouteDecorator actual) {
       return actual.getAbstractRoute().getMetric();
+    }
+  }
+
+  static final class HasNextHop extends FeatureMatcher<AbstractRouteDecorator, NextHop> {
+    HasNextHop(@Nonnull Matcher<? super NextHop> subMatcher) {
+      super(subMatcher, "An AbstractRouteDecorator with nextHop:", "nextHop");
+    }
+
+    @Override
+    protected NextHop featureValueOf(AbstractRouteDecorator actual) {
+      return actual.getAbstractRoute().getNextHop();
     }
   }
 

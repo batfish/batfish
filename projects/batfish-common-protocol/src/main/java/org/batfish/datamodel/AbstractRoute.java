@@ -16,6 +16,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 
 /**
  * A base class for all types of routes supported in the dataplane computation, making this the most
@@ -182,6 +183,11 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
         public Ip visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
           return Route.UNSET_ROUTE_NEXT_HOP_IP;
         }
+
+        @Override
+        public Ip visitNextHopVrf(NextHopVrf nextHopVrf) {
+          return Route.UNSET_ROUTE_NEXT_HOP_IP;
+        }
       };
 
   private static final NextHopVisitor<String> NEXT_HOP_INTERFACE_EXTRACTOR =
@@ -199,6 +205,39 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
         @Override
         public String visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
           return Interface.NULL_INTERFACE_NAME;
+        }
+
+        @Override
+        public String visitNextHopVrf(NextHopVrf nextHopVrf) {
+          return Route.UNSET_NEXT_HOP_INTERFACE;
+        }
+      };
+
+  /** Returns the name of next VRF for a given route or {@code null} otherwise. */
+  public static final NextHopVisitor<String> NEXT_VRF_EXTRACTOR =
+      new NextHopVisitor<String>() {
+
+        @Override
+        @Nullable
+        public String visitNextHopIp(NextHopIp nextHopIp) {
+          return null;
+        }
+
+        @Override
+        @Nullable
+        public String visitNextHopInterface(NextHopInterface nextHopInterface) {
+          return null;
+        }
+
+        @Override
+        @Nullable
+        public String visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+          return null;
+        }
+
+        @Override
+        public String visitNextHopVrf(NextHopVrf nextHopVrf) {
+          return nextHopVrf.getVrfName();
         }
       };
 }

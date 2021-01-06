@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 
 /**
  * A static route.
@@ -30,7 +31,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   private static final String PROP_NEXT_VRF = "nextVrf";
 
   private final long _metric;
-  @Nullable private final String _nextVrf;
 
   private transient int _hashCode;
 
@@ -45,8 +45,9 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @JsonProperty(PROP_TAG) long tag) {
     return new StaticRoute(
         requireNonNull(network),
-        NextHop.legacyConverter(nextHopInterface, nextHopIp),
-        nextVrf,
+        nextVrf != null
+            ? NextHopVrf.of(nextVrf)
+            : NextHop.legacyConverter(nextHopInterface, nextHopIp),
         administrativeCost,
         metric,
         tag,
@@ -57,7 +58,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   private StaticRoute(
       @Nonnull Prefix network,
       @Nonnull NextHop nextHop,
-      @Nullable String nextVrf,
       int administrativeCost,
       long metric,
       long tag,
@@ -66,7 +66,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _metric = metric;
     _nextHop = nextHop;
-    _nextVrf = nextVrf;
   }
 
   @Override
@@ -76,10 +75,11 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return _metric;
   }
 
+  /** Jackson use only */
   @Nullable
   @JsonProperty(PROP_NEXT_VRF)
-  public String getNextVrf() {
-    return _nextVrf;
+  private String getNextVrf() {
+    return NEXT_VRF_EXTRACTOR.visit(_nextHop);
   }
 
   @Override
@@ -106,8 +106,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @ParametersAreNonnullByDefault
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
-    @Nullable private String _nextVrf;
-
     private Builder() {
       // Tmp hack until parent builder is fixed and doesn't default to primitives
       setAdmin(Route.UNSET_ROUTE_ADMIN);
@@ -120,15 +118,10 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           getAdmin() != Route.UNSET_ROUTE_ADMIN,
           "Static route cannot have unset %s",
           PROP_ADMINISTRATIVE_COST);
-      if (_nextVrf == null) {
-        // Allow null next hop if next vrf is set
-        checkArgument(_nextHop != null, "Missing next hop");
-      }
+      checkArgument(_nextHop != null, "Static route missing a next hop");
       return new StaticRoute(
           getNetwork(),
-          // Only the case when next vrf is set
-          _nextHop == null ? NextHopDiscard.instance() : _nextHop,
-          _nextVrf,
+          _nextHop,
           getAdmin(),
           getMetric(),
           getTag(),
@@ -146,12 +139,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     public Builder setAdministrativeCost(int administrativeCost) {
       // Call method on parent builder. Keep backwards-compatible API.
       setAdmin(administrativeCost);
-      return this;
-    }
-
-    @Nonnull
-    public Builder setNextVrf(@Nullable String nextVrf) {
-      _nextVrf = nextVrf;
       return this;
     }
   }
@@ -175,7 +162,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return builder()
         .setNetwork(getNetwork())
         .setNextHop(_nextHop)
-        .setNextVrf(_nextVrf)
         .setMetric(_metric)
         .setTag(_tag)
         .setAdmin(getAdministrativeCost())
@@ -198,7 +184,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         && getNonRouting() == rhs.getNonRouting()
         && _metric == rhs._metric
         && _nextHop.equals(rhs._nextHop)
-        && Objects.equals(_nextVrf, rhs._nextVrf)
         && _tag == rhs._tag;
   }
 
@@ -208,14 +193,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     if (h == 0) {
       h =
           Objects.hash(
-              _network,
-              _admin,
-              getNonForwarding(),
-              getNonRouting(),
-              _metric,
-              _nextHop,
-              _nextVrf,
-              _tag);
+              _network, _admin, getNonForwarding(), getNonRouting(), _metric, _nextHop, _tag);
       _hashCode = h;
     }
     return h;

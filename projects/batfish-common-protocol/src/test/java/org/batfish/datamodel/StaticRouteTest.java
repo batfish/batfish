@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
@@ -9,6 +8,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -22,20 +22,16 @@ public final class StaticRouteTest {
   public void checkAllAttrs() {
     StaticRoute sr =
         StaticRoute.testBuilder()
-            .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
-            .setNextHopInterface("Ethernet0")
-            .setNextVrf("otherVrf")
+            .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(3L)
             .setMetric(123)
             .build()
             .toBuilder()
             .build();
-    assertThat(sr.getNextHopIp(), equalTo(Ip.parse("192.168.1.1")));
     assertThat(sr.getNetwork(), equalTo(Prefix.ZERO));
-    assertThat(sr.getNextHopInterface(), equalTo("Ethernet0"));
-    assertThat(sr.getNextVrf(), equalTo("otherVrf"));
+    assertThat(sr.getNextHop(), equalTo(NextHopVrf.of("otherVrf")));
     assertThat(sr.getAdministrativeCost(), equalTo(1));
     assertThat(sr.getTag(), equalTo(3L));
     assertThat(sr.getMetric(), equalTo(123L));
@@ -73,7 +69,6 @@ public final class StaticRouteTest {
             .setNetwork(Prefix.ZERO)
             .setAdministrativeCost(1)
             .build();
-    assertThat(sr.getNextVrf(), nullValue());
     assertThat(sr.getAdministrativeCost(), equalTo(1));
     assertThat(sr.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
     assertThat(sr.getMetric(), equalTo(StaticRoute.DEFAULT_STATIC_ROUTE_METRIC));
@@ -92,7 +87,7 @@ public final class StaticRouteTest {
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("Ethernet0")
-            .setNextVrf("otherVrf")
+            .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(0L)
             .setMetric(123)
@@ -116,7 +111,7 @@ public final class StaticRouteTest {
         .addEqualityGroup(b.setNonForwarding(true).build())
         .addEqualityGroup(b.setMetric(3).build())
         .addEqualityGroup(b.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2"))).build())
-        .addEqualityGroup(b.setNextVrf("otherVrf").build())
+        .addEqualityGroup(b.setNextHop(NextHopVrf.of("otherVrf")).build())
         .addEqualityGroup(b.setTag(4L).build())
         .addEqualityGroup(new Object())
         .testEquals();
@@ -129,7 +124,7 @@ public final class StaticRouteTest {
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("Ethernet0")
-            .setNextVrf("otherVrf")
+            .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(0L)
             .setMetric(123)
@@ -145,7 +140,7 @@ public final class StaticRouteTest {
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("Ethernet0")
-            .setNextVrf("otherVrf")
+            .setNextHop(NextHopVrf.of("otherVrf"))
             .setAdministrativeCost(1)
             .setTag(0L)
             .setMetric(123)
