@@ -34,6 +34,9 @@ public class Interface implements Serializable {
       return 1E9;
     } else if (name.startsWith("et")) {
       return 1E11;
+    } else if (name.startsWith("em")) {
+      // In show data, management interfaces have bandwidth of 1 Gbps.
+      return 1E9;
     } else {
       return 1E12;
     }
