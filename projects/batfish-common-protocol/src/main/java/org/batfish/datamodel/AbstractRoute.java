@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,6 +11,11 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVisitor;
 
 /**
  * A base class for all types of routes supported in the dataplane computation, making this the most
@@ -28,8 +34,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   static final String PROP_NETWORK = "network";
   static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
   static final String PROP_NEXT_HOP_IP = "nextHopIp";
-  static final String PROP_NON_ROUTING = "nonRouting";
-  static final String PROP_NON_FORWARDING = "nonForwarding";
   static final String PROP_PROTOCOL = "protocol";
   static final String PROP_TAG = "tag";
 
@@ -38,6 +42,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
   protected final long _tag;
+  @Nonnull protected NextHop _nextHop = NextHopDiscard.instance();
 
   @JsonCreator
   protected AbstractRoute(
@@ -82,15 +87,31 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    * Name of the next-hop interface for this route. If not known, {@link
    * Route#UNSET_NEXT_HOP_INTERFACE} must be returned.
    */
-  @JsonIgnore
-  public abstract String getNextHopInterface();
+  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
+  @Nonnull
+  public final String getNextHopInterface() {
+    return nextHopInterfaceExtractor().visit(_nextHop);
+  }
 
   /**
    * Next hop IP for this route. If not known, {@link Route#UNSET_ROUTE_NEXT_HOP_IP} must be
    * returned.
    */
+  @JsonProperty(PROP_NEXT_HOP_IP)
+  @Nonnull
+  public final Ip getNextHopIp() {
+    return nextHopIpExtractor().visit(_nextHop);
+  }
+
+  /**
+   * The generic {@link NextHop} for this route. Preferred method to reason about next hops, as
+   * opposed to the legacy {@link #getNextHopIp()}} or {@link #getNextHopInterface()} methods.
+   */
   @JsonIgnore
-  public abstract Ip getNextHopIp();
+  @Nonnull
+  public final NextHop getNextHop() {
+    return _nextHop;
+  }
 
   /**
    * Returns {@code true} if this route is non-forwarding, i.e., it can be installed in the main RIB
@@ -130,4 +151,48 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   /** Return a {@link AbstractRouteBuilder} pre-populated with the values for this route. */
   public abstract AbstractRouteBuilder<?, ?> toBuilder();
+
+  // Private implementation
+
+  // Helper package methods
+  @Nonnull
+  static NextHopVisitor<Ip> nextHopIpExtractor() {
+    return new NextHopVisitor<Ip>() {
+
+      @Override
+      public Ip visitNextHopIp(NextHopIp nextHopIp) {
+        return nextHopIp.getIp();
+      }
+
+      @Override
+      public Ip visitNextHopInterface(NextHopInterface nextHopInterface) {
+        return firstNonNull(nextHopInterface.getIp(), Route.UNSET_ROUTE_NEXT_HOP_IP);
+      }
+
+      @Override
+      public Ip visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+        return Route.UNSET_ROUTE_NEXT_HOP_IP;
+      }
+    };
+  }
+
+  @Nonnull
+  static NextHopVisitor<String> nextHopInterfaceExtractor() {
+    return new NextHopVisitor<String>() {
+      @Override
+      public String visitNextHopIp(NextHopIp nextHopIp) {
+        return Route.UNSET_NEXT_HOP_INTERFACE;
+      }
+
+      @Override
+      public String visitNextHopInterface(NextHopInterface nextHopInterface) {
+        return nextHopInterface.getInterfaceName();
+      }
+
+      @Override
+      public String visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+        return Interface.NULL_INTERFACE_NAME;
+      }
+    };
+  }
 }

@@ -50,21 +50,27 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   }
 
   @JsonCreator
+  @SuppressWarnings("unused")
   private static KernelRoute create(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create kernel route: missing %s", PROP_NETWORK);
-    return new KernelRoute(network, tag);
+    return new KernelRoute(network, adminCost, tag);
   }
 
   public KernelRoute(Prefix network) {
     this(network, UNSET_ROUTE_TAG);
   }
 
+  private KernelRoute(Prefix network, int admin, long tag) {
+    super(network, admin, tag, false, true);
+  }
+
   public KernelRoute(Prefix network, long tag) {
-    super(network, 0, tag, false, true);
+    this(network, 0, tag);
   }
 
   @Override
@@ -76,19 +82,6 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   @Override
   public Long getMetric() {
     return 0L;
-  }
-
-  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
-  }
-
-  @Nonnull
-  @Override
-  public Ip getNextHopIp() {
-    return Route.UNSET_ROUTE_NEXT_HOP_IP;
   }
 
   @Override

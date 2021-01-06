@@ -9,6 +9,7 @@ import com.google.common.collect.Interners;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /** OSPF intra-area route. Must stay within a single OSPF area. */
 @ParametersAreNonnullByDefault
@@ -18,9 +19,11 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
   private int _hashCode;
 
   @JsonCreator
+  @SuppressWarnings("unused")
   private static OspfIntraAreaRoute jsonCreator(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
       @Nullable @JsonProperty(PROP_METRIC) Long metric,
       @Nullable @JsonProperty(PROP_AREA) Long area,
@@ -30,19 +33,20 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     checkArgument(admin != null, "%s must be specified", PROP_ADMINISTRATIVE_COST);
     checkArgument(metric != null, "%s must be specified", PROP_METRIC);
     checkArgument(area != null, "%s must be specified", PROP_AREA);
-    return new OspfIntraAreaRoute(network, nextHopIp, admin, metric, area, tag, false, false);
+    return new OspfIntraAreaRoute(
+        network, NextHop.legacyConverter(null, nextHopIp), admin, metric, area, tag, false, false);
   }
 
   public OspfIntraAreaRoute(
       Prefix network,
-      Ip nextHopIp,
+      NextHop nextHop,
       int admin,
       long metric,
       long area,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, nextHopIp, admin, metric, area, tag, nonForwarding, nonRouting);
+    super(network, nextHop, admin, metric, area, tag, nonForwarding, nonRouting);
   }
 
   @Nonnull
@@ -62,10 +66,11 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     @Nonnull
     @Override
     public OspfIntraAreaRoute build() {
+      checkArgument(_nextHop != null);
       OspfIntraAreaRoute r =
           new OspfIntraAreaRoute(
               getNetwork(),
-              getNextHopIp(),
+              _nextHop,
               getAdmin(),
               getMetric(),
               _area,
@@ -96,7 +101,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     return builder()
         // AbstractRoute properties
         .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
+        .setNextHop(_nextHop)
         .setAdmin(_admin)
         .setMetric(_metric)
         .setNonForwarding(getNonForwarding())
@@ -120,7 +125,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
         && _metric == other._metric
-        && _nextHopIp.equals(other._nextHopIp)
+        && _nextHop.equals(other._nextHop)
         && _tag == other._tag;
   }
 
@@ -132,7 +137,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       h = 31 * h + _admin;
       h = 31 * h + Long.hashCode(_area);
       h = 31 * h + Long.hashCode(_metric);
-      h = 31 * h + _nextHopIp.hashCode();
+      h = 31 * h + _nextHop.hashCode();
       h = 31 * h + Boolean.hashCode(getNonForwarding());
       h = 31 * h + Boolean.hashCode(getNonRouting());
       h = 31 * h + Long.hashCode(_tag);

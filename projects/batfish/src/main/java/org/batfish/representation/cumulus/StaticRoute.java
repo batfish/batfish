@@ -12,6 +12,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** A statically-configured route */
 public class StaticRoute implements Serializable {
@@ -73,13 +75,15 @@ public class StaticRoute implements Serializable {
   /** Convert this static route to a VI static route */
   @Nonnull
   org.batfish.datamodel.StaticRoute convert() {
+    String nhInt = _nextHopInterface != null ? canonicalizeInterfaceName(_nextHopInterface) : null;
     return org.batfish.datamodel.StaticRoute.builder()
         .setAdmin(_distance != null ? _distance : DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)
         .setMetric(DEFAULT_STATIC_ROUTE_METRIC)
         .setNetwork(_network)
-        .setNextHopIp(_nextHopIp)
-        .setNextHopInterface(
-            _nextHopInterface != null ? canonicalizeInterfaceName(_nextHopInterface) : null)
+        .setNextHop(
+            org.batfish.datamodel.Interface.NULL_INTERFACE_NAME.equals(nhInt)
+                ? NextHopDiscard.instance()
+                : NextHop.legacyConverter(nhInt, _nextHopIp))
         .build();
   }
 

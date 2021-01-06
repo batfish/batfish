@@ -87,6 +87,7 @@ import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -1833,8 +1834,7 @@ public class CiscoXrConversions {
     }
     return org.batfish.datamodel.StaticRoute.builder()
         .setNetwork(staticRoute.getPrefix())
-        .setNextHopIp(staticRoute.getNextHopIp())
-        .setNextHopInterface(nextHopInterface)
+        .setNextHop(NextHop.legacyConverter(nextHopInterface, staticRoute.getNextHopIp()))
         .setAdministrativeCost(staticRoute.getDistance())
         .setTag(firstNonNull(staticRoute.getTag(), -1L))
         .build();

@@ -126,6 +126,8 @@ import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
@@ -2901,17 +2903,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
-    String nextHopInterface =
-        route.getDrop()
-            ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
-            : route.getNextHopInterface();
-
     // static route corresponding to the next hop
     viStaticRoutes.add(
         org.batfish.datamodel.StaticRoute.builder()
             .setNetwork(route.getPrefix())
-            .setNextHopIp(firstNonNull(route.getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
-            .setNextHopInterface(nextHopInterface)
+            .setNextHop(
+                route.getDrop()
+                    ? NextHopDiscard.instance()
+                    : NextHop.legacyConverter(route.getNextHopInterface(), route.getNextHopIp()))
             .setAdministrativeCost(route.getDistance())
             .setMetric(route.getMetric())
             .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
@@ -2923,13 +2922,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       viStaticRoutes.add(
           org.batfish.datamodel.StaticRoute.builder()
               .setNetwork(route.getPrefix())
-              .setNextHopIp(
-                  firstNonNull(
-                      qualifiedNextHop.getNextHop().getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP))
-              .setNextHopInterface(
+              .setNextHop(
                   route.getDrop()
-                      ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
-                      : qualifiedNextHop.getNextHop().getNextHopInterface())
+                      ? NextHopDiscard.instance()
+                      : NextHop.legacyConverter(
+                          qualifiedNextHop.getNextHop().getNextHopInterface(),
+                          qualifiedNextHop.getNextHop().getNextHopIp()))
               .setAdministrativeCost(
                   firstNonNull(qualifiedNextHop.getPreference(), route.getDistance()))
               .setMetric(firstNonNull(qualifiedNextHop.getMetric(), route.getMetric()))

@@ -4,13 +4,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.batfish.datamodel.BumTransportMethod.MULTICAST_GROUP;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
-import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
-import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
@@ -136,6 +133,10 @@ import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.TrueExpr;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
@@ -3620,24 +3621,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
     // TODO: support track object number
     String nextHopInterface = staticRoute.getNextHopInterface();
-    String newNextHopInterface;
+    NextHop nh;
     if (nextHopInterface != null) {
       if (!_interfaces.containsKey(nextHopInterface)) {
         // undefined reference
         return null;
+      } else if (staticRoute.getNextHopIp() == null) {
+        nh = NextHopInterface.of(nextHopInterface);
+      } else {
+        nh = NextHopInterface.of(nextHopInterface, staticRoute.getNextHopIp());
       }
-      newNextHopInterface = nextHopInterface;
     } else if (staticRoute.getDiscard()) {
-      newNextHopInterface = NULL_INTERFACE_NAME;
+      nh = NextHopDiscard.instance();
+    } else if (staticRoute.getNextHopIp() != null) {
+      nh = NextHopIp.of(staticRoute.getNextHopIp());
     } else {
-      newNextHopInterface = UNSET_NEXT_HOP_INTERFACE;
+      return null;
     }
     return org.batfish.datamodel.StaticRoute.builder()
         .setAdministrativeCost(staticRoute.getPreference())
         .setMetric(0L)
         .setNetwork(staticRoute.getPrefix())
-        .setNextHopInterface(newNextHopInterface)
-        .setNextHopIp(firstNonNull(staticRoute.getNextHopIp(), UNSET_ROUTE_NEXT_HOP_IP))
+        .setNextHop(nh)
         .setTag(staticRoute.getTag())
         .build();
   }

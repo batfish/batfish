@@ -11,6 +11,7 @@ import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /**
  * A generic EVPN route containing the common properties among the different types of EVPN routes
@@ -46,14 +47,13 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
 
   protected EvpnRoute(
       Prefix network,
-      Ip nextHopIp,
+      NextHop nextHop,
       int admin,
       AsPath asPath,
       Set<Community> communities,
       boolean discard,
       long localPreference,
       long med,
-      String nextHopInterface,
       Ip originatorIp,
       Set<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
@@ -68,14 +68,13 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       RouteDistinguisher routeDistinguisher) {
     super(
         network,
-        nextHopIp,
+        nextHop,
         admin,
         asPath,
         communities,
         discard,
         localPreference,
         med,
-        nextHopInterface,
         originatorIp,
         clusterList,
         receivedFromRouteReflectorClient,

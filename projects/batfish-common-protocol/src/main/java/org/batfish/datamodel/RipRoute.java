@@ -1,12 +1,11 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.NextHop;
 
 @ParametersAreNonnullByDefault
 public abstract class RipRoute extends AbstractRoute {
@@ -15,9 +14,8 @@ public abstract class RipRoute extends AbstractRoute {
   public static final long MAX_ROUTE_METRIC = 16;
 
   protected final long _metric;
-  @Nonnull protected final Ip _nextHopIp;
 
-  protected RipRoute(Prefix network, Ip nextHopIp, int admin, long metric, long tag) {
+  protected RipRoute(Prefix network, NextHop nextHop, int admin, long metric, long tag) {
     super(network, admin, tag, false, false);
     checkArgument(
         metric >= 0 && metric <= MAX_ROUTE_METRIC,
@@ -25,7 +23,7 @@ public abstract class RipRoute extends AbstractRoute {
         metric,
         MAX_ROUTE_METRIC);
     _metric = metric;
-    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextHop = nextHop;
   }
 
   @JsonIgnore(false)
@@ -33,13 +31,5 @@ public abstract class RipRoute extends AbstractRoute {
   @Override
   public final Long getMetric() {
     return _metric;
-  }
-
-  @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_IP)
-  @Override
-  public final Ip getNextHopIp() {
-    return _nextHopIp;
   }
 }

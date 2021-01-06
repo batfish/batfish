@@ -48,6 +48,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.representation.aws.NetworkAcl.NetworkAclAssociation;
 import org.batfish.representation.aws.Route.State;
 import org.batfish.representation.aws.Route.TargetType;
@@ -670,8 +671,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
                 cfgNode,
                 StaticRoute.builder()
                     .setNetwork(network)
-                    .setNextHopInterface(nexthopInterfaceName)
-                    .setNextHopIp(nextHopIp)
+                    .setNextHop(NextHop.legacyConverter(nexthopInterfaceName, nextHopIp))
                     .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
                     .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
                     .build()));

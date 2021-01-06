@@ -41,6 +41,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -248,8 +249,7 @@ public final class Utils {
       boolean nonForwarding) {
     return StaticRoute.builder()
         .setNetwork(targetPrefix)
-        .setNextHopInterface(nextHopInterfaceName)
-        .setNextHopIp(nextHopIp)
+        .setNextHop(NextHop.legacyConverter(nextHopInterfaceName, nextHopIp))
         .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
         .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
         .setNonForwarding(nonForwarding)
