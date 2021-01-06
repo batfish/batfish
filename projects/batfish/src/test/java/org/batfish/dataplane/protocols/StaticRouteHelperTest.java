@@ -32,15 +32,12 @@ public class StaticRouteHelperTest {
   public void testIsInterfaceRoute() {
 
     StaticRoute.Builder sb =
-        StaticRoute.builder().setNetwork(Prefix.parse("9.9.9.0/24")).setAdministrativeCost(1);
+        StaticRoute.testBuilder().setNetwork(Prefix.parse("9.9.9.0/24")).setAdministrativeCost(1);
     Ip someIp = Ip.parse("1.1.1.1");
 
-    // Unset interface
-    StaticRoute sr = sb.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE).build();
-    assertThat(isInterfaceRoute(sr), equalTo(false));
-
     // Unset interface + nextHopIp
-    sr = sb.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE).setNextHopIp(someIp).build();
+    StaticRoute sr =
+        sb.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE).setNextHopIp(someIp).build();
     assertThat(isInterfaceRoute(sr), equalTo(false));
 
     // Null interface
@@ -48,10 +45,6 @@ public class StaticRouteHelperTest {
         sb.setNextHopInterface(Interface.NULL_INTERFACE_NAME)
             .setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP)
             .build();
-    assertThat(isInterfaceRoute(sr), equalTo(true));
-
-    // Null interface + nextHopIp
-    sr = sb.setNextHopInterface(Interface.NULL_INTERFACE_NAME).setNextHopIp(someIp).build();
     assertThat(isInterfaceRoute(sr), equalTo(true));
 
     // Real interface
@@ -68,7 +61,7 @@ public class StaticRouteHelperTest {
   public void testShouldActivateEmptyRib() {
     Ip nextHop = Ip.parse("1.1.1.1");
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
             .setNextHopIp(nextHop)
             .setAdministrativeCost(1)
@@ -83,7 +76,7 @@ public class StaticRouteHelperTest {
 
     // Route in question
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
             .setNextHopIp(Ip.parse("2.2.2.2"))
             .setAdministrativeCost(1)
@@ -98,7 +91,7 @@ public class StaticRouteHelperTest {
   public void testShouldActivateMatch() {
     _rib.mergeRoute(
         annotateRoute(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.0.0.0/8"))
                 .setNextHopInterface("Eth0")
                 .setAdministrativeCost(1)
@@ -106,7 +99,7 @@ public class StaticRouteHelperTest {
 
     // Route in question
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
@@ -121,7 +114,7 @@ public class StaticRouteHelperTest {
   public void testShouldActivateSelfReferential() {
     _rib.mergeRoute(
         annotateRoute(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("9.9.9.0/24"))
                 .setNextHopIp(Ip.parse("1.1.1.2"))
                 .setAdministrativeCost(1)
@@ -129,7 +122,7 @@ public class StaticRouteHelperTest {
 
     // Route in question
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
             .setNextHopIp(Ip.parse("9.9.9.9"))
             .setAdministrativeCost(1)
@@ -143,7 +136,7 @@ public class StaticRouteHelperTest {
   @Test
   public void testShouldActivateIfExists() {
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
@@ -160,7 +153,7 @@ public class StaticRouteHelperTest {
     // base route
     _rib.mergeRoute(
         annotateRoute(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.0.0.0/8"))
                 .setNextHopInterface("Eth0")
                 .setAdministrativeCost(1)
@@ -168,7 +161,7 @@ public class StaticRouteHelperTest {
     // Static route 1, same network as sr, but different next hop ip
     _rib.mergeRoute(
         annotateRoute(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("9.9.9.0/24"))
                 .setNextHopIp(Ip.parse("1.1.1.2"))
                 .setAdministrativeCost(1)
@@ -176,7 +169,7 @@ public class StaticRouteHelperTest {
 
     // Route in question
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
@@ -195,14 +188,14 @@ public class StaticRouteHelperTest {
      */
     _rib.mergeRoute(
         annotateRoute(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.1.1.0/24"))
                 .setNextHopIp(Ip.parse("2.2.2.2"))
                 .setAdministrativeCost(1)
                 .build()));
     _rib.mergeRoute(
         annotateRoute(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("2.2.2.0/24"))
                 .setNextHopIp(Ip.parse("9.9.9.9"))
                 .setAdministrativeCost(1)
@@ -210,7 +203,7 @@ public class StaticRouteHelperTest {
 
     // Route in question
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
@@ -227,7 +220,7 @@ public class StaticRouteHelperTest {
 
     // Route in question
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
             .setNextHopIp(Ip.parse("9.9.9.9"))
             .setAdministrativeCost(1)

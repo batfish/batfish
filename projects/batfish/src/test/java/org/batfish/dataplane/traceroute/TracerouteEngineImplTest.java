@@ -129,6 +129,7 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 import org.batfish.datamodel.transformation.Transformation;
@@ -225,7 +226,7 @@ public class TracerouteEngineImplTest {
     Prefix prefix = Prefix.parse("1.0.0.0/8");
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(prefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
@@ -459,7 +460,7 @@ public class TracerouteEngineImplTest {
     Prefix loopPrefix = Prefix.parse("2.0.0.0/32");
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(loopPrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i1.getName())
@@ -479,7 +480,7 @@ public class TracerouteEngineImplTest {
         always().apply(assignSourceIp(natPoolIp.getStartIp(), natPoolIp.getStartIp())).build());
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(loopPrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i2.getName())
@@ -586,7 +587,7 @@ public class TracerouteEngineImplTest {
         nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("0.0.0.0/0"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i2.getName())
@@ -707,7 +708,7 @@ public class TracerouteEngineImplTest {
         nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("0.0.0.0/0"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i2.getName())
@@ -966,7 +967,7 @@ public class TracerouteEngineImplTest {
         nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("0.0.0.0/0"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i2.getName())
@@ -1059,7 +1060,7 @@ public class TracerouteEngineImplTest {
         nf.interfaceBuilder().setActive(true).setOwner(c1).setVrf(v1).setAddress(i2Addr).build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("0.0.0.0/0"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i2.getName())
@@ -1187,7 +1188,7 @@ public class TracerouteEngineImplTest {
 
     // static routes for EXITS_NETWORK and INSUFFICIENT_INFO
     StaticRoute.Builder srb =
-        StaticRoute.builder().setAdministrativeCost(1).setNextHopInterface(i3.getName());
+        StaticRoute.testBuilder().setAdministrativeCost(1).setNextHopInterface(i3.getName());
     StaticRoute exitRoute = srb.setNetwork(Prefix.parse("10.0.0.2/32")).build();
     StaticRoute insufficientInfoRoute =
         srb.setNetwork(Prefix.parse("10.0.0.1/32")).setNextHopIp(unreachableLoopbackIp).build();
@@ -1411,16 +1412,18 @@ public class TracerouteEngineImplTest {
         .build();
     vrf1.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setAdmin(1)
                 .setNetwork(Prefix.ZERO)
+                .setNextHop(NextHopDiscard.instance())
                 .setNextVrf(vrf2.getName())
                 .build());
     vrf2.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setAdmin(1)
                 .setNetwork(Prefix.ZERO)
+                .setNextHop(NextHopDiscard.instance())
                 .setNextVrf(vrf1.getName())
                 .build());
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, c);
@@ -1807,7 +1810,7 @@ public class TracerouteEngineImplTest {
         .build();
     vrf1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.1.2.0/24"))
                 .setNextHopIp(Ip.parse("1.1.1.1"))
                 .setNextHopInterface(c1i1Name)
@@ -2288,7 +2291,7 @@ public class TracerouteEngineImplTest {
     Interface i1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
 
     StaticRoute.Builder sb =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(1)
             .setNetwork(Prefix.parse("5.0.0.0/32"))
             .setNextHopInterface(i1.getName());
@@ -2347,7 +2350,7 @@ public class TracerouteEngineImplTest {
     Interface i1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
 
     StaticRoute.Builder sb =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(1)
             .setNetwork(Prefix.parse("5.0.0.0/32"))
             .setNextHopInterface(i1.getName());
@@ -2506,7 +2509,7 @@ public class TracerouteEngineImplTest {
 
     vrf1.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("20.0.0.2/32"))
                 .setNextHopInterface(c1ToFw)
                 .setNextHopIp(Ip.parse("1.1.1.2"))
@@ -2540,7 +2543,7 @@ public class TracerouteEngineImplTest {
     fwVrf
         .getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("10.0.0.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopIp(Ip.parse("1.1.1.1"))
@@ -2627,7 +2630,7 @@ public class TracerouteEngineImplTest {
 
     vrf1.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("20.0.0.2/32"))
                 .setNextHopInterface(c1ToFw)
                 .setNextHopIp(Ip.parse("1.1.1.2"))
@@ -2670,7 +2673,7 @@ public class TracerouteEngineImplTest {
     fwVrf
         .getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("30.0.0.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopIp(Ip.parse("100.1.1.1"))

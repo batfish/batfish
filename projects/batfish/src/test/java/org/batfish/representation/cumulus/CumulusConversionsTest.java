@@ -100,6 +100,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -146,7 +147,7 @@ public final class CumulusConversionsTest {
     Environment env =
         Environment.builder(_c)
             .setOriginalRoute(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.parse(network))
                     // Only network matters for these tests, but Bgp4Route requires these have
                     // values.
@@ -186,7 +187,7 @@ public final class CumulusConversionsTest {
         .call(
             Environment.builder(_c)
                 .setOriginalRoute(
-                    StaticRoute.builder().setAdministrativeCost(0).setNetwork(network).build())
+                    StaticRoute.testBuilder().setAdministrativeCost(0).setNetwork(network).build())
                 .build())
         .getBooleanValue();
   }
@@ -543,7 +544,8 @@ public final class CumulusConversionsTest {
         viConfig
             .getRoutingPolicies()
             .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
-            .process(route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            .process(
+                route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   /** Test that networks statement routemaps are processed in VI. */
@@ -582,7 +584,7 @@ public final class CumulusConversionsTest {
 
     // the prefix is allowed to leave
     AbstractRoute route = new ConnectedRoute(prefix, "dummy");
-    Builder builder = Bgpv4Route.builder();
+    Builder builder = Bgpv4Route.testBuilder();
     assertTrue(
         viConfig
             .getRoutingPolicies()
@@ -629,7 +631,8 @@ public final class CumulusConversionsTest {
         viConfig
             .getRoutingPolicies()
             .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
-            .process(route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            .process(
+                route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   @Test
@@ -684,13 +687,13 @@ public final class CumulusConversionsTest {
     assertFalse(
         rejectDefaultPolicy.process(
             defaultRoute,
-            Bgpv4Route.builder().setNetwork(defaultRoute.getNetwork()),
+            Bgpv4Route.testBuilder().setNetwork(defaultRoute.getNetwork()),
             Direction.OUT));
 
     assertTrue(
         rejectDefaultPolicy.process(
             nonDefaultRoute,
-            Bgpv4Route.builder().setNetwork(nonDefaultRoute.getNetwork()),
+            Bgpv4Route.testBuilder().setNetwork(nonDefaultRoute.getNetwork()),
             Direction.OUT));
   }
 
@@ -1093,7 +1096,7 @@ public final class CumulusConversionsTest {
             .build();
 
     Builder builder =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setOriginatorIp(Ip.parse("10.0.0.1"))
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
@@ -1494,6 +1497,7 @@ public final class CumulusConversionsTest {
     OspfExternalRoute.Builder ospfExternalRouteBuilder =
         OspfExternalRoute.builder()
             .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setOspfMetricType(OspfMetricType.E1)
             .setLsaMetric(1L)
             .setArea(0L)
@@ -1503,6 +1507,7 @@ public final class CumulusConversionsTest {
     OspfExternalRoute.Builder ospfExternalRouteBuilder2 =
         OspfExternalRoute.builder()
             .setNetwork(prefix)
+            .setNextHop(NextHopDiscard.instance())
             .setOspfMetricType(OspfMetricType.E2)
             .setLsaMetric(1L)
             .setArea(0L)
@@ -1517,7 +1522,7 @@ public final class CumulusConversionsTest {
             .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(
                 ospfExternalRouteBuilder.build(),
-                Bgpv4Route.builder().setNetwork(Prefix.ZERO),
+                Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO),
                 Direction.OUT));
 
     assertTrue(
@@ -1526,7 +1531,7 @@ public final class CumulusConversionsTest {
             .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(
                 ospfExternalRouteBuilder2.build(),
-                Bgpv4Route.builder().setNetwork(prefix),
+                Bgpv4Route.testBuilder().setNetwork(prefix),
                 Direction.OUT));
   }
 

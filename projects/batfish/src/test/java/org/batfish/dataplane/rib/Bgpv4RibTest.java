@@ -51,7 +51,7 @@ public class Bgpv4RibTest {
 
   @Before
   public void setup() {
-    _rb = Bgpv4Route.builder();
+    _rb = Bgpv4Route.testBuilder();
     _rb.setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
         .setNetwork(Prefix.parse("10.0.0.0/8"))
         .setProtocol(RoutingProtocol.BGP)
@@ -212,7 +212,7 @@ public class Bgpv4RibTest {
   public void testIgpCostPreference() {
     Rib mainRib = new Rib();
     StaticRoute.Builder sb =
-        StaticRoute.builder().setAdministrativeCost(1).setNextHopInterface("eth0");
+        StaticRoute.testBuilder().setAdministrativeCost(1).setNextHopInterface("eth0");
     mainRib.mergeRoute(
         annotateRoute(sb.setNetwork(Prefix.parse("5.5.5.5/32")).setMetric(1).build()));
     mainRib.mergeRoute(
@@ -561,7 +561,7 @@ public class Bgpv4RibTest {
      */
     Prefix p = Prefix.ZERO;
     Bgpv4Route.Builder b =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(p)
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.INCOMPLETE);
@@ -691,7 +691,7 @@ public class Bgpv4RibTest {
             false);
 
     Prefix p = Prefix.ZERO;
-    Bgpv4Route.Builder b = new Bgpv4Route.Builder().setNetwork(p).setProtocol(RoutingProtocol.IBGP);
+    Bgpv4Route.Builder b = Bgpv4Route.testBuilder().setNetwork(p).setProtocol(RoutingProtocol.IBGP);
 
     /*
      *  Initialize with different originator ips, which should not affect comparison of routes with
@@ -751,14 +751,14 @@ public class Bgpv4RibTest {
     Ip ip1 = Ip.parse("1.0.0.0");
     Ip ip2 = Ip.parse("2.2.0.0");
     Bgpv4Route.Builder b1 =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNextHopIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO);
     Bgpv4Route.Builder b2 =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNextHopIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.MAX)
@@ -829,7 +829,7 @@ public class Bgpv4RibTest {
             false,
             false);
     Bgpv4Route.Builder ebgpBuilder =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
@@ -850,7 +850,7 @@ public class Bgpv4RibTest {
             false,
             false);
     Bgpv4Route.Builder ibgpBuilder =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)

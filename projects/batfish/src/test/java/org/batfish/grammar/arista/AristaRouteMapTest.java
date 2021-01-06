@@ -94,14 +94,14 @@ public class AristaRouteMapTest {
       RoutingPolicy routingPolicy, AbstractRoute route) {
     assertFalse(
         routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private static void assertRoutingPolicyPermitsRoute(
       RoutingPolicy routingPolicy, AbstractRoute route) {
     assertFalse(
         routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private static @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
@@ -115,7 +115,7 @@ public class AristaRouteMapTest {
     Configuration c = parseConfig("arista_route_map");
     final Ip origNextHopIp = Ip.parse("192.0.2.254");
     final Bgpv4Route baseBgpRoute =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)

@@ -24,9 +24,10 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,14 +43,7 @@ public class AbstractRibTest {
    */
   private AbstractRib<StaticRoute> _rib;
   private static final StaticRoute _mostGeneralRoute =
-      StaticRoute.builder()
-          .setNetwork(Prefix.ZERO)
-          .setNextHopIp(Ip.ZERO)
-          .setNextHopInterface(null)
-          .setAdministrativeCost(1)
-          .setMetric(0L)
-          .setTag(0L)
-          .build();
+      StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setMetric(0L).setTag(0L).build();
   @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
@@ -79,13 +73,7 @@ public class AbstractRibTest {
     List<StaticRoute> routes = new ArrayList<>();
 
     // Test: merge the routes into the RIB
-    StaticRoute.Builder srb =
-        StaticRoute.builder()
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(0L);
+    StaticRoute.Builder srb = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     for (String prefixStr : testPrefixes) {
       StaticRoute r = srb.setNetwork(Prefix.parse(prefixStr)).build();
       _rib.mergeRouteGetDelta(r);
@@ -98,11 +86,8 @@ public class AbstractRibTest {
   @Test
   public void testRepeatedAdd() {
     StaticRoute route =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("10.0.0.0/11"))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(0L)
             .build();
@@ -118,13 +103,7 @@ public class AbstractRibTest {
    */
   @Test
   public void testNonOverlappingRouteAdd() {
-    StaticRoute.Builder srb =
-        StaticRoute.builder()
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(0L);
+    StaticRoute.Builder srb = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     StaticRoute r1 = srb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
     StaticRoute r2 = srb.setNetwork(Prefix.parse("128.1.1.1/32")).build();
     _rib.mergeRouteGetDelta(r1);
@@ -156,7 +135,7 @@ public class AbstractRibTest {
   @Test
   public void testLongestPrefixMatchWhenInRoot() {
     StaticRoute r =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("0.0.0.0/0"))
             .setAdministrativeCost(1)
             .build();
@@ -227,7 +206,7 @@ public class AbstractRibTest {
     OspfIntraAreaRoute ospfRoute =
         OspfIntraAreaRoute.builder()
             .setNetwork(prefix)
-            .setNextHopIp(null)
+            .setNextHop(NextHopDiscard.instance())
             .setAdmin(100)
             .setMetric(30)
             .setArea(1L)
@@ -252,11 +231,8 @@ public class AbstractRibTest {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getTypedRoutes();
     StaticRoute r1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(0L)
             .build();
@@ -274,11 +250,8 @@ public class AbstractRibTest {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getTypedRoutes();
     StaticRoute r1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(0L)
             .build();
@@ -308,10 +281,20 @@ public class AbstractRibTest {
     Prefix prefix = Prefix.create(Ip.parse("10.0.0.0"), 8);
     // High metric
     RipInternalRoute oldRoute =
-        new RipInternalRoute(prefix, Ip.ZERO, admin, 10, Route.UNSET_ROUTE_TAG);
+        RipInternalRoute.builder()
+            .setNetwork(prefix)
+            .setNextHop(NextHopDiscard.instance())
+            .setAdmin(admin)
+            .setMetric(10)
+            .build();
     // New route, lower metric, will override oldRoute
     RipInternalRoute newRoute =
-        new RipInternalRoute(prefix, Ip.ZERO, admin, 5, Route.UNSET_ROUTE_TAG);
+        RipInternalRoute.builder()
+            .setNetwork(prefix)
+            .setNextHop(NextHopDiscard.instance())
+            .setAdmin(admin)
+            .setMetric(5)
+            .build();
 
     // First merge old route
     RibDelta<RipInternalRoute> delta = rib.mergeRouteGetDelta(oldRoute);
@@ -338,11 +321,8 @@ public class AbstractRibTest {
   @Test
   public void testRemoveRoute() {
     StaticRoute r =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
@@ -372,19 +352,16 @@ public class AbstractRibTest {
   public void testRemoveRouteSamePreference() {
     // Two routes for same prefix,
     StaticRoute r1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
     StaticRoute r2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.parse("2.2.2.2"))
-            .setNextHopInterface(null)
+            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
@@ -403,12 +380,7 @@ public class AbstractRibTest {
   @Test
   public void testLengthLimit() {
     StaticRoute.Builder builder =
-        StaticRoute.builder()
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(1L);
+        StaticRoute.testBuilder().setAdministrativeCost(1).setMetric(0L).setTag(1L);
 
     Ip ip = Ip.parse("1.1.1.1");
     StaticRoute r32 = builder.setNetwork(ip.toPrefix()).build();
@@ -425,13 +397,7 @@ public class AbstractRibTest {
 
   @Test
   public void testNonForwarding() {
-    StaticRoute.Builder b =
-        StaticRoute.builder()
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(0L);
+    StaticRoute.Builder b = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     // Non forwarding 1.2.3.4/32
     _rib.mergeRouteGetDelta(
         b.setNetwork(Prefix.parse("1.2.3.4/32")).setNonForwarding(true).build());
@@ -454,13 +420,7 @@ public class AbstractRibTest {
   @Test
   public void testClear() {
     // Setup: just merge in a bunch of routes
-    StaticRoute.Builder b =
-        StaticRoute.builder()
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
-            .setAdministrativeCost(1)
-            .setMetric(0L)
-            .setTag(0L);
+    StaticRoute.Builder b = StaticRoute.testBuilder().setMetric(0L).setTag(0L);
     _rib.mergeRouteGetDelta(
         b.setNetwork(Prefix.parse("1.2.3.4/32")).setNonForwarding(true).build());
     _rib.mergeRouteGetDelta(
@@ -492,7 +452,7 @@ public class AbstractRibTest {
     Ip originator1 = Ip.parse("1.1.1.1");
     Ip originator2 = Ip.parse("2.2.2.2");
     Bgpv4Route.Builder routeBuilder =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setLocalPreference(100)
             .setOriginType(OriginType.INCOMPLETE)

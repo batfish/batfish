@@ -149,7 +149,7 @@ public class ConjunctionChainTest {
     NavigableMap<String, RoutingPolicy> policiesMap =
         ImmutableSortedMap.of(
             P1.getName(), P1, P2.getName(), P2, DEFAULT_POLICY.getName(), DEFAULT_POLICY);
-    StaticRoute.Builder srb = StaticRoute.builder().setAdmin(5).setMetric(10L);
+    StaticRoute.Builder srb = StaticRoute.testBuilder().setAdmin(5).setMetric(10L);
 
     // Route with tag 1 and NETWORK_1 should be accepted by both policies, no metric change
     Environment environment =

@@ -92,7 +92,7 @@ public class BatfishCompressionTest {
         .build();
 
     StaticRoute staticRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(p)
             .setNextHopIp(p.getEndIp())
             .setAdministrativeCost(1)
@@ -195,7 +195,7 @@ public class BatfishCompressionTest {
         .setAddress(ConcreteInterfaceAddress.create(pD.getEndIp(), pD.getPrefixLength()))
         .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setNetwork(pD).setAdministrativeCost(1);
+    StaticRoute.Builder bld = StaticRoute.testBuilder().setNetwork(pD).setAdministrativeCost(1);
     vA.getStaticRoutes().add(bld.setNextHopIp(pAB.getEndIp()).build());
     vA.getStaticRoutes().add(bld.setNextHopIp(pAC.getEndIp()).build());
     vB.getStaticRoutes().add(bld.setNextHopIp(pBD.getEndIp()).build());
@@ -252,14 +252,14 @@ public class BatfishCompressionTest {
         .setAddress(ConcreteInterfaceAddress.create(p23.getEndIp(), p23.getPrefixLength()))
         .build();
     StaticRoute s13 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(p23)
             .setNextHopIp(p12.getEndIp())
             .setAdministrativeCost(1)
             .build();
     v1.getStaticRoutes().add(s13);
     StaticRoute s31 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(p12)
             .setNextHopIp(p23.getStartIp())
             .setAdministrativeCost(1)

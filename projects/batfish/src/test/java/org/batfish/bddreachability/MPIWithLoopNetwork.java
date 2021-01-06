@@ -50,13 +50,13 @@ public class MPIWithLoopNetwork {
     // routing to both c1 and c3 to add inconsistency
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(targetPrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i11.getName())
                 .setNextHopIp(c2Addr.getIp())
                 .build(),
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(targetPrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i12.getName())
@@ -66,7 +66,7 @@ public class MPIWithLoopNetwork {
     // looping back the packet back to c1 if we are at c2
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(targetPrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i2.getName())

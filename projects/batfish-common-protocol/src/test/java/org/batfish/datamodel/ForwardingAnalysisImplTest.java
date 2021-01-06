@@ -431,7 +431,7 @@ public class ForwardingAnalysisImplTest {
                 ImmutableMap.of(
                     edge,
                     ImmutableSet.of(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(P1)
                             .setNextHopIp(P2.getStartIp())
                             .setAdministrativeCost(1)
@@ -554,7 +554,7 @@ public class ForwardingAnalysisImplTest {
     String i1 = "i1";
     ConnectedRoute r1 = new ConnectedRoute(P1, i1);
     StaticRoute nullRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P2)
             .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
             .setAdministrativeCost(1)
@@ -714,7 +714,7 @@ public class ForwardingAnalysisImplTest {
     String v1 = "v1";
     String i1 = "i1";
     AbstractRoute r1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
@@ -767,7 +767,7 @@ public class ForwardingAnalysisImplTest {
                                 new FibEntry(
                                     new FibNextVrf(v2),
                                     ImmutableList.of(
-                                        StaticRoute.builder()
+                                        StaticRoute.testBuilder()
                                             .setAdmin(1)
                                             .setNetwork(P1)
                                             .setNextVrf(v2)
@@ -783,7 +783,7 @@ public class ForwardingAnalysisImplTest {
                                 new FibEntry(
                                     new FibNextVrf(v1),
                                     ImmutableList.of(
-                                        StaticRoute.builder()
+                                        StaticRoute.testBuilder()
                                             .setAdmin(1)
                                             .setNetwork(P2)
                                             .setNextVrf(v1)
@@ -809,7 +809,7 @@ public class ForwardingAnalysisImplTest {
     String v1 = "v1";
     String i1 = "i1";
     AbstractRoute nullRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
             .setNetwork(P1)
             .setAdministrativeCost(1)
@@ -865,7 +865,7 @@ public class ForwardingAnalysisImplTest {
                         new FibEntry(
                             new FibForward(Ip.ZERO, "iface"),
                             ImmutableList.of(
-                                StaticRoute.builder()
+                                StaticRoute.testBuilder()
                                     .setAdministrativeCost(1)
                                     .setNetwork(prefix)
                                     .build())))))
@@ -904,7 +904,7 @@ public class ForwardingAnalysisImplTest {
     String v1 = "v1";
     String i1 = "i1";
     AbstractRoute r1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
@@ -1007,7 +1007,7 @@ public class ForwardingAnalysisImplTest {
     String v1 = "v1";
     String i1 = "i1";
     AbstractRoute r1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
@@ -1041,13 +1041,13 @@ public class ForwardingAnalysisImplTest {
   public void testComputeRoutesWithNextHopIpArpFalseForInterface() {
     String outInterface = "i1";
     AbstractRoute nextHopIpRoute1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
             .build();
     AbstractRoute nextHopIpRoute2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getEndIp())
             .setAdministrativeCost(1)
@@ -1087,13 +1087,13 @@ public class ForwardingAnalysisImplTest {
   public void testComputeRoutesWithNextHopIpArpFalseForInterfaceNoNeighbors() {
     String outInterface = "i1";
     AbstractRoute nextHopIpRoute1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
             .build();
     AbstractRoute nextHopIpRoute2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getEndIp())
             .setAdministrativeCost(1)
@@ -1139,13 +1139,13 @@ public class ForwardingAnalysisImplTest {
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     String v1 = "v1";
     AbstractRoute r1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
             .build();
     AbstractRoute r2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(P1)
             .setNextHopIp(P2.getEndIp())
             .setAdministrativeCost(1)
@@ -1512,14 +1512,14 @@ public class ForwardingAnalysisImplTest {
             .build();
 
     StaticRoute route1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(prefix)
             .setNextHopInterface(i1.getName())
             .setAdministrativeCost(1)
             .build();
 
     StaticRoute route2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopInterface(i2.getName())
             .setNetwork(prefix)
             .setAdministrativeCost(1)

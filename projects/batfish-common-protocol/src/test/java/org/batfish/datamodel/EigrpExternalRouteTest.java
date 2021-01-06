@@ -13,7 +13,7 @@ public class EigrpExternalRouteTest {
   @Test
   public void testToBuilder() {
     EigrpExternalRoute r =
-        EigrpExternalRoute.builder()
+        EigrpExternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setMetric(1L)
             .setEigrpMetricVersion(EigrpMetricVersion.V1)

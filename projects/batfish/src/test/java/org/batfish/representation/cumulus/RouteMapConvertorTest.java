@@ -87,7 +87,7 @@ public class RouteMapConvertorTest {
     C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_NCLU);
     initRouteMap();
     _originalRouteBuilder =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -104,7 +104,7 @@ public class RouteMapConvertorTest {
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     RoutingPolicy policy = convertor.toRouteMap();
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     _originalRouteBuilder.setTag(1L);
     Environment.Builder env = Environment.builder(C);
     Result result =
@@ -123,7 +123,7 @@ public class RouteMapConvertorTest {
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     RoutingPolicy policy = convertor.toRouteMap();
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
     Result result =
         policy.call(
@@ -141,7 +141,7 @@ public class RouteMapConvertorTest {
     RouteMapConvertor convertor = new RouteMapConvertor(C, VC, ROUTEMAP, W);
     RoutingPolicy policy = convertor.toRouteMap();
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
     Result result =
         policy.call(
@@ -237,7 +237,7 @@ public class RouteMapConvertorTest {
     rm.getEntries().put(10, rme);
     RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
     policy.call(
         env.setOriginalRoute(_originalRouteBuilder.build()).setOutputRoute(outputBuilder).build());
@@ -252,7 +252,7 @@ public class RouteMapConvertorTest {
     rm.getEntries().put(10, rme);
     RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
     policy.call(
         env.setOriginalRoute(_originalRouteBuilder.build()).setOutputRoute(outputBuilder).build());
@@ -273,7 +273,7 @@ public class RouteMapConvertorTest {
     rm.getEntries().put(10, rme);
     RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     C.getRoutingPolicies()
         .put(
             subMapName,
@@ -317,7 +317,7 @@ public class RouteMapConvertorTest {
                 .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
                 .build());
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
     Result result =
         policy.call(
@@ -337,7 +337,7 @@ public class RouteMapConvertorTest {
     rm.getEntries().put(10, rme);
     RoutingPolicy policy = new RouteMapConvertor(C, VC, rm, W).toRouteMap();
 
-    Builder outputBuilder = Bgpv4Route.builder();
+    Builder outputBuilder = Bgpv4Route.testBuilder();
     Environment.Builder env = Environment.builder(C);
     Result result =
         policy.call(

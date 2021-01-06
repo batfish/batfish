@@ -26,6 +26,7 @@ public class RibDeltaTest {
 
   private static final int PREFIX_LENGTH = 24;
   private RibDelta.Builder<AbstractRoute> _builder;
+  private static final Ip _nextHopIp = Ip.parse("42.42.42.42");
 
   @Before
   public void setupNewBuilder() {
@@ -44,11 +45,23 @@ public class RibDeltaTest {
     Prefix p1 = Prefix.parse("1.1.1.0/24");
     Prefix p2 = Prefix.parse("2.2.2.0/24");
     StaticRoute sr1 =
-        StaticRoute.builder().setNetwork(p1).setAdmin(1).setNextHopIp(Ip.parse("2.2.2.2")).build();
+        StaticRoute.testBuilder()
+            .setNetwork(p1)
+            .setAdmin(1)
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .build();
     StaticRoute sr2 =
-        StaticRoute.builder().setNetwork(p2).setAdmin(1).setNextHopIp(Ip.parse("2.2.2.2")).build();
+        StaticRoute.testBuilder()
+            .setNetwork(p2)
+            .setAdmin(1)
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .build();
     StaticRoute sr3 =
-        StaticRoute.builder().setNetwork(p2).setAdmin(1).setNextHopIp(Ip.parse("3.3.3.3")).build();
+        StaticRoute.testBuilder()
+            .setNetwork(p2)
+            .setAdmin(1)
+            .setNextHopIp(Ip.parse("3.3.3.3"))
+            .build();
     new EqualsTester()
         .addEqualityGroup(RibDelta.builder().build(), RibDelta.builder().build())
         .addEqualityGroup(
@@ -68,29 +81,26 @@ public class RibDeltaTest {
   @Test
   public void testBuilderAddRoute() {
     StaticRoute route1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), PREFIX_LENGTH))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
+            .setNextHopIp(_nextHopIp)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
     // Route 2 & 3 should be equal
     StaticRoute route2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
+            .setNextHopIp(_nextHopIp)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
     StaticRoute route3 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
+            .setNextHopIp(_nextHopIp)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
@@ -112,29 +122,26 @@ public class RibDeltaTest {
   @Test
   public void testBuilderRemoveRoute() {
     StaticRoute route1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("1.1.1.0"), PREFIX_LENGTH))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
+            .setNextHopIp(_nextHopIp)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
     // Route 2 & 3 should be equal
     StaticRoute route2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
+            .setNextHopIp(_nextHopIp)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
     StaticRoute route3 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.create(Ip.parse("2.1.1.0"), PREFIX_LENGTH))
-            .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
+            .setNextHopIp(_nextHopIp)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
@@ -163,7 +170,7 @@ public class RibDeltaTest {
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,
             false);
-    Bgpv4Route.Builder routeBuilder = new Bgpv4Route.Builder();
+    Bgpv4Route.Builder routeBuilder = Bgpv4Route.testBuilder();
     routeBuilder
         .setNetwork(Ip.parse("1.1.1.1").toPrefix())
         .setProtocol(RoutingProtocol.IBGP)
@@ -219,7 +226,7 @@ public class RibDeltaTest {
             false,
             false);
     Bgpv4Route r1 =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setProtocol(RoutingProtocol.IBGP)
             .setOriginType(OriginType.IGP)
@@ -227,7 +234,7 @@ public class RibDeltaTest {
             .setReceivedFromIp(Ip.parse("7.7.7.7"))
             .build();
     Bgpv4Route r2 =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setProtocol(RoutingProtocol.BGP)
             .setOriginType(OriginType.IGP)

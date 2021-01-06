@@ -225,7 +225,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setAdministrativeCost(1)
@@ -249,7 +249,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setName(NEXT_HOP_INTERFACE).setAddresses(NEXT_HOP_INTERFACE_FULL_ADDR).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setAdministrativeCost(1)
@@ -283,7 +283,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setAdministrativeCost(1)
@@ -307,7 +307,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setName(NEXT_HOP_INTERFACE).setAddresses(NEXT_HOP_INTERFACE_NOT_FULL_ADDR).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setAdministrativeCost(1)
@@ -348,7 +348,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)
@@ -374,7 +374,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)
@@ -413,7 +413,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)
@@ -439,7 +439,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     _ib.setName(NEXT_HOP_INTERFACE).setAddresses(NEXT_HOP_INTERFACE_NOT_FULL_ADDR).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)
@@ -483,7 +483,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)
@@ -518,7 +518,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)
@@ -555,7 +555,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)
@@ -581,7 +581,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
 
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(NEXT_HOP_INTERFACE)
                 .setNextHopIp(NEXT_HOP_IP)

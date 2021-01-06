@@ -9,6 +9,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -20,7 +21,7 @@ public class Bgpv4RouteTest {
   @Test
   public void testJavaSerialization() {
     Bgpv4Route br =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
@@ -33,7 +34,7 @@ public class Bgpv4RouteTest {
   @Test
   public void testJsonSerialization() {
     Bgpv4Route br =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
@@ -46,7 +47,7 @@ public class Bgpv4RouteTest {
   @Test
   public void testToBuilder() {
     Bgpv4Route br =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("blah")
             .setOriginatorIp(Ip.parse("1.1.1.1"))
@@ -60,7 +61,7 @@ public class Bgpv4RouteTest {
   @Test
   public void testEquals() {
     Builder brb =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
@@ -96,6 +97,7 @@ public class Bgpv4RouteTest {
     thrown.expect(IllegalArgumentException.class);
     Bgpv4Route.builder()
         .setNetwork(Prefix.parse("1.1.1.0/24"))
+        .setNextHop(NextHopDiscard.instance())
         .setOriginatorIp(Ip.parse("1.1.1.1"))
         .setProtocol(RoutingProtocol.BGP)
         .build();
@@ -106,6 +108,7 @@ public class Bgpv4RouteTest {
     thrown.expect(IllegalArgumentException.class);
     Bgpv4Route.builder()
         .setNetwork(Prefix.parse("1.1.1.0/24"))
+        .setNextHop(NextHopDiscard.instance())
         .setProtocol(RoutingProtocol.BGP)
         .setOriginType(OriginType.IGP)
         .build();
@@ -116,6 +119,7 @@ public class Bgpv4RouteTest {
     thrown.expect(IllegalArgumentException.class);
     Bgpv4Route.builder()
         .setNetwork(Prefix.parse("1.1.1.0/24"))
+        .setNextHop(NextHopDiscard.instance())
         .setOriginatorIp(Ip.parse("1.1.1.1"))
         .setOriginType(OriginType.IGP)
         .build();

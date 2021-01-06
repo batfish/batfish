@@ -37,7 +37,7 @@ public class AsPathRegexTest {
         ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME)));
     return Environment.builder(c)
         .setOriginalRoute(
-            Bgpv4Route.builder()
+            Bgpv4Route.testBuilder()
                 .setOriginatorIp(Ip.ZERO)
                 .setOriginType(OriginType.INCOMPLETE)
                 .setProtocol(RoutingProtocol.BGP)

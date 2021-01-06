@@ -93,7 +93,7 @@ public class ElasticsearchDomainTest {
   @Before
   public void setup() throws IOException {
     _staticRouteBuilder =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
             .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
             .setNetwork(Prefix.ZERO);

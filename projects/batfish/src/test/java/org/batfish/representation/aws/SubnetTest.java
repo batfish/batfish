@@ -561,7 +561,7 @@ public class SubnetTest {
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSortedSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(route.getDestinationCidrBlock())
                     .setNextHopInterface(instancesInterfaceName(subnet.getId()))
                     .setNextHopIp(ngw.getPrivateIp())
@@ -618,7 +618,7 @@ public class SubnetTest {
         subnetCfg.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSortedSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(route.getDestinationCidrBlock())
                     .setNextHopInterface(interfaceNameToRemote(vpcCfg, vrfNameForLink(ngw.getId())))
                     .setNextHopIp(
@@ -665,7 +665,7 @@ public class SubnetTest {
             prefixes.stream()
                 .map(
                     prefix ->
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(prefix)
                             .setNextHopInterface(NULL_INTERFACE_NAME)
                             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)

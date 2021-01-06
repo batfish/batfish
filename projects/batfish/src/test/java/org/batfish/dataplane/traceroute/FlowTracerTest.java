@@ -115,6 +115,7 @@ import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
@@ -586,7 +587,7 @@ public final class FlowTracerTest {
                         new FibEntry(
                             FibNullRoute.INSTANCE,
                             ImmutableList.of(
-                                StaticRoute.builder()
+                                StaticRoute.testBuilder()
                                     .setAdmin(1)
                                     .setNetwork(Prefix.ZERO)
                                     .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
@@ -635,12 +636,17 @@ public final class FlowTracerTest {
             .build();
     Ip dstIp = flow.getDstIp();
     StaticRoute nextVrfRoute =
-        StaticRoute.builder().setAdmin(1).setNetwork(Prefix.ZERO).setNextVrf(nextVrfName).build();
-    StaticRoute nullRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdmin(1)
             .setNetwork(Prefix.ZERO)
-            .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+            .setNextHop(NextHopDiscard.instance())
+            .setNextVrf(nextVrfName)
+            .build();
+    StaticRoute nullRoute =
+        StaticRoute.testBuilder()
+            .setAdmin(1)
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .build();
     Fib srcFib =
         MockFib.builder()
@@ -717,9 +723,19 @@ public final class FlowTracerTest {
             .build();
     Ip dstIp = flow.getDstIp();
     StaticRoute vrf1NextVrfRoute =
-        StaticRoute.builder().setAdmin(1).setNetwork(Prefix.ZERO).setNextVrf(vrf2Name).build();
+        StaticRoute.testBuilder()
+            .setAdmin(1)
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setNextVrf(vrf2Name)
+            .build();
     StaticRoute vrf2NextVrfRoute =
-        StaticRoute.builder().setAdmin(1).setNetwork(Prefix.ZERO).setNextVrf(vrf1Name).build();
+        StaticRoute.testBuilder()
+            .setAdmin(1)
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setNextVrf(vrf1Name)
+            .build();
     Fib fib1 =
         MockFib.builder()
             .setFibEntries(
@@ -817,7 +833,7 @@ public final class FlowTracerTest {
                         new FibEntry(
                             new FibForward(finalNhip, finalNhif),
                             ImmutableList.of(
-                                StaticRoute.builder()
+                                StaticRoute.testBuilder()
                                     .setAdmin(1)
                                     .setNetwork(Prefix.ZERO)
                                     .setNextHopIp(Ip.parse("1.2.3.4"))
@@ -825,7 +841,7 @@ public final class FlowTracerTest {
                         new FibEntry(
                             new FibForward(finalNhip, finalNhif),
                             ImmutableList.of(
-                                StaticRoute.builder()
+                                StaticRoute.testBuilder()
                                     .setAdmin(1)
                                     .setNetwork(Prefix.ZERO)
                                     .setNextHopIp(Ip.parse("2.3.4.5"))
@@ -1082,7 +1098,7 @@ public final class FlowTracerTest {
             new FibEntry(
                 fibForward,
                 ImmutableList.of(
-                    StaticRoute.builder()
+                    StaticRoute.testBuilder()
                         .setNextHopIp(Ip.parse("2.2.2.2"))
                         .setNetwork(prefix)
                         .setAdministrativeCost(1)
@@ -1109,7 +1125,7 @@ public final class FlowTracerTest {
             new FibEntry(
                 fibNextVrf,
                 ImmutableList.of(
-                    StaticRoute.builder()
+                    StaticRoute.testBuilder()
                         .setNextHopIp(Ip.parse("2.2.2.2"))
                         .setNetwork(prefix)
                         .setAdministrativeCost(1)
@@ -1136,7 +1152,7 @@ public final class FlowTracerTest {
             new FibEntry(
                 fibNullRoute,
                 ImmutableList.of(
-                    StaticRoute.builder()
+                    StaticRoute.testBuilder()
                         .setNextHopIp(Ip.parse("2.2.2.2"))
                         .setNetwork(prefix)
                         .setAdministrativeCost(1)
@@ -1291,7 +1307,7 @@ public final class FlowTracerTest {
             .build();
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setAdministrativeCost(1)
                 .setNetwork(Prefix.ZERO)
                 .setNextHopIp(Ip.parse("2.0.0.1"))
@@ -1301,7 +1317,7 @@ public final class FlowTracerTest {
     Vrf v2 = nf.vrfBuilder().setOwner(n2).build();
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setAdministrativeCost(1)
                 .setNetwork(Prefix.ZERO)
                 .setNextHopIp(Ip.parse("1.0.0.0"))

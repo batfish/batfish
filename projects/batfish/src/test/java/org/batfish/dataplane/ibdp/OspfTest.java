@@ -538,7 +538,7 @@ public class OspfTest {
     Vrf v6 = vb.setOwner(r6).build();
     v6.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("10.10.10.10/32"))
                 .setAdministrativeCost(1)
                 .setMetric(0)

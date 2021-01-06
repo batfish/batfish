@@ -305,6 +305,7 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -396,7 +397,7 @@ public final class FlatJuniperGrammarTest {
         route,
         route instanceof Bgpv4Route
             ? route.toBuilder()
-            : Bgpv4Route.builder().setNetwork(route.getNetwork()),
+            : Bgpv4Route.testBuilder().setNetwork(route.getNetwork()),
         Direction.OUT);
   }
 
@@ -1010,7 +1011,7 @@ public final class FlatJuniperGrammarTest {
     // p1
     RoutingPolicy p1 = c.getRoutingPolicies().get("p1");
     Bgpv4Route.Builder b1 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(StandardCommunity.of(5L)))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -1030,7 +1031,7 @@ public final class FlatJuniperGrammarTest {
     // p2
     RoutingPolicy p2 = c.getRoutingPolicies().get("p2");
     Bgpv4Route.Builder b2 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(StandardCommunity.of(5L)))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -1046,7 +1047,7 @@ public final class FlatJuniperGrammarTest {
     // p3
     RoutingPolicy p3 = c.getRoutingPolicies().get("p3");
     Bgpv4Route.Builder b3 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(StandardCommunity.of(5L)))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -1068,7 +1069,7 @@ public final class FlatJuniperGrammarTest {
     // p4
     RoutingPolicy p4 = c.getRoutingPolicies().get("p4");
     Bgpv4Route.Builder b4 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(StandardCommunity.of(5L)))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -1089,7 +1090,7 @@ public final class FlatJuniperGrammarTest {
     // p5
     RoutingPolicy p5 = c.getRoutingPolicies().get("p5");
     Bgpv4Route.Builder b5 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(StandardCommunity.of(5L)))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -1107,7 +1108,7 @@ public final class FlatJuniperGrammarTest {
     // p6
     RoutingPolicy p6 = c.getRoutingPolicies().get("p6");
     Bgpv4Route.Builder b6 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(cr.getNetwork())
             .setCommunities(ImmutableSet.of(StandardCommunity.of(5L)))
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -1125,7 +1126,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("community");
 
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -1200,7 +1201,7 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("community");
 
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -2160,8 +2161,8 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy rp2 = config.getRoutingPolicies().get(ar2.getGenerationPolicy());
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
-    assertThat(rp2.process(cr31, Bgpv4Route.builder(), Direction.OUT), equalTo(false));
-    assertThat(rp2.process(cr32, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
+    assertThat(rp2.process(cr31, Bgpv4Route.testBuilder(), Direction.OUT), equalTo(false));
+    assertThat(rp2.process(cr32, Bgpv4Route.testBuilder(), Direction.OUT), equalTo(true));
 
     // all should be discard routes
     assertThat(ar1.getDiscard(), equalTo(true));
@@ -2173,17 +2174,17 @@ public final class FlatJuniperGrammarTest {
     // falls through without changing default, so accept
     RoutingPolicy rp4 = config.getRoutingPolicies().get(ar4.getGenerationPolicy());
     ConnectedRoute cr4 = new ConnectedRoute(Prefix.parse("4.0.0.0/32"), "blah");
-    assertThat(rp4.process(cr4, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
+    assertThat(rp4.process(cr4, Bgpv4Route.testBuilder(), Direction.OUT), equalTo(true));
 
     // rejects first, so reject
     RoutingPolicy rp5 = config.getRoutingPolicies().get(ar5.getGenerationPolicy());
     ConnectedRoute cr5 = new ConnectedRoute(Prefix.parse("5.0.0.0/32"), "blah");
-    assertThat(rp5.process(cr5, Bgpv4Route.builder(), Direction.OUT), equalTo(false));
+    assertThat(rp5.process(cr5, Bgpv4Route.testBuilder(), Direction.OUT), equalTo(false));
 
     // accepts first, so accept
     RoutingPolicy rp6 = config.getRoutingPolicies().get(ar6.getGenerationPolicy());
     ConnectedRoute cr6 = new ConnectedRoute(Prefix.parse("6.0.0.0/32"), "blah");
-    assertThat(rp6.process(cr6, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
+    assertThat(rp6.process(cr6, Bgpv4Route.testBuilder(), Direction.OUT), equalTo(true));
   }
 
   @Test
@@ -2287,8 +2288,8 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy rp2 = config.getRoutingPolicies().get(gr2.getGenerationPolicy());
     ConnectedRoute cr31 = new ConnectedRoute(Prefix.parse("2.0.0.0/31"), "blah");
     ConnectedRoute cr32 = new ConnectedRoute(Prefix.parse("2.0.0.0/32"), "blah");
-    assertThat(rp2.process(cr31, Bgpv4Route.builder(), Direction.OUT), equalTo(false));
-    assertThat(rp2.process(cr32, Bgpv4Route.builder(), Direction.OUT), equalTo(true));
+    assertThat(rp2.process(cr31, Bgpv4Route.testBuilder(), Direction.OUT), equalTo(false));
+    assertThat(rp2.process(cr32, Bgpv4Route.testBuilder(), Direction.OUT), equalTo(true));
 
     // none should be discard routes
     assertThat(gr1.getDiscard(), equalTo(false));
@@ -2473,7 +2474,7 @@ public final class FlatJuniperGrammarTest {
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
 
     StaticRoute staticRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface("nextint")
             .setNextHopIp(Ip.parse("10.0.0.1"))
@@ -3493,7 +3494,7 @@ public final class FlatJuniperGrammarTest {
             .call(
                 Environment.builder(c)
                     .setOriginalRoute(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setAdministrativeCost(0)
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .build())
@@ -3526,7 +3527,7 @@ public final class FlatJuniperGrammarTest {
     */
     RoutingPolicy communityPolicy = c.getRoutingPolicies().get("COMMUNITY_POLICY");
     Bgpv4Route.Builder brb =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAdmin(100)
             .setNetwork(testPrefix)
             .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -3587,7 +3588,7 @@ public final class FlatJuniperGrammarTest {
      */
     RoutingPolicy metricPolicy = c.getRoutingPolicies().get("METRIC_POLICY");
     Builder bgpRouteBuilder =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setOriginatorIp(Ip.ZERO)
             .setNetwork(Prefix.ZERO)
             .setProtocol(RoutingProtocol.BGP)
@@ -3614,7 +3615,7 @@ public final class FlatJuniperGrammarTest {
       set policy-options policy-statement NETWORK_POLICY term T1 from route-filter 8.8.8.0/24 exact
     */
     RoutingPolicy networkPolicy = c.getRoutingPolicies().get("NETWORK_POLICY");
-    StaticRoute.Builder srb = StaticRoute.builder().setAdministrativeCost(100);
+    StaticRoute.Builder srb = StaticRoute.testBuilder().setAdministrativeCost(100);
     // prefix-list statements should match exact length
     result =
         networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("1.1.1.0/24")).build()));
@@ -3697,7 +3698,7 @@ public final class FlatJuniperGrammarTest {
       set policy-options policy-statement TAG_POLICY term T1 from tag 2
     */
     RoutingPolicy tagPolicy = c.getRoutingPolicies().get("TAG_POLICY");
-    srb = StaticRoute.builder().setAdministrativeCost(100).setNetwork(testPrefix);
+    srb = StaticRoute.testBuilder().setAdministrativeCost(100).setNetwork(testPrefix);
     result = tagPolicy.call(Environment.builder(c).setOutputRoute(srb.setTag(1L)).build());
     assertThat(result.getBooleanValue(), equalTo(true));
     result = tagPolicy.call(Environment.builder(c).setOutputRoute(srb.setTag(2L)).build());
@@ -3965,13 +3966,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         peer1RejectAllLocal
             .call(
-                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(false));
     assertThat(
         peer1RejectAllLocal
             .call(
-                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(false));
 
@@ -3979,13 +3980,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         peer2RejectPtpLocal
             .call(
-                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(false));
     assertThat(
         peer2RejectPtpLocal
             .call(
-                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(true));
 
@@ -3993,13 +3994,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         peer3RejectLanLocal
             .call(
-                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(true));
     assertThat(
         peer3RejectLanLocal
             .call(
-                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(false));
 
@@ -4007,13 +4008,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         peer4AllowAllLocal
             .call(
-                eb.setOriginalRoute(localRoutePtp).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRoutePtp).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(true));
     assertThat(
         peer4AllowAllLocal
             .call(
-                eb.setOriginalRoute(localRouteLan).setOutputRoute(new Bgpv4Route.Builder()).build())
+                eb.setOriginalRoute(localRouteLan).setOutputRoute(Bgpv4Route.testBuilder()).build())
             .getBooleanValue(),
         equalTo(true));
   }
@@ -4815,11 +4816,22 @@ public final class FlatJuniperGrammarTest {
         isisBuilder.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_EL1).build();
     IsisRoute isisEl2 =
         isisBuilder.setLevel(IsisLevel.LEVEL_2).setProtocol(RoutingProtocol.ISIS_EL2).build();
-    OspfRoute ospfIntra = OspfIntraAreaRoute.builder().setNetwork(Prefix.ZERO).setArea(1).build();
-    OspfRoute ospfInter = OspfInterAreaRoute.builder().setNetwork(Prefix.ZERO).setArea(1).build();
+    OspfRoute ospfIntra =
+        OspfIntraAreaRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setArea(1)
+            .build();
+    OspfRoute ospfInter =
+        OspfInterAreaRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setArea(1)
+            .build();
     OspfRoute ospfE1 =
         OspfExternalType1Route.builder()
             .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setLsaMetric(1)
             .setArea(1)
             .setCostToAdvertiser(1)
@@ -4828,6 +4840,7 @@ public final class FlatJuniperGrammarTest {
     OspfRoute ospfE2 =
         OspfExternalType2Route.builder()
             .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setLsaMetric(1)
             .setArea(1)
             .setCostToAdvertiser(1)
@@ -4867,12 +4880,12 @@ public final class FlatJuniperGrammarTest {
             hasStaticRoutes(
                 equalTo(
                     ImmutableSet.of(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(Prefix.parse("1.2.3.4/24"))
                             .setNextHopIp(Ip.parse("10.0.0.1"))
                             .setAdministrativeCost(250)
                             .build(),
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(Prefix.parse("2.3.4.5/24"))
                             .setNextHopIp(Ip.parse("10.0.0.2"))
                             .setAdministrativeCost(5)
@@ -4895,6 +4908,7 @@ public final class FlatJuniperGrammarTest {
                             .build(),
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("3.0.0.0/8"))
+                            .setNextHop(NextHopDiscard.instance())
                             .setNonForwarding(true)
                             .setAdministrativeCost(5)
                             .build(),
@@ -5050,7 +5064,7 @@ public final class FlatJuniperGrammarTest {
             .call(
                 Environment.builder(config)
                     .setOriginalRoute(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNextHopInterface("iface")
                             .setNetwork(Prefix.parse("1.1.1.1/24"))
                             .setAdministrativeCost(1)
@@ -5244,7 +5258,7 @@ public final class FlatJuniperGrammarTest {
     */
     RoutingPolicy instanceImportPolicy =
         c.getRoutingPolicies().get(generateInstanceImportPolicyName(DEFAULT_VRF_NAME));
-    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdmin(5).build();
+    StaticRoute sr = StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setAdmin(5).build();
     assertThat(
         instanceImportPolicy.process(new AnnotatedRoute<>(sr, "VRF1"), null, null), equalTo(true));
     assertThat(

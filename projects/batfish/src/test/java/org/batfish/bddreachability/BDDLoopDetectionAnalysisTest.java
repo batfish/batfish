@@ -101,7 +101,7 @@ public final class BDDLoopDetectionAnalysisTest {
                     LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
             .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setAdministrativeCost(1);
+    StaticRoute.Builder bld = StaticRoute.testBuilder().setAdministrativeCost(1);
     srcVrf.setStaticRoutes(
         ImmutableSortedSet.of(
             bld.setNetwork(DST_PREFIX_1).setNextHopIp(LINK_1_NETWORK.getEndIp()).build(),

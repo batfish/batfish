@@ -162,7 +162,7 @@ public final class CumulusNcluGrammarTest {
     assertFalse(
         routingPolicy.process(
             new ConnectedRoute(network, "dummy"),
-            Bgpv4Route.builder().setNetwork(network),
+            Bgpv4Route.testBuilder().setNetwork(network),
             Direction.OUT));
   }
 
@@ -170,7 +170,7 @@ public final class CumulusNcluGrammarTest {
     assertTrue(
         routingPolicy.process(
             new ConnectedRoute(network, "dummy"),
-            Bgpv4Route.builder().setNetwork(network),
+            Bgpv4Route.testBuilder().setNetwork(network),
             Direction.OUT));
   }
 
@@ -181,7 +181,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   private @Nonnull Bgpv4Route.Builder makeBgpOutputRouteBuilder() {
-    return Bgpv4Route.builder()
+    return Bgpv4Route.testBuilder()
         .setNetwork(Prefix.ZERO)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
@@ -189,7 +189,7 @@ public final class CumulusNcluGrammarTest {
   }
 
   private @Nonnull Bgpv4Route makeBgpRoute(Prefix prefix) {
-    return Bgpv4Route.builder()
+    return Bgpv4Route.testBuilder()
         .setNetwork(prefix)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
@@ -1184,7 +1184,7 @@ public final class CumulusNcluGrammarTest {
     Configuration c = parseConfig("cumulus_nclu_routing");
 
     org.batfish.datamodel.StaticRoute.Builder builder =
-        org.batfish.datamodel.StaticRoute.builder().setAdmin(1).setMetric(0);
+        org.batfish.datamodel.StaticRoute.testBuilder().setAdmin(1).setMetric(0);
 
     // static routes in default VRF
     builder.setNetwork(Prefix.strict("10.0.1.0/24"));
@@ -1201,7 +1201,7 @@ public final class CumulusNcluGrammarTest {
                         .build()))));
 
     // static routes in vrf1
-    builder = org.batfish.datamodel.StaticRoute.builder().setAdmin(1).setMetric(0);
+    builder = org.batfish.datamodel.StaticRoute.testBuilder().setAdmin(1).setMetric(0);
     builder.setNetwork(Prefix.strict("10.0.2.0/24"));
     assertThat(
         c,

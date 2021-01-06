@@ -10,6 +10,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.EvpnType3Route.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -68,6 +69,7 @@ public class EvpnType3RouteTest {
     Builder erb =
         EvpnType3Route.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
@@ -106,6 +108,7 @@ public class EvpnType3RouteTest {
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopDiscard.instance())
             .setRouteDistinguisher(RouteDistinguisher.from(Ip.parse("2.2.2.2"), 2));
 
     assertThat(erb.build().getNetwork(), equalTo(Prefix.parse("1.1.1.1/32")));

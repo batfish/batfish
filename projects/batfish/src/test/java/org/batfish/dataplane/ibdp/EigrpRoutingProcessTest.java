@@ -74,7 +74,7 @@ public class EigrpRoutingProcessTest {
                     .build())
             .build();
     _externalRouteBuilder =
-        EigrpExternalRoute.builder()
+        EigrpExternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setAdmin(222)
             .setProcessAsn(1L)
@@ -84,7 +84,7 @@ public class EigrpRoutingProcessTest {
             .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setTag(3L);
     _internalRouteBuilder =
-        EigrpInternalRoute.builder()
+        EigrpInternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setAdmin(222)
             .setProcessAsn(1L)
@@ -139,7 +139,7 @@ public class EigrpRoutingProcessTest {
     assertTrue(maybeRoute.isPresent());
     EigrpExternalRoute route = maybeRoute.get();
     EigrpExternalRoute expected =
-        EigrpExternalRoute.builder()
+        EigrpExternalRoute.testBuilder()
             .setNextHopIp(ip)
             .setAdmin(_process.getExternalAdminCost())
             .setEigrpMetric(routeIn.getEigrpMetric().add(_ifaceMetric))

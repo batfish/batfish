@@ -188,7 +188,7 @@ public class TracerouteTest {
     // set up static route "1.0.0.128/26" -> i1
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(i1.getName())
                 .setNetwork(Prefix.parse("1.0.0.128/26"))
                 .setAdministrativeCost(1)
@@ -273,7 +273,7 @@ public class TracerouteTest {
     // set up static route "1.0.0.128/26" -> "1.0.0.2"
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(i1.getName())
                 .setNextHopIp(Ip.parse("1.0.0.2"))
                 .setNetwork(Prefix.parse("1.0.0.128/26"))
@@ -361,7 +361,7 @@ public class TracerouteTest {
 
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(n1i1.getName())
                 .setNetwork(Prefix.parse("1.0.0.128/" + mask))
                 .setAdministrativeCost(1)
@@ -389,7 +389,7 @@ public class TracerouteTest {
 
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(n2i2.getName())
                 .setNetwork(Prefix.parse("1.0.0.128/" + mask))
                 .setAdministrativeCost(1)
@@ -498,7 +498,7 @@ public class TracerouteTest {
 
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(n1i1.getName())
                 .setNetwork(Prefix.parse("1.0.0.128/24"))
                 .setAdministrativeCost(1)
@@ -526,7 +526,7 @@ public class TracerouteTest {
 
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(n2i1.getName())
                 .setNetwork(Prefix.parse("1.0.0.128/24"))
                 .setAdministrativeCost(1)
@@ -615,7 +615,7 @@ public class TracerouteTest {
 
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(n1i0.getName())
                 .setNetwork(Prefix.parse("1.0.0.0/25"))
                 .setAdministrativeCost(1)
@@ -643,7 +643,7 @@ public class TracerouteTest {
 
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(n2i1.getName())
                 .setNetwork(Prefix.parse("1.0.0.0/25"))
                 .setAdministrativeCost(1)
@@ -671,7 +671,7 @@ public class TracerouteTest {
 
     v3.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(n3i1.getName())
                 .setNetwork(Prefix.parse("1.0.0.0/25"))
                 .setAdministrativeCost(1)
@@ -752,7 +752,7 @@ public class TracerouteTest {
         nf.interfaceBuilder().setActive(true).setOwner(config).setVrf(vrf);
     Interface lo0 = ifaceBuilder.setAddress(ConcreteInterfaceAddress.parse("5.5.5.5/32")).build();
     Interface lo1 = ifaceBuilder.setAddress(ConcreteInterfaceAddress.parse("6.6.6.6/32")).build();
-    Builder routeBuilder = StaticRoute.builder().setNetwork(dst).setAdministrativeCost(1);
+    Builder routeBuilder = StaticRoute.testBuilder().setNetwork(dst).setAdministrativeCost(1);
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
             routeBuilder.setNextHopInterface(lo0.getName()).build(),
@@ -835,7 +835,7 @@ public class TracerouteTest {
     // set up static route "8.8.8.0/24" -> 1.0.0.2
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopIp(Ip.parse("1.0.0.2"))
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setAdministrativeCost(1)
@@ -908,7 +908,7 @@ public class TracerouteTest {
     // set up static route "8.8.8.0/24" -> 2.0.0.2
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopIp(Ip.parse("2.0.0.2"))
                 .setNextHopInterface(i1.getName())
                 .setNetwork(Prefix.parse("8.8.8.0/24"))

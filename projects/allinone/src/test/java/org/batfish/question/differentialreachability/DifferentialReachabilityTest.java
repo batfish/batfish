@@ -77,7 +77,7 @@ public class DifferentialReachabilityTest {
     if (!delta) {
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
-              StaticRoute.builder()
+              StaticRoute.testBuilder()
                   .setAdministrativeCost(1)
                   .setNetwork(Prefix.parse("2.2.2.2/32"))
                   .setNextHopInterface(PHYSICAL)
@@ -94,7 +94,7 @@ public class DifferentialReachabilityTest {
         .build();
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
                 .setNextHopInterface(PHYSICAL)
                 .setAdministrativeCost(1)

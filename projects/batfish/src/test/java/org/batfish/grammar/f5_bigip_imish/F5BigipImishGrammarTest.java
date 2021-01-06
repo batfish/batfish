@@ -168,7 +168,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   private Bgpv4Route.Builder makeBgpOutputRouteBuilder() {
-    return Bgpv4Route.builder()
+    return Bgpv4Route.testBuilder()
         .setNetwork(Prefix.ZERO)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
@@ -176,7 +176,7 @@ public final class F5BigipImishGrammarTest {
   }
 
   private @Nonnull Bgpv4Route makeBgpRoute(Prefix prefix) {
-    return Bgpv4Route.builder()
+    return Bgpv4Route.testBuilder()
         .setNetwork(prefix)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
@@ -368,7 +368,7 @@ public final class F5BigipImishGrammarTest {
     {
       // more specific route should be allowed since summary-only is not specified
       Bgpv4Route bgpRoute =
-          Bgpv4Route.builder()
+          Bgpv4Route.testBuilder()
               .setOriginatorIp(Ip.parse("10.0.0.1"))
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.BGP)
@@ -385,7 +385,7 @@ public final class F5BigipImishGrammarTest {
     {
       // more specific route should NOT be allowed since summary-only is specified
       Bgpv4Route bgpRoute =
-          Bgpv4Route.builder()
+          Bgpv4Route.testBuilder()
               .setOriginatorIp(Ip.parse("10.0.0.1"))
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.BGP)
@@ -402,7 +402,7 @@ public final class F5BigipImishGrammarTest {
     {
       // a valid aggregated route should be allowed
       Bgpv4Route bgpRoute =
-          Bgpv4Route.builder()
+          Bgpv4Route.testBuilder()
               .setOriginatorIp(Ip.parse("10.0.0.1"))
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
@@ -748,7 +748,7 @@ public final class F5BigipImishGrammarTest {
         F5BigipConfiguration.computeBgpPeerExportPolicyName(bgpProcessName, Ip.parse("192.0.2.1"));
 
     Bgpv4Route.Builder bgpRouteBuilder =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAdmin(10)
             .setMetric(10)
             .setOriginatorIp(Ip.ZERO)
@@ -1121,7 +1121,7 @@ public final class F5BigipImishGrammarTest {
     ConnectedRoute acceptedRoute =
         new ConnectedRoute(Prefix.strict("10.0.1.0/24"), "/Common/outint");
     Bgpv4Route.Builder outputRoute =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(acceptedRoute.getNetwork())
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)

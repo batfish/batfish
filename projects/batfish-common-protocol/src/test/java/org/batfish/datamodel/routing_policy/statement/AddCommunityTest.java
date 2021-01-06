@@ -54,7 +54,7 @@ public class AddCommunityTest {
     // Test does not crash on non-bgp route
     ac.execute(Environment.builder(c).setOutputRoute(ConnectedRoute.builder()).build());
     // Test sets community on BGP route
-    Environment e = Environment.builder(c).setOutputRoute(Bgpv4Route.builder()).build();
+    Environment e = Environment.builder(c).setOutputRoute(Bgpv4Route.testBuilder()).build();
     ac.execute(e);
     assertThat(
         ((Bgpv4Route.Builder) e.getOutputRoute()).getCommunities(),

@@ -238,6 +238,9 @@ import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
 import org.batfish.datamodel.packet_policy.FlowEvaluator;
 import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -398,15 +401,16 @@ public final class CiscoNxosGrammarTest {
         .setAdvertiser("dummy")
         .setArea(0L)
         .setCostToAdvertiser(0L)
+        .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
         .setLsaMetric(0L);
   }
 
   private static @Nonnull OspfIntraAreaRoute.Builder ospfRouteBuilder() {
-    return OspfIntraAreaRoute.builder().setArea(0L);
+    return OspfIntraAreaRoute.builder().setNextHop(NextHopIp.of(Ip.parse("3.3.3.3"))).setArea(0L);
   }
 
   private static @Nonnull OspfInterAreaRoute.Builder ospfIARouteBuilder() {
-    return OspfInterAreaRoute.builder().setArea(0L);
+    return OspfInterAreaRoute.builder().setNextHop(NextHopIp.of(Ip.parse("3.3.3.3"))).setArea(0L);
   }
 
   private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
@@ -496,13 +500,13 @@ public final class CiscoNxosGrammarTest {
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
     assertFalse(
         routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private void assertRoutingPolicyPermitsRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
     assertTrue(
         routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
@@ -516,6 +520,7 @@ public final class CiscoNxosGrammarTest {
     OspfExternalRoute.Builder builder =
         OspfExternalRoute.builder()
             .setNetwork(route.getNetwork())
+            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
             .setLsaMetric(123L)
             .setArea(456L)
             .setCostToAdvertiser(789L)
@@ -702,7 +707,7 @@ public final class CiscoNxosGrammarTest {
     // assert on the behavior of routing policy
     Ip originalNhip = Ip.parse("12.12.12.12");
     Bgpv4Route originalRoute =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.2.3.4/31"))
             .setNextHopIp(originalNhip)
             .setAdmin(1)
@@ -711,7 +716,7 @@ public final class CiscoNxosGrammarTest {
             .setProtocol(RoutingProtocol.BGP)
             .build();
     Bgpv4Route.Builder outputRouteBuilder =
-        Bgpv4Route.builder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+        Bgpv4Route.testBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
 
     Ip sessionPropsHeadIp = Ip.parse("1.1.1.1");
     BgpSessionProperties.Builder sessionProps =
@@ -741,7 +746,7 @@ public final class CiscoNxosGrammarTest {
     // Original route has unset next hop IP: sets output route nhip to head IP of session props
     outputRouteBuilder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
     Bgpv4Route noNhipRoute =
-        originalRoute.toBuilder().setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP).build();
+        originalRoute.toBuilder().setNextHop(NextHopDiscard.instance()).build();
     boolean shouldExportToEbgpUnsetNextHop =
         nhipUnchangedPolicy.processBgpRoute(
             noNhipRoute, outputRouteBuilder, ebgpSession, Direction.OUT);
@@ -784,15 +789,17 @@ public final class CiscoNxosGrammarTest {
 
     // Create eigrp routes to redistribute
     EigrpInternalRoute.Builder internalRb =
-        EigrpInternalRoute.builder()
+        EigrpInternalRoute.testBuilder()
             .setProcessAsn(1L)
             .setEigrpMetricVersion(EigrpMetricVersion.V2)
             .setEigrpMetric(
                 ClassicMetric.builder()
                     .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
                     .build());
-    EigrpRoute matchEigrp = internalRb.setNetwork(matchRm).build();
-    EigrpRoute noMatchEigrp = internalRb.setNetwork(noMatchRm).build();
+    EigrpRoute matchEigrp =
+        internalRb.setNextHop(NextHopDiscard.instance()).setNetwork(matchRm).build();
+    EigrpRoute noMatchEigrp =
+        internalRb.setNextHop(NextHopDiscard.instance()).setNetwork(noMatchRm).build();
 
     {
       // Redistribute matching EIGRP route into EBGP
@@ -803,7 +810,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.builder()
+              Bgpv4Route.testBuilder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
@@ -833,7 +840,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.builder()
+              Bgpv4Route.testBuilder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.IBGP)
                   .setAdmin(ibgpAdmin)
@@ -857,7 +864,7 @@ public final class CiscoNxosGrammarTest {
     {
       // Ensure external EIGRP route can also match routing policy
       EigrpRoute matchEigrpEx =
-          EigrpExternalRoute.builder()
+          EigrpExternalRoute.testBuilder()
               .setProcessAsn(1L)
               .setDestinationAsn(2L)
               .setEigrpMetricVersion(EigrpMetricVersion.V2)
@@ -875,7 +882,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.builder()
+              Bgpv4Route.testBuilder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
@@ -1523,13 +1530,13 @@ public final class CiscoNxosGrammarTest {
     Prefix bgpPermittedPrefix = Prefix.parse("2.2.2.2/32");
     Prefix connectedPermittedPrefix = Prefix.parse("3.3.3.3/32");
     org.batfish.datamodel.StaticRoute.Builder staticRb =
-        org.batfish.datamodel.StaticRoute.builder().setNextHopInterface("foo").setAdmin(1);
+        org.batfish.datamodel.StaticRoute.testBuilder().setNextHopInterface("foo").setAdmin(1);
     org.batfish.datamodel.StaticRoute staticDenied =
         staticRb.setNetwork(bgpPermittedPrefix).build();
     org.batfish.datamodel.StaticRoute staticPermitted =
         staticRb.setNetwork(staticPermittedPrefix).build();
     Bgpv4Route.Builder bgpRb =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAdmin(1)
             .setOriginatorIp(Ip.parse("3.3.3.3"))
             .setOriginType(OriginType.IGP)
@@ -1540,6 +1547,7 @@ public final class CiscoNxosGrammarTest {
         ConnectedRoute.builder().setNetwork(Prefix.ZERO).setNextHopInterface("Ethernet1").build();
     ConnectedRoute connectedPermitted =
         connectedDenied.toBuilder().setNetwork(connectedPermittedPrefix).build();
+    NextHopIp nh = NextHopIp.of(Ip.parse("5.5.5.5"));
 
     // Redistributed routes should have default EIGRP metric: bw 100000 kbps, delay 1E9 ps.
     EigrpMetric defaultMetric =
@@ -1549,13 +1557,17 @@ public final class CiscoNxosGrammarTest {
     {
       // Redistribution policy denies static route that doesn't match static_redist route-map
       EigrpExternalRoute.Builder rb =
-          EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2);
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(EigrpMetricVersion.V2);
       assertFalse(redistPolicy.process(staticDenied, rb, eigrpProc, Direction.OUT));
     }
     {
       // Redistribution policy permits static route that matches static_redist route-map
       EigrpExternalRoute.Builder rb =
-          EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2);
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(EigrpMetricVersion.V2);
       assertTrue(redistPolicy.process(staticPermitted, rb, eigrpProc, Direction.OUT));
       // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
       // built, so first set other required fields.
@@ -1565,13 +1577,17 @@ public final class CiscoNxosGrammarTest {
     {
       // Redistribution policy denies BGP route that doesn't match bgp_redist route-map
       EigrpExternalRoute.Builder rb =
-          EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2);
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(EigrpMetricVersion.V2);
       assertFalse(redistPolicy.process(bgpDenied, rb, eigrpProc, Direction.OUT));
     }
     {
       // Redistribution policy permits BGP route that matches bgp_redist route-map
       EigrpExternalRoute.Builder rb =
-          EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2);
+          EigrpExternalRoute.testBuilder()
+              .setNextHop(nh)
+              .setEigrpMetricVersion(EigrpMetricVersion.V2);
       assertTrue(redistPolicy.process(bgpPermitted, rb, eigrpProc, Direction.OUT));
       // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
       // built, so first set other required fields.
@@ -1583,24 +1599,28 @@ public final class CiscoNxosGrammarTest {
       assertFalse(
           redistPolicy.process(
               connectedDenied,
-              EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpExternalRoute.testBuilder()
+                  .setNextHop(nh)
+                  .setEigrpMetricVersion(EigrpMetricVersion.V2),
               eigrpProc,
               Direction.OUT));
       assertTrue(
           redistPolicy.process(
               connectedPermitted,
-              EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpExternalRoute.testBuilder()
+                  .setNextHop(nh)
+                  .setEigrpMetricVersion(EigrpMetricVersion.V2),
               eigrpProc,
               Direction.OUT));
     }
     {
       // Make sure VRF redistribution policy correctly applies default-metric 1 2 3 4 5
       EigrpExternalRoute.Builder rb =
-          EigrpExternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2);
+          EigrpExternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2);
       assertTrue(vrfRedistPolicy.process(staticPermitted, rb, vrfEigrpProc, Direction.OUT));
       // Policy should set default EIGRP metric. To check route's EIGRP metric, it needs to be
       // built, so first set other required fields.
-      rb.setNetwork(staticPermittedPrefix).setProcessAsn(1L).setDestinationAsn(2L);
+      rb.setNetwork(staticPermittedPrefix).setProcessAsn(1L).setNextHop(nh).setDestinationAsn(2L);
       EigrpMetric expectedMetric =
           ClassicMetric.builder()
               .setValues(
@@ -1617,7 +1637,7 @@ public final class CiscoNxosGrammarTest {
     {
       // Make sure VRF redistribution policy does not redistribute BGP routes, since no BGP process
       // has ASN 2 (and vrf1 EIGRP config has `redistribute bgp 2 route-map bgp_redist`)
-      EigrpExternalRoute.Builder rb = EigrpExternalRoute.builder();
+      EigrpExternalRoute.Builder rb = EigrpExternalRoute.testBuilder();
       assertFalse(vrfRedistPolicy.process(bgpPermitted, rb, vrfEigrpProc, Direction.OUT));
     }
   }
@@ -5041,7 +5061,7 @@ public final class CiscoNxosGrammarTest {
     {
       // common routes for default-originate tests
       org.batfish.datamodel.StaticRoute staticInputRoute =
-          org.batfish.datamodel.StaticRoute.builder()
+          org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
               .setNextHopInterface(org.batfish.datamodel.Interface.NULL_INTERFACE_NAME)
@@ -5193,7 +5213,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("r_static");
       // can redistribute static default route on NX-OS
       org.batfish.datamodel.StaticRoute inputRoute =
-          org.batfish.datamodel.StaticRoute.builder()
+          org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
               .setNextHopInterface("dummy")
@@ -6211,7 +6231,7 @@ public final class CiscoNxosGrammarTest {
             computeRoutingPolicyName("reach_continue_target_without_match", 30)));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -6328,6 +6348,7 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyPermitsRoute(
           rp,
           LocalRoute.builder()
+              .setNextHop(NextHopInterface.of("iface"))
               .setNetwork(Prefix.parse("1.2.3.4/32"))
               .setSourcePrefixLength(24)
               .build());
@@ -6401,7 +6422,7 @@ public final class CiscoNxosGrammarTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("match_source_protocol_connected");
       assertRoutingPolicyDeniesRoute(
           rp,
-          org.batfish.datamodel.StaticRoute.builder()
+          org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
               .setNextHopIp(Ip.ZERO)
@@ -6413,7 +6434,7 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
       assertRoutingPolicyPermitsRoute(
           rp,
-          org.batfish.datamodel.StaticRoute.builder()
+          org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
               .setNextHopIp(Ip.ZERO)
@@ -6528,7 +6549,7 @@ public final class CiscoNxosGrammarTest {
               .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
               .build();
       EigrpRoute routeBefore =
-          EigrpInternalRoute.builder()
+          EigrpInternalRoute.testBuilder()
               .setAdmin(90)
               .setNetwork(Prefix.ZERO)
               .setEigrpMetric(originalMetric)
@@ -6536,7 +6557,7 @@ public final class CiscoNxosGrammarTest {
               .setProcessAsn(1L)
               .build();
       EigrpExternalRoute.Builder builder =
-          EigrpExternalRoute.builder()
+          EigrpExternalRoute.testBuilder()
               .setAdmin(90)
               .setNetwork(Prefix.ZERO)
               .setEigrpMetricVersion(EigrpMetricVersion.V2)
@@ -7231,7 +7252,7 @@ public final class CiscoNxosGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKey("RM"));
     RoutingPolicy rm = c.getRoutingPolicies().get("RM");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setTag(0L)
             .setSrcProtocol(RoutingProtocol.BGP)
             .setMetric(0L) // 30 match metric 3
@@ -8230,9 +8251,10 @@ public final class CiscoNxosGrammarTest {
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
     // helper builder
     EigrpInternalRoute.Builder builder =
-        EigrpInternalRoute.builder()
+        EigrpInternalRoute.testBuilder()
             .setAdmin(90)
             .setEigrpMetricVersion(EigrpMetricVersion.V2)
+            .setNextHop(NextHopDiscard.instance())
             .setEigrpMetric(
                 ClassicMetric.builder()
                     .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
@@ -8251,12 +8273,12 @@ public final class CiscoNxosGrammarTest {
       assertTrue(
           importPolicy.process(
               builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
-              EigrpInternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpInternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2),
               Direction.IN));
       assertFalse(
           importPolicy.process(
               builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
-              EigrpInternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpInternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2),
               Direction.IN));
 
       RoutingPolicy exportPolicy = policies.get(exportPolicyName);
@@ -8264,12 +8286,12 @@ public final class CiscoNxosGrammarTest {
       assertTrue(
           exportPolicy.process(
               builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
-              EigrpInternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpInternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2),
               Direction.OUT));
       assertFalse(
           exportPolicy.process(
               builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
-              EigrpInternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpInternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2),
               Direction.OUT));
     }
     {
@@ -8285,14 +8307,14 @@ public final class CiscoNxosGrammarTest {
       assertTrue(
           importPolicy.process(
               builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
-              EigrpInternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpInternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2),
               Direction.IN));
 
       RoutingPolicy exportPolicy = policies.get(exportPolicyName);
       assertTrue(
           exportPolicy.process(
               builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
-              EigrpInternalRoute.builder().setEigrpMetricVersion(EigrpMetricVersion.V2),
+              EigrpInternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2),
               Direction.OUT));
     }
   }

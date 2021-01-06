@@ -7,6 +7,8 @@ import static org.junit.Assert.assertThat;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,7 +21,7 @@ public final class StaticRouteTest {
   @Test
   public void checkAllAttrs() {
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("Ethernet0")
@@ -42,10 +44,11 @@ public final class StaticRouteTest {
   @Test
   public void checkNullNextHop() {
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setAdministrativeCost(1)
             .setNextHopIp(null)
+            .setNextHopInterface("iface")
             .build();
     assertThat(sr.getNextHopIp(), equalTo(Route.UNSET_ROUTE_NEXT_HOP_IP));
   }
@@ -53,19 +56,23 @@ public final class StaticRouteTest {
   @Test
   public void checkNullNextHopInterface() {
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setAdministrativeCost(1)
             .setNextHopInterface(null)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .build();
     assertThat(sr.getNextHopInterface(), equalTo(Route.UNSET_NEXT_HOP_INTERFACE));
   }
 
   @Test
   public void checkDefaults() {
-    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdministrativeCost(1).build();
-    assertThat(sr.getNextHopInterface(), equalTo(Route.UNSET_NEXT_HOP_INTERFACE));
-    assertThat(sr.getNextHopIp(), equalTo(Route.UNSET_ROUTE_NEXT_HOP_IP));
+    StaticRoute sr =
+        StaticRoute.builder()
+            .setNextHop(NextHopDiscard.instance())
+            .setNetwork(Prefix.ZERO)
+            .setAdministrativeCost(1)
+            .build();
     assertThat(sr.getNextVrf(), nullValue());
     assertThat(sr.getAdministrativeCost(), equalTo(1));
     assertThat(sr.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
@@ -81,7 +88,7 @@ public final class StaticRouteTest {
   @Test
   public void testToBuilderRoundTrip() {
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("Ethernet0")
@@ -97,7 +104,10 @@ public final class StaticRouteTest {
   @Test
   public void testEquals() {
     StaticRoute.Builder b =
-        StaticRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setAdministrativeCost(1);
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .setAdministrativeCost(1);
     new EqualsTester()
         .addEqualityGroup(b.build(), b.build())
         .addEqualityGroup(b.setNetwork(Prefix.parse("2.2.2.0/24")).build())
@@ -105,8 +115,7 @@ public final class StaticRouteTest {
         .addEqualityGroup(b.setNonRouting(true).build())
         .addEqualityGroup(b.setNonForwarding(true).build())
         .addEqualityGroup(b.setMetric(3).build())
-        .addEqualityGroup(b.setNextHopIp(Ip.parse("2.2.2.2")).build())
-        .addEqualityGroup(b.setNextHopInterface("Ethernet0").build())
+        .addEqualityGroup(b.setNextHop(NextHopIp.of(Ip.parse("2.2.2.2"))).build())
         .addEqualityGroup(b.setNextVrf("otherVrf").build())
         .addEqualityGroup(b.setTag(4L).build())
         .addEqualityGroup(new Object())
@@ -116,7 +125,7 @@ public final class StaticRouteTest {
   @Test
   public void checkJsonSerialization() {
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("Ethernet0")
@@ -132,7 +141,7 @@ public final class StaticRouteTest {
   @Test
   public void testJavaSerialization() {
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopIp(Ip.parse("192.168.1.1"))
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("Ethernet0")
