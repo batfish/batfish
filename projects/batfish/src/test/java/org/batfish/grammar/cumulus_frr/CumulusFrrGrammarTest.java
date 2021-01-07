@@ -156,6 +156,10 @@ public class CumulusFrrGrammarTest {
         .get(usage.getDescription());
   }
 
+  /**
+   * NB: the parse function can only be used once per test, as it breaks state that is setup cleanly
+   * once per test.
+   */
   private static void parse(String src) {
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
@@ -165,10 +169,18 @@ public class CumulusFrrGrammarTest {
     parseFromTextWithSettings(src, settings);
   }
 
+  /**
+   * NB: the parseLines function can only be used once per test, as it breaks state that is setup
+   * cleanly once per test.
+   */
   private static void parseLines(String... lines) {
     parse(String.join("\n", lines) + "\n");
   }
 
+  /**
+   * NB: the parseFromTextWithSettings function can only be used once per test, as it breaks state
+   * that is setup cleanly once per test.
+   */
   private static void parseFromTextWithSettings(String src, Settings settings) {
     CumulusFrrCombinedParser parser = new CumulusFrrCombinedParser(src, settings, 1, 0);
     ParserRuleContext tree =
@@ -1505,22 +1517,32 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testInterface_ospf_area() {
-    FrrInterface i1 = new FrrInterface("swp1", "VRF");
-    _frr.getInterfaces().put("swp1", i1);
-    parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0\n");
-    parse("interface swp1 vrf VRF\n ip ospf area 255.0.0.0\n");
+    parse("interface swp1\n ip ospf area 0.0.0.0\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
   }
 
   @Test
+  public void testInterface_ospf_area_subnet_mask() {
+    parse("interface swp1\n ip ospf area 255.0.0.0\n");
+    assertThat(_warnings.getParseWarnings(), empty());
+    assertThat(
+        _frr.getInterfaces().get("swp1").getOspf().getOspfArea(),
+        equalTo(Ip.parse("255.0.0.0").asLong()));
+  }
+
+  @Test
   public void testInterface_ospf_area_num() {
-    FrrInterface i1 = new FrrInterface("swp1", "VRF");
-    _frr.getInterfaces().put("swp1", i1);
-    parse("interface swp1 vrf VRF\n ip ospf area 0\n");
-    parse("interface swp1 vrf VRF\n ip ospf area 4000000000\n");
+    parse("interface swp1\n ip ospf area 0\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
+  }
+
+  @Test
+  public void testInterface_ospf_area_num32bit() {
+    parse("interface swp1\n ip ospf area 4000000000\n");
+    assertThat(_warnings.getParseWarnings(), empty());
+    assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(4000000000L));
   }
 
   @Test
