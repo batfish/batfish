@@ -923,6 +923,9 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         parseConfig("bgp-multipath-external").getDefaultVrf(),
         hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false))));
+    assertThat(
+        parseConfig("bgp-multipath-none").getDefaultVrf(),
+        hasBgpProcess(allOf(hasMultipathEbgp(false), hasMultipathIbgp(false))));
   }
 
   @Test
