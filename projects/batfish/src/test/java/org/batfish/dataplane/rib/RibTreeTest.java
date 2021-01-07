@@ -5,13 +5,17 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Test;
 
 public final class RibTreeTest {
   @Test
   public void testRemoveRouteGetDelta() {
-    StaticRoute.Builder srb = StaticRoute.builder().setNetwork(Prefix.parse("1.0.0.0/8"));
+    StaticRoute.Builder srb =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.0.0.0/8"))
+            .setNextHop(NextHopDiscard.instance());
     StaticRoute r1 = srb.setAdministrativeCost(2).setTag(1L).build();
     StaticRoute r2 = srb.setAdministrativeCost(2).setTag(2L).build();
     StaticRoute r3 = srb.setAdministrativeCost(1).setTag(3L).build();

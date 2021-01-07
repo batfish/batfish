@@ -124,7 +124,7 @@ public class FibImplTest {
      */
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopInterface(FAST_ETHERNET_0)
                 .setNextHopIp(EXTERNAL_IP)
@@ -155,7 +155,7 @@ public class FibImplTest {
      */
     _vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(DST_IP.toPrefix())
                 .setNextHopIp(Ip.parse("2.1.1.1"))
                 .setAdministrativeCost(1)
@@ -181,14 +181,14 @@ public class FibImplTest {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
             .setNonForwarding(true)
             .build();
     StaticRoute forwardingRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("2.2.2.0/24"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
@@ -211,7 +211,7 @@ public class FibImplTest {
     String nextVrf = "nextVrf";
 
     StaticRoute nextVrfRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setNextVrf("nextVrf")
             .setAdministrativeCost(1)
@@ -231,7 +231,7 @@ public class FibImplTest {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth2")
             .setAdministrativeCost(1)
@@ -239,7 +239,7 @@ public class FibImplTest {
             .build();
 
     StaticRoute forwardingLessSpecificRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/31"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
@@ -247,7 +247,7 @@ public class FibImplTest {
             .build();
 
     StaticRoute testRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("2.2.2.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1")) // matches both routes defined above
             .setAdministrativeCost(1)
@@ -274,7 +274,7 @@ public class FibImplTest {
     Rib rib = new Rib();
 
     StaticRoute nonForwardingRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth2")
             .setAdministrativeCost(1)
@@ -282,14 +282,14 @@ public class FibImplTest {
             .build();
 
     StaticRoute ecmpForwardingRoute1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth3")
             .setAdministrativeCost(1)
             .setNonForwarding(false)
             .build();
     StaticRoute ecmpForwardingRoute2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setNextHopInterface("Eth4")
             .setAdministrativeCost(1)
@@ -297,7 +297,7 @@ public class FibImplTest {
             .build();
 
     StaticRoute forwardingLessSpecificRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/31"))
             .setNextHopInterface("Eth1")
             .setAdministrativeCost(1)
@@ -306,7 +306,7 @@ public class FibImplTest {
 
     final Prefix TEST_PREFIX = Prefix.parse("2.2.2.0/24");
     StaticRoute testRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(TEST_PREFIX)
             .setNextHopIp(Ip.parse("1.1.1.1")) // matches multiple routes defined above
             .setAdministrativeCost(1)

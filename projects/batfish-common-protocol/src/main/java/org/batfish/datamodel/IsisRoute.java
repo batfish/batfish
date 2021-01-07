@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.isis.IsisLevel;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /** IS-IS route */
 public class IsisRoute extends AbstractRoute {
@@ -33,7 +34,7 @@ public class IsisRoute extends AbstractRoute {
           requireNonNull(_level),
           getMetric(),
           requireNonNull(getNetwork()),
-          requireNonNull(getNextHopIp()),
+          requireNonNull(_nextHop),
           _overload,
           requireNonNull(_protocol),
           requireNonNull(_systemId),
@@ -116,7 +117,7 @@ public class IsisRoute extends AbstractRoute {
         requireNonNull(level),
         metric,
         requireNonNull(network),
-        requireNonNull(nextHopIp),
+        NextHop.legacyConverter(null, nextHopIp),
         overload,
         requireNonNull(protocol),
         requireNonNull(systemId),
@@ -135,8 +136,6 @@ public class IsisRoute extends AbstractRoute {
 
   private final long _metric;
 
-  private final Ip _nextHopIp;
-
   private final boolean _overload;
 
   private final RoutingProtocol _protocol;
@@ -151,7 +150,7 @@ public class IsisRoute extends AbstractRoute {
       @Nonnull IsisLevel level,
       long metric,
       @Nonnull Prefix network,
-      @Nonnull Ip nextHopIp,
+      @Nonnull NextHop nextHop,
       boolean overload,
       @Nonnull RoutingProtocol protocol,
       @Nonnull String systemId,
@@ -164,7 +163,7 @@ public class IsisRoute extends AbstractRoute {
     _down = down;
     _level = level;
     _metric = metric;
-    _nextHopIp = nextHopIp;
+    _nextHop = nextHop;
     _overload = overload;
     _protocol = protocol;
     _systemId = systemId;
@@ -205,16 +204,6 @@ public class IsisRoute extends AbstractRoute {
     return _metric;
   }
 
-  @Override
-  public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
-  }
-
-  @Override
-  public @Nonnull Ip getNextHopIp() {
-    return _nextHopIp;
-  }
-
   /** Overload bit indicates this route came through an overloaded interface level. */
   @JsonProperty(PROP_OVERLOAD)
   public boolean getOverload() {
@@ -246,7 +235,7 @@ public class IsisRoute extends AbstractRoute {
         .setLevel(_level)
         .setMetric(_metric)
         .setNetwork(_network)
-        .setNextHopIp(_nextHopIp)
+        .setNextHop(_nextHop)
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
         .setOverload(_overload)
@@ -271,7 +260,7 @@ public class IsisRoute extends AbstractRoute {
         && _level == rhs._level
         && _metric == rhs._metric
         && _network.equals(rhs._network)
-        && _nextHopIp.equals(rhs._nextHopIp)
+        && _nextHop.equals(rhs._nextHop)
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
         && _overload == rhs._overload
@@ -290,7 +279,7 @@ public class IsisRoute extends AbstractRoute {
         _level.ordinal(),
         _metric,
         _network,
-        _nextHopIp,
+        _nextHop,
         getNonForwarding(),
         getNonRouting(),
         _overload,

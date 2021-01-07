@@ -50,7 +50,7 @@ public class BgpProtocolHelperTest {
   @Before
   public void resetDefaultRouteBuilders() {
     _baseBgpRouteBuilder =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setOriginatorIp(ORIGINATOR_IP)
             .setOriginType(OriginType.IGP)
             .setNetwork(DEST_NETWORK)
@@ -332,8 +332,8 @@ public class BgpProtocolHelperTest {
                         new SetCommunity(new LiteralCommunity(community)),
                         Statements.ReturnTrue.toStaticStatement()))
                 .build(),
-            Ip.MAX,
-            Ip.ZERO,
+            Ip.parse("1.1.1.1"),
+            Ip.parse("1.1.1.1"),
             true);
 
     assertThat(result.getCommunities().getCommunities(), equalTo(ImmutableSet.of(community)));

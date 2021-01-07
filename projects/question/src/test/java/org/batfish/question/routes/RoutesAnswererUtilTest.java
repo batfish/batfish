@@ -58,7 +58,6 @@ import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
@@ -74,6 +73,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
 import org.batfish.question.routes.RoutesAnswererTest.MockRib;
@@ -221,7 +221,7 @@ public class RoutesAnswererUtilTest {
     Prefix prefix = ip.toPrefix();
     Ip bgpUnnumIp = Ip.parse("169.254.0.1");
     Bgpv4Route.Builder rb =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(prefix)
             .setOriginType(OriginType.IGP)
             .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
@@ -281,10 +281,11 @@ public class RoutesAnswererUtilTest {
         "node",
         "vrf",
         ImmutableSet.of(
-            new Builder()
+            Bgpv4Route.builder()
                 .setNetwork(ip.toPrefix())
                 .setOriginType(OriginType.IGP)
                 .setOriginatorIp(ip)
+                .setNextHop(NextHopIp.of(ip))
                 .setReceivedFromIp(ip)
                 .setCommunities(ImmutableSortedSet.of(StandardCommunity.of(65537L)))
                 .setProtocol(RoutingProtocol.BGP)
@@ -530,7 +531,7 @@ public class RoutesAnswererUtilTest {
   @Test
   public void testGroupMatchingBgpRoutesByPrefix() {
     Bgpv4Route bgpv4Route1 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.2"))
             .setOriginType(OriginType.IGP)
@@ -543,7 +544,7 @@ public class RoutesAnswererUtilTest {
             .build();
 
     Bgpv4Route bgpv4Route2 =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.3"))
             .setAdmin(10)

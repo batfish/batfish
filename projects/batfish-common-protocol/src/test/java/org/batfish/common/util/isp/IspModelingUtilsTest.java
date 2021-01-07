@@ -548,7 +548,7 @@ public class IspModelingUtilsTest {
                 ispInfo.getAdditionalPrefixesToInternet().stream()
                     .map(
                         prefix ->
-                            StaticRoute.builder()
+                            StaticRoute.testBuilder()
                                 .setNetwork(prefix)
                                 .setNextHopInterface(NULL_INTERFACE_NAME)
                                 .setAdministrativeCost(HIGH_ADMINISTRATIVE_COST)
@@ -733,7 +733,7 @@ public class IspModelingUtilsTest {
                         equalTo(
                             new ImmutableSortedSet.Builder<StaticRoute>(Comparator.naturalOrder())
                                 .add(
-                                    StaticRoute.builder()
+                                    StaticRoute.testBuilder()
                                         .setNetwork(Prefix.ZERO)
                                         .setNextHopInterface(
                                             IspModelingUtils.INTERNET_OUT_INTERFACE)
@@ -743,7 +743,7 @@ public class IspModelingUtilsTest {
                                     INTERNET_NULL_ROUTED_PREFIXES.stream()
                                         .map(
                                             prefix ->
-                                                StaticRoute.builder()
+                                                StaticRoute.testBuilder()
                                                     .setNetwork(prefix)
                                                     .setNextHopInterface(NULL_INTERFACE_NAME)
                                                     .setAdministrativeCost(1)

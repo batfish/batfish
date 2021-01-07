@@ -4,12 +4,12 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 
 /**
  * Represents directly connected routes. These are typically generated based on interface
@@ -18,12 +18,12 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class ConnectedRoute extends AbstractRoute {
 
-  @Nonnull private final String _nextHopInterface;
-
   @JsonCreator
+  @SuppressWarnings("unused")
   private static ConnectedRoute create(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) String nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create connected route: missing %s", PROP_NETWORK);
@@ -54,26 +54,12 @@ public final class ConnectedRoute extends AbstractRoute {
 
   public ConnectedRoute(Prefix network, String nextHopInterface, int adminCost, long tag) {
     super(network, adminCost, tag, false, false);
-    _nextHopInterface = nextHopInterface;
+    _nextHop = NextHopInterface.of(nextHopInterface);
   }
 
   @Override
   public Long getMetric() {
     return 0L;
-  }
-
-  @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
-  @Override
-  public String getNextHopInterface() {
-    return _nextHopInterface;
-  }
-
-  @Nonnull
-  @Override
-  public Ip getNextHopIp() {
-    return Route.UNSET_ROUTE_NEXT_HOP_IP;
   }
 
   @Override
@@ -83,25 +69,22 @@ public final class ConnectedRoute extends AbstractRoute {
 
   /** Builder for {@link ConnectedRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, ConnectedRoute> {
-    @Nullable private String _nextHopInterface;
 
     @Nonnull
     @Override
     public ConnectedRoute build() {
       checkArgument(
-          _nextHopInterface != null, "ConnectedRoute must have %s", PROP_NEXT_HOP_INTERFACE);
-      return new ConnectedRoute(getNetwork(), _nextHopInterface, getAdmin(), getTag());
+          _nextHop != null && _nextHop instanceof NextHopInterface,
+          "ConnectedRoute must have %s",
+          PROP_NEXT_HOP_INTERFACE);
+      return new ConnectedRoute(
+          getNetwork(), ((NextHopInterface) _nextHop).getInterfaceName(), getAdmin(), getTag());
     }
 
     @Nonnull
     @Override
     protected Builder getThis() {
       return this;
-    }
-
-    public Builder setNextHopInterface(String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
-      return getThis();
     }
   }
 
@@ -116,7 +99,7 @@ public final class ConnectedRoute extends AbstractRoute {
     return builder()
         .setNetwork(getNetwork())
         .setAdmin(_admin)
-        .setNextHopInterface(_nextHopInterface)
+        .setNextHop(_nextHop)
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
         .setTag(_tag);
@@ -134,13 +117,12 @@ public final class ConnectedRoute extends AbstractRoute {
         && _admin == rhs._admin
         && getNonRouting() == rhs.getNonRouting()
         && getNonForwarding() == rhs.getNonForwarding()
-        && _nextHopInterface.equals(rhs._nextHopInterface)
+        && _nextHop.equals(rhs._nextHop)
         && _tag == rhs._tag;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _network, _admin, getNonRouting(), getNonForwarding(), _nextHopInterface, _tag);
+    return Objects.hash(_network, _admin, getNonRouting(), getNonForwarding(), _nextHop, _tag);
   }
 }

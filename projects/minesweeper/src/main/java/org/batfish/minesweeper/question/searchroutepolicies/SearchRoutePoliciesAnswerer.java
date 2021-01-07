@@ -54,6 +54,7 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -254,6 +255,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
+            .setNextHop(NextHopDiscard.instance())
             .setProtocol(RoutingProtocol.BGP);
 
     Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));

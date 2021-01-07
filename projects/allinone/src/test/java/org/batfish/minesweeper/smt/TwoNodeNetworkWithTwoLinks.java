@@ -84,7 +84,7 @@ public class TwoNodeNetworkWithTwoLinks {
                 DST_PREFIX_2.getStartIp(), DST_PREFIX_2.getPrefixLength()))
         .build();
 
-    StaticRoute.Builder bld = StaticRoute.builder().setAdministrativeCost(1);
+    StaticRoute.Builder bld = StaticRoute.testBuilder().setAdministrativeCost(1);
     srcVrf.setStaticRoutes(
         ImmutableSortedSet.of(
             bld.setNetwork(DST_PREFIX_1).setNextHopIp(LINK_1_NETWORK.getEndIp()).build(),

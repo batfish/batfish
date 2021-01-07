@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,7 +67,11 @@ public class RipInternalRouteTest {
   @Test
   public void testToBuilder() {
     RipInternalRoute r =
-        RipInternalRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setMetric(1L).build();
+        RipInternalRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setMetric(1L)
+            .setNextHop(NextHopDiscard.instance())
+            .build();
     assertThat(r.toBuilder().build(), Matchers.equalTo(r));
   }
 }

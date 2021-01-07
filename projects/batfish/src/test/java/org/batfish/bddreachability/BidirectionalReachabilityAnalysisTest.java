@@ -203,7 +203,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Vrf v1 = vb.setOwner(n1).build();
     v1.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.ZERO)
                 .setNextHopIp(FPFN_END_NEIGHBOR_ADDRESS.getIp())
                 .setAdmin(1)
@@ -211,7 +211,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Vrf v2 = vb.setOwner(n2).build();
     v2.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.ZERO)
                 .setNextHopIp(FPFN_START_EGRESS_ADDRESS.getIp())
                 .setAdmin(1)
@@ -279,7 +279,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Interface source1Iface = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("255.255.255.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(source1Iface.getName())
@@ -292,7 +292,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Interface source2Iface = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.2/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("255.255.255.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(source2Iface.getName())
@@ -533,7 +533,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Interface source1Iface = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.1/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("255.255.255.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(source1Iface.getName())
@@ -547,7 +547,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Interface source2Iface2 = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.2/29")).build();
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("255.255.255.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(source2Iface2.getName())
@@ -705,7 +705,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         nf.aclBuilder().setOwner(source1).setLines(ImmutableList.of(permitTcpLine)).build());
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("255.255.255.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(source1Iface.getName())
@@ -720,12 +720,12 @@ public final class BidirectionalReachabilityAnalysisTest {
     Prefix source2Iface1RoutePrefix = Prefix.parse("9.9.9.9/32");
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(source2Iface1RoutePrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(source2Iface1.getName())
                 .build(),
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("255.255.255.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(source2Iface2.getName())
@@ -956,7 +956,7 @@ public final class BidirectionalReachabilityAnalysisTest {
       ingressVrf
           .getStaticRoutes()
           .add(
-              StaticRoute.builder()
+              StaticRoute.testBuilder()
                   .setNetwork(Prefix.ZERO)
                   .setNextVrf(SFL_EGRESS_VRF)
                   .setAdmin(1)
@@ -965,7 +965,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         egressVrf
             .getStaticRoutes()
             .add(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextVrf(SFL_INGRESS_VRF)
                     .setAdmin(1)
@@ -989,7 +989,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     neighborVrf
         .getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.ZERO)
                 .setAdmin(1)
                 .setNextHopIp(SFL_EGRESS_IFACE_ADDRESS.getIp())
@@ -1018,7 +1018,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Vrf vrf = nf.vrfBuilder().setName(SFL_INGRESS_VRF).setOwner(node).build();
     vrf.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.ZERO)
                 .setNextHopInterface(SFL_INGRESS_IFACE)
                 .setAdmin(1)
@@ -1265,7 +1265,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     Interface.Builder ib = nf.interfaceBuilder().setActive(true);
-    StaticRoute.Builder rb = StaticRoute.builder().setAdministrativeCost(1);
+    StaticRoute.Builder rb = StaticRoute.testBuilder().setAdministrativeCost(1);
 
     Prefix srcTransitPrefix = Prefix.parse("2.0.0.0/31");
     Prefix srcOtherPrefix = Prefix.parse("2.0.0.2/31");

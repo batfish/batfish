@@ -102,12 +102,12 @@ public class RoutesAnswererTest {
                 Configuration.DEFAULT_VRF_NAME,
                 new MockRib<>(
                     ImmutableSet.of(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
                             .setAdministrativeCost(1)
                             .build(),
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(Prefix.parse("2.2.2.0/24"))
                             .setNextHopInterface("Null")
                             .setAdministrativeCost(1)
@@ -136,7 +136,7 @@ public class RoutesAnswererTest {
                 Configuration.DEFAULT_VRF_NAME,
                 new MockRib<>(
                     ImmutableSet.of(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setAdministrativeCost(1)
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
@@ -163,7 +163,7 @@ public class RoutesAnswererTest {
                 Configuration.DEFAULT_VRF_NAME,
                 new MockRib<>(
                     ImmutableSet.of(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
                             .setAdministrativeCost(1)
@@ -188,7 +188,7 @@ public class RoutesAnswererTest {
                 Configuration.DEFAULT_VRF_NAME,
                 new MockRib<>(
                     ImmutableSet.of(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setAdministrativeCost(1)
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .setNextHopInterface("Null")
@@ -196,7 +196,7 @@ public class RoutesAnswererTest {
                 "notDefaultVrf",
                 new MockRib<>(
                     ImmutableSet.of(
-                        StaticRoute.builder()
+                        StaticRoute.testBuilder()
                             .setNetwork(Prefix.parse("2.2.2.0/24"))
                             .setNextHopInterface("Null")
                             .setAdministrativeCost(1)
@@ -448,7 +448,7 @@ public class RoutesAnswererTest {
                 new MockRib<>(
                     ImmutableSet.of(
                         new AnnotatedRoute<>(
-                            StaticRoute.builder()
+                            StaticRoute.testBuilder()
                                 .setAdministrativeCost(1)
                                 .setNetwork(Prefix.parse("1.1.1.1/32"))
                                 .setNextHopInterface("Null")

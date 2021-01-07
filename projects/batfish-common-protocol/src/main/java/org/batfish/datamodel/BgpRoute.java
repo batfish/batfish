@@ -22,6 +22,7 @@ import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /** A generic BGP route containing the common properties among different types of BGP routes */
@@ -50,7 +51,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nonnull protected Set<Community> _communities;
     protected boolean _discard;
     protected long _localPreference;
-    @Nullable protected String _nextHopInterface;
     @Nullable protected Ip _originatorIp;
     @Nullable protected OriginType _originType;
     @Nullable protected RoutingProtocol _protocol;
@@ -59,7 +59,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nullable protected RoutingProtocol _srcProtocol;
     protected int _weight;
 
-    public Builder() {
+    protected Builder() {
       _asPath = AsPath.empty();
       _communities = ImmutableSet.of();
       _clusterList = ImmutableSet.of();
@@ -105,11 +105,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     public long getLocalPreference() {
       return _localPreference;
-    }
-
-    @Nullable
-    public String getNextHopInterface() {
-      return _nextHopInterface;
     }
 
     @Nullable
@@ -219,11 +214,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    public @Nonnull B setNextHopInterface(String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
-      return getThis();
-    }
-
     public B setOriginatorIp(Ip originatorIp) {
       _originatorIp = originatorIp;
       return getThis();
@@ -282,8 +272,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   protected final boolean _discard;
   protected final long _localPreference;
   protected final long _med;
-  @Nonnull protected final String _nextHopInterface;
-  @Nonnull protected final Ip _nextHopIp;
   @Nonnull protected final Ip _originatorIp;
   @Nonnull protected final OriginType _originType;
   @Nonnull protected final RoutingProtocol _protocol;
@@ -303,14 +291,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
   protected BgpRoute(
       @Nullable Prefix network,
-      @Nullable Ip nextHopIp,
+      @Nonnull NextHop nextHop,
       int admin,
       @Nullable AsPath asPath,
       @Nullable Set<Community> communities,
       boolean discard,
       long localPreference,
       long med,
-      String nextHopInterface,
       Ip originatorIp,
       @Nullable Set<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
@@ -335,8 +322,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _discard = discard;
     _localPreference = localPreference;
     _med = med;
-    _nextHopInterface = nextHopInterface;
-    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextHop = nextHop;
     _originatorIp = originatorIp;
     _originType = originType;
     _protocol = protocol;
@@ -390,22 +376,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Override
   public Long getMetric() {
     return _med;
-  }
-
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return _nextHopInterface;
-  }
-
-  @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_IP)
-  @Override
-  public Ip getNextHopIp() {
-    return _nextHopIp;
   }
 
   @Nonnull

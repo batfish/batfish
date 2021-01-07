@@ -128,14 +128,14 @@ public class TraceroutePolicyBasedRoutingTest {
     final Prefix prefixToMatch = Prefix.parse("9.9.9.0/24");
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(prefixToMatch)
                 .setNextHopInterface(i1.getName())
                 .setAdmin(1)
                 .build()));
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(prefixToMatch)
                 .setNextHopInterface(i2.getName())
                 .setAdmin(1)

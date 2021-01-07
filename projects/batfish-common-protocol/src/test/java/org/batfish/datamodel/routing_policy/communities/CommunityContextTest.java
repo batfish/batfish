@@ -46,7 +46,7 @@ public final class CommunityContextTest {
             Environment.builder(c)
                 .setUseOutputAttributes(true)
                 .setOutputRoute(
-                    Bgpv4Route.builder().setCommunities(outputCommunitySet.getCommunities()))
+                    Bgpv4Route.testBuilder().setCommunities(outputCommunitySet.getCommunities()))
                 .build());
 
     // first check attributes from configuration
@@ -63,7 +63,8 @@ public final class CommunityContextTest {
             Environment.builder(c)
                 .setReadFromIntermediateBgpAttributes(true)
                 .setIntermediateBgpAttributes(
-                    Bgpv4Route.builder().setCommunities(intermediateCommunitySet.getCommunities()))
+                    Bgpv4Route.testBuilder()
+                        .setCommunities(intermediateCommunitySet.getCommunities()))
                 .build());
     assertThat(useIntermediate.getInputCommunitySet(), equalTo(intermediateCommunitySet));
 
@@ -71,7 +72,7 @@ public final class CommunityContextTest {
         fromEnvironment(
             Environment.builder(c)
                 .setOriginalRoute(
-                    Bgpv4Route.builder()
+                    Bgpv4Route.testBuilder()
                         .setCommunities(inputRouteCommunitySet.getCommunities())
                         .setNetwork(Prefix.ZERO)
                         .setOriginatorIp(Ip.ZERO)

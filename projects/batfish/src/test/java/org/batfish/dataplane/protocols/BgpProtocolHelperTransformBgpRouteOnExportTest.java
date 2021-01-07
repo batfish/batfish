@@ -13,6 +13,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -39,6 +40,7 @@ import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -71,9 +73,10 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    */
   @Before
   public void resetDefaultRouteBuilders() {
-    _baseAggRouteBuilder = GeneratedRoute.builder().setNetwork(DEST_NETWORK);
+    _baseAggRouteBuilder =
+        GeneratedRoute.builder().setNextHop(NextHopDiscard.instance()).setNetwork(DEST_NETWORK);
     _baseBgpRouteBuilder =
-        new Bgpv4Route.Builder()
+        Bgpv4Route.testBuilder()
             .setOriginatorIp(ORIGINATOR_IP)
             .setOriginType(OriginType.IGP)
             .setNetwork(DEST_NETWORK)
@@ -130,7 +133,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           convertGeneratedRouteToBgp(
                   (GeneratedRoute) route,
                   _fromBgpProcess.getRouterId(),
-                  _headNeighbor.getLocalIp(),
+                  Objects.requireNonNull(_headNeighbor.getLocalIp()),
                   false)
               .build(),
           Type.IPV4_UNICAST);
@@ -225,6 +228,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                           AddressFamilyCapabilities.builder().setSendCommunity(true).build())
                       .build())
               .setLocalAs(AS1)
+              .setLocalIp(_headNeighbor.getLocalIp())
               .setRemoteAsns(_headNeighbor.getRemoteAsns())
               .build();
       transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
@@ -342,7 +346,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
     // Also check for a route type that does not have an asPath property
     StaticRoute staticRoute =
-        StaticRoute.builder().setNetwork(DEST_NETWORK).setAdministrativeCost(1).build();
+        StaticRoute.testBuilder().setNetwork(DEST_NETWORK).setAdministrativeCost(1).build();
     Bgpv4Route.Builder transformedRoute = runTransformBgpRoutePreExport(staticRoute);
     assertThat(transformedRoute.getAsPath(), equalTo(AsPath.empty()));
 
@@ -417,7 +421,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     setUpPeers(false);
     assertThat(
         convertNonBgpRouteToBgpRoute(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopInterface("foo")
                     .setAdministrativeCost(1)
@@ -437,7 +441,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     long metric = 333;
     assertThat(
         convertNonBgpRouteToBgpRoute(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopInterface("foo")
                     .setAdministrativeCost(1)
@@ -453,9 +457,9 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   @Test
   public void testAggregateProtocolIsCleared() {
-    Builder routeBuilder = Bgpv4Route.builder().setProtocol(RoutingProtocol.AGGREGATE);
+    Builder routeBuilder = Bgpv4Route.testBuilder().setProtocol(RoutingProtocol.AGGREGATE);
     transformBgpRoutePostExport(
-        routeBuilder, true, ConfedSessionType.NO_CONFED, 1, Ip.MAX, Ip.ZERO);
+        routeBuilder, true, ConfedSessionType.NO_CONFED, 1, Ip.parse("1.1.1.1"), Ip.ZERO);
     assertThat(
         "Protocol overriden to BGP", routeBuilder.getProtocol(), equalTo(RoutingProtocol.BGP));
   }

@@ -30,7 +30,7 @@ public class ForwardingAnalysisImplIntegrationTest {
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
     Prefix nonForwardingRoutePrefix = Prefix.parse("2.2.0.0/16");
     StaticRoute nonForwardingRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
             .setNetwork(nonForwardingRoutePrefix)
             .setNonForwarding(true)
@@ -83,13 +83,13 @@ public class ForwardingAnalysisImplIntegrationTest {
     Prefix forwardingRoutePrefix = Prefix.parse("2.0.0.0/8");
     Prefix nonForwardingRoutePrefix = Prefix.parse("2.2.0.0/16");
     StaticRoute forwardingRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopInterface(ifaceName)
             .setNetwork(forwardingRoutePrefix)
             .setAdministrativeCost(100)
             .build();
     StaticRoute nonForwardingRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
             .setNetwork(nonForwardingRoutePrefix)
             .setNonForwarding(true)
@@ -136,7 +136,7 @@ public class ForwardingAnalysisImplIntegrationTest {
 
     Prefix prefix = Prefix.parse("10.0.0.0/16");
     StaticRoute route =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopInterface(i1.getName())
             .setNetwork(prefix)
             .setAdministrativeCost(100)

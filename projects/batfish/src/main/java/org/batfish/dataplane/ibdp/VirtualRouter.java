@@ -78,6 +78,8 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -508,12 +510,13 @@ public final class VirtualRouter {
         long cost = RipProcess.DEFAULT_RIP_COST;
         for (Prefix prefix : allNetworkPrefixes) {
           RipInternalRoute route =
-              new RipInternalRoute(
-                  prefix,
-                  Route.UNSET_ROUTE_NEXT_HOP_IP,
-                  RoutingProtocol.RIP.getDefaultAdministrativeCost(_c.getConfigurationFormat()),
-                  cost,
-                  Route.UNSET_ROUTE_TAG);
+              RipInternalRoute.builder()
+                  .setNetwork(prefix)
+                  .setNextHop(NextHopInterface.of(ifaceName))
+                  .setAdmin(
+                      RoutingProtocol.RIP.getDefaultAdministrativeCost(_c.getConfigurationFormat()))
+                  .setMetric(cost)
+                  .build();
           _ripInternalRib.mergeRouteGetDelta(route);
         }
       }
@@ -968,8 +971,12 @@ public final class VirtualRouter {
           long newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
           Ip nextHopIp = neighborInterface.getConcreteAddress().getIp();
           RipInternalRoute newRoute =
-              new RipInternalRoute(
-                  neighborRoute.getNetwork(), nextHopIp, admin, newCost, Route.UNSET_ROUTE_TAG);
+              RipInternalRoute.builder()
+                  .setNetwork(neighborRoute.getNetwork())
+                  .setNextHop(NextHopIp.of(nextHopIp))
+                  .setAdmin(admin)
+                  .setMetric(newCost)
+                  .build();
           if (!_ripInternalStagingRib.mergeRouteGetDelta(newRoute).isEmpty()) {
             changed = true;
           }

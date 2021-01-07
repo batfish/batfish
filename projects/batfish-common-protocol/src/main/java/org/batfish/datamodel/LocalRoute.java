@@ -1,16 +1,16 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 
 /**
  * A local route. Local routes are more specific versions of interface (i.e., connected) routes.
@@ -21,13 +21,12 @@ public final class LocalRoute extends AbstractRoute {
 
   private static final String PROP_SOURCE_PREFIX_LENGTH = "sourcePrefixLength";
 
-  private final String _nextHopInterface;
   private final int _sourcePrefixLength;
 
   public LocalRoute(ConcreteInterfaceAddress interfaceAddress, String nextHopInterface) {
     this(
         interfaceAddress.getIp().toPrefix(),
-        nextHopInterface,
+        NextHopInterface.of(nextHopInterface),
         interfaceAddress.getNetworkBits(),
         0,
         Route.UNSET_ROUTE_TAG);
@@ -35,44 +34,33 @@ public final class LocalRoute extends AbstractRoute {
 
   @VisibleForTesting
   LocalRoute(Prefix network, String nextHopInterface, int sourcePrefixLength, int admin, long tag) {
+    this(network, NextHopInterface.of(nextHopInterface), sourcePrefixLength, admin, tag);
+  }
+
+  private LocalRoute(Prefix network, NextHop nextHop, int sourcePrefixLength, int admin, long tag) {
     super(network, admin, tag, false, false);
-    _nextHopInterface = nextHopInterface;
+    _nextHop = nextHop;
     _sourcePrefixLength = sourcePrefixLength;
   }
 
   @JsonCreator
+  @SuppressWarnings("unused")
   private static LocalRoute create(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_SOURCE_PREFIX_LENGTH) int sourcePrefixLength,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "LocalRoute missing %s", PROP_NETWORK);
+    checkArgument(nextHopInterface != null, "LocalRoute missing %s", PROP_NEXT_HOP_INTERFACE);
     return new LocalRoute(
-        network,
-        firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-        sourcePrefixLength,
-        admin,
-        tag);
+        network, NextHopInterface.of(nextHopInterface), sourcePrefixLength, admin, tag);
   }
 
   @Override
   public Long getMetric() {
     return 0L;
-  }
-
-  @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
-  @Override
-  public String getNextHopInterface() {
-    return _nextHopInterface;
-  }
-
-  @Nonnull
-  @Override
-  public Ip getNextHopIp() {
-    return Route.UNSET_ROUTE_NEXT_HOP_IP;
   }
 
   @Override
@@ -88,7 +76,6 @@ public final class LocalRoute extends AbstractRoute {
   /** Builder for {@link org.batfish.datamodel.LocalRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, LocalRoute> {
 
-    @Nullable private String _nextHopInterface;
     @Nullable private Integer _sourcePrefixLength;
 
     @Nonnull
@@ -97,22 +84,13 @@ public final class LocalRoute extends AbstractRoute {
       checkArgument(getNetwork() != null, "LocalRoute missing %s", PROP_NETWORK);
       checkArgument(
           _sourcePrefixLength != null, "LocalRoute missing %s", PROP_SOURCE_PREFIX_LENGTH);
-      return new LocalRoute(
-          getNetwork(),
-          firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-          _sourcePrefixLength,
-          getAdmin(),
-          getTag());
+      checkArgument(_nextHop != null, "LocalRoute missing next hop");
+      return new LocalRoute(getNetwork(), _nextHop, _sourcePrefixLength, getAdmin(), getTag());
     }
 
     @Nonnull
     @Override
     protected Builder getThis() {
-      return this;
-    }
-
-    public Builder setNextHopInterface(@Nullable String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
       return this;
     }
 
@@ -133,7 +111,7 @@ public final class LocalRoute extends AbstractRoute {
         .setAdmin(_admin)
         .setNonRouting(getNonRouting())
         .setNonForwarding(getNonForwarding())
-        .setNextHopInterface(_nextHopInterface)
+        .setNextHop(_nextHop)
         .setSourcePrefixLength(_sourcePrefixLength)
         .setTag(_tag);
   }
@@ -152,7 +130,7 @@ public final class LocalRoute extends AbstractRoute {
         && _admin == rhs._admin
         && getNonRouting() == rhs.getNonRouting()
         && getNonForwarding() == rhs.getNonForwarding()
-        && _nextHopInterface.equals(rhs._nextHopInterface)
+        && _nextHop.equals(rhs._nextHop)
         && _sourcePrefixLength == rhs._sourcePrefixLength
         && _tag == rhs._tag;
   }
@@ -160,12 +138,6 @@ public final class LocalRoute extends AbstractRoute {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _network,
-        _admin,
-        getNonRouting(),
-        getNonForwarding(),
-        _nextHopInterface,
-        _sourcePrefixLength,
-        _tag);
+        _network, _admin, getNonRouting(), getNonForwarding(), _nextHop, _sourcePrefixLength, _tag);
   }
 }

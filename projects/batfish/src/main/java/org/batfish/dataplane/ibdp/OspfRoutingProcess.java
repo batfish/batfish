@@ -51,6 +51,7 @@ import org.batfish.datamodel.ospf.OspfSessionProperties;
 import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -1303,7 +1304,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   Optional<OspfExternalRoute> convertToExternalRoute(
       AbstractRouteDecorator potentialExportRoute, RoutingPolicy exportPolicy) {
     // Prepare the builder
-    OspfExternalRoute.Builder outputRouteBuilder = OspfExternalRoute.builder();
+    OspfExternalRoute.Builder outputRouteBuilder =
+        OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance());
     // Export based on the policy result of processing the potentialExportRoute
     boolean accept = exportPolicy.process(potentialExportRoute, outputRouteBuilder, Direction.OUT);
     if (!accept) {

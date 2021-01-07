@@ -45,6 +45,8 @@ import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfigId;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.eigrp.EigrpTopology;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.rib.EigrpExternalRib;
@@ -263,6 +265,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
                 .setEigrpMetricVersion(_process.getMetricVersion())
                 .setNetwork(prefix)
                 .setProcessAsn(_asn)
+                .setNextHop(NextHopInterface.of(ifaceName))
                 .build();
         builder.from(_internalRib.mergeRouteGetDelta(route));
       }
@@ -325,7 +328,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
             .setEigrpMetric(newMetric)
             .setEigrpMetricVersion(_process.getMetricVersion())
             .setNetwork(route.getNetwork())
-            .setNextHopIp(nextHopIp)
+            .setNextHop(NextHopIp.of(nextHopIp))
             .setProcessAsn(_asn);
     return filterRouteOnImport(route, outputRouteBuilder, importPolicy);
   }
@@ -398,7 +401,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
         EigrpExternalRoute.builder()
             .setAdmin(_process.getExternalAdminCost())
             .setProcessAsn(_asn)
-            .setNextHopIp(nextHopIp)
+            .setNextHop(NextHopIp.of(nextHopIp))
             .setDestinationAsn(route.getDestinationAsn())
             .setEigrpMetric(newMetric)
             .setEigrpMetricVersion(_process.getMetricVersion())
@@ -582,6 +585,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     outputRouteBuilder.setNetwork(unannotatedPotentialRoute.getNetwork());
     outputRouteBuilder.setProcessAsn(_asn);
     outputRouteBuilder.setNonRouting(true);
+    outputRouteBuilder.setNextHop(unannotatedPotentialRoute.getNextHop());
     return outputRouteBuilder.build();
   }
 

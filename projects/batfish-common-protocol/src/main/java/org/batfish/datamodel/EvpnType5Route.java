@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /** An EVPN type 5 route */
 @ParametersAreNonnullByDefault
@@ -38,6 +39,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
       checkArgument(_routeDistinguisher != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
+      checkArgument(_nextHop != null, "Missing next hop");
       return new EvpnType5Route(
           getAdmin(),
           _asPath,
@@ -47,8 +49,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
           _localPreference,
           getMetric(),
           getNetwork(),
-          firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-          firstNonNull(getNextHopIp(), Route.UNSET_ROUTE_NEXT_HOP_IP),
+          _nextHop,
           getNonForwarding(),
           getNonRouting(),
           _originatorIp,
@@ -108,8 +109,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         localPreference,
         med,
         network,
-        firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
-        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         false,
         false,
         originatorIp,
@@ -132,8 +132,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       long localPreference,
       long med,
       Prefix network,
-      String nextHopInterface,
-      Ip nextHopIp,
+      NextHop nextHop,
       boolean nonForwarding,
       boolean nonRouting,
       Ip originatorIp,
@@ -147,14 +146,13 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       int weight) {
     super(
         network,
-        nextHopIp,
+        nextHop,
         admin,
         asPath,
         communities,
         discard,
         localPreference,
         med,
-        nextHopInterface,
         originatorIp,
         clusterList,
         receivedFromRouteReflectorClient,
@@ -188,8 +186,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         .setDiscard(_discard)
         .setLocalPreference(_localPreference)
         .setMetric(_med)
-        .setNextHopInterface(_nextHopInterface)
-        .setNextHopIp(_nextHopIp)
+        .setNextHop(_nextHop)
         .setOriginatorIp(_originatorIp)
         .setOriginType(_originType)
         .setProtocol(_protocol)
@@ -223,8 +220,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
         && Objects.equals(_asPath, other._asPath)
         && Objects.equals(_clusterList, other._clusterList)
         && Objects.equals(_communities, other._communities)
-        && _nextHopInterface.equals(other._nextHopInterface)
-        && Objects.equals(_nextHopIp, other._nextHopIp)
+        && Objects.equals(_nextHop, other._nextHop)
         && Objects.equals(_originatorIp, other._originatorIp)
         && _originType == other._originType
         && _protocol == other._protocol
@@ -246,8 +242,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
       h = h * 31 + Long.hashCode(_localPreference);
       h = h * 31 + Long.hashCode(_med);
       h = h * 31 + _network.hashCode();
-      h = h * 31 + _nextHopInterface.hashCode();
-      h = h * 31 + _nextHopIp.hashCode();
+      h = h * 31 + _nextHop.hashCode();
       h = h * 31 + _originatorIp.hashCode();
       h = h * 31 + _originType.ordinal();
       h = h * 31 + _protocol.ordinal();

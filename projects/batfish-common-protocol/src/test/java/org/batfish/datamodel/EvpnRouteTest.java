@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.junit.Test;
 
 /** Tests of {@link EvpnRoute} */
@@ -19,6 +20,7 @@ public class EvpnRouteTest {
             .setIp(Ip.parse("1.1.1.1"))
             .setMacAddress(MacAddress.parse("00:11:22:33:44:55"))
             .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)

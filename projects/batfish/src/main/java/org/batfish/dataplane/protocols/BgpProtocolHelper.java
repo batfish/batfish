@@ -1,6 +1,5 @@
 package org.batfish.dataplane.protocols;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -23,12 +22,13 @@ import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -59,7 +59,7 @@ public final class BgpProtocolHelper {
     // Make a new builder
     B builder = route.toBuilder();
     // this will be set later during export policy transformation or after it is exported
-    builder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
+    builder.clearNextHop();
 
     RoutingProtocol routeProtocol = route.getProtocol();
     RoutingProtocol outgoingProtocol =
@@ -202,11 +202,10 @@ public final class BgpProtocolHelper {
     }
 
     RoutingProtocol targetProtocol = isEbgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
-    String nhInt = firstNonNull(peerInterface, Route.UNSET_NEXT_HOP_INTERFACE);
 
     return route.toBuilder()
         .setAdmin(toProcess.getAdminCost(targetProtocol))
-        .setNextHopInterface(nhInt)
+        .setNextHop(NextHop.legacyConverter(peerInterface, route.getNextHopIp()))
         .setProtocol(targetProtocol)
         .setReceivedFromIp(peerIp)
         .setSrcProtocol(targetProtocol);
@@ -232,10 +231,10 @@ public final class BgpProtocolHelper {
     if (attributePolicy == null) {
       return builder.build();
     }
-    builder.setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP);
-    boolean accepted = attributePolicy.process(builder.build(), builder, Direction.OUT);
+    boolean accepted =
+        attributePolicy.process(builder.build(), builder.clearNextHop(), Direction.OUT);
     assert accepted;
-    return builder.setNextHopIp(nextHopIp).build();
+    return builder.setNextHop(NextHopIp.of(nextHopIp)).build();
   }
 
   /**
@@ -256,7 +255,7 @@ public final class BgpProtocolHelper {
         .setMetric(generatedRoute.getMetric())
         .setSrcProtocol(RoutingProtocol.AGGREGATE)
         .setProtocol(RoutingProtocol.AGGREGATE)
-        .setNextHopIp(nextHopIp)
+        .setNextHop(NextHopIp.of(nextHopIp))
         .setNetwork(generatedRoute.getNetwork())
         .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
         /*

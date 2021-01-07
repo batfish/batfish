@@ -37,7 +37,7 @@ public class RouteAdvertisementTest {
     RouteAdvertisement<StaticRoute> ra =
         RouteAdvertisement.<StaticRoute>builder()
             .setRoute(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setAdministrativeCost(1)
                     .setNetwork(Prefix.parse("1.1.1.0/24"))
                     .setNextHopIp(Ip.parse("2.2.2.2"))
@@ -53,7 +53,7 @@ public class RouteAdvertisementTest {
     RouteAdvertisement.Builder<StaticRoute> raBuilder =
         RouteAdvertisement.<StaticRoute>builder()
             .setRoute(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setAdministrativeCost(1)
                     .setNetwork(Prefix.parse("1.1.1.0/24"))
                     .setNextHopIp(Ip.parse("2.2.2.2"))

@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /** OSPF external route of type 2 */
 @ParametersAreNonnullByDefault
@@ -17,6 +18,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
   private static OspfExternalType2Route jsonCreator(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix prefix,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
       @Nullable @JsonProperty(PROP_METRIC) Long metric,
       @Nullable @JsonProperty(PROP_LSA_METRIC) Long lsaMetric,
@@ -34,7 +36,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
     checkArgument(advertiser != null, "Missing %s", PROP_ADVERTISER);
     return new OspfExternalType2Route(
         prefix,
-        nextHopIp,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         admin,
         metric,
         lsaMetric,
@@ -48,7 +50,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
 
   OspfExternalType2Route(
       Prefix network,
-      Ip nextHopIp,
+      NextHop nextHop,
       int admin,
       long metric,
       long lsaMetric,
@@ -60,7 +62,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
       boolean nonRouting) {
     super(
         network,
-        nextHopIp,
+        nextHop,
         admin,
         metric,
         lsaMetric,

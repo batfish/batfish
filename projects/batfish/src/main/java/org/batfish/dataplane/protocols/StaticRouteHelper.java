@@ -4,15 +4,34 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.GenericRib;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVisitor;
 
 /** Helper functions implementing logic related to handling of static routes */
 public class StaticRouteHelper {
 
   /** Determine if given static route is an interface route. */
   public static boolean isInterfaceRoute(StaticRoute route) {
-    return !Route.UNSET_NEXT_HOP_INTERFACE.equals(route.getNextHopInterface());
+    return new NextHopVisitor<Boolean>() {
+
+      @Override
+      public Boolean visitNextHopIp(NextHopIp nextHopIp) {
+        return false;
+      }
+
+      @Override
+      public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
+        return true;
+      }
+
+      @Override
+      public Boolean visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+        return true;
+      }
+    }.visit(route.getNextHop());
   }
 
   /** Determine if given static route is a next-vrf route. */

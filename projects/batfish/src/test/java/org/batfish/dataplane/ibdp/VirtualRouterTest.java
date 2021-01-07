@@ -60,7 +60,6 @@ import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -82,6 +81,8 @@ import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -122,7 +123,7 @@ public class VirtualRouterTest {
 
   private static Set<AbstractRoute> makeOneRouteOfEveryType() {
     return ImmutableSet.of(
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("1.0.0.0/24"))
             .setOriginatorIp(Ip.parse("8.8.8.8"))
             .setOriginType(OriginType.IGP)
@@ -132,7 +133,7 @@ public class VirtualRouterTest {
             .setNetwork(Prefix.parse("1.0.1.0/24"))
             .setNextHopInterface("iface")
             .build(),
-        EigrpExternalRoute.builder()
+        EigrpExternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.0.2.0/24"))
             .setDestinationAsn(1L)
             .setEigrpMetric(
@@ -142,7 +143,7 @@ public class VirtualRouterTest {
             .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setProcessAsn(2L)
             .build(),
-        EigrpInternalRoute.builder()
+        EigrpInternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.0.3.0/24"))
             .setEigrpMetric(
                 ClassicMetric.builder()
@@ -158,15 +159,26 @@ public class VirtualRouterTest {
             .setArea("0")
             .setProtocol(RoutingProtocol.ISIS_L1)
             .setSystemId("id")
+            .setNextHop(NextHopDiscard.instance())
             .build(),
         LocalRoute.builder()
             .setNetwork(Prefix.parse("1.0.6.0/24"))
+            .setNextHopInterface("iface")
             .setSourcePrefixLength(24)
             .build(),
-        OspfInterAreaRoute.builder().setNetwork(Prefix.parse("1.0.7.0/24")).setArea(2L).build(),
-        OspfIntraAreaRoute.builder().setNetwork(Prefix.parse("1.0.8.0/24")).setArea(2L).build(),
+        OspfInterAreaRoute.builder()
+            .setNetwork(Prefix.parse("1.0.7.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .setArea(2L)
+            .build(),
+        OspfIntraAreaRoute.builder()
+            .setNetwork(Prefix.parse("1.0.8.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .setArea(2L)
+            .build(),
         OspfExternalType1Route.builder()
             .setNetwork(Prefix.parse("1.0.9.0/24"))
+            .setNextHop(NextHopDiscard.instance())
             .setOspfMetricType(OspfMetricType.E1)
             .setLsaMetric(2L)
             .setCostToAdvertiser(3L)
@@ -175,14 +187,18 @@ public class VirtualRouterTest {
             .build(),
         OspfExternalType2Route.builder()
             .setNetwork(Prefix.parse("1.1.0.0/24"))
+            .setNextHop(NextHopDiscard.instance())
             .setOspfMetricType(OspfMetricType.E1)
             .setLsaMetric(2L)
             .setCostToAdvertiser(3L)
             .setAdvertiser("advertiser")
             .setArea(4L)
             .build(),
-        RipInternalRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).build(),
-        StaticRoute.builder().setNetwork(Prefix.parse("1.1.2.0/24")).setAdmin(1).build());
+        RipInternalRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopDiscard.instance())
+            .build(),
+        StaticRoute.testBuilder().setNetwork(Prefix.parse("1.1.2.0/24")).setAdmin(1).build());
   }
 
   /**
@@ -195,13 +211,13 @@ public class VirtualRouterTest {
     addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
 
     StaticRoute baseRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopInterface("Ethernet1")
             .setAdministrativeCost(1)
             .build();
     StaticRoute dependentRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .setAdministrativeCost(1)
@@ -300,23 +316,21 @@ public class VirtualRouterTest {
 
     List<StaticRoute> routes =
         ImmutableList.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
-                .setNextHopIp(null)
                 .setNextHopInterface("Ethernet1")
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(1L)
                 .build(),
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("2.2.2.2/32"))
                 .setNextHopIp(Ip.parse("9.9.9.8"))
-                .setNextHopInterface(null)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(1L)
                 .build(),
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("3.3.3.3/32"))
                 .setNextHopIp(Ip.parse("9.9.9.9"))
                 .setNextHopInterface("Ethernet1")
@@ -324,9 +338,8 @@ public class VirtualRouterTest {
                 .setMetric(0L)
                 .setTag(1L)
                 .build(),
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("4.4.4.4/32"))
-                .setNextHopIp(null)
                 .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
@@ -334,18 +347,9 @@ public class VirtualRouterTest {
                 .build(),
 
             // These do not get activated due to missing/incorrect interface names
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("5.5.5.5/32"))
-                .setNextHopIp(null)
                 .setNextHopInterface("Eth1")
-                .setAdministrativeCost(1)
-                .setMetric(0L)
-                .setTag(1L)
-                .build(),
-            StaticRoute.builder()
-                .setNetwork(Prefix.parse("6.6.6.6/32"))
-                .setNextHopIp(null)
-                .setNextHopInterface(null)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(1L)
@@ -408,16 +412,17 @@ public class VirtualRouterTest {
     assertThat(
         vr._ripInternalRib.getTypedRoutes(),
         equalTo(
-            exampleInterfaceAddresses.values().stream()
+            exampleInterfaceAddresses.entrySet().stream()
                 .map(
-                    address ->
-                        new RipInternalRoute(
-                            address.getPrefix(),
-                            Route.UNSET_ROUTE_NEXT_HOP_IP,
-                            RoutingProtocol.RIP.getDefaultAdministrativeCost(
-                                vr.getConfiguration().getConfigurationFormat()),
-                            RipProcess.DEFAULT_RIP_COST,
-                            Route.UNSET_ROUTE_TAG))
+                    entry ->
+                        RipInternalRoute.builder()
+                            .setNetwork(entry.getValue().getPrefix())
+                            .setNextHop(NextHopInterface.of(entry.getKey()))
+                            .setAdmin(
+                                RoutingProtocol.RIP.getDefaultAdministrativeCost(
+                                    vr.getConfiguration().getConfigurationFormat()))
+                            .setMetric(RipProcess.DEFAULT_RIP_COST)
+                            .build())
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
@@ -428,10 +433,9 @@ public class VirtualRouterTest {
     vr.initRibs();
     SortedSet<StaticRoute> routeSet =
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
                 .setNextHopIp(Ip.ZERO)
-                .setNextHopInterface(null)
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(0L)
@@ -459,19 +463,17 @@ public class VirtualRouterTest {
 
     // Test queueing non-empty delta
     StaticRoute sr1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
     StaticRoute sr2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
             .setAdministrativeCost(100)
             .setMetric(0L)
             .setTag(1L)
@@ -493,19 +495,17 @@ public class VirtualRouterTest {
   public void testQueueDeltaOrder() {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
     StaticRoute sr1 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
             .build();
     StaticRoute sr2 =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
             .setNextHopIp(Ip.ZERO)
-            .setNextHopInterface(null)
             .setAdministrativeCost(100)
             .setMetric(0L)
             .setTag(1L)

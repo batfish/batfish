@@ -109,7 +109,7 @@ public class RouteReflectionTest {
     _ib.setAddress(ConcreteInterfaceAddress.create(edge1LoopbackIp, Prefix.MAX_PREFIX_LENGTH))
         .build();
     _ib.setAddress(ConcreteInterfaceAddress.create(edge1IbgpIfaceIp, EDGE_PREFIX_LENGTH)).build();
-    StaticRoute.Builder sb = StaticRoute.builder().setAdministrativeCost(1);
+    StaticRoute.Builder sb = StaticRoute.testBuilder().setAdministrativeCost(1);
     vEdge1.setStaticRoutes(
         ImmutableSortedSet.of(
             sb.setNextHopIp(rrEdge1IfaceIp).setNetwork(rrLoopbackIp.toPrefix()).build(),
@@ -245,7 +245,7 @@ public class RouteReflectionTest {
     Ip rr2IbgpIfaceIp = Ip.parse("10.1.23.3");
     Ip rr2LoopbackIp = Ip.parse("2.0.0.3");
 
-    StaticRoute.Builder sb = StaticRoute.builder().setAdministrativeCost(1);
+    StaticRoute.Builder sb = StaticRoute.testBuilder().setAdministrativeCost(1);
     Configuration edge1 = _cb.setHostname(EDGE1_NAME).build();
     Vrf vEdge1 = _vb.setOwner(edge1).build();
     _ib.setOwner(edge1).setVrf(vEdge1);

@@ -1,10 +1,10 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.Set;
@@ -12,6 +12,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /**
  * A BGP Route. Captures attributes of both iBGP and eBGP routes.
@@ -37,16 +39,16 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       checkArgument(_originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
       checkArgument(_originType != null, "Missing %s", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "Missing %s", PROP_PROTOCOL);
+      checkArgument(_nextHop != null, "Missing next hop");
       return new Bgpv4Route(
           getNetwork(),
-          getNextHopIp(),
+          _nextHop,
           getAdmin(),
           _asPath,
           _communities,
           _discard,
           _localPreference,
           getMetric(),
-          firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           _originatorIp,
           _clusterList,
           _receivedFromRouteReflectorClient,
@@ -65,6 +67,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     public Builder getThis() {
       return this;
     }
+
+    private Builder() {}
   }
 
   /* Cache the hashcode */
@@ -96,14 +100,13 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     return new Bgpv4Route(
         network,
-        nextHopIp,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         admin,
         asPath,
         communities,
         discard,
         localPreference,
         med,
-        firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
         originatorIp,
         clusterList,
         receivedFromRouteReflectorClient,
@@ -119,14 +122,13 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
 
   private Bgpv4Route(
       @Nullable Prefix network,
-      @Nullable Ip nextHopIp,
+      @Nonnull NextHop nextHop,
       int admin,
       @Nullable AsPath asPath,
       @Nullable Set<Community> communities,
       boolean discard,
       long localPreference,
       long med,
-      String nextHopInterface,
       Ip originatorIp,
       @Nullable Set<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
@@ -140,14 +142,13 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       boolean nonRouting) {
     super(
         network,
-        nextHopIp,
+        nextHop,
         admin,
         asPath,
         communities,
         discard,
         localPreference,
         med,
-        nextHopInterface,
         originatorIp,
         clusterList,
         receivedFromRouteReflectorClient,
@@ -165,6 +166,17 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     return new Builder();
   }
 
+  /** Return a route builder with pre-filled mandatory values. To be used in tests only */
+  @VisibleForTesting
+  public static Builder testBuilder() {
+    return builder()
+        .setNextHop(NextHopDiscard.instance())
+        .setOriginType(OriginType.IGP)
+        .setOriginatorIp(Ip.parse("1.1.1.1"))
+        .setAdmin(170)
+        .setProtocol(RoutingProtocol.BGP);
+  }
+
   /////// Keep #toBuilder, #equals, and #hashCode in sync ////////
 
   @Override
@@ -180,8 +192,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setDiscard(_discard)
         .setLocalPreference(_localPreference)
         .setMetric(_med)
-        .setNextHopInterface(_nextHopInterface)
-        .setNextHopIp(_nextHopIp)
+        .setNextHop(_nextHop)
         .setOriginatorIp(_originatorIp)
         .setOriginType(_originType)
         .setProtocol(_protocol)
@@ -203,9 +214,8 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
     Bgpv4Route other = (Bgpv4Route) o;
     return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
         && _network.equals(other._network)
-        && _nextHopIp.equals(other._nextHopIp)
+        && _nextHop.equals(other._nextHop)
         && _originatorIp.equals(other._originatorIp)
-        && _nextHopInterface.equals(other._nextHopInterface)
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
         // Things above this line are more likely to cause false earlier.
         && _admin == other._admin
@@ -237,8 +247,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + Long.hashCode(_localPreference);
       h = h * 31 + Long.hashCode(_med);
       h = h * 31 + _network.hashCode();
-      h = h * 31 + _nextHopInterface.hashCode();
-      h = h * 31 + _nextHopIp.hashCode();
+      h = h * 31 + _nextHop.hashCode();
       h = h * 31 + Boolean.hashCode(getNonForwarding());
       h = h * 31 + Boolean.hashCode(getNonRouting());
       h = h * 31 + _originatorIp.hashCode();
@@ -268,8 +277,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_discard", _discard)
         .add("_localPreference", _localPreference)
         .add("_med", _med)
-        .add("_nextHopInterface", _nextHopInterface)
-        .add("_nextHopIp", _nextHopIp)
+        .add("_nextHop", _nextHop)
         .add("_originatorIp", _originatorIp)
         .add("_originType", _originType)
         .add("_protocol", _protocol)

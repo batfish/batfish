@@ -33,7 +33,7 @@ public class AutoAsTest {
           .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
           .build();
   private static final Bgpv4Route BGP_ROUTE =
-      Bgpv4Route.builder()
+      Bgpv4Route.testBuilder()
           .setNetwork(Prefix.parse("1.1.1.1/31"))
           .setAdmin(1)
           .setOriginatorIp(Ip.parse("2.2.2.2"))
@@ -63,7 +63,8 @@ public class AutoAsTest {
         equalTo(33333L));
 
     // If useOutputAttributes but output route is not BGP, still use intermediate attrs
-    StaticRoute.Builder sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdministrativeCost(1);
+    StaticRoute.Builder sr =
+        StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setAdministrativeCost(1);
     assertThat(
         INSTANCE.evaluate(envBuilder.setUseOutputAttributes(true).setOutputRoute(sr).build()),
         equalTo(33333L));
@@ -76,7 +77,8 @@ public class AutoAsTest {
 
   @Test
   public void testEvaluateDirectionIn_originalRouteNotBgp() {
-    StaticRoute sr = StaticRoute.builder().setNetwork(Prefix.ZERO).setAdministrativeCost(1).build();
+    StaticRoute sr =
+        StaticRoute.testBuilder().setNetwork(Prefix.ZERO).setAdministrativeCost(1).build();
     Environment env =
         Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(sr).build();
     _thrown.expect(AssertionError.class);

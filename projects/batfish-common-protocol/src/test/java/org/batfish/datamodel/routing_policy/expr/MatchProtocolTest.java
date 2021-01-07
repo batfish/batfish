@@ -17,6 +17,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.isis.IsisLevel;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.junit.Test;
 
@@ -59,7 +60,7 @@ public class MatchProtocolTest {
     Environment.Builder eb = Environment.builder(c);
 
     StaticRoute staticR =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setAdmin(1)
             .setNextHopIp(Ip.parse("2.2.2.2"))
@@ -75,6 +76,7 @@ public class MatchProtocolTest {
         IsisRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setArea("fakeArea")
+            .setNextHop(NextHopDiscard.instance())
             .setSystemId("invalidSystemId");
     IsisRoute isisL1 = ib.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_L1).build();
     IsisRoute isisL2 = ib.setLevel(IsisLevel.LEVEL_2).setProtocol(RoutingProtocol.ISIS_L2).build();

@@ -18,7 +18,7 @@ public class EigrpRouteTest {
   @Test
   public void testEigrpInternalRouteClone() {
     EigrpInternalRoute route =
-        EigrpInternalRoute.builder()
+        EigrpInternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setEigrpMetric(
                 WideMetric.builder()
@@ -34,7 +34,7 @@ public class EigrpRouteTest {
   @Test
   public void testEigrpExternalRouteClone() {
     EigrpExternalRoute route =
-        EigrpExternalRoute.builder()
+        EigrpExternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setEigrpMetric(
                 WideMetric.builder()

@@ -151,14 +151,14 @@ public final class XrGrammarTest {
       RoutingPolicy routingPolicy, AbstractRoute route) {
     assertFalse(
         routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private static void assertRoutingPolicyPermitsRoute(
       RoutingPolicy routingPolicy, AbstractRoute route) {
     assertTrue(
         routingPolicy.process(
-            route, Bgpv4Route.builder().setNetwork(route.getNetwork()), Direction.OUT));
+            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
   private static @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
@@ -365,7 +365,7 @@ public final class XrGrammarTest {
             "deletenotin"));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -574,7 +574,7 @@ public final class XrGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKeys("set-rt1", "set-inline", "set-inline-additive"));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -713,18 +713,18 @@ public final class XrGrammarTest {
     Prefix rejectedPrefix = Prefix.parse("2.0.0.0/8");
 
     StaticRoute permittedRoute =
-        StaticRoute.builder().setAdministrativeCost(1).setNetwork(permittedPrefix).build();
+        StaticRoute.testBuilder().setAdministrativeCost(1).setNetwork(permittedPrefix).build();
     StaticRoute permittedRoute2 =
-        StaticRoute.builder().setAdministrativeCost(1).setNetwork(permittedPrefix2).build();
+        StaticRoute.testBuilder().setAdministrativeCost(1).setNetwork(permittedPrefix2).build();
     StaticRoute rejectedRoute =
-        StaticRoute.builder().setAdministrativeCost(1).setNetwork(rejectedPrefix).build();
+        StaticRoute.testBuilder().setAdministrativeCost(1).setNetwork(rejectedPrefix).build();
 
     // The route-policy accepts and rejects the same prefixes.
     RoutingPolicy rp = c.getRoutingPolicies().get("rp_ip");
     assertThat(rp, notNullValue());
-    assertTrue(rp.process(permittedRoute, Bgpv4Route.builder(), Direction.OUT));
-    assertTrue(rp.process(permittedRoute2, Bgpv4Route.builder(), Direction.OUT));
-    assertFalse(rp.process(rejectedRoute, Bgpv4Route.builder(), Direction.OUT));
+    assertTrue(rp.process(permittedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
+    assertTrue(rp.process(permittedRoute2, Bgpv4Route.testBuilder(), Direction.OUT));
+    assertFalse(rp.process(rejectedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
 
     // The BGP peer export policy also accepts and rejects the same prefixes.
     BgpActivePeerConfig bgpCfg =
@@ -734,9 +734,9 @@ public final class XrGrammarTest {
         c.getRoutingPolicies().get(bgpCfg.getIpv4UnicastAddressFamily().getExportPolicy());
     assertThat(bgpRpOut, notNullValue());
 
-    assertTrue(bgpRpOut.process(permittedRoute, Bgpv4Route.builder(), Direction.OUT));
-    assertTrue(bgpRpOut.process(permittedRoute2, Bgpv4Route.builder(), Direction.OUT));
-    assertFalse(bgpRpOut.process(rejectedRoute, Bgpv4Route.builder(), Direction.OUT));
+    assertTrue(bgpRpOut.process(permittedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
+    assertTrue(bgpRpOut.process(permittedRoute2, Bgpv4Route.testBuilder(), Direction.OUT));
+    assertFalse(bgpRpOut.process(rejectedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
   }
 
   @Test

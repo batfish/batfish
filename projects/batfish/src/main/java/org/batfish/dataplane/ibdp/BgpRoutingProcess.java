@@ -74,6 +74,7 @@ import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -581,6 +582,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     type3RouteBuilder.setProtocol(RoutingProtocol.BGP);
     type3RouteBuilder.setRouteDistinguisher(routeDistinguisher);
     type3RouteBuilder.setVniIp(vni.getSourceAddress());
+    type3RouteBuilder.setNextHop(NextHopDiscard.instance());
 
     return type3RouteBuilder.build();
   }
@@ -1378,7 +1380,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     ribDeltas.put(_ebgpv4Rib, RibDelta.builder());
     ribDeltas.put(_ibgpv4Rib, RibDelta.builder());
 
-    Bgpv4Route.Builder outgoingRouteBuilder = new Bgpv4Route.Builder();
+    Bgpv4Route.Builder outgoingRouteBuilder = Bgpv4Route.testBuilder();
     // Process each BGP advertisement
     for (BgpAdvertisement advert : externalAdverts) {
 
@@ -1439,7 +1441,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       int admin = _process.getAdminCost(targetProtocol);
 
       if (received) {
-        Bgpv4Route.Builder builder = new Bgpv4Route.Builder();
+        Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
         builder.setAdmin(admin);
         builder.setAsPath(advert.getAsPath());
         builder.setClusterList(advert.getClusterList());
@@ -1480,7 +1482,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // outgoingRouteBuilder.setReceivedFromRouteReflectorClient(...);
         outgoingRouteBuilder.setSrcProtocol(advert.getSrcProtocol());
         Bgpv4Route transformedOutgoingRoute = outgoingRouteBuilder.build();
-        Bgpv4Route.Builder transformedIncomingRouteBuilder = new Bgpv4Route.Builder();
+        Bgpv4Route.Builder transformedIncomingRouteBuilder = Bgpv4Route.testBuilder();
 
         // Incoming originatorIp
         transformedIncomingRouteBuilder.setOriginatorIp(transformedOutgoingRoute.getOriginatorIp());

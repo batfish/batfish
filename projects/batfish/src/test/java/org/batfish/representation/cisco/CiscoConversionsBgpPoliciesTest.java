@@ -30,6 +30,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
@@ -112,7 +113,7 @@ public class CiscoConversionsBgpPoliciesTest {
    */
   private void testPolicyMatchesPrefixList(RoutingPolicy p, Direction direction) {
     Bgpv4Route.Builder r =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
@@ -131,10 +132,11 @@ public class CiscoConversionsBgpPoliciesTest {
    */
   private void testPolicyMatchesRouteMap(RoutingPolicy p, Direction direction) {
     Bgpv4Route.Builder r =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(Prefix.parse("5.6.7.0/24"))
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
+            .setNextHop(NextHopDiscard.instance())
             .setProtocol(RoutingProtocol.IBGP);
     Bgpv4Route permitted = r.setCommunities(PERMITTED_COMMUNITY_SET).build();
     Bgpv4Route denied = r.setCommunities(DENIED_COMMUNITY_SET).build();
@@ -166,7 +168,7 @@ public class CiscoConversionsBgpPoliciesTest {
     assertThat(_w.getRedFlagWarnings(), empty());
 
     Bgpv4Route.Builder r =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setOriginatorIp(PEER_ADDRESS)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP)

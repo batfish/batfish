@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsFirst;
@@ -9,11 +8,14 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /**
  * A static route.
@@ -28,8 +30,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   private static final String PROP_NEXT_VRF = "nextVrf";
 
   private final long _metric;
-  @Nonnull private final String _nextHopInterface;
-  @Nonnull private final Ip _nextHopIp;
   @Nullable private final String _nextVrf;
 
   private transient int _hashCode;
@@ -45,8 +45,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @JsonProperty(PROP_TAG) long tag) {
     return new StaticRoute(
         requireNonNull(network),
-        nextHopIp,
-        nextHopInterface,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         nextVrf,
         administrativeCost,
         metric,
@@ -57,8 +56,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
 
   private StaticRoute(
       @Nonnull Prefix network,
-      @Nullable Ip nextHopIp,
-      @Nullable String nextHopInterface,
+      @Nonnull NextHop nextHop,
       @Nullable String nextVrf,
       int administrativeCost,
       long metric,
@@ -67,8 +65,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       boolean nonRouting) {
     super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _metric = metric;
-    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
-    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextHop = nextHop;
     _nextVrf = nextVrf;
   }
 
@@ -77,22 +74,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @JsonProperty(PROP_METRIC)
   public Long getMetric() {
     return _metric;
-  }
-
-  @Nonnull
-  @Override
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_INTERFACE)
-  public String getNextHopInterface() {
-    return _nextHopInterface;
-  }
-
-  @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_IP)
-  @Override
-  public Ip getNextHopIp() {
-    return _nextHopIp;
   }
 
   @Nullable
@@ -110,6 +91,11 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return new Builder();
   }
 
+  @VisibleForTesting
+  public static Builder testBuilder() {
+    return builder().setNextHop(NextHopDiscard.instance()).setAdmin(1);
+  }
+
   @Override
   public int compareTo(StaticRoute o) {
     // The comparator has no impact on route preference in RIBs and should not be used as such
@@ -120,7 +106,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @ParametersAreNonnullByDefault
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
-    private String _nextHopInterface = Route.UNSET_NEXT_HOP_INTERFACE;
     @Nullable private String _nextVrf;
 
     private Builder() {
@@ -135,10 +120,14 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           getAdmin() != Route.UNSET_ROUTE_ADMIN,
           "Static route cannot have unset %s",
           PROP_ADMINISTRATIVE_COST);
+      if (_nextVrf == null) {
+        // Allow null next hop if next vrf is set
+        checkArgument(_nextHop != null, "Missing next hop");
+      }
       return new StaticRoute(
           getNetwork(),
-          getNextHopIp(),
-          _nextHopInterface,
+          // Only the case when next vrf is set
+          _nextHop == null ? NextHopDiscard.instance() : _nextHop,
           _nextVrf,
           getAdmin(),
           getMetric(),
@@ -157,12 +146,6 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     public Builder setAdministrativeCost(int administrativeCost) {
       // Call method on parent builder. Keep backwards-compatible API.
       setAdmin(administrativeCost);
-      return this;
-    }
-
-    @Nonnull
-    public Builder setNextHopInterface(@Nullable String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
       return this;
     }
 
@@ -191,8 +174,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   public Builder toBuilder() {
     return builder()
         .setNetwork(getNetwork())
-        .setNextHopIp(_nextHopIp)
-        .setNextHopInterface(_nextHopInterface)
+        .setNextHop(_nextHop)
         .setNextVrf(_nextVrf)
         .setMetric(_metric)
         .setTag(_tag)
@@ -215,8 +197,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         && getNonForwarding() == rhs.getNonForwarding()
         && getNonRouting() == rhs.getNonRouting()
         && _metric == rhs._metric
-        && _nextHopInterface.equals(rhs._nextHopInterface)
-        && _nextHopIp.equals(rhs._nextHopIp)
+        && _nextHop.equals(rhs._nextHop)
         && Objects.equals(_nextVrf, rhs._nextVrf)
         && _tag == rhs._tag;
   }
@@ -232,8 +213,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
               getNonForwarding(),
               getNonRouting(),
               _metric,
-              _nextHopInterface,
-              _nextHopIp,
+              _nextHop,
               _nextVrf,
               _tag);
       _hashCode = h;

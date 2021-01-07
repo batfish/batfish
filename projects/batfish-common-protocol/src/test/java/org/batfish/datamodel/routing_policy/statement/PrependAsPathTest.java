@@ -29,7 +29,7 @@ public class PrependAsPathTest {
   public void testPrepend() {
     List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1), new ExplicitAs(2));
     PrependAsPath operation = new PrependAsPath(new LiteralAsList(prepend));
-    Bgpv4Route.Builder builder = new Bgpv4Route.Builder();
+    Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
     builder.setAsPath(ofSingletonAsSets(3L, 4L));
     Environment env = newTestEnvironment(builder);
 
@@ -41,10 +41,10 @@ public class PrependAsPathTest {
   public void testPrependWithIntermediateAttributes() {
     List<AsExpr> prepend = Lists.newArrayList(new ExplicitAs(1), new ExplicitAs(2));
     PrependAsPath operation = new PrependAsPath(new LiteralAsList(prepend));
-    Bgpv4Route.Builder outputRoute = new Bgpv4Route.Builder();
+    Bgpv4Route.Builder outputRoute = Bgpv4Route.testBuilder();
     outputRoute.setAsPath(ofSingletonAsSets(3L, 4L));
 
-    Bgpv4Route.Builder intermediateAttributes = new Bgpv4Route.Builder();
+    Bgpv4Route.Builder intermediateAttributes = Bgpv4Route.testBuilder();
     intermediateAttributes.setAsPath(ofSingletonAsSets(5L, 6L));
     Environment env = newTestEnvironment(outputRoute);
     env.setIntermediateBgpAttributes(intermediateAttributes);
