@@ -28,6 +28,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
@@ -350,6 +351,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -389,6 +391,7 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -7180,5 +7183,44 @@ public final class CiscoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasNumReferrers(filename, POLICY_MAP, "PM", 2));
+  }
+
+  @Test
+  public void testIosVrfLeakingConversion() throws IOException {
+    String hostname = "ios-vrf-leaking";
+    Configuration c = parseConfig(hostname);
+    VrfLeakingConfig.Builder builder = VrfLeakingConfig.builder().setLeakAsBgp(true);
+    assertThat(
+        c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
+        contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build()));
+    assertThat(
+        c.getVrfs().get("DST_IMPOSSIBLE").getVrfLeakConfigs(),
+        contains(
+            builder.setImportFromVrf("SRC_VRF").setImportPolicy("UNDEFINED~undefined").build()));
+  }
+
+  @Test
+  public void testIosVrfLeakingRoutes() throws IOException {
+    String hostname = "ios-vrf-leaking";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs = dp.getRibs().get(hostname);
+    Set<AbstractRoute> dstVrfRoutes = ribs.get("DST_VRF").getRoutes();
+    assertThat(
+        dstVrfRoutes,
+        contains(
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(Prefix.parse("2.2.2.0/24")),
+                    hasProtocol(RoutingProtocol.BGP),
+                    hasNextHop(NextHopVrf.of("SRC_VRF"))))));
+    // Denied by import map
+    assertThat(
+        dstVrfRoutes, not(contains(isBgpv4RouteThat(hasPrefix(Prefix.parse("1.1.1.1/32"))))));
+    assertThat(ribs.get("DST_IMPOSSIBLE").getRoutes(), empty());
   }
 }
