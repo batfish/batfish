@@ -77461,7 +77461,7 @@
                 "administrativeCost" : 10,
                 "metric" : 10,
                 "network" : "0.0.0.0/0",
-                "nextHopInterface" : "null_interface",
+                "nextHopInterface" : "dynamic",
                 "nextHopIp" : "AUTO/NONE(-1l)",
                 "nextVrf" : "vr2",
                 "tag" : -1

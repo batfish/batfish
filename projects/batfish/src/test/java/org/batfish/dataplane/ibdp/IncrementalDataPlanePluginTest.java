@@ -399,7 +399,7 @@ public class IncrementalDataPlanePluginTest {
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
-            .setNextVrf(nextVrf)
+            .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(nextVrf))
             .setAdministrativeCost(1)
             .build();
     vrf.getStaticRoutes().add(sr);

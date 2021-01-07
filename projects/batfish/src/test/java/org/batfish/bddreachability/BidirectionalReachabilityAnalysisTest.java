@@ -958,7 +958,7 @@ public final class BidirectionalReachabilityAnalysisTest {
           .add(
               StaticRoute.testBuilder()
                   .setNetwork(Prefix.ZERO)
-                  .setNextVrf(SFL_EGRESS_VRF)
+                  .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(SFL_EGRESS_VRF))
                   .setAdmin(1)
                   .build());
       if (!missingEgressVrfNextVrfRoute) {
@@ -967,7 +967,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             .add(
                 StaticRoute.testBuilder()
                     .setNetwork(Prefix.ZERO)
-                    .setNextVrf(SFL_INGRESS_VRF)
+                    .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(SFL_INGRESS_VRF))
                     .setAdmin(1)
                     .build());
       }

@@ -3622,7 +3622,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     // TODO: support track object number
     String nextHopInterface = staticRoute.getNextHopInterface();
     NextHop nh;
-    if (nextHopInterface != null) {
+    if (staticRoute.getDiscard()) {
+      nh = NextHopDiscard.instance();
+    } else if (nextHopInterface != null) {
       if (!_interfaces.containsKey(nextHopInterface)) {
         // undefined reference
         return null;
@@ -3631,8 +3633,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       } else {
         nh = NextHopInterface.of(nextHopInterface, staticRoute.getNextHopIp());
       }
-    } else if (staticRoute.getDiscard()) {
-      nh = NextHopDiscard.instance();
     } else if (staticRoute.getNextHopIp() != null) {
       nh = NextHopIp.of(staticRoute.getNextHopIp());
     } else {

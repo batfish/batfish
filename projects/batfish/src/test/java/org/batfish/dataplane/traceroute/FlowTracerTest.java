@@ -640,7 +640,7 @@ public final class FlowTracerTest {
             .setAdmin(1)
             .setNetwork(Prefix.ZERO)
             .setNextHop(NextHopDiscard.instance())
-            .setNextVrf(nextVrfName)
+            .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(nextVrfName))
             .build();
     StaticRoute nullRoute =
         StaticRoute.testBuilder()
@@ -727,14 +727,14 @@ public final class FlowTracerTest {
             .setAdmin(1)
             .setNetwork(Prefix.ZERO)
             .setNextHop(NextHopDiscard.instance())
-            .setNextVrf(vrf2Name)
+            .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(vrf2Name))
             .build();
     StaticRoute vrf2NextVrfRoute =
         StaticRoute.testBuilder()
             .setAdmin(1)
             .setNetwork(Prefix.ZERO)
             .setNextHop(NextHopDiscard.instance())
-            .setNextVrf(vrf1Name)
+            .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(vrf1Name))
             .build();
     Fib fib1 =
         MockFib.builder()

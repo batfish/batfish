@@ -1416,7 +1416,7 @@ public class TracerouteEngineImplTest {
                 .setAdmin(1)
                 .setNetwork(Prefix.ZERO)
                 .setNextHop(NextHopDiscard.instance())
-                .setNextVrf(vrf2.getName())
+                .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(vrf2.getName()))
                 .build());
     vrf2.getStaticRoutes()
         .add(
@@ -1424,7 +1424,7 @@ public class TracerouteEngineImplTest {
                 .setAdmin(1)
                 .setNetwork(Prefix.ZERO)
                 .setNextHop(NextHopDiscard.instance())
-                .setNextVrf(vrf1.getName())
+                .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(vrf1.getName()))
                 .build());
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, c);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
