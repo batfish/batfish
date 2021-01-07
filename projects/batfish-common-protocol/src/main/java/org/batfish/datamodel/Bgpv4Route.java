@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import java.util.Set;
@@ -166,6 +167,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
   }
 
   /** Return a route builder with pre-filled mandatory values. To be used in tests only */
+  @VisibleForTesting
   public static Builder testBuilder() {
     return builder()
         .setNextHop(NextHopDiscard.instance())

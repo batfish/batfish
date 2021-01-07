@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -31,7 +32,6 @@ public class EigrpInternalRoute extends EigrpRoute {
   }
 
   @JsonCreator
-  @SuppressWarnings("unused")
   private static EigrpInternalRoute create(
       @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
       @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn,
@@ -50,7 +50,7 @@ public class EigrpInternalRoute extends EigrpRoute {
         admin,
         processAsn,
         network,
-        NextHop.legacyConverter(null, nextHopIp),
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         metric,
         metricVersion,
         tag,
@@ -62,6 +62,7 @@ public class EigrpInternalRoute extends EigrpRoute {
     return new Builder();
   }
 
+  @VisibleForTesting
   public static Builder testBuilder() {
     return builder()
         .setNextHop(NextHopDiscard.instance())

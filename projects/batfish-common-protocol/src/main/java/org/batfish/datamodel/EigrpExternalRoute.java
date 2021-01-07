@@ -5,6 +5,7 @@ import static java.util.Objects.hash;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -41,7 +42,6 @@ public class EigrpExternalRoute extends EigrpRoute {
   }
 
   @JsonCreator
-  @SuppressWarnings("unused")
   private static EigrpExternalRoute create(
       @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
       @Nullable @JsonProperty(PROP_DESTINATION_ASN) Long destinationAsn,
@@ -62,7 +62,7 @@ public class EigrpExternalRoute extends EigrpRoute {
         network,
         admin,
         destinationAsn,
-        NextHop.legacyConverter(null, nextHopIp),
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         metric,
         metricVersion,
         processAsn,
@@ -86,6 +86,7 @@ public class EigrpExternalRoute extends EigrpRoute {
     return new Builder();
   }
 
+  @VisibleForTesting
   public static Builder testBuilder() {
     return builder()
         .setNextHop(NextHopDiscard.instance())

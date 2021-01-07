@@ -3636,6 +3636,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     } else if (staticRoute.getNextHopIp() != null) {
       nh = NextHopIp.of(staticRoute.getNextHopIp());
     } else {
+      // Should be unreachable. Warn just in case.
+      _w.redFlag(
+          String.format(
+              "Could not determine a next hop for static route: %s", staticRoute.getPrefix()));
       return null;
     }
     return org.batfish.datamodel.StaticRoute.builder()

@@ -2904,17 +2904,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
     // static route corresponding to the next hop
+    Boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
     viStaticRoutes.add(
         org.batfish.datamodel.StaticRoute.builder()
             .setNetwork(route.getPrefix())
             .setNextHop(
-                route.getDrop()
+                route.getDrop() || noInstall
                     ? NextHopDiscard.instance()
                     : NextHop.legacyConverter(route.getNextHopInterface(), route.getNextHopIp()))
             .setAdministrativeCost(route.getDistance())
             .setMetric(route.getMetric())
             .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
-            .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
+            .setNonForwarding(noInstall)
             .build());
 
     // populating static routes from each qualified next hop while overriding applicable properties
@@ -2923,7 +2924,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           org.batfish.datamodel.StaticRoute.builder()
               .setNetwork(route.getPrefix())
               .setNextHop(
-                  route.getDrop()
+                  route.getDrop() || noInstall
                       ? NextHopDiscard.instance()
                       : NextHop.legacyConverter(
                           qualifiedNextHop.getNextHop().getNextHopInterface(),
@@ -2935,7 +2936,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   firstNonNull(
                       qualifiedNextHop.getTag(),
                       firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG)))
-              .setNonForwarding(firstNonNull(route.getNoInstall(), Boolean.FALSE))
+              .setNonForwarding(noInstall)
               .build());
     }
     return viStaticRoutes.build();

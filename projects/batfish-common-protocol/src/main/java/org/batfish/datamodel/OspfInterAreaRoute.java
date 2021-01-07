@@ -20,7 +20,6 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
   private static final Interner<OspfInterAreaRoute> _cache = Interners.newWeakInterner();
 
   @JsonCreator
-  @SuppressWarnings("unused")
   private static OspfInterAreaRoute jsonCreator(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
@@ -35,7 +34,14 @@ public final class OspfInterAreaRoute extends OspfInternalRoute {
     checkArgument(metric != null, "%s must be specified", PROP_METRIC);
     checkArgument(area != null, "%s must be specified", PROP_AREA);
     return new OspfInterAreaRoute(
-        network, NextHop.legacyConverter(null, nextHopIp), admin, metric, area, tag, false, false);
+        network,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
+        admin,
+        metric,
+        area,
+        tag,
+        false,
+        false);
   }
 
   private OspfInterAreaRoute(

@@ -33,7 +33,8 @@ public interface NextHop extends Serializable {
       if (nextHopIp != null && !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(nextHopIp)) {
         return NextHopIp.of(nextHopIp);
       } else {
-        return NextHopDiscard.instance();
+        throw new IllegalArgumentException(
+            "Cannot construct a next hop when missing both a next hop IP and interface");
       }
     }
   }

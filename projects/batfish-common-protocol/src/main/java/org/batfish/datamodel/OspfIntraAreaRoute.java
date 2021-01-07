@@ -19,7 +19,6 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
   private int _hashCode;
 
   @JsonCreator
-  @SuppressWarnings("unused")
   private static OspfIntraAreaRoute jsonCreator(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
@@ -34,7 +33,14 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     checkArgument(metric != null, "%s must be specified", PROP_METRIC);
     checkArgument(area != null, "%s must be specified", PROP_AREA);
     return new OspfIntraAreaRoute(
-        network, NextHop.legacyConverter(null, nextHopIp), admin, metric, area, tag, false, false);
+        network,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
+        admin,
+        metric,
+        area,
+        tag,
+        false,
+        false);
   }
 
   public OspfIntraAreaRoute(

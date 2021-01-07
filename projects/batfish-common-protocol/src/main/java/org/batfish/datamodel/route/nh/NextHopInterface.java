@@ -77,6 +77,7 @@ public final class NextHopInterface implements NextHop {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(NextHopInterface.class)
+        .omitNullValues()
         .add("interfaceName", _interfaceName)
         .add("ip", _ip)
         .toString();
@@ -96,7 +97,7 @@ public final class NextHopInterface implements NextHop {
         "NULL interface cannot be used as NextHopInterface, use NextHopDiscard");
     checkArgument(
         !Route.UNSET_NEXT_HOP_INTERFACE.equals(interfaceName),
-        "NextHopInterface cannot have unset interface. Received",
+        "NextHopInterface cannot have unset interface. Received %s",
         interfaceName);
     checkArgument(
         ip == null || (!ip.equals(Ip.AUTO) && !ip.equals(Ip.ZERO) && !ip.equals(Ip.MAX)),

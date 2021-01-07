@@ -157,42 +157,48 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   // Helper package methods
   @Nonnull
   static NextHopVisitor<Ip> nextHopIpExtractor() {
-    return new NextHopVisitor<Ip>() {
-
-      @Override
-      public Ip visitNextHopIp(NextHopIp nextHopIp) {
-        return nextHopIp.getIp();
-      }
-
-      @Override
-      public Ip visitNextHopInterface(NextHopInterface nextHopInterface) {
-        return firstNonNull(nextHopInterface.getIp(), Route.UNSET_ROUTE_NEXT_HOP_IP);
-      }
-
-      @Override
-      public Ip visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-        return Route.UNSET_ROUTE_NEXT_HOP_IP;
-      }
-    };
+    return NEXT_HOP_IP_EXTRACTOR;
   }
 
   @Nonnull
   static NextHopVisitor<String> nextHopInterfaceExtractor() {
-    return new NextHopVisitor<String>() {
-      @Override
-      public String visitNextHopIp(NextHopIp nextHopIp) {
-        return Route.UNSET_NEXT_HOP_INTERFACE;
-      }
-
-      @Override
-      public String visitNextHopInterface(NextHopInterface nextHopInterface) {
-        return nextHopInterface.getInterfaceName();
-      }
-
-      @Override
-      public String visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
-        return Interface.NULL_INTERFACE_NAME;
-      }
-    };
+    return NEXT_HOP_INTERFACE_EXTRACTOR;
   }
+
+  private static final NextHopVisitor<Ip> NEXT_HOP_IP_EXTRACTOR =
+      new NextHopVisitor<Ip>() {
+
+        @Override
+        public Ip visitNextHopIp(NextHopIp nextHopIp) {
+          return nextHopIp.getIp();
+        }
+
+        @Override
+        public Ip visitNextHopInterface(NextHopInterface nextHopInterface) {
+          return firstNonNull(nextHopInterface.getIp(), Route.UNSET_ROUTE_NEXT_HOP_IP);
+        }
+
+        @Override
+        public Ip visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+          return Route.UNSET_ROUTE_NEXT_HOP_IP;
+        }
+      };
+
+  private static final NextHopVisitor<String> NEXT_HOP_INTERFACE_EXTRACTOR =
+      new NextHopVisitor<String>() {
+        @Override
+        public String visitNextHopIp(NextHopIp nextHopIp) {
+          return Route.UNSET_NEXT_HOP_INTERFACE;
+        }
+
+        @Override
+        public String visitNextHopInterface(NextHopInterface nextHopInterface) {
+          return nextHopInterface.getInterfaceName();
+        }
+
+        @Override
+        public String visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+          return Interface.NULL_INTERFACE_NAME;
+        }
+      };
 }

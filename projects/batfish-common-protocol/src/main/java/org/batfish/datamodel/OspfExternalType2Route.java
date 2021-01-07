@@ -15,7 +15,6 @@ import org.batfish.datamodel.route.nh.NextHop;
 public class OspfExternalType2Route extends OspfExternalRoute {
 
   @JsonCreator
-  @SuppressWarnings("unused")
   private static OspfExternalType2Route jsonCreator(
       @Nullable @JsonProperty(PROP_NETWORK) Prefix prefix,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
@@ -37,7 +36,7 @@ public class OspfExternalType2Route extends OspfExternalRoute {
     checkArgument(advertiser != null, "Missing %s", PROP_ADVERTISER);
     return new OspfExternalType2Route(
         prefix,
-        NextHop.legacyConverter(null, nextHopIp),
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         admin,
         metric,
         lsaMetric,

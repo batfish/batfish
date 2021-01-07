@@ -8,6 +8,7 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -90,6 +91,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return new Builder();
   }
 
+  @VisibleForTesting
   public static Builder testBuilder() {
     return builder().setNextHop(NextHopDiscard.instance()).setAdmin(1);
   }
