@@ -21942,7 +21942,7 @@
                   "remoteAsns" : "2"
                 }
               },
-              "multipathEbgp" : true,
+              "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -22219,7 +22219,7 @@
               "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
-              "multipathEbgp" : true,
+              "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "neighbors" : {
@@ -67100,7 +67100,7 @@
               "ibgpAdminCost" : 170,
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
-              "multipathEbgp" : true,
+              "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "FIRST_AS",
               "multipathIbgp" : false,
               "neighbors" : {
