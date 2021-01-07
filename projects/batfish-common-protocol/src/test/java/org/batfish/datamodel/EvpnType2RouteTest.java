@@ -87,7 +87,6 @@ public class EvpnType2RouteTest {
         .addEqualityGroup(erb.setAsPath(AsPath.ofSingletonAsSets(1L, 1L)).build())
         .addEqualityGroup(erb.setClusterList(ImmutableSet.of(1L)).build())
         .addEqualityGroup(erb.setCommunities(ImmutableSet.of(StandardCommunity.of(1L))).build())
-        .addEqualityGroup(erb.setDiscard(true).build())
         .addEqualityGroup(erb.setLocalPreference(10).build())
         .addEqualityGroup(erb.setMetric(10).build())
         .addEqualityGroup(erb.setNextHopInterface("blah").build())

@@ -49,7 +49,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nonnull protected Set<Long> _clusterList;
     // Invariant: either immutable or a local copy shielded from external mutations.
     @Nonnull protected Set<Community> _communities;
-    protected boolean _discard;
     protected long _localPreference;
     @Nullable protected Ip _originatorIp;
     @Nullable protected OriginType _originType;
@@ -204,11 +203,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    public B setDiscard(boolean discard) {
-      _discard = discard;
-      return getThis();
-    }
-
     public B setLocalPreference(long localPreference) {
       _localPreference = localPreference;
       return getThis();
@@ -256,7 +250,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   public static final String PROP_AS_PATH = "asPath";
   static final String PROP_CLUSTER_LIST = "clusterList";
   public static final String PROP_COMMUNITIES = "communities";
-  static final String PROP_DISCARD = "discard";
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
   static final String PROP_ORIGIN_TYPE = "originType";
   static final String PROP_ORIGINATOR_IP = "originatorIp";
@@ -269,7 +262,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @Nonnull protected final AsPath _asPath;
   @Nonnull protected final Set<Long> _clusterList;
   @Nonnull protected final CommunitySet _communities;
-  protected final boolean _discard;
   protected final long _localPreference;
   protected final long _med;
   @Nonnull protected final Ip _originatorIp;
@@ -295,7 +287,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       int admin,
       @Nullable AsPath asPath,
       @Nullable Set<Community> communities,
-      boolean discard,
       long localPreference,
       long med,
       Ip originatorIp,
@@ -319,7 +310,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _clusterList =
         clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.getUnchecked(clusterList);
     _communities = communities == null ? CommunitySet.empty() : CommunitySet.of(communities);
-    _discard = discard;
     _localPreference = localPreference;
     _med = med;
     _nextHop = nextHop;
@@ -359,11 +349,6 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonIgnore
   public Set<ExtendedCommunity> getExtendedCommunities() {
     return _communities.getExtendedCommunities();
-  }
-
-  @JsonProperty(PROP_DISCARD)
-  public boolean getDiscard() {
-    return _discard;
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)

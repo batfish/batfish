@@ -69,7 +69,6 @@ public final class BgpProtocolHelper {
 
     // Clear a bunch of non-transitive attributes
     builder.setWeight(0);
-    builder.setDiscard(false);
     builder.setNonRouting(false);
     builder.setNonForwarding(false);
     builder.setAdmin(remoteBgpProcess.getAdminCost(outgoingProtocol));

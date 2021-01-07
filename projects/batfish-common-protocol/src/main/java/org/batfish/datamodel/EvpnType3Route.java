@@ -47,7 +47,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
           _asPath,
           _clusterList,
           _communities,
-          _discard,
           _localPreference,
           getMetric(),
           _nextHop,
@@ -95,7 +94,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
       @Nullable @JsonProperty(PROP_COMMUNITIES) Set<Community> communities,
-      @JsonProperty(PROP_DISCARD) boolean discard,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long med,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
@@ -121,7 +119,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, ImmutableSet.of()),
-        discard,
         localPreference,
         med,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
@@ -144,7 +141,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       AsPath asPath,
       Set<Long> clusterList,
       Set<Community> communities,
-      boolean discard,
       long localPreference,
       long med,
       NextHop nextHop,
@@ -166,7 +162,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         admin,
         asPath,
         communities,
-        discard,
         localPreference,
         med,
         originatorIp,
@@ -209,7 +204,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
-        .setDiscard(_discard)
         .setLocalPreference(_localPreference)
         .setMetric(_med)
         .setNextHop(_nextHop)
@@ -239,7 +233,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
-        && _discard == other._discard
         && _localPreference == other._localPreference
         && _med == other._med
         && _receivedFromRouteReflectorClient == other._receivedFromRouteReflectorClient
@@ -266,7 +259,6 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       h = h * 31 + _asPath.hashCode();
       h = h * 31 + _clusterList.hashCode();
       h = h * 31 + _communities.hashCode();
-      h = h * 31 + Boolean.hashCode(_discard);
       h = h * 31 + Long.hashCode(_localPreference);
       h = h * 31 + Long.hashCode(_med);
       h = h * 31 + _network.hashCode();
