@@ -10,6 +10,7 @@ import static org.batfish.common.BatfishLogger.LEVEL_UNIMPLEMENTED;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -268,6 +269,17 @@ public class Warnings implements Serializable {
     @Override
     public int hashCode() {
       return Objects.hash(_comment, _line, _parserContext, _text);
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this)
+          .omitNullValues()
+          .add("line", _line)
+          .add("text", _text)
+          .add("comment", _comment)
+          .add("parserContext", _parserContext)
+          .toString();
     }
   }
 }

@@ -25,6 +25,16 @@ public class ParseWarningTest {
   }
 
   @Test
+  public void testToString() {
+    assertThat(
+        new ParseWarning(1, "text", "ctx", "comment").toString(),
+        equalTo("ParseWarning{line=1, text=text, comment=comment, parserContext=ctx}"));
+    assertThat(
+        new ParseWarning(1, "text", "ctx", null).toString(),
+        equalTo("ParseWarning{line=1, text=text, parserContext=ctx}"));
+  }
+
+  @Test
   public void testParseWarningsJavaSerialization() {
     ParseWarning pw = new ParseWarning(1, "", "", "");
     assertThat(SerializationUtils.clone(pw), equalTo(pw));
