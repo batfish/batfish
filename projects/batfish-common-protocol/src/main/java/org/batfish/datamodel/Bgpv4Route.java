@@ -46,7 +46,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
           getAdmin(),
           _asPath,
           _communities,
-          _discard,
           _localPreference,
           getMetric(),
           _originatorIp,
@@ -81,7 +80,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_COMMUNITIES) Set<Community> communities,
-      @JsonProperty(PROP_DISCARD) boolean discard,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long med,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
@@ -104,7 +102,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         admin,
         asPath,
         communities,
-        discard,
         localPreference,
         med,
         originatorIp,
@@ -126,7 +123,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       int admin,
       @Nullable AsPath asPath,
       @Nullable Set<Community> communities,
-      boolean discard,
       long localPreference,
       long med,
       Ip originatorIp,
@@ -146,7 +142,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         admin,
         asPath,
         communities,
-        discard,
         localPreference,
         med,
         originatorIp,
@@ -189,7 +184,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
-        .setDiscard(_discard)
         .setLocalPreference(_localPreference)
         .setMetric(_med)
         .setNextHop(_nextHop)
@@ -219,7 +213,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         && Objects.equals(_receivedFromIp, other._receivedFromIp)
         // Things above this line are more likely to cause false earlier.
         && _admin == other._admin
-        && _discard == other._discard
         && _localPreference == other._localPreference
         && _med == other._med
         && _originType == other._originType
@@ -243,7 +236,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       h = h * 31 + _asPath.hashCode();
       h = h * 31 + _clusterList.hashCode();
       h = h * 31 + _communities.hashCode();
-      h = h * 31 + Boolean.hashCode(_discard);
       h = h * 31 + Long.hashCode(_localPreference);
       h = h * 31 + Long.hashCode(_med);
       h = h * 31 + _network.hashCode();
@@ -274,7 +266,6 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         .add("_asPath", _asPath)
         .add("_clusterList", _clusterList)
         .add("_communities", _communities)
-        .add("_discard", _discard)
         .add("_localPreference", _localPreference)
         .add("_med", _med)
         .add("_nextHop", _nextHop)

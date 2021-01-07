@@ -49,7 +49,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
           _asPath,
           _clusterList,
           _communities,
-          _discard,
           _ip,
           _localPreference,
           _macAddress,
@@ -109,7 +108,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
       @Nullable @JsonProperty(PROP_COMMUNITIES) Set<Community> communities,
-      @JsonProperty(PROP_DISCARD) boolean discard,
       @Nullable @JsonProperty(PROP_IP) Ip ip,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @Nullable @JsonProperty(PROP_MAC_ADDRESS) MacAddress macAddress,
@@ -136,7 +134,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, ImmutableSet.of()),
-        discard,
         ip,
         localPreference,
         macAddress,
@@ -160,7 +157,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       AsPath asPath,
       Set<Long> clusterList,
       Set<Community> communities,
-      boolean discard,
       Ip ip,
       long localPreference,
       @Nullable MacAddress macAddress,
@@ -183,7 +179,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         admin,
         asPath,
         communities,
-        discard,
         localPreference,
         med,
         originatorIp,
@@ -232,7 +227,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
-        .setDiscard(_discard)
         .setIp(_ip)
         .setLocalPreference(_localPreference)
         .setMacAddress(_macAddress)
@@ -263,7 +257,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
         && _admin == other._admin
         && getNonRouting() == other.getNonRouting()
         && getNonForwarding() == other.getNonForwarding()
-        && _discard == other._discard
         && Objects.equals(_ip, other._ip)
         && _localPreference == other._localPreference
         && Objects.equals(_macAddress, other._macAddress)
@@ -291,7 +284,6 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       h = h * 31 + _asPath.hashCode();
       h = h * 31 + _clusterList.hashCode();
       h = h * 31 + _communities.hashCode();
-      h = h * 31 + Boolean.hashCode(_discard);
       h = h * 31 + _ip.hashCode();
       h = h * 31 + Long.hashCode(_localPreference);
       h = h * 31 + Objects.hashCode(_macAddress);

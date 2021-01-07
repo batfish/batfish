@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
@@ -45,9 +47,7 @@ public final class SetNextHop extends Statement {
 
     // Handle "discard" next hop, where the route acts as a null route.
     if (_expr.getDiscard()) {
-      BgpRoute.Builder<?, ?> bgpRouteBuilder =
-          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
-      bgpRouteBuilder.setDiscard(true);
+      environment.getOutputRoute().setNextHop(NextHopDiscard.instance());
     }
 
     // Evaluate our next hop expression. If the result is non-null, modify the next hop IP.
@@ -55,7 +55,7 @@ public final class SetNextHop extends Statement {
     if (nextHop == null) {
       return result;
     }
-    environment.getOutputRoute().setNextHopIp(nextHop);
+    environment.getOutputRoute().setNextHop(NextHopIp.of(nextHop));
     return result;
   }
 
