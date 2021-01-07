@@ -501,7 +501,7 @@ public class CumulusFrrGrammarTest {
         dp.getRibs().get("frr-reoriginator").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("10.1.1.1"))
                     .setReceivedFromIp(Ip.parse("10.1.1.1"))
@@ -519,7 +519,7 @@ public class CumulusFrrGrammarTest {
         dp.getRibs().get("frr-propagator").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("20.1.1.2"))
                     .setReceivedFromIp(Ip.parse("20.1.1.2"))
@@ -537,7 +537,7 @@ public class CumulusFrrGrammarTest {
         dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.ZERO)
                     .setNextHopIp(Ip.parse("30.1.1.3"))
                     .setReceivedFromIp(Ip.parse("30.1.1.3"))
@@ -1079,17 +1079,17 @@ public class CumulusFrrGrammarTest {
     RoutingPolicy policy = c.getRoutingPolicies().get(name);
 
     Builder routeBuilder =
-        org.batfish.datamodel.StaticRoute.builder()
+        org.batfish.datamodel.StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setAdmin(1)
             .setNextHopInterface("iface");
     // NOTE: re-using the builder, order of asserts may matter
     // With missing tag -- no match
-    assertFalse(policy.process(routeBuilder.build(), Bgpv4Route.builder(), OUT));
+    assertFalse(policy.process(routeBuilder.build(), Bgpv4Route.testBuilder(), OUT));
     // With tag -- match
-    assertTrue(policy.process(routeBuilder.setTag(65555L).build(), Bgpv4Route.builder(), OUT));
+    assertTrue(policy.process(routeBuilder.setTag(65555L).build(), Bgpv4Route.testBuilder(), OUT));
     // With different tag -- no match
-    assertFalse(policy.process(routeBuilder.setTag(65554L).build(), Bgpv4Route.builder(), OUT));
+    assertFalse(policy.process(routeBuilder.setTag(65554L).build(), Bgpv4Route.testBuilder(), OUT));
   }
 
   @Test
@@ -1966,12 +1966,11 @@ public class CumulusFrrGrammarTest {
         dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.parse("10.2.2.2/32"))
                     .setNextHopIp(Ip.parse("10.1.1.1"))
                     .setReceivedFromIp(Ip.parse("10.1.1.1"))
                     .setOriginatorIp(Ip.parse("1.1.1.1"))
-                    .setNextHopInterface("dynamic")
                     .setOriginType(OriginType.IGP)
                     .setProtocol(RoutingProtocol.BGP)
                     .setSrcProtocol(RoutingProtocol.BGP)
@@ -2013,7 +2012,7 @@ public class CumulusFrrGrammarTest {
         dp.getRibs().get("frr-listener").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(
             equalTo(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.parse("2.2.2.2/32"))
                     .setNextHopIp(Ip.parse("10.1.1.1"))
                     .setReceivedFromIp(Ip.parse("10.1.1.1"))

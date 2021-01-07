@@ -847,7 +847,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(ifaceName)
                 .setAdministrativeCost(1)
                 .setNetwork(staticRoutePrefix)
@@ -982,7 +982,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Prefix staticRoutePrefix = Prefix.parse("3.3.3.3/32");
     vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(ifaceName)
                 .setAdministrativeCost(1)
                 .setNetwork(staticRoutePrefix)
@@ -1060,7 +1060,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // set up static route "8.8.8.0/24" -> 1.0.0.2
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopIp(Ip.parse("1.0.0.2"))
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setAdministrativeCost(1)
@@ -1124,7 +1124,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // set up static route "8.8.8.0/24" -> 1.0.0.2
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopIp(Ip.parse("2.0.0.2"))
                 .setNetwork(Prefix.parse("8.8.8.0/24"))
                 .setNextHopInterface(i1.getName())
@@ -1355,7 +1355,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24")).build();
 
     StaticRoute sb =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(1)
             .setNetwork(dstPrefix)
             .setNextHopInterface(i1.getName())
@@ -1498,7 +1498,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Vrf ingressVrf = nf.vrfBuilder().setName(INGRESS_VRF).setOwner(ingressNode).build();
     Vrf nextVrf = nf.vrfBuilder().setName(NEXT_VRF).setOwner(ingressNode).build();
     StaticRoute ingressVrfNextVrfRoute =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(1)
             .setNetwork(Prefix.ZERO)
             .setNextVrf(NEXT_VRF)

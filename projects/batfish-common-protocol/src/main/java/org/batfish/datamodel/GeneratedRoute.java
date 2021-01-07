@@ -18,6 +18,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /**
  * A generated/aggregate IPV4 route.
@@ -35,7 +37,6 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     @Nullable private Set<Community> _communities;
     private boolean _discard;
     @Nullable private String _generationPolicy;
-    @Nullable private String _nextHopInterface;
 
     private Builder() {}
 
@@ -45,14 +46,13 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       return new GeneratedRoute(
           getNetwork(),
           getAdmin(),
-          getNextHopIp(),
+          firstNonNull(_nextHop, NextHopDiscard.instance()),
           firstNonNull(_asPath, AsPath.empty()),
           _attributePolicy,
           ImmutableSortedSet.copyOf(firstNonNull(_communities, ImmutableSet.of())),
           _discard,
           _generationPolicy,
           getMetric(),
-          firstNonNull(_nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
           getTag(),
           getNonForwarding(),
           getNonRouting());
@@ -88,11 +88,6 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       _generationPolicy = generationPolicy;
       return this;
     }
-
-    public Builder setNextHopInterface(@Nullable String nextHopInterface) {
-      _nextHopInterface = nextHopInterface;
-      return this;
-    }
   }
 
   public static Builder builder() {
@@ -114,8 +109,6 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   private final boolean _discard;
   @Nullable private final String _generationPolicy;
   private final long _metric;
-  @Nonnull private final String _nextHopInterface;
-  @Nonnull private final Ip _nextHopIp;
   // Non-final fields, not properties of the route. Should not impact equality or hashcode.
   private SortedSet<String> _attributePolicySources;
   private SortedSet<String> _generationPolicySources;
@@ -140,14 +133,13 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     return new GeneratedRoute(
         network,
         administrativeCost,
-        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         firstNonNull(asPath, AsPath.empty()),
         attributePolicy,
         firstNonNull(communities, ImmutableSortedSet.of()),
         discard,
         generationPolicy,
         metric,
-        firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE),
         tag,
         false,
         false);
@@ -156,14 +148,13 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   private GeneratedRoute(
       Prefix network,
       int administrativeCost,
-      Ip nextHopIp,
+      NextHop nextHop,
       AsPath asPath,
       @Nullable String attributePolicy,
       @Nullable SortedSet<Community> communities,
       boolean discard,
       @Nullable String generationPolicy,
       long metric,
-      String nextHopInterface,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
@@ -176,8 +167,8 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     _generationPolicy = generationPolicy;
     _generationPolicySources = ImmutableSortedSet.of();
     _metric = metric;
-    _nextHopIp = nextHopIp;
-    _nextHopInterface = nextHopInterface;
+    // TODO: incorporate discard in here too.
+    _nextHop = nextHop;
   }
 
   /** A BGP AS-path attribute to associate with this generated route */
@@ -228,20 +219,6 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   @Override
   public Long getMetric() {
     return _metric;
-  }
-
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return _nextHopInterface;
-  }
-
-  @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_IP)
-  @Override
-  public Ip getNextHopIp() {
-    return _nextHopIp;
   }
 
   @Override
@@ -295,8 +272,7 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
         .setMetric(firstNonNull(getMetric(), 0L))
-        .setNextHopInterface(getNextHopInterface())
-        .setNextHopIp(getNextHopIp())
+        .setNextHop(getNextHop())
         .setTag(getTag())
         // GeneratedRoute properties
         .setAsPath(getAsPath())
@@ -327,8 +303,7 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
         && Objects.equals(_attributePolicy, that._attributePolicy)
         && _communities.equals(that._communities)
         && Objects.equals(_generationPolicy, that._generationPolicy)
-        && _nextHopInterface.equals(that._nextHopInterface)
-        && _nextHopIp.equals(that._nextHopIp);
+        && _nextHop.equals(that._nextHop);
   }
 
   @Override
@@ -348,8 +323,7 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
               _discard,
               _generationPolicy,
               _metric,
-              _nextHopInterface,
-              _nextHopIp);
+              _nextHop);
       _hashCode = h;
     }
     return h;

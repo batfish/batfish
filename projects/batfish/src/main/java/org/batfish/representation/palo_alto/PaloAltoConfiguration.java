@@ -141,6 +141,8 @@ import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.Statement;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
@@ -2334,8 +2336,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       vrf.getStaticRoutes()
           .add(
               org.batfish.datamodel.StaticRoute.builder()
-                  .setNextHopInterface(sr.getNextHopInterface())
-                  .setNextHopIp(sr.getNextHopIp())
+                  .setNextHop(
+                      nextVrf == null
+                          ? NextHop.legacyConverter(sr.getNextHopInterface(), sr.getNextHopIp())
+                          : NextHopDiscard.instance())
                   .setAdministrativeCost(sr.getAdminDistance())
                   .setMetric(sr.getMetric())
                   .setNetwork(destination)

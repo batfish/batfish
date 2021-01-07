@@ -353,7 +353,7 @@ public class IncrementalDataPlanePluginTest {
             .setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/24"))
             .build();
     StaticRoute srBoth =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface(i.getName())
             .setNextHopIp(Ip.parse("10.0.0.1"))
@@ -361,7 +361,7 @@ public class IncrementalDataPlanePluginTest {
             .build();
     vrf.getStaticRoutes().add(srBoth);
     StaticRoute srJustInterface =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("10.0.2.0/24"))
             .setNextHopInterface(i.getName())
             .setAdministrativeCost(1)
@@ -397,7 +397,7 @@ public class IncrementalDataPlanePluginTest {
     Vrf vrf = vb.setName(DEFAULT_VRF_NAME).build();
     vb.setName(nextVrf).build();
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setNextVrf(nextVrf)
             .setAdministrativeCost(1)
@@ -740,7 +740,7 @@ public class IncrementalDataPlanePluginTest {
     // static routes on node1
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.0.0.3/32"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i11.getName())
@@ -750,7 +750,7 @@ public class IncrementalDataPlanePluginTest {
     // static routes on node 3 to get back to node1
     v3.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.0.0.0/32"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i31.getName())

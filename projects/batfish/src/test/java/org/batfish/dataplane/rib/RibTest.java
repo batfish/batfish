@@ -25,7 +25,7 @@ public class RibTest {
     Rib rib = new Rib();
     AnnotatedRoute<AbstractRoute> route =
         annotateRoute(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface("foo")
                 .setNetwork(Prefix.ZERO)
                 .setAdministrativeCost(1)
@@ -41,7 +41,7 @@ public class RibTest {
     Rib rib = new Rib();
     // Identical routes, different admin distance.
     StaticRoute.Builder sb =
-        StaticRoute.builder().setNextHopInterface("foo").setNetwork(Prefix.ZERO);
+        StaticRoute.testBuilder().setNextHopInterface("foo").setNetwork(Prefix.ZERO);
     AbstractRoute route1 = sb.setAdministrativeCost(100).build();
     AbstractRoute route2 = sb.setAdministrativeCost(101).build();
 
@@ -54,7 +54,7 @@ public class RibTest {
     Rib rib = new Rib();
     // Identical routes should be equally preferred
     StaticRoute.Builder sb =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setNextHopInterface("foo")
             .setNetwork(Prefix.ZERO)
             .setAdministrativeCost(100);

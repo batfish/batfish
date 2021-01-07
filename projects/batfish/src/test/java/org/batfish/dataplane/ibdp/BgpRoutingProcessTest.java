@@ -47,6 +47,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -133,6 +134,7 @@ public class BgpRoutingProcessTest {
                 .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
                 .setVniIp(ip)
                 .setOriginatorIp(ip)
+                .setNextHop(NextHopDiscard.instance())
                 .build()));
   }
 
@@ -206,6 +208,7 @@ public class BgpRoutingProcessTest {
                 .setProtocol(RoutingProtocol.BGP)
                 .setAdmin(20)
                 .setOriginatorIp(_bgpProcess.getRouterId())
+                .setNextHop(NextHopDiscard.instance())
                 .build()));
     // Sibling VRF, for vni2
     assertThat(
@@ -225,6 +228,7 @@ public class BgpRoutingProcessTest {
                 .setProtocol(RoutingProtocol.BGP)
                 .setAdmin(20)
                 .setOriginatorIp(_bgpProcess.getRouterId())
+                .setNextHop(NextHopDiscard.instance())
                 .build()));
   }
 

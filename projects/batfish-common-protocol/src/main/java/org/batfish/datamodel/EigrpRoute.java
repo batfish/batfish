@@ -1,7 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.primitives.UnsignedLong;
@@ -9,6 +7,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /** Represents an EIGRP route, internal or external */
 public abstract class EigrpRoute extends AbstractRoute {
@@ -20,7 +19,6 @@ public abstract class EigrpRoute extends AbstractRoute {
   protected final int _admin;
   @Nonnull protected final EigrpMetric _metric;
   @Nonnull protected final EigrpMetricVersion _metricVersion;
-  @Nonnull protected final Ip _nextHopIp;
 
   /** AS number of the EIGRP process that installed this route in the RIB */
   final long _processAsn;
@@ -28,7 +26,7 @@ public abstract class EigrpRoute extends AbstractRoute {
   EigrpRoute(
       int admin,
       Prefix network,
-      @Nullable Ip nextHopIp,
+      NextHop nextHop,
       @Nonnull EigrpMetric metric,
       @Nonnull EigrpMetricVersion metricVersion,
       long processAsn,
@@ -39,7 +37,7 @@ public abstract class EigrpRoute extends AbstractRoute {
     _admin = admin;
     _metric = metric;
     _metricVersion = metricVersion;
-    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextHop = nextHop;
     _processAsn = processAsn;
   }
 
@@ -63,20 +61,6 @@ public abstract class EigrpRoute extends AbstractRoute {
   @Override
   public final Long getMetric() {
     return _metric.ribMetric(_metricVersion);
-  }
-
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
-  }
-
-  @Nonnull
-  @JsonIgnore(false)
-  @JsonProperty(PROP_NEXT_HOP_IP)
-  @Override
-  public final Ip getNextHopIp() {
-    return _nextHopIp;
   }
 
   @JsonProperty(PROP_PROCESS_ASN)

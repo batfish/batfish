@@ -96,6 +96,7 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -132,6 +133,7 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -169,6 +171,7 @@ public class TestRoutePoliciesAnswererTest {
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .build();
     BgpRoute outputRoute = inputRoute.toBuilder().setMetric(500L).build();
     BgpRouteDiffs diff =
@@ -206,6 +209,7 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -238,6 +242,7 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -267,6 +272,7 @@ public class TestRoutePoliciesAnswererTest {
         BgpRoute.builder()
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
@@ -316,6 +322,7 @@ public class TestRoutePoliciesAnswererTest {
             .setNetwork(Prefix.ZERO)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
             .setProtocol(RoutingProtocol.BGP)
             .build();
 

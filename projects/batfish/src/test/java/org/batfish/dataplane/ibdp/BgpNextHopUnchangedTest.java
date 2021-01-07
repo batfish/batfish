@@ -121,7 +121,7 @@ public class BgpNextHopUnchangedTest {
             .build();
     r1Vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setAdministrativeCost(1)
                 .setNetwork(_advertisedBgpPrefix)
                 .setNextHopInterface(ifaceForStaticRoute.getName())
@@ -196,7 +196,7 @@ public class BgpNextHopUnchangedTest {
     // ip)
     r3Vrf.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(_r1Addr1.getPrefix())
                 .setAdmin(1)
                 .setNextHopInterface(i3.getName())

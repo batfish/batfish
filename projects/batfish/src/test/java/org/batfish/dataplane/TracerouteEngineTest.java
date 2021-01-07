@@ -421,7 +421,7 @@ public class TracerouteEngineTest {
 
     v1.getStaticRoutes()
         .add(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("2.0.0.0/8"))
                 .setNextHopInterface("i1")
                 .setNextHopIp(Ip.parse("3.3.3.3"))

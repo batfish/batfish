@@ -25,7 +25,7 @@ public final class SetCommunitiesTest {
   private static final SetCommunities OBJ = new SetCommunities(new CommunitySetExprReference("a"));
 
   private static @Nonnull BgpRoute.Builder<?, ?> routeBuilder() {
-    return Bgpv4Route.builder()
+    return Bgpv4Route.testBuilder()
         .setNetwork(Prefix.ZERO)
         .setOriginatorIp(Ip.ZERO)
         .setOriginType(OriginType.INCOMPLETE)

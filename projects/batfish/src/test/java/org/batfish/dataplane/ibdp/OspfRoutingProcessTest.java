@@ -76,6 +76,8 @@ import org.batfish.datamodel.ospf.OspfTopology;
 import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.StubSettings;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
@@ -277,10 +279,16 @@ public class OspfRoutingProcessTest {
         .build();
 
     OspfIntraAreaRoute.Builder allowedRouteBuilder =
-        OspfIntraAreaRoute.builder().setNetwork(ACTIVE_ADDR_2.getPrefix()).setArea(1L);
+        OspfIntraAreaRoute.builder()
+            .setNextHop(NextHopIp.of(Ip.parse("9.9.9.9")))
+            .setNetwork(ACTIVE_ADDR_2.getPrefix())
+            .setArea(1L);
 
     OspfIntraAreaRoute.Builder deniedRouteBuilder =
-        OspfIntraAreaRoute.builder().setNetwork(ACTIVE_ADDR_1.getPrefix()).setArea(1L);
+        OspfIntraAreaRoute.builder()
+            .setNextHop(NextHopIp.of(Ip.parse("9.9.9.9")))
+            .setNetwork(ACTIVE_ADDR_1.getPrefix())
+            .setArea(1L);
 
     applyDistributeList(c, vrf.getName(), i1.getName(), allowedRouteBuilder);
 
@@ -919,7 +927,7 @@ public class OspfRoutingProcessTest {
         RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
             .add(
                 new AnnotatedRoute<>(
-                    StaticRoute.builder()
+                    StaticRoute.testBuilder()
                         .setAdministrativeCost(1)
                         .setNetwork(Prefix.parse("1.1.1.0/24"))
                         .setNextHopInterface("Null")
@@ -955,7 +963,7 @@ public class OspfRoutingProcessTest {
   @Test
   public void testConvertToExternalRoute() {
     StaticRoute.Builder sb =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(1)
             .setNetwork(Prefix.parse("2.2.2.2/32"))
             .setNextHopInterface("Null");
@@ -985,6 +993,7 @@ public class OspfRoutingProcessTest {
         equalTo(
             OspfExternalType1Route.builder()
                 .setNetwork(route.getNetwork())
+                .setNextHop(NextHopDiscard.instance())
                 .setMetric(0)
                 .setLsaMetric(0)
                 .setCostToAdvertiser(0)
@@ -1008,6 +1017,7 @@ public class OspfRoutingProcessTest {
             .add(
                 OspfExternalType1Route.builder()
                     .setNetwork(Prefix.parse("1.1.1.1/32"))
+                    .setNextHop(NextHopDiscard.instance())
                     .setLsaMetric(0L)
                     .setCostToAdvertiser(0L)
                     .setAdvertiser("someNode")
@@ -1114,7 +1124,7 @@ public class OspfRoutingProcessTest {
             new RouteAdvertisement<>(
                 new OspfIntraAreaRoute(
                     Prefix.parse("2.2.2.2/32"),
-                    Ip.parse("2.2.2.2"),
+                    NextHopIp.of(Ip.parse("2.2.2.2")),
                     100,
                     1,
                     0,
@@ -1180,6 +1190,7 @@ public class OspfRoutingProcessTest {
                 OspfIntraAreaRoute.builder()
                     .setArea(0)
                     .setNetwork(Prefix.parse("1.1.1.1/29"))
+                    .setNextHop(NextHopIp.of(Ip.parse("9.9.9.9")))
                     .setMetric(1)
                     .build())
             .build());

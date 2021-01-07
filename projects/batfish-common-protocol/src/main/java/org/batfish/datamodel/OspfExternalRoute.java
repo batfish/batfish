@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /** Base class for OSPF external routes */
 @ParametersAreNonnullByDefault
@@ -33,13 +34,14 @@ public abstract class OspfExternalRoute extends OspfRoute {
       checkArgument(_area != null, "Missing %s", PROP_AREA);
       checkArgument(_costToAdvertiser != null, "Missing OSPF %s", PROP_COST_TO_ADVERTISER);
       checkArgument(_advertiser != null, "Missing OSPF %s", PROP_ADVERTISER);
+      checkArgument(_nextHop != null, "Missing OSPF nexthop");
       RoutingProtocol protocol = _ospfMetricType.toRoutingProtocol();
       switch (protocol) {
         case OSPF_E1:
           return _cache.intern(
               new OspfExternalType1Route(
                   getNetwork(),
-                  getNextHopIp(),
+                  _nextHop,
                   getAdmin(),
                   getMetric(),
                   _lsaMetric,
@@ -53,7 +55,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
           return _cache.intern(
               new OspfExternalType2Route(
                   getNetwork(),
-                  getNextHopIp(),
+                  _nextHop,
                   getAdmin(),
                   getMetric(),
                   _lsaMetric,
@@ -129,7 +131,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
 
   OspfExternalRoute(
       Prefix prefix,
-      Ip nextHopIp,
+      NextHop nextHop,
       int admin,
       long metric,
       long lsaMetric,
@@ -139,7 +141,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(prefix, nextHopIp, admin, metric, area, tag, nonRouting, nonForwarding);
+    super(prefix, nextHop, admin, metric, area, tag, nonRouting, nonForwarding);
     _advertiser = advertiser;
     _costToAdvertiser = costToAdvertiser;
     _lsaMetric = lsaMetric;
@@ -161,12 +163,6 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return _lsaMetric;
   }
 
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
-  }
-
   @JsonIgnore
   @Nonnull
   public abstract OspfMetricType getOspfMetricType();
@@ -184,7 +180,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
     return OspfExternalRoute.builder()
         // AbstractRoute properties
         .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
+        .setNextHop(_nextHop)
         .setAdmin(getAdministrativeCost())
         .setMetric(getMetric())
         .setNonForwarding(getNonForwarding())
@@ -214,7 +210,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
         && _metric == that._metric
-        && _nextHopIp.equals(that._nextHopIp)
+        && _nextHop.equals(that._nextHop)
         && _tag == that._tag
         // OspfRoute properties
         && _area == that._area
@@ -232,7 +228,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
       h = _network.hashCode();
       h = 31 * h + _admin;
       h = 31 * h + Long.hashCode(_metric);
-      h = 31 * h + _nextHopIp.hashCode();
+      h = 31 * h + _nextHop.hashCode();
       h = 31 * h + Boolean.hashCode(getNonRouting());
       h = 31 * h + Boolean.hashCode(getNonForwarding());
       h = 31 * h + Long.hashCode(_tag);

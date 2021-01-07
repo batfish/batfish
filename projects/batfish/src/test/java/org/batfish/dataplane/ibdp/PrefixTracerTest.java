@@ -105,7 +105,7 @@ public class PrefixTracerTest {
             .build();
     vrf1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNextHopInterface(i1.getName())
                 .setNetwork(_staticRoutePrefix)
                 .setAdministrativeCost(1)

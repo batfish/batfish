@@ -386,7 +386,7 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   private Bgpv4Route.Builder makeBgpOutputRouteBuilder() {
-    return Bgpv4Route.builder()
+    return Bgpv4Route.testBuilder()
         .setNetwork(Prefix.ZERO)
         .setOriginType(OriginType.INCOMPLETE)
         .setOriginatorIp(Ip.ZERO)
@@ -467,7 +467,7 @@ public final class F5BigipStructuredGrammarTest {
         F5BigipConfiguration.computeBgpPeerExportPolicyName(bgpProcessName, Ip.parse("192.0.2.1"));
 
     Bgpv4Route.Builder bgpRouteBuilder =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAdmin(10)
             .setMetric(10)
             .setOriginatorIp(Ip.ZERO)
@@ -2683,7 +2683,7 @@ public final class F5BigipStructuredGrammarTest {
     ConnectedRoute acceptedRoute =
         new ConnectedRoute(Prefix.strict("10.0.1.0/24"), "/Common/outint");
     Bgpv4Route.Builder outputRoute =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setNetwork(acceptedRoute.getNetwork())
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)

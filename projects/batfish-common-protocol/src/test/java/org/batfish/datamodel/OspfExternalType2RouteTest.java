@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.junit.Test;
 
 /** Test for {@link OspfExternalType2Route} */
@@ -15,7 +16,7 @@ public class OspfExternalType2RouteTest {
     OspfExternalType2Route.Builder b =
         OspfExternalRoute.builder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setAdmin(1)
             .setMetric(1)
             .setLsaMetric(1)
@@ -42,6 +43,7 @@ public class OspfExternalType2RouteTest {
         OspfExternalRoute.builder()
             .setOspfMetricType(OspfMetricType.E2)
             .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopDiscard.instance())
             .setMetric(1L)
             .setLsaMetric(2L)
             .setCostToAdvertiser(3L)

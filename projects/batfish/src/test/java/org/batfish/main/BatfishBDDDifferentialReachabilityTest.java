@@ -182,7 +182,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       if (!delta) {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(DST_IP.toPrefix())
                     .setNextHopInterface(PHYSICAL)
                     .setAdministrativeCost(1)
@@ -277,7 +277,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       if (!delta) {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(DST_IP.toPrefix())
                     .setNextHopInterface(PHYSICAL)
                     .setAdministrativeCost(1)
@@ -321,7 +321,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       _ib.setName(PHYSICAL).setAddresses(NODE1_PHYSICAL_NETWORK).build();
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
-              StaticRoute.builder()
+              StaticRoute.testBuilder()
                   .setNetwork(DST_IP.toPrefix())
                   .setNextHopInterface(PHYSICAL)
                   .setAdministrativeCost(1)
@@ -407,7 +407,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       _ib = _nf.interfaceBuilder();
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
-              StaticRoute.builder()
+              StaticRoute.testBuilder()
                   .setNetwork(DST_IP.toPrefix())
                   .setNextHopInterface(PHYSICAL)
                   .setAdministrativeCost(1)
@@ -469,7 +469,7 @@ public class BatfishBDDDifferentialReachabilityTest {
 
       v1.setStaticRoutes(
           ImmutableSortedSet.of(
-              StaticRoute.builder()
+              StaticRoute.testBuilder()
                   .setNetwork(DST_IP.toPrefix())
                   .setNextHopInterface(PHYSICAL)
                   .setAdministrativeCost(1)
@@ -523,7 +523,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       if (delta) {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(DST_IP.toPrefix())
                     .setNextHopInterface(PHYSICAL)
                     .setAdministrativeCost(1)
@@ -578,7 +578,7 @@ public class BatfishBDDDifferentialReachabilityTest {
       if (!delta) {
         v1.setStaticRoutes(
             ImmutableSortedSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(DST_IP.toPrefix())
                     .setNextHopInterface(NULL_INTERFACE_NAME)
                     .setAdministrativeCost(1)

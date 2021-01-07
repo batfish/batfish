@@ -4,12 +4,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** Represents an internal EIGRP route */
 public class EigrpInternalRoute extends EigrpRoute {
@@ -18,22 +21,14 @@ public class EigrpInternalRoute extends EigrpRoute {
       int admin,
       long processAsn,
       @Nullable Prefix network,
-      @Nullable Ip nextHopIp,
+      @Nonnull NextHop nextHop,
       @Nonnull EigrpMetric metric,
       @Nonnull EigrpMetricVersion metricVersion,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
     super(
-        admin,
-        network,
-        nextHopIp,
-        metric,
-        metricVersion,
-        processAsn,
-        tag,
-        nonForwarding,
-        nonRouting);
+        admin, network, nextHop, metric, metricVersion, processAsn, tag, nonForwarding, nonRouting);
   }
 
   @JsonCreator
@@ -42,6 +37,7 @@ public class EigrpInternalRoute extends EigrpRoute {
       @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
       @Nullable @JsonProperty(PROP_EIGRP_METRIC_VERSION) EigrpMetricVersion metricVersion,
       @Nullable @JsonProperty(PROP_TAG) Long tag) {
@@ -51,11 +47,26 @@ public class EigrpInternalRoute extends EigrpRoute {
     checkArgument(processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
     checkArgument(tag != null, "EIGRP route: missing %s", PROP_TAG);
     return new EigrpInternalRoute(
-        admin, processAsn, network, nextHopIp, metric, metricVersion, tag, false, false);
+        admin,
+        processAsn,
+        network,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
+        metric,
+        metricVersion,
+        tag,
+        false,
+        false);
   }
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  @VisibleForTesting
+  public static Builder testBuilder() {
+    return builder()
+        .setNextHop(NextHopDiscard.instance())
+        .setEigrpMetricVersion(EigrpMetricVersion.V1);
   }
 
   @Override
@@ -77,11 +88,12 @@ public class EigrpInternalRoute extends EigrpRoute {
       checkArgument(_processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
       checkArgument(
           getMetric() == 0, "EIGRP route: cannot set metric directly, use setEigrpMetric instead");
+      checkArgument(_nextHop != null, "EIGRP route: missing next hop");
       return new EigrpInternalRoute(
           getAdmin(),
           _processAsn,
           getNetwork(),
-          getNextHopIp(),
+          _nextHop,
           _eigrpMetric,
           _eigrpMetricVersion,
           getTag(),
@@ -104,7 +116,7 @@ public class EigrpInternalRoute extends EigrpRoute {
         // AbstractRoute properties
         .setAdmin(getAdministrativeCost())
         .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
+        .setNextHop(getNextHop())
         // Skip setMetric since this builder ignores it in favor of setEigrpMetric
         .setTag(getTag())
         .setNonForwarding(getNonForwarding())
@@ -127,7 +139,7 @@ public class EigrpInternalRoute extends EigrpRoute {
     return _admin == rhs._admin
         // Skip #getMetric() since it is derived from EigrpMetric _metric
         && _network.equals(rhs._network)
-        && _nextHopIp.equals(rhs._nextHopIp)
+        && _nextHop.equals(rhs._nextHop)
         && _tag == rhs._tag
         && _processAsn == rhs._processAsn
         && _metric.equals(rhs._metric)
@@ -141,7 +153,7 @@ public class EigrpInternalRoute extends EigrpRoute {
     return Objects.hash(
         _admin,
         _network,
-        _nextHopIp,
+        _nextHop,
         _tag,
         _processAsn,
         _metric,
@@ -154,7 +166,7 @@ public class EigrpInternalRoute extends EigrpRoute {
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add(PROP_NETWORK, _network)
-        .add(PROP_NEXT_HOP_IP, _nextHopIp)
+        .add(PROP_NEXT_HOP_IP, _nextHop)
         .add(PROP_PROCESS_ASN, _processAsn)
         .toString();
   }

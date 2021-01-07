@@ -36,7 +36,7 @@ public class LoopNetwork {
     Prefix loopPrefix = Prefix.parse("2.0.0.0/32");
     v1.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(loopPrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i1.getName())
@@ -62,7 +62,7 @@ public class LoopNetwork {
         always().apply(assignSourceIp(natPoolIp.getStartIp(), natPoolIp.getStartIp())).build());
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(loopPrefix)
                 .setAdministrativeCost(1)
                 .setNextHopInterface(i2.getName())

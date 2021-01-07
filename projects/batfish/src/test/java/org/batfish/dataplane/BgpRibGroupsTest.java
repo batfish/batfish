@@ -180,7 +180,7 @@ public class BgpRibGroupsTest {
     Vrf v2 = nf.vrfBuilder().setOwner(c2).setName(Configuration.DEFAULT_VRF_NAME).build();
     v2.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("2.2.2.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
@@ -212,7 +212,7 @@ public class BgpRibGroupsTest {
     Vrf v3 = nf.vrfBuilder().setOwner(c3).setName(Configuration.DEFAULT_VRF_NAME).build();
     v3.setStaticRoutes(
         ImmutableSortedSet.of(
-            StaticRoute.builder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("3.3.3.0/24"))
                 .setAdministrativeCost(1)
                 .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
@@ -259,7 +259,7 @@ public class BgpRibGroupsTest {
         vrf2Routes,
         hasItem(
             new AnnotatedRoute<>(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.parse("2.2.2.0/24"))
                     .setAdmin(ADMIN_OVERWRITE)
                     .setAsPath(AsPath.ofSingletonAsSets(2L))
@@ -280,7 +280,7 @@ public class BgpRibGroupsTest {
         defaultVrfRoutes,
         hasItem(
             new AnnotatedRoute<>(
-                Bgpv4Route.builder()
+                Bgpv4Route.testBuilder()
                     .setNetwork(Prefix.parse("3.3.3.0/24"))
                     .setAdmin(
                         RoutingProtocol.BGP.getDefaultAdministrativeCost(

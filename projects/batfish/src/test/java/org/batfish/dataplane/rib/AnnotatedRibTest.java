@@ -13,7 +13,7 @@ public class AnnotatedRibTest {
   public void testContainsRoute() {
     Rib rib = new Rib();
     StaticRoute sr =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(1)
             .setNetwork(Prefix.ZERO)
             .setNextHopInterface("iface")
@@ -25,7 +25,7 @@ public class AnnotatedRibTest {
     assertFalse(
         rib.containsRoute(
             new AnnotatedRoute<>(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setAdministrativeCost(1)
                     .setNetwork(Prefix.ZERO)
                     .setNextHopInterface("iface2")

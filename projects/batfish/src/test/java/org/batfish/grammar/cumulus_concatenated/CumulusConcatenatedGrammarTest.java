@@ -274,27 +274,27 @@ public class CumulusConcatenatedGrammarTest {
         viConfig.getDefaultVrf().getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.parse("1.1.1.1/24"))
                     .setNextHopIp(Ip.parse("10.0.0.1"))
                     .setAdministrativeCost(100)
                     .build(),
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.parse("3.3.3.3/24"))
                     .setNextHopInterface("null_interface")
                     .setAdministrativeCost(1)
                     .build(),
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.parse("4.4.4.4/24"))
                     .setNextHopInterface("Eth0")
                     .setAdministrativeCost(1)
                     .build(),
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.parse("6.6.6.6/24"))
                     .setNextHopInterface("null_interface")
                     .setAdministrativeCost(1)
                     .build(),
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.parse("7.7.7.7/24"))
                     .setNextHopInterface("null_interface")
                     .setAdministrativeCost(250)
@@ -303,12 +303,12 @@ public class CumulusConcatenatedGrammarTest {
         viConfig.getVrfs().get("VRF").getStaticRoutes(),
         equalTo(
             ImmutableSet.of(
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.parse("2.2.2.2/24"))
                     .setNextHopIp(Ip.parse("10.0.0.2"))
                     .setAdministrativeCost(1)
                     .build(),
-                StaticRoute.builder()
+                StaticRoute.testBuilder()
                     .setNetwork(Prefix.parse("5.5.5.5/24"))
                     .setNextHopInterface("eth0-1")
                     .setAdministrativeCost(1)
@@ -355,7 +355,7 @@ public class CumulusConcatenatedGrammarTest {
   public void testSetCommunityAdditive() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -389,7 +389,7 @@ public class CumulusConcatenatedGrammarTest {
   public void testSetCommunityContinue() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -416,7 +416,7 @@ public class CumulusConcatenatedGrammarTest {
   public void testSetMetric() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -450,7 +450,7 @@ public class CumulusConcatenatedGrammarTest {
   public void testSetCommListDelete() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
@@ -569,7 +569,7 @@ public class CumulusConcatenatedGrammarTest {
   public void testCommSetMatchExpr() throws IOException {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
-        Bgpv4Route.builder()
+        Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)

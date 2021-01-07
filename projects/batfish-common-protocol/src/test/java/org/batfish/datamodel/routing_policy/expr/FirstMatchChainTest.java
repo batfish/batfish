@@ -129,7 +129,7 @@ public class FirstMatchChainTest {
         ImmutableSortedMap.of(
             P1.getName(), P1, P2.getName(), P2, DEFAULT_POLICY.getName(), DEFAULT_POLICY);
     StaticRoute.Builder srb =
-        StaticRoute.builder().setNetwork(Prefix.parse("1.1.1.0/24")).setAdmin(5).setMetric(10L);
+        StaticRoute.testBuilder().setNetwork(Prefix.parse("1.1.1.0/24")).setAdmin(5).setMetric(10L);
 
     // Route with tag 1 should be accepted by policy 1, no metric change
     Environment environment =

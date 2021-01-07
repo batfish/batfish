@@ -93,7 +93,7 @@ public class GeneratedRouteHelperTest {
             policy,
             ImmutableSet.of(
                 annotateRoute(
-                    StaticRoute.builder()
+                    StaticRoute.testBuilder()
                         .setNetwork(Prefix.parse("2.2.2.2/32"))
                         .setNextHopIp(null)
                         .setNextHopInterface("eth0")

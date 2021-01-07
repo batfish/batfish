@@ -45039,6 +45039,7 @@
                       "discard" : false,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
+                      "nextHopInterface" : "null_interface",
                       "nextHopIp" : "AUTO/NONE(-1l)",
                       "tag" : -1
                     }
@@ -45081,6 +45082,7 @@
                       "discard" : false,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
+                      "nextHopInterface" : "null_interface",
                       "nextHopIp" : "AUTO/NONE(-1l)",
                       "tag" : -1
                     }

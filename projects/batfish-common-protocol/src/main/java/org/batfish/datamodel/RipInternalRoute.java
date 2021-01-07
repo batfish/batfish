@@ -1,29 +1,39 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopIp;
 
 @ParametersAreNonnullByDefault
 public class RipInternalRoute extends RipRoute {
 
   @JsonCreator
-  public RipInternalRoute(
-      @JsonProperty(PROP_NETWORK) Prefix network,
-      @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @JsonProperty(PROP_METRIC) long metric,
-      @JsonProperty(PROP_TAG) long tag) {
-    super(network, nextHopIp, admin, metric, tag);
+  private static RipInternalRoute create(
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @Nullable @JsonProperty(PROP_METRIC) long metric,
+      @Nullable @JsonProperty(PROP_TAG) long tag) {
+    checkArgument(network != null);
+    checkArgument(nextHopIp != null);
+    return new RipInternalRoute(network, NextHopIp.of(nextHopIp), admin, metric, tag);
   }
 
-  @Nonnull
-  @Override
-  public String getNextHopInterface() {
-    return Route.UNSET_NEXT_HOP_INTERFACE;
+  private RipInternalRoute(Prefix network, NextHop nextHop, int admin, long metric, long tag) {
+    super(network, nextHop, admin, metric, tag);
+  }
+
+  @VisibleForTesting
+  RipInternalRoute(Prefix network, Ip nextHopIp, int admin, long metric, long tag) {
+    super(network, NextHopIp.of(nextHopIp), admin, metric, tag);
   }
 
   @Override
@@ -43,7 +53,7 @@ public class RipInternalRoute extends RipRoute {
     @Nonnull
     @Override
     public RipInternalRoute build() {
-      return new RipInternalRoute(getNetwork(), getNextHopIp(), getAdmin(), getMetric(), getTag());
+      return new RipInternalRoute(getNetwork(), _nextHop, getAdmin(), getMetric(), getTag());
     }
 
     @Nonnull
@@ -61,7 +71,7 @@ public class RipInternalRoute extends RipRoute {
         .setAdmin(getAdministrativeCost())
         .setMetric(getMetric())
         .setNetwork(getNetwork())
-        .setNextHopIp(getNextHopIp())
+        .setNextHop(getNextHop())
         .setNonForwarding(getNonForwarding())
         .setNonRouting(getNonRouting())
         .setTag(getTag());
@@ -79,7 +89,7 @@ public class RipInternalRoute extends RipRoute {
     return _network.equals(other._network)
         && _admin == other._admin
         && _metric == other._metric
-        && _nextHopIp.equals(other._nextHopIp)
+        && _nextHop.equals(other._nextHop)
         && getNonForwarding() == other.getNonForwarding()
         && getNonRouting() == other.getNonRouting()
         && _tag == other._tag;
@@ -88,6 +98,6 @@ public class RipInternalRoute extends RipRoute {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _network, _admin, _metric, _nextHopIp, getNonForwarding(), getNonRouting(), _tag);
+        _network, _admin, _metric, _nextHop, getNonForwarding(), getNonRouting(), _tag);
   }
 }

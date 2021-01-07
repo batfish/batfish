@@ -74,7 +74,7 @@ public class RdsInstanceTest {
   @Before
   public void setup() {
     _staticRouteBuilder =
-        StaticRoute.builder()
+        StaticRoute.testBuilder()
             .setAdministrativeCost(Route.DEFAULT_STATIC_ROUTE_ADMIN)
             .setMetric(Route.DEFAULT_STATIC_ROUTE_COST)
             .setNetwork(Prefix.ZERO);

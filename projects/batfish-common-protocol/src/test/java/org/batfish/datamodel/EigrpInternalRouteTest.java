@@ -13,7 +13,7 @@ public class EigrpInternalRouteTest {
   @Test
   public void testToBuilder() {
     EigrpInternalRoute r =
-        EigrpInternalRoute.builder()
+        EigrpInternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setEigrpMetric(

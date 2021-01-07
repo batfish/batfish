@@ -5,12 +5,15 @@ import static java.util.Objects.hash;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** Represents an external EIGRP route */
 public class EigrpExternalRoute extends EigrpRoute {
@@ -26,7 +29,7 @@ public class EigrpExternalRoute extends EigrpRoute {
       @Nullable Prefix network,
       int admin,
       long destinationAsn,
-      @Nullable Ip nextHopIp,
+      @Nonnull NextHop nextHop,
       @Nonnull EigrpMetric metric,
       @Nonnull EigrpMetricVersion metricVersion,
       long processAsn,
@@ -34,15 +37,7 @@ public class EigrpExternalRoute extends EigrpRoute {
       boolean nonForwarding,
       boolean nonRouting) {
     super(
-        admin,
-        network,
-        nextHopIp,
-        metric,
-        metricVersion,
-        processAsn,
-        tag,
-        nonForwarding,
-        nonRouting);
+        admin, network, nextHop, metric, metricVersion, processAsn, tag, nonForwarding, nonRouting);
     _destinationAsn = destinationAsn;
   }
 
@@ -52,6 +47,7 @@ public class EigrpExternalRoute extends EigrpRoute {
       @Nullable @JsonProperty(PROP_DESTINATION_ASN) Long destinationAsn,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
       @Nullable @JsonProperty(PROP_EIGRP_METRIC_VERSION) EigrpMetricVersion metricVersion,
       @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn,
@@ -66,7 +62,7 @@ public class EigrpExternalRoute extends EigrpRoute {
         network,
         admin,
         destinationAsn,
-        nextHopIp,
+        NextHop.legacyConverter(nextHopInterface, nextHopIp),
         metric,
         metricVersion,
         processAsn,
@@ -90,6 +86,13 @@ public class EigrpExternalRoute extends EigrpRoute {
     return new Builder();
   }
 
+  @VisibleForTesting
+  public static Builder testBuilder() {
+    return builder()
+        .setNextHop(NextHopDiscard.instance())
+        .setEigrpMetricVersion(EigrpMetricVersion.V1);
+  }
+
   public static class Builder extends EigrpRoute.Builder<Builder, EigrpExternalRoute> {
 
     private Builder() {}
@@ -103,11 +106,12 @@ public class EigrpExternalRoute extends EigrpRoute {
       checkArgument(
           _eigrpMetricVersion != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC_VERSION);
       checkArgument(_processAsn != null, "EIGRP route: missing %s", PROP_PROCESS_ASN);
+      checkArgument(_nextHop != null, "EIGRP route: missing next hop");
       return new EigrpExternalRoute(
           getNetwork(),
           getAdmin(),
           _destinationAsn,
-          getNextHopIp(),
+          _nextHop,
           _eigrpMetric,
           _eigrpMetricVersion,
           _processAsn,
@@ -157,7 +161,7 @@ public class EigrpExternalRoute extends EigrpRoute {
         && _metric.equals(rhs._metric)
         && _metricVersion == rhs._metricVersion
         && _network.equals(rhs._network)
-        && _nextHopIp.equals(rhs._nextHopIp)
+        && _nextHop.equals(rhs._nextHop)
         && _processAsn == rhs._processAsn
         && _tag == rhs._tag
         && getNonForwarding() == rhs.getNonForwarding()
@@ -168,7 +172,7 @@ public class EigrpExternalRoute extends EigrpRoute {
   public final int hashCode() {
     return hash(
         _network,
-        _nextHopIp,
+        _nextHop,
         _admin,
         _tag,
         getNonForwarding(),
@@ -183,7 +187,7 @@ public class EigrpExternalRoute extends EigrpRoute {
   public String toString() {
     return MoreObjects.toStringHelper(this)
         .add(PROP_NETWORK, _network)
-        .add(PROP_NEXT_HOP_IP, _nextHopIp)
+        .add(PROP_NEXT_HOP_IP, _nextHop)
         .add(PROP_PROCESS_ASN, _processAsn)
         .toString();
   }
