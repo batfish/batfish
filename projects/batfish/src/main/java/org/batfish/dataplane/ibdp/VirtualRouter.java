@@ -34,6 +34,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -191,6 +193,8 @@ public final class VirtualRouter {
 
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
+
+  private static final Logger LOGGER = LogManager.getLogger(VirtualRouter.class);
 
   VirtualRouter(@Nonnull String name, @Nonnull Node node) {
     _node = node;
@@ -1280,12 +1284,13 @@ public final class VirtualRouter {
    */
   void queueCrossVrfImports() {
     for (VrfLeakingConfig leakConfig : _vrf.getVrfLeakConfigs()) {
-      if (leakConfig.leakAsBgp()) {
-        continue;
-      }
       String importFromVrf = leakConfig.getImportFromVrf();
       VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(importFromVrf);
       CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(importFromVrf, RibId.DEFAULT_RIB_NAME);
+      if (leakConfig.leakAsBgp()) {
+        /* handled in bgpIteration() */
+        continue;
+      }
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
@@ -1348,7 +1353,38 @@ public final class VirtualRouter {
       return;
     }
     _bgpRoutingProcess.executeIteration(allNodes);
+    // If we must leak routes as BGP, do so here.
+    bgpVrfLeak();
     updateFloodLists();
+  }
+
+  /** Import BGP routes from other VRFs on the same node, if configured */
+  private void bgpVrfLeak() {
+    assert _bgpRoutingProcess != null; // invariant of being called from bgpIteration
+    for (VrfLeakingConfig vrfLeakConfig : _vrf.getVrfLeakConfigs()) {
+      if (!vrfLeakConfig.leakAsBgp()) {
+        /* Handled in queueCrossVrfImports() */
+        continue;
+      }
+      LOGGER.debug("Leaking BGP routes from {} to {}", vrfLeakConfig.getImportFromVrf(), _name);
+      Optional<BgpRoutingProcess> exportingBgpProc =
+          _node
+              .getVirtualRouter(vrfLeakConfig.getImportFromVrf())
+              .map(VirtualRouter::getBgpRoutingProcess);
+      if (exportingBgpProc.isPresent()) {
+        _bgpRoutingProcess.importCrossVrfV4Routes(
+            exportingBgpProc.get().getRoutesToLeak(),
+            vrfLeakConfig.getImportPolicy(),
+            vrfLeakConfig.getImportFromVrf());
+      } else {
+        LOGGER.error(
+            "Leaking BGP routes from VRF {} to VRF {} on node {} failed. Exporting VRF has no BGP"
+                + " process",
+            vrfLeakConfig.getImportFromVrf(),
+            _name,
+            _c.getHostname());
+      }
+    }
   }
 
   /**

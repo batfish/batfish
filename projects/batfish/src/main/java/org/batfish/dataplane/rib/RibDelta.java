@@ -236,6 +236,11 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
       }
       return this;
     }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(this).add("actions", _actions).toString();
+    }
   }
 
   @Nonnull
