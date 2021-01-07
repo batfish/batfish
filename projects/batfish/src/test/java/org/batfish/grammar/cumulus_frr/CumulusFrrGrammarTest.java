@@ -1508,6 +1508,7 @@ public class CumulusFrrGrammarTest {
     FrrInterface i1 = new FrrInterface("swp1", "VRF");
     _frr.getInterfaces().put("swp1", i1);
     parse("interface swp1 vrf VRF\n ip ospf area 0.0.0.0\n");
+    parse("interface swp1 vrf VRF\n ip ospf area 255.0.0.0\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
   }
@@ -1517,6 +1518,7 @@ public class CumulusFrrGrammarTest {
     FrrInterface i1 = new FrrInterface("swp1", "VRF");
     _frr.getInterfaces().put("swp1", i1);
     parse("interface swp1 vrf VRF\n ip ospf area 0\n");
+    parse("interface swp1 vrf VRF\n ip ospf area 4000000000\n");
     assertThat(_warnings.getParseWarnings(), empty());
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getOspfArea(), equalTo(0L));
   }

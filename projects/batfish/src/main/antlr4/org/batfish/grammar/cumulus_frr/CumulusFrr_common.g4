@@ -62,6 +62,12 @@ loglevel
     | WARNINGS
 ;
 
+ospf_area
+:
+  ip = ip_address
+  | num = uint32
+;
+
 ospf_redist_type
 :
   STATIC | CONNECTED | BGP
