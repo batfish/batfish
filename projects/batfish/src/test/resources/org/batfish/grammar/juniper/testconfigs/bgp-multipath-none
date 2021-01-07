@@ -1,0 +1,5 @@
+#
+set system host-name bgp-multipath-none
+#
+set routing-options autonomous-system 1
+set protocols bgp group MYGROUP neighbor 1.1.1.1

@@ -696,7 +696,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
       neighbor.build();
     }
-    proc.setMultipathEbgp(multipathEbgpSet);
+    proc.setMultipathEbgp(multipathEbgp);
     proc.setMultipathIbgp(multipathIbgp);
     MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
         multipathMultipleAs
