@@ -65,6 +65,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_redist_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
@@ -257,6 +258,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Nonnull
   private Long toLong(Uint32Context ctx) {
     return Long.parseUnsignedLong(ctx.getText());
+  }
+
+  private long toLong(Ospf_areaContext ctx) {
+    if (ctx.ip != null) {
+      return toIp(ctx.ip).asLong();
+    }
+    return toLong(ctx.num);
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -742,14 +750,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (_currentInterface == null) {
       return;
     }
-
-    if (ctx.ip != null) {
-      _currentInterface.getOrCreateOspf().setOspfArea(Ip.parse(ctx.ip.getText()).asLong());
-    } else if (ctx.num != null) {
-      _currentInterface.getOrCreateOspf().setOspfArea(Long.parseLong(ctx.num.getText()));
-    } else {
-      _w.addWarning(ctx, ctx.getText(), _parser, "only allow IP and number in ospf area");
-    }
+    _currentInterface.getOrCreateOspf().setOspfArea(toLong(ctx.area));
   }
 
   @Override
