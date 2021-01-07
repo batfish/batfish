@@ -11,6 +11,7 @@ import static org.batfish.datamodel.OriginType.IGP;
 import static org.batfish.datamodel.OriginType.INCOMPLETE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -46,7 +47,6 @@ import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
-import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasNextVrf;
 import static org.batfish.datamodel.matchers.StubSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isChainOfSingleChildren;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
@@ -191,6 +191,7 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.trace.TraceTree;
@@ -2521,7 +2522,10 @@ public final class PaloAltoGrammarTest {
         hasVrf(
             vr2Name,
             hasStaticRoutes(
-                hasItem(allOf(hasPrefix(Prefix.strict("10.0.0.0/8")), hasNextVrf(vrName))))));
+                hasItem(
+                    allOf(
+                        hasPrefix(Prefix.strict("10.0.0.0/8")),
+                        hasNextHop(NextHopVrf.of(vrName)))))));
     // static-route with undefined next-vr should not be converted
     assertThat(c, hasVrf(vr2Name, hasStaticRoutes(not(hasItem(hasPrefix(Prefix.ZERO))))));
     // static-route with next-vr same as its own virtual-router should not be converted

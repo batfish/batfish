@@ -26,6 +26,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FilterResult;
@@ -37,8 +38,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
@@ -96,9 +95,7 @@ public final class TracerouteUtils {
                     route.getProtocol(),
                     route.getNetwork(),
                     route.getNextHopIp(),
-                    route.getProtocol() == RoutingProtocol.STATIC
-                        ? ((StaticRoute) route).getNextVrf()
-                        : null))
+                    AbstractRoute.NEXT_VRF_EXTRACTOR.visit(route.getNextHop())))
         .sorted(
             comparing(RouteInfo::getNetwork)
                 .thenComparing(RouteInfo::getNextHopIp)

@@ -213,7 +213,7 @@ public class FibImplTest {
     StaticRoute nextVrfRoute =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
-            .setNextVrf("nextVrf")
+            .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of("nextVrf"))
             .setAdministrativeCost(1)
             .build();
 

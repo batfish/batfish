@@ -1,16 +1,13 @@
 package org.batfish.dataplane.protocols;
 
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
-import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.dataplane.rib.Rib;
 import org.junit.Before;
@@ -25,35 +22,6 @@ public class StaticRouteHelperTest {
   public void setup() {
     // Empty rib before each test
     _rib = new Rib();
-  }
-
-  /** Ensure we identify interface routes correctly. */
-  @Test
-  public void testIsInterfaceRoute() {
-
-    StaticRoute.Builder sb =
-        StaticRoute.testBuilder().setNetwork(Prefix.parse("9.9.9.0/24")).setAdministrativeCost(1);
-    Ip someIp = Ip.parse("1.1.1.1");
-
-    // Unset interface + nextHopIp
-    StaticRoute sr =
-        sb.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE).setNextHopIp(someIp).build();
-    assertThat(isInterfaceRoute(sr), equalTo(false));
-
-    // Null interface
-    sr =
-        sb.setNextHopInterface(Interface.NULL_INTERFACE_NAME)
-            .setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP)
-            .build();
-    assertThat(isInterfaceRoute(sr), equalTo(true));
-
-    // Real interface
-    sr = sb.setNextHopInterface("Eth0").setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP).build();
-    assertThat(isInterfaceRoute(sr), equalTo(true));
-
-    // Real interface + nextHopIp
-    sr = sb.setNextHopInterface("Eth0").setNextHopIp(someIp).build();
-    assertThat(isInterfaceRoute(sr), equalTo(true));
   }
 
   /** Check no static routes are activated if RIB is empty */

@@ -101,6 +101,7 @@ import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.PacketMatchExpr;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1501,7 +1502,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         StaticRoute.testBuilder()
             .setAdministrativeCost(1)
             .setNetwork(Prefix.ZERO)
-            .setNextVrf(NEXT_VRF)
+            .setNextHop(NextHopVrf.of(NEXT_VRF))
             .build();
     ingressVrf.setStaticRoutes(ImmutableSortedSet.of(ingressVrfNextVrfRoute));
 

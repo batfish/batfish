@@ -770,7 +770,8 @@ public class ForwardingAnalysisImplTest {
                                         StaticRoute.testBuilder()
                                             .setAdmin(1)
                                             .setNetwork(P1)
-                                            .setNextVrf(v2)
+                                            .setNextHop(
+                                                org.batfish.datamodel.route.nh.NextHopVrf.of(v2))
                                             .build())))))
                     .build(),
                 v2,
@@ -786,7 +787,8 @@ public class ForwardingAnalysisImplTest {
                                         StaticRoute.testBuilder()
                                             .setAdmin(1)
                                             .setNetwork(P2)
-                                            .setNextVrf(v1)
+                                            .setNextHop(
+                                                org.batfish.datamodel.route.nh.NextHopVrf.of(v1))
                                             .build())))))
                     .build()));
 

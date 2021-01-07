@@ -9,6 +9,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasAdministrativeCost;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasMetric;
+import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNextHop;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNextHopInterface;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasNextHopIp;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasPrefix;
@@ -16,6 +17,7 @@ import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasProt
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.HasTag;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonForwarding;
 import org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchersImpl.IsNonRouting;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.hamcrest.Matcher;
 
 public final class AbstractRouteDecoratorMatchers {
@@ -52,6 +54,22 @@ public final class AbstractRouteDecoratorMatchers {
    */
   public static @Nonnull HasMetric hasMetric(@Nonnull Matcher<? super Long> subMatcher) {
     return new HasMetric(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the {@link AbstractRouteDecorator}'s nextHop is {@code
+   * expectedNextHop}.
+   */
+  public static @Nonnull HasNextHop hasNextHop(@Nonnull NextHop expectedNextHop) {
+    return new HasNextHop(equalTo(expectedNextHop));
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRouteDecorator}'s nextHop.
+   */
+  public static @Nonnull HasNextHop hasNextHop(@Nonnull Matcher<? super NextHop> subMatcher) {
+    return new HasNextHop(subMatcher);
   }
 
   /**

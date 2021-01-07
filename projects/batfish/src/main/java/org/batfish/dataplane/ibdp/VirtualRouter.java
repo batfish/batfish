@@ -8,8 +8,6 @@ import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.exportNonIsisRouteToIsis;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.setOverloadOnAllRoutes;
-import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
-import static org.batfish.dataplane.protocols.StaticRouteHelper.isNextVrfRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
@@ -78,8 +76,11 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.isis.IsisNode;
 import org.batfish.datamodel.isis.IsisProcess;
 import org.batfish.datamodel.isis.IsisTopology;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHopVisitor;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
@@ -834,24 +835,40 @@ public final class VirtualRouter {
   @VisibleForTesting
   void initStaticRibs() {
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
-      if (isInterfaceRoute(sr)) {
-        // We have an interface route, check if interface is active
-        Interface nextHopInterface = _c.getAllInterfaces().get(sr.getNextHopInterface());
+      new NextHopVisitor<Void>() {
 
-        if (Interface.NULL_INTERFACE_NAME.equals(sr.getNextHopInterface())
-            || (nextHopInterface != null && (nextHopInterface.getActive()))) {
-          // Interface is active (or special null interface), install route
+        @Override
+        public Void visitNextHopIp(NextHopIp nextHopIp) {
+          // We have a next-hop-ip route, keep in it that RIB
+          _staticNextHopRib.mergeRouteGetDelta(sr);
+          return null;
+        }
+
+        @Override
+        public Void visitNextHopInterface(NextHopInterface nextHopInterface) {
+          // We have an interface route, check that interface exists and is active
+          Interface iface = _c.getAllInterfaces().get(nextHopInterface.getInterfaceName());
+          if (iface == null || !iface.getActive()) {
+            return null;
+          }
           _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          return null;
         }
-      } else if (isNextVrfRoute(sr)) {
-        _staticUnconditionalRib.mergeRouteGetDelta(sr);
-      } else {
-        if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(sr.getNextHopIp())) {
-          continue;
+
+        @Override
+        public Void visitNextHopDiscard(NextHopDiscard nextHopDiscard) {
+          // Null routes are always active unconditionally
+          _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          return null;
         }
-        // We have a next-hop-ip route, keep in it that RIB
-        _staticNextHopRib.mergeRouteGetDelta(sr);
-      }
+
+        @Override
+        public Void visitNextHopVrf(NextHopVrf nextHopVrf) {
+          // next vrf routes are always active unconditionally
+          _staticUnconditionalRib.mergeRouteGetDelta(sr);
+          return null;
+        }
+      }.visit(sr.getNextHop());
     }
   }
 
