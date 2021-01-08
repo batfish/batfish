@@ -19,6 +19,7 @@ public enum NamedApplication {
   HTTP("http", new TcpApplication(NamedPort.HTTP.number())),
   HTTPS("https", new TcpApplication(NamedPort.HTTPS.number())),
   MYSQL("mysql", new TcpApplication(NamedPort.MYSQL_SERVER.number())),
+  SMTP("smtp", new TcpApplication(NamedPort.SMTP.number())),
   SNMP("snmp", new UdpApplication(NamedPort.SNMP.number())),
   SSH("ssh", new TcpApplication(NamedPort.SSH.number())),
   TELNET("telnet", new TcpApplication(NamedPort.TELNET.number()));
