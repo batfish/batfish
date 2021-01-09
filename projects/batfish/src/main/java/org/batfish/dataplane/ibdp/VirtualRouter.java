@@ -1284,13 +1284,13 @@ public final class VirtualRouter {
    */
   void queueCrossVrfImports() {
     for (VrfLeakingConfig leakConfig : _vrf.getVrfLeakConfigs()) {
-      String importFromVrf = leakConfig.getImportFromVrf();
-      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(importFromVrf);
-      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(importFromVrf, RibId.DEFAULT_RIB_NAME);
       if (leakConfig.leakAsBgp()) {
         /* handled in bgpIteration() */
         continue;
       }
+      String importFromVrf = leakConfig.getImportFromVrf();
+      VirtualRouter exportingVR = _node.getVirtualRouterOrThrow(importFromVrf);
+      CrossVrfEdgeId otherVrfToOurRib = new CrossVrfEdgeId(importFromVrf, RibId.DEFAULT_RIB_NAME);
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
