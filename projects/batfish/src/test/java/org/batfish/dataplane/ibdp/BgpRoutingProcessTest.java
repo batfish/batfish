@@ -5,6 +5,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.initEvpnType3Route;
@@ -583,7 +584,8 @@ public class BgpRoutingProcessTest {
                 allOf(
                     hasNextHop(NextHopDiscard.instance()),
                     hasPrefix(prefix),
-                    hasProtocol(RoutingProtocol.BGP)))));
+                    hasProtocol(RoutingProtocol.BGP),
+                    isNonRouting(true)))));
   }
 
   @Test
@@ -639,7 +641,10 @@ public class BgpRoutingProcessTest {
             .collect(Collectors.toList()),
         contains(
             isBgpv4RouteThat(
-                allOf(hasPrefix(allowedPrefix), hasNextHop(NextHopVrf.of(otherVrf))))));
+                allOf(
+                    hasPrefix(allowedPrefix),
+                    hasNextHop(NextHopVrf.of(otherVrf)),
+                    isNonRouting(false)))));
 
     // Process denied prefix, but because no policy is specified, allow it
     _routingProcess.importCrossVrfV4Routes(
@@ -654,6 +659,10 @@ public class BgpRoutingProcessTest {
             .getRoutesStream()
             .collect(Collectors.toList()),
         hasItem(
-            isBgpv4RouteThat(allOf(hasPrefix(deniedPrefix), hasNextHop(NextHopVrf.of(otherVrf))))));
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(deniedPrefix),
+                    hasNextHop(NextHopVrf.of(otherVrf)),
+                    isNonRouting(false)))));
   }
 }

@@ -146,7 +146,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** {@link RibDelta} representing changes to {@link #_ebgpv4Rib} in the current iteration */
   @Nonnull private Builder<Bgpv4Route> _ebgpv4DeltaBuilder = RibDelta.builder();
   /**
-   * Keep track of redistributed routes that we have merged into our local RIB).
+   * Keep track of redistributed routes that we have merged into our local RIB.
    *
    * <p>Currently used for VRF leaking only.
    */
@@ -258,7 +258,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             clusterListAsIgpCost);
     _localBgpv4Rib =
         new Bgpv4Rib(
-            _mainRib, bestPathTieBreaker, 1, multiPathMatchMode, true, clusterListAsIgpCost);
+            _mainRib, bestPathTieBreaker, null, multiPathMatchMode, true, clusterListAsIgpCost);
 
     _toRedistribute = new HashMap<>(1);
 
@@ -477,9 +477,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // newer redistribution model:
     if (_process.getRedistributionPolicy() != null) {
       // Place redistributed routes into our local RIB
+      String policyName = _process.getRedistributionPolicy();
+      assert policyName != null;
+      Optional<RoutingPolicy> policy = _policies.get(policyName);
+      if (!policy.isPresent()) {
+        LOGGER.debug("Undefined BGP redistribution policy {}. Skipping redistribution", policyName);
+        return;
+      }
       mainRibDelta
           .getActions()
-          .map(this::redistributeRouteToLocalRib)
+          .map(a -> redistributeRouteToLocalRib(a, policy.get()))
           .forEach(_localDeltaBuilder::from);
       LOGGER.debug(
           "Redistributed into local BGP RIB node {}, VRF {}: {}",
@@ -487,22 +494,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           _vrfName,
           _localDeltaBuilder.build());
     }
-  }
-
-  /**
-   * Convert a main RIB route to a BGP route and run it through the redistribution policy, if it
-   * exists
-   */
-  private RibDelta<Bgpv4Route> redistributeRouteToLocalRib(
-      RouteAdvertisement<? extends AnnotatedRoute<AbstractRoute>> route) {
-    String policyName = _process.getRedistributionPolicy();
-    assert policyName != null;
-    Optional<RoutingPolicy> policy = _policies.get(policyName);
-    if (!policy.isPresent()) {
-      LOGGER.debug("Undefined BGP redistribution policy {}. Skipping redistribution", policyName);
-      return RibDelta.empty();
-    }
-    return redistributeRouteToLocalRib(route, policy.get());
   }
 
   /** Convert a main RIB route to a BGP route and run them through the provided policy */
@@ -732,8 +723,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // consume exported routes
       RouteAdvertisement<Bgpv4Route> remoteRouteAdvert = exportedRoutes.next();
       Bgpv4Route remoteRoute = remoteRouteAdvert.getRoute();
-
-      //      LOGGER.debug("{} Processing bgpv4 route {}", _hostname, remoteRoute);
 
       Bgpv4Route.Builder transformedIncomingRouteBuilder =
           transformBgpRouteOnImport(
@@ -1682,6 +1671,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltaBuilders = new IdentityHashMap<>();
     ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
     ribDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
+    @Nullable
+    RoutingPolicy policy =
+        Optional.ofNullable(importPolicyName).flatMap(_policies::get).orElse(null);
     routesToLeak.forEach(
         ra -> {
           Bgpv4Route route = ra.getRoute();
@@ -1696,9 +1688,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
           // Process route through import policy, if one exists
           boolean accept = true;
-          if (importPolicyName != null) {
-            accept =
-                _policies.getOrThrow(importPolicyName).processBgpRoute(route, builder, null, IN);
+          if (policy != null) {
+            accept = policy.processBgpRoute(route, builder, null, IN);
           }
           if (accept) {
             Bgpv4Rib targetRib =
