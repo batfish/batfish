@@ -32,13 +32,15 @@ public class BgpProcess implements Serializable {
     @Nullable private Integer _ibgpAdminCost;
     @Nullable private Ip _routerId;
     @Nullable private Vrf _vrf;
+    @Nullable private String _redistributionPolicy;
 
     public BgpProcess build() {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
       checkArgument(_ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
       checkArgument(_ibgpAdminCost != null, "Missing %s", PROP_IBGP_ADMIN_COST);
       BgpProcess bgpProcess =
-          new BgpProcess(_routerId, _ebgpAdminCost, _ibgpAdminCost, _confederation);
+          new BgpProcess(
+              _routerId, _ebgpAdminCost, _ibgpAdminCost, _confederation, _redistributionPolicy);
       if (_vrf != null) {
         _vrf.setBgpProcess(bgpProcess);
       }
@@ -84,6 +86,11 @@ public class BgpProcess implements Serializable {
       _vrf = vrf;
       return this;
     }
+
+    public Builder setRedistributionPolicy(@Nullable String redistributionPolicy) {
+      _redistributionPolicy = redistributionPolicy;
+      return this;
+    }
   }
 
   private class ClusterIdsSupplier implements Serializable, Supplier<Set<Long>> {
@@ -110,6 +117,7 @@ public class BgpProcess implements Serializable {
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_TIE_BREAKER = "tieBreaker";
   private static final String PROP_CLUSTER_LIST_AS_IGP_COST = "clusterListAsIgpCost";
+  private static final String PROP_REDISTRIBUTION_POLICY = "redistributionPolicy";
 
   @Nullable private BgpConfederation _confederation;
   private final int _ebgpAdminCost;
@@ -140,6 +148,8 @@ public class BgpProcess implements Serializable {
 
   private BgpTieBreaker _tieBreaker;
 
+  @Nullable private String _redistributionPolicy;
+
   /**
    * Constructs a BgpProcess with the default admin costs for the given {@link ConfigurationFormat},
    * for convenient creation of BGP processes in tests.
@@ -154,14 +164,15 @@ public class BgpProcess implements Serializable {
 
   /** Constructs a BgpProcess with the given router ID and admin costs */
   public BgpProcess(@Nonnull Ip routerId, int ebgpAdminCost, int ibgpAdminCost) {
-    this(routerId, ebgpAdminCost, ibgpAdminCost, null);
+    this(routerId, ebgpAdminCost, ibgpAdminCost, null, null);
   }
 
   private BgpProcess(
       @Nonnull Ip routerId,
       int ebgpAdminCost,
       int ibgpAdminCost,
-      @Nullable BgpConfederation confederation) {
+      @Nullable BgpConfederation confederation,
+      @Nullable String redistributionPolicy) {
     _activeNeighbors = new TreeMap<>();
     _confederation = confederation;
     _ebgpAdminCost = ebgpAdminCost;
@@ -173,6 +184,7 @@ public class BgpProcess implements Serializable {
     _passiveNeighbors = new TreeMap<>();
     _routerId = routerId;
     _clusterListAsIbgpCost = false;
+    _redistributionPolicy = redistributionPolicy;
   }
 
   @JsonCreator
@@ -180,7 +192,8 @@ public class BgpProcess implements Serializable {
       @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
       @Nullable @JsonProperty(PROP_CONFEDERATION) BgpConfederation confederation,
       @Nullable @JsonProperty(PROP_EBGP_ADMIN_COST) Integer ebgpAdminCost,
-      @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost) {
+      @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost,
+      @Nullable @JsonProperty(PROP_REDISTRIBUTION_POLICY) String redistributionPolicy) {
     checkArgument(routerId != null, "Missing %s", routerId);
     // In the absence of provided values, default to Cisco IOS values
     return new BgpProcess(
@@ -191,7 +204,8 @@ public class BgpProcess implements Serializable {
         firstNonNull(
             ibgpAdminCost,
             RoutingProtocol.IBGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)),
-        confederation);
+        confederation,
+        redistributionPolicy);
   }
 
   public static Builder builder() {
@@ -388,5 +402,23 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_CLUSTER_LIST_AS_IGP_COST)
   public void setClusterListAsIgpCost(boolean clusterListAsIbgpCost) {
     _clusterListAsIbgpCost = clusterListAsIbgpCost;
+  }
+
+  /**
+   * Name of the redistribution policy for this process. If {@code null}, indicates that no
+   * redistribution should be performed.
+   *
+   * <p><b>NOTE:</b> We are in a transition period where this property is used <b>only</b> to enable
+   * VRF leaking (primarily on Cisco IOS devices). This policy does not have any effect (yet) on the
+   * routes advertised to BGP neighbors.
+   */
+  @JsonProperty(PROP_REDISTRIBUTION_POLICY)
+  @Nullable
+  public String getRedistributionPolicy() {
+    return _redistributionPolicy;
+  }
+
+  public void setRedistributionPolicy(@Nullable String redistributionPolicy) {
+    _redistributionPolicy = redistributionPolicy;
   }
 }
