@@ -1,0 +1,49 @@
+!RANCID-CONTENT-TYPE: cisco
+version 15.2
+!
+hostname ios-vrf-leaking
+!
+vrf definition SRC_VRF
+ rd 65003:1
+ !
+ address-family ipv4
+  route-target export 65003:11
+ exit-address-family
+!
+ip route vrf SRC_VRF 1.1.1.1 255.255.255.255 Null0
+ip route vrf SRC_VRF 2.2.2.0 255.255.255.0 Null0
+!
+vrf definition DST_VRF
+ rd 65003:2
+ !
+ address-family ipv4
+  import map IMPORT_MAP
+  route-target export 65003:22
+  route-target import 65003:11
+ exit-address-family
+!
+ vrf definition DST_IMPOSSIBLE
+  rd 65003:2
+  !
+  address-family ipv4
+   import map UNDEFINED
+   route-target import 65003:11
+  exit-address-family
+!
+router bgp 65003
+ bgp router-id 192.168.123.3
+ !
+ address-family ipv4 vrf SRC_VRF
+  bgp router-id 192.168.123.31
+  redistribute static
+ exit-address-family
+ !
+ address-family ipv4 vrf DST_VRF
+  bgp router-id 192.168.123.32
+ exit-address-family
+ !
+!
+ip prefix-list import_pl seq 5 permit 2.2.2.0/24
+!
+route-map IMPORT_MAP permit 10
+ match ip address prefix-list import_pl

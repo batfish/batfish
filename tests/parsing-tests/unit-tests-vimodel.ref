@@ -18355,6 +18355,15 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -18371,6 +18380,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -18720,6 +18730,136 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute connected routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "connected"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "192.154.2.0/24"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -18750,6 +18890,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "198.188.136.21",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -22523,6 +22664,152 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "1.0.1.0/24"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "1.0.2.0/24"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -22539,6 +22826,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "1.1.1.1",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : true,
@@ -22758,6 +23046,87 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "137.164.17.0/24"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocols" : [
+                          "aggregate",
+                          "bgp",
+                          "ibgp"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "True"
+                      },
+                      "postStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "UnsetWriteIntermediateBgpAttributes"
+                        }
+                      ],
+                      "postTrueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetReadIntermediateBgpAttributes"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                          "originType" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                            "originType" : "igp"
+                          }
+                        }
+                      ],
+                      "preStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetWriteIntermediateBgpAttributes"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -22774,6 +23143,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -22816,6 +23186,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -22832,6 +23211,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -23556,6 +23936,164 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute RIP routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "rip"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute static routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "static"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute connected routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "connected"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -23569,6 +24107,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 20,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "1.2.3.4",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -25531,6 +26070,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -25547,6 +26095,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -26277,6 +26826,384 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~aVrfWithInnerStatements~" : {
+            "name" : "~BGP_REDISTRIBUTION~aVrfWithInnerStatements~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute connected routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "connected"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                            "calledPolicyName" : "CONNECTED-TO-BGP"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                          "prefix" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                          },
+                          "prefixSet" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                            "prefixSpace" : [
+                              "192.160.0.0/11"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                            "protocols" : [
+                              "aggregate",
+                              "bgp",
+                              "ibgp"
+                            ]
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "igp"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute RIP routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "rip"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute static routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "static"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute connected routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "connected"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute OSPF routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "ospf",
+                            "ospfIA"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                      "comment" : "Redistribute EIGRP routes into BGP",
+                      "conjuncts" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                          "protocols" : [
+                            "eigrp",
+                            "eigrpEX"
+                          ]
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                          "expr" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                            "type" : "True"
+                          },
+                          "postStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "UnsetWriteIntermediateBgpAttributes"
+                            }
+                          ],
+                          "postTrueStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetReadIntermediateBgpAttributes"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                              "originType" : {
+                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                                "originType" : "incomplete"
+                              }
+                            }
+                          ],
+                          "preStatements" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                              "type" : "SetWriteIntermediateBgpAttributes"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -26311,6 +27238,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~aVrfWithInnerStatements~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -26368,6 +27296,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -26410,6 +27339,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -26433,6 +27371,7 @@
               },
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -28314,6 +29253,15 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -28330,6 +29278,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "207.46.160.15",
               "clusterListAsIgpCost" : false,
               "dynamicNeighbors" : {
@@ -32004,6 +32953,80 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~VRF:MMS:RMT:PBI:145~" : {
+            "name" : "~BGP_REDISTRIBUTION~VRF:MMS:RMT:PBI:145~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "comment" : "Redistribute connected routes into BGP",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                      "protocols" : [
+                        "connected"
+                      ]
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "True"
+                      },
+                      "postStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "UnsetWriteIntermediateBgpAttributes"
+                        }
+                      ],
+                      "postTrueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetReadIntermediateBgpAttributes"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                          "originType" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                            "originType" : "incomplete"
+                          }
+                        }
+                      ],
+                      "preStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetWriteIntermediateBgpAttributes"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -32020,6 +33043,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~VRF:MMS:RMT:PBI:145~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -32033,6 +33057,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -38012,6 +39037,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -38025,6 +39059,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -39993,6 +41028,24 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
+          },
+          "~BGP_REDISTRIBUTION~vrf-A~" : {
+            "name" : "~BGP_REDISTRIBUTION~vrf-A~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -40009,6 +41062,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -40022,6 +41076,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~vrf-A~",
               "routerId" : "10.4.8.149",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -40135,6 +41190,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -40151,6 +41215,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -40534,6 +41599,24 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~EXTRA~" : {
+            "name" : "~BGP_REDISTRIBUTION~EXTRA~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -40550,6 +41633,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~EXTRA~",
               "routerId" : "10.10.10.10",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -40563,6 +41647,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -73560,6 +74645,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -73576,6 +74670,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -74047,6 +75142,87 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "5.5.5.5/32"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocols" : [
+                          "aggregate",
+                          "bgp",
+                          "ibgp"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "True"
+                      },
+                      "postStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "UnsetWriteIntermediateBgpAttributes"
+                        }
+                      ],
+                      "postTrueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetReadIntermediateBgpAttributes"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                          "originType" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                            "originType" : "igp"
+                          }
+                        }
+                      ],
+                      "preStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetWriteIntermediateBgpAttributes"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -74063,6 +75239,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "10.10.10.10",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -74197,6 +75374,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -74213,6 +75399,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -74480,6 +75667,87 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "Redistribute routes into BGP",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "192.168.100.100/32"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                        "protocols" : [
+                          "aggregate",
+                          "bgp",
+                          "ibgp"
+                        ]
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                        "type" : "True"
+                      },
+                      "postStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "UnsetWriteIntermediateBgpAttributes"
+                        }
+                      ],
+                      "postTrueStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetReadIntermediateBgpAttributes"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                          "originType" : {
+                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                            "originType" : "igp"
+                          }
+                        }
+                      ],
+                      "preStatements" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                          "type" : "SetWriteIntermediateBgpAttributes"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -74496,6 +75764,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -82932,6 +84201,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -82948,6 +84226,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,

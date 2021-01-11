@@ -2731,6 +2731,7 @@
           "bgpProcess" : {
             "ebgpAdminCost" : 20,
             "ibgpAdminCost" : 200,
+            "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
             "routerId" : "1.1.1.1",
             "clusterListAsIgpCost" : false,
             "multipathEbgp" : true,
