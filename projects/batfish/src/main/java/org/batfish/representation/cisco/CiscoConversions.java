@@ -18,10 +18,12 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeService
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Multimap;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,9 +85,11 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.VrfLeakingConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -1707,6 +1711,49 @@ public class CiscoConversions {
             String.format(
                 "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString()));
         return null;
+    }
+  }
+
+  /**
+   * Convert VRF leaking configs, if needed. Must be called after VRF address family inheritance is
+   * completed, and routing policies have been converted.
+   *
+   * @param c VI {@link Configuration}
+   */
+  public static void convertVrfLeakingConfig(Collection<Vrf> vrfs, Configuration c) {
+    List<Vrf> vrfsWithIpv4Af =
+        vrfs.stream()
+            .filter(v -> v.getIpv4UnicastAddressFamily() != null)
+            .collect(Collectors.toList());
+    Multimap<ExtendedCommunity, String> vrfsByExportRt = HashMultimap.create();
+    // pre-compute RT to VRF name mapping
+    for (Vrf vrf : vrfsWithIpv4Af) {
+      assert vrf.getIpv4UnicastAddressFamily() != null;
+      vrf.getIpv4UnicastAddressFamily()
+          .getRouteTargetExport()
+          .forEach(rt -> vrfsByExportRt.put(rt, vrf.getName()));
+    }
+
+    // Create VRF leaking configs for each importing VRF that has import RTs defined.
+    for (Vrf importingVrf : vrfsWithIpv4Af) {
+      VrfAddressFamily ipv4uaf = importingVrf.getIpv4UnicastAddressFamily();
+      assert ipv4uaf != null;
+      for (ExtendedCommunity importRt : ipv4uaf.getRouteTargetImport()) {
+        org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(importingVrf.getName());
+        assert viVrf != null;
+        for (String exportingVrf : vrfsByExportRt.get(importRt)) {
+          // Take care to prevent self-loops
+          if (importingVrf.getName().equals(exportingVrf)) {
+            continue;
+          }
+          viVrf.addVrfLeakingConfig(
+              VrfLeakingConfig.builder()
+                  .setLeakAsBgp(true)
+                  .setImportFromVrf(exportingVrf)
+                  .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
+                  .build());
+        }
+      }
     }
   }
 

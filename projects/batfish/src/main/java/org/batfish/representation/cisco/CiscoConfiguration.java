@@ -15,6 +15,7 @@ import static org.batfish.datamodel.routing_policy.Common.generateGenerationPoli
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
+import static org.batfish.representation.cisco.CiscoConversions.convertVrfLeakingConfig;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateEigrpPolicy;
@@ -54,6 +55,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1210,6 +1212,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
           new BgpConfederation(confederation, proc.getConfederationMembers()));
     }
 
+    /**
+     * Create BGP redistribution policy. This should only capture network statements and
+     * redistribute commands (at this time)
+     */
+    RoutingPolicy.Builder redistributionPolicyBuilder =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(String.format("~BGP_REDISTRIBUTION~%s~", vrfName));
+    List<BooleanExpr> redistributeConditions = new LinkedList<>();
+
     /*
      * Create common bgp export policy. This policy encompasses network
      * statements, aggregate-address with/without summary-only, redistribution
@@ -1218,6 +1230,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     RoutingPolicy bgpCommonExportPolicy =
         new RoutingPolicy(Names.generatedBgpCommonExportPolicyName(vrfName), c);
     c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
+
     List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy.getStatements();
 
     // Never export routes suppressed because they are more specific than summary-only aggregate
@@ -1325,6 +1338,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportRipConditions.getConjuncts().add(we);
       exportConditions.add(exportRipConditions);
+      redistributeConditions.add(exportRipConditions);
     }
 
     // Export static routes that should be redistributed.
@@ -1345,6 +1359,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportStaticConditions.getConjuncts().add(we);
       exportConditions.add(exportStaticConditions);
+      redistributeConditions.add(exportStaticConditions);
     }
 
     // Export connected routes that should be redistributed.
@@ -1365,6 +1380,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportConnectedConditions.getConjuncts().add(we);
       exportConditions.add(exportConnectedConditions);
+      redistributeConditions.add(exportConnectedConditions);
     }
 
     // Export OSPF routes that should be redistributed.
@@ -1395,6 +1411,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportOspfConditions.getConjuncts().add(we);
       exportConditions.add(exportOspfConditions);
+      redistributeConditions.add(exportOspfConditions);
     }
 
     // Export EIGRP routes that should be redistributed.
@@ -1417,6 +1434,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Conjunction eigrp = new Conjunction(exportEigrpConditions.build());
       eigrp.setComment("Redistribute EIGRP routes into BGP");
       exportConditions.add(eigrp);
+      redistributeConditions.add(eigrp);
     }
 
     // cause ip peer groups to inherit unset fields from owning named peer
@@ -1462,6 +1480,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                               RoutingProtocol.AGGREGATE)));
               exportNetworkConditions.getConjuncts().add(we);
               exportConditions.add(exportNetworkConditions);
+              redistributeConditions.add(exportNetworkConditions);
             });
     if (!proc.getIpv6Networks().isEmpty()) {
       String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
@@ -1502,6 +1521,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
               });
       c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
     }
+
+    // Finalize redistribution policy and attach to process
+    newBgpProcess.setRedistributionPolicy(
+        redistributionPolicyBuilder
+            .addStatement(
+                new If(
+                    "Redistribute routes into BGP",
+                    new Disjunction(redistributeConditions),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build()
+            .getName());
 
     // Export BGP and IBGP routes.
     exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
@@ -2949,6 +2980,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // initialize vrfs
     for (String vrfName : _vrfs.keySet()) {
       c.getVrfs().put(vrfName, new org.batfish.datamodel.Vrf(vrfName));
+      // inherit address family props
+      Vrf vrf = _vrfs.get(vrfName);
+      VrfAddressFamily ip4uaf = vrf.getIpv4UnicastAddressFamily();
+      if (ip4uaf == null) {
+        continue;
+      }
+      ip4uaf.inherit(vrf.getGenericAddressFamilyConfig());
     }
 
     // snmp server
@@ -3441,6 +3479,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             finalizeInterfaceOspfSettings(iface, vsIface, null, null);
           }
         });
+
+    convertVrfLeakingConfig(_vrfs.values(), c);
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
