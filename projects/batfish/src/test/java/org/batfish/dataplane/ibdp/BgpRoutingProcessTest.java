@@ -2,14 +2,22 @@ package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.initEvpnType3Route;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -19,6 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -29,12 +38,17 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -48,10 +62,19 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.VniConfig;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.rib.Rib;
+import org.batfish.dataplane.rib.RibDelta;
+import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -495,5 +518,151 @@ public class BgpRoutingProcessTest {
     assertThat(
         routingProcNode2._evpnType3IncomingRoutes.get(new BgpTopology.EdgeId(peer1Id, peer2Id)),
         not(empty()));
+  }
+
+  /**
+   * Check that redistribution does not affect local RIB if the redistribution policy is not
+   * defined.
+   */
+  @Test
+  public void testRedistributionNoPolicy() {
+    _routingProcess.redistribute(
+        RibDelta.adding(
+            new AnnotatedRoute<>(
+                StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build(), _vrf.getName())));
+    assertThat(_routingProcess.getV4LocalRoutes(), empty());
+  }
+
+  /**
+   * Check that redistribution affects the local RIB if the redistribution policy is defined and
+   * allows the route.
+   */
+  @Test
+  public void testRedistributionWithPolicy() {
+    // Make up a policy
+    RoutingPolicy policy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("redistribute_policy")
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.CONNECTED),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+    _bgpProcess.setRedistributionPolicy(policy.getName());
+    // re-init routing process after modifying configuration.
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+
+    Prefix prefix = Prefix.parse("1.1.1.0/24");
+
+    // Process denied route
+    _routingProcess.redistribute(
+        RibDelta.adding(
+            new AnnotatedRoute<>(
+                StaticRoute.testBuilder().setNetwork(prefix).build(), _vrf.getName())));
+    assertThat(_routingProcess.getV4LocalRoutes(), empty());
+
+    // Fake up end of round before other test
+    _routingProcess.endOfRound();
+
+    // Process allowed route
+    _routingProcess.redistribute(
+        RibDelta.adding(
+            new AnnotatedRoute<>(
+                ConnectedRoute.builder()
+                    .setNetwork(prefix)
+                    .setNextHop(NextHopInterface.of("foo"))
+                    .build(),
+                _vrf.getName())));
+    assertThat(
+        _routingProcess.getV4LocalRoutes(),
+        contains(
+            isBgpv4RouteThat(
+                allOf(
+                    hasNextHop(NextHopDiscard.instance()),
+                    hasPrefix(prefix),
+                    hasProtocol(RoutingProtocol.BGP),
+                    isNonRouting(true)))));
+  }
+
+  @Test
+  public void testCrossVrfImport() {
+    // Make up a policy
+    Prefix allowedPrefix = Prefix.parse("1.1.1.0/24");
+    RoutingPolicy policy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("redistribute_policy")
+            .addStatement(
+                new If(
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(),
+                        new ExplicitPrefixSet(
+                            new PrefixSpace(new PrefixRange(allowedPrefix, new SubRange(24, 32))))),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+    _bgpProcess.setRedistributionPolicy(policy.getName());
+    // re-init routing process after modifying configuration.
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+
+    String otherVrf = "otherVrf";
+    // Process denied prefix, specify policy
+    Prefix deniedPrefix = Prefix.parse("2.2.2.0/24");
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(
+            RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
+        policy.getName(),
+        otherVrf);
+    assertThat(
+        _routingProcess
+            .getBgpv4DeltaBuilder()
+            .build()
+            .getRoutesStream()
+            .collect(Collectors.toList()),
+        empty());
+
+    // Process allowed prefix with policy
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(
+            RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(allowedPrefix).build())),
+        policy.getName(),
+        otherVrf);
+    assertThat(
+        _routingProcess
+            .getBgpv4DeltaBuilder()
+            .build()
+            .getRoutesStream()
+            .collect(Collectors.toList()),
+        contains(
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(allowedPrefix),
+                    hasNextHop(NextHopVrf.of(otherVrf)),
+                    isNonRouting(false)))));
+
+    // Process denied prefix, but because no policy is specified, allow it
+    _routingProcess.importCrossVrfV4Routes(
+        Stream.of(
+            RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
+        null, // no policy
+        otherVrf);
+    assertThat(
+        _routingProcess
+            .getBgpv4DeltaBuilder()
+            .build()
+            .getRoutesStream()
+            .collect(Collectors.toList()),
+        hasItem(
+            isBgpv4RouteThat(
+                allOf(
+                    hasPrefix(deniedPrefix),
+                    hasNextHop(NextHopVrf.of(otherVrf)),
+                    isNonRouting(false)))));
   }
 }
