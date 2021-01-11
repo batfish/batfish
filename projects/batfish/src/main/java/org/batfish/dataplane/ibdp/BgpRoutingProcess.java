@@ -477,11 +477,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // newer redistribution model:
     if (_process.getRedistributionPolicy() != null) {
       // Place redistributed routes into our local RIB
-      String policyName = _process.getRedistributionPolicy();
-      assert policyName != null;
-      Optional<RoutingPolicy> policy = _policies.get(policyName);
+      Optional<RoutingPolicy> policy = _policies.get(_process.getRedistributionPolicy());
       if (!policy.isPresent()) {
-        LOGGER.debug("Undefined BGP redistribution policy {}. Skipping redistribution", policyName);
+        LOGGER.debug(
+            "Undefined BGP redistribution policy {}. Skipping redistribution",
+            _process.getRedistributionPolicy());
         return;
       }
       mainRibDelta
