@@ -251,7 +251,10 @@ final class Conversions {
     RoutingPolicy.builder()
         .setOwner(c)
         .setName(policyRulesRpNameForPeer)
-        .setStatements(statementsForExportPolicyRules)
+        .setStatements(
+            !statementsForExportPolicyRules.isEmpty()
+                ? statementsForExportPolicyRules
+                : ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
         .build();
 
     // for a route to be exported by this peer, it has to match the common BGP export policy AND

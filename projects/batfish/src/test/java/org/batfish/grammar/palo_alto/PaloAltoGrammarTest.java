@@ -1030,6 +1030,18 @@ public final class PaloAltoGrammarTest {
             srb.setNetwork(Prefix.parse("1.1.1.0/24")).build(),
             Bgpv4Route.testBuilder(),
             Direction.IN));
+
+    {
+      // testing export policy generated for peer 2, any BGP route is allowed
+      String exportPolicyName = "~BGP_PEER_EXPORT_POLICY:vr1:peer2~";
+      RoutingPolicy exportRoutingPolicy = c.getRoutingPolicies().get(exportPolicyName);
+
+      assertTrue(
+          exportRoutingPolicy.process(
+              srb.setNetwork(Prefix.parse("1.1.1.0/24")).build(),
+              Bgpv4Route.testBuilder(),
+              Direction.OUT));
+    }
   }
 
   @Test
