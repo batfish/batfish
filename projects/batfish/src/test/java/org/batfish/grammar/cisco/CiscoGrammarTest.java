@@ -7212,15 +7212,13 @@ public final class CiscoGrammarTest {
     Set<AbstractRoute> dstVrfRoutes = ribs.get("DST_VRF").getRoutes();
     assertThat(
         dstVrfRoutes,
+        // 1.1.1.1/32 is denied by import map, only 2.2.2.0/24 is expected to be leaked.
         contains(
             isBgpv4RouteThat(
                 allOf(
                     hasPrefix(Prefix.parse("2.2.2.0/24")),
                     hasProtocol(RoutingProtocol.BGP),
                     hasNextHop(NextHopVrf.of("SRC_VRF"))))));
-    // Denied by import map
-    assertThat(
-        dstVrfRoutes, not(contains(isBgpv4RouteThat(hasPrefix(Prefix.parse("1.1.1.1/32"))))));
     assertThat(ribs.get("DST_IMPOSSIBLE").getRoutes(), empty());
   }
 }
