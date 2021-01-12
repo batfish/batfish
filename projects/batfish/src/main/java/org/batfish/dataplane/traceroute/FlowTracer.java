@@ -616,7 +616,7 @@ class FlowTracer {
         Ip dstIp = result.getFinalFlow().getDstIp();
 
         // Accept if the flow is destined for this vrf on this host.
-        if (isAcceptedAtCurrentVrf()) {
+        if (isAcceptedAtCurrentVrf(dstIp)) {
           return null;
         }
 
@@ -633,7 +633,7 @@ class FlowTracer {
         makePermittedStep();
 
         // Accept if the flow is destined for this vrf on this host.
-        if (isAcceptedAtCurrentVrf()) {
+        if (isAcceptedAtCurrentVrf(result.getFinalFlow().getDstIp())) {
           return null;
         }
 
@@ -678,26 +678,26 @@ class FlowTracer {
         return null;
       }
 
-      /**
-       * Check if the packet should be accepted in current VRF. If yes, build accept trace, returns
-       * true. If no, returns false.
-       */
-      private boolean isAcceptedAtCurrentVrf() {
-        String currentNodeName = _currentNode.getName();
-        Ip dstIp = result.getFinalFlow().getDstIp();
-        if (_tracerouteContext.vrfAcceptsIp(currentNodeName, _vrfName, dstIp)) {
-          buildAcceptTrace();
-          return true;
-        }
-        return false;
-      }
-
       private void makePermittedStep() {
         _steps.add(new PolicyStep(new PolicyStepDetail(policy.getName()), PERMITTED));
       }
     }.visit(result.getAction());
 
     return true;
+  }
+
+  /**
+   * Check if the packet should be accepted in current VRF. If yes, build accept trace, returns
+   * true. If no, returns false.
+   */
+  private boolean isAcceptedAtCurrentVrf(Ip dstIp) {
+    String currentNodeName = _currentNode.getName();
+
+    if (_tracerouteContext.vrfAcceptsIp(currentNodeName, _vrfName, dstIp)) {
+      buildAcceptTrace();
+      return true;
+    }
+    return false;
   }
 
   /** Apply the input {@link Transformation} to the current flow in the current context. */
@@ -1420,13 +1420,16 @@ class FlowTracer {
             }
             intraHopBreadcrumbs.push(breadcrumb);
             String nextVrf = fibNextVrf.getNextVrf();
-            forkTracerSameNode(nextVrf)
-                .fibLookup(
-                    dstIp,
-                    currentNodeName,
-                    _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
-                    forwardOutInterfaceHandler,
-                    intraHopBreadcrumbs);
+            FlowTracer forkedTracer = forkTracerSameNode(nextVrf);
+            // Accept if the flow is destined for next vrf.
+            if (!forkedTracer.isAcceptedAtCurrentVrf(dstIp)) {
+              forkedTracer.fibLookup(
+                  dstIp,
+                  currentNodeName,
+                  _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
+                  forwardOutInterfaceHandler,
+                  intraHopBreadcrumbs);
+            } // else do nothing. buildAcceptTrace has been called inside isAcceptedAtCurrentVrf
             intraHopBreadcrumbs.pop();
             return null;
           }
