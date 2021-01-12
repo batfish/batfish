@@ -99,6 +99,7 @@ import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.InboundStep;
 import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
@@ -668,7 +669,10 @@ public final class FlowTracerTest {
     ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
+            MockDataPlane.builder()
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder().setAcceptedIps(ImmutableMap.of()).build())
+                .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
@@ -702,6 +706,102 @@ public final class FlowTracerTest {
         ((RoutingStep) steps.get(1)).getDetail().getRoutes().get(0).getNextHopIp(),
         equalTo(Ip.AUTO));
     assertThat((steps.get(1)).getAction(), equalTo(StepAction.NULL_ROUTED));
+  }
+
+  @Test
+  public void testFibLookupNextVrfAccepted() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    String hostname = c.getHostname();
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(c);
+    Vrf srcVrf = vb.build();
+    String srcVrfName = srcVrf.getName();
+    Vrf nextVrf = vb.build();
+    Ip dstIp = Ip.parse("1.1.1.1");
+    String ifaceName = "lo";
+    nf.interfaceBuilder()
+        .setOwner(c)
+        .setVrf(nextVrf)
+        .setAddress(ConcreteInterfaceAddress.create(dstIp, Prefix.MAX_PREFIX_LENGTH))
+        .setName(ifaceName)
+        .build();
+    String nextVrfName = nextVrf.getName();
+    Flow flow =
+        Flow.builder()
+            .setDstIp(dstIp)
+            .setIngressNode(c.getHostname())
+            .setIngressVrf(srcVrfName)
+            .build();
+    StaticRoute nextVrfRoute =
+        StaticRoute.testBuilder()
+            .setAdmin(1)
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setNextHop(org.batfish.datamodel.route.nh.NextHopVrf.of(nextVrfName))
+            .build();
+    StaticRoute nullRoute =
+        StaticRoute.testBuilder()
+            .setAdmin(1)
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .build();
+    Fib srcFib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    dstIp,
+                    ImmutableSet.of(
+                        new FibEntry(new FibNextVrf(nextVrfName), ImmutableList.of(nextVrfRoute)))))
+            .build();
+    Fib nextFib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    dstIp,
+                    ImmutableSet.of(
+                        new FibEntry(FibNullRoute.INSTANCE, ImmutableList.of(nullRoute)))))
+            .build();
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder()
+                        .setAcceptedIps(
+                            ImmutableMap.of(
+                                hostname,
+                                ImmutableMap.of(
+                                    nextVrfName, ImmutableMap.of(ifaceName, dstIp.toIpSpace()))))
+                        .build())
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(hostname, ImmutableMap.of(srcVrfName, srcFib, nextVrfName, nextFib)),
+            false,
+            configs);
+    FlowTracer flowTracer = initialFlowTracer(ctxt, hostname, null, flow, traces::add);
+    flowTracer.fibLookup(dstIp, hostname, srcFib);
+
+    // Should be delegated from srcFib to nextFib and eventually ACCEPTED
+    assertThat(traces, contains(hasTrace(hasDisposition(ACCEPTED))));
+
+    List<Hop> hops = traces.get(0).getTrace().getHops();
+
+    // There should be a single hop
+    assertThat(hops, hasSize(1));
+
+    List<Step<?>> steps = hops.iterator().next().getSteps();
+
+    // There should be next-vrf routing step and an accepted step
+    assertThat(steps, contains(instanceOf(RoutingStep.class), instanceOf(InboundStep.class)));
+    assertThat(
+        ((RoutingStep) steps.get(0)).getDetail().getRoutes().get(0).getNextVrf(),
+        equalTo(nextVrfName));
+    assertThat((steps.get(0)).getAction(), equalTo(StepAction.FORWARDED_TO_NEXT_VRF));
+    assertThat((steps.get(1)).getAction(), equalTo(StepAction.ACCEPTED));
   }
 
   @Test
@@ -759,7 +859,10 @@ public final class FlowTracerTest {
 
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
+            MockDataPlane.builder()
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder().setAcceptedIps(ImmutableMap.of()).build())
+                .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
