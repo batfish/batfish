@@ -669,7 +669,10 @@ public final class FlowTracerTest {
     ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
+            MockDataPlane.builder()
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder().setAcceptedIps(ImmutableMap.of()).build())
+                .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
@@ -856,7 +859,10 @@ public final class FlowTracerTest {
 
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
+            MockDataPlane.builder()
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder().setAcceptedIps(ImmutableMap.of()).build())
+                .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
             ImmutableSet.of(),
