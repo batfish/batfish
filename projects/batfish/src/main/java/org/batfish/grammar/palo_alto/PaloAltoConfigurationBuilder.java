@@ -122,6 +122,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coi_remote_portContex
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_allowContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_local_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enable_sender_side_loop_detectionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_max_prefixesContext;
@@ -946,6 +947,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitBgppgp_enable(Bgppgp_enableContext ctx) {
     _currentBgpPeer.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgppgp_enable_sender_side_loop_detection(
+      Bgppgp_enable_sender_side_loop_detectionContext ctx) {
+    _currentBgpPeer.setEnableSenderSideLoopDetection(toBoolean(ctx.yn));
   }
 
   @Override

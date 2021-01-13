@@ -41,6 +41,7 @@ network {
                  }
                }
                enable yes;
+               enable-sender-side-loop-detection no;
                local-address {
                  interface ethernet1/1;
                  ip 1.2.3.6/24;
