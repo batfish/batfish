@@ -2106,10 +2106,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .ifPresent(peerB::setLocalIp);
     }
 
-    // TODO
-    Builder ipv4af =
-        Ipv4UnicastAddressFamily.builder()
-            .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build());
+    Builder ipv4af = Ipv4UnicastAddressFamily.builder();
+    if (Boolean.TRUE.equals(peer.getEnableSenderSideLoopDetection())) {
+      /*
+       TODO: routes should be sent, but AS path should be modified to remove the peer's ASN
+       https://docs.paloaltonetworks.com/pan-os/8-1/pan-os-admin/networking/bgp/configure-a-bgp-peer-with-mp-bgp-for-ipv4-or-ipv6-unicast.html
+      */
+      getWarnings().redFlag("'enable-sender-side-loop-detection yes' is not supported");
+    }
+    ipv4af.setAddressFamilyCapabilities(
+        // TODO: need to support other setAddressFamilyCapabilities like sendCommunity, etc.
+        AddressFamilyCapabilities.builder()
+            .setAllowRemoteAsOut(
+                true) // PAN always sends routes, but may change AS path (see above)
+            .build());
 
     ipv4af.setExportPolicy(
         computeAndSetPerPeerExportPolicy(peer, _c, vr, bgp, pg.getName()).getName());
