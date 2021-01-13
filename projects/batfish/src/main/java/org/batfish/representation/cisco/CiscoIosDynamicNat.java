@@ -38,6 +38,15 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   /* Interface whose address to use as pool (this and _natPool are mutually exclusive) */
   private @Nullable String _interface;
   private @Nullable String _natPool;
+  // TODO: model overload. Overload is a relatively simple feature that adds PAT on top of NAT,
+  // which kicks in when the existing ports already have sessions in the table. In Batfish terms,
+  // this requires modeling a fairly complicated if-then-else structure after matching a NAT rule,
+  // which is possible in the VI model but complicated to build.
+  //
+  // The bug modeling this could catch is if a session can traverse the nat rule but some downstream
+  // filter blocks the port-translated flows, which only shows up under load.
+  /* Overload, aka PAT. */
+  private boolean _overload;
 
   @VisibleForTesting
   public static String computeDynamicDestinationNatAclName(@Nonnull String natAclName) {
@@ -53,8 +62,24 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     _aclName = aclName;
   }
 
+  public boolean getOverload() {
+    return _overload;
+  }
+
+  public void setOverload(boolean overload) {
+    _overload = overload;
+  }
+
+  public @Nullable String getInterface() {
+    return _interface;
+  }
+
   public void setInterface(@Nullable String iface) {
     _interface = iface;
+  }
+
+  public @Nullable String getNatPool() {
+    return _natPool;
   }
 
   public void setNatPool(@Nullable String natPool) {
@@ -72,12 +97,14 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
         && Objects.equals(getVrf(), other.getVrf())
         && Objects.equals(_aclName, other._aclName)
         && Objects.equals(_interface, other._interface)
-        && Objects.equals(_natPool, other._natPool);
+        && Objects.equals(_natPool, other._natPool)
+        && Objects.equals(_overload, other._overload);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aclName, getAction(), getAddRoute(), _interface, _natPool, getVrf());
+    return Objects.hash(
+        _aclName, getAction(), getAddRoute(), _interface, _natPool, _overload, getVrf());
   }
 
   @Override
