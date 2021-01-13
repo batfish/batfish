@@ -879,6 +879,7 @@ public final class PaloAltoGrammarTest {
     assertThat(pg.getPeers().keySet(), contains("PEER"));
     BgpPeer peer = pg.getOrCreatePeerGroup("PEER");
     assertThat(peer.getEnable(), equalTo(true));
+    assertThat(peer.getEnableSenderSideLoopDetection(), equalTo(false));
     assertThat(peer.getLocalInterface(), equalTo("ethernet1/1"));
     assertThat(peer.getLocalAddress(), equalTo(Ip.parse("1.2.3.6")));
     assertThat(peer.getPeerAddress(), equalTo(Ip.parse("5.4.3.2")));
@@ -905,6 +906,8 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
     assertThat(peer.getLocalAs(), equalTo(65001L));
     assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
+    assertTrue(
+        peer.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut());
     // BgpRoutingProcess requires an export policy be present
     String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
     assertThat(exportPolicyName, not(nullValue()));

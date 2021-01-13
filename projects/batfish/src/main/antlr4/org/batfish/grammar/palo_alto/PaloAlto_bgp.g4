@@ -99,6 +99,7 @@ bgppg_peer
         bgppgp_bfd
         | bgppgp_connection_options
         | bgppgp_enable
+        | bgppgp_enable_sender_side_loop_detection
         | bgppgp_local_address
         | bgppgp_max_prefixes
         | bgppgp_peer_address
@@ -182,6 +183,11 @@ bgppgp_coo_local_port
 bgppgp_enable
 :
     ENABLE yn = yes_or_no
+;
+
+bgppgp_enable_sender_side_loop_detection
+:
+    ENABLE_SENDER_SIDE_LOOP_DETECTION yn = yes_or_no
 ;
 
 bgppgp_local_address
