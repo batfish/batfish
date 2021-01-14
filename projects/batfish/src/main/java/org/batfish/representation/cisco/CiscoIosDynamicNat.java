@@ -8,6 +8,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -113,34 +114,27 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     checkArgument(
         o instanceof CiscoIosDynamicNat,
         "CiscoIosNat.natCompare should only be used for NATs of the same type.");
-    // Based on GNS3 testing, dynamic NAT rules are applied in order of ACL name.
-    // Deprioritize NATs with null ACLs, as they can't be converted at all.
     CiscoIosDynamicNat other = (CiscoIosDynamicNat) o;
-    if (_aclName == null) {
-      return other._aclName == null ? 0 : 1;
-    } else if (other._aclName == null) {
-      return -1;
-    }
-    // ACLs with numeric names come first in numerical order, followed by others in lexicographical
-    // order. It is not possible to configure two rules with the same ACL.
-    int thisAcl = 0; // not a configurable ACL id
-    int otherAcl = 0;
+    /* Based on GNS3 testing:
+     - Dynamic NAT rules are applied in order of ACL name
+     - ACLs with numeric names come first in numerical order, then others in lexicographical order
+     - It is not possible to configure two rules with the same ACL
+    */
+    return Comparator.comparing(
+            CiscoIosDynamicNat::toIntOrNull, Comparator.nullsLast(Integer::compareTo))
+        // Deprioritize NATs with null ACL, as they can't be converted at all
+        .thenComparing(Comparator.nullsLast(String::compareTo))
+        .compare(_aclName, other._aclName);
+  }
+
+  /** Converts given ACL name to an int if possible, otherwise returns null. */
+  @Nullable
+  private static Integer toIntOrNull(@Nullable String aclName) {
     try {
-      thisAcl = Integer.parseInt(_aclName);
-    } catch (NumberFormatException ignored) {
-      // expected
+      return Integer.parseInt(aclName); // throws same error for null and non-numeric names
+    } catch (NumberFormatException e) {
+      return null;
     }
-    try {
-      otherAcl = Integer.parseInt(other._aclName);
-    } catch (NumberFormatException ignored) {
-      // expected
-    }
-    if (thisAcl != 0 && otherAcl != 0) {
-      return Integer.compare(thisAcl, otherAcl);
-    }
-    // Don't need to special-case exactly one ACL being numeric, because numbers come first
-    // lexicographically anyway. Non-numeric ACL names must begin with a letter.
-    return _aclName.compareTo(other._aclName);
   }
 
   @Override
