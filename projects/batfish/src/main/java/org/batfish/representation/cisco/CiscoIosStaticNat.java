@@ -1,7 +1,9 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,11 +27,14 @@ public class CiscoIosStaticNat extends CiscoIosNat {
 
   @Override
   protected int natCompare(CiscoIosNat o) {
-    if (!(o instanceof CiscoIosStaticNat)) {
-      return 0;
-    }
+    checkArgument(
+        o instanceof CiscoIosStaticNat,
+        "CiscoIosNat.natCompare should only be used for NATs of the same type.");
     CiscoIosStaticNat other = (CiscoIosStaticNat) o;
-    return Integer.compare(_localNetwork.getPrefixLength(), other._localNetwork.getPrefixLength());
+    // Rules with longer prefixes should come first
+    return Comparator.comparing(Prefix::getPrefixLength)
+        .reversed()
+        .compare(_localNetwork, other._localNetwork);
   }
 
   @Override

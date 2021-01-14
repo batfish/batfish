@@ -101,19 +101,25 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   public abstract int hashCode();
 
   /**
-   * Compare NATs of equal type for sorting.
+   * Compare NATs of equal type for sorting. Orders NATs in the order they would appear in the
+   * config (so highest precedence first).
    *
    * @param other NAT to compare
-   * @return a negative integer, zero, or a positive integer as this NAT precedence is less than,
-   *     equal to, or greater than the specified NAT precedence.
+   * @return a negative integer if this NAT should be matched before the other, positive if it
+   *     should be matched after, or 0 if the NATs are of different types or their match order
+   *     doesn't matter (e.g. both malformed or match mutually exclusive traffic).
+   * @throws IllegalArgumentException if NATs are of different types.
    */
   protected abstract int natCompare(CiscoIosNat other);
 
   @Override
   public final int compareTo(CiscoIosNat other) {
-    return Comparator.comparingInt(CiscoIosNatUtil::getTypePrecedence)
-        .thenComparing(this::natCompare)
-        .compare(this, other);
+    int typeCompare =
+        Comparator.comparingInt(CiscoIosNatUtil::getTypePrecedence).compare(this, other);
+    if (typeCompare != 0) {
+      return typeCompare;
+    }
+    return this.natCompare(other);
   }
 
   public enum RuleAction {
