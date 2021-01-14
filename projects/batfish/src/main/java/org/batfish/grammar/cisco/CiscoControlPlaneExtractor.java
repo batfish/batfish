@@ -6311,18 +6311,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIpnis_route_map(Ipnis_route_mapContext ctx) {
-    warn(ctx, "ip nat inside source route-map is not supported");
+  public void enterIpnis_route_map(Ipnis_route_mapContext ctx) {
+    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
+    nat.setAction(RuleAction.SOURCE_INSIDE);
+    String routeMap = ctx.mapname.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+    nat.setRouteMap(routeMap);
     if (ctx.iname != null) {
       String iname = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(
           INTERFACE, iname, IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+      nat.setInterface(iname);
     } else {
+      String pool = ctx.pool.getText();
       _configuration.referenceStructure(
           NAT_POOL, ctx.pool.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+      nat.setNatPool(pool);
     }
+    nat.setOverload(ctx.OVERLOAD() != null);
+    _currentIosSourceNat = nat;
+    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
+  }
+
+  @Override
+  public void exitIpnis_route_map(Ipnis_route_mapContext ctx) {
+    _currentIosSourceNat = null;
   }
 
   @Override
@@ -6343,12 +6357,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIpnos_route_map(Ipnos_route_mapContext ctx) {
-    warn(ctx, "ip nat outside source route-map is not supported");
+  public void enterIpnos_route_map(Ipnos_route_mapContext ctx) {
+    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
+    nat.setAction(RuleAction.SOURCE_OUTSIDE);
+    String routeMap = ctx.mapname.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, ctx.mapname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+    nat.setRouteMap(routeMap);
+    String pool = ctx.pname.getText();
     _configuration.referenceStructure(
-        NAT_POOL, ctx.pname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+        NAT_POOL, pool, IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+    nat.setNatPool(pool);
+    _currentIosSourceNat = nat;
+    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
+  }
+
+  @Override
+  public void exitIpnos_route_map(Ipnos_route_mapContext ctx) {
+    _currentIosSourceNat = null;
   }
 
   @Override
