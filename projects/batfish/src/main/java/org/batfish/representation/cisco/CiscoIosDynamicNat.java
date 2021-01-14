@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.transformation.Transformation.when;
@@ -109,16 +110,16 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
 
   @Override
   protected int natCompare(CiscoIosNat o) {
-    if (!(o instanceof CiscoIosDynamicNat)) {
-      return 0;
-    }
+    checkArgument(
+        o instanceof CiscoIosDynamicNat,
+        "CiscoIosNat.natCompare should only be used for NATs of the same type.");
     // Based on GNS3 testing, dynamic NAT rules are applied in order of ACL name.
     // Deprioritize NATs with null ACLs, as they can't be converted at all.
     CiscoIosDynamicNat other = (CiscoIosDynamicNat) o;
     if (_aclName == null) {
-      return other._aclName == null ? 0 : -1;
+      return other._aclName == null ? 0 : 1;
     } else if (other._aclName == null) {
-      return 1;
+      return -1;
     }
     // ACLs with numeric names come first in numerical order, followed by others in lexicographical
     // order. It is not possible to configure two rules with the same ACL.
@@ -135,11 +136,11 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       // expected
     }
     if (thisAcl != 0 && otherAcl != 0) {
-      return Integer.compare(otherAcl, thisAcl);
+      return Integer.compare(thisAcl, otherAcl);
     }
     // Don't need to special-case exactly one ACL being numeric, because numbers come first
     // lexicographically anyway. Non-numeric ACL names must begin with a letter.
-    return other._aclName.compareTo(_aclName);
+    return _aclName.compareTo(other._aclName);
   }
 
   @Override
