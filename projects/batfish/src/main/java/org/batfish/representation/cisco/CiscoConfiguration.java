@@ -1713,7 +1713,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Interface toInterface(
-      String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
+      String ifaceName, Interface iface, Configuration c) {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
@@ -1893,11 +1893,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {
-      newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
+      newIface.setIncomingFilter(c.getIpAccessLists().get(incomingFilterName));
     }
     String outgoingFilterName = iface.getOutgoingFilter();
     if (outgoingFilterName != null) {
-      newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
+      newIface.setOutgoingFilter(c.getIpAccessLists().get(outgoingFilterName));
     }
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
@@ -1918,7 +1918,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else if (!ciscoAsaNats.isEmpty()) {
       generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
     } else if (!ciscoIosNats.isEmpty()) {
-      generateCiscoIosNatTransformations(ifaceName, vrfName, newIface, ipAccessLists, c);
+      generateCiscoIosNatTransformations(ifaceName, vrfName, newIface, c);
     }
 
     String routingPolicyName = iface.getRoutingPolicy();
@@ -2012,11 +2012,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void generateCiscoIosNatTransformations(
-      String ifaceName,
-      String vrfName,
-      org.batfish.datamodel.Interface newIface,
-      Map<String, IpAccessList> ipAccessLists,
-      Configuration c) {
+      String ifaceName, String vrfName, org.batfish.datamodel.Interface newIface, Configuration c) {
     if (!getNatOutside().contains(ifaceName)) {
       return;
     }
@@ -2031,9 +2027,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (!firstNonNull(nat.getVrf(), Configuration.DEFAULT_VRF_NAME).equals(vrfName)) {
         continue;
       }
-      nat.toIncomingTransformation(ipAccessLists, _natPools, _interfaces)
+      nat.toIncomingTransformation(c.getIpAccessLists(), _natPools, _interfaces)
           .ifPresent(incoming -> convertedIncomingNats.put(nat, incoming));
-      nat.toOutgoingTransformation(ipAccessLists, _natPools, getNatInside(), _interfaces, c)
+      nat.toOutgoingTransformation(_natPools, getNatInside(), _interfaces, c)
           .ifPresent(outgoing -> convertedOutgoingNats.put(nat, outgoing));
     }
 
@@ -3208,8 +3204,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         (ifaceName, iface) -> {
           // Handle renaming interfaces for ASA devices
           String newIfaceName = getNewInterfaceName(iface);
-          org.batfish.datamodel.Interface newInterface =
-              toInterface(newIfaceName, iface, c.getIpAccessLists(), c);
+          org.batfish.datamodel.Interface newInterface = toInterface(newIfaceName, iface, c);
           String vrfName = iface.getVrf();
           if (vrfName == null) {
             throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");

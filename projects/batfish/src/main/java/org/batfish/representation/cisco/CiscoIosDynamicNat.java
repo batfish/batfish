@@ -180,7 +180,6 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
 
   @Override
   public Optional<Transformation.Builder> toOutgoingTransformation(
-      Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
@@ -196,12 +195,12 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       return Optional.empty();
     }
 
-    if (isMalformed(natPools, ipAccessLists, interfaces)) {
+    if (isMalformed(natPools, c.getIpAccessLists(), interfaces)) {
       return Optional.empty();
     }
     assert _aclName != null; // invariant of isMalformed being false, to help compiler.
 
-    IpAccessList natAcl = ipAccessLists.get(_aclName);
+    IpAccessList natAcl = c.getIpAccessLists().get(_aclName);
 
     if (getAction() == RuleAction.DESTINATION_INSIDE) {
       // Expect all lines to be header space matches for NAT ACL
