@@ -99,7 +99,7 @@ final class CiscoIosNatUtil {
               String.format(
                   "Ignoring NAT rule with route-map %s: lines of type %s not supported in this"
                       + " context",
-                  routeMap.getName(), matchLine.getClass()));
+                  routeMap.getName(), matchLine.getClass().getCanonicalName()));
           return Optional.empty();
         }
         Set<String> listNames = ((RouteMapMatchIpAccessListLine) matchLine).getListNames();
@@ -109,7 +109,7 @@ final class CiscoIosNatUtil {
               String.format(
                   "Ignoring NAT rule with route-map %s: route-map references at least one"
                       + " undefined ACL",
-                  routeMap.getName(), matchLine.getClass().getCanonicalName()));
+                  routeMap.getName()));
           return Optional.empty();
         }
         // Never need to reverse these ACLs because route-maps can't be used for destination inside.
