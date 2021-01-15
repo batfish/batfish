@@ -107,7 +107,7 @@ ipnis_route_map
      POOL pool = variable
      | INTERFACE iname = interface_name
    )
-   ( VRF variable )?
+   ipnios_vrf?
    OVERLOAD?
    NEWLINE
 ;
@@ -140,7 +140,7 @@ ipnos_route_map
 :
    ROUTE_MAP mapname = variable
    POOL pname = variable
-   ( VRF vrfname = variable )?
+   ipnios_vrf?
    ipnosm_add_route?
    NEWLINE
 ;

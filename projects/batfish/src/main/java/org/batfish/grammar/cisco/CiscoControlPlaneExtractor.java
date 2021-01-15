@@ -6294,10 +6294,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
-    // TODO Once ipnos_route_map is supported, we should assert _currentIosSourceNat != null
-    if (_currentIosSourceNat != null) {
-      _currentIosSourceNat.setAddRoute(true);
-    }
+    assert _currentIosSourceNat != null;
+    _currentIosSourceNat.setAddRoute(true);
     if (_currentIosSourceNat instanceof CiscoIosDynamicNat) {
       todo(ctx);
     }
