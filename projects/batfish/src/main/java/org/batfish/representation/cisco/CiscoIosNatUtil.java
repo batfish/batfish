@@ -57,16 +57,21 @@ final class CiscoIosNatUtil {
    *   <li>set lines
    *   <li>match lines other than matching v4 ACLs
    *   <li>references to undefined ACLs
+   *   <li>empty clauses or no clauses
    * </ul>
    */
   static Optional<AclLineMatchExpr> toMatchExpr(RouteMap routeMap, Set<String> validAclNames) {
     ImmutableList.Builder<AclLineMatchExpr> clauseExprs = ImmutableList.builder();
+    if (routeMap.getClauses().isEmpty()) {
+      return Optional.empty();
+    }
     for (RouteMapClause clause : routeMap.getClauses().values()) {
-      if (clause.getAction() != LineAction.PERMIT) {
+      if (clause.getAction() != LineAction.PERMIT
+          || !clause.getSetList().isEmpty()
+          || clause.getMatchList().isEmpty()) {
         // TODO Support NAT rules referencing route-maps with deny clauses
-        return Optional.empty();
-      } else if (!clause.getSetList().isEmpty()) {
         // TODO Check if set lines take effect in context of NAT rule-matching
+        // TODO Check behavior of empty clauses (deny all or permit all?)
         return Optional.empty();
       }
       for (RouteMapMatchLine matchLine : clause.getMatchList()) {
