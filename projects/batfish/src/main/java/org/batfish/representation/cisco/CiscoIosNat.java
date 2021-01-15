@@ -61,7 +61,6 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   /**
    * Converts a single NAT from the configuration into a {@link Transformation}.
    *
-   * @param ipAccessLists Named access lists which may be referenced by dynamic NATs
    * @param natPools NAT pools from the configuration
    * @param insideInterfaces Names of interfaces which are defined as 'inside'
    * @param c Configuration
@@ -69,7 +68,6 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
    *     Transformation} could not be built
    */
   public abstract Optional<Transformation.Builder> toOutgoingTransformation(
-      Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
