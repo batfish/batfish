@@ -36,7 +36,10 @@ import org.batfish.datamodel.transformation.TransformationStep;
 @ParametersAreNonnullByDefault
 public final class CiscoIosDynamicNat extends CiscoIosNat {
 
+  /* NAT must use either an ACL or a route-map to specify traffic to match. */
   private @Nullable String _aclName;
+  private @Nullable String _routeMap;
+
   /* Interface whose address to use as pool (this and _natPool are mutually exclusive) */
   private @Nullable String _interface;
   private @Nullable String _natPool;
@@ -55,6 +58,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     return String.format("~DYNAMIC_DESTINATION_NAT_INSIDE_ACL~%s~", natAclName);
   }
 
+  /** ACL specifying matching traffic (mutually exclusive with {@link #getRouteMap() route-map}) */
   @Nullable
   public String getAclName() {
     return _aclName;
@@ -88,6 +92,16 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     _natPool = natPool;
   }
 
+  /** Route-map specifying matching traffic (mutually exclusive with {@link #getAclName() ACL}) */
+  @Nullable
+  public String getRouteMap() {
+    return _routeMap;
+  }
+
+  public void setRouteMap(@Nullable String routeMap) {
+    _routeMap = routeMap;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (!(o instanceof CiscoIosDynamicNat)) {
@@ -100,13 +114,14 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
         && Objects.equals(_aclName, other._aclName)
         && Objects.equals(_interface, other._interface)
         && Objects.equals(_natPool, other._natPool)
-        && Objects.equals(_overload, other._overload);
+        && Objects.equals(_overload, other._overload)
+        && Objects.equals(_routeMap, other._routeMap);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _aclName, getAction(), getAddRoute(), _interface, _natPool, _overload, getVrf());
+        _aclName, getAction(), getAddRoute(), _interface, _natPool, _overload, _routeMap, getVrf());
   }
 
   @Override
@@ -116,15 +131,22 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
         "CiscoIosNat.natCompare should only be used for NATs of the same type.");
     CiscoIosDynamicNat other = (CiscoIosDynamicNat) o;
     /* Based on GNS3 testing:
-     - Dynamic NAT rules are applied in order of ACL name
+     - Dynamic NAT rules configured with ACLs come before those configured with route-maps
      - ACLs with numeric names come first in numerical order, then others in lexicographical order
-     - It is not possible to configure two rules with the same ACL
+     - Route-maps are ordered lexicographically
+     - It is not possible to configure two rules with the same structure
     */
-    return Comparator.comparing(
-            CiscoIosDynamicNat::toIntOrNull, Comparator.nullsLast(Integer::compareTo))
-        // Deprioritize NATs with null ACL, as they can't be converted at all
-        .thenComparing(Comparator.nullsLast(String::compareTo))
-        .compare(_aclName, other._aclName);
+    int aclsCompare =
+        Comparator.comparing(
+                CiscoIosDynamicNat::toIntOrNull, Comparator.nullsLast(Integer::compareTo))
+            .thenComparing(Comparator.nullsLast(String::compareTo))
+            .compare(_aclName, other._aclName);
+    if (aclsCompare != 0) {
+      return aclsCompare;
+    }
+    // Neither NAT has an ACL defined. That should mean both have route-maps defined, but if either
+    // has a null route-map, deprioritize that one as it can't be converted at all.
+    return Comparator.nullsLast(String::compareTo).compare(_routeMap, other.getRouteMap());
   }
 
   /** Converts given ACL name to an int if possible, otherwise returns null. */
@@ -158,7 +180,6 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
 
   @Override
   public Optional<Transformation.Builder> toOutgoingTransformation(
-      Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
@@ -174,12 +195,12 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       return Optional.empty();
     }
 
-    if (isMalformed(natPools, ipAccessLists, interfaces)) {
+    if (isMalformed(natPools, c.getIpAccessLists(), interfaces)) {
       return Optional.empty();
     }
     assert _aclName != null; // invariant of isMalformed being false, to help compiler.
 
-    IpAccessList natAcl = ipAccessLists.get(_aclName);
+    IpAccessList natAcl = c.getIpAccessLists().get(_aclName);
 
     if (getAction() == RuleAction.DESTINATION_INSIDE) {
       // Expect all lines to be header space matches for NAT ACL

@@ -73,7 +73,6 @@ public class CiscoIosStaticNat extends CiscoIosNat {
 
   @Override
   public Optional<Transformation.Builder> toOutgoingTransformation(
-      Map<String, IpAccessList> ipAccessLists,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,

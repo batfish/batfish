@@ -249,6 +249,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -5613,6 +5614,75 @@ public final class CiscoGrammarTest {
 
       assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
     }
+  }
+
+  @Test
+  public void testIosDynamicNatRouteMapsExtraction() throws IOException {
+    CiscoConfiguration c =
+        parseCiscoConfig("ios-nat-dynamic-route-maps", ConfigurationFormat.CISCO_IOS);
+    assertThat(c.getCiscoIosNats(), hasSize(5));
+    List<CiscoIosNat> nats = c.getCiscoIosNats();
+    {
+      assertThat(nats.get(0), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(0);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("10"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("in-src-nat-pool"));
+      assertThat(nat.getOverload(), equalTo(true));
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(1), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(1);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("13"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), equalTo("Ethernet10"));
+      assertThat(nat.getNatPool(), nullValue());
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(2), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(2);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("22"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(3), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(3);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("12"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-in-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+    {
+      assertThat(nats.get(4), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(4);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("23"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+  }
+
+  @Test
+  public void testIosDynamicNatRouteMapsConversion() throws IOException {
+    // don't crash
+    parseConfig("ios-nat-dynamic-route-maps");
   }
 
   @Test
