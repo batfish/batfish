@@ -50,6 +50,7 @@ ip nat pool vrf-out-src-nat-pool 6.6.6.1 6.6.6.254 prefix-length 24
 
 ip nat inside source route-map 10 pool in-src-nat-pool overload
 ip nat inside source route-map 13 interface Ethernet10
+ip nat inside destination list 11 pool in-dst-nat-pool
 ip nat outside source route-map 22 pool out-src-nat-pool
 
 ip nat inside source route-map 12 pool vrf-in-src-nat-pool vrf vrf1

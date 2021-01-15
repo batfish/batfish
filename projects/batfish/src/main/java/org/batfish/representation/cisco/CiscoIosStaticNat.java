@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
@@ -73,10 +74,12 @@ public class CiscoIosStaticNat extends CiscoIosNat {
 
   @Override
   public Optional<Transformation.Builder> toOutgoingTransformation(
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
-      Configuration c) {
+      Configuration c,
+      Warnings w) {
 
     /*
      * No named ACL in rule, but need to match src/dest to global/local according
@@ -104,8 +107,10 @@ public class CiscoIosStaticNat extends CiscoIosNat {
   @Override
   public Optional<Transformation.Builder> toIncomingTransformation(
       Map<String, IpAccessList> ipAccessLists,
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
-      Map<String, Interface> interfaces) {
+      Map<String, Interface> interfaces,
+      Warnings w) {
     /*
      * No named ACL in rule, but need to match src/dest to global/local according
      * to direction and rule type

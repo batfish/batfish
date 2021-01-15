@@ -1,11 +1,13 @@
 package org.batfish.representation.cisco;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
+import static org.batfish.representation.cisco.CiscoIosNatUtil.toMatchExpr;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Comparator;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
@@ -162,8 +165,10 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   @Override
   public Optional<Transformation.Builder> toIncomingTransformation(
       Map<String, IpAccessList> ipAccessLists,
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
-      Map<String, Interface> interfaces) {
+      Map<String, Interface> interfaces,
+      Warnings w) {
     // SOURCE_OUTSIDE matches and dynamically translates source addresses on ingress.
     if (getAction() != RuleAction.SOURCE_OUTSIDE) {
       // INSIDE rules require reverse translation on ingress, which is not
@@ -171,19 +176,22 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       return Optional.empty();
     }
 
-    if (isMalformed(natPools, ipAccessLists, interfaces)) {
+    if (isMalformed(natPools, ipAccessLists, routeMaps, interfaces, w)) {
       return Optional.empty();
     }
 
-    return Optional.of(makeTransformation(permittedByAcl(_aclName), false, natPools, interfaces));
+    return makeFilterMatchExpr(routeMaps, ipAccessLists.keySet(), null, w)
+        .map(matchExpr -> makeTransformation(matchExpr, false, natPools, interfaces));
   }
 
   @Override
   public Optional<Transformation.Builder> toOutgoingTransformation(
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
-      Configuration c) {
+      Configuration c,
+      Warnings w) {
     /*
      * SOURCE_INSIDE matches and dynamically translates source addresses on egress
      * DESTINATION_INSIDE matches and dynamically translates destination addresses on egress
@@ -195,63 +203,110 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       return Optional.empty();
     }
 
-    if (isMalformed(natPools, c.getIpAccessLists(), interfaces)) {
+    if (isMalformed(natPools, c.getIpAccessLists(), routeMaps, interfaces, w)) {
       return Optional.empty();
     }
-    assert _aclName != null; // invariant of isMalformed being false, to help compiler.
 
-    IpAccessList natAcl = c.getIpAccessLists().get(_aclName);
+    return makeFilterMatchExpr(routeMaps, c.getIpAccessLists().keySet(), c, w)
+        .map(filterMatchExpr -> and(filterMatchExpr, new MatchSrcInterface(insideInterfaces)))
+        .map(matchExpr -> makeTransformation(matchExpr, true, natPools, interfaces));
+  }
 
-    if (getAction() == RuleAction.DESTINATION_INSIDE) {
-      // Expect all lines to be header space matches for NAT ACL
-      if (!natAcl.getLines().stream()
-          .allMatch(
-              l ->
-                  l instanceof ExprAclLine
-                      && ((ExprAclLine) l).getMatchCondition() instanceof MatchHeaderSpace)) {
-        return Optional.empty();
+  /**
+   * Returns an {@link AclLineMatchExpr} expressing traffic matching this NAT rule's {@link
+   * #getAclName() ACL} or {@link #getRouteMap() route-map} (exactly one of which should be
+   * defined). Assumes {@link #isMalformed(Map, Map, Map, Map, Warnings) isMalformed} has passed.
+   * Returns empty optional if the ACL or route-map can't be converted to an {@link
+   * AclLineMatchExpr}.
+   */
+  private Optional<AclLineMatchExpr> makeFilterMatchExpr(
+      Map<String, RouteMap> routeMaps,
+      Set<String> aclNames,
+      @Nullable Configuration c,
+      Warnings w) {
+    if (_aclName != null) {
+      switch (getAction()) {
+        case SOURCE_INSIDE:
+        case SOURCE_OUTSIDE:
+          return Optional.of(permittedByAcl(_aclName));
+        case DESTINATION_INSIDE:
+          assert c != null; // should only be null for SOURCE_OUTSIDE rules
+          Optional<IpAccessList> reverseAcl = getOrCreateReverseAcl(c);
+          if (!reverseAcl.isPresent()) {
+            w.redFlag(
+                String.format(
+                    "Ignoring inside destination NAT rule with ACL %s: Cannot convert to reverse"
+                        + " ACL",
+                    _aclName));
+          }
+          return reverseAcl.map(ipAccessList -> permittedByAcl(ipAccessList.getName()));
+        default:
+          throw new IllegalStateException(String.format("Unrecognized RuleAction %s", getAction()));
       }
+    }
+    // isMalformed guarantees that _routeMap is nonnull when (iff) _aclName is null, and that it
+    // references a real RouteMap
+    assert _routeMap != null;
+    return toMatchExpr(routeMaps.get(_routeMap), aclNames, w);
+  }
 
-      // Create reverse acl to match destination address instead of source address
-      String reverseAclName = computeDynamicDestinationNatAclName(_aclName);
-      List<AclLine> lines =
-          natAcl.getLines().stream()
-              // Already checked that all lines are instances of ExprAclLine
-              .map(ExprAclLine.class::cast)
-              .map(
-                  line -> {
-                    HeaderSpace origHeader =
-                        ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
-                    HeaderSpace headerSpace =
-                        origHeader.toBuilder()
-                            .setDstIps(origHeader.getSrcIps())
-                            .setSrcIps((IpSpace) null)
-                            .build();
-                    return ExprAclLine.builder()
-                        .setAction(line.getAction())
-                        .setMatchCondition(new MatchHeaderSpace(headerSpace))
-                        .build();
-                  })
-              .collect(Collectors.toList());
-      natAcl =
-          IpAccessList.builder()
-              .setLines(lines)
-              .setName(reverseAclName)
-              .setOwner(c)
-              .setSourceName(_aclName)
-              .setSourceType(natAcl.getSourceType())
-              .build();
+  private Optional<IpAccessList> getOrCreateReverseAcl(Configuration c) {
+    checkArgument(_aclName != null, "Cannot make match expr for null ACL");
+    checkState(
+        getAction() == RuleAction.DESTINATION_INSIDE,
+        "Should not reverse ACL unless rule is destination inside");
+
+    // If the corresponding reverse ACL has already been created, just return it
+    String reverseAclName = computeDynamicDestinationNatAclName(_aclName);
+    if (c.getIpAccessLists().containsKey(reverseAclName)) {
+      return Optional.of(c.getIpAccessLists().get(reverseAclName));
     }
 
-    AclLineMatchExpr natAclExpr =
-        and(permittedByAcl(natAcl.getName()), new MatchSrcInterface(insideInterfaces));
-    return Optional.of(makeTransformation(natAclExpr, true, natPools, interfaces));
+    // For destination inside rules, we need to filter using an ACL matching reversed src/dst
+    IpAccessList natAcl = c.getIpAccessLists().get(_aclName);
+    // Expect all lines to be header space matches for NAT ACL
+    if (!natAcl.getLines().stream()
+        .allMatch(
+            l ->
+                l instanceof ExprAclLine
+                    && ((ExprAclLine) l).getMatchCondition() instanceof MatchHeaderSpace)) {
+      return Optional.empty();
+    }
+
+    // Create reverse acl to match destination address instead of source address
+    List<AclLine> lines =
+        natAcl.getLines().stream()
+            // Already checked that all lines are instances of ExprAclLine
+            .map(ExprAclLine.class::cast)
+            .map(
+                line -> {
+                  HeaderSpace origHeader =
+                      ((MatchHeaderSpace) line.getMatchCondition()).getHeaderspace();
+                  HeaderSpace headerSpace =
+                      origHeader.toBuilder()
+                          .setDstIps(origHeader.getSrcIps())
+                          .setSrcIps((IpSpace) null)
+                          .build();
+                  return ExprAclLine.builder()
+                      .setAction(line.getAction())
+                      .setMatchCondition(new MatchHeaderSpace(headerSpace))
+                      .build();
+                })
+            .collect(Collectors.toList());
+    return Optional.of(
+        IpAccessList.builder()
+            .setLines(lines)
+            .setName(reverseAclName)
+            .setOwner(c)
+            .setSourceName(_aclName)
+            .setSourceType(natAcl.getSourceType())
+            .build());
   }
 
   /**
    * Returns the (forward) transformation for this dynamic NAT expression using the given condition
    * on which to NAT, the direction of traffic, and the available NatPools and Interfaces. Assumes
-   * {@link #isMalformed(Map, Map, Map)} has passed.
+   * {@link #isMalformed(Map, Map, Map, Map, Warnings) isMalformed} has passed.
    */
   private Transformation.Builder makeTransformation(
       AclLineMatchExpr shouldNat,
@@ -287,21 +342,36 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   private boolean isMalformed(
       Map<String, NatPool> natPools,
       Map<String, IpAccessList> ipAccessLists,
-      Map<String, Interface> interfaces) {
-    // Validate that ACL is configured, present, and is a standard ACL.
-    if (_aclName == null) {
-      // Not configured (should be rejected by parser, but confirm).
+      Map<String, RouteMap> routeMaps,
+      Map<String, Interface> interfaces,
+      Warnings w) {
+    // Either route-map or ACL must be configured. (Should be guaranteed by parser.)
+    if ((_aclName == null) == (_routeMap == null)) {
       return true;
     }
-    if (!ipAccessLists.containsKey(_aclName)) {
-      // Invalid reference
-      return true;
-    }
-    if (!CiscoStructureType.IPV4_ACCESS_LIST_STANDARD
-        .getDescription()
-        .equals(ipAccessLists.get(_aclName).getSourceType())) {
-      // Cisco IOS only supports standard ACLs for dynamic NAT.
-      return true;
+    if (_aclName != null) {
+      // ACL is configured. Make sure it exists and is a standard ACL
+      if (!ipAccessLists.containsKey(_aclName)) {
+        w.redFlag(String.format("Ignoring NAT rule with undefined ACL %s", _aclName));
+        return true;
+      }
+      if (!CiscoStructureType.IPV4_ACCESS_LIST_STANDARD
+          .getDescription()
+          .equals(ipAccessLists.get(_aclName).getSourceType())) {
+        w.redFlag(String.format("Ignoring NAT rule with ACL %s: ACL is not standard", _aclName));
+        // Cisco IOS only supports standard ACLs for dynamic NAT.
+        return true;
+      }
+    } else {
+      // Route-map is configured. Make sure this NAT rule is not destination inside (which doesn't
+      // allow route-maps; this should be guaranteed by parser) and that the route-map exists.
+      if (getAction() == RuleAction.DESTINATION_INSIDE) {
+        return true;
+      }
+      if (!routeMaps.containsKey(_routeMap)) {
+        w.redFlag(String.format("Ignoring NAT rule with undefined route-map %s", _routeMap));
+        return true;
+      }
     }
 
     // Validate that NAT pool xor interface is configured and valid.
@@ -311,16 +381,18 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       return true;
     }
     if (_natPool == null) {
-      // Interface can only be used for inside source NAT (at least on IOS).
+      // Interface can only be used for inside source NAT (at least on IOS). Should be guaranteed by
+      // parser.
       if (getAction() != RuleAction.SOURCE_INSIDE) {
         return true;
       }
       Interface iface = interfaces.get(_interface);
       if (iface == null || iface.getAddress() == null) {
+        w.redFlag(String.format("Ignoring NAT rule with undefined interface %s", _interface));
         return true;
       }
     } else if (!natPools.containsKey(_natPool)) {
-      // Configuration has an invalid reference
+      w.redFlag(String.format("Ignoring NAT rule with undefined pool %s", _natPool));
       return true;
     }
 
