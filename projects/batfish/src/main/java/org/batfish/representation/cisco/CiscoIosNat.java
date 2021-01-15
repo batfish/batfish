@@ -68,6 +68,7 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
    *     Transformation} could not be built
    */
   public abstract Optional<Transformation.Builder> toOutgoingTransformation(
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
@@ -83,6 +84,7 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
    */
   public abstract Optional<Transformation.Builder> toIncomingTransformation(
       Map<String, IpAccessList> ipAccessLists,
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
       Map<String, Interface> interfaces);
 

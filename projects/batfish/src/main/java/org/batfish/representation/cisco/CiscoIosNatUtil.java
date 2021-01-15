@@ -1,18 +1,25 @@
 package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.Transformation.Builder;
@@ -38,6 +45,49 @@ final class CiscoIosNatUtil {
       throw new BatfishException("Unsupported NAT type");
     }
     return typePrecedence.get(name);
+  }
+
+  /**
+   * Converts the given {@link RouteMap} to an {@link AclLineMatchExpr} for use as a guard in a
+   * {@link Transformation}. Currently only offers limited support (pending behavior tests); returns
+   * empty if the route-map has any of the following:
+   *
+   * <ul>
+   *   <li>deny clauses
+   *   <li>set lines
+   *   <li>match lines other than matching v4 ACLs
+   *   <li>references to undefined ACLs
+   * </ul>
+   */
+  static Optional<AclLineMatchExpr> toMatchExpr(RouteMap routeMap, Set<String> validAclNames) {
+    ImmutableList.Builder<AclLineMatchExpr> clauseExprs = ImmutableList.builder();
+    for (RouteMapClause clause : routeMap.getClauses().values()) {
+      if (clause.getAction() != LineAction.PERMIT) {
+        // TODO Support NAT rules referencing route-maps with deny clauses
+        return Optional.empty();
+      } else if (!clause.getSetList().isEmpty()) {
+        // TODO Check if set lines take effect in context of NAT rule-matching
+        return Optional.empty();
+      }
+      for (RouteMapMatchLine matchLine : clause.getMatchList()) {
+        if (!(matchLine instanceof RouteMapMatchIpAccessListLine)) {
+          // TODO Check what other types of lines NAT rule route-maps can have and support them
+          return Optional.empty();
+        }
+        Set<String> listNames = ((RouteMapMatchIpAccessListLine) matchLine).getListNames();
+        if (!validAclNames.containsAll(listNames)) {
+          // TODO Check behavior of match ACL line when some or all ACLs are undefined
+          return Optional.empty();
+        }
+        // Never need to reverse these ACLs because route-maps can't be used for destination inside.
+        List<AclLineMatchExpr> permittedByAcls =
+            listNames.stream()
+                .map(AclLineMatchExprs::permittedByAcl)
+                .collect(ImmutableList.toImmutableList());
+        clauseExprs.add(or(permittedByAcls));
+      }
+    }
+    return Optional.of(or(clauseExprs.build()));
   }
 
   @Nonnull
