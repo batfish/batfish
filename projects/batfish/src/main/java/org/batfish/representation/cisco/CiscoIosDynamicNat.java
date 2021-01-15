@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.transformation.Transformation.when;
@@ -240,9 +239,6 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       Map<String, Interface> interfaces) {
     if (_natPool != null) {
       NatPool pool = natPools.get(_natPool);
-      if (pool == null) {
-        return when(FALSE);
-      }
       return makeTransformation(shouldNat, pool.getFirst(), pool.getLast(), outgoing);
     } else {
       Ip ifaceAddress = interfaces.get(_interface).getAddress().getIp();
