@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.transformation.IpField;
@@ -72,7 +73,8 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
-      Configuration c);
+      Configuration c,
+      Warnings w);
 
   /**
    * Converts a single NAT from the configuration into a {@link Transformation}.
@@ -86,7 +88,8 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
       Map<String, IpAccessList> ipAccessLists,
       Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
-      Map<String, Interface> interfaces);
+      Map<String, Interface> interfaces,
+      Warnings w);
 
   /**
    * Creates the {@link StaticRoute} that will be added due to this NAT, if any (only possible if

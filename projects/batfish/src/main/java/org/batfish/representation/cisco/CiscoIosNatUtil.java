@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -60,28 +61,55 @@ final class CiscoIosNatUtil {
    *   <li>empty clauses or no clauses
    * </ul>
    */
-  static Optional<AclLineMatchExpr> toMatchExpr(RouteMap routeMap, Set<String> validAclNames) {
+  static Optional<AclLineMatchExpr> toMatchExpr(
+      RouteMap routeMap, Set<String> validAclNames, Warnings w) {
     ImmutableList.Builder<AclLineMatchExpr> clauseExprs = ImmutableList.builder();
     if (routeMap.getClauses().isEmpty()) {
+      w.redFlag(String.format("Ignoring NAT rule with empty route-map %s", routeMap.getName()));
       return Optional.empty();
     }
     for (RouteMapClause clause : routeMap.getClauses().values()) {
-      if (clause.getAction() != LineAction.PERMIT
-          || !clause.getSetList().isEmpty()
-          || clause.getMatchList().isEmpty()) {
+      if (clause.getAction() != LineAction.PERMIT) {
         // TODO Support NAT rules referencing route-maps with deny clauses
+        w.redFlag(
+            String.format(
+                "Ignoring NAT rule with route-map %s: deny clauses not supported in this context",
+                routeMap.getName()));
+        return Optional.empty();
+      } else if (!clause.getSetList().isEmpty()) {
         // TODO Check if set lines take effect in context of NAT rule-matching
+        w.redFlag(
+            String.format(
+                "Ignoring NAT rule with route-map %s: set lines not supported in this context",
+                routeMap.getName()));
+        return Optional.empty();
+      } else if (clause.getMatchList().isEmpty()) {
         // TODO Check behavior of empty clauses (deny all or permit all?)
+        w.redFlag(
+            String.format(
+                "Ignoring NAT rule with route-map %s: clauses without match lines not supported in"
+                    + " this context",
+                routeMap.getName()));
         return Optional.empty();
       }
       for (RouteMapMatchLine matchLine : clause.getMatchList()) {
         if (!(matchLine instanceof RouteMapMatchIpAccessListLine)) {
           // TODO Check what other types of lines NAT rule route-maps can have and support them
+          w.redFlag(
+              String.format(
+                  "Ignoring NAT rule with route-map %s: lines of type %s not supported in this"
+                      + " context",
+                  routeMap.getName(), matchLine.getClass()));
           return Optional.empty();
         }
         Set<String> listNames = ((RouteMapMatchIpAccessListLine) matchLine).getListNames();
         if (!validAclNames.containsAll(listNames)) {
           // TODO Check behavior of match ACL line when some or all ACLs are undefined
+          w.redFlag(
+              String.format(
+                  "Ignoring NAT rule with route-map %s: route-map references at least one"
+                      + " undefined ACL",
+                  routeMap.getName(), matchLine.getClass().getCanonicalName()));
           return Optional.empty();
         }
         // Never need to reverse these ACLs because route-maps can't be used for destination inside.
