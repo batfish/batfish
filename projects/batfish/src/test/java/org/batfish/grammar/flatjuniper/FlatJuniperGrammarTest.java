@@ -5247,7 +5247,6 @@ public final class FlatJuniperGrammarTest {
     Vrf defaultVrf = c.getVrfs().get(DEFAULT_VRF_NAME);
     VrfLeakingConfig.Builder leakConfigBuilder =
         VrfLeakingConfig.builder()
-            .setLeakAsBgp(false)
             .setImportPolicy(generateInstanceImportPolicyName(DEFAULT_VRF_NAME));
     assertThat(
         defaultVrf.getVrfLeakConfigs(),

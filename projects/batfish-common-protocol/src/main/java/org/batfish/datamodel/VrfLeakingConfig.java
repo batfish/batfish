@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,6 +10,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 /**
  * Configuration responsible for VRF leaking. To successfully leak routes from one VRF to another,
@@ -50,8 +50,16 @@ public final class VrfLeakingConfig implements Serializable {
     return _importFromVrf;
   }
 
+  /** Knobs that control Cisco-IOS-style VRF leaking */
+  @Nullable
+  @JsonProperty(PROP_BGP_CONFIG)
+  public BgpLeakConfig getBgpConfig() {
+    return _bgpConfig;
+  }
+
   /**
-   * Whether or not to leak routes between BGP RIBs or main RIBs.
+   * Whether or not to leak routes between BGP RIBs or main RIBs. True if {@link #getBgpConfig()} is
+   * not null.
    *
    * <p>For those familiar with vendor semantics: if set to {@code true}, leaking routes as BGP is
    * equivalent to IOS vrf leaking which is done between BGP RIBs of different VRFs (on a real
@@ -59,9 +67,8 @@ public final class VrfLeakingConfig implements Serializable {
    * follows the Juniper model, where routes are simply copied from the main RIB of one routing
    * instance (read: VRF) into another, with appropriate src-VRF annotation.
    */
-  @JsonProperty(PROP_LEAK_AS_BGP)
   public boolean leakAsBgp() {
-    return _leakAsBgp;
+    return _bgpConfig != null;
   }
 
   public static Builder builder() {
@@ -79,48 +86,49 @@ public final class VrfLeakingConfig implements Serializable {
     VrfLeakingConfig that = (VrfLeakingConfig) o;
     return _importFromVrf.equals(that._importFromVrf)
         && Objects.equals(_importPolicy, that._importPolicy)
-        && _leakAsBgp == that._leakAsBgp;
+        && Objects.equals(_bgpConfig, that._bgpConfig);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_importPolicy, _importFromVrf, _leakAsBgp);
+    return Objects.hash(_importPolicy, _importFromVrf, _bgpConfig);
   }
 
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(VrfLeakingConfig.class)
+        .omitNullValues()
         .add("importPolicy", _importPolicy)
         .add("importFromVrf", _importFromVrf)
-        .add("leakAsBgp", _leakAsBgp)
+        .add("bgpConfig", _bgpConfig)
         .toString();
   }
 
   @Nullable private final String _importPolicy;
   @Nonnull private final String _importFromVrf;
-  private final boolean _leakAsBgp;
+  @Nullable private final BgpLeakConfig _bgpConfig;
 
   private VrfLeakingConfig(Builder builder) {
     checkArgument(builder._importFromVrf != null, "VRF leaking config is missing import VRF");
     _importPolicy = builder._importPolicy;
     _importFromVrf = builder._importFromVrf;
-    _leakAsBgp = builder._leakAsBgp;
+    _bgpConfig = builder._bgpConfig;
   }
 
   private static final String PROP_IMPORT_FROM_VRF = "importFromVrf";
   private static final String PROP_IMPORT_POLICY = "importPolicy";
-  private static final String PROP_LEAK_AS_BGP = "leakAsBgp";
+  private static final String PROP_BGP_CONFIG = "bgpConfig";
 
   @JsonCreator
   private static VrfLeakingConfig create(
       @Nullable @JsonProperty(PROP_IMPORT_FROM_VRF) String importFromVrf,
       @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
-      @Nullable @JsonProperty(PROP_LEAK_AS_BGP) Boolean leakAsBgp) {
+      @Nullable @JsonProperty(PROP_BGP_CONFIG) BgpLeakConfig bgpConfig) {
     checkArgument(importFromVrf != null, String.format("Missing %s", PROP_IMPORT_FROM_VRF));
     return builder()
         .setImportFromVrf(importFromVrf)
         .setImportPolicy(importPolicy)
-        .setLeakAsBgp(firstNonNull(leakAsBgp, Boolean.FALSE))
+        .setBgpLeakConfig(bgpConfig)
         .build();
   }
 
@@ -137,8 +145,8 @@ public final class VrfLeakingConfig implements Serializable {
       return this;
     }
 
-    public Builder setLeakAsBgp(boolean leakAsBgp) {
-      _leakAsBgp = leakAsBgp;
+    public Builder setBgpLeakConfig(@Nullable BgpLeakConfig config) {
+      _bgpConfig = config;
       return this;
     }
 
@@ -148,8 +156,52 @@ public final class VrfLeakingConfig implements Serializable {
 
     @Nullable private String _importPolicy;
     @Nullable private String _importFromVrf;
-    private boolean _leakAsBgp;
+    @Nullable private BgpLeakConfig _bgpConfig;
 
     private Builder() {}
+  }
+
+  public static final class BgpLeakConfig implements Serializable {
+
+    public BgpLeakConfig(ExtendedCommunity attachRouteTarget) {
+      _attachRouteTarget = attachRouteTarget;
+    }
+
+    public ExtendedCommunity getAttachRouteTarget() {
+      return _attachRouteTarget;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof BgpLeakConfig)) {
+        return false;
+      }
+      BgpLeakConfig that = (BgpLeakConfig) o;
+      return _attachRouteTarget.equals(that._attachRouteTarget);
+    }
+
+    @Override
+    public int hashCode() {
+      return _attachRouteTarget.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      return MoreObjects.toStringHelper(BgpLeakConfig.class)
+          .add("attachRouteTarget", _attachRouteTarget)
+          .toString();
+    }
+
+    @Nonnull private final ExtendedCommunity _attachRouteTarget;
+    private static final String PROP_ATTACH_ROUTE_TARGET = "attachRouteTarget";
+
+    @JsonCreator
+    private static BgpLeakConfig jsonCreate(
+        @JsonProperty(PROP_ATTACH_ROUTE_TARGET) ExtendedCommunity attachRouteTarget) {
+      return new BgpLeakConfig(attachRouteTarget);
+    }
   }
 }

@@ -68,6 +68,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -1666,7 +1667,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   public void importCrossVrfV4Routes(
       Stream<RouteAdvertisement<Bgpv4Route>> routesToLeak,
       @Nullable String importPolicyName,
-      String importFromVrf) {
+      String importFromVrf,
+      BgpLeakConfig bgpConfig) {
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
     Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltaBuilders = new IdentityHashMap<>();
     ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
@@ -1684,7 +1686,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
            non-routing after redistribution). Also, update the next hop to be next-vrf
           */
           Bgpv4Route.Builder builder =
-              route.toBuilder().setNonRouting(false).setNextHop(NextHopVrf.of(importFromVrf));
+              route.toBuilder()
+                  .setNonRouting(false)
+                  .setNextHop(NextHopVrf.of(importFromVrf))
+                  .addCommunity(bgpConfig.getAttachRouteTarget());
 
           // Process route through import policy, if one exists
           boolean accept = true;

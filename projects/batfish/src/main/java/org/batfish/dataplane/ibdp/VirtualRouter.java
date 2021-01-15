@@ -1372,10 +1372,12 @@ public final class VirtualRouter {
               .getVirtualRouter(vrfLeakConfig.getImportFromVrf())
               .map(VirtualRouter::getBgpRoutingProcess);
       if (exportingBgpProc.isPresent()) {
+        assert vrfLeakConfig.getBgpConfig() != null; // invariant of leakAsBgp()
         _bgpRoutingProcess.importCrossVrfV4Routes(
             exportingBgpProc.get().getRoutesToLeak(),
             vrfLeakConfig.getImportPolicy(),
-            vrfLeakConfig.getImportFromVrf());
+            vrfLeakConfig.getImportFromVrf(),
+            vrfLeakConfig.getBgpConfig());
       } else {
         LOGGER.error(
             "Leaking BGP routes from VRF {} to VRF {} on node {} failed. Exporting VRF has no BGP"
