@@ -7361,4 +7361,11 @@ public final class CiscoGrammarTest {
                     hasNextHop(NextHopVrf.of("SRC_VRF"))))));
     assertThat(ribs.get("DST_IMPOSSIBLE").getRoutes(), empty());
   }
+
+  @Test
+  public void testNatMalformedNatPool() throws IOException {
+    String hostname = "ios-nat-malformed-pool";
+    // Do not crash
+    parseConfig(hostname);
+  }
 }

@@ -6128,6 +6128,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = _currentIosNatPoolName;
     Ip first = toIp(ctx.first);
     Ip last = toIp(ctx.last);
+    if (first.compareTo(last) > 0) {
+      warn(ctx, String.format("Skipping malformed NAT pool %s. First IP > End Ip", name));
+      return;
+    }
     if (ctx.mask != null) {
       Prefix subnet = IpWildcard.ipWithWildcardMask(first, toIp(ctx.mask).inverted()).toPrefix();
       createNatPool(name, first, last, subnet, ctx);
@@ -6145,6 +6149,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = _currentIosNatPoolName;
     Ip first = toIp(ctx.first);
     Ip last = toIp(ctx.last);
+    if (first.compareTo(last) > 0) {
+      warn(ctx, String.format("Skipping malformed NAT pool %s. First IP > End Ip", name));
+      return;
+    }
     if (ctx.prefix_length != null) {
       Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
       createNatPool(name, first, last, subnet, ctx);
