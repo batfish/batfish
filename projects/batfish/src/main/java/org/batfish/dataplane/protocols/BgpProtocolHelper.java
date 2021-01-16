@@ -93,9 +93,9 @@ public final class BgpProtocolHelper {
     // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
     // peer's AS and local peer has not set getAllowRemoteOut
     if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_ADVERTISE)
-        || (sessionProperties.isEbgp()
-            && route.getAsPath().containsAs(sessionProperties.getTailAs())
-            && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
+        || (sessionProperties.isEbgp() && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())
+            && !route.getAsPath().getAsSets().isEmpty()
+            && route.getAsPath().getAsSets().get(0).containsAs(sessionProperties.getTailAs())) {
       return null;
     }
     // Also do not export if route has NO_EXPORT community and this is a true ebgp session
