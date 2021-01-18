@@ -432,6 +432,7 @@ import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -7423,6 +7424,9 @@ public final class CiscoGrammarTest {
         c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
         contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build()));
     assertThat(
+        c.getVrfs().get("NOT_UNDER_ROUTER_BGP").getVrfLeakConfigs(),
+        contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy(null).build()));
+    assertThat(
         c.getVrfs().get("DST_IMPOSSIBLE").getVrfLeakConfigs(),
         contains(
             builder.setImportFromVrf("SRC_VRF").setImportPolicy("UNDEFINED~undefined").build()));
@@ -7439,13 +7443,34 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
     SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs = dp.getRibs().get(hostname);
     Set<AbstractRoute> dstVrfRoutes = ribs.get("DST_VRF").getRoutes();
+    Matcher<AbstractRoute> leakedRouteMatcher2220 =
+        isBgpv4RouteThat(
+            allOf(
+                hasPrefix(Prefix.parse("2.2.2.0/24")),
+                hasProtocol(RoutingProtocol.BGP),
+                hasNextHop(NextHopVrf.of("SRC_VRF")),
+                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
     assertThat(
         dstVrfRoutes,
         // 1.1.1.1/32 is denied by import map, only 2.2.2.0/24 is expected to be leaked.
-        contains(
+        contains(leakedRouteMatcher2220));
+    // VRF not defined under router bgp should still have a process, and get both routes
+    // (because no import map is defined)
+    assertThat(
+        batfish
+            .loadConfigurations(snapshot)
+            .get(hostname)
+            .getVrfs()
+            .get("NOT_UNDER_ROUTER_BGP")
+            .getBgpProcess(),
+        notNullValue());
+    assertThat(
+        ribs.get("NOT_UNDER_ROUTER_BGP").getRoutes(),
+        containsInAnyOrder(
+            leakedRouteMatcher2220,
             isBgpv4RouteThat(
                 allOf(
-                    hasPrefix(Prefix.parse("2.2.2.0/24")),
+                    hasPrefix(Prefix.parse("1.1.1.1/32")),
                     hasProtocol(RoutingProtocol.BGP),
                     hasNextHop(NextHopVrf.of("SRC_VRF")),
                     BgpRouteMatchers.hasCommunities(
