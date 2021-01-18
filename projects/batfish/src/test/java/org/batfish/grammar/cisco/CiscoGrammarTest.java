@@ -5794,17 +5794,16 @@ public final class CiscoGrammarTest {
       Prefix nat2Global = Prefix.parse("2.2.2.0/14");
       Prefix nat4Global = Prefix.parse("6.6.6.6/32");
       Prefix nat3Global = Prefix.parse("2.2.3.0/24");
+      String nat1Acl = "10"; // ACL referenced by NAT 1's route-map
 
       Interface inside = c.getAllInterfaces().get(insideIntf);
       assertThat(inside.getIncomingTransformation(), nullValue());
       assertThat(inside.getOutgoingTransformation(), nullValue());
 
       Interface outside = c.getAllInterfaces().get(outsideIntf);
-      assertThat(outside.getIncomingTransformation(), notNullValue());
-      assertThat(outside.getOutgoingTransformation(), notNullValue());
 
       Transformation inDestinationTransformation =
-          when(matchDst(nat1Global))
+          when(and(matchDst(nat1Global), permittedByAcl(nat1Acl)))
               .apply(shiftDestinationIp(nat1Local))
               .setOrElse(
                   when(matchDst(nat3Global))
@@ -5829,7 +5828,7 @@ public final class CiscoGrammarTest {
               .build();
 
       Transformation outTransformation =
-          when(and(matchSrc(nat1Local), matchSrcIfaceInside))
+          when(and(matchSrc(nat1Local), permittedByAcl(nat1Acl), matchSrcIfaceInside))
               .apply(shiftSourceIp(nat1Global))
               .setAndThen(outDestinationTransformation)
               .setOrElse(

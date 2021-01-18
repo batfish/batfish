@@ -6355,9 +6355,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIpnis_static(Ipnis_staticContext ctx) {
     if (ctx.ROUTE_MAP() != null) {
+      String rmName = ctx.mapname.getText();
       _configuration.referenceStructure(
-          ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
-      warn(ctx, "route-map specification in 'ip nat inside source static' is not supported");
+          ROUTE_MAP, rmName, IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
+      _currentIosSourceNat.setRouteMap(rmName);
     }
     _currentIosSourceNat = null;
   }
