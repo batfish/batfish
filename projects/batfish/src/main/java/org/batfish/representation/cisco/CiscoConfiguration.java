@@ -3446,6 +3446,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
           if (bgpProcess != null) {
             org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
             newVrf.setBgpProcess(newBgpProcess);
+          } else if (vrf.getIpv4UnicastAddressFamily() != null
+              && !vrf.getIpv4UnicastAddressFamily().getRouteTargetImport().isEmpty()) {
+            /*
+             * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
+             */
+            assert newVrf.getBgpProcess() == null;
+            newVrf.setBgpProcess(
+                org.batfish.datamodel.BgpProcess.builder()
+                    .setRouterId(Ip.ZERO)
+                    .setAdminCostsToVendorDefaults(c.getConfigurationFormat())
+                    .build());
           }
         });
     /*

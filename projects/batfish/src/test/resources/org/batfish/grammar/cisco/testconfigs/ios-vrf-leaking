@@ -23,10 +23,16 @@ vrf definition DST_VRF
  exit-address-family
 !
  vrf definition DST_IMPOSSIBLE
-  rd 65003:2
+  rd 65003:3
   !
   address-family ipv4
    import map UNDEFINED
+   route-target import 65003:11
+  exit-address-family
+!
+ vrf definition NOT_UNDER_ROUTER_BGP
+  rd 65003:4
+  address-family ipv4
    route-target import 65003:11
   exit-address-family
 !
