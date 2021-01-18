@@ -3338,7 +3338,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         for (String referencedVrf : referencedVrfs) {
           vrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setLeakAsBgp(false)
                   .setImportFromVrf(referencedVrf)
                   .setImportPolicy(instanceImportPolicy.getName())
                   .build());
