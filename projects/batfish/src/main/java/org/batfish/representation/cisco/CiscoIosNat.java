@@ -23,6 +23,7 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
 
   private RuleAction _action;
   private boolean _addRoute;
+  @Nullable private String _routeMap;
   @Nullable private String _vrf;
 
   /**
@@ -41,21 +42,31 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
    * The add-route option installs a static route to the local IP via the global IP (for {@link
    * RuleAction#SOURCE_OUTSIDE} only). <b>Only works on default VRF, otherwise no effect.</b>
    */
-  public boolean getAddRoute() {
+  public final boolean getAddRoute() {
     return _addRoute;
   }
 
-  public void setAddRoute(boolean addRoute) {
+  public final void setAddRoute(boolean addRoute) {
     _addRoute = addRoute;
+  }
+
+  /** Route-map specifying matching traffic (mutually exclusive with ACL) */
+  @Nullable
+  public String getRouteMap() {
+    return _routeMap;
+  }
+
+  public void setRouteMap(@Nullable String routeMap) {
+    _routeMap = routeMap;
   }
 
   /** Which VRF this NAT is in */
   @Nullable
-  public String getVrf() {
+  public final String getVrf() {
     return _vrf;
   }
 
-  public void setVrf(@Nullable String vrf) {
+  public final void setVrf(@Nullable String vrf) {
     _vrf = vrf;
   }
 

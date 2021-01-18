@@ -41,7 +41,6 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
 
   /* NAT must use either an ACL or a route-map to specify traffic to match. */
   private @Nullable String _aclName;
-  private @Nullable String _routeMap;
 
   /* Interface whose address to use as pool (this and _natPool are mutually exclusive) */
   private @Nullable String _interface;
@@ -95,16 +94,6 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     _natPool = natPool;
   }
 
-  /** Route-map specifying matching traffic (mutually exclusive with {@link #getAclName() ACL}) */
-  @Nullable
-  public String getRouteMap() {
-    return _routeMap;
-  }
-
-  public void setRouteMap(@Nullable String routeMap) {
-    _routeMap = routeMap;
-  }
-
   @Override
   public boolean equals(@Nullable Object o) {
     if (!(o instanceof CiscoIosDynamicNat)) {
@@ -118,13 +107,20 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
         && Objects.equals(_interface, other._interface)
         && Objects.equals(_natPool, other._natPool)
         && Objects.equals(_overload, other._overload)
-        && Objects.equals(_routeMap, other._routeMap);
+        && Objects.equals(getRouteMap(), other.getRouteMap());
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
-        _aclName, getAction(), getAddRoute(), _interface, _natPool, _overload, _routeMap, getVrf());
+        _aclName,
+        getAction(),
+        getAddRoute(),
+        _interface,
+        _natPool,
+        _overload,
+        getRouteMap(),
+        getVrf());
   }
 
   @Override
@@ -149,7 +145,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     }
     // Neither NAT has an ACL defined. That should mean both have route-maps defined, but if either
     // has a null route-map, deprioritize that one as it can't be converted at all.
-    return Comparator.nullsLast(String::compareTo).compare(_routeMap, other.getRouteMap());
+    return Comparator.nullsLast(String::compareTo).compare(getRouteMap(), other.getRouteMap());
   }
 
   /** Converts given ACL name to an int if possible, otherwise returns null. */
@@ -246,8 +242,8 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     }
     // isMalformed guarantees that _routeMap is nonnull when (iff) _aclName is null, and that it
     // references a real RouteMap
-    assert _routeMap != null;
-    return toMatchExpr(routeMaps.get(_routeMap), aclNames, w);
+    assert getRouteMap() != null;
+    return toMatchExpr(routeMaps.get(getRouteMap()), aclNames, w);
   }
 
   private Optional<IpAccessList> getOrCreateReverseAcl(Configuration c) {
@@ -346,7 +342,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       Map<String, Interface> interfaces,
       Warnings w) {
     // Either route-map or ACL must be configured. (Should be guaranteed by parser.)
-    if ((_aclName == null) == (_routeMap == null)) {
+    if ((_aclName == null) == (getRouteMap() == null)) {
       return true;
     }
     if (_aclName != null) {
@@ -368,8 +364,8 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       if (getAction() == RuleAction.DESTINATION_INSIDE) {
         return true;
       }
-      if (!routeMaps.containsKey(_routeMap)) {
-        w.redFlag(String.format("Ignoring NAT rule with undefined route-map %s", _routeMap));
+      if (!routeMaps.containsKey(getRouteMap())) {
+        w.redFlag(String.format("Ignoring NAT rule with undefined route-map %s", getRouteMap()));
         return true;
       }
     }
