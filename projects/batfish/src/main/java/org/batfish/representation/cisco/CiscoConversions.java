@@ -86,6 +86,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.VrfLeakingConfig;
+import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -1748,7 +1749,7 @@ public class CiscoConversions {
           }
           viVrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setLeakAsBgp(true)
+                  .setBgpLeakConfig(new BgpLeakConfig(importRt))
                   .setImportFromVrf(exportingVrf)
                   .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
                   .build());

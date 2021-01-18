@@ -353,6 +353,7 @@ import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakingConfig;
+import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -373,6 +374,7 @@ import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
+import org.batfish.datamodel.matchers.BgpRouteMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpMetricMatchers;
@@ -7414,7 +7416,9 @@ public final class CiscoGrammarTest {
   public void testIosVrfLeakingConversion() throws IOException {
     String hostname = "ios-vrf-leaking";
     Configuration c = parseConfig(hostname);
-    VrfLeakingConfig.Builder builder = VrfLeakingConfig.builder().setLeakAsBgp(true);
+    VrfLeakingConfig.Builder builder =
+        VrfLeakingConfig.builder()
+            .setBgpLeakConfig(new BgpLeakConfig(ExtendedCommunity.target(65003, 11)));
     assertThat(
         c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
         contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build()));
@@ -7443,7 +7447,9 @@ public final class CiscoGrammarTest {
                 allOf(
                     hasPrefix(Prefix.parse("2.2.2.0/24")),
                     hasProtocol(RoutingProtocol.BGP),
-                    hasNextHop(NextHopVrf.of("SRC_VRF"))))));
+                    hasNextHop(NextHopVrf.of("SRC_VRF")),
+                    BgpRouteMatchers.hasCommunities(
+                        contains(ExtendedCommunity.target(65003, 11)))))));
     assertThat(ribs.get("DST_IMPOSSIBLE").getRoutes(), empty());
   }
 
