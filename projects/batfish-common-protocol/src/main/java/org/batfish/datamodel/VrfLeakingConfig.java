@@ -172,7 +172,7 @@ public final class VrfLeakingConfig implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
       if (this == o) {
         return true;
       }
@@ -200,7 +200,8 @@ public final class VrfLeakingConfig implements Serializable {
 
     @JsonCreator
     private static BgpLeakConfig jsonCreate(
-        @JsonProperty(PROP_ATTACH_ROUTE_TARGET) ExtendedCommunity attachRouteTarget) {
+        @Nullable @JsonProperty(PROP_ATTACH_ROUTE_TARGET) ExtendedCommunity attachRouteTarget) {
+      checkArgument(attachRouteTarget != null, "Missing %s", PROP_ATTACH_ROUTE_TARGET);
       return new BgpLeakConfig(attachRouteTarget);
     }
   }
