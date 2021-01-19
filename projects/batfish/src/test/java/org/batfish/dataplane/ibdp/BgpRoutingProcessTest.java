@@ -672,5 +672,10 @@ public class BgpRoutingProcessTest {
                     hasNextHop(NextHopVrf.of(otherVrf)),
                     isNonRouting(false),
                     hasCommunities(contains(routeTarget))))));
+
+    // Finally check that routes imported from other vrfs won't be exported for leaking.
+    // Fake up end of round
+    _routingProcess.endOfRound();
+    assertThat(_routingProcess.getRoutesToLeak().collect(Collectors.toList()), empty());
   }
 }
