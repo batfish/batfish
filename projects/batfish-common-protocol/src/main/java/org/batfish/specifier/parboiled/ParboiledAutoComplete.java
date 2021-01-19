@@ -3,6 +3,7 @@ package org.batfish.specifier.parboiled;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Names.ESCAPE_CHAR;
 import static org.batfish.datamodel.Names.nameNeedsEscaping;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.CHAR_LITERAL;
 import static org.batfish.specifier.parboiled.Anchor.Type.FILTER_NAME_REGEX;
 import static org.batfish.specifier.parboiled.Anchor.Type.INTERFACE_NAME_REGEX;
@@ -309,6 +310,12 @@ public final class ParboiledAutoComplete {
         return ImmutableSet.of();
       case ZONE_NAME:
         return autoCompleteGeneric(pm, _grammar);
+      case APP_SET_DELIMITER:
+        // The grammar allows application sets to be limited (union) by either space or comma, but
+        // we're only going to suggest comma.
+        return ImmutableSet.of(
+            new ParboiledAutoCompleteSuggestion(
+                ",", pm.getMatchPrefix().length() + pm.getMatchStartIndex(), APP_SET_OP));
       default:
         throw new IllegalArgumentException("Unhandled completion type " + pm.getAnchorType());
     }
@@ -419,6 +426,8 @@ public final class ParboiledAutoComplete {
    */
   private static Variable.Type anchorTypeToVariableType(Anchor.Type anchorType, Grammar grammar) {
     switch (anchorType) {
+      case APP_SET_OP:
+        return Type.APPLICATION_SPEC;
       case ADDRESS_GROUP_NAME:
         return Variable.Type.ADDRESS_GROUP_NAME;
       case FILTER_NAME:

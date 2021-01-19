@@ -209,7 +209,10 @@ public class ParserAppTest {
     assertThat(
         getPAC(query).run(),
         equalTo(
-            ImmutableSet.of(new ParboiledAutoCompleteSuggestion(",", query.length(), APP_SET_OP))));
+            ImmutableSet.builder()
+                .add(new ParboiledAutoCompleteSuggestion(",", query.length(), APP_SET_OP))
+                .addAll(getAllStartingSuggestions(query.length()))
+                .build()));
   }
 
   /** Test that we present all initial suggestions after all valid complete ICMP inputs */
@@ -369,5 +372,32 @@ public class ParserAppTest {
 
     assertThat(ParserUtils.getAst(getRunner().run("http,tcp")), equalTo(expectedNode));
     assertThat(ParserUtils.getAst(getRunner().run(" http , tcp ")), equalTo(expectedNode));
+  }
+
+  @Test
+  public void testParseUnion3() {
+    UnionAppAstNode expectedNode =
+        new UnionAppAstNode(new NameAppAstNode("http"), new TcpAppAstNode());
+
+    assertThat(ParserUtils.getAst(getRunner().run("http tcp")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" http ,  tcp ")), equalTo(expectedNode));
+  }
+
+  @Test
+  public void testParseUnion4() {
+    UnionAppAstNode expectedNode =
+        new UnionAppAstNode(new TcpAppAstNode(), new NameAppAstNode("http"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("tcp http ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" tcp , http ")), equalTo(expectedNode));
+  }
+
+  @Test
+  public void testParseUnion5() {
+    UnionAppAstNode expectedNode =
+        new UnionAppAstNode(new UdpAppAstNode(), new NameAppAstNode("http"));
+
+    assertThat(ParserUtils.getAst(getRunner().run("udp http ")), equalTo(expectedNode));
+    assertThat(ParserUtils.getAst(getRunner().run(" udp , http ")), equalTo(expectedNode));
   }
 }

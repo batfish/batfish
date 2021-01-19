@@ -43,6 +43,8 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
      * ParboiledAutoCompleteSuggestion#completeDescriptionIfNeeded}.
      */
     APP_SET_OP("APP_SET_OP", " of applications", "appSpec", SuggestionType.SET_OPERATOR),
+    APP_SET_DELIMITER(
+        "APP_SET_DELIMITER", " of applications", "appSpec", SuggestionType.SET_OPERATOR),
     /** TCP-based application definition in appSpec */
     APP_TCP("APP_TCP", "TCP application", null, SuggestionType.UNKNOWN),
     /** UDP-based application definition in appSpec */

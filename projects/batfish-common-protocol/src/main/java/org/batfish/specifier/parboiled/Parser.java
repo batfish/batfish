@@ -8,6 +8,7 @@ import static org.batfish.specifier.parboiled.Anchor.Type.APP_NAME;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_PORT;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_PORTS;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_PORT_RANGE;
+import static org.batfish.specifier.parboiled.Anchor.Type.APP_SET_DELIMITER;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_SET_OP;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_TCP;
 import static org.batfish.specifier.parboiled.Anchor.Type.APP_UDP;
@@ -240,8 +241,13 @@ public class Parser extends CommonParser {
   public Rule AppSpec() {
     return Sequence(
         AppTerm(),
-        WhiteSpace(),
-        ZeroOrMore(", ", AppTerm(), push(new UnionAppAstNode(pop(1), pop())), WhiteSpace()));
+        ZeroOrMore(AppSpecDelimiter(), AppTerm(), push(new UnionAppAstNode(pop(1), pop()))),
+        WhiteSpace());
+  }
+
+  @Anchor(APP_SET_DELIMITER)
+  public Rule AppSpecDelimiter() {
+    return FirstOf(Sequence(WhiteSpace(), ",", WhiteSpace()), OneOrMore(AnyOf(" \t")));
   }
 
   public Rule AppTerm() {
@@ -290,20 +296,22 @@ public class Parser extends CommonParser {
 
   @Anchor(APP_TCP)
   public Rule AppTcpTerm() {
-    return Sequence(
-        IgnoreCase("tcp"), WhiteSpace(), push(new TcpAppAstNode()), Optional(AppPortSpec()));
+    return Sequence(IgnoreCase("tcp"), push(new TcpAppAstNode()), Optional(AppPortSpec()));
   }
 
   @Anchor(APP_UDP)
   public Rule AppUdpTerm() {
-    return Sequence(
-        IgnoreCase("udp"), WhiteSpace(), push(new UdpAppAstNode()), Optional(AppPortSpec()));
+    return Sequence(IgnoreCase("udp"), push(new UdpAppAstNode()), Optional(AppPortSpec()));
   }
 
   @Anchor(APP_PORTS)
   public Rule AppPortSpec() {
     return Sequence(
-        "/ ", AppPortTerm(), WhiteSpace(), ZeroOrMore(", ", AppPortTerm(), WhiteSpace()));
+        WhiteSpace(),
+        "/ ",
+        AppPortTerm(),
+        WhiteSpace(),
+        ZeroOrMore(", ", AppPortTerm(), WhiteSpace()));
   }
 
   public Rule AppPortTerm() {
