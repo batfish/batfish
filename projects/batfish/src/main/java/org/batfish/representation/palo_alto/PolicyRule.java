@@ -20,6 +20,7 @@ public final class PolicyRule implements Serializable {
   private @Nullable Boolean _enable;
   private @Nullable PolicyRuleUpdateOrigin _updateOrigin;
   private @Nullable PolicyRuleUpdateMetric _updateMetric;
+  private @Nullable PolicyRuleUpdateWeight _updateWeight;
   private @Nonnull Set<String> _usedBy;
   private @Nullable PolicyRuleMatchFromPeerSet _matchFromPeerSet;
   private @Nullable PolicyRuleMatchAddressPrefixSet _matchAddressPrefixSet;
@@ -49,8 +50,17 @@ public final class PolicyRule implements Serializable {
     return _updateMetric;
   }
 
+  @Nullable
+  public PolicyRuleUpdateWeight getUpdateWeight() {
+    return _updateWeight;
+  }
+
+  public void setUpdateWeight(@Nullable PolicyRuleUpdateWeight updateWeight) {
+    _updateWeight = updateWeight;
+  }
+
   public @Nonnull Stream<PolicyRuleUpdate> getUpdates() {
-    return Stream.of(_updateOrigin, _updateMetric).filter(Objects::nonNull);
+    return Stream.of(_updateOrigin, _updateMetric, _updateWeight).filter(Objects::nonNull);
   }
 
   public @Nonnull Stream<PolicyRuleMatch> getMatches() {

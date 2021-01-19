@@ -13,6 +13,12 @@ bgp_med
   uint32
 ;
 
+bgp_weight
+:
+  // 0 - 65535
+  uint16
+;
+
 bgp_policy_rule
 :
     RULES name = variable
@@ -71,6 +77,7 @@ praa_update
         | praau_extended_community
         | praau_med
         | praau_origin
+        | praau_weight
     )?
 ;
 
@@ -97,6 +104,11 @@ praau_med
 praau_origin
 :
     ORIGIN (EGP | IGP | INCOMPLETE)
+;
+
+praau_weight
+:
+    WEIGHT val = bgp_weight
 ;
 
 prm_address_prefix

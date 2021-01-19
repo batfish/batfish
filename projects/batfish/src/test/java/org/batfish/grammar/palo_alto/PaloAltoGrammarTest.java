@@ -151,6 +151,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -235,6 +236,7 @@ import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.batfish.representation.palo_alto.PolicyRule;
 import org.batfish.representation.palo_alto.PolicyRule.Action;
 import org.batfish.representation.palo_alto.PolicyRuleUpdateOrigin;
+import org.batfish.representation.palo_alto.PolicyRuleUpdateWeight;
 import org.batfish.representation.palo_alto.RedistProfile;
 import org.batfish.representation.palo_alto.RedistProfileFilter;
 import org.batfish.representation.palo_alto.RedistRule;
@@ -766,6 +768,7 @@ public final class PaloAltoGrammarTest {
     assertThat(import1.getAction(), equalTo(Action.ALLOW));
     assertThat(import1.getUsedBy(), containsInAnyOrder("pg2", "pg4"));
     assertThat(import1.getUpdateOrigin(), equalTo(new PolicyRuleUpdateOrigin(OriginType.EGP)));
+    assertThat(import1.getUpdateWeight(), equalTo(new PolicyRuleUpdateWeight(42)));
     assertThat(import1.getMatchAddressPrefixSet(), not(nullValue()));
     assertThat(
         import1.getMatchAddressPrefixSet().getAddressPrefixes(),
@@ -1011,29 +1014,28 @@ public final class PaloAltoGrammarTest {
             srb.setNetwork(Prefix.parse("2.2.2.0/24")).build(),
             Bgpv4Route.testBuilder(),
             Direction.OUT));
+    {
+      // testing import policy generated for peer 1
+      String importPolicyPeer1Name = "~BGP_PEER_IMPORT_POLICY:vr1:peer1~";
+      RoutingPolicy importRoutingPolicyPeer1 = c.getRoutingPolicies().get(importPolicyPeer1Name);
 
-    // testing import policy generated for peer 1
-    String importPolicyPeer1Name = "~BGP_PEER_IMPORT_POLICY:vr1:peer1~";
-    RoutingPolicy importRoutingPolicyPeer1 = c.getRoutingPolicies().get(importPolicyPeer1Name);
+      Builder bgpIncomingBuilder =
+          Bgpv4Route.testBuilder().setNetwork(Prefix.parse("3.2.1.0/24")).setMetric(10L);
 
-    srb =
-        org.batfish.datamodel.StaticRoute.testBuilder()
-            .setNetwork(Prefix.parse("3.2.1.0/24"))
-            .setAdmin(5)
-            .setMetric(10L);
+      bgpBuilder = Bgpv4Route.testBuilder();
+      accepted =
+          importRoutingPolicyPeer1.process(bgpIncomingBuilder.build(), bgpBuilder, Direction.IN);
+      assertTrue(accepted);
+      assertThat(bgpBuilder.getOriginType(), equalTo(INCOMPLETE));
+      assertThat(bgpBuilder.getWeight(), equalTo(42));
 
-    bgpBuilder = Bgpv4Route.testBuilder();
-    accepted = importRoutingPolicyPeer1.process(srb.build(), bgpBuilder, Direction.IN);
-    assertTrue(accepted);
-    assertThat(bgpBuilder.getOriginType(), equalTo(INCOMPLETE));
-
-    // rejected because of mismatching prefix
-    assertFalse(
-        importRoutingPolicyPeer1.process(
-            srb.setNetwork(Prefix.parse("1.1.1.0/24")).build(),
-            Bgpv4Route.testBuilder(),
-            Direction.IN));
-
+      // rejected because of mismatching prefix
+      assertFalse(
+          importRoutingPolicyPeer1.process(
+              bgpIncomingBuilder.setNetwork(Prefix.parse("1.1.1.0/24")).build(),
+              Bgpv4Route.testBuilder(),
+              Direction.IN));
+    }
     {
       // testing export policy generated for peer 2, any BGP route is allowed
       String exportPolicyName = "~BGP_PEER_EXPORT_POLICY:vr1:peer2~";
