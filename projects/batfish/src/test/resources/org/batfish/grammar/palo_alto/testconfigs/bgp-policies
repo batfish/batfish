@@ -5,6 +5,7 @@ set network virtual-router vr1 protocol bgp policy import rules import1 action a
 set network virtual-router vr1 protocol bgp policy import rules import1 action allow update community none
 set network virtual-router vr1 protocol bgp policy import rules import1 action allow update origin egp
 set network virtual-router vr1 protocol bgp policy import rules import1 action allow update as-path none
+set network virtual-router vr1 protocol bgp policy import rules import1 action allow update weight 42
 set network virtual-router vr1 protocol bgp policy import rules import1 match address-prefix 12.12.1.1/32 exact yes
 set network virtual-router vr1 protocol bgp policy import rules import1 match address-prefix 1.21.3.0/24 exact no
 set network virtual-router vr1 protocol bgp policy import rules import1 match address-prefix 1.1.1.1/32 exact yes

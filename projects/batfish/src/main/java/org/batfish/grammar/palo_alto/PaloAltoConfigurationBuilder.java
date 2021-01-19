@@ -203,6 +203,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Pra_allowContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Pra_denyContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_medContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_originContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_weightContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Prm_address_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Prm_from_peerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Protocol_adContext;
@@ -399,6 +400,7 @@ import org.batfish.representation.palo_alto.PolicyRule.Action;
 import org.batfish.representation.palo_alto.PolicyRuleMatchFromPeerSet;
 import org.batfish.representation.palo_alto.PolicyRuleUpdateMetric;
 import org.batfish.representation.palo_alto.PolicyRuleUpdateOrigin;
+import org.batfish.representation.palo_alto.PolicyRuleUpdateWeight;
 import org.batfish.representation.palo_alto.RedistProfile;
 import org.batfish.representation.palo_alto.RedistRule;
 import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
@@ -873,6 +875,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitPraau_med(Praau_medContext ctx) {
     _currentPolicyRule.setUpdateMetric(new PolicyRuleUpdateMetric(toLong(ctx.val.uint32())));
+  }
+
+  @Override
+  public void exitPraau_weight(Praau_weightContext ctx) {
+    _currentPolicyRule.setUpdateWeight(new PolicyRuleUpdateWeight(toInteger(ctx.val.uint16())));
   }
 
   @Override

@@ -26,6 +26,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.palo_alto.PolicyRule.Action;
@@ -140,6 +142,12 @@ final class Conversions {
           public Statement visitPolicyRuleUpdateOrigin(
               PolicyRuleUpdateOrigin policyRuleUpdateOrigin) {
             return new SetOrigin(new LiteralOrigin(policyRuleUpdateOrigin.getOrigin(), null));
+          }
+
+          @Override
+          public Statement visitPolicyRuleUpdateWeight(
+              PolicyRuleUpdateWeight policyRuleUpdateWeight) {
+            return new SetWeight(new LiteralInt(policyRuleUpdateWeight.getWeight()));
           }
         });
   }

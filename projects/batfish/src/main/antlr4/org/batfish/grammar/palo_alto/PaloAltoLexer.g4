@@ -1712,6 +1712,11 @@ VSYS
     'vsys'
 ;
 
+WEIGHT
+:
+    'weight'
+;
+
 YES
 :
     'yes'
