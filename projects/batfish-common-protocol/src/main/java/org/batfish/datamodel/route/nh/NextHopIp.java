@@ -3,6 +3,9 @@ package org.batfish.datamodel.route.nh;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -12,10 +15,18 @@ import org.batfish.datamodel.Ip;
  * values such as {@link Ip#ZERO}, {@link Ip#AUTO}.
  */
 public final class NextHopIp implements NextHop {
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  //   (8 bytes seems smallest possible entry (long), would be 8 MiB total).
+  private static final LoadingCache<Ip, NextHopIp> CACHE =
+      CacheBuilder.newBuilder()
+          .softValues()
+          .maximumSize(1 << 20)
+          .build(CacheLoader.from(NextHopIp::new));
 
   @Nonnull
   public static NextHopIp of(Ip ip) {
-    return new NextHopIp(ip);
+    return CACHE.getUnchecked(ip);
   }
 
   @Nonnull
