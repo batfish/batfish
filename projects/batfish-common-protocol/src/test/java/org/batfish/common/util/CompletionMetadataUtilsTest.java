@@ -503,7 +503,8 @@ public final class CompletionMetadataUtilsTest {
     config.setIpsecPhase2Proposals(
         ImmutableSortedMap.of(ipsecPhase2ProposalName, new IpsecPhase2Proposal()));
     config.setIpsecPeerConfigs(
-        ImmutableSortedMap.of(ipsecPeerConfigName, IpsecStaticPeerConfig.builder().build()));
+        ImmutableSortedMap.of(
+            ipsecPeerConfigName, IpsecStaticPeerConfig.builder().setLocalAddress(Ip.ZERO).build()));
     config.setRouteFilterLists(
         ImmutableSortedMap.of(routeFilterListName, new RouteFilterList(routeFilterListName)));
     config.setRoute6FilterLists(

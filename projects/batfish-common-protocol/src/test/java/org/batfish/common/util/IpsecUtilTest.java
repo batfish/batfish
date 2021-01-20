@@ -26,6 +26,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
@@ -68,30 +69,41 @@ public class IpsecUtilTest {
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("interface1")
             .setTunnelInterface("Tunnel1")
+            .setLocalAddress(Ip.parse("1.1.1.1"))
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig2 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("interface2")
             .setTunnelInterface("Tunnel2")
+            .setLocalAddress(Ip.parse("2.2.2.2"))
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig3 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("interface3")
             .setTunnelInterface("Tunnel3")
+            .setLocalAddress(Ip.parse("3.3.3.3"))
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig4 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("interface4")
             .setTunnelInterface("Tunnel4")
+            .setLocalAddress(Ip.parse("4.4.4.4"))
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig5 =
-        IpsecStaticPeerConfig.builder().setSourceInterface("interface5").build();
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("interface5")
+            .setLocalAddress(Ip.parse("5.5.5.5"))
+            .build();
     IpsecStaticPeerConfig ipsecPeerConfig6 =
-        IpsecStaticPeerConfig.builder().setSourceInterface("interface6").build();
+        IpsecStaticPeerConfig.builder()
+            .setSourceInterface("interface6")
+            .setLocalAddress(Ip.parse("6.6.6.6"))
+            .build();
     IpsecStaticPeerConfig ipsecPeerConfig7 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("interface7")
             .setTunnelInterface("Tunnel7")
+            .setLocalAddress(Ip.parse("7.7.7.7"))
             .build();
 
     IpsecSession establishedSession =
@@ -194,24 +206,24 @@ public class IpsecUtilTest {
         getIpsecSession(
                 cb.setConfigurationFormat(AWS).build(),
                 cb.setConfigurationFormat(AWS).build(),
-                ipsecPeerConfigBuilder.build(),
-                ipsecPeerConfigBuilder.build())
+                ipsecPeerConfigBuilder.setLocalAddress(Ip.parse("1.1.1.1")).build(),
+                ipsecPeerConfigBuilder.setLocalAddress(Ip.parse("2.2.2.2")).build())
             .isCloud());
 
     assertTrue(
         getIpsecSession(
                 cb.setConfigurationFormat(CISCO_IOS).build(),
                 cb.setConfigurationFormat(AWS).build(),
-                ipsecPeerConfigBuilder.build(),
-                ipsecPeerConfigBuilder.build())
+                ipsecPeerConfigBuilder.setLocalAddress(Ip.parse("1.1.1.1")).build(),
+                ipsecPeerConfigBuilder.setLocalAddress(Ip.parse("2.2.2.2")).build())
             .isCloud());
 
     assertFalse(
         getIpsecSession(
                 cb.setConfigurationFormat(CISCO_IOS).build(),
                 cb.setConfigurationFormat(CISCO_IOS).build(),
-                ipsecPeerConfigBuilder.build(),
-                ipsecPeerConfigBuilder.build())
+                ipsecPeerConfigBuilder.setLocalAddress(Ip.parse("1.1.1.1")).build(),
+                ipsecPeerConfigBuilder.setLocalAddress(Ip.parse("2.2.2.2")).build())
             .isCloud());
   }
 
