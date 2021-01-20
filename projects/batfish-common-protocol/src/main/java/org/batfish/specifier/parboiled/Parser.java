@@ -274,7 +274,7 @@ public class Parser extends CommonParser {
   @Anchor(APP_ICMP)
   public Rule AppIcmpTerm() {
     return Sequence(
-        IgnoreCase("icmp"), WhiteSpace(), push(new IcmpAllAppAstNode()), Optional(AppIcmpType()));
+        IgnoreCase("icmp"), push(new IcmpAllAppAstNode()), Optional(WhiteSpace(), AppIcmpType()));
   }
 
   @Anchor(APP_ICMP_TYPE)
@@ -284,8 +284,7 @@ public class Parser extends CommonParser {
         Number(),
         ACTION(pop() != null),
         push(new IcmpTypeAppAstNode(Integer.parseInt(match()))),
-        WhiteSpace(),
-        Optional(AppIcmpTypeCode()));
+        Optional(WhiteSpace(), AppIcmpTypeCode()));
   }
 
   @Anchor(APP_ICMP_TYPE_CODE)

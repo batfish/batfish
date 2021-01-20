@@ -389,6 +389,9 @@ public class ParserAppTest {
     AstNode tcp80_to_100 = new TcpAppAstNode(ImmutableList.of(new SubRange(80, 100)));
     AstNode udp = new UdpAppAstNode();
     AstNode udp53 = new UdpAppAstNode(ImmutableList.of(SubRange.singleton(53)));
+    AstNode icmp = new IcmpAllAppAstNode();
+    AstNode icmp_0 = new IcmpTypeAppAstNode(0);
+    AstNode icmp_0_0 = new IcmpTypeCodeAppAstNode(0, 0);
 
     assertThat(ParserUtils.getAst(getRunner().run("http  tcp")), equalTo(union(http, tcp)));
 
@@ -404,5 +407,11 @@ public class ParserAppTest {
     assertThat(
         ParserUtils.getAst(getRunner().run("tcp/80 - 100  udp")),
         equalTo(union(tcp80_to_100, udp)));
+
+    // works with ICMP
+    assertThat(ParserUtils.getAst(getRunner().run("icmp  udp")), equalTo(union(icmp, udp)));
+    assertThat(ParserUtils.getAst(getRunner().run("icmp / 0 udp")), equalTo(union(icmp_0, udp)));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("icmp / 0/ 0 udp")), equalTo(union(icmp_0_0, udp)));
   }
 }
