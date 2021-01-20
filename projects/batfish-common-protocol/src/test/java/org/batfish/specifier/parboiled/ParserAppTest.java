@@ -374,30 +374,35 @@ public class ParserAppTest {
     assertThat(ParserUtils.getAst(getRunner().run(" http , tcp ")), equalTo(expectedNode));
   }
 
-  @Test
-  public void testParseUnion3() {
-    UnionAppAstNode expectedNode =
-        new UnionAppAstNode(new NameAppAstNode("http"), new TcpAppAstNode());
-
-    assertThat(ParserUtils.getAst(getRunner().run("http tcp")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" http ,  tcp ")), equalTo(expectedNode));
+  private static AstNode union(AstNode left, AstNode right) {
+    return new UnionAppAstNode(left, right);
   }
 
+  /** Test that union can be delimited by whitespace. */
   @Test
-  public void testParseUnion4() {
-    UnionAppAstNode expectedNode =
-        new UnionAppAstNode(new TcpAppAstNode(), new NameAppAstNode("http"));
+  public void testParseUnion_spaceDelimiter() {
+    AstNode http = new NameAppAstNode("http");
+    AstNode tcp = new TcpAppAstNode();
+    AstNode tcp80 = new TcpAppAstNode(ImmutableList.of(SubRange.singleton(80)));
+    AstNode tcp80_8080 =
+        new TcpAppAstNode(ImmutableList.of(SubRange.singleton(80), SubRange.singleton(8080)));
+    AstNode tcp80_to_100 = new TcpAppAstNode(ImmutableList.of(new SubRange(80, 100)));
+    AstNode udp = new UdpAppAstNode();
+    AstNode udp53 = new UdpAppAstNode(ImmutableList.of(SubRange.singleton(53)));
 
-    assertThat(ParserUtils.getAst(getRunner().run("tcp http ")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" tcp , http ")), equalTo(expectedNode));
-  }
+    assertThat(ParserUtils.getAst(getRunner().run("http  tcp")), equalTo(union(http, tcp)));
 
-  @Test
-  public void testParseUnion5() {
-    UnionAppAstNode expectedNode =
-        new UnionAppAstNode(new UdpAppAstNode(), new NameAppAstNode("http"));
+    // works for tcp and udp too, with or without the port spec
+    assertThat(ParserUtils.getAst(getRunner().run("udp  tcp")), equalTo(union(udp, tcp)));
+    assertThat(ParserUtils.getAst(getRunner().run("udp/53 tcp")), equalTo(union(udp53, tcp)));
+    assertThat(ParserUtils.getAst(getRunner().run("tcp  udp")), equalTo(union(tcp, udp)));
+    assertThat(ParserUtils.getAst(getRunner().run("tcp/80  udp")), equalTo(union(tcp80, udp)));
 
-    assertThat(ParserUtils.getAst(getRunner().run("udp http ")), equalTo(expectedNode));
-    assertThat(ParserUtils.getAst(getRunner().run(" udp , http ")), equalTo(expectedNode));
+    // works with multiple ports and ranges
+    assertThat(
+        ParserUtils.getAst(getRunner().run("tcp/80 , 8080  udp")), equalTo(union(tcp80_8080, udp)));
+    assertThat(
+        ParserUtils.getAst(getRunner().run("tcp/80 - 100  udp")),
+        equalTo(union(tcp80_to_100, udp)));
   }
 }

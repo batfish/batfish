@@ -307,11 +307,7 @@ public class Parser extends CommonParser {
   @Anchor(APP_PORTS)
   public Rule AppPortSpec() {
     return Sequence(
-        WhiteSpace(),
-        "/ ",
-        AppPortTerm(),
-        WhiteSpace(),
-        ZeroOrMore(", ", AppPortTerm(), WhiteSpace()));
+        WhiteSpace(), "/ ", AppPortTerm(), ZeroOrMore(WhiteSpace(), ", ", AppPortTerm()));
   }
 
   public Rule AppPortTerm() {
