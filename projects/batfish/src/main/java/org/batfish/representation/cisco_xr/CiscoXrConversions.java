@@ -1167,18 +1167,30 @@ public class CiscoXrConversions {
     return firstNonNull(AclIpSpace.union(networkObjectGroup.getLines()), EmptyIpSpace.INSTANCE);
   }
 
-  /** Converts a {@link Tunnel} to an {@link IpsecPeerConfig} */
-  static IpsecPeerConfig toIpsecPeerConfig(
+  /**
+   * Converts a {@link Tunnel} to an {@link IpsecPeerConfig}, or empty optional if it can't be
+   * converted
+   */
+  static Optional<IpsecPeerConfig> toIpsecPeerConfig(
       Tunnel tunnel,
       String tunnelIfaceName,
       CiscoXrConfiguration oldConfig,
-      Configuration newConfig) {
+      Configuration newConfig,
+      Warnings w) {
+    Ip localAddress = tunnel.getSourceAddress();
+    if (localAddress == null || !localAddress.valid()) {
+      w.redFlag(
+          String.format(
+              "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
+              tunnelIfaceName));
+      return Optional.empty();
+    }
 
     IpsecStaticPeerConfig.Builder ipsecStaticPeerConfigBuilder =
         IpsecStaticPeerConfig.builder()
             .setTunnelInterface(tunnelIfaceName)
             .setDestinationAddress(tunnel.getDestination())
-            .setLocalAddress(tunnel.getSourceAddress())
+            .setLocalAddress(localAddress)
             .setSourceInterface(tunnel.getSourceInterfaceName())
             .setIpsecPolicy(tunnel.getIpsecProfileName());
 
@@ -1197,7 +1209,7 @@ public class CiscoXrConversions {
               tunnel.getSourceInterfaceName()));
     }
 
-    return ipsecStaticPeerConfigBuilder.build();
+    return Optional.of(ipsecStaticPeerConfigBuilder.build());
   }
 
   /**
@@ -1230,19 +1242,30 @@ public class CiscoXrConversions {
         continue;
       }
       // add one IPSec peer config per interface for the crypto map entry
-      ipsecPeerConfigsBuilder.put(
-          String.format("~IPSEC_PEER_CONFIG:%s_%s~", cryptoMapNameSeqNumber, iface.getName()),
-          toIpsecPeerConfig(c, cryptoMapEntry, iface, ipsecPhase2Policy, w));
+      String peerName =
+          String.format("~IPSEC_PEER_CONFIG:%s_%s~", cryptoMapNameSeqNumber, iface.getName());
+      toIpsecPeerConfig(c, cryptoMapEntry, iface, ipsecPhase2Policy, w)
+          .ifPresent(config -> ipsecPeerConfigsBuilder.put(peerName, config));
     }
     return ipsecPeerConfigsBuilder.build();
   }
 
-  private static IpsecPeerConfig toIpsecPeerConfig(
+  private static Optional<IpsecPeerConfig> toIpsecPeerConfig(
       Configuration c,
       CryptoMapEntry cryptoMapEntry,
       org.batfish.datamodel.Interface iface,
       String ipsecPhase2Policy,
       Warnings w) {
+    Ip localAddress =
+        Optional.ofNullable(iface.getConcreteAddress())
+            .map(ConcreteInterfaceAddress::getIp)
+            .orElse(null);
+    if (localAddress == null || !localAddress.valid()) {
+      w.redFlag(
+          String.format(
+              "Cannot create IPsec peer on interface %s: no valid interface IP", iface.getName()));
+      return Optional.empty();
+    }
 
     IpsecPeerConfig.Builder<?, ?> newIpsecPeerConfigBuilder;
 
@@ -1274,11 +1297,11 @@ public class CiscoXrConversions {
     newIpsecPeerConfigBuilder
         .setSourceInterface(iface.getName())
         .setIpsecPolicy(ipsecPhase2Policy)
-        .setLocalAddress(iface.getConcreteAddress().getIp());
+        .setLocalAddress(localAddress);
 
     setIpsecPeerConfigPolicyAccessList(c, cryptoMapEntry, newIpsecPeerConfigBuilder, w);
 
-    return newIpsecPeerConfigBuilder.build();
+    return Optional.of(newIpsecPeerConfigBuilder.build());
   }
 
   private static void setIpsecPeerConfigPolicyAccessList(

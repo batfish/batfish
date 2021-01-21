@@ -3387,7 +3387,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           continue;
         }
         // convert to IpsecPeerConfig
-        ipsecPeerConfigBuilder.put(name, toIpsecPeerConfig(tunnel, name, this, c));
+        toIpsecPeerConfig(tunnel, name, this, c, _w)
+            .ifPresent(config -> ipsecPeerConfigBuilder.put(name, config));
       }
     }
     c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());

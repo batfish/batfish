@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -524,18 +525,30 @@ public class Conversions {
         .build();
   }
 
-  /** Converts a {@link Tunnel} to an {@link IpsecPeerConfig} */
-  static IpsecPeerConfig toIpsecPeerConfig(
+  /**
+   * Converts a {@link Tunnel} to an {@link IpsecPeerConfig}, or empty optional if it can't be
+   * converted
+   */
+  static Optional<IpsecPeerConfig> toIpsecPeerConfig(
       Tunnel tunnel,
       String tunnelIfaceName,
       AristaConfiguration oldConfig,
-      Configuration newConfig) {
+      Configuration newConfig,
+      Warnings w) {
+    Ip localAddress = tunnel.getSourceAddress();
+    if (localAddress == null || !localAddress.valid()) {
+      w.redFlag(
+          String.format(
+              "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
+              tunnelIfaceName));
+      return Optional.empty();
+    }
 
     IpsecStaticPeerConfig.Builder ipsecStaticPeerConfigBuilder =
         IpsecStaticPeerConfig.builder()
             .setTunnelInterface(tunnelIfaceName)
             .setDestinationAddress(tunnel.getDestination())
-            .setLocalAddress(tunnel.getSourceAddress())
+            .setLocalAddress(localAddress)
             .setSourceInterface(tunnel.getSourceInterfaceName())
             .setIpsecPolicy(tunnel.getIpsecProfileName());
 
@@ -554,7 +567,7 @@ public class Conversions {
               tunnel.getSourceInterfaceName()));
     }
 
-    return ipsecStaticPeerConfigBuilder.build();
+    return Optional.of(ipsecStaticPeerConfigBuilder.build());
   }
 
   /**

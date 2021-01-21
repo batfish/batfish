@@ -16,6 +16,7 @@ import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
@@ -45,11 +46,13 @@ public class IpsecUtilHybridCloudTest {
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("interface1")
             .setTunnelInterface("Tunnel1")
+            .setLocalAddress(Ip.parse("1.1.1.1"))
             .build();
     IpsecStaticPeerConfig ipsecPeerConfig2 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("interface2")
             .setTunnelInterface("Tunnel2")
+            .setLocalAddress(Ip.parse("2.2.2.2"))
             .build();
 
     IpsecSession establishedSession =

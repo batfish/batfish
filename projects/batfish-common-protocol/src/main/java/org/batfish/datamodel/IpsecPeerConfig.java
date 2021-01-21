@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -41,10 +42,14 @@ public abstract class IpsecPeerConfig implements Serializable {
       @JsonProperty(PROP_POLICY_ACCESS_LIST) @Nullable IpAccessList policyAccessList,
       @JsonProperty(PROP_LOCAL_ADDRESS) @Nullable Ip localAddress,
       @JsonProperty(PROP_TUNNEL_INTERFACE) @Nullable String tunnelInterface) {
+    checkArgument(
+        localAddress != null && localAddress.valid(),
+        "Not a valid local address: %s",
+        localAddress);
     _ipsecPolicy = ipsecPolicy;
     _sourceInterface = firstNonNull(sourceInterface, UNSET_LOCAL_INTERFACE);
     _policyAccessList = policyAccessList;
-    _localAddress = firstNonNull(localAddress, Ip.AUTO);
+    _localAddress = localAddress;
     _tunnelInterface = tunnelInterface;
   }
 
