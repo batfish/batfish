@@ -707,7 +707,7 @@ public final class CumulusConversions {
                 null));
     List<Statement> defaultRouteExportStatements;
     if (defaultOriginateExportMapName == null
-        || !c.getRoutingPolicies().keySet().contains(defaultOriginateExportMapName)) {
+        || !c.getRoutingPolicies().containsKey(defaultOriginateExportMapName)) {
       defaultRouteExportStatements =
           ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
     } else {
@@ -987,7 +987,7 @@ public final class CumulusConversions {
               // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
               BooleanExpr weInterior = BooleanExprs.TRUE;
               String mapName = redistributeProtocolPolicy.getRouteMap();
-              if (mapName != null && routeMaps.keySet().contains(mapName)) {
+              if (mapName != null && routeMaps.containsKey(mapName)) {
                 weInterior = new CallExpr(mapName);
               }
               BooleanExpr we =

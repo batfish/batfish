@@ -52,7 +52,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public void assignAnalysis(String analysis, NetworkId networkId, AnalysisId analysisId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     _analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).put(analysis, analysisId);
@@ -65,7 +65,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public void assignNetworkNodeRolesId(NetworkId networkId, NodeRolesId networkNodeRolesId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     _networkNodeRolesIds.put(networkId, networkNodeRolesId);
@@ -77,10 +77,10 @@ public class LocalIdManager implements IdManager {
       NetworkId networkId,
       QuestionId questionId,
       @Nullable AnalysisId analysisId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
-    if (analysisId != null && !_analysisIds.get(networkId).values().contains(analysisId)) {
+    if (analysisId != null && !_analysisIds.get(networkId).containsValue(analysisId)) {
       throw new IllegalArgumentException(String.format("No analysis with ID: '%s'", analysisId));
     }
     _questionIds
@@ -96,7 +96,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public boolean deleteAnalysis(String analysis, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       return false;
     }
     return _analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).remove(analysis) != null;
@@ -110,10 +110,10 @@ public class LocalIdManager implements IdManager {
   @Override
   public boolean deleteQuestion(
       String question, NetworkId networkId, @Nullable AnalysisId analysisId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       return false;
     }
-    if (analysisId != null && !_analysisIds.get(networkId).values().contains(analysisId)) {
+    if (analysisId != null && !_analysisIds.get(networkId).containsValue(analysisId)) {
       return false;
     }
     return _questionIds
@@ -125,7 +125,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public boolean deleteSnapshot(String snapshot, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return _snapshotIds.computeIfAbsent(networkId, n -> new HashMap<>()).remove(snapshot) != null;
@@ -158,7 +158,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public Optional<AnalysisId> getAnalysisId(String analysis, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return ofNullable(_analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).get(analysis));
@@ -191,7 +191,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public Optional<NodeRolesId> getNetworkNodeRolesId(NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       return Optional.empty();
     }
     return ofNullable(_networkNodeRolesIds.get(networkId));
@@ -200,10 +200,10 @@ public class LocalIdManager implements IdManager {
   @Override
   public Optional<QuestionId> getQuestionId(
       String question, NetworkId networkId, AnalysisId analysisId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       return Optional.empty();
     }
-    if (analysisId != null && !_analysisIds.get(networkId).values().contains(analysisId)) {
+    if (analysisId != null && !_analysisIds.get(networkId).containsValue(analysisId)) {
       return Optional.empty();
     }
     return ofNullable(
@@ -215,7 +215,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public Optional<SnapshotId> getSnapshotId(String snapshot, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       return Optional.empty();
     }
     return ofNullable(_snapshotIds.computeIfAbsent(networkId, n -> new HashMap<>()).get(snapshot));
@@ -228,7 +228,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public boolean hasAnalysisId(String analysis, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return _analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).containsKey(analysis);
@@ -241,7 +241,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public boolean hasNetworkNodeRolesId(NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return _networkNodeRolesIds.containsKey(networkId);
@@ -249,10 +249,10 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public boolean hasQuestionId(String question, NetworkId networkId, AnalysisId analysisId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
-    if (analysisId != null && !_analysisIds.get(networkId).values().contains(analysisId)) {
+    if (analysisId != null && !_analysisIds.get(networkId).containsValue(analysisId)) {
       throw new IllegalArgumentException(String.format("No analysis with ID: '%s'", analysisId));
     }
     return _questionIds
@@ -263,7 +263,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public boolean hasSnapshotId(String snapshot, NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return _snapshotIds.computeIfAbsent(networkId, n -> new HashMap<>()).containsKey(snapshot);
@@ -271,7 +271,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public Set<String> listAnalyses(NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return _analysisIds.computeIfAbsent(networkId, n -> new HashMap<>()).keySet();
@@ -284,10 +284,10 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public Set<String> listQuestions(NetworkId networkId, @Nullable AnalysisId analysisId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
-    if (analysisId != null && !_analysisIds.get(networkId).values().contains(analysisId)) {
+    if (analysisId != null && !_analysisIds.get(networkId).containsValue(analysisId)) {
       throw new IllegalArgumentException(String.format("No analysis with ID: '%s'", analysisId));
     }
     return _questionIds
@@ -298,7 +298,7 @@ public class LocalIdManager implements IdManager {
 
   @Override
   public Set<String> listSnapshots(NetworkId networkId) {
-    if (!_networkIds.values().contains(networkId)) {
+    if (!_networkIds.containsValue(networkId)) {
       throw new IllegalArgumentException(String.format("No network with ID: '%s'", networkId));
     }
     return _snapshotIds.computeIfAbsent(networkId, n -> new HashMap<>()).keySet();
