@@ -14,11 +14,14 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -835,6 +838,16 @@ final class IncrementalBdpEngine {
   private int initOspfInternalRoutes(Map<String, Node> allNodes, OspfTopology ospfTopology) {
     int ospfInternalIterations = 0;
     boolean dirty = true;
+    Set<Integer> hashCodes = new HashSet<>();
+
+    // Compute node schedule
+    IbdpSchedule schedule =
+        IbdpSchedule.getSchedule(
+            _settings,
+            _settings.getScheduleName(),
+            allNodes,
+            TopologyContext.builder().setOspfTopology(ospfTopology).build());
+    List<Map<String, Node>> schedules = Lists.newArrayList(schedule);
 
     while (dirty) {
       ospfInternalIterations++;
@@ -845,16 +858,8 @@ final class IncrementalBdpEngine {
       LOGGER.info("OSPF internal: Iteration {}", ospfInternalIterations);
       try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
         assert scope != null; // avoid unused warning
-        // Compute node schedule
-        IbdpSchedule schedule =
-            IbdpSchedule.getSchedule(
-                _settings,
-                _settings.getScheduleName(),
-                allNodes,
-                TopologyContext.builder().setOspfTopology(ospfTopology).build());
 
-        while (schedule.hasNext()) {
-          Map<String, Node> scheduleNodes = schedule.next();
+        for (Map<String, Node> scheduleNodes : schedules) {
           scheduleNodes.values().parallelStream()
               .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
@@ -868,6 +873,20 @@ final class IncrementalBdpEngine {
                 .flatMap(n -> n.getVirtualRouters().stream())
                 .flatMap(vr -> vr.getOspfProcesses().values().stream())
                 .anyMatch(OspfRoutingProcess::isDirty);
+        if (dirty) {
+          // Check for a loop.
+          int hash =
+              allNodes.values().parallelStream()
+                  .flatMap(node -> node.getVirtualRouters().stream())
+                  .flatMap(vr -> vr.getOspfProcesses().values().stream())
+                  .mapToInt(OspfRoutingProcess::iterationHashCode)
+                  .sum();
+          if (!hashCodes.add(hash)) {
+            throw new BdpOscillationException(
+                String.format(
+                    "OSPF IGP computation looped after %d iterations", ospfInternalIterations));
+          }
+        }
       } finally {
         span.finish();
       }

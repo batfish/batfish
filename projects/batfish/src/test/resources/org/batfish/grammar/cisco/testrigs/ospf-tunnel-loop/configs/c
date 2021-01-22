@@ -1,0 +1,8 @@
+interface Ethernet32
+   ip address 10.2.4.25/31
+   ip ospf network point-to-point
+interface Vlan1040
+   ip address 10.40.5.46/31
+   ip ospf network point-to-point
+router ospf 1
+   network 10.0.0.0/8 area 0.0.0.0

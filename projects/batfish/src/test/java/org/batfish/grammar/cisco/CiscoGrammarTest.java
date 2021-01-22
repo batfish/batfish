@@ -7274,6 +7274,22 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testOspfTunnelLoop() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(
+                    TESTRIGS_PREFIX + "ospf-tunnel-loop",
+                    ImmutableList.of("a", "b", "c", "d", "e", "f", "g", "h", "i"))
+                .build(),
+            _folder);
+
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+  }
+
+  @Test
   public void testReenterInterfaceStanza() throws IOException {
     Configuration c = parseConfig("ios-interface-reenter");
     assertThat(c, hasInterface("FastEthernet0/0", hasMtu(2000)));

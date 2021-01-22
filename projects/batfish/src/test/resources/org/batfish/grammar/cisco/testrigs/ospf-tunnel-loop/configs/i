@@ -1,0 +1,9 @@
+interface GigabitEthernet1/0/23
+ ip address 10.12.255.78 255.255.255.254
+ ip ospf network point-to-point
+interface GigabitEthernet1/0/24
+ ip address 10.2.5.93 255.255.255.254
+ ip ospf network point-to-point
+router ospf 1
+ network 10.2.5.93 0.0.0.0 area 0.0.0.10
+ network 10.12.255.78 0.0.0.0 area 0.0.0.10

@@ -1,0 +1,15 @@
+interface Ethernet4/1
+   ip address 10.2.4.101/31
+   ip ospf network point-to-point
+   switchport mode trunk
+interface Vlan10
+   ip address 10.2.4.57/30
+   ip ospf network point-to-point
+interface Vlan20
+   ip address 10.2.4.24/31
+   ip ospf network point-to-point
+interface Vlan1050
+   ip address 10.2.5.178/31
+   ip ospf network point-to-point
+router ospf 1
+   network 10.0.0.0/8 area 0.0.0.0

@@ -1,0 +1,10 @@
+interface Ethernet13
+   ip address 10.2.5.92/31
+   ip ospf network point-to-point
+interface Ethernet16
+   ip address 10.2.5.179/31
+   ip ospf cost 2
+   ip ospf network point-to-point
+router ospf 1
+   network 10.2.5.92/32 area 0.0.0.10
+   network 10.2.5.179/32 area 0.0.0.0

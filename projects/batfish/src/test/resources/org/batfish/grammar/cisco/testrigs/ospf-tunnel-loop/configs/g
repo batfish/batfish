@@ -1,0 +1,7 @@
+interface Tunnel255154
+ ip address 10.38.255.154 255.255.255.254
+interface TenGigabitEthernet0/0/0
+ ip address 10.38.4.101 255.255.255.252
+ ip ospf network point-to-point
+router ospf 1
+ network 10.0.0.0 0.255.255.255 area 0

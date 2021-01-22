@@ -1,0 +1,8 @@
+interface Vlan1030
+   ip address 10.38.4.102/30
+   ip ospf network point-to-point
+interface Vlan1060
+   ip address 10.38.6.53/31
+   ip ospf network point-to-point
+router ospf 1
+   network 10.0.0.0/8 area 0.0.0.0
