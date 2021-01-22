@@ -1504,7 +1504,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   int iterationHashCode() {
-    return Stream.of(
+    return Streams.concat(
             // Message queues
             Stream.of(
                     _intraAreaIncomingRoutes,
