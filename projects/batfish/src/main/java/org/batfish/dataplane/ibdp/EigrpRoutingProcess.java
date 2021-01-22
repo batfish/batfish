@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 import com.google.common.graph.Network;
 import java.util.Collection;
 import java.util.Map;
@@ -601,8 +602,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * @return integer hashcode
    */
   int computeIterationHashCode() {
-    return Stream.of(
-            _rib,
+    return Streams.concat(
+            Stream.of(_rib),
             _incomingInternalRoutes.values().stream(),
             _incomingExternalRoutes.values().stream())
         .collect(toOrderedHashCode());
