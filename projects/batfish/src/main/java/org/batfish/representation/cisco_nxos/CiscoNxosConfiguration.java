@@ -1482,7 +1482,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .filter(
             iface ->
                 iface.getInterfaceType() == InterfaceType.VLAN
-                    && !_vlans.keySet().contains(iface.getVlan()))
+                    && !_vlans.containsKey(iface.getVlan()))
         .forEach(iface -> iface.setActive(false));
   }
 
