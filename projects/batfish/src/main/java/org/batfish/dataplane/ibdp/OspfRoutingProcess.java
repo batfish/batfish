@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
@@ -73,9 +74,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** The configuration/datamodel process */
   @Nonnull private final OspfProcess _process;
   /** The parent {@link Configuration} */
-  @Nonnull private final Configuration _c;
+  @Nonnull public final Configuration _c;
   /** The name of the VRF we are in */
-  @Nonnull private final String _vrfName;
+  @Nonnull public final String _vrfName;
   /** The current known topology */
   @Nonnull private OspfTopology _topology;
 
@@ -139,7 +140,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _type1Rib = new OspfExternalType1Rib(_c.getHostname());
     _type2Rib = new OspfExternalType2Rib(_c.getHostname());
     _ospfRib = new OspfRib();
+    _activatedGeneratedRoutes = RibDelta.empty();
 
+    System.err.println(_c.getHostname() + ' ' + _vrfName + ' ' + iterationHashCode());
     updateQueues(topology);
 
     // Determine whether to use min metric by default, based on RFC1583 compatibility setting.
@@ -162,7 +165,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _changeset = RibDelta.builder();
     _initializationDelta = new InternalDelta(RibDelta.empty(), RibDelta.empty());
     _queuedForRedistribution = new ExternalDelta();
-    _activatedGeneratedRoutes = RibDelta.empty();
     _neighborsWhereDefaultIARouteWasInjected = new HashSet<>(0);
   }
 
@@ -317,9 +319,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Initialize intra-area routes based on available interfaces. */
   private void initializeIntraAreaRoutes() {
     RibDelta.Builder<OspfIntraAreaRoute> intraAreaBuilder = RibDelta.builder();
-    _process
-        .getAreas()
-        .values()
+    _process.getAreas().entrySet().stream()
+        .sorted(Entry.comparingByKey())
+        .map(Entry::getValue)
         .forEach(area -> intraAreaBuilder.from(initializeRoutesByArea(area)));
     RibDelta<OspfIntraAreaRoute> intraAreaDelta = intraAreaBuilder.build();
     RibDelta.Builder<OspfInterAreaRoute> interAreaBuilder = RibDelta.builder();
@@ -373,11 +375,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @VisibleForTesting
   static Stream<ConcreteInterfaceAddress> getIfaceAddressesForIntraAreaRoutes(Interface iface) {
     return (isLoopbackNotInP2PModeOrP2MP(iface)
-        ? iface.getAllConcreteAddresses().stream()
-            .map(
-                ifaceAddr ->
-                    ConcreteInterfaceAddress.create(ifaceAddr.getIp(), Prefix.MAX_PREFIX_LENGTH))
-        : iface.getAllConcreteAddresses().stream());
+            ? iface.getAllConcreteAddresses().stream()
+                .map(
+                    ifaceAddr ->
+                        ConcreteInterfaceAddress.create(
+                            ifaceAddr.getIp(), Prefix.MAX_PREFIX_LENGTH))
+            : iface.getAllConcreteAddresses().stream())
+        .sorted();
   }
 
   private static boolean isLoopbackNotInP2PModeOrP2MP(Interface iface) {
@@ -650,7 +654,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       return RibDelta.empty();
     }
     RibDelta.Builder<OspfInterAreaRoute> deltaBuilder = RibDelta.builder();
-    _process.getAreas().values().stream()
+    _process.getAreas().entrySet().stream()
+        .sorted(Comparator.comparingLong(Entry::getKey))
+        .map(Entry::getValue)
         .map(this::computeInterAreaSummariesForArea)
         .forEach(deltaBuilder::from);
     return deltaBuilder.build();
@@ -1353,6 +1359,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     // activated routes through the standard OSPF export policy.
     RibDelta.Builder<OspfExternalRoute> activated = RibDelta.builder();
     _process.getGeneratedRoutes().stream()
+        .sorted()
         .map(r -> activateGeneratedRoute(mainRibDelta, r))
         .filter(Objects::nonNull)
         .map(r -> convertToExternalRoute(new AnnotatedRoute<>(r, _vrfName), _exportPolicy))
@@ -1504,7 +1511,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   int iterationHashCode() {
-    return Stream.of(
+    return Streams.concat(
             // Message queues
             Stream.of(
                     _intraAreaIncomingRoutes,

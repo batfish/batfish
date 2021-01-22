@@ -160,7 +160,7 @@ public final class VirtualRouter {
   /** Parent {@link Node} on which this virtual router resides */
   @Nonnull private final Node _node;
 
-  private Map<String, OspfRoutingProcess> _ospfProcesses;
+  private SortedMap<String, OspfRoutingProcess> _ospfProcesses;
 
   RipInternalRib _ripInternalRib;
   RipInternalRib _ripInternalStagingRib;
@@ -212,7 +212,7 @@ public final class VirtualRouter {
 
     _prefixTracer = new PrefixTracer();
     _eigrpProcesses = ImmutableMap.of();
-    _ospfProcesses = ImmutableMap.of();
+    _ospfProcesses = ImmutableSortedMap.of();
     _layer2Vnis = ImmutableSet.copyOf(_vrf.getLayer2Vnis().values());
     _layer3Vnis = ImmutableSet.copyOf(_vrf.getLayer3Vnis().values());
     if (_vrf.getBgpProcess() != null) {
@@ -286,12 +286,17 @@ public final class VirtualRouter {
     _ospfProcesses =
         _vrf.getOspfProcesses().entrySet().stream()
             .collect(
-                ImmutableMap.toImmutableMap(
+                ImmutableSortedMap.toImmutableSortedMap(
+                    Ordering.natural(),
                     Entry::getKey,
                     e ->
                         new OspfRoutingProcess(
                             e.getValue(), _name, _c, topologyContext.getOspfTopology())));
+    _ospfProcesses.forEach(
+        (n, p) -> System.err.println(_c.getHostname() + ' ' + _name + ' ' + p.iterationHashCode()));
     _ospfProcesses.values().forEach(p -> p.initialize(_node));
+    _ospfProcesses.forEach(
+        (n, p) -> System.err.println(_c.getHostname() + ' ' + _name + ' ' + p.iterationHashCode()));
 
     initEigrp();
     initBaseRipRoutes();
@@ -545,6 +550,7 @@ public final class VirtualRouter {
   private static Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
     assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
+        .sorted()
         .map(
             addr ->
                 generateConnectedRoute(
@@ -601,6 +607,7 @@ public final class VirtualRouter {
   private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
     assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
+        .sorted()
         .filter(
             addr ->
                 shouldGenerateLocalRoute(

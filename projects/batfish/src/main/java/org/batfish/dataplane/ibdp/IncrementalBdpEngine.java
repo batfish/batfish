@@ -5,6 +5,7 @@ import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.pruneUnreachableTunnelEdges;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
+import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.common.util.IpsecUtil.retainReachableIpsecEdges;
 import static org.batfish.common.util.IpsecUtil.toEdgeSet;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
@@ -546,7 +547,7 @@ final class IncrementalBdpEngine {
       LOGGER.info("Initialize for IGP computation");
       try (Scope innerScope = GlobalTracer.get().scopeManager().activate(initializeSpan)) {
         assert innerScope != null; // avoid unused warning
-        nodes.values().parallelStream()
+        nodes.values().stream()
             .flatMap(n -> n.getVirtualRouters().stream())
             .forEach(vr -> vr.initForIgpComputation(topologyContext));
       } finally {
@@ -848,7 +849,23 @@ final class IncrementalBdpEngine {
             allNodes,
             TopologyContext.builder().setOspfTopology(ospfTopology).build());
     List<Map<String, Node>> schedules = Lists.newArrayList(schedule);
+    int schedHash =
+        schedules.stream().map(Map::keySet).peek(System.err::println).collect(toOrderedHashCode());
 
+    int initialHash =
+        allNodes.values().stream()
+            .flatMap(node -> node.getVirtualRouters().stream())
+            .flatMap(vr -> vr.getOspfProcesses().values().stream())
+            .peek(
+                p -> {
+                  System.err.println(
+                      p._c.getHostname() + ' ' + p._vrfName + ' ' + p.iterationHashCode());
+                })
+            .mapToInt(OspfRoutingProcess::iterationHashCode)
+            .sum();
+    if (initialHash != 1312986101) {
+      throw new IllegalArgumentException(Integer.toString(initialHash));
+    }
     while (dirty) {
       ospfInternalIterations++;
       Span span =
@@ -860,11 +877,11 @@ final class IncrementalBdpEngine {
         assert scope != null; // avoid unused warning
 
         for (Map<String, Node> scheduleNodes : schedules) {
-          scheduleNodes.values().parallelStream()
+          scheduleNodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(virtualRouter -> virtualRouter.ospfIteration(allNodes));
 
-          scheduleNodes.values().parallelStream()
+          scheduleNodes.values().stream()
               .flatMap(n -> n.getVirtualRouters().stream())
               .forEach(VirtualRouter::mergeOspfRoutesToMainRib);
         }
@@ -884,7 +901,8 @@ final class IncrementalBdpEngine {
           if (!hashCodes.add(hash)) {
             throw new BdpOscillationException(
                 String.format(
-                    "OSPF IGP computation looped after %d iterations", ospfInternalIterations));
+                    "OSPF IGP computation looped after %d iterations [schedule %s]",
+                    ospfInternalIterations, schedHash));
           }
         }
       } finally {
