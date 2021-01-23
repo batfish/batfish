@@ -45,6 +45,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -149,6 +150,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpIpv6Neighbor;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
@@ -871,11 +873,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterSbn_ip(Sbn_ipContext ctx) {
-    String name = ctx.ip.getText();
     _currentBgpNeighbor =
-        _currentBgpVrf
-            .getNeighbors()
-            .computeIfAbsent(name, (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)));
+        ctx.ip != null
+            ? _currentBgpVrf
+                .getNeighbors()
+                .computeIfAbsent(
+                    ctx.ip.getText(), (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)))
+            : _currentBgpVrf
+                .getNeighbors()
+                .computeIfAbsent(
+                    ctx.ip6.getText(), (ipStr) -> new BgpIpv6Neighbor(ipStr, Ip6.parse(ipStr)));
   }
 
   @Override

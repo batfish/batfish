@@ -206,7 +206,11 @@ sb_always_compare_med
 
 sbn_ip
 :
-  ip = IP_ADDRESS sbn_property
+  (
+     ip = IP_ADDRESS
+     | ip6 = IPV6_ADDRESS
+  )
+  sbn_property
 ;
 
 sbn_name

@@ -752,6 +752,15 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpNeighbor_Ipv6() {
+    parseLines("router bgp 1", "neighbor 2001:100:1:31::2 remote-as 2");
+    Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
+    BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
+  }
+
+  @Test
   public void testBgpBestpathAsPathMultipathRelax() {
     parse("router bgp 1\n bgp bestpath as-path multipath-relax\n");
     assertTrue(_frr.getBgpProcess().getDefaultVrf().getAsPathMultipathRelax());
