@@ -752,6 +752,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgp_Ipv6() {
+    parseLines(
+        "router bgp 1",
+        "  neighbor 2001:100:1:31::2 remote-as 2",
+        "  address-family ipv6 unicast",
+        "    redistribute connected",
+        "    neighbor 2001:100:1:31::2 activate");
+    Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
+    BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
+    assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
+    assertThat(_warnings.getParseWarnings(), empty());
+  }
+
+  @Test
   public void testBgpBestpathAsPathMultipathRelax() {
     parse("router bgp 1\n bgp bestpath as-path multipath-relax\n");
     assertTrue(_frr.getBgpProcess().getDefaultVrf().getAsPathMultipathRelax());
@@ -891,6 +906,12 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testRouteMapMatchAsPathAccessList() {
     parseLines("route-map ROUTE_MAP permit 10", "match as-path AS_PATH_ACCESS_LIST");
+  }
+
+  @Test
+  public void testRouteMapMatchIpv6() {
+    parseLines("route-map ROUTE_MAP permit 10", "match ipv6 address prefix-list pfx6-vrf-deny");
+    assertTrue(_warnings.getParseWarnings().isEmpty());
   }
 
   @Test
@@ -1403,7 +1424,7 @@ public class CumulusFrrGrammarTest {
 
   @Test
   public void testInterface_IPv6() {
-    parseLines("interface swp1", "ipv6 nd ra-interval 10");
+    parseLines("interface swp1", "ipv6 nd ra-interval 10", "ipv6 address 172:65:1::3/128");
     assertTrue(_warnings.getParseWarnings().isEmpty());
   }
 
@@ -1506,6 +1527,12 @@ public class CumulusFrrGrammarTest {
     _frr.getInterfaces().put("swp1", i1);
     parseLines("interface swp1 vrf VRF", "description rt1010svc01 swp1s1");
     assertThat(_warnings.getParseWarnings(), empty());
+  }
+
+  @Test
+  public void testIpv6PrefixList() {
+    parseLines("ipv6 prefix-list allow-loc-storage-v6 seq 10 permit 2001:100:100:20::/64");
+    assertTrue(_warnings.getParseWarnings().isEmpty());
   }
 
   @Test
