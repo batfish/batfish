@@ -388,6 +388,12 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _warnings.getParseWarnings(),
         contains(hasComment("Route maps in 'advertise ipv4 unicast' are not supported")));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP,
+            "RM",
+            CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST),
+        contains(3));
   }
 
   @Test
@@ -399,6 +405,12 @@ public class CumulusFrrGrammarTest {
         "advertise ipv6 unicast route-map RM",
         "exit-address-family");
     assertThat(_warnings.getParseWarnings(), empty());
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP,
+            "RM",
+            CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST),
+        contains(4));
   }
 
   @Test
