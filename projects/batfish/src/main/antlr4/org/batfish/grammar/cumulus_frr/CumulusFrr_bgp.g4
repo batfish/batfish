@@ -141,6 +141,7 @@ sbaf_l2vpn_evpn
        sbafl_advertise_all_vni
      | sbafl_advertise_default_gw
      | sbafl_advertise_ipv4_unicast
+     | sbafl_advertise_ipv6_unicast
      | sbafl_neighbor
   )*
 ;
@@ -186,7 +187,12 @@ sbafl_advertise_default_gw
 
 sbafl_advertise_ipv4_unicast
 :
-  ADVERTISE IPV4 UNICAST NEWLINE
+  ADVERTISE IPV4 UNICAST (ROUTE_MAP rm = route_map_name)? NEWLINE
+;
+
+sbafl_advertise_ipv6_unicast
+:
+  ADVERTISE IPV6 UNICAST null_rest_of_line
 ;
 
 sbafln_activate

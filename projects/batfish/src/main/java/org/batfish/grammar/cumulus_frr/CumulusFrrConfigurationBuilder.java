@@ -470,6 +470,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void enterSbafl_advertise_ipv4_unicast(Sbafl_advertise_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+    if (ctx.rm != null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route maps in 'advertise ipv4 unicast' are not supported");
+    }
   }
 
   @Override
