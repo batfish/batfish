@@ -502,7 +502,7 @@ public final class CumulusConversions {
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
-    } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
+    } else if (!(neighbor instanceof BgpPeerGroupNeighbor || neighbor instanceof BgpIpv6Neighbor)) {
       throw new IllegalArgumentException(
           "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
     }
