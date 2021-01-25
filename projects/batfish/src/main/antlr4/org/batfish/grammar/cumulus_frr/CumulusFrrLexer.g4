@@ -346,6 +346,11 @@ IDENTIFIER
   'identifier'
 ;
 
+IMPORT
+:
+   'import'
+;
+
 IN
 :
   'in'

@@ -126,11 +126,13 @@ sbaf_ipv4_unicast
   IPV4 UNICAST NEWLINE
   (
     sbafi_aggregate_address
+    | sbafi_import
     // Skeptical that max-paths belongs here.
     // Adding for now to prevent jumping out of parser context.
     | sbafi_maximum_paths
     | sbafi_network
     | sbafi_neighbor
+    | sbafi_no
     | sbafi_redistribute
   )*
 ;
@@ -145,7 +147,9 @@ sbafi6_null_tail
 :
   (
      // there are likely others but haven't seen examples yet, so leaving for later
-     NEIGHBOR
+     IMPORT
+     | NEIGHBOR
+     | NO
      | REDISTRIBUTE
   ) null_rest_of_line
 ;
@@ -174,6 +178,11 @@ sbafl_neighbor
 sbafi_aggregate_address
 :
   AGGREGATE_ADDRESS IP_PREFIX SUMMARY_ONLY? NEWLINE
+;
+
+sbafi_import
+:
+  IMPORT null_rest_of_line
 ;
 
 sbafi_maximum_paths
@@ -323,6 +332,11 @@ sbafi_neighbor
   | sbafin_route_map
   )
   NEWLINE
+;
+
+sbafi_no
+:
+   NO null_rest_of_line
 ;
 
 sbafin_activate

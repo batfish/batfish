@@ -105,8 +105,10 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_noContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
@@ -446,6 +448,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
               "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
               _currentBgpVrf.getVrfName(), srcProtocol));
     }
+  }
+
+  @Override
+  public void exitSbafi_no(Sbafi_noContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSbafi_import(Sbafi_importContext ctx) {
+    todo(ctx);
   }
 
   @Override

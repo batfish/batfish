@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -217,6 +218,35 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamily_ipv4UnicastMaximumPaths() {
     // do not crash
     parse("router bgp 1\n address-family ipv4 unicast\n maximum-paths 4\nexit-address-family\n");
+  }
+
+  /** Make sure that we warn when import statements are ignored */
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastImport() {
+    parseLines(
+        "router bgp 1",
+        " address-family ipv4 unicast",
+        "  import vrf Vrf_storage1",
+        "  import vrf route-map import6-vrf-deny",
+        " exit-address-family");
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(
+            hasText(equalTo("import vrf Vrf_storage1")),
+            hasText(equalTo("import vrf route-map import6-vrf-deny"))));
+  }
+
+  /** Make sure that we warn when no statements are ignored */
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastNo() {
+    parseLines(
+        "router bgp 1",
+        " address-family ipv4 unicast",
+        "  no neighbor 2001:100:1:31::2 activate",
+        " exit-address-family");
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(hasText(equalTo("no neighbor 2001:100:1:31::2 activate"))));
   }
 
   @Test
@@ -758,6 +788,7 @@ public class CumulusFrrGrammarTest {
         "  neighbor 2001:100:1:31::2 remote-as 2",
         "  address-family ipv6 unicast",
         "    redistribute connected",
+        "    import vrf Vrf_tenant1",
         "    neighbor 2001:100:1:31::2 activate");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
