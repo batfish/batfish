@@ -47,6 +47,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -1911,8 +1912,7 @@ public final class CumulusConversionsTest {
         neighbor,
         w);
 
-    assertThat(w.getRedFlagWarnings().size(), equalTo(1));
-    assertThat(w.getRedFlagWarnings().get(0).getText(), containsString("iface"));
+    assertThat(w.getRedFlagWarnings(), contains(hasToString(containsString("iface"))));
   }
 
   @Test
