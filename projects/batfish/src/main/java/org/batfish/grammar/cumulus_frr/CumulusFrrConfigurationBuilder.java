@@ -126,6 +126,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrati
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ip6Context;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
@@ -874,15 +875,19 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void enterSbn_ip(Sbn_ipContext ctx) {
     _currentBgpNeighbor =
-        ctx.ip != null
-            ? _currentBgpVrf
-                .getNeighbors()
-                .computeIfAbsent(
-                    ctx.ip.getText(), (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)))
-            : _currentBgpVrf
-                .getNeighbors()
-                .computeIfAbsent(
-                    ctx.ip6.getText(), (ipStr) -> new BgpIpv6Neighbor(ipStr, Ip6.parse(ipStr)));
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(
+                ctx.ip.getText(), (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)));
+  }
+
+  @Override
+  public void enterSbn_ip6(Sbn_ip6Context ctx) {
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(
+                ctx.ip6.getText(), (ipStr) -> new BgpIpv6Neighbor(ipStr, Ip6.parse(ipStr)));
   }
 
   @Override

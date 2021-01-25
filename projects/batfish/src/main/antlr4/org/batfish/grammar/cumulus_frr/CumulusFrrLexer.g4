@@ -429,6 +429,11 @@ IPV6_ADDRESS
   F_Ipv6Address
 ;
 
+IPV6_PREFIX
+:
+  F_Ipv6Prefix
+;
+
 L2VPN
 :
   'l2vpn'
@@ -1022,6 +1027,21 @@ F_Ipv6Address
   | F_HexWord6 '::' F_HexWordLE1
   | F_HexWord7 '::'
   | F_HexWord8
+;
+
+fragment
+F_Ipv6Prefix
+:
+  F_Ipv6Address '/' F_Ipv6PrefixLength
+;
+
+fragment
+F_Ipv6PrefixLength
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' [01] F_Digit
+  | '12' [0-8]
 ;
 
 fragment

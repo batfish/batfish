@@ -25,6 +25,7 @@ statement
   | s_frr
   | s_hostname
   | s_ip
+  | s_ipv6
   | s_line
   | s_log
   | s_no
@@ -100,6 +101,11 @@ s_ip
     | ip_prefix_list
     | ip_route
   )
+;
+
+s_ipv6
+:
+   IPV6 null_rest_of_line
 ;
 
 ip_route

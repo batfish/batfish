@@ -105,7 +105,7 @@ sbb_cluster_id
 
 sb_neighbor
 :
-  NEIGHBOR (sbn_ip | sbn_name) NEWLINE
+  NEIGHBOR (sbn_ip | sbn_ip6 | sbn_name) NEWLINE
 ;
 
 sb_address_family
@@ -117,6 +117,7 @@ sb_address_family
 sbaf
 :
     sbaf_ipv4_unicast
+  | sbaf_ipv6_unicast
   | sbaf_l2vpn_evpn
 ;
 
@@ -133,6 +134,22 @@ sbaf_ipv4_unicast
     | sbafi_redistribute
   )*
 ;
+
+sbaf_ipv6_unicast
+:
+  IPV6 UNICAST NEWLINE
+  sbafi6_null_tail*
+;
+
+sbafi6_null_tail
+:
+  (
+     // there are likely others but haven't seen examples yet, so leaving for later
+     NEIGHBOR
+     | REDISTRIBUTE
+  ) null_rest_of_line
+;
+
 
 sbaf_l2vpn_evpn
 :
@@ -206,11 +223,12 @@ sb_always_compare_med
 
 sbn_ip
 :
-  (
-     ip = IP_ADDRESS
-     | ip6 = IPV6_ADDRESS
-  )
-  sbn_property
+  ip = IP_ADDRESS sbn_property
+;
+
+sbn_ip6
+:
+   ip6 = IPV6_ADDRESS sbn_property
 ;
 
 sbn_name
