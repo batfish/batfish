@@ -13,6 +13,8 @@ import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNI
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
@@ -116,8 +118,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_default_gwContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv6_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
@@ -470,9 +473,29 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void enterSbafl_advertise_ipv4_unicast(Sbafl_advertise_ipv4_unicastContext ctx) {
+  public void enterSbafla_ipv4_unicast(Sbafla_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+    if (ctx.rm != null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route maps in 'advertise ipv4 unicast' are not supported");
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.rm.getText(),
+          BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST,
+          ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void enterSbafla_ipv6_unicast(Sbafla_ipv6_unicastContext ctx) {
+    if (ctx.rm != null) {
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.rm.getText(),
+          BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST,
+          ctx.getStart().getLine());
+    }
   }
 
   @Override
