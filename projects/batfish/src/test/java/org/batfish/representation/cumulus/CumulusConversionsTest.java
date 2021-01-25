@@ -43,6 +43,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilte
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -1884,6 +1885,34 @@ public final class CumulusConversionsTest {
     Prefix peerPrefix = Prefix.parse("1.1.1.0/32");
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
     assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
+  }
+
+  /** Warn, don't crash, when an interface neighbor is defined on an undefined interface */
+  @Test
+  public void testAddBgpNeighbor_undefinedInterface() {
+    // set up the VI bgp process
+    org.batfish.datamodel.BgpProcess bgpProc =
+        new org.batfish.datamodel.BgpProcess(
+            Ip.parse("0.0.0.0"), ConfigurationFormat.CUMULUS_CONCATENATED);
+    Vrf viVrf = Vrf.builder().setName("vrf").build();
+    viVrf.setBgpProcess(bgpProc);
+
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    c.getVrfs().put(viVrf.getName(), viVrf);
+
+    BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
+    neighbor.setRemoteAs(RemoteAs.explicit(123));
+
+    Warnings w = new Warnings(true, true, true);
+    addBgpNeighbor(
+        c,
+        CumulusConcatenatedConfiguration.builder().setHostname("c").build(),
+        new BgpVrf(viVrf.getName()),
+        neighbor,
+        w);
+
+    assertThat(w.getRedFlagWarnings().size(), equalTo(1));
+    assertThat(w.getRedFlagWarnings().get(0).getText(), containsString("iface"));
   }
 
   @Test

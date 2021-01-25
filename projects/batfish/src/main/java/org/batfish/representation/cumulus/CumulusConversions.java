@@ -521,6 +521,17 @@ public final class CumulusConversions {
     // if an interface neighbor has only one address and that address is a /31, it gets treated as
     // numbered peer
     Interface viIface = c.getAllInterfaces().get(neighbor.getName());
+
+    // if this interface is not defined warn and move on
+    if (viIface == null) {
+      w.redFlag(
+          String.format(
+              "BGP interface neighbor is defined on %s, but the interface does not exist on the"
+                  + " device",
+              neighbor.getName()));
+      return;
+    }
+
     Optional<Ip> inferredIp = inferPeerIp(viIface);
     if (inferredIp.isPresent()) {
       InterfaceAddress localAddress = viIface.getAddress();
