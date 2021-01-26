@@ -5364,8 +5364,8 @@ fragment
 F_SubnetMask
 :
   F_SubnetMaskOctet '.0.0.0'
-  | '255.' F_SubnetMaskOctet . '.0.0'
-  | '255.255.' F_SubnetMaskOctet . '.0'
+  | '255.' F_SubnetMaskOctet '.0.0'
+  | '255.255.' F_SubnetMaskOctet '.0'
   | '255.255.255.' F_SubnetMaskOctet
 ;
 
