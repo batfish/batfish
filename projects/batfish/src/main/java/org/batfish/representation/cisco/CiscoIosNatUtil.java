@@ -198,6 +198,18 @@ final class CiscoIosNatUtil {
     }
 
     @Override
+    public Optional<AclLineMatchExpr> visitRouteMapMatchExtcommunityLine(
+        RouteMapMatchExtcommunityLine line) {
+      // TODO What happens here?
+      _w.redFlag(
+          String.format(
+              "Ignoring NAT rule with route-map %s %d: match extcommunity not supported"
+                  + " in this context",
+              _rmName, _seqNum));
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<AclLineMatchExpr> visitRouteMapMatchInterfaceLine(
         RouteMapMatchInterfaceLine line) {
       // Clause only matches traffic fwded to certain outside ifaces; see last paragraph here:

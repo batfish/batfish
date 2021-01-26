@@ -20,6 +20,8 @@ public abstract class RouteMapMatchLine implements Serializable {
 
     T visitRouteMapMatchCommunityListLine(RouteMapMatchCommunityListLine line);
 
+    T visitRouteMapMatchExtcommunityLine(RouteMapMatchExtcommunityLine line);
+
     T visitRouteMapMatchInterfaceLine(RouteMapMatchInterfaceLine line);
 
     T visitRouteMapMatchIpAccessListLine(RouteMapMatchIpAccessListLine line);

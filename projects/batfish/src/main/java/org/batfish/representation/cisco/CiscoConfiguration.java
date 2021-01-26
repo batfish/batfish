@@ -3628,6 +3628,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
         CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY);
 
+    markExtcommunityLists(CiscoStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY);
+
     markConcreteStructure(
         CiscoStructureType.PREFIX_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
@@ -4276,6 +4278,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               CiscoStructureType.COMMUNITY_LIST_EXPANDED,
               CiscoStructureType.COMMUNITY_LIST_STANDARD));
+    }
+  }
+
+  private void markExtcommunityLists(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.EXTCOMMUNITY_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.EXTCOMMUNITY_LIST_EXPANDED,
+              CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD));
     }
   }
 
