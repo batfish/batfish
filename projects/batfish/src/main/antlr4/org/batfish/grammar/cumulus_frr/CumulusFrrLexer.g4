@@ -1291,12 +1291,12 @@ M_Import_WS
 
 mode M_ImportVrf;
 
-M_Import_ROUTE_MAP
+M_ImportVrf_ROUTE_MAP
 :
    'route-map' -> type ( ROUTE_MAP ), mode(M_Word)
 ;
 
-M_Import_WORD
+M_ImportVrf_WORD
 :
    F_Word -> type ( WORD ), popMode
 ;
@@ -1353,11 +1353,6 @@ M_PeerGroup_WS
 
 
 mode M_Word;
-
-M_Word_ROUTE_MAP
-:
-   'route-map' -> type (ROUTE_MAP)
-;
 
 M_Word_NEWLINE
 :
