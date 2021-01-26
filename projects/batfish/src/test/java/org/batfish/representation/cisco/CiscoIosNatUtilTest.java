@@ -125,6 +125,20 @@ public class CiscoIosNatUtilTest {
   }
 
   @Test
+  public void testClauseToMatchExpr_inconvertibleLineAfterFalseLine() {
+    RouteMapMatchLine inconvertibleLine =
+        new RouteMapMatchIpAccessListLine(ImmutableSet.of("otherAcl"));
+    RouteMapClause rmc = rmc(MATCH_IFACE, inconvertibleLine);
+    Warnings w = new Warnings(true, true, true);
+    assertFalse(clauseToMatchExpr(rmc, "rm", ImmutableSet.of(ACL), "otherIface", w).isPresent());
+    assertThat(
+        Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
+        equalTo(
+            "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists"
+                + " [otherAcl]"));
+  }
+
+  @Test
   public void testClauseToMatchExpr_inconvertibleLine() {
     RouteMapMatchLine inconvertibleLine =
         new RouteMapMatchIpAccessListLine(ImmutableSet.of("otherAcl"));
@@ -134,7 +148,8 @@ public class CiscoIosNatUtilTest {
     assertThat(
         Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
         equalTo(
-            "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists [otherAcl]"));
+            "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists"
+                + " [otherAcl]"));
   }
 
   @Test
@@ -168,7 +183,8 @@ public class CiscoIosNatUtilTest {
     assertThat(
         Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
         equalTo(
-            "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists [otherAcl]"));
+            "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists"
+                + " [otherAcl]"));
   }
 
   @Test

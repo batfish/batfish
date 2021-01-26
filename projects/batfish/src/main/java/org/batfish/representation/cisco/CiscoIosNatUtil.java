@@ -130,23 +130,27 @@ final class CiscoIosNatUtil {
       return Optional.empty();
     }
     List<AclLineMatchExpr> clauseConjuncts = new ArrayList<>();
+    boolean matchable = true;
+    RouteMapMatchLineToExprVisitor toExprVisitor =
+        new RouteMapMatchLineToExprVisitor(rmName, clause.getSeqNum(), validAclNames, ifaceName, w);
     for (RouteMapMatchLine matchLine : clause.getMatchList()) {
-      Optional<AclLineMatchExpr> lineExpr =
-          new RouteMapMatchLineToExprVisitor(
-                  rmName, clause.getSeqNum(), validAclNames, ifaceName, w)
-              .visit(matchLine);
+      Optional<AclLineMatchExpr> lineExpr = matchLine.accept(toExprVisitor);
       if (!lineExpr.isPresent()) {
         // Line couldn't be converted. Warning already filed.
         return Optional.empty();
       } else if (lineExpr.get().equals(AclLineMatchExprs.FALSE)) {
-        // Since this line can't be matched, the clause can't be matched
-        return lineExpr;
+        // Since this line can't be matched, the clause can't be matched.
+        // Don't return yet in case there's still an inconvertible line.
+        matchable = false;
       } else {
         clauseConjuncts.add(lineExpr.get());
       }
     }
+    if (!matchable) {
+      return Optional.of(AclLineMatchExprs.FALSE);
+    }
     // matchLines weren't empty, and we would have returned already if we'd hit any match line that
-    // didn't convert to an expr, so clauseConjuncts must not be empty
+    // didn't contribute to clauseConjuncts, so clauseConjuncts must not be empty
     assert !clauseConjuncts.isEmpty();
     return Optional.of(and(clauseConjuncts));
   }
