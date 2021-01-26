@@ -15,11 +15,13 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.isA;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -128,7 +130,7 @@ public class CumulusFrrGrammarTest {
     _config.setHostname("c");
     _frr = _config.getFrrConfiguration();
     _ccae = new ConvertConfigurationAnswerElement();
-    _warnings = new Warnings();
+    _warnings = new Warnings(true, true, true);
     _config.setFilename(FILENAME);
     _config.setAnswerElement(_ccae);
     _config.setWarnings(_warnings);
@@ -190,7 +192,9 @@ public class CumulusFrrGrammarTest {
     CumulusFrrConfigurationBuilder cb =
         new CumulusFrrConfigurationBuilder(_config, parser, _warnings, src);
     walker.walk(cb, tree);
+    Warnings w = _config.getWarnings();
     _config = SerializationUtils.clone(_config);
+    _config.setWarnings(w);
   }
 
   @Test
@@ -1390,6 +1394,23 @@ public class CumulusFrrGrammarTest {
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getNeighbors().get("10.0.0.1").getEbgpMultihop(),
         equalTo(3L));
+  }
+
+  /**
+   * Test that we warn (and not crash) when we encounter an interface neighbor on an undefined
+   * interface
+   */
+  @Test
+  public void testBgpNeighborMissingInterface() {
+    parseLines(
+        "router bgp 65003",
+        "  neighbor leaf peer-group",
+        "  neighbor leaf remote-as external",
+        "  neighbor Ethernet8 interface peer-group leaf");
+    _config.toVendorIndependentConfigurations();
+    assertThat(
+        _config.getWarnings().getRedFlagWarnings(),
+        contains(hasToString(containsString("Ethernet8"))));
   }
 
   @Test
