@@ -38,4 +38,9 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
     }
     return d.simplify();
   }
+
+  @Override
+  public <T> T accept(RouteMapMatchLineVisitor<T> visitor) {
+    return visitor.visitRouteMapMatchCommunityListLine(this);
+  }
 }

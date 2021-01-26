@@ -31,4 +31,9 @@ public class RouteMapMatchTagLine extends RouteMapMatchLine {
     }
     return d.simplify();
   }
+
+  @Override
+  public <T> T accept(RouteMapMatchLineVisitor<T> visitor) {
+    return visitor.visitRouteMapMatchTagLine(this);
+  }
 }
