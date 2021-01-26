@@ -41,4 +41,9 @@ public final class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
     }
     return d.simplify();
   }
+
+  @Override
+  public <T> T accept(RouteMapMatchLineVisitor<T> visitor) {
+    return visitor.visitRouteMapMatchIpAccessListLine(this);
+  }
 }
