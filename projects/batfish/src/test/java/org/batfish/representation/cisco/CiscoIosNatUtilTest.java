@@ -206,7 +206,6 @@ public class CiscoIosNatUtilTest {
     String acl2 = "acl2";
     Set<String> definedAcls = ImmutableSet.of(ACL, acl2);
     RouteMapMatchLine line = new RouteMapMatchIpAccessListLine(definedAcls);
-    RouteMap rm = rmWithClauses(rmc(line));
     RouteMapMatchLineToExprVisitor visitor =
         new RouteMapMatchLineToExprVisitor(
             "rm", 10, definedAcls, IFACE, new Warnings(true, true, true));
