@@ -17,6 +17,11 @@ public class RouteMapMatchInterfaceLine extends RouteMapMatchLine {
     _ifaceNames = ImmutableSet.copyOf(names);
   }
 
+  @Override
+  public <T> T accept(RouteMapMatchLineVisitor<T> visitor) {
+    return visitor.visitRouteMapMatchInterfaceLine(this);
+  }
+
   public Set<String> getInterfaceNames() {
     return _ifaceNames;
   }
