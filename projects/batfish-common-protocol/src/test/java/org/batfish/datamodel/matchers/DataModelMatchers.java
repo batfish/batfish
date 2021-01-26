@@ -252,12 +252,12 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
-   * defined structure for {@code hostname} of type {@code type} named {@code structureName}.
+   * defined structure for {@code filename} of type {@code type} named {@code structureName}.
    */
   public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasDefinedStructure(
-      @Nonnull String hostname, @Nonnull StructureType type, @Nonnull String structureName) {
+      @Nonnull String filename, @Nonnull StructureType type, @Nonnull String structureName) {
     return new ConvertConfigurationAnswerElementMatchers.HasDefinedStructure(
-        hostname, type, structureName);
+        filename, type, structureName);
   }
 
   /**
