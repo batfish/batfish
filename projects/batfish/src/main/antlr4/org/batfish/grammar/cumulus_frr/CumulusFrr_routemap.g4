@@ -51,6 +51,7 @@ rm_match
     | rmm_community
     | rmm_interface
     | rmm_ip
+    | rmm_ipv6
     | rmm_tag
   )
 ;
@@ -99,6 +100,11 @@ rms_metric
 rmm_ip
 :
   IP rmmip_address
+;
+
+rmm_ipv6
+:
+  IPV6 null_rest_of_line
 ;
 
 rmm_tag

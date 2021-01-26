@@ -105,7 +105,7 @@ sbb_cluster_id
 
 sb_neighbor
 :
-  NEIGHBOR (sbn_ip | sbn_name) NEWLINE
+  NEIGHBOR (sbn_ip | sbn_ip6 | sbn_name) NEWLINE
 ;
 
 sb_address_family
@@ -117,6 +117,7 @@ sb_address_family
 sbaf
 :
     sbaf_ipv4_unicast
+  | sbaf_ipv6_unicast
   | sbaf_l2vpn_evpn
 ;
 
@@ -134,13 +135,29 @@ sbaf_ipv4_unicast
   )*
 ;
 
+sbaf_ipv6_unicast
+:
+  IPV6 UNICAST NEWLINE
+  sbafi6_null_tail*
+;
+
+sbafi6_null_tail
+:
+  (
+     // there are likely others but haven't seen examples yet, so leaving for later
+     NEIGHBOR
+     | REDISTRIBUTE
+  ) null_rest_of_line
+;
+
+
 sbaf_l2vpn_evpn
 :
   L2VPN EVPN NEWLINE
   (
-       sbafl_advertise_all_vni
+       sbafl_advertise
+     | sbafl_advertise_all_vni
      | sbafl_advertise_default_gw
-     | sbafl_advertise_ipv4_unicast
      | sbafl_neighbor
   )*
 ;
@@ -174,6 +191,25 @@ sbafi_redistribute
   REDISTRIBUTE bgp_redist_type (ROUTE_MAP route_map_name)? NEWLINE
 ;
 
+sbafl_advertise
+:
+  ADVERTISE
+  (
+     sbafla_ipv4_unicast
+     | sbafla_ipv6_unicast
+  )
+;
+
+sbafla_ipv4_unicast
+:
+  IPV4 UNICAST (ROUTE_MAP rm = route_map_name)? NEWLINE
+;
+
+sbafla_ipv6_unicast
+:
+  IPV6 UNICAST (ROUTE_MAP rm = route_map_name)? NEWLINE
+;
+
 sbafl_advertise_all_vni
 :
   ADVERTISE_ALL_VNI NEWLINE
@@ -182,11 +218,6 @@ sbafl_advertise_all_vni
 sbafl_advertise_default_gw
 :
   ADVERTISE_DEFAULT_GW NEWLINE
-;
-
-sbafl_advertise_ipv4_unicast
-:
-  ADVERTISE IPV4 UNICAST NEWLINE
 ;
 
 sbafln_activate
@@ -207,6 +238,11 @@ sb_always_compare_med
 sbn_ip
 :
   ip = IP_ADDRESS sbn_property
+;
+
+sbn_ip6
+:
+   ip6 = IPV6_ADDRESS sbn_property
 ;
 
 sbn_name
