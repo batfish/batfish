@@ -1,5 +1,6 @@
 package org.batfish.grammar.cumulus_frr;
 
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -405,6 +406,41 @@ public class CumulusFrrGrammarTest {
         "advertise ipv4 unicast",
         "exit-address-family");
     assertNotNull(_frr.getBgpProcess().getDefaultVrf().getL2VpnEvpn().getAdvertiseIpv4Unicast());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv4UnicastRouteMap() {
+    parseLines(
+        "router bgp 1",
+        "address-family l2vpn evpn",
+        "advertise ipv4 unicast route-map RM",
+        "exit-address-family");
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(hasComment("Route maps in 'advertise ipv4 unicast' are not supported")));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP,
+            "RM",
+            CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST),
+        contains(3));
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnAdvertiseIpv6Unicast() {
+    parseLines(
+        "router bgp 1",
+        "address-family l2vpn evpn",
+        "advertise ipv6 unicast",
+        "advertise ipv6 unicast route-map RM",
+        "exit-address-family");
+    assertThat(_warnings.getParseWarnings(), empty());
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP,
+            "RM",
+            CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST),
+        contains(4));
   }
 
   @Test

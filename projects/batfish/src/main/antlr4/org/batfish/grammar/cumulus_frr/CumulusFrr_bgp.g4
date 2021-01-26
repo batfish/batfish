@@ -159,9 +159,9 @@ sbaf_l2vpn_evpn
 :
   L2VPN EVPN NEWLINE
   (
-       sbafl_advertise_all_vni
+       sbafl_advertise
+     | sbafl_advertise_all_vni
      | sbafl_advertise_default_gw
-     | sbafl_advertise_ipv4_unicast
      | sbafl_neighbor
   )*
 ;
@@ -200,6 +200,25 @@ sbafi_redistribute
   REDISTRIBUTE bgp_redist_type (ROUTE_MAP route_map_name)? NEWLINE
 ;
 
+sbafl_advertise
+:
+  ADVERTISE
+  (
+     sbafla_ipv4_unicast
+     | sbafla_ipv6_unicast
+  )
+;
+
+sbafla_ipv4_unicast
+:
+  IPV4 UNICAST (ROUTE_MAP rm = route_map_name)? NEWLINE
+;
+
+sbafla_ipv6_unicast
+:
+  IPV6 UNICAST (ROUTE_MAP rm = route_map_name)? NEWLINE
+;
+
 sbafl_advertise_all_vni
 :
   ADVERTISE_ALL_VNI NEWLINE
@@ -208,11 +227,6 @@ sbafl_advertise_all_vni
 sbafl_advertise_default_gw
 :
   ADVERTISE_DEFAULT_GW NEWLINE
-;
-
-sbafl_advertise_ipv4_unicast
-:
-  ADVERTISE IPV4 UNICAST NEWLINE
 ;
 
 sbafln_activate
