@@ -349,6 +349,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
@@ -358,6 +359,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -5721,7 +5723,12 @@ public final class CiscoGrammarTest {
       Interface outside1 = c.getAllInterfaces().get(outsideIntf1);
 
       Transformation inTransformation =
-          when(permittedByAcl(outsideSrcPoolAcl))
+          when(and(
+                  permittedByAcl(outsideSrcPoolAcl),
+                  // copied from CiscoIosNatUtil#toExpr, which is not visible from this package
+                  new TrueExpr(
+                      TraceElement.of(
+                          String.format("Matched outside interface %s", outsideIntf0)))))
               .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
               .build();
 
