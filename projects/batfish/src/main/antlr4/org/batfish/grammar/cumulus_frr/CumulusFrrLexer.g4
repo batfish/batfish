@@ -1296,12 +1296,9 @@ M_Import_ROUTE_MAP
    'route-map' -> type ( ROUTE_MAP ), mode(M_Word)
 ;
 
-M_Import_Other
+M_Import_WORD
 :
-   F_Word
-   {
-     less();
-   } -> mode(M_Word)
+   F_Word -> type ( WORD ), popMode
 ;
 
 M_ImportVrf_NEWLINE
