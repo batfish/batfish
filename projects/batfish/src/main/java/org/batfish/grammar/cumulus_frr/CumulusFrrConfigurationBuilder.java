@@ -13,6 +13,8 @@ import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNI
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
@@ -106,6 +108,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi6_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
@@ -461,6 +464,38 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbafi_import(Sbafi_importContext ctx) {
     todo(ctx);
+    if (ctx.vrf_name() != null) {
+      _c.referenceStructure(
+          VRF,
+          ctx.vrf_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
+    if (ctx.route_map_name() != null) {
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.route_map_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitSbafi6_import(Sbafi6_importContext ctx) {
+    if (ctx.vrf_name() != null) {
+      _c.referenceStructure(
+          VRF,
+          ctx.vrf_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
+    if (ctx.route_map_name() != null) {
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.route_map_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
   }
 
   @Override

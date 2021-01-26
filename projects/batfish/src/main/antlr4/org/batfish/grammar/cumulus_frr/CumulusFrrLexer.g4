@@ -1313,6 +1313,11 @@ M_PeerGroup_WS
 
 mode M_Word;
 
+M_Word_ROUTE_MAP
+:
+   'route-map' -> type (ROUTE_MAP)
+;
+
 M_Word_NEWLINE
 :
   F_Newline+ -> type ( NEWLINE ) , popMode

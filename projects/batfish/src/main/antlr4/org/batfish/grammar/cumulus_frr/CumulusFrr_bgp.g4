@@ -140,15 +140,22 @@ sbaf_ipv4_unicast
 sbaf_ipv6_unicast
 :
   IPV6 UNICAST NEWLINE
-  sbafi6_null_tail*
+  (
+    sbafi6_import
+    |  sbafi6_null_tail
+  )*
+;
+
+sbafi6_import
+:
+  IMPORT VRF (vrf_name | ROUTE_MAP route_map_name) NEWLINE
 ;
 
 sbafi6_null_tail
 :
   (
      // there are likely others but haven't seen examples yet, so leaving for later
-     IMPORT
-     | NEIGHBOR
+     NEIGHBOR
      | NO
      | REDISTRIBUTE
   ) null_rest_of_line
@@ -182,7 +189,7 @@ sbafi_aggregate_address
 
 sbafi_import
 :
-  IMPORT null_rest_of_line
+  IMPORT VRF (vrf_name | ROUTE_MAP route_map_name) NEWLINE
 ;
 
 sbafi_maximum_paths
