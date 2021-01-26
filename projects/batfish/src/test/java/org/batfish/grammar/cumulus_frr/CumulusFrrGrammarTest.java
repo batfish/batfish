@@ -1,6 +1,7 @@
 package org.batfish.grammar.cumulus_frr;
 
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -11,6 +12,10 @@ import static org.batfish.representation.cumulus.CumulusRoutingProtocol.OSPF;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.hamcrest.Matchers.contains;
@@ -222,6 +227,58 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamily_ipv4UnicastMaximumPaths() {
     // do not crash
     parse("router bgp 1\n address-family ipv4 unicast\n maximum-paths 4\nexit-address-family\n");
+  }
+
+  /** Make sure that we warn when import statements are ignored but still do reference counting */
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastImport() {
+    parseLines(
+        "router bgp 1",
+        " address-family ipv4 unicast",
+        "  import vrf Vrf_storage1",
+        "  import vrf route-map import6-vrf-deny",
+        " exit-address-family");
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(
+            hasText(equalTo("import vrf Vrf_storage1")),
+            hasText(equalTo("import vrf route-map import6-vrf-deny"))));
+    assertThat(
+        getStructureReferences(VRF, "Vrf_storage1", BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF),
+        contains(3));
+    assertThat(
+        getStructureReferences(ROUTE_MAP, "import6-vrf-deny", BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF),
+        contains(4));
+  }
+
+  /** Make sure we do reference counting for import statements */
+  @Test
+  public void testBgpAddressFamilyIpv6UnicastImport() {
+    parseLines(
+        "router bgp 1",
+        " address-family ipv6 unicast",
+        "  import vrf Vrf_storage1",
+        "  import vrf route-map import6-vrf-deny",
+        " exit-address-family");
+    assertThat(
+        getStructureReferences(VRF, "Vrf_storage1", BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF),
+        contains(3));
+    assertThat(
+        getStructureReferences(ROUTE_MAP, "import6-vrf-deny", BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF),
+        contains(4));
+  }
+
+  /** Make sure that we warn when no statements are ignored */
+  @Test
+  public void testBgpAddressFamilyIpv4UnicastNo() {
+    parseLines(
+        "router bgp 1",
+        " address-family ipv4 unicast",
+        "  no neighbor 2001:100:1:31::2 activate",
+        " exit-address-family");
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(hasText(equalTo("no neighbor 2001:100:1:31::2 activate"))));
   }
 
   @Test
@@ -798,6 +855,7 @@ public class CumulusFrrGrammarTest {
         "  neighbor 2001:100:1:31::2 remote-as 2",
         "  address-family ipv6 unicast",
         "    redistribute connected",
+        "    import vrf Vrf_tenant1",
         "    neighbor 2001:100:1:31::2 activate");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
