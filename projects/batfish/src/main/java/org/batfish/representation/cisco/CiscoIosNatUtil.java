@@ -121,6 +121,17 @@ final class CiscoIosNatUtil {
               }
 
               @Override
+              public Boolean visitRouteMapMatchExtcommunityLine(
+                  RouteMapMatchExtcommunityLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match extcommunity not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+
+              @Override
               public Boolean visitRouteMapMatchIpAccessListLine(
                   RouteMapMatchIpAccessListLine line) {
                 return false;
