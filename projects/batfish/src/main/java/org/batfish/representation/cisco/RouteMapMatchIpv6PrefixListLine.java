@@ -35,4 +35,9 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
     }
     return d.simplify();
   }
+
+  @Override
+  public <T> T accept(RouteMapMatchLineVisitor<T> visitor) {
+    return visitor.visitRouteMapMatchIpv6PrefixListLine(this);
+  }
 }

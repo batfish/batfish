@@ -28,4 +28,9 @@ public class RouteMapMatchSourceProtocolLine extends RouteMapMatchLine {
     // route map is being evaluated.
     return new MatchProtocol(_protocols);
   }
+
+  @Override
+  public <T> T accept(RouteMapMatchLineVisitor<T> visitor) {
+    return visitor.visitRouteMapMatchSourceProtocolLine(this);
+  }
 }

@@ -73,43 +73,121 @@ final class CiscoIosNatUtil {
         // TODO Support NAT rules referencing route-maps with deny clauses
         w.redFlag(
             String.format(
-                "Ignoring NAT rule with route-map %s: deny clauses not supported in this context",
-                routeMap.getName()));
+                "Ignoring NAT rule with route-map %s %d: deny clauses not supported in this context",
+                routeMap.getName(), clause.getSeqNum()));
         return Optional.empty();
       } else if (!clause.getSetList().isEmpty()) {
         // TODO Check if set lines take effect in context of NAT rule-matching
         w.redFlag(
             String.format(
-                "Ignoring NAT rule with route-map %s: set lines not supported in this context",
-                routeMap.getName()));
+                "Ignoring NAT rule with route-map %s %d: set lines not supported in this context",
+                routeMap.getName(), clause.getSeqNum()));
         return Optional.empty();
       } else if (clause.getMatchList().isEmpty()) {
         // TODO Check behavior of empty clauses (deny all or permit all?)
         w.redFlag(
             String.format(
-                "Ignoring NAT rule with route-map %s: clauses without match lines not supported in"
+                "Ignoring NAT rule with route-map %s %d: clauses without match lines not supported in"
                     + " this context",
-                routeMap.getName()));
+                routeMap.getName(), clause.getSeqNum()));
         return Optional.empty();
       }
       for (RouteMapMatchLine matchLine : clause.getMatchList()) {
-        if (!(matchLine instanceof RouteMapMatchIpAccessListLine)) {
-          // TODO Check what other types of lines NAT rule route-maps can have and support them
-          w.redFlag(
-              String.format(
-                  "Ignoring NAT rule with route-map %s: lines of type %s not supported in this"
-                      + " context",
-                  routeMap.getName(), matchLine.getClass().getCanonicalName()));
+        boolean unsupported =
+            new RouteMapMatchLine.RouteMapMatchLineVisitor<Boolean>() {
+              @Override
+              public Boolean visitRouteMapMatchAsPathAccessListLine(
+                  RouteMapMatchAsPathAccessListLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match as-path-access-list not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+
+              @Override
+              public Boolean visitRouteMapMatchCommunityListLine(
+                  RouteMapMatchCommunityListLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match community not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+
+              @Override
+              public Boolean visitRouteMapMatchIpAccessListLine(
+                  RouteMapMatchIpAccessListLine line) {
+                return false;
+              }
+
+              @Override
+              public Boolean visitRouteMapMatchIpPrefixListLine(
+                  RouteMapMatchIpPrefixListLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match ip address prefix-list not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+
+              @Override
+              public Boolean visitRouteMapMatchIpv6AccessListLine(
+                  RouteMapMatchIpv6AccessListLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match ipv6 address not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+
+              @Override
+              public Boolean visitRouteMapMatchIpv6PrefixListLine(
+                  RouteMapMatchIpv6PrefixListLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match ipv6 address prefix-list not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+
+              @Override
+              public Boolean visitRouteMapMatchSourceProtocolLine(
+                  RouteMapMatchSourceProtocolLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match source-protocol not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+
+              @Override
+              public Boolean visitRouteMapMatchTagLine(RouteMapMatchTagLine line) {
+                // TODO What happens here?
+                w.redFlag(
+                    String.format(
+                        "Ignoring NAT rule with route-map %s %d: match tag not supported in this context",
+                        routeMap.getName(), clause.getSeqNum()));
+                return true;
+              }
+            }.visit(matchLine);
+        if (unsupported) {
           return Optional.empty();
         }
         Set<String> listNames = ((RouteMapMatchIpAccessListLine) matchLine).getListNames();
-        if (!validAclNames.containsAll(listNames)) {
+        Set<String> missingNames = Sets.difference(listNames, validAclNames);
+        if (!missingNames.isEmpty()) {
           // TODO Check behavior of match ACL line when some or all ACLs are undefined
           w.redFlag(
               String.format(
-                  "Ignoring NAT rule with route-map %s: route-map references at least one"
-                      + " undefined ACL",
-                  routeMap.getName()));
+                  "Ignoring NAT rule with route-map %s %d: route-map references undefined access-lists %s",
+                  routeMap.getName(), clause.getSeqNum(), missingNames));
           return Optional.empty();
         }
         // Never need to reverse these ACLs because route-maps can't be used for destination inside.
