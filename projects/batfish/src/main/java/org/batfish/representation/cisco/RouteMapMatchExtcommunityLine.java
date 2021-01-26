@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
 /** Implementation of route-map match extcommunity. */
-public class RouteMapMatchExtcommunityLine extends RouteMapMatchLine {
+public final class RouteMapMatchExtcommunityLine extends RouteMapMatchLine {
 
   private final @Nonnull Set<String> _lists;
 
