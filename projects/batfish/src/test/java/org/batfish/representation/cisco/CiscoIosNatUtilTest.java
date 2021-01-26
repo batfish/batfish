@@ -83,7 +83,8 @@ public class CiscoIosNatUtilTest {
       assertThat(
           Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
           equalTo(
-              "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists [acl2]"));
+              "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists"
+                  + " [acl2]"));
     }
     {
       // Clause references defined ACL acl1 but also undefined ACL acl2
@@ -94,7 +95,8 @@ public class CiscoIosNatUtilTest {
       assertThat(
           Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
           equalTo(
-              "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists [acl2]"));
+              "Ignoring NAT rule with route-map rm 10: route-map references undefined access-lists"
+                  + " [acl2]"));
     }
     {
       // Clause uses an unsupported type of match line
@@ -105,7 +107,8 @@ public class CiscoIosNatUtilTest {
       assertThat(
           Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
           equalTo(
-              "Ignoring NAT rule with route-map rm 10: match ip address prefix-list not supported in this context"));
+              "Ignoring NAT rule with route-map rm 10: match ip address prefix-list not supported"
+                  + " in this context"));
     }
   }
 

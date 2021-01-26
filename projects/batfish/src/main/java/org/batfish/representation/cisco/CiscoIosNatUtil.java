@@ -73,7 +73,8 @@ final class CiscoIosNatUtil {
         // TODO Support NAT rules referencing route-maps with deny clauses
         w.redFlag(
             String.format(
-                "Ignoring NAT rule with route-map %s %d: deny clauses not supported in this context",
+                "Ignoring NAT rule with route-map %s %d: deny clauses not supported in this"
+                    + " context",
                 routeMap.getName(), clause.getSeqNum()));
         return Optional.empty();
       } else if (!clause.getSetList().isEmpty()) {
@@ -87,8 +88,8 @@ final class CiscoIosNatUtil {
         // TODO Check behavior of empty clauses (deny all or permit all?)
         w.redFlag(
             String.format(
-                "Ignoring NAT rule with route-map %s %d: clauses without match lines not supported in"
-                    + " this context",
+                "Ignoring NAT rule with route-map %s %d: clauses without match lines not supported"
+                    + " in this context",
                 routeMap.getName(), clause.getSeqNum()));
         return Optional.empty();
       }
@@ -101,7 +102,8 @@ final class CiscoIosNatUtil {
                 // TODO What happens here?
                 w.redFlag(
                     String.format(
-                        "Ignoring NAT rule with route-map %s %d: match as-path-access-list not supported in this context",
+                        "Ignoring NAT rule with route-map %s %d: match as-path-access-list not"
+                            + " supported in this context",
                         routeMap.getName(), clause.getSeqNum()));
                 return true;
               }
@@ -112,7 +114,8 @@ final class CiscoIosNatUtil {
                 // TODO What happens here?
                 w.redFlag(
                     String.format(
-                        "Ignoring NAT rule with route-map %s %d: match community not supported in this context",
+                        "Ignoring NAT rule with route-map %s %d: match community not supported in"
+                            + " this context",
                         routeMap.getName(), clause.getSeqNum()));
                 return true;
               }
@@ -129,7 +132,8 @@ final class CiscoIosNatUtil {
                 // TODO What happens here?
                 w.redFlag(
                     String.format(
-                        "Ignoring NAT rule with route-map %s %d: match ip address prefix-list not supported in this context",
+                        "Ignoring NAT rule with route-map %s %d: match ip address prefix-list not"
+                            + " supported in this context",
                         routeMap.getName(), clause.getSeqNum()));
                 return true;
               }
@@ -140,7 +144,8 @@ final class CiscoIosNatUtil {
                 // TODO What happens here?
                 w.redFlag(
                     String.format(
-                        "Ignoring NAT rule with route-map %s %d: match ipv6 address not supported in this context",
+                        "Ignoring NAT rule with route-map %s %d: match ipv6 address not supported"
+                            + " in this context",
                         routeMap.getName(), clause.getSeqNum()));
                 return true;
               }
@@ -151,7 +156,8 @@ final class CiscoIosNatUtil {
                 // TODO What happens here?
                 w.redFlag(
                     String.format(
-                        "Ignoring NAT rule with route-map %s %d: match ipv6 address prefix-list not supported in this context",
+                        "Ignoring NAT rule with route-map %s %d: match ipv6 address prefix-list"
+                            + " not supported in this context",
                         routeMap.getName(), clause.getSeqNum()));
                 return true;
               }
@@ -162,7 +168,8 @@ final class CiscoIosNatUtil {
                 // TODO What happens here?
                 w.redFlag(
                     String.format(
-                        "Ignoring NAT rule with route-map %s %d: match source-protocol not supported in this context",
+                        "Ignoring NAT rule with route-map %s %d: match source-protocol not"
+                            + " supported in this context",
                         routeMap.getName(), clause.getSeqNum()));
                 return true;
               }
@@ -172,7 +179,8 @@ final class CiscoIosNatUtil {
                 // TODO What happens here?
                 w.redFlag(
                     String.format(
-                        "Ignoring NAT rule with route-map %s %d: match tag not supported in this context",
+                        "Ignoring NAT rule with route-map %s %d: match tag not supported in this"
+                            + " context",
                         routeMap.getName(), clause.getSeqNum()));
                 return true;
               }
@@ -186,7 +194,8 @@ final class CiscoIosNatUtil {
           // TODO Check behavior of match ACL line when some or all ACLs are undefined
           w.redFlag(
               String.format(
-                  "Ignoring NAT rule with route-map %s %d: route-map references undefined access-lists %s",
+                  "Ignoring NAT rule with route-map %s %d: route-map references undefined"
+                      + " access-lists %s",
                   routeMap.getName(), clause.getSeqNum(), missingNames));
           return Optional.empty();
         }
