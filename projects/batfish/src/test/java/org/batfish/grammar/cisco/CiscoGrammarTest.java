@@ -352,6 +352,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
@@ -361,6 +362,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -5709,11 +5711,13 @@ public final class CiscoGrammarTest {
   public void testIosDynamicNatRouteMapsConversion() throws IOException {
     Configuration c = parseConfig("ios-nat-dynamic-route-maps");
     String insideIntf = "Ethernet1";
-    String outsideIntf = "Ethernet2";
+    String outsideIntf0 = "Ethernet2/0";
+    String outsideIntf1 = "Ethernet2/1";
     String vrfInsideIntf = "Ethernet3";
     String vrfOutsideIntf = "Ethernet4";
     assertThat(c, hasInterface(insideIntf, notNullValue()));
-    assertThat(c, hasInterface(outsideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf0, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf1, notNullValue()));
     assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
     MatchSrcInterface matchSrcInside = matchSrcInterface(insideIntf, vrfInsideIntf);
@@ -5736,14 +5740,25 @@ public final class CiscoGrammarTest {
       assertThat(inside.getIncomingTransformation(), nullValue());
       assertThat(inside.getOutgoingTransformation(), nullValue());
 
-      Interface outside = c.getAllInterfaces().get(outsideIntf);
+      Interface outside0 = c.getAllInterfaces().get(outsideIntf0);
+      Interface outside1 = c.getAllInterfaces().get(outsideIntf1);
 
       Transformation inTransformation =
-          when(permittedByAcl(outsideSrcPoolAcl))
+          when(and(
+                  permittedByAcl(outsideSrcPoolAcl),
+                  // copied from CiscoIosNatUtil#toExpr, which is not visible from this package
+                  new TrueExpr(
+                      TraceElement.of(
+                          String.format("Matched outside interface %s", outsideIntf0)))))
               .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
               .build();
 
-      assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+      assertThat(outside0.getIncomingTransformation(), equalTo(inTransformation));
+
+      // The route-map used for the outside source rule specifies "match interface Ethernet2/0",
+      // i.e. outside0. Since it will never match traffic forwarded out outside1, that interface
+      // should have no incoming transformation.
+      assertNull(outside1.getIncomingTransformation());
 
       Transformation destTransformation =
           when(and(permittedByAcl(insideDstPoolAcl), matchSrcInside))
@@ -5761,8 +5776,10 @@ public final class CiscoGrammarTest {
                       .setOrElse(destTransformation)
                       .build())
               .build();
-
-      assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+      // both interfaces should have the same outgoing transformation since the route-maps used for
+      // inside source rules don't specify match interfaces
+      assertThat(outside0.getOutgoingTransformation(), equalTo(outTransformation));
+      assertThat(outside1.getOutgoingTransformation(), equalTo(outTransformation));
     }
     {
       // NAT in vrf1
@@ -7263,6 +7280,29 @@ public final class CiscoGrammarTest {
         c.getRoutingPolicies()
             .get("rm_standard_permit_permit")
             .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+  }
+
+  @Test
+  public void testRouteMapMatchInterface() throws IOException {
+    String hostname = "ios-route-map-match-interface";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    // Ensure warning was filed regarding lack of match interface support
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Route-map match interface is not fully supported. Batfish will ignore clauses"
+                    + " using match interface for route filtering.")));
+
+    // Ensure the converted route-map ignores the match-interface clause
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    RoutingPolicy rm = c.getRoutingPolicies().get("rm");
+    assertThat(
+        rm.getStatements(), contains(Statements.ReturnLocalDefaultAction.toStaticStatement()));
   }
 
   @Test
