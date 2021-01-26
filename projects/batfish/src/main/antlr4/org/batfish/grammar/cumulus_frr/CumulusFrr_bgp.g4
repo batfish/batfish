@@ -357,7 +357,7 @@ sbafi_neighbor
 
 sbafi_no
 :
-   NO null_rest_of_line
+   NO NEIGHBOR (IP_ADDRESS | IPV6_ADDRESS) ACTIVATE NEWLINE
 ;
 
 sbafin_activate

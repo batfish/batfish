@@ -348,7 +348,7 @@ IDENTIFIER
 
 IMPORT
 :
-   'import'
+   'import' -> pushMode(M_Import)
 ;
 
 IN
@@ -1266,6 +1266,50 @@ M_Static_Route_Word
 ;
 
 M_Static_Route_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+
+mode M_Import;
+
+M_Import_VRF
+:
+   'vrf' -> type ( VRF ), mode(M_ImportVrf)
+;
+
+M_Import_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_Import_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+
+mode M_ImportVrf;
+
+M_Import_ROUTE_MAP
+:
+   'route-map' -> type ( ROUTE_MAP ), mode(M_Word)
+;
+
+M_Import_Other
+:
+   F_Word
+   {
+     less();
+   } -> mode(M_Word)
+;
+
+M_ImportVrf_NEWLINE
+:
+  F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_ImportVrf_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;
