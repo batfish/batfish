@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
+import com.google.common.io.MoreFiles;
 import com.google.errorprone.annotations.MustBeClosed;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -1153,7 +1154,7 @@ public class FileBasedStorage implements StorageProvider {
     Path sanitizedFile = validatePath(file);
     Path tmpFile = Files.createTempFile(null, null);
     try {
-      FileUtils.write(tmpFile.toFile(), data, charset);
+      MoreFiles.asCharSink(tmpFile, charset).write(data);
       mkdirs(sanitizedFile.getParent());
       Files.move(tmpFile, sanitizedFile, StandardCopyOption.REPLACE_EXISTING);
     } finally {
