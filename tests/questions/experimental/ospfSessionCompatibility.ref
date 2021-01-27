@@ -15,6 +15,7 @@
       "statuses"
     ],
     "tags" : [
+      "dataplane",
       "ospf",
       "status"
     ],
