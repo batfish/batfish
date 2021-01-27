@@ -53,7 +53,7 @@ public class OspfSessionCompatibilityQuestion extends Question {
 
   @Override
   public boolean getDataPlane() {
-    return false;
+    return true;
   }
 
   @Override
