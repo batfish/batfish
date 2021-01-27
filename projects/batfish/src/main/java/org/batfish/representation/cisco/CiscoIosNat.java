@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.transformation.IpField;
@@ -22,6 +23,7 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
 
   private RuleAction _action;
   private boolean _addRoute;
+  @Nullable private String _routeMap;
   @Nullable private String _vrf;
 
   /**
@@ -40,28 +42,39 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
    * The add-route option installs a static route to the local IP via the global IP (for {@link
    * RuleAction#SOURCE_OUTSIDE} only). <b>Only works on default VRF, otherwise no effect.</b>
    */
-  public boolean getAddRoute() {
+  public final boolean getAddRoute() {
     return _addRoute;
   }
 
-  public void setAddRoute(boolean addRoute) {
+  public final void setAddRoute(boolean addRoute) {
     _addRoute = addRoute;
+  }
+
+  /** Route-map specifying matching traffic (mutually exclusive with ACL) */
+  @Nullable
+  public String getRouteMap() {
+    return _routeMap;
+  }
+
+  public void setRouteMap(@Nullable String routeMap) {
+    _routeMap = routeMap;
   }
 
   /** Which VRF this NAT is in */
   @Nullable
-  public String getVrf() {
+  public final String getVrf() {
     return _vrf;
   }
 
-  public void setVrf(@Nullable String vrf) {
+  public final void setVrf(@Nullable String vrf) {
     _vrf = vrf;
   }
 
   /**
    * Converts a single NAT from the configuration into a {@link Transformation}.
    *
-   * @param ipAccessLists Named access lists which may be referenced by dynamic NATs
+   * @param ifaceName Name of the (outside) interface for which we're creating the transformation
+   * @param routeMaps Route-maps which may be referenced by static or dynamic NATs
    * @param natPools NAT pools from the configuration
    * @param insideInterfaces Names of interfaces which are defined as 'inside'
    * @param c Configuration
@@ -69,24 +82,31 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
    *     Transformation} could not be built
    */
   public abstract Optional<Transformation.Builder> toOutgoingTransformation(
-      Map<String, IpAccessList> ipAccessLists,
+      String ifaceName,
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
       Set<String> insideInterfaces,
       Map<String, Interface> interfaces,
-      Configuration c);
+      Configuration c,
+      Warnings w);
 
   /**
    * Converts a single NAT from the configuration into a {@link Transformation}.
    *
+   * @param ifaceName Name of the (outside) interface for which we're creating the transformation
    * @param ipAccessLists Named access lists which may be referenced by dynamic NATs
+   * @param routeMaps Route-maps which may be referenced by static or dynamic NATs
    * @param natPools NAT pools from the configuration
    * @return A single {@link Transformation} for inside-to-outside, or nothing if the {@link
    *     Transformation} could not be built
    */
   public abstract Optional<Transformation.Builder> toIncomingTransformation(
+      String ifaceName,
       Map<String, IpAccessList> ipAccessLists,
+      Map<String, RouteMap> routeMaps,
       Map<String, NatPool> natPools,
-      Map<String, Interface> interfaces);
+      Map<String, Interface> interfaces,
+      Warnings w);
 
   /**
    * Creates the {@link StaticRoute} that will be added due to this NAT, if any (only possible if
@@ -101,18 +121,21 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   public abstract int hashCode();
 
   /**
-   * Compare NATs of equal type for sorting.
+   * Compare NATs of equal type for sorting. Orders NATs in the order they would appear in the
+   * config (so highest precedence first).
    *
    * @param other NAT to compare
-   * @return a negative integer, zero, or a positive integer as this NAT precedence is less than,
-   *     equal to, or greater than the specified NAT precedence.
+   * @return a negative integer if this NAT should be matched before the other, positive if it
+   *     should be matched after, or 0 if the NATs are of different types or their match order
+   *     doesn't matter (e.g. both malformed or match mutually exclusive traffic).
+   * @throws IllegalArgumentException if NATs are of different types.
    */
   protected abstract int natCompare(CiscoIosNat other);
 
   @Override
   public final int compareTo(CiscoIosNat other) {
     return Comparator.comparingInt(CiscoIosNatUtil::getTypePrecedence)
-        .thenComparing(this::natCompare)
+        .thenComparing(CiscoIosNat::natCompare)
         .compare(this, other);
   }
 

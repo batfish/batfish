@@ -4,6 +4,12 @@ import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureUsage;
 
 public enum CumulusStructureUsage implements StructureUsage {
+  BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF("bgp address-family ipv4 unicast import vrf"),
+  BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF("bgp address-family ipv6 unicast import vrf"),
+  BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST(
+      "bgp address-family l2vpn advertise ipv4 unicast"),
+  BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST(
+      "bgp address-family l2vpn advertise ipv6 unicast"),
   BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP(
       "bgp ipv4 unicast redistribute connected route-map"),
   BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP("bgp ipv4 unicast redistribute static route-map"),

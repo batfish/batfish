@@ -23,6 +23,7 @@ import com.google.common.graph.ValueGraph;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -68,6 +69,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopology;
@@ -145,6 +147,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private Builder<Bgpv4Route> _bgpv4DeltaBuilder = RibDelta.builder();
   /** {@link RibDelta} representing changes to {@link #_ebgpv4Rib} in the current iteration */
   @Nonnull private Builder<Bgpv4Route> _ebgpv4DeltaBuilder = RibDelta.builder();
+  /**
+   * Keep track of routes we had imported from other VRF during leaking, to avoid exporting them
+   * again (chain leaking).
+   */
+  @Nonnull private final Set<Bgpv4Route> _importedFromOtherVrfs = new HashSet<>(0);
   /**
    * Keep track of redistributed routes that we have merged into our local RIB.
    *
@@ -1666,7 +1673,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   public void importCrossVrfV4Routes(
       Stream<RouteAdvertisement<Bgpv4Route>> routesToLeak,
       @Nullable String importPolicyName,
-      String importFromVrf) {
+      String importFromVrf,
+      BgpLeakConfig bgpConfig) {
     // Keep track of changes to the RIBs using delta builders, keyed by RIB type
     Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltaBuilders = new IdentityHashMap<>();
     ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
@@ -1684,7 +1692,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
            non-routing after redistribution). Also, update the next hop to be next-vrf
           */
           Bgpv4Route.Builder builder =
-              route.toBuilder().setNonRouting(false).setNextHop(NextHopVrf.of(importFromVrf));
+              route.toBuilder()
+                  .setNonRouting(false)
+                  .setNextHop(NextHopVrf.of(importFromVrf))
+                  .addCommunity(bgpConfig.getAttachRouteTarget());
 
           // Process route through import policy, if one exists
           boolean accept = true;
@@ -1696,12 +1707,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 getRib(
                     Bgpv4Route.class,
                     route.getProtocol() == RoutingProtocol.IBGP ? RibType.IBGP : RibType.EBGP);
+            Bgpv4Route transformedRoute = builder.build();
             if (ra.isWithdrawn()) {
-              ribDeltaBuilders.get(targetRib).remove(builder.build(), Reason.WITHDRAW);
+              ribDeltaBuilders.get(targetRib).remove(transformedRoute, Reason.WITHDRAW);
+              _importedFromOtherVrfs.remove(transformedRoute);
             } else {
-              RibDelta<Bgpv4Route> d = targetRib.mergeRouteGetDelta(builder.build());
+              RibDelta<Bgpv4Route> d = targetRib.mergeRouteGetDelta(transformedRoute);
               LOGGER.debug("Node {}, VRF {}, route {} leaked", _hostname, _vrfName, d);
               ribDeltaBuilders.get(targetRib).from(d);
+              _importedFromOtherVrfs.add(transformedRoute);
             }
           } else {
             LOGGER.trace(
@@ -1799,8 +1813,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * locally-generated and received routes.
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
-    // TODO: in the fullness of time this is what getV4Routes should return.
-    return Stream.concat(_localDeltaPrev.getActions(), _bgpv4DeltaPrev.getActions());
+    return Stream.concat(
+        _localDeltaPrev.getActions(),
+        _bgpv4DeltaPrev.getActions().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute())));
   }
 
   /**

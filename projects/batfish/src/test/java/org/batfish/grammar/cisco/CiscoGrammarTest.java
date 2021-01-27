@@ -191,6 +191,8 @@ import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborI
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
@@ -226,6 +228,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
@@ -249,6 +252,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -348,14 +352,17 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.TunnelConfiguration.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakingConfig;
+import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -372,6 +379,7 @@ import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
+import org.batfish.datamodel.matchers.BgpRouteMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpMetricMatchers;
@@ -416,6 +424,9 @@ import org.batfish.representation.cisco.BgpRedistributionPolicy;
 import org.batfish.representation.cisco.CiscoAsaNat;
 import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoIosDynamicNat;
+import org.batfish.representation.cisco.CiscoIosNat;
+import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
@@ -426,6 +437,7 @@ import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1338,6 +1350,24 @@ public final class CiscoGrammarTest {
     assertThat(
         c.getVendorFamily().getCisco().getBanners().get("login"),
         equalTo("Some text\nSome more text\n"));
+  }
+
+  @Test
+  public void testIosBgpExtcommunityParsing() throws IOException {
+    CiscoConfiguration c = parseCiscoConfig("ios-bgp-extcommunity", ConfigurationFormat.CISCO_IOS);
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    c.setAnswerElement(ccae);
+    c.setWarnings(new Warnings(true, true, true));
+    assertThat(
+        ccae, hasDefinedStructure(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT"));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            c.getFilename(), EXTCOMMUNITY_LIST, "COM_WITH_RT", ROUTE_MAP_MATCH_EXTCOMMUNITY));
+    // convert to mark structures.
+    c.toVendorIndependentConfigurations();
+    assertThat(
+        ccae, hasNumReferrers(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT", 1));
   }
 
   @Test
@@ -5456,7 +5486,74 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosDynamicNat() throws IOException {
+  public void testIosDynamicNatExtraction() throws IOException {
+    CiscoConfiguration c = parseCiscoConfig("ios-nat-dynamic", ConfigurationFormat.CISCO_IOS);
+    assertThat(c.getCiscoIosNats(), hasSize(6));
+    List<CiscoIosNat> nats = c.getCiscoIosNats();
+    {
+      assertThat(nats.get(0), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(0);
+      assertThat(nat.getAclName(), equalTo("10"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("in-src-nat-pool"));
+      assertThat(nat.getOverload(), equalTo(true));
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(1), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(1);
+      assertThat(nat.getAclName(), equalTo("13"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), equalTo("Ethernet10"));
+      assertThat(nat.getNatPool(), nullValue());
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(2), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(2);
+      assertThat(nat.getAclName(), equalTo("11"));
+      assertThat(nat.getAction(), equalTo(RuleAction.DESTINATION_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("in-dst-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(3), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(3);
+      assertThat(nat.getAclName(), equalTo("22"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(4), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(4);
+      assertThat(nat.getAclName(), equalTo("12"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-in-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+    {
+      assertThat(nats.get(5), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(5);
+      assertThat(nat.getAclName(), equalTo("23"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+  }
+
+  @Test
+  public void testIosDynamicNatConversion() throws IOException {
     Configuration c = parseConfig("ios-nat-dynamic");
     String insideIntf = "Ethernet1";
     String outsideIntf = "Ethernet2";
@@ -5546,6 +5643,176 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosDynamicNatRouteMapsExtraction() throws IOException {
+    CiscoConfiguration c =
+        parseCiscoConfig("ios-nat-dynamic-route-maps", ConfigurationFormat.CISCO_IOS);
+    assertThat(c.getCiscoIosNats(), hasSize(6));
+    List<CiscoIosNat> nats = c.getCiscoIosNats();
+    {
+      assertThat(nats.get(0), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(0);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("10"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("in-src-nat-pool"));
+      assertThat(nat.getOverload(), equalTo(true));
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(1), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(1);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("13"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), equalTo("Ethernet10"));
+      assertThat(nat.getNatPool(), nullValue());
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    // note, the indices skip 2 because there's an inside dest rule that's only present to test how
+    // it gets incorporated in the converted transformations
+    {
+      assertThat(nats.get(3), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(3);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("22"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), nullValue());
+    }
+    {
+      assertThat(nats.get(4), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(4);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("12"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_INSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-in-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+    {
+      assertThat(nats.get(5), instanceOf(CiscoIosDynamicNat.class));
+      CiscoIosDynamicNat nat = (CiscoIosDynamicNat) nats.get(5);
+      assertNull(nat.getAclName());
+      assertThat(nat.getRouteMap(), equalTo("23"));
+      assertThat(nat.getAction(), equalTo(RuleAction.SOURCE_OUTSIDE));
+      assertThat(nat.getInterface(), nullValue());
+      assertThat(nat.getNatPool(), equalTo("vrf-out-src-nat-pool"));
+      assertFalse(nat.getOverload());
+      assertThat(nat.getVrf(), equalTo("vrf1"));
+    }
+  }
+
+  @Test
+  public void testIosDynamicNatRouteMapsConversion() throws IOException {
+    Configuration c = parseConfig("ios-nat-dynamic-route-maps");
+    String insideIntf = "Ethernet1";
+    String outsideIntf0 = "Ethernet2/0";
+    String outsideIntf1 = "Ethernet2/1";
+    String vrfInsideIntf = "Ethernet3";
+    String vrfOutsideIntf = "Ethernet4";
+    assertThat(c, hasInterface(insideIntf, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf0, notNullValue()));
+    assertThat(c, hasInterface(outsideIntf1, notNullValue()));
+    assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
+    assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
+    MatchSrcInterface matchSrcInside = matchSrcInterface(insideIntf, vrfInsideIntf);
+
+    {
+      // NAT in default VRF
+      Ip insideSrcPoolFirst = Ip.parse("3.3.3.1");
+      Ip insideSrcPoolLast = Ip.parse("3.3.3.254");
+      Ip insideDstPoolFirst = Ip.parse("3.3.4.1");
+      Ip insideDstPoolLast = Ip.parse("3.3.4.254");
+      Ip outsideSrcPoolFirst = Ip.parse("4.4.4.1");
+      Ip outsideSrcPoolLast = Ip.parse("4.4.4.254");
+      Ip insideSrcIfaceAddr = Ip.parse("1.1.1.1");
+      String insideSrcPoolAcl = "10";
+      String insideSrcIfaceAcl = "13";
+      String insideDstPoolAcl = computeDynamicDestinationNatAclName("11");
+      String outsideSrcPoolAcl = "22";
+
+      Interface inside = c.getAllInterfaces().get(insideIntf);
+      assertThat(inside.getIncomingTransformation(), nullValue());
+      assertThat(inside.getOutgoingTransformation(), nullValue());
+
+      Interface outside0 = c.getAllInterfaces().get(outsideIntf0);
+      Interface outside1 = c.getAllInterfaces().get(outsideIntf1);
+
+      Transformation inTransformation =
+          when(and(
+                  permittedByAcl(outsideSrcPoolAcl),
+                  // copied from CiscoIosNatUtil#toExpr, which is not visible from this package
+                  new TrueExpr(
+                      TraceElement.of(
+                          String.format("Matched outside interface %s", outsideIntf0)))))
+              .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
+              .build();
+
+      assertThat(outside0.getIncomingTransformation(), equalTo(inTransformation));
+
+      // The route-map used for the outside source rule specifies "match interface Ethernet2/0",
+      // i.e. outside0. Since it will never match traffic forwarded out outside1, that interface
+      // should have no incoming transformation.
+      assertNull(outside1.getIncomingTransformation());
+
+      Transformation destTransformation =
+          when(and(permittedByAcl(insideDstPoolAcl), matchSrcInside))
+              .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
+              .build();
+
+      Transformation outTransformation =
+          when(and(permittedByAcl(insideSrcPoolAcl), matchSrcInside))
+              .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
+              .setAndThen(destTransformation)
+              .setOrElse(
+                  when(and(permittedByAcl(insideSrcIfaceAcl), matchSrcInside))
+                      .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
+                      .setAndThen(destTransformation)
+                      .setOrElse(destTransformation)
+                      .build())
+              .build();
+      // both interfaces should have the same outgoing transformation since the route-maps used for
+      // inside source rules don't specify match interfaces
+      assertThat(outside0.getOutgoingTransformation(), equalTo(outTransformation));
+      assertThat(outside1.getOutgoingTransformation(), equalTo(outTransformation));
+    }
+    {
+      // NAT in vrf1
+      Ip insidePoolFirst = Ip.parse("5.5.5.1");
+      Ip insidePoolLast = Ip.parse("5.5.5.254");
+      Ip outsidePoolFirst = Ip.parse("6.6.6.1");
+      Ip outsidePoolLast = Ip.parse("6.6.6.254");
+      String insideAclName = "12";
+      String outsideAclName = "23";
+
+      Interface inside = c.getAllInterfaces().get(vrfInsideIntf);
+      assertThat(inside.getIncomingTransformation(), nullValue());
+      assertThat(inside.getOutgoingTransformation(), nullValue());
+
+      Interface outside = c.getAllInterfaces().get(vrfOutsideIntf);
+
+      Transformation inTransformation =
+          when(permittedByAcl(outsideAclName))
+              .apply(assignSourceIp(outsidePoolFirst, outsidePoolLast))
+              .build();
+
+      assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
+
+      Transformation outTransformation =
+          when(and(permittedByAcl(insideAclName), matchSrcInside))
+              .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
+              .build();
+
+      assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
+    }
+  }
+
+  @Test
   public void testIosStaticNat() throws IOException {
     Configuration c = parseConfig("ios-nat-static");
     String insideIntf = "Ethernet1";
@@ -5568,17 +5835,16 @@ public final class CiscoGrammarTest {
       Prefix nat2Global = Prefix.parse("2.2.2.0/14");
       Prefix nat4Global = Prefix.parse("6.6.6.6/32");
       Prefix nat3Global = Prefix.parse("2.2.3.0/24");
+      String nat1Acl = "10"; // ACL referenced by NAT 1's route-map
 
       Interface inside = c.getAllInterfaces().get(insideIntf);
       assertThat(inside.getIncomingTransformation(), nullValue());
       assertThat(inside.getOutgoingTransformation(), nullValue());
 
       Interface outside = c.getAllInterfaces().get(outsideIntf);
-      assertThat(outside.getIncomingTransformation(), notNullValue());
-      assertThat(outside.getOutgoingTransformation(), notNullValue());
 
       Transformation inDestinationTransformation =
-          when(matchDst(nat1Global))
+          when(and(matchDst(nat1Global), permittedByAcl(nat1Acl)))
               .apply(shiftDestinationIp(nat1Local))
               .setOrElse(
                   when(matchDst(nat3Global))
@@ -5603,7 +5869,7 @@ public final class CiscoGrammarTest {
               .build();
 
       Transformation outTransformation =
-          when(and(matchSrc(nat1Local), matchSrcIfaceInside))
+          when(and(matchSrc(nat1Local), permittedByAcl(nat1Acl), matchSrcIfaceInside))
               .apply(shiftSourceIp(nat1Global))
               .setAndThen(outDestinationTransformation)
               .setOrElse(
@@ -7017,6 +7283,29 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testRouteMapMatchInterface() throws IOException {
+    String hostname = "ios-route-map-match-interface";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    // Ensure warning was filed regarding lack of match interface support
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Route-map match interface is not fully supported. Batfish will ignore clauses"
+                    + " using match interface for route filtering.")));
+
+    // Ensure the converted route-map ignores the match-interface clause
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    RoutingPolicy rm = c.getRoutingPolicies().get("rm");
+    assertThat(
+        rm.getStatements(), contains(Statements.ReturnLocalDefaultAction.toStaticStatement()));
+  }
+
+  @Test
   public void testSetMetricEigrp() throws IOException {
     Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
 
@@ -7189,10 +7478,15 @@ public final class CiscoGrammarTest {
   public void testIosVrfLeakingConversion() throws IOException {
     String hostname = "ios-vrf-leaking";
     Configuration c = parseConfig(hostname);
-    VrfLeakingConfig.Builder builder = VrfLeakingConfig.builder().setLeakAsBgp(true);
+    VrfLeakingConfig.Builder builder =
+        VrfLeakingConfig.builder()
+            .setBgpLeakConfig(new BgpLeakConfig(ExtendedCommunity.target(65003, 11)));
     assertThat(
         c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
         contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build()));
+    assertThat(
+        c.getVrfs().get("NOT_UNDER_ROUTER_BGP").getVrfLeakConfigs(),
+        contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy(null).build()));
     assertThat(
         c.getVrfs().get("DST_IMPOSSIBLE").getVrfLeakConfigs(),
         contains(
@@ -7210,15 +7504,45 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
     SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs = dp.getRibs().get(hostname);
     Set<AbstractRoute> dstVrfRoutes = ribs.get("DST_VRF").getRoutes();
+    Matcher<AbstractRoute> leakedRouteMatcher2220 =
+        isBgpv4RouteThat(
+            allOf(
+                hasPrefix(Prefix.parse("2.2.2.0/24")),
+                hasProtocol(RoutingProtocol.BGP),
+                hasNextHop(NextHopVrf.of("SRC_VRF")),
+                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
     assertThat(
         dstVrfRoutes,
         // 1.1.1.1/32 is denied by import map, only 2.2.2.0/24 is expected to be leaked.
-        contains(
+        contains(leakedRouteMatcher2220));
+    // VRF not defined under router bgp should still have a process, and get both routes
+    // (because no import map is defined)
+    assertThat(
+        batfish
+            .loadConfigurations(snapshot)
+            .get(hostname)
+            .getVrfs()
+            .get("NOT_UNDER_ROUTER_BGP")
+            .getBgpProcess(),
+        notNullValue());
+    assertThat(
+        ribs.get("NOT_UNDER_ROUTER_BGP").getRoutes(),
+        containsInAnyOrder(
+            leakedRouteMatcher2220,
             isBgpv4RouteThat(
                 allOf(
-                    hasPrefix(Prefix.parse("2.2.2.0/24")),
+                    hasPrefix(Prefix.parse("1.1.1.1/32")),
                     hasProtocol(RoutingProtocol.BGP),
-                    hasNextHop(NextHopVrf.of("SRC_VRF"))))));
+                    hasNextHop(NextHopVrf.of("SRC_VRF")),
+                    BgpRouteMatchers.hasCommunities(
+                        contains(ExtendedCommunity.target(65003, 11)))))));
     assertThat(ribs.get("DST_IMPOSSIBLE").getRoutes(), empty());
+  }
+
+  @Test
+  public void testNatMalformedNatPool() throws IOException {
+    String hostname = "ios-nat-malformed-pool";
+    // Do not crash
+    parseConfig(hostname);
   }
 }

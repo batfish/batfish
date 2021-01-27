@@ -144,6 +144,7 @@ public final class CumulusConversions {
   public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
 
   public static final long DEFAULT_MAX_MED = 4294967294L;
+  public static final long DEFAULT_OSPF_MAX_METRIC = 0xFFFF;
 
   @VisibleForTesting
   static GeneratedRoute GENERATED_DEFAULT_ROUTE =
@@ -501,7 +502,7 @@ public final class CumulusConversions {
     } else if (neighbor instanceof BgpIpNeighbor) {
       BgpIpNeighbor ipNeighbor = (BgpIpNeighbor) neighbor;
       addIpv4BgpNeighbor(c, vsConfig, ipNeighbor, localAs, bgpVrf, viBgpProcess, w);
-    } else if (!(neighbor instanceof BgpPeerGroupNeighbor)) {
+    } else if (!(neighbor instanceof BgpPeerGroupNeighbor || neighbor instanceof BgpIpv6Neighbor)) {
       throw new IllegalArgumentException(
           "Unsupported BGP neighbor type: " + neighbor.getClass().getSimpleName());
     }
@@ -520,6 +521,17 @@ public final class CumulusConversions {
     // if an interface neighbor has only one address and that address is a /31, it gets treated as
     // numbered peer
     Interface viIface = c.getAllInterfaces().get(neighbor.getName());
+
+    // if this interface is not defined warn and move on
+    if (viIface == null) {
+      w.redFlag(
+          String.format(
+              "BGP interface neighbor is defined on %s, but the interface does not exist on the"
+                  + " device",
+              neighbor.getName()));
+      return;
+    }
+
     Optional<Ip> inferredIp = inferPeerIp(viIface);
     if (inferredIp.isPresent()) {
       InterfaceAddress localAddress = viIface.getAddress();
@@ -706,7 +718,7 @@ public final class CumulusConversions {
                 null));
     List<Statement> defaultRouteExportStatements;
     if (defaultOriginateExportMapName == null
-        || !c.getRoutingPolicies().keySet().contains(defaultOriginateExportMapName)) {
+        || !c.getRoutingPolicies().containsKey(defaultOriginateExportMapName)) {
       defaultRouteExportStatements =
           ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
     } else {
@@ -986,7 +998,7 @@ public final class CumulusConversions {
               // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
               BooleanExpr weInterior = BooleanExprs.TRUE;
               String mapName = redistributeProtocolPolicy.getRouteMap();
-              if (mapName != null && routeMaps.keySet().contains(mapName)) {
+              if (mapName != null && routeMaps.containsKey(mapName)) {
                 weInterior = new CallExpr(mapName);
               }
               BooleanExpr we =
@@ -1244,6 +1256,11 @@ public final class CumulusConversions {
 
     addOspfInterfaces(vsConfig, vrfInterfaces, proc.getProcessId(), w);
     proc.setAreas(computeOspfAreas(vsConfig, vrfInterfaces.keySet()));
+
+    // Handle Max Metric Router LSA
+    if (firstNonNull(vsConfig.getOspfProcess().getMaxMetricRouterLsa(), Boolean.FALSE)) {
+      proc.setMaxMetricTransitLinks(DEFAULT_OSPF_MAX_METRIC);
+    }
 
     // Handle Redistribution
     String ospfExportPolicyName = computeOspfExportPolicyName(ospfVrf.getVrfName());

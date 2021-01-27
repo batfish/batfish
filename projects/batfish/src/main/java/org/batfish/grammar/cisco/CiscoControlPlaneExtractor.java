@@ -30,6 +30,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.DEPI_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_TUNNEL;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY_RULE;
+import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY_MAP;
@@ -249,6 +252,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_ADD
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
@@ -660,6 +665,8 @@ import org.batfish.grammar.cisco.CiscoParser.Ip_community_list_standard_tailCont
 import org.batfish.grammar.cisco.CiscoParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_domain_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_extcommunity_list_expandedContext;
+import org.batfish.grammar.cisco.CiscoParser.Ip_extcommunity_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_hostnameContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ip_prefix_list_tailContext;
@@ -711,6 +718,8 @@ import org.batfish.grammar.cisco.CiscoParser.Management_ssh_ip_access_groupConte
 import org.batfish.grammar.cisco.CiscoParser.Management_telnet_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_as_path_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_community_list_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Match_extcommunity_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Match_interface_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_prefix_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_access_list_rm_stanzaContext;
@@ -956,6 +965,7 @@ import org.batfish.grammar.cisco.CiscoParser.Set_community_list_additive_rm_stan
 import org.batfish.grammar.cisco.CiscoParser.Set_community_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_none_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Set_extcommunity_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_local_preference_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_metric_eigrp_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_metric_rm_stanzaContext;
@@ -1127,6 +1137,8 @@ import org.batfish.representation.cisco.RouteMapClause;
 import org.batfish.representation.cisco.RouteMapContinue;
 import org.batfish.representation.cisco.RouteMapMatchAsPathAccessListLine;
 import org.batfish.representation.cisco.RouteMapMatchCommunityListLine;
+import org.batfish.representation.cisco.RouteMapMatchExtcommunityLine;
+import org.batfish.representation.cisco.RouteMapMatchInterfaceLine;
 import org.batfish.representation.cisco.RouteMapMatchIpAccessListLine;
 import org.batfish.representation.cisco.RouteMapMatchIpPrefixListLine;
 import org.batfish.representation.cisco.RouteMapMatchIpv6AccessListLine;
@@ -6098,6 +6110,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterIp_extcommunity_list_expanded(Ip_extcommunity_list_expandedContext ctx) {
+    todo(ctx);
+    String name = ctx.name != null ? ctx.name.getText() : Integer.toString(toInteger(ctx.num));
+    _configuration.defineStructure(EXTCOMMUNITY_LIST_EXPANDED, name, ctx);
+  }
+
+  @Override
+  public void enterIp_extcommunity_list_standard(Ip_extcommunity_list_standardContext ctx) {
+    todo(ctx);
+    String name = ctx.name != null ? ctx.name.getText() : Integer.toString(toInteger(ctx.num));
+    _configuration.defineStructure(EXTCOMMUNITY_LIST_STANDARD, name, ctx);
+  }
+
+  @Override
   public void exitIpl_policy(Ipl_policyContext ctx) {
     todo(ctx);
     String name = ctx.name.getText();
@@ -6128,6 +6154,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = _currentIosNatPoolName;
     Ip first = toIp(ctx.first);
     Ip last = toIp(ctx.last);
+    if (first.compareTo(last) > 0) {
+      warn(ctx, String.format("Skipping malformed NAT pool %s. First IP > End Ip", name));
+      return;
+    }
     if (ctx.mask != null) {
       Prefix subnet = IpWildcard.ipWithWildcardMask(first, toIp(ctx.mask).inverted()).toPrefix();
       createNatPool(name, first, last, subnet, ctx);
@@ -6145,6 +6175,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = _currentIosNatPoolName;
     Ip first = toIp(ctx.first);
     Ip last = toIp(ctx.last);
+    if (first.compareTo(last) > 0) {
+      warn(ctx, String.format("Skipping malformed NAT pool %s. First IP > End Ip", name));
+      return;
+    }
     if (ctx.prefix_length != null) {
       Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
       createNatPool(name, first, last, subnet, ctx);
@@ -6225,6 +6259,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           NAT_POOL, ctx.pool.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
       nat.setNatPool(pool);
     }
+    nat.setOverload(ctx.OVERLOAD() != null);
     _currentIosSourceNat = nat;
     _configuration.getCiscoIosNats().add(_currentIosSourceNat);
   }
@@ -6293,10 +6328,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
-    // TODO Once ipnos_route_map is supported, we should assert _currentIosSourceNat != null
-    if (_currentIosSourceNat != null) {
-      _currentIosSourceNat.setAddRoute(true);
-    }
+    assert _currentIosSourceNat != null;
+    _currentIosSourceNat.setAddRoute(true);
     if (_currentIosSourceNat instanceof CiscoIosDynamicNat) {
       todo(ctx);
     }
@@ -6310,18 +6343,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIpnis_route_map(Ipnis_route_mapContext ctx) {
-    warn(ctx, "ip nat inside source route-map is not supported");
+  public void enterIpnis_route_map(Ipnis_route_mapContext ctx) {
+    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
+    nat.setAction(RuleAction.SOURCE_INSIDE);
+    String routeMap = ctx.mapname.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+    nat.setRouteMap(routeMap);
     if (ctx.iname != null) {
       String iname = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(
           INTERFACE, iname, IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+      nat.setInterface(iname);
     } else {
+      String pool = ctx.pool.getText();
       _configuration.referenceStructure(
           NAT_POOL, ctx.pool.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
+      nat.setNatPool(pool);
     }
+    nat.setOverload(ctx.OVERLOAD() != null);
+    _currentIosSourceNat = nat;
+    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
+  }
+
+  @Override
+  public void exitIpnis_route_map(Ipnis_route_mapContext ctx) {
+    _currentIosSourceNat = null;
   }
 
   @Override
@@ -6334,20 +6381,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIpnis_static(Ipnis_staticContext ctx) {
     if (ctx.ROUTE_MAP() != null) {
+      String rmName = ctx.mapname.getText();
       _configuration.referenceStructure(
-          ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
-      warn(ctx, "route-map specification in 'ip nat inside source static' is not supported");
+          ROUTE_MAP, rmName, IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
+      _currentIosSourceNat.setRouteMap(rmName);
     }
     _currentIosSourceNat = null;
   }
 
   @Override
-  public void exitIpnos_route_map(Ipnos_route_mapContext ctx) {
-    warn(ctx, "ip nat outside source route-map is not supported");
+  public void enterIpnos_route_map(Ipnos_route_mapContext ctx) {
+    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
+    nat.setAction(RuleAction.SOURCE_OUTSIDE);
+    String routeMap = ctx.mapname.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, ctx.mapname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+    nat.setRouteMap(routeMap);
+    String pool = ctx.pname.getText();
     _configuration.referenceStructure(
-        NAT_POOL, ctx.pname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+        NAT_POOL, pool, IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
+    nat.setNatPool(pool);
+    _currentIosSourceNat = nat;
+    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
+  }
+
+  @Override
+  public void exitIpnos_route_map(Ipnos_route_mapContext ctx) {
+    _currentIosSourceNat = null;
   }
 
   @Override
@@ -6749,6 +6809,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           name.getStart().getLine());
     }
     RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(names);
+    _currentRouteMapClause.addMatchLine(line);
+  }
+
+  @Override
+  public void exitMatch_extcommunity_rm_stanza(Match_extcommunity_rm_stanzaContext ctx) {
+    ImmutableSet.Builder<String> lists = ImmutableSet.builder();
+    for (VariableContext v : ctx.name_list) {
+      String name = v.getText();
+      _configuration.referenceStructure(
+          EXTCOMMUNITY_LIST, name, ROUTE_MAP_MATCH_EXTCOMMUNITY, v.getStart().getLine());
+      lists.add(name);
+    }
+    _currentRouteMapClause.addMatchLine(new RouteMapMatchExtcommunityLine(lists.build()));
+    todo(ctx);
+  }
+
+  @Override
+  public void exitMatch_interface_rm_stanza(Match_interface_rm_stanzaContext ctx) {
+    Set<String> names = new TreeSet<>();
+    for (Interface_nameContext name : ctx.interface_name()) {
+      String ifaceName = getCanonicalInterfaceName(name.getText());
+      names.add(ifaceName);
+      _configuration.referenceStructure(
+          INTERFACE, ifaceName, ROUTE_MAP_MATCH_INTERFACE, name.getStart().getLine());
+    }
+    RouteMapMatchInterfaceLine line = new RouteMapMatchInterfaceLine(names);
     _currentRouteMapClause.addMatchLine(line);
   }
 
@@ -9141,6 +9227,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
     _currentRouteMapClause.addSetLine(line);
+  }
+
+  @Override
+  public void exitSet_extcommunity_rm_stanza(Set_extcommunity_rm_stanzaContext ctx) {
+    todo(ctx);
   }
 
   @Override

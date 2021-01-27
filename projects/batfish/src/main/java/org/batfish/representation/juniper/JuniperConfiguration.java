@@ -2487,17 +2487,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     ipsecStaticConfigBuilder.setSourceInterface(externalIfaceName);
 
+    Ip localAddress = null;
     if (ikeGateway.getLocalAddress() != null) {
-      ipsecStaticConfigBuilder.setLocalAddress(ikeGateway.getLocalAddress());
+      localAddress = ikeGateway.getLocalAddress();
     } else if (externalIface != null && externalIface.getPrimaryAddress() != null) {
-      ipsecStaticConfigBuilder.setLocalAddress(externalIface.getPrimaryAddress().getIp());
-    } else {
+      localAddress = externalIface.getPrimaryAddress().getIp();
+    }
+    if (localAddress == null || !localAddress.valid()) {
       _w.redFlag(
           String.format(
               "External interface %s configured on IKE Gateway %s does not have any IP",
               externalIfaceName, ikeGateway.getName()));
       return null;
     }
+    ipsecStaticConfigBuilder.setLocalAddress(localAddress);
 
     ipsecStaticConfigBuilder.setIpsecPolicy(ipsecVpn.getIpsecPolicy());
     ipsecStaticConfigBuilder.setIkePhase1Policy(ikeGateway.getIkePolicy());
@@ -3338,7 +3341,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         for (String referencedVrf : referencedVrfs) {
           vrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setLeakAsBgp(false)
                   .setImportFromVrf(referencedVrf)
                   .setImportPolicy(instanceImportPolicy.getName())
                   .build());

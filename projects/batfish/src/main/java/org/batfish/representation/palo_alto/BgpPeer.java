@@ -36,6 +36,15 @@ public class BgpPeer implements Serializable {
     _enable = enable;
   }
 
+  @Nullable
+  public Boolean getEnableSenderSideLoopDetection() {
+    return _enableSenderSideLoopDetection;
+  }
+
+  public void setEnableSenderSideLoopDetection(boolean enableSenderSideLoopDetection) {
+    _enableSenderSideLoopDetection = enableSenderSideLoopDetection;
+  }
+
   public @Nullable Ip getLocalAddress() {
     return _localAddress;
   }
@@ -93,6 +102,7 @@ public class BgpPeer implements Serializable {
 
   private BgpConnectionOptions _connectionOptions = new BgpConnectionOptions();
   private boolean _enable;
+  private @Nullable Boolean _enableSenderSideLoopDetection;
   private @Nullable Ip _localAddress;
   private @Nullable String _localInterface;
   private final @Nonnull String _name;

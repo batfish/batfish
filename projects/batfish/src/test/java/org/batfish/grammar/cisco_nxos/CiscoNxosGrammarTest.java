@@ -1847,7 +1847,8 @@ public final class CiscoNxosGrammarTest {
                   containsInAnyOrder(
                       ConcreteInterfaceAddress.parse("10.0.0.1/24"),
                       ConcreteInterfaceAddress.parse("10.0.0.2/24"),
-                      ConcreteInterfaceAddress.parse("10.0.0.3/24")))));
+                      ConcreteInterfaceAddress.parse("10.0.0.3/24"),
+                      ConcreteInterfaceAddress.parse("10.50.0.2/16")))));
       assertThat(
           iface.getAddressMetadata(),
           allOf(
@@ -1894,10 +1895,13 @@ public final class CiscoNxosGrammarTest {
           new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.2/24"));
       InterfaceAddressWithAttributes secondary3 =
           new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.0.0.3/24"));
+      InterfaceAddressWithAttributes secondary50 =
+          new InterfaceAddressWithAttributes(ConcreteInterfaceAddress.parse("10.50.0.2/16"));
       secondary3.setTag(3L);
       secondary3.setRoutePreference(5);
       assertThat(iface.getAddress(), equalTo(primary));
-      assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary2, secondary3));
+      assertThat(
+          iface.getSecondaryAddresses(), containsInAnyOrder(secondary2, secondary3, secondary50));
       assertFalse(iface.getIpAddressDhcp());
     }
     {

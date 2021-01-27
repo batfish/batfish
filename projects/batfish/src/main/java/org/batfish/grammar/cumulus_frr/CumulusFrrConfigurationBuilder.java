@@ -13,6 +13,10 @@ import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNI
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
@@ -45,6 +49,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
@@ -86,6 +91,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_max_metric_router_lsa_administrativeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
@@ -102,9 +108,12 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi6_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_noContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
@@ -114,8 +123,9 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_default_gwContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv6_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
@@ -124,6 +134,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrati
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ip6Context;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
@@ -148,6 +159,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpIpv6Neighbor;
 import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
 import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
 import org.batfish.representation.cumulus.BgpNeighbor;
@@ -445,6 +457,48 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitSbafi_no(Sbafi_noContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitSbafi_import(Sbafi_importContext ctx) {
+    todo(ctx);
+    if (ctx.vrf_name() != null) {
+      _c.referenceStructure(
+          VRF,
+          ctx.vrf_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
+    if (ctx.route_map_name() != null) {
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.route_map_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitSbafi6_import(Sbafi6_importContext ctx) {
+    if (ctx.vrf_name() != null) {
+      _c.referenceStructure(
+          VRF,
+          ctx.vrf_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
+    if (ctx.route_map_name() != null) {
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.route_map_name().getText(),
+          BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF,
+          ctx.getStart().getLine());
+    }
+  }
+
+  @Override
   public void exitSbafi_network(Sbafi_networkContext ctx) {
     @Nullable String routeMap = null;
     if (ctx.rm != null) {
@@ -466,9 +520,29 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void enterSbafl_advertise_ipv4_unicast(Sbafl_advertise_ipv4_unicastContext ctx) {
+  public void enterSbafla_ipv4_unicast(Sbafla_ipv4_unicastContext ctx) {
     // setting in enter instead of exit since in future we can attach a routemap
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
+    if (ctx.rm != null) {
+      _w.addWarning(
+          ctx, ctx.getText(), _parser, "Route maps in 'advertise ipv4 unicast' are not supported");
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.rm.getText(),
+          BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST,
+          ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void enterSbafla_ipv6_unicast(Sbafla_ipv6_unicastContext ctx) {
+    if (ctx.rm != null) {
+      _c.referenceStructure(
+          ROUTE_MAP,
+          ctx.rm.getText(),
+          BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST,
+          ctx.getStart().getLine());
+    }
   }
 
   @Override
@@ -678,6 +752,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRo_max_metric_router_lsa_administrative(
+      Ro_max_metric_router_lsa_administrativeContext ctx) {
+    _frr.getOspfProcess().setMaxMetricRouterLsa(true);
+  }
+
+  @Override
   public void exitRo_router_id(Ro_router_idContext ctx) {
     if (_frr.getOspfProcess() == null) {
       _w.addWarning(ctx, ctx.getText(), _parser, "No OSPF process configured");
@@ -864,11 +944,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterSbn_ip(Sbn_ipContext ctx) {
-    String name = ctx.ip.getText();
     _currentBgpNeighbor =
         _currentBgpVrf
             .getNeighbors()
-            .computeIfAbsent(name, (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)));
+            .computeIfAbsent(
+                ctx.ip.getText(), (ipStr) -> new BgpIpNeighbor(ipStr, Ip.parse(ipStr)));
+  }
+
+  @Override
+  public void enterSbn_ip6(Sbn_ip6Context ctx) {
+    _currentBgpNeighbor =
+        _currentBgpVrf
+            .getNeighbors()
+            .computeIfAbsent(
+                ctx.ip6.getText(), (ipStr) -> new BgpIpv6Neighbor(ipStr, Ip6.parse(ipStr)));
   }
 
   @Override

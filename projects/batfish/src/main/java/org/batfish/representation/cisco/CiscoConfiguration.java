@@ -1713,7 +1713,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Interface toInterface(
-      String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
+      String ifaceName, Interface iface, Configuration c) {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
@@ -1893,11 +1893,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {
-      newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
+      newIface.setIncomingFilter(c.getIpAccessLists().get(incomingFilterName));
     }
     String outgoingFilterName = iface.getOutgoingFilter();
     if (outgoingFilterName != null) {
-      newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
+      newIface.setOutgoingFilter(c.getIpAccessLists().get(outgoingFilterName));
     }
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
@@ -1918,7 +1918,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else if (!ciscoAsaNats.isEmpty()) {
       generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
     } else if (!ciscoIosNats.isEmpty()) {
-      generateCiscoIosNatTransformations(ifaceName, vrfName, newIface, ipAccessLists, c);
+      generateCiscoIosNatTransformations(ifaceName, vrfName, newIface, c);
     }
 
     String routingPolicyName = iface.getRoutingPolicy();
@@ -2012,11 +2012,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void generateCiscoIosNatTransformations(
-      String ifaceName,
-      String vrfName,
-      org.batfish.datamodel.Interface newIface,
-      Map<String, IpAccessList> ipAccessLists,
-      Configuration c) {
+      String ifaceName, String vrfName, org.batfish.datamodel.Interface newIface, Configuration c) {
     if (!getNatOutside().contains(ifaceName)) {
       return;
     }
@@ -2031,9 +2027,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (!firstNonNull(nat.getVrf(), Configuration.DEFAULT_VRF_NAME).equals(vrfName)) {
         continue;
       }
-      nat.toIncomingTransformation(ipAccessLists, _natPools, _interfaces)
+      nat.toIncomingTransformation(
+              ifaceName, c.getIpAccessLists(), _routeMaps, _natPools, _interfaces, _w)
           .ifPresent(incoming -> convertedIncomingNats.put(nat, incoming));
-      nat.toOutgoingTransformation(ipAccessLists, _natPools, getNatInside(), _interfaces, c)
+      nat.toOutgoingTransformation(
+              ifaceName, _routeMaps, _natPools, getNatInside(), _interfaces, c, _w)
           .ifPresent(outgoing -> convertedOutgoingNats.put(nat, outgoing));
     }
 
@@ -3208,8 +3206,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         (ifaceName, iface) -> {
           // Handle renaming interfaces for ASA devices
           String newIfaceName = getNewInterfaceName(iface);
-          org.batfish.datamodel.Interface newInterface =
-              toInterface(newIfaceName, iface, c.getIpAccessLists(), c);
+          org.batfish.datamodel.Interface newInterface = toInterface(newIfaceName, iface, c);
           String vrfName = iface.getVrf();
           if (vrfName == null) {
             throw new BatfishException("Missing vrf name for iface: '" + iface.getName() + "'");
@@ -3392,7 +3389,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           continue;
         }
         // convert to IpsecPeerConfig
-        ipsecPeerConfigBuilder.put(name, toIpsecPeerConfig(tunnel, name, this, c));
+        toIpsecPeerConfig(tunnel, name, this, c, _w)
+            .ifPresent(config -> ipsecPeerConfigBuilder.put(name, config));
       }
     }
     c.setIpsecPeerConfigs(ipsecPeerConfigBuilder.build());
@@ -3451,6 +3449,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
           if (bgpProcess != null) {
             org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
             newVrf.setBgpProcess(newBgpProcess);
+          } else if (vrf.getIpv4UnicastAddressFamily() != null
+              && !vrf.getIpv4UnicastAddressFamily().getRouteTargetImport().isEmpty()) {
+            /*
+             * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
+             */
+            assert newVrf.getBgpProcess() == null;
+            newVrf.setBgpProcess(
+                org.batfish.datamodel.BgpProcess.builder()
+                    .setRouterId(Ip.ZERO)
+                    .setAdminCostsToVendorDefaults(c.getConfigurationFormat())
+                    .build());
           }
         });
     /*
@@ -3535,6 +3544,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
         CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
         CiscoStructureUsage.ROUTER_STATIC_ROUTE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
         CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
@@ -3617,6 +3627,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
         CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
         CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY);
+
+    markExtcommunityLists(CiscoStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY);
 
     markConcreteStructure(
         CiscoStructureType.PREFIX_LIST,
@@ -4266,6 +4278,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               CiscoStructureType.COMMUNITY_LIST_EXPANDED,
               CiscoStructureType.COMMUNITY_LIST_STANDARD));
+    }
+  }
+
+  private void markExtcommunityLists(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.EXTCOMMUNITY_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.EXTCOMMUNITY_LIST_EXPANDED,
+              CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD));
     }
   }
 

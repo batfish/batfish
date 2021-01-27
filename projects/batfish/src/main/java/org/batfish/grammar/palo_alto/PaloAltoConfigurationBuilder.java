@@ -122,6 +122,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coi_remote_portContex
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_allowContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_coo_local_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_enable_sender_side_loop_detectionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_la_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgppgp_max_prefixesContext;
@@ -202,6 +203,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Pra_allowContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Pra_denyContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_medContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_originContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Praau_weightContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Prm_address_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Prm_from_peerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Protocol_adContext;
@@ -398,6 +400,7 @@ import org.batfish.representation.palo_alto.PolicyRule.Action;
 import org.batfish.representation.palo_alto.PolicyRuleMatchFromPeerSet;
 import org.batfish.representation.palo_alto.PolicyRuleUpdateMetric;
 import org.batfish.representation.palo_alto.PolicyRuleUpdateOrigin;
+import org.batfish.representation.palo_alto.PolicyRuleUpdateWeight;
 import org.batfish.representation.palo_alto.RedistProfile;
 import org.batfish.representation.palo_alto.RedistRule;
 import org.batfish.representation.palo_alto.RedistRule.AddressFamilyIdentifier;
@@ -875,6 +878,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitPraau_weight(Praau_weightContext ctx) {
+    _currentPolicyRule.setUpdateWeight(new PolicyRuleUpdateWeight(toInteger(ctx.val.uint16())));
+  }
+
+  @Override
   public void exitPrm_from_peer(Prm_from_peerContext ctx) {
     ImmutableSet.Builder<String> peers = ImmutableSet.builder();
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
@@ -946,6 +954,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitBgppgp_enable(Bgppgp_enableContext ctx) {
     _currentBgpPeer.setEnable(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitBgppgp_enable_sender_side_loop_detection(
+      Bgppgp_enable_sender_side_loop_detectionContext ctx) {
+    _currentBgpPeer.setEnableSenderSideLoopDetection(toBoolean(ctx.yn));
   }
 
   @Override

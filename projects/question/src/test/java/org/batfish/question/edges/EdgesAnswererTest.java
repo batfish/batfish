@@ -204,21 +204,25 @@ public class EdgesAnswererTest {
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("int11")
             .setTunnelInterface("tunnel11")
+            .setLocalAddress(Ip.parse("11.11.11.11"))
             .build();
     IpsecStaticPeerConfig peer2 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("int12")
             .setTunnelInterface("tunnel12")
+            .setLocalAddress(Ip.parse("12.12.12.12"))
             .build();
     IpsecStaticPeerConfig peer3 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("int21")
             .setTunnelInterface("tunnel21")
+            .setLocalAddress(Ip.parse("21.21.21.21"))
             .build();
     IpsecStaticPeerConfig peer4 =
         IpsecStaticPeerConfig.builder()
             .setSourceInterface("int22")
             .setTunnelInterface("tunnel22")
+            .setLocalAddress(Ip.parse("22.22.22.22"))
             .build();
 
     _host1.setIpsecPeerConfigs(ImmutableSortedMap.of("peer1", peer1, "peer2", peer2));

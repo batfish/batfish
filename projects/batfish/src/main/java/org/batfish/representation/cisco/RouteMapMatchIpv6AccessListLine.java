@@ -61,4 +61,9 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
     }
     return d.simplify();
   }
+
+  @Override
+  public <T> T accept(RouteMapMatchLineVisitor<T> visitor) {
+    return visitor.visitRouteMapMatchIpv6AccessListLine(this);
+  }
 }

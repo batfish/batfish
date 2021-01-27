@@ -53,12 +53,22 @@ public class CiscoIosDynamicNatTest {
       diffIface.setInterface("diffIface");
       et.addEqualityGroup(diffIface);
     }
+    {
+      CiscoIosDynamicNat overload = baseNat();
+      overload.setOverload(true);
+      et.addEqualityGroup(overload);
+    }
+    {
+      CiscoIosDynamicNat routeMap = baseNat();
+      routeMap.setRouteMap("diffRouteMap");
+      et.addEqualityGroup(routeMap);
+    }
     et.testEquals();
   }
 
   @Test
   public void testNatCompare() {
-    // If both NATs have null ACLs, compare should give 0
+    // If both NATs have null ACLs and route-maps, compare should give 0
     assertThat(new CiscoIosDynamicNat().compareTo(new CiscoIosDynamicNat()), equalTo(0));
 
     List<CiscoIosDynamicNat> ordered =
@@ -71,6 +81,12 @@ public class CiscoIosDynamicNatTest {
             natWithAcl("Z"),
             natWithAcl("a"),
             natWithAcl("b"),
+            // NAT rules with route-maps come after ACL-based rules, sorted lexicographically
+            natWithRouteMap("0a"),
+            natWithRouteMap("10"),
+            natWithRouteMap("2"),
+            natWithRouteMap("Z"),
+            natWithRouteMap("a"),
             new CiscoIosDynamicNat());
     for (int i = 0; i < ordered.size() - 1; i++) {
       for (int j = i + 1; j < ordered.size(); j++) {
@@ -83,6 +99,12 @@ public class CiscoIosDynamicNatTest {
   private static CiscoIosDynamicNat natWithAcl(String aclName) {
     CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
     nat.setAclName(aclName);
+    return nat;
+  }
+
+  private static CiscoIosDynamicNat natWithRouteMap(String mapName) {
+    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
+    nat.setRouteMap(mapName);
     return nat;
   }
 }

@@ -468,6 +468,11 @@ ENABLE
     'enable'
 ;
 
+ENABLE_SENDER_SIDE_LOOP_DETECTION
+:
+    'enable-sender-side-loop-detection'
+;
+
 ENCRYPTION
 :
     'encryption'
@@ -1705,6 +1710,11 @@ VLAN
 VSYS
 :
     'vsys'
+;
+
+WEIGHT
+:
+    'weight'
 ;
 
 YES

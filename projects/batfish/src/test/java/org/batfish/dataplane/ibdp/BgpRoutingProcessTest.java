@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasN
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.initEvpnType3Route;
@@ -50,6 +51,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
@@ -614,11 +616,13 @@ public class BgpRoutingProcessTest {
     String otherVrf = "otherVrf";
     // Process denied prefix, specify policy
     Prefix deniedPrefix = Prefix.parse("2.2.2.0/24");
+    ExtendedCommunity routeTarget = ExtendedCommunity.target(1, 1);
     _routingProcess.importCrossVrfV4Routes(
         Stream.of(
             RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
         policy.getName(),
-        otherVrf);
+        otherVrf,
+        new BgpLeakConfig(routeTarget));
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
@@ -632,7 +636,8 @@ public class BgpRoutingProcessTest {
         Stream.of(
             RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(allowedPrefix).build())),
         policy.getName(),
-        otherVrf);
+        otherVrf,
+        new BgpLeakConfig(routeTarget));
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
@@ -644,14 +649,16 @@ public class BgpRoutingProcessTest {
                 allOf(
                     hasPrefix(allowedPrefix),
                     hasNextHop(NextHopVrf.of(otherVrf)),
-                    isNonRouting(false)))));
+                    isNonRouting(false),
+                    hasCommunities(contains(routeTarget))))));
 
     // Process denied prefix, but because no policy is specified, allow it
     _routingProcess.importCrossVrfV4Routes(
         Stream.of(
             RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
         null, // no policy
-        otherVrf);
+        otherVrf,
+        new BgpLeakConfig(routeTarget));
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
@@ -663,6 +670,12 @@ public class BgpRoutingProcessTest {
                 allOf(
                     hasPrefix(deniedPrefix),
                     hasNextHop(NextHopVrf.of(otherVrf)),
-                    isNonRouting(false)))));
+                    isNonRouting(false),
+                    hasCommunities(contains(routeTarget))))));
+
+    // Finally check that routes imported from other vrfs won't be exported for leaking.
+    // Fake up end of round
+    _routingProcess.endOfRound();
+    assertThat(_routingProcess.getRoutesToLeak().collect(Collectors.toList()), empty());
   }
 }

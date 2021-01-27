@@ -225,16 +225,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     getIncomingEdgeStream(topology)
         .forEach(
             edgeId -> {
-              if (!_intraAreaIncomingRoutes.keySet().contains(edgeId)) {
+              if (!_intraAreaIncomingRoutes.containsKey(edgeId)) {
                 intraAreaBuilder.put(edgeId, new ConcurrentLinkedQueue<>());
               }
-              if (!_interAreaIncomingRoutes.keySet().contains(edgeId)) {
+              if (!_interAreaIncomingRoutes.containsKey(edgeId)) {
                 interAreaBuilder.put(edgeId, new ConcurrentLinkedQueue<>());
               }
-              if (!_type1IncomingRoutes.keySet().contains(edgeId)) {
+              if (!_type1IncomingRoutes.containsKey(edgeId)) {
                 type1Builder.put(edgeId, new ConcurrentLinkedQueue<>());
               }
-              if (!_type2IncomingRoutes.keySet().contains(edgeId)) {
+              if (!_type2IncomingRoutes.containsKey(edgeId)) {
                 type2Builder.put(edgeId, new ConcurrentLinkedQueue<>());
               }
             });
@@ -1475,7 +1475,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @VisibleForTesting
   void enqueueMessagesInter(
       EdgeId edge, Collection<RouteAdvertisement<OspfInterAreaRoute>> routes) {
-    assert _interAreaIncomingRoutes.keySet().contains(edge);
+    assert _interAreaIncomingRoutes.containsKey(edge);
     _interAreaIncomingRoutes.get(edge).addAll(routes);
   }
 
@@ -1487,7 +1487,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   private void enqueueMessagesType1(
       EdgeId edge, Collection<RouteAdvertisement<OspfExternalType1Route>> routes) {
-    assert _type1IncomingRoutes.keySet().contains(edge);
+    assert _type1IncomingRoutes.containsKey(edge);
     _type1IncomingRoutes.get(edge).addAll(routes);
   }
 
@@ -1499,12 +1499,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    */
   private void enqueueMessagesType2(
       EdgeId edge, Collection<RouteAdvertisement<OspfExternalType2Route>> routes) {
-    assert _type2IncomingRoutes.keySet().contains(edge);
+    assert _type2IncomingRoutes.containsKey(edge);
     _type2IncomingRoutes.get(edge).addAll(routes);
   }
 
   int iterationHashCode() {
-    return Stream.of(
+    return Streams.concat(
             // Message queues
             Stream.of(
                     _intraAreaIncomingRoutes,
