@@ -6359,7 +6359,7 @@ LINE_COMMENT
    (
       '#'
       | '!'
-   ) F_NonNewlineChar* F_NewlineChar+
+   ) F_NonNewlineChar*
    {_enableIpv6Address = true;}
 
    -> channel ( HIDDEN )

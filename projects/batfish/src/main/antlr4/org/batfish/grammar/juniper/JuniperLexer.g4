@@ -52,7 +52,7 @@ LINE_COMMENT
         '#'
         | '!'
     )
-    F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
+    F_NonNewlineChar* -> channel(HIDDEN)
 ;
 
 MULTILINE_COMMENT

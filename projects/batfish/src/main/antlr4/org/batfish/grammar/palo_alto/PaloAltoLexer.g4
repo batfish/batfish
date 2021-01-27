@@ -1770,7 +1770,7 @@ LINE_COMMENT
         '#'
         | '!'
     )
-    F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+    F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
 NETFLOW_PROFILE
