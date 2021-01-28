@@ -310,7 +310,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
-          JuniperFlattener flattener = new JuniperFlattener(header);
+          JuniperFlattener flattener = new JuniperFlattener(header, input);
           ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);

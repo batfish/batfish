@@ -1,0 +1,5 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+    host-name nested-config-with-flat-statements;
+}
+set security policies from-zone A to-zone B policy P match source-address any

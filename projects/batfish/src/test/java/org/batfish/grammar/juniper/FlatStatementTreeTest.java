@@ -14,14 +14,14 @@ import static org.junit.Assert.assertThat;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.junit.Test;
 
-/** Test of {@link SetStatementTree}. */
+/** Test of {@link FlatStatementTree}. */
 @ParametersAreNonnullByDefault
-public final class SetStatementTreeTest {
+public final class FlatStatementTreeTest {
 
   @Test
-  public void testAddSetStatementIndex() {
-    SetStatementTree tree = new SetStatementTree();
-    tree.addSetStatementIndex(1);
+  public void testAddFlatStatementIndex() {
+    FlatStatementTree tree = new FlatStatementTree();
+    tree.addFlatStatementIndex(1);
 
     assertThat(tree._lines.build(), contains(1));
   }
@@ -29,11 +29,11 @@ public final class SetStatementTreeTest {
   @Test
   public void testGetOrAddSubtree() {
     String text = "foo";
-    SetStatementTree tree = new SetStatementTree();
+    FlatStatementTree tree = new FlatStatementTree();
 
     assertThat(tree._children, anEmptyMap());
 
-    SetStatementTree child = tree.getOrAddSubtree(text);
+    FlatStatementTree child = tree.getOrAddSubtree(text);
 
     assertThat(child, notNullValue());
     assertThat(tree._children, hasEntry(equalTo(text), sameInstance(child)));
@@ -41,32 +41,32 @@ public final class SetStatementTreeTest {
   }
 
   @Test
-  public void testGetSetStatementIndices() {
-    SetStatementTree tree = new SetStatementTree();
+  public void testGetFlatStatementIndices() {
+    FlatStatementTree tree = new FlatStatementTree();
 
-    assertThat(tree.getSetStatementIndices(), empty());
+    assertThat(tree.getFlatStatementIndices(), empty());
 
-    tree.addSetStatementIndex(1);
+    tree.addFlatStatementIndex(1);
 
-    assertThat(tree.getSetStatementIndices(), contains(1));
+    assertThat(tree.getFlatStatementIndices(), contains(1));
 
-    tree.getOrAddSubtree("foo").addSetStatementIndex(2);
+    tree.getOrAddSubtree("foo").addFlatStatementIndex(2);
 
-    assertThat(tree.getSetStatementIndices(), containsInAnyOrder(1, 2));
+    assertThat(tree.getFlatStatementIndices(), containsInAnyOrder(1, 2));
 
-    tree.replaceSubtree("foo").addSetStatementIndex(3);
+    tree.replaceSubtree("foo").addFlatStatementIndex(3);
 
-    assertThat(tree.getSetStatementIndices(), containsInAnyOrder(1, 3));
+    assertThat(tree.getFlatStatementIndices(), containsInAnyOrder(1, 3));
   }
 
   @Test
   public void testReplaceSubtree() {
     String text = "foo";
-    SetStatementTree tree = new SetStatementTree();
-    SetStatementTree oldChild = new SetStatementTree();
+    FlatStatementTree tree = new FlatStatementTree();
+    FlatStatementTree oldChild = new FlatStatementTree();
     tree._children.put("foo", oldChild);
 
-    SetStatementTree newChild = tree.replaceSubtree(text);
+    FlatStatementTree newChild = tree.replaceSubtree(text);
 
     assertThat(tree._children, hasEntry(equalTo(text), sameInstance(newChild)));
     assertThat(newChild, not(sameInstance(oldChild)));

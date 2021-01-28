@@ -122,6 +122,17 @@ public class VendorConfigurationFormatDetectorTest {
       assertThat(identifyConfigurationFormat(fileText), equalTo(FLAT_JUNIPER));
     }
 
+    /* Confirm hybrid (hierarchical+set-style) configs are correctly identified */
+    String hybridText =
+        ""
+            + "set {\n"
+            + "  system {\n"
+            + "    host-name hybrid;\n"
+            + "  }\n"
+            + "}\n"
+            + "set system host-name hybrid2";
+    assertThat(identifyConfigurationFormat(hybridText), equalTo(JUNIPER));
+
     /* Confirm Juniper switch format is detected */
     assertThat(identifyConfigurationFormat("set hostname\n"), equalTo(JUNIPER_SWITCH));
   }

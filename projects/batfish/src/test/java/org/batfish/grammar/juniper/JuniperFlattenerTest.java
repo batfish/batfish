@@ -20,7 +20,7 @@ import org.junit.Test;
 public class JuniperFlattenerTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
-  /** Test for https://github.com/batfish/batfish/issue/6149. */
+  /** Test for https://github.com/batfish/batfish/issues/6149. */
   @Test
   public void testGH6149Flatten() {
     String hostname = "gh-6149-flatten";
@@ -46,7 +46,7 @@ public class JuniperFlattenerTest {
 
   @Test
   public void testNestedConfigLineMap() {
-    String hostname = "nested-config";
+    String hostname = "nested-config-with-flat-statements";
     Flattener flattener =
         Batfish.flatten(
             readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
@@ -57,15 +57,28 @@ public class JuniperFlattenerTest {
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
     assert flattener instanceof JuniperFlattener;
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
-    /*
-     * Flattened config should be two lines: header line and set-host-name line
-     * This test is only checking content of the set-host-name line
-     */
-    String flatText = flattener.getFlattenedConfigurationText().split("\n", -1)[1];
 
-    /* Confirm original line numbers are preserved */
-    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
-    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("host-name")), equalTo(3));
-    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("nested-config")), equalTo(3));
+    /*
+     * Flattened config should be 3 lines: header, set-host-name, and set-security-policies.
+     * This test checks the latter two.
+     */
+
+    {
+      /* Confirm original line numbers are preserved for hierarchical words */
+      String flatText = flattener.getFlattenedConfigurationText().split("\n", -1)[1];
+      assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
+      assertThat(lineMap.getOriginalLine(2, flatText.indexOf("host-name")), equalTo(3));
+      assertThat(
+          lineMap.getOriginalLine(2, flatText.indexOf("nested-config-with-flat-statements")),
+          equalTo(3));
+    }
+    /* Confirm original line number preserved for flat statements */
+    {
+      String statement =
+          "set security policies from-zone A to-zone B policy P match source-address any";
+      for (int index = 0; index < statement.length(); ++index) {
+        assertThat(lineMap.getOriginalLine(3, index), equalTo(5));
+      }
+    }
   }
 }
