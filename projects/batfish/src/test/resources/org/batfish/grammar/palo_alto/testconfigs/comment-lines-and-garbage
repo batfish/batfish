@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: paloalto
+set deviceconfig system hostname comment-lines-and-garbage
+
+[edit]
+foo@bar(active-secondary)#
+set address bippety.boppety_1.2.3.4 ip-netmask 1.2.3.4
+
+set rulebase security rules r1 description "fleepety floop"
