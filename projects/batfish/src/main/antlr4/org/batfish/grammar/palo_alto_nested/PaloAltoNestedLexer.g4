@@ -1,7 +1,7 @@
 lexer grammar PaloAltoNestedLexer;
 
 options {
-   superClass = 'org.batfish.grammar.BatfishLexer';
+   superClass = 'org.batfish.grammar.palo_alto_nested.parsing.PaloAltoNestedBaseLexer';
 }
 
 @members {
@@ -35,19 +35,13 @@ CLOSE_PAREN
    ')'
 ;
 
-// Handle Palo Alto-style and RANCID-header-style line comments
-LINE_COMMENT
+// Handle developer and RANCID-header-style line comments
+COMMENT_LINE
 :
-    (
-        '#'
-        | '!'
-    )
-    F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
-;
-
-MULTILINE_COMMENT
-:
-   '/*' .*? '*/' -> channel(HIDDEN)
+  F_WhitespaceChar* [!#]
+  {lastTokenType() == -1 || lastTokenType() == NEWLINE || lastTokenType() == SHOW_CONFIG_LINE}?
+  F_NonNewlineChar* (F_NewlineChar+ | EOF)
+    -> skip // so not counted as last token
 ;
 
 OPEN_BRACE
@@ -82,9 +76,11 @@ WORD
    | F_Word
 ;
 
+NEWLINE: F_NewlineChar+ -> channel(HIDDEN);
+
 WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> skip // so not counted as last token
 ;
 
 fragment
@@ -108,7 +104,7 @@ F_QuotedString
 fragment
 F_WhitespaceChar
 :
-   [ \t\u000C\r\n]
+   [ \t\u000C]
 ;
 
 fragment

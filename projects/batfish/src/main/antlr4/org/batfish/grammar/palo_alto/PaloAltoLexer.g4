@@ -1764,14 +1764,13 @@ IP_RANGE
     F_IpAddress '-' F_IpAddress
 ;
 
-LINE_COMMENT
+// Handle developer and RANCID-header-style line comments
+COMMENT_LINE
 :
-    (
-        '#'
-        | '!'
-    )
-    F_NonNewlineChar* -> channel ( HIDDEN )
+  F_Whitespace* [!#] {lastTokenType() == NEWLINE || lastTokenType() == -1}?
+  F_NonNewlineChar* (F_Newline+ | EOF) -> channel(HIDDEN)
 ;
+
 
 NETFLOW_PROFILE
 :

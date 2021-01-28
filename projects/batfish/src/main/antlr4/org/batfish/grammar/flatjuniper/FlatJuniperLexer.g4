@@ -6354,20 +6354,10 @@ IPV6_PREFIX
    F_Ipv6Prefix {_enableIpv6Address}?
 ;
 
-LINE_COMMENT
+COMMENT_LINE
 :
-   (
-      '#'
-      | '!'
-   ) F_NonNewlineChar*
-   {_enableIpv6Address = true;}
-
-   -> channel ( HIDDEN )
-;
-
-MULTILINE_COMMENT
-:
-   '/*' .*? '*/' -> channel ( HIDDEN )
+  F_WhitespaceChar* [!#] {lastTokenType() == NEWLINE || lastTokenType() == -1}?
+  F_NonNewlineChar* (F_NewlineChar+ | EOF) -> channel(HIDDEN)
 ;
 
 NEWLINE
