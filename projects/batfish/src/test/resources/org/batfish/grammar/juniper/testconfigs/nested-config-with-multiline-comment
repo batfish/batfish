@@ -1,0 +1,5 @@
+#RANCID-CONTENT-TYPE: juniper
+/* multi-line comment that should be discarded
+   */system {
+    host-name nested-config-with-multiline-comment;
+}
