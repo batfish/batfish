@@ -54,6 +54,11 @@ COMMENT_LINE
     -> skip // so not counted as last token
 ;
 
+MULTILINE_COMMENT
+:
+   '/*' .*? '*/' -> skip // so not counted as last token
+;
+
 OPEN_BRACE
 :
    '{'

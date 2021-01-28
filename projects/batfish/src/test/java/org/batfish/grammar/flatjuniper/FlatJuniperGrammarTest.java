@@ -2330,6 +2330,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNestedConfigWithMultilineComment() throws IOException {
+    String hostname = "nested-config-with-multiline-comment";
+
+    // Confirm extraction works for nested configs even in the presence of multiline comments
+    assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
   public void testNestedConfigStructureDef() throws IOException {
     String hostname = "nested-config-structure-def";
     String filename = "configs/" + hostname;
