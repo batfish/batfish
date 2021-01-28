@@ -4,15 +4,14 @@ load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "juniper",
+    name = "palo_alto_nested",
     srcs = glob(
         ["*.java"],
-        exclude = ["BUILD"],
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/java/org/batfish/grammar/juniper/parsing:juniper_base",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/juniper",
+        "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto_nested/parsing:palo_alto_nested_base",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto_nested",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
@@ -21,5 +20,5 @@ java_library(
 
 pmd_test(
     name = "pmd",
-    lib = ":juniper",
+    lib = ":palo_alto_nested",
 )

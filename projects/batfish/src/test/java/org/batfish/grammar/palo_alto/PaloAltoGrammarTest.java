@@ -3822,4 +3822,17 @@ public final class PaloAltoGrammarTest {
         hasNumReferrers(
             filename, ADDRESS_OBJECT, computeObjectName(DEFAULT_VSYS_NAME, "addr2"), 1));
   }
+
+  @Test
+  public void testCommentLinesAndGarbage() throws IOException {
+    String hostname = "comment-lines-and-garbage";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    PaloAltoConfiguration vsConfig =
+        (PaloAltoConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(
+        vsConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getAddressObjects(),
+        hasKey("bippety.boppety_1.2.3.4"));
+  }
 }

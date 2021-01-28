@@ -13,6 +13,7 @@ java_library(
     javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//projects/batfish-common-protocol:parser_common",
+        "//projects/batfish/src/main/java/org/batfish/grammar/juniper/parsing:juniper_base",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )

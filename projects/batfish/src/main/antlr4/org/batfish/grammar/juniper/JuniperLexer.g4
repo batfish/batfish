@@ -1,7 +1,7 @@
 lexer grammar JuniperLexer;
 
 options {
-   superClass = 'org.batfish.grammar.BatfishLexer';
+   superClass = 'org.batfish.grammar.juniper.parsing.JuniperBaseLexer';
 }
 
 @members {
@@ -46,18 +46,12 @@ INACTIVE
 ;
 
 // Handle Juniper-style and RANCID-header-style line comments
-LINE_COMMENT
+COMMENT_LINE
 :
-    (
-        '#'
-        | '!'
-    )
-    F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
-;
-
-MULTILINE_COMMENT
-:
-   '/*' .*? '*/' -> channel(HIDDEN)
+  F_WhitespaceChar* [!#]
+  {lastTokenType() == -1 || lastTokenType() == NEWLINE}?
+  F_NonNewlineChar* (F_NewlineChar+ | EOF)
+    -> skip // so not counted as last token
 ;
 
 OPEN_BRACE
@@ -87,9 +81,11 @@ WORD
    | F_WordChar+
 ;
 
+NEWLINE: F_NewlineChar+ -> channel(HIDDEN);
+
 WS
 :
-   F_WhitespaceChar+ -> channel(HIDDEN)
+   F_WhitespaceChar+ -> skip // so not counted as last token
 ;
 
 fragment
@@ -119,7 +115,7 @@ F_QuotedString
 fragment
 F_WhitespaceChar
 :
-   [ \t\u000C\r\n]
+   [ \t\u000C]
 ;
 
 fragment
