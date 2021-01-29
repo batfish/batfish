@@ -32,11 +32,11 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Table;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -121,10 +121,12 @@ public class RoutesAnswererUtil {
     if (nextHopIp == null || ipOwners == null) {
       return null;
     }
-    // TODO: https://github.com/batfish/batfish/issues/1862
-    return ipOwners.getOrDefault(nextHopIp, ImmutableSet.of()).stream()
-        .min(Comparator.naturalOrder())
-        .orElse(null);
+    Set<String> nextNodes = ipOwners.getOrDefault(nextHopIp, ImmutableSet.of());
+    if (nextNodes.size() == 1) {
+      return Iterables.getOnlyElement(nextNodes);
+    }
+    // TODO: https://github.com/batfish/batfish/issues/1862 can try harder for multiple outs
+    return null;
   }
 
   /**
