@@ -232,22 +232,26 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkJuniper(boolean preMatch) {
     if (_notJuniper) {
       return null;
+    } else if (FLATTENED_JUNIPER_PATTERN.matcher(_fileText).find(0)) {
+      return ConfigurationFormat.FLAT_JUNIPER;
     } else if (_fileText.contains("set hostname")) {
       return ConfigurationFormat.JUNIPER_SWITCH;
-    } else if (FLATTENED_JUNIPER_PATTERN.matcher(_fileText).find(0)
-        || FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN.matcher(_fileText).find(0)
-        || (_fileText.contains("apply-groups") && SET_PATTERN.matcher(_fileText).find(0))) {
-      return ConfigurationFormat.FLAT_JUNIPER;
-    } else if (_fileText.contains("system")
-            && _fileText.contains("{")
-            && _fileText.contains("}")
-            && _fileText.contains("host-name")
-            && _fileText.contains("interfaces")
-        || fileTextMatches(JUNIPER_ACL_PATTERN)
-        || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
-        || fileTextMatches(JUNIPER_SNMP_PATTERN)) {
-      return ConfigurationFormat.JUNIPER;
-    } else if (preMatch) {
+    }
+
+    // Decide whether we believe this is a Juniper file.
+    boolean isJuniper =
+        preMatch
+            || FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN.matcher(_fileText).find(0)
+            || (_fileText.contains("apply-groups") && SET_PATTERN.matcher(_fileText).find(0))
+            || fileTextMatches(JUNIPER_ACL_PATTERN)
+            || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
+            || fileTextMatches(JUNIPER_SNMP_PATTERN)
+            || _fileText.contains("system")
+                && _fileText.contains("{")
+                && _fileText.contains("}")
+                && _fileText.contains("host-name")
+                && _fileText.contains("interfaces");
+    if (isJuniper) {
       return (_fileText.contains("{"))
           ? ConfigurationFormat.JUNIPER
           : ConfigurationFormat.FLAT_JUNIPER;

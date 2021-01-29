@@ -40,6 +40,13 @@ CLOSE_PAREN
    ')'
 ;
 
+// The start of a flat line
+START_FLAT_LINE
+:
+  F_WhitespaceChar* ('activate'|'deactivate'|'delete'|'insert'|'set')
+  {lastTokenType() == -1 || lastTokenType() == NEWLINE}?
+;
+
 INACTIVE
 :
    'inactive:'

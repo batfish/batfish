@@ -22,16 +22,24 @@ juniper_configuration
 
 statement
 :
+  flat_statement
+  | hierarchical_statement
+;
+
+flat_statement
+:
+  START_FLAT_LINE words += word+
+;
+
+hierarchical_statement
+:
   (
     INACTIVE
     | REPLACE
   )? words += word+
   (
     braced_clause
-    |
-    (
-      bracketed_clause terminator
-    )
+    | bracketed_clause terminator
     | terminator
   )
 ;
