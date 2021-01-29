@@ -2117,8 +2117,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ipv4af.setAddressFamilyCapabilities(
         // TODO: need to support other setAddressFamilyCapabilities like sendCommunity, etc.
         AddressFamilyCapabilities.builder()
-            .setAllowRemoteAsOut(
-                true) // PAN always sends routes, but may change AS path (see above)
+            // PAN always sends routes, but may change AS path (enable-sender-side-loop-detection)
+            .setAllowRemoteAsOut(true)
+            // PAN always sends communities, but they can be updated (including remove all)
+            .setSendCommunity(true)
+            .setSendExtendedCommunity(true)
             .build());
 
     ipv4af.setExportPolicy(
