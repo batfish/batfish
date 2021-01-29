@@ -439,6 +439,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "2.1.1.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : null,
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
           "id" : "node-as2border1",
           "name" : "as2border1"
         },
@@ -466,6 +481,21 @@
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "2.1.1.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : null,
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -4204,66 +4234,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/16",
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/16",
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/16",
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/16",
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 0
-      },
-      {
-        "Node" : {
           "id" : "node-as2dept1",
           "name" : "as2dept1"
         },
@@ -4804,6 +4774,36 @@
       },
       {
         "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "2.1.1.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : null,
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "2.1.1.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : null,
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
           "id" : "node-as3border2",
           "name" : "as3border2"
         },
@@ -4894,21 +4894,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/16",
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 0
-      },
-      {
-        "Node" : {
           "id" : "node-as2border2",
           "name" : "as2border2"
         },
@@ -4966,6 +4951,36 @@
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "2.1.1.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : null,
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/16",
+        "Next_Hop_IP" : "2.1.1.2",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : null,
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 0
       },
       {
         "Node" : {
@@ -5146,21 +5161,6 @@
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/16",
-        "Next_Hop_IP" : "2.1.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 0
       }
     ],
     "summary" : {

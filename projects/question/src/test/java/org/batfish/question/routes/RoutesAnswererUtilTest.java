@@ -365,6 +365,10 @@ public class RoutesAnswererUtilTest {
         computeNextHopNode(
             Ip.parse("1.1.1.1"), ImmutableMap.of(Ip.parse("1.1.1.2"), ImmutableSet.of("n1"))),
         nullValue());
+    assertThat(
+        computeNextHopNode(
+            Ip.parse("1.1.1.1"), ImmutableMap.of(Ip.parse("1.1.1.1"), ImmutableSet.of("n1", "n2"))),
+        nullValue());
   }
 
   @Test
