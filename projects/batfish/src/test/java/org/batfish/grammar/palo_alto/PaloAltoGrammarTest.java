@@ -911,6 +911,12 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
     assertTrue(
         peer.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut());
+    assertTrue(
+        peer.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getSendCommunity());
+    assertTrue(
+        peer.getIpv4UnicastAddressFamily()
+            .getAddressFamilyCapabilities()
+            .getSendExtendedCommunity());
     // BgpRoutingProcess requires an export policy be present
     String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
     assertThat(exportPolicyName, not(nullValue()));
