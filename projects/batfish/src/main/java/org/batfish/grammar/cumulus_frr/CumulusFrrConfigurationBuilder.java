@@ -337,7 +337,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
        * Unsupported metric long expression - do not add cases unless you
        * know what you are doing
        */
-      throw new BatfishException(String.format("Invalid BGP MED metric : " + ctx.getText()));
+      throw new BatfishException(String.format("Invalid BGP MED metric : " + getFullText(ctx)));
     }
   }
 
@@ -386,7 +386,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void enterSbaf_ipv4_unicast(Sbaf_ipv4_unicastContext ctx) {
     if (_currentBgpVrf.getIpv4Unicast() != null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "duplicate 'address-family ipv4 unicast'");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "duplicate 'address-family ipv4 unicast'");
     }
     _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
   }
@@ -394,7 +394,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void enterSbaf_l2vpn_evpn(Sbaf_l2vpn_evpnContext ctx) {
     if (_currentBgpVrf.getL2VpnEvpn() != null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "duplicate 'address-family l2vpn evpn'");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "duplicate 'address-family l2vpn evpn'");
     }
     _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
   }
@@ -525,7 +525,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpVrf.getL2VpnEvpn().setAdvertiseIpv4Unicast(new BgpL2VpnEvpnIpv4Unicast());
     if (ctx.rm != null) {
       _w.addWarning(
-          ctx, ctx.getText(), _parser, "Route maps in 'advertise ipv4 unicast' are not supported");
+          ctx,
+          getFullText(ctx),
+          _parser,
+          "Route maps in 'advertise ipv4 unicast' are not supported");
       _c.referenceStructure(
           ROUTE_MAP,
           ctx.rm.getText(),
@@ -555,7 +558,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     agg.setSummaryOnly(ctx.SUMMARY_ONLY() != null);
     if (aggregateNetworks.put(prefix, agg) != null) {
       _w.addWarning(
-          ctx, ctx.getText(), _parser, "Overwriting aggregate-address for " + prefix.toString());
+          ctx, getFullText(ctx), _parser, "Overwriting aggregate-address for " + prefix.toString());
     }
   }
 
@@ -563,7 +566,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitSbnp_local_as(Sbnp_local_asContext ctx) {
     long asn = Long.parseLong(ctx.autonomous_system().getText());
     if (_currentBgpNeighbor == null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp neighbor");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "cannot find bgp neighbor");
       return;
     }
     _currentBgpNeighbor.setLocalAs(asn);
@@ -575,7 +578,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbnp_update_source(Sbnp_update_sourceContext ctx) {
     if (_currentBgpNeighbor == null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp neighbor");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "cannot find bgp neighbor");
       return;
     }
 
@@ -585,7 +588,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     } else if (ctx.name != null) {
       _currentBgpNeighbor.setBgpNeighborSource(new BgpNeighborSourceInterface(ctx.name.getText()));
     } else {
-      _w.addWarning(ctx, ctx.getText(), _parser, "either Ip or Interface is needed");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "either Ip or Interface is needed");
     }
   }
 
@@ -595,7 +598,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     BgpNeighbor neighbor = _currentBgpVrf.getNeighbors().get(neighborName);
     if (neighbor == null) {
       _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("neighbor %s does not exist", neighborName));
+          ctx,
+          getFullText(ctx),
+          _parser,
+          String.format("neighbor %s does not exist", neighborName));
     } else {
       _currentBgpNeighborL2vpnEvpnAddressFamily = neighbor.getL2vpnEvpnAddressFamily();
       if (_currentBgpNeighborL2vpnEvpnAddressFamily == null) {
@@ -656,7 +662,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbnobd_ipv4_unicast(Sbnobd_ipv4_unicastContext ctx) {
     if (_currentBgpVrf == null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "cannot find bgp vrf");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "cannot find bgp vrf");
       return;
     }
     _currentBgpVrf.setDefaultIpv4Unicast(false);
@@ -737,7 +743,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSiip_address(Siip_addressContext ctx) {
     if (_currentInterface == null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "no interfaces found for address declaration");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "no interfaces found for address declaration");
       return;
     }
 
@@ -760,7 +766,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitRo_router_id(Ro_router_idContext ctx) {
     if (_frr.getOspfProcess() == null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "No OSPF process configured");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "No OSPF process configured");
       return;
     }
 
@@ -977,7 +983,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (_currentBgpNeighbor != null) {
       // warn if it's not an interface
       if (!(_currentBgpNeighbor instanceof BgpInterfaceNeighbor)) {
-        String line = ctx.getParent().getText() + ctx.getText();
+        String line = getFullText(ctx.getParent()) + getFullText(ctx);
         _w.addWarning(
             ctx,
             line,
@@ -998,7 +1004,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void exitSbn_peer_group_decl(Sbn_peer_group_declContext ctx) {
     if (_currentBgpNeighbor != null) {
-      String line = ctx.getParent().getText() + ctx.getText();
+      String line = getFullText(ctx.getParent()) + getFullText(ctx);
       _w.addWarning(
           ctx,
           line,
@@ -1129,7 +1135,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
         && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", ifaceName));
+          ctx, getFullText(ctx), _parser, String.format("interface %s is not defined", ifaceName));
       return;
     }
     _frr.getOrCreateInterface(ifaceName).getOrCreateOspf().setPassive(false);
@@ -1147,7 +1153,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (!_c.getInterfacesConfiguration().getInterfaces().containsKey(ifaceName)
         && !_frr.getInterfaces().containsKey(ifaceName)) {
       _w.addWarning(
-          ctx, ctx.getText(), _parser, String.format("interface %s is not defined", ifaceName));
+          ctx, getFullText(ctx), _parser, String.format("interface %s is not defined", ifaceName));
       return;
     }
     _frr.getOrCreateInterface(ifaceName).getOrCreateOspf().setPassive(true);
@@ -1273,7 +1279,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     RouteMapSetIpNextHopLiteral setNextHop = _currentRouteMapEntry.getSetIpNextHop();
     if (setNextHop != null) {
       _w.addWarning(
-          ctx, ctx.getText(), _parser, "next-hop already exists will be replaced by this one");
+          ctx, getFullText(ctx), _parser, "next-hop already exists will be replaced by this one");
     }
 
     _currentRouteMapEntry.setSetIpNextHop(new RouteMapSetIpNextHopLiteral(ip));
@@ -1283,7 +1289,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitRms_community(Rms_communityContext ctx) {
     RouteMapSetCommunity old = _currentRouteMapEntry.getSetCommunity();
     if (old != null) {
-      _w.addWarning(ctx, ctx.getText(), _parser, "overwriting set community");
+      _w.addWarning(ctx, getFullText(ctx), _parser, "overwriting set community");
     }
     boolean additive = ctx.ADDITIVE() != null;
     _currentRouteMapEntry.setSetCommunity(
