@@ -88,12 +88,12 @@ praau_as_path
 
 praau_community
 :
-    COMMUNITY name = variable
+    COMMUNITY NONE
 ;
 
 praau_extended_community
 :
-    EXTENDED_COMMUNITY name = variable
+    EXTENDED_COMMUNITY NONE
 ;
 
 praau_med
