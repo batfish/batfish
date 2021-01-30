@@ -178,6 +178,7 @@ sbafl_neighbor
    NEIGHBOR neighbor = (IP_ADDRESS | WORD)
    (
       sbafln_activate
+      | sbafln_route_map
       | sbafln_route_reflector_client
    )
 ;
@@ -239,6 +240,11 @@ sbafl_advertise_default_gw
 sbafln_activate
 :
   ACTIVATE NEWLINE
+;
+
+sbafln_route_map
+:
+  ROUTE_MAP name=word (IN | OUT) NEWLINE
 ;
 
 sbafln_route_reflector_client
