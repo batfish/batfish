@@ -490,6 +490,32 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAdressFamilyL2vpnEvpnNeighborRouteMap() {
+    parseLines(
+        "router bgp 1",
+        " neighbor n interface description a",
+        " address-family l2vpn evpn",
+        "  neighbor n route-map rm in",
+        "  neighbor n route-map rm out",
+        " exit-address-family");
+    assertThat(
+        getStructureReferences(
+            ROUTE_MAP, "rm", CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_IN),
+        contains(4));
+    assertThat(
+        getStructureReferences(
+            ROUTE_MAP, "rm", CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_OUT),
+        contains(5));
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(
+            hasComment(
+                "Routes maps on neighbors in address-family  'l2vpn evpn' are not supported"),
+            hasComment(
+                "Routes maps on neighbors in address-family  'l2vpn evpn' are not supported")));
+  }
+
+  @Test
   public void testBgpAdressFamilyL2vpnEvpnNeighborRouteReflectorClient() {
     parseLines(
         "router bgp 1",
