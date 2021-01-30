@@ -393,7 +393,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterSbaf_l2vpn_evpn(Sbaf_l2vpn_evpnContext ctx) {
-    if (_currentBgpVrf.getL2VpnEvpn() != null) {
+    if (_currentBgpVrf.getL2VpnEvpn() == null) {
       _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
     }
   }
