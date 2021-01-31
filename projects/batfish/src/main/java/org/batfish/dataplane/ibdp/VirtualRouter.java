@@ -150,10 +150,15 @@ public final class VirtualRouter {
   @VisibleForTesting RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
 
   /**
-   * All of the routes that were merged/withdraws for the main RIB in this the previous iteration
+   * All of the routes that were merged/withdrawn for the main RIB in this the previous iteration
    * Will inform redistribution/VRF leaking in current round.
    */
   RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDeltaPrevRound;
+  /**
+   * The state of the main RIB after the previous round. This will be used for new sessions that
+   * come up.
+   */
+  Set<AnnotatedRoute<AbstractRoute>> _mainRibPrevRound;
 
   /** The VRF name for this virtual router */
   @Nonnull private final String _name;
@@ -205,6 +210,7 @@ public final class VirtualRouter {
     _mainRib = new Rib();
     _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, _mainRib);
     _mainRibDeltaPrevRound = RibDelta.empty();
+    _mainRibPrevRound = ImmutableSet.of();
     _mainRibRouteDeltaBuilder = RibDelta.builder();
     _routesForIsisRedistribution = RibDelta.builder();
     // Init rest of the RIBs
@@ -334,11 +340,12 @@ public final class VirtualRouter {
    * @param topologyContext The various network topologies
    */
   void initForEgpComputationWithNewTopology(TopologyContext topologyContext) {
-    initQueuesAndDeltaBuilders(topologyContext);
+    // Save the main RIB at the current state, so that it can be used in new sessions.
     if (_bgpRoutingProcess != null) {
       // If the process exists, update the topology
-      _bgpRoutingProcess.updateTopology(topologyContext.getBgpTopology());
+      _bgpRoutingProcess.updateTopology(topologyContext.getBgpTopology(), _mainRibPrevRound);
     }
+    initQueuesAndDeltaBuilders(topologyContext, _mainRibPrevRound);
   }
 
   /**
@@ -351,8 +358,9 @@ public final class VirtualRouter {
     Merge post-IGP main rib in to a mainRibDelta.
     This effectively makes the entire IGP computation a "previous round".
     */
+    _mainRibPrevRound = _mainRib.getTypedRoutes();
     _mainRibDeltaPrevRound =
-        RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build();
+        RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRibPrevRound).build();
     if (_bgpRoutingProcess != null && !_bgpRoutingProcess.isInitialized()) {
       _bgpRoutingProcess.initialize(_node);
       _bgpRoutingProcess.processExternalBgpAdvertisements(externalAdverts, ipVrfOwners);
@@ -365,11 +373,12 @@ public final class VirtualRouter {
    * @param topologyContext The various network topologies
    */
   @VisibleForTesting
-  void initQueuesAndDeltaBuilders(TopologyContext topologyContext) {
+  void initQueuesAndDeltaBuilders(
+      TopologyContext topologyContext, Set<AnnotatedRoute<AbstractRoute>> mainRibPrevRound) {
     // Update topology/re-initialize message queues for EIGRP neighbors
     _eigrpProcesses
         .values()
-        .forEach(proc -> proc.updateTopology(topologyContext.getEigrpTopology()));
+        .forEach(proc -> proc.updateTopology(topologyContext.getEigrpTopology(), mainRibPrevRound));
     // Initialize message queues for each IS-IS neighbor
     initIsisQueues(topologyContext.getIsisTopology());
     // Initialize message queues for all neighboring VRFs/VirtualRouters
@@ -1463,6 +1472,7 @@ public final class VirtualRouter {
   /** End of a single "EGP" routing round. */
   void endOfEgpRound() {
     _mainRibDeltaPrevRound = _mainRibRouteDeltaBuilder.build();
+    _mainRibPrevRound = _mainRib.getTypedRoutes();
     _mainRibRouteDeltaBuilder = RibDelta.builder();
     if (_bgpRoutingProcess != null) {
       _bgpRoutingProcess.endOfRound();

@@ -679,7 +679,8 @@ public class VirtualRouterTest {
                     TopologyContext.builder()
                         .setEigrpTopology(eigrpTopology)
                         .setIsisTopology(initialIsisTopology)
-                        .build()));
+                        .build(),
+                    ImmutableSet.of()));
 
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
@@ -701,7 +702,8 @@ public class VirtualRouterTest {
                     TopologyContext.builder()
                         .setEigrpTopology(eigrpTopology)
                         .setIsisTopology(updatedIsisTopology)
-                        .build()));
+                        .build(),
+                    ImmutableSet.of()));
 
     // Assert that queues are initialized
     assertThat(

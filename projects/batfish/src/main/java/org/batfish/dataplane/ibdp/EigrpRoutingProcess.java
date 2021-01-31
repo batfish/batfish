@@ -128,7 +128,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   @Override
-  public void updateTopology(EigrpTopology topology) {
+  public void updateTopology(
+      EigrpTopology topology, Set<AnnotatedRoute<AbstractRoute>> mainRibPrevRound) {
     EigrpTopology oldTopology = _topology;
     _topology = topology;
     updateQueues(_topology);

@@ -250,7 +250,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   @Override
-  public void updateTopology(OspfTopology topology) {
+  public void updateTopology(
+      OspfTopology topology, Set<AnnotatedRoute<AbstractRoute>> mainRibPrevRound) {
     _topology = topology;
     updateQueues(topology);
     /*

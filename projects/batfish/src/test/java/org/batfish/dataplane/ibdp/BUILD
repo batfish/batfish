@@ -26,6 +26,7 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources",
+        "//projects/batfish/src/test/resources/org/batfish/dataplane/ibdp/bgp-topology-change",
     ],
     runtime_deps = [
         "@maven//:org_apache_logging_log4j_log4j_core",
