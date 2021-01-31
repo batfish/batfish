@@ -338,6 +338,21 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testBgpAddressFamilyIpv4UnicastMultipleDefinitions() {
+    parseLines(
+        "router bgp 1",
+        " address-family ipv4 unicast",
+        "  network 1.2.3.4/24",
+        " exit-address-family",
+        " address-family ipv4 unicast",
+        "  network 2.2.3.4/24",
+        " exit-address-family");
+    assertThat(
+        _frr.getBgpProcess().getDefaultVrf().getIpv4Unicast().getNetworks().keySet(),
+        contains(Prefix.parse("1.2.3.4/24"), Prefix.parse("2.2.3.5/24")));
+  }
+
+  @Test
   public void testBgpRedistributeOspfRouteMap() {
     parseLines("router bgp 1", "redistribute ospf route-map foo");
     BgpRedistributionPolicy policy =
@@ -525,6 +540,21 @@ public class CumulusFrrGrammarTest {
         "exit-address-family");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
     assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getRouteReflectorClient());
+  }
+
+  @Test
+  public void testBgpAdressFamilyL2vpnEvpnMultipleDefinitions() {
+    parseLines(
+        "router bgp 1",
+        " neighbor n interface description a",
+        " neighbor 1.2.3.4 description a",
+        " address-family l2vpn evpn",
+        "   neighbor n activate",
+        " address-family l2vpn evpn",
+        "   neighbor 1.2.3.4 activate");
+    Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertTrue(neighbors.get("n").getL2vpnEvpnAddressFamily().getActivated());
+    assertTrue(neighbors.get("1.2.3.4").getL2vpnEvpnAddressFamily().getActivated());
   }
 
   @Test

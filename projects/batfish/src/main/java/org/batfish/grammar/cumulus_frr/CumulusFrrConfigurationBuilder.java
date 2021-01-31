@@ -386,18 +386,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterSbaf_ipv4_unicast(Sbaf_ipv4_unicastContext ctx) {
-    if (_currentBgpVrf.getIpv4Unicast() != null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "duplicate 'address-family ipv4 unicast'");
+    if (_currentBgpVrf.getIpv4Unicast() == null) {
+      _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
     }
-    _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
   }
 
   @Override
   public void enterSbaf_l2vpn_evpn(Sbaf_l2vpn_evpnContext ctx) {
-    if (_currentBgpVrf.getL2VpnEvpn() != null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "duplicate 'address-family l2vpn evpn'");
+    if (_currentBgpVrf.getL2VpnEvpn() == null) {
+      _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
     }
-    _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
   }
 
   @Override
