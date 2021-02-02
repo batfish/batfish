@@ -1,0 +1,18 @@
+hostname c
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 20.0.0.1/31
+  description to b
+
+router bgp 3
+ router-id 3.3.3.3
+ address-family ipv4 unicast
+ neighbor 1.1.1.1
+   remote-as 1
+   update-source Ethernet1
+   address-family ipv4 unicast
+
+ip route 1.1.1.1/32 20.0.0.0
