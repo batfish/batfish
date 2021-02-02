@@ -35,6 +35,37 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     IBGP_RECEIVED,
     IBGP_SENT;
 
+    /** Returns true if this advertisement is from an ebgp peer. */
+    public boolean isEbgp() {
+      switch (this) {
+        case EBGP_ORIGINATED:
+        case EBGP_RECEIVED:
+        case EBGP_SENT:
+          return true;
+        default:
+          return false;
+      }
+    }
+
+    /**
+     * Returns true if this advertisement is from a device's local view of the route, aka, it has
+     * already been processed/filtered by import policy. These routes are installed directly in the
+     * RIB.
+     */
+    public boolean isReceived() {
+      switch (this) {
+        case EBGP_RECEIVED:
+        case IBGP_RECEIVED:
+          return true;
+        case EBGP_SENT:
+        case IBGP_SENT:
+          return false;
+        default:
+          // include originated.
+          throw new BatfishException("Missing or invalid bgp advertisement type");
+      }
+    }
+
     private static final Map<String, BgpAdvertisementType> _map = buildMap();
 
     private static Map<String, BgpAdvertisementType> buildMap() {
