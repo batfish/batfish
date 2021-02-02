@@ -42,7 +42,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -1431,6 +1430,112 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return transformedOutgoingRoute;
   }
 
+  private void processExternalBgpAdvertisement(
+      BgpAdvertisement advert, Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltas) {
+    Ip srcIp = advert.getSrcIp();
+    // TODO: support passive and unnumbered bgp connections
+    Prefix srcPrefix = srcIp.toPrefix();
+    BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcPrefix);
+    assert neighbor != null; // invariant of being processed
+
+    // Build a route based on the type of this advertisement
+    BgpAdvertisementType type = advert.getType();
+    boolean ebgp = type.isEbgp();
+
+    Bgpv4Rib targetRib = ebgp ? _ebgpv4Rib : _ibgpv4Rib;
+    RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
+
+    // Route advertisement does not contain its admin distance.
+    int admin = _process.getAdminCost(targetProtocol);
+
+    if (type.isReceived()) {
+      // Since the route is received, it is from a post-import-chain view of the route.
+      // Copy its attributes directly where possible then directly import it into the RIB.
+      Bgpv4Route route =
+          Bgpv4Route.testBuilder()
+              .setAdmin(admin)
+              .setAsPath(advert.getAsPath())
+              .setClusterList(advert.getClusterList())
+              .setCommunities(advert.getCommunities())
+              .setLocalPreference(advert.getLocalPreference())
+              .setMetric(advert.getMed())
+              .setNetwork(advert.getNetwork())
+              .setNextHopIp(advert.getNextHopIp())
+              .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginType(advert.getOriginType())
+              .setProtocol(targetProtocol)
+              .setReceivedFromIp(advert.getSrcIp())
+              // TODO: support external route reflector clients
+              .setReceivedFromRouteReflectorClient(false)
+              .setSrcProtocol(advert.getSrcProtocol())
+              // TODO: possibly support setting tag
+              .setWeight(advert.getWeight())
+              .build();
+      ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route));
+    } else {
+      // Since the route was logged after sending, it is from a pre-import-chain view of the route.
+      // Override some attributes with local ones, then send it through the import policy.
+      long localPreference;
+      if (ebgp) {
+        localPreference = Bgpv4Route.DEFAULT_LOCAL_PREFERENCE;
+      } else {
+        localPreference = advert.getLocalPreference();
+      }
+      Bgpv4Route transformedOutgoingRoute =
+          Bgpv4Route.testBuilder()
+              .setAsPath(advert.getAsPath())
+              .setClusterList(advert.getClusterList())
+              .setCommunities(ImmutableSortedSet.copyOf(advert.getCommunities()))
+              .setLocalPreference(localPreference)
+              .setMetric(advert.getMed())
+              .setNetwork(advert.getNetwork())
+              .setNextHopIp(advert.getNextHopIp())
+              .setOriginatorIp(advert.getOriginatorIp())
+              .setOriginType(advert.getOriginType())
+              .setProtocol(targetProtocol)
+              .setReceivedFromIp(advert.getSrcIp())
+              // TODO .setReceivedFromRouteReflectorClient(...)
+              .setSrcProtocol(advert.getSrcProtocol())
+              .build();
+      Bgpv4Route.Builder transformedIncomingRouteBuilder =
+          Bgpv4Route.testBuilder()
+              .setAdmin(admin)
+              .setAsPath(transformedOutgoingRoute.getAsPath())
+              .setClusterList(transformedOutgoingRoute.getClusterList())
+              .setCommunities(transformedOutgoingRoute.getCommunities().getCommunities())
+              .setLocalPreference(transformedOutgoingRoute.getLocalPreference())
+              .setMetric(transformedOutgoingRoute.getMetric())
+              .setNetwork(transformedOutgoingRoute.getNetwork())
+              .setNextHopIp(transformedOutgoingRoute.getNextHopIp())
+              .setOriginType(transformedOutgoingRoute.getOriginType())
+              .setOriginatorIp(transformedOutgoingRoute.getOriginatorIp())
+              .setReceivedFromIp(transformedOutgoingRoute.getReceivedFromIp())
+              .setReceivedFromRouteReflectorClient(
+                  transformedOutgoingRoute.getReceivedFromRouteReflectorClient())
+              .setProtocol(targetProtocol)
+              .setSrcProtocol(targetProtocol);
+      String importPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
+      // TODO: ensure there is always an import policy
+
+      /*
+       * CREATE INCOMING ROUTE
+       */
+      boolean acceptIncoming = true;
+      if (importPolicyName != null) {
+        RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
+        if (importPolicy != null) {
+          // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
+          acceptIncoming =
+              importPolicy.process(transformedOutgoingRoute, transformedIncomingRouteBuilder, IN);
+        }
+      }
+      if (acceptIncoming) {
+        Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
+        ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
+      }
+    }
+  }
+
   /**
    * Initializes BGP RIBs prior to any dataplane iterations based on the external BGP advertisements
    * coming into the network.
@@ -1449,7 +1554,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     ribDeltas.put(_ebgpv4Rib, RibDelta.builder());
     ribDeltas.put(_ibgpv4Rib, RibDelta.builder());
 
-    Bgpv4Route.Builder outgoingRouteBuilder = Bgpv4Route.testBuilder();
     // Process each BGP advertisement
     for (BgpAdvertisement advert : externalAdverts) {
 
@@ -1474,161 +1578,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         continue;
       }
 
-      // Build a route based on the type of this advertisement
-      BgpAdvertisementType type = advert.getType();
-      boolean ebgp;
-      boolean received;
-      switch (type) {
-        case EBGP_RECEIVED:
-          ebgp = true;
-          received = true;
-          break;
-
-        case EBGP_SENT:
-          ebgp = true;
-          received = false;
-          break;
-
-        case IBGP_RECEIVED:
-          ebgp = false;
-          received = true;
-          break;
-
-        case IBGP_SENT:
-          ebgp = false;
-          received = false;
-          break;
-
-        case EBGP_ORIGINATED:
-        case IBGP_ORIGINATED:
-        default:
-          throw new BatfishException("Missing or invalid bgp advertisement type");
+      if (advert.getType().isEbgp()
+          && advert.getAsPath().containsAs(neighbor.getLocalAs())
+          && !neighbor
+              .getIpv4UnicastAddressFamily()
+              .getAddressFamilyCapabilities()
+              .getAllowLocalAsIn()) {
+        // skip routes containing this peer's AS unless the session is configured to allow loops.
+        continue;
       }
 
-      Bgpv4Rib targetRib = ebgp ? _ebgpv4Rib : _ibgpv4Rib;
-      RoutingProtocol targetProtocol = ebgp ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
-      int admin = _process.getAdminCost(targetProtocol);
-
-      if (received) {
-        Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
-        builder.setAdmin(admin);
-        builder.setAsPath(advert.getAsPath());
-        builder.setClusterList(advert.getClusterList());
-        builder.setCommunities(advert.getCommunities());
-        builder.setLocalPreference(advert.getLocalPreference());
-        builder.setMetric(advert.getMed());
-        builder.setNetwork(advert.getNetwork());
-        builder.setNextHopIp(advert.getNextHopIp());
-        builder.setOriginatorIp(advert.getOriginatorIp());
-        builder.setOriginType(advert.getOriginType());
-        builder.setProtocol(targetProtocol);
-        // TODO: support external route reflector clients
-        builder.setReceivedFromIp(advert.getSrcIp());
-        builder.setReceivedFromRouteReflectorClient(false);
-        builder.setSrcProtocol(advert.getSrcProtocol());
-        // TODO: possibly support setting tag
-        builder.setWeight(advert.getWeight());
-        Bgpv4Route route = builder.build();
-        ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(route));
-      } else {
-        long localPreference;
-        if (ebgp) {
-          localPreference = Bgpv4Route.DEFAULT_LOCAL_PREFERENCE;
-        } else {
-          localPreference = advert.getLocalPreference();
-        }
-        outgoingRouteBuilder.setAsPath(advert.getAsPath());
-        outgoingRouteBuilder.setCommunities(ImmutableSortedSet.copyOf(advert.getCommunities()));
-        outgoingRouteBuilder.setLocalPreference(localPreference);
-        outgoingRouteBuilder.setMetric(advert.getMed());
-        outgoingRouteBuilder.setNetwork(advert.getNetwork());
-        outgoingRouteBuilder.setNextHopIp(advert.getNextHopIp());
-        outgoingRouteBuilder.setOriginatorIp(advert.getOriginatorIp());
-        outgoingRouteBuilder.setOriginType(advert.getOriginType());
-        outgoingRouteBuilder.setProtocol(targetProtocol);
-        outgoingRouteBuilder.setReceivedFromIp(advert.getSrcIp());
-        // TODO:
-        // outgoingRouteBuilder.setReceivedFromRouteReflectorClient(...);
-        outgoingRouteBuilder.setSrcProtocol(advert.getSrcProtocol());
-        Bgpv4Route transformedOutgoingRoute = outgoingRouteBuilder.build();
-        Bgpv4Route.Builder transformedIncomingRouteBuilder = Bgpv4Route.testBuilder();
-
-        // Incoming originatorIp
-        transformedIncomingRouteBuilder.setOriginatorIp(transformedOutgoingRoute.getOriginatorIp());
-
-        // Incoming receivedFromIp
-        transformedIncomingRouteBuilder.setReceivedFromIp(
-            transformedOutgoingRoute.getReceivedFromIp());
-
-        // Incoming clusterList
-        transformedIncomingRouteBuilder.addClusterList(transformedOutgoingRoute.getClusterList());
-
-        // Incoming receivedFromRouteReflectorClient
-        transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
-            transformedOutgoingRoute.getReceivedFromRouteReflectorClient());
-
-        // Incoming asPath
-        transformedIncomingRouteBuilder.setAsPath(transformedOutgoingRoute.getAsPath());
-
-        // Incoming communities
-        transformedIncomingRouteBuilder.addCommunities(
-            transformedOutgoingRoute.getCommunities().getCommunities());
-
-        // Incoming protocol
-        transformedIncomingRouteBuilder.setProtocol(targetProtocol);
-
-        // Incoming network
-        transformedIncomingRouteBuilder.setNetwork(transformedOutgoingRoute.getNetwork());
-
-        // Incoming nextHopIp
-        transformedIncomingRouteBuilder.setNextHopIp(transformedOutgoingRoute.getNextHopIp());
-
-        // Incoming originType
-        transformedIncomingRouteBuilder.setOriginType(transformedOutgoingRoute.getOriginType());
-
-        // Incoming localPreference
-        transformedIncomingRouteBuilder.setLocalPreference(
-            transformedOutgoingRoute.getLocalPreference());
-
-        // Incoming admin
-        transformedIncomingRouteBuilder.setAdmin(admin);
-
-        // Incoming metric
-        transformedIncomingRouteBuilder.setMetric(transformedOutgoingRoute.getMetric());
-
-        // Incoming srcProtocol
-        transformedIncomingRouteBuilder.setSrcProtocol(targetProtocol);
-        String importPolicyName = neighbor.getIpv4UnicastAddressFamily().getImportPolicy();
-        // TODO: ensure there is always an import policy
-
-        if (ebgp
-            && transformedOutgoingRoute.getAsPath().containsAs(neighbor.getLocalAs())
-            && !neighbor
-                .getIpv4UnicastAddressFamily()
-                .getAddressFamilyCapabilities()
-                .getAllowLocalAsIn()) {
-          // skip routes containing peer's AS unless
-          // disable-peer-as-check (getAllowRemoteAsOut) is set
-          continue;
-        }
-
-        /*
-         * CREATE INCOMING ROUTE
-         */
-        boolean acceptIncoming = true;
-        if (importPolicyName != null) {
-          RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
-          if (importPolicy != null) {
-            // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
-            acceptIncoming =
-                importPolicy.process(transformedOutgoingRoute, transformedIncomingRouteBuilder, IN);
-          }
-        }
-        if (acceptIncoming) {
-          Bgpv4Route transformedIncomingRoute = transformedIncomingRouteBuilder.build();
-          ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-        }
-      }
+      processExternalBgpAdvertisement(advert, ribDeltas);
     }
 
     // Propagate received routes through all the RIBs
