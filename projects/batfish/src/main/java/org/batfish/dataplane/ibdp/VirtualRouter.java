@@ -150,7 +150,7 @@ public final class VirtualRouter {
   @VisibleForTesting RibDelta.Builder<AnnotatedRoute<AbstractRoute>> _mainRibRouteDeltaBuilder;
 
   /**
-   * All of the routes that were merged/withdraws for the main RIB in this the previous iteration
+   * All of the routes that were merged/withdrawn for the main RIB in this the previous iteration
    * Will inform redistribution/VRF leaking in current round.
    */
   RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDeltaPrevRound;
@@ -331,9 +331,13 @@ public final class VirtualRouter {
    * Prepare for the EGP part of the computation. Handles updating routing processes given new
    * topology information.
    *
+   * <p>Must be called between rounds, aka, all delta builder should be empty.
+   *
    * @param topologyContext The various network topologies
    */
   void initForEgpComputationWithNewTopology(TopologyContext topologyContext) {
+    assert _mainRibRouteDeltaBuilder.isEmpty(); // or else invariant is not maintained
+
     initQueuesAndDeltaBuilders(topologyContext);
     if (_bgpRoutingProcess != null) {
       // If the process exists, update the topology
@@ -353,9 +357,11 @@ public final class VirtualRouter {
     */
     _mainRibDeltaPrevRound =
         RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build();
+    _mainRibRouteDeltaBuilder = RibDelta.builder();
+
     if (_bgpRoutingProcess != null && !_bgpRoutingProcess.isInitialized()) {
       _bgpRoutingProcess.initialize(_node);
-      _bgpRoutingProcess.processExternalBgpAdvertisements(externalAdverts, ipVrfOwners);
+      _bgpRoutingProcess.stageExternalAdvertisements(externalAdverts, ipVrfOwners);
     }
   }
 

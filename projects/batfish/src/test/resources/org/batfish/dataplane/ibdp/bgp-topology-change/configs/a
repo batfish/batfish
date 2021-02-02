@@ -1,0 +1,31 @@
+hostname a
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.0.0/31
+  description to b
+
+interface Loopback0
+  ip address 1.1.1.1/32
+  description to c
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+
+router bgp 1
+  router-id 1.1.1.1
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  neighbor 10.0.0.1
+    remote-as 2
+    update-source Ethernet1
+    address-family ipv4 unicast
+
+  neighbor 20.0.0.1
+    remote-as 3
+    ebgp-multihop 3
+    update-source Loopback0
+    address-family ipv4 unicast
+
+ip route 20.0.0.1/32 10.0.0.1

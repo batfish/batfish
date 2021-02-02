@@ -126,6 +126,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull @VisibleForTesting
   SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
 
+  /**
+   * External BGP announcements to be processed upon the first iteration of BGP on this node.
+   *
+   * <p>Always null after that first iteration.
+   */
+  @Nullable Set<BgpAdvertisement> _externalAdvertisements;
+
   // RIBs and RIB delta builders
   /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
   @Nonnull final Bgpv4Rib _ebgpv4Rib;
@@ -139,6 +146,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
   // currently used for VRF-leaking only.
   @Nonnull private RibDelta<Bgpv4Route> _localDeltaPrev = RibDelta.empty();
+
+  // copy of RIBs from prev round, for new links in the current round.
+  // Nullable so they crash on improper use.
+  private @Nullable Set<Bgpv4Route> _ebgpv4Prev;
+  private @Nullable Set<Bgpv4Route> _bgpv4Prev;
+  private @Nullable Set<AnnotatedRoute<AbstractRoute>> _mainRibPrev;
 
   /** Combined BGP (both iBGP and eBGP) RIB, for IPv4 unicast */
   @Nonnull Bgpv4Rib _bgpv4Rib;
@@ -195,7 +208,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull private Map<String, RibDelta<? extends AnnotatedRoute<AbstractRoute>>> _toRedistribute;
 
   /** Set of edges (sessions) that came up since previous topology update */
-  private Set<EdgeId> _edgesWentUp = ImmutableSet.of();
+  private Set<EdgeId> _evpnEdgesWentUp = ImmutableSet.of();
+
+  /** Set of edges (sessions) that came up since previous topology update */
+  private Set<EdgeId> _unicastEdgesWentUp = ImmutableSet.of();
+
   /**
    * Type 3 routes that were created locally (across all VRFs). Save them so that if new sessions
    * come up, we can easily send out the updates
@@ -390,12 +407,41 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _topology = topology;
     initBgpQueues(_topology);
     // New sessions got established
-    _edgesWentUp =
+    _unicastEdgesWentUp =
+        Sets.difference(
+            getEdgeIdStream(
+                    topology.getGraph(),
+                    BgpPeerConfig::getIpv4UnicastAddressFamily,
+                    Type.IPV4_UNICAST)
+                .collect(ImmutableSet.toImmutableSet()),
+            getEdgeIdStream(
+                    oldTopology.getGraph(),
+                    BgpPeerConfig::getIpv4UnicastAddressFamily,
+                    Type.IPV4_UNICAST)
+                .collect(ImmutableSet.toImmutableSet()));
+    _evpnEdgesWentUp =
         Sets.difference(
             getEdgeIdStream(topology.getGraph(), BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
                 .collect(ImmutableSet.toImmutableSet()),
             getEdgeIdStream(oldTopology.getGraph(), BgpPeerConfig::getEvpnAddressFamily, Type.EVPN)
                 .collect(ImmutableSet.toImmutableSet()));
+    if (!_unicastEdgesWentUp.isEmpty()) {
+      // We copy these three RIBs here instead of at the end of the previous round to avoid
+      // unnecessary space/time use. However, this process is only correct if the RIBs have not
+      // changed since the end of the previous round. That means deltas must (still) be empty.
+      // Main RIB invariant is checked at the VirtualRouter caller, since this class does not
+      // have access to the main RIB delta.
+      assert _bgpv4DeltaBuilder.isEmpty();
+      assert _ebgpv4DeltaBuilder.isEmpty();
+
+      _mainRibPrev = _mainRib.getTypedRoutes();
+      _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
+      _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
+    } else {
+      assert _mainRibPrev == null;
+      assert _bgpv4Prev == null;
+      assert _ebgpv4Prev == null;
+    }
     _topology = topology;
     // TODO: compute edges that went down, remove routes we received from those neighbors
   }
@@ -424,12 +470,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
      If we have any new edges, send out our RIB state to them.
      EVPN only
     */
-    sendOutRoutesToNewEdges(_edgesWentUp, allNodes, nc);
+    sendOutRoutesToNewEdges(_evpnEdgesWentUp, allNodes, nc);
 
     processBgpMessages(nc, allNodes);
-
-    // Clear new edges.
-    _edgesWentUp = ImmutableSet.of();
   }
 
   private void sendOutRoutesToNewEdges(
@@ -669,10 +712,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     ribDeltaBuilders.put(_ebgpv4Rib, RibDelta.builder());
     ribDeltaBuilders.put(_ibgpv4Rib, RibDelta.builder());
 
+    // If there are any, process external advertisements. This will only be true once, the first
+    // time any BGP routes are pulled.
+    if (_externalAdvertisements != null) {
+      _externalAdvertisements.forEach(a -> processExternalBgpAdvertisement(a, ribDeltaBuilders));
+      _externalAdvertisements = null;
+    }
+
     // Process updates from each neighbor
     for (EdgeId edgeId : _bgpv4Edges) {
       pullV4UnicastMessages(
-          bgpTopology, nc, nodes, ribDeltaBuilders, edgeId, _edgesWentUp.contains(edgeId));
+          bgpTopology, nc, nodes, ribDeltaBuilders, edgeId, _unicastEdgesWentUp.contains(edgeId));
     }
 
     unstage(ribDeltaBuilders);
@@ -791,7 +841,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         }
       } else {
         // Merge into staging rib, note delta
-
         ribDeltas.get(targetRib).from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
         if (useRibGroups) {
           perNeighborDeltaForRibGroups.add(annotatedTransformedRoute);
@@ -840,7 +889,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Stream<RouteAdvertisement<Bgpv4Route>> mainRibExports =
         (isNewSession
                 // Look at the entire main RIB if this session is new.
-                ? _mainRib.getTypedRoutes().stream().map(RouteAdvertisement::adding)
+                ? _mainRibPrev.stream().map(RouteAdvertisement::adding)
                 : _toRedistribute.values().stream().flatMap(RibDelta::getActions))
             .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
             .map(
@@ -874,9 +923,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     if (session.getAdvertiseExternal()) {
       if (isNewSession) {
         bgpRibExports.from(
-            _ebgpv4Rib.getTypedRoutes().stream()
-                .map(this::annotateRoute)
-                .map(RouteAdvertisement::new));
+            _ebgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       } else {
         importDeltaToBuilder(bgpRibExports, _ebgpv4DeltaPrev, _vrfName);
       }
@@ -885,32 +932,29 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     if (session.getAdvertiseInactive()) {
       if (isNewSession) {
         bgpRibExports.from(
-            _bgpv4Rib.getTypedRoutes().stream()
-                .map(this::annotateRoute)
-                .map(RouteAdvertisement::new));
+            _bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new));
       } else {
         importDeltaToBuilder(bgpRibExports, _bgpv4DeltaPrev, _vrfName);
       }
     } else {
       // Default behavior
+      Stream<RouteAdvertisement<AnnotatedRoute<Bgpv4Route>>> routes;
       if (isNewSession) {
-        bgpRibExports.from(
-            // note: only best paths are advertised here
-            _bgpv4Rib.getBestPathRoutes().stream()
-                .map(this::annotateRoute)
-                .map(RouteAdvertisement::new));
+        routes = _bgpv4Prev.stream().map(this::annotateRoute).map(RouteAdvertisement::new);
       } else {
-        bgpRibExports.from(
+        routes =
             _bgpv4DeltaPrev
                 .getActions()
+                .filter(r -> !r.isWithdrawn())
                 .map(
                     r ->
                         RouteAdvertisement.<AnnotatedRoute<Bgpv4Route>>builder()
                             .setReason(r.getReason())
                             .setRoute(annotateRoute(r.getRoute()))
-                            .build())
-                .filter(r -> _mainRib.containsRoute(r.getRoute()) || r.isWithdrawn()));
+                            .build());
       }
+      // Keep only routes that are active in the main rib.
+      bgpRibExports.from(routes.filter(r -> _mainRib.containsRoute(r.getRoute())));
     }
 
     /*
@@ -1026,7 +1070,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * imported into the main RIB. The purpose of these routes is to prevent the local router from
    * accepting advertisements less desirable than the locally generated ones for a given network.
    */
-  @SuppressWarnings("deprecation")
   void initBgpAggregateRoutes(Collection<AbstractRoute> generatedRoutes) {
     // TODO: get rid of ConfigurationFormat switching. Source of known bugs.
     // first import aggregates
@@ -1523,62 +1566,56 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
-   * Initializes BGP RIBs prior to any dataplane iterations based on the external BGP advertisements
-   * coming into the network.
-   *
-   * <p>Note: assumes the external advertisements are pre-transformation and will run import policy
-   * on them, if present.
+   * Identifies the given external advertisements for this node and saves them. They will be
+   * processed at the start of the BGP computation.
    *
    * @param externalAdverts a set of external BGP advertisements
    * @param ipVrfOwners mapping of IPs to their owners in our network
    */
-  void processExternalBgpAdvertisements(
+  void stageExternalAdvertisements(
       Set<BgpAdvertisement> externalAdverts, Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    // Retain only advertisements that are valid, and stage them for processing once we start up.
+    _externalAdvertisements =
+        externalAdverts.stream()
+            .filter(
+                advert -> {
+                  // If it is not for us, ignore it
+                  if (!advert.getDstNode().equals(_hostname)) {
+                    return false;
+                  }
 
-    // Keep track of changes to the RIBs using delta builders, keyed by RIB type
-    Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltas = new IdentityHashMap<>();
-    ribDeltas.put(_ebgpv4Rib, RibDelta.builder());
-    ribDeltas.put(_ibgpv4Rib, RibDelta.builder());
+                  // If we don't own the IP for this advertisement, ignore it
+                  Ip dstIp = advert.getDstIp();
+                  Map<String, Set<String>> dstIpOwners = ipVrfOwners.get(dstIp);
+                  if (dstIpOwners == null || !dstIpOwners.containsKey(_hostname)) {
+                    return false;
+                  }
 
-    // Process each BGP advertisement
-    for (BgpAdvertisement advert : externalAdverts) {
+                  Ip srcIp = advert.getSrcIp();
+                  // TODO: support passive and unnumbered bgp connections
+                  Prefix srcPrefix = srcIp.toPrefix();
+                  BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcPrefix);
+                  if (neighbor == null) {
+                    return false;
+                  }
 
-      // If it is not for us, ignore it
-      if (!advert.getDstNode().equals(_hostname)) {
-        continue;
-      }
+                  if (advert.getType().isEbgp()
+                      && advert.getAsPath().containsAs(neighbor.getLocalAs())
+                      && !neighbor
+                          .getIpv4UnicastAddressFamily()
+                          .getAddressFamilyCapabilities()
+                          .getAllowLocalAsIn()) {
+                    // skip routes containing this peer's AS unless the session is configured to
+                    // allow loops.
+                    return false;
+                  }
 
-      // If we don't own the IP for this advertisement, ignore it
-      Ip dstIp = advert.getDstIp();
-      Map<String, Set<String>> dstIpOwners = ipVrfOwners.get(dstIp);
-      String hostname = _hostname;
-      if (dstIpOwners == null || !dstIpOwners.containsKey(hostname)) {
-        continue;
-      }
-
-      Ip srcIp = advert.getSrcIp();
-      // TODO: support passive and unnumbered bgp connections
-      Prefix srcPrefix = srcIp.toPrefix();
-      BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcPrefix);
-      if (neighbor == null) {
-        continue;
-      }
-
-      if (advert.getType().isEbgp()
-          && advert.getAsPath().containsAs(neighbor.getLocalAs())
-          && !neighbor
-              .getIpv4UnicastAddressFamily()
-              .getAddressFamilyCapabilities()
-              .getAllowLocalAsIn()) {
-        // skip routes containing this peer's AS unless the session is configured to allow loops.
-        continue;
-      }
-
-      processExternalBgpAdvertisement(advert, ribDeltas);
+                  return true;
+                })
+            .collect(ImmutableSet.toImmutableSet());
+    if (_externalAdvertisements.isEmpty()) {
+      _externalAdvertisements = null;
     }
-
-    // Propagate received routes through all the RIBs
-    unstage(ribDeltas);
   }
 
   /**
@@ -1695,6 +1732,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _ebgpv4DeltaBuilder = RibDelta.builder();
     _localDeltaPrev = _localDeltaBuilder.build();
     _localDeltaBuilder = RibDelta.builder();
+    // Delete all the state from the start of a topology round.
+    _evpnEdgesWentUp = ImmutableSet.of();
+    _unicastEdgesWentUp = ImmutableSet.of();
+    _mainRibPrev = null;
+    _bgpv4Prev = null;
+    _ebgpv4Prev = null;
     // Legacy redistribution map
     _toRedistribute = new HashMap<>();
   }

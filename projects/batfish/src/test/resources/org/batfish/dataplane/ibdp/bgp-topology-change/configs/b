@@ -1,0 +1,25 @@
+hostname b
+feature bgp
+
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 10.0.0.1/31
+  description to a
+
+interface Ethernet2
+  no switchport
+  no shutdown
+  ip address 20.0.0.0/31
+  description to c
+
+route-map REDISTRIBUTE_CONNECTED permit 10
+
+router bgp 2
+  router-id 2.2.2.2
+  address-family ipv4 unicast
+    redistribute direct route-map REDISTRIBUTE_CONNECTED
+  neighbor 10.0.0.0
+    remote-as 1
+    update-source Ethernet1
+    address-family ipv4 unicast
