@@ -371,7 +371,7 @@ public class BgpRoutingProcessTest {
         peer1Id,
         sessionBuilderReverse.setAddressFamilies(ImmutableSet.of(Type.IPV4_UNICAST)).build());
     topology = new BgpTopology(graph);
-    routingProcess.updateTopology(topology, ImmutableSet.of());
+    routingProcess.updateTopology(topology);
 
     assertThat(
         routingProcess
@@ -508,8 +508,8 @@ public class BgpRoutingProcessTest {
         peer2Id,
         peer1Id,
         sessionBuilderReverse.setAddressFamilies(ImmutableSet.of(Type.EVPN)).build());
-    routingProcNode1.updateTopology(new BgpTopology(graph), ImmutableSet.of());
-    routingProcNode2.updateTopology(new BgpTopology(graph), ImmutableSet.of());
+    routingProcNode1.updateTopology(new BgpTopology(graph));
+    routingProcNode2.updateTopology(new BgpTopology(graph));
     routingProcNode1.executeIteration(
         ImmutableSortedMap.of(
             node.getConfiguration().getHostname(),

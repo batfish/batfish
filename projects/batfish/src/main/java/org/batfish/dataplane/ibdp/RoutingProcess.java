@@ -1,7 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
 import java.util.Map;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
@@ -27,10 +26,8 @@ public interface RoutingProcess<T, R extends AbstractRouteDecorator> {
    * protocol-specific topology is available, which could result in neighbor adjacency updates.
    *
    * @param topology the updated protocol-specific topology
-   * @param mainRibPrevRound the routes in the main RIB at the end of the previous round. Will be
-   *     sent to new edges in a protocol-specific way.
    */
-  void updateTopology(T topology, Set<AnnotatedRoute<AbstractRoute>> mainRibPrevRound);
+  void updateTopology(T topology);
 
   /**
    * Execute one iteration of dataplane computation. Involves processing route updates from

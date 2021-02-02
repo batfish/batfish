@@ -477,7 +477,7 @@ public class OspfRoutingProcessTest {
 
   @Test
   public void testUpdateTopology() {
-    _routingProcess.updateTopology(nonEmptyOspfTopology(), ImmutableSet.of());
+    _routingProcess.updateTopology(nonEmptyOspfTopology());
     OspfNeighborConfigId n1 =
         new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
     OspfNeighborConfigId n2 =
@@ -490,7 +490,7 @@ public class OspfRoutingProcessTest {
 
   @Test
   public void updateTopologyIsNonDestructive() {
-    _routingProcess.updateTopology(nonEmptyOspfTopology(), ImmutableSet.of());
+    _routingProcess.updateTopology(nonEmptyOspfTopology());
     OspfNeighborConfigId n1 =
         new OspfNeighborConfigId(HOSTNAME, VRF_NAME, "1", ACTIVE_IFACE_NAME, ACTIVE_ADDR_1);
     OspfNeighborConfigId n2 =
@@ -505,7 +505,7 @@ public class OspfRoutingProcessTest {
                     .setNextHopIp(Ip.parse("8.8.8.8"))
                     .build())));
     // Re-update topology
-    _routingProcess.updateTopology(nonEmptyOspfTopology(), ImmutableSet.of());
+    _routingProcess.updateTopology(nonEmptyOspfTopology());
     // Ensure still in dirty state (didn't lose the queued advertisement)
     assertTrue(_routingProcess.isDirty());
   }
