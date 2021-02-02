@@ -127,6 +127,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv4_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv6_unicastContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
@@ -385,18 +386,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterSbaf_ipv4_unicast(Sbaf_ipv4_unicastContext ctx) {
-    if (_currentBgpVrf.getIpv4Unicast() != null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "duplicate 'address-family ipv4 unicast'");
+    if (_currentBgpVrf.getIpv4Unicast() == null) {
+      _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
     }
-    _currentBgpVrf.setIpv4Unicast(new BgpIpv4UnicastAddressFamily());
   }
 
   @Override
   public void enterSbaf_l2vpn_evpn(Sbaf_l2vpn_evpnContext ctx) {
-    if (_currentBgpVrf.getL2VpnEvpn() != null) {
-      _w.addWarning(ctx, getFullText(ctx), _parser, "duplicate 'address-family l2vpn evpn'");
+    if (_currentBgpVrf.getL2VpnEvpn() == null) {
+      _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
     }
-    _currentBgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
   }
 
   @Override
@@ -893,6 +892,25 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighborL2vpnEvpnAddressFamily.setActivated(true);
+  }
+
+  @Override
+  public void exitSbafln_route_map(Sbafln_route_mapContext ctx) {
+    String name = ctx.name.getText();
+    CumulusStructureUsage usage;
+    if (ctx.IN() != null) {
+      usage = CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_IN;
+    } else if (ctx.OUT() != null) {
+      usage = CumulusStructureUsage.BGP_L2VPN_EVPN_NEIGHBOR_ROUTE_MAP_OUT;
+    } else {
+      throw new IllegalStateException("only support in and out in route map");
+    }
+    _w.addWarning(
+        ctx,
+        getFullText(ctx.getParent()),
+        _parser,
+        "Routes maps on neighbors in address-family  'l2vpn evpn' are not supported");
+    _c.referenceStructure(ROUTE_MAP, name, usage, ctx.name.getStart().getLine());
   }
 
   @Override
