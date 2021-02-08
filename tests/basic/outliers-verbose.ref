@@ -2753,7 +2753,7 @@
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : true,
+                    "allowRemoteAsOut" : "ALWAYS",
                     "sendCommunity" : true,
                     "sendExtendedCommunity" : false
                   },
@@ -2780,7 +2780,7 @@
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : true,
+                    "allowRemoteAsOut" : "ALWAYS",
                     "sendCommunity" : false,
                     "sendExtendedCommunity" : false
                   },
@@ -2806,7 +2806,7 @@
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : true,
+                    "allowRemoteAsOut" : "ALWAYS",
                     "sendCommunity" : false,
                     "sendExtendedCommunity" : false
                   },
@@ -2832,7 +2832,7 @@
                     "advertiseExternal" : false,
                     "advertiseInactive" : true,
                     "allowLocalAsIn" : false,
-                    "allowRemoteAsOut" : true,
+                    "allowRemoteAsOut" : "ALWAYS",
                     "sendCommunity" : true,
                     "sendExtendedCommunity" : false
                   },
