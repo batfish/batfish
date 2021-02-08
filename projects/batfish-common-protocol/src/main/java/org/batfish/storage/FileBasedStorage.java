@@ -58,6 +58,8 @@ import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -100,6 +102,7 @@ import org.batfish.vendor.VendorConfiguration;
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
 public class FileBasedStorage implements StorageProvider {
+  private static final Logger LOGGER = LogManager.getLogger(FileBasedStorage.class);
 
   @VisibleForTesting static final Duration GC_SKEW_ALLOWANCE = Duration.ofMinutes(10L);
   private static final String ID_EXTENSION = ".id";
@@ -222,6 +225,7 @@ public class FileBasedStorage implements StorageProvider {
       _logger.errorf(
           "Failed to deserialize ConvertConfigurationAnswerElement: %s",
           Throwables.getStackTraceAsString(e));
+      LOGGER.error("Failed to deserialize ConvertConfigurationAnswerElement", e);
       return null;
     }
   }
@@ -253,6 +257,11 @@ public class FileBasedStorage implements StorageProvider {
       _logger.warnf(
           "Unexpected exception caught while loading interface blacklist for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
+      LOGGER.warn(
+          String.format(
+              "Unexpected exception caught while loading interface blacklist for snapshot %s",
+              snapshot),
+          e);
       return null;
     }
   }
@@ -277,6 +286,11 @@ public class FileBasedStorage implements StorageProvider {
       _logger.warnf(
           "Unexpected exception caught while loading ISP configuration for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
+      LOGGER.warn(
+          String.format(
+              "Unexpected exception caught while loading ISP configuration for snapshot %s",
+              snapshot),
+          e);
       return null;
     }
   }
@@ -307,6 +321,10 @@ public class FileBasedStorage implements StorageProvider {
       _logger.warnf(
           "Unexpected exception caught while loading node blacklist for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
+      LOGGER.warn(
+          String.format(
+              "Unexpected exception caught while loading node blacklist for snapshot %s", snapshot),
+          e);
       return null;
     }
   }
@@ -336,6 +354,11 @@ public class FileBasedStorage implements StorageProvider {
       _logger.warnf(
           "Unexpected exception caught while loading layer-1 topology for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
+      LOGGER.warn(
+          String.format(
+              "Unexpected exception caught while loading layer-1 topology for snapshot %s",
+              snapshot),
+          e);
       return null;
     } finally {
       counter.incrementAndGet();
@@ -392,6 +415,10 @@ public class FileBasedStorage implements StorageProvider {
       _logger.warnf(
           "Unexpected exception caught while loading runtime data for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
+      LOGGER.warn(
+          String.format(
+              "Unexpected exception caught while loading runtime data for snapshot %s", snapshot),
+          e);
       return null;
     } finally {
       counter.incrementAndGet();
@@ -589,6 +616,10 @@ public class FileBasedStorage implements StorageProvider {
       _logger.warnf(
           "Unexpected exception caught while deserializing configs for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
+      LOGGER.warn(
+          String.format(
+              "Unexpected exception caught while deserializing configs for snapshot %s", snapshot),
+          e);
       return false;
     }
   }
@@ -1838,6 +1869,8 @@ public class FileBasedStorage implements StorageProvider {
                     _logger.errorf(
                         "Failed to expunge old data for network with ID '%s': %s",
                         networkId, Throwables.getStackTraceAsString(e));
+                    LOGGER.error(
+                        String.format("Failed to expunge old data for network %s", networkId), e);
                   }
                 });
       }
