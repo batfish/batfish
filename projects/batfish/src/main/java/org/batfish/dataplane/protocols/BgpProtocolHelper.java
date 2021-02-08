@@ -25,6 +25,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
@@ -90,13 +91,33 @@ public final class BgpProtocolHelper {
     AddressFamily af = localNeighbor.getAddressFamily(afType);
     assert af != null;
 
-    // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
-    // peer's AS and local peer has not set getAllowRemoteOut
-    if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_ADVERTISE)
-        || (sessionProperties.isEbgp() && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())
-            && !route.getAsPath().getAsSets().isEmpty()
-            && route.getAsPath().getAsSets().get(0).containsAs(sessionProperties.getTailAs())) {
+    // Do not export route if it has NO_ADVERTISE community.
+    if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_ADVERTISE)) {
       return null;
+    }
+
+    // For eBGP, do not export if AS path contains the peer's AS in a disallowed position
+    if (sessionProperties.isEbgp() && !route.getAsPath().getAsSets().isEmpty()) {
+      AllowRemoteAsOutMode allowRemoteAsOutMode =
+          af.getAddressFamilyCapabilities().getAllowRemoteAsOut();
+      switch (allowRemoteAsOutMode) {
+        case ALWAYS:
+          break;
+        case NEVER:
+          if (route.getAsPath().getAsSets().stream()
+              .anyMatch(asSet -> asSet.containsAs(sessionProperties.getTailAs()))) {
+            return null;
+          }
+          break;
+        case EXCEPT_FIRST:
+          if (route.getAsPath().getAsSets().get(0).containsAs(sessionProperties.getTailAs())) {
+            return null;
+          }
+          break;
+        default:
+          throw new IllegalArgumentException(
+              String.format("Unsupported AllowsRemoteAsOutMode: %s", allowRemoteAsOutMode));
+      }
     }
     // Also do not export if route has NO_EXPORT community and this is a true ebgp session
     if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_EXPORT)
