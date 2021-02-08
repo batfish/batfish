@@ -547,7 +547,6 @@ import org.batfish.grammar.cisco.CiscoParser.Default_shutdown_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Description_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Description_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.Dh_groupContext;
-import org.batfish.grammar.cisco.CiscoParser.Disable_peer_as_check_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Distribute_list_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Distribute_list_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Domain_lookupContext;
@@ -4507,11 +4506,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
     _currentPeerGroup.setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitDisable_peer_as_check_bgp_tail(Disable_peer_as_check_bgp_tailContext ctx) {
-    _currentPeerGroup.setDisablePeerAsCheck(true);
   }
 
   @Override
