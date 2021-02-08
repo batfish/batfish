@@ -445,7 +445,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Delete_community_rp_stanzaCont
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Description_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Description_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Dh_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Disable_peer_as_check_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Disposition_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Distribute_list_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Distribute_list_is_stanzaContext;
@@ -3854,11 +3853,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
     _currentPeerGroup.setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitDisable_peer_as_check_bgp_tail(Disable_peer_as_check_bgp_tailContext ctx) {
-    _currentPeerGroup.setDisablePeerAsCheck(true);
   }
 
   @Override

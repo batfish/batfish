@@ -204,7 +204,6 @@ bgp_tail
    | default_originate_bgp_tail
    | default_shutdown_bgp_tail
    | description_bgp_tail
-   | disable_peer_as_check_bgp_tail
    | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
    | local_as_bgp_tail
@@ -278,11 +277,6 @@ default_shutdown_bgp_tail
 description_bgp_tail
 :
    description_line
-;
-
-disable_peer_as_check_bgp_tail
-:
-   DISABLE_PEER_AS_CHECK NEWLINE
 ;
 
 distribute_list_bgp_tail
