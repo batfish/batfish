@@ -3,7 +3,9 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasAllowLocalAsIn;
 import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasAllowRemoteAsOut;
 import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasSendCommunity;
@@ -11,6 +13,7 @@ import org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchersImpl.HasS
 import org.hamcrest.Matcher;
 
 /** Matchers for {@link AddressFamilyCapabilities} */
+@ParametersAreNonnullByDefault
 public final class AddressFamilyCapabilitiesMatchers {
 
   /**
@@ -27,7 +30,7 @@ public final class AddressFamilyCapabilitiesMatchers {
    * {@code value}.
    */
   @Nonnull
-  public static Matcher<AddressFamilyCapabilities> hasAllowRemoteAsOut(boolean value) {
+  public static Matcher<AddressFamilyCapabilities> hasAllowRemoteAsOut(AllowRemoteAsOutMode value) {
     return new HasAllowRemoteAsOut(equalTo(value));
   }
 

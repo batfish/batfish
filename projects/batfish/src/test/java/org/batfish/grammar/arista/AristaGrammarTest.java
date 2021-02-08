@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
@@ -794,7 +795,7 @@ public class AristaGrammarTest {
                 hasActiveNeighbor(
                     neighborWithRemoteAs,
                     hasIpv4UnicastAddressFamily(
-                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true)))))));
+                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(ALWAYS)))))));
   }
 
   @Test
@@ -1086,7 +1087,7 @@ public class AristaGrammarTest {
       assertThat(defaultOriginate.getAttributePolicy(), nullValue());
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
       assertThat(af.getAddressFamilyCapabilities().getAllowLocalAsIn(), equalTo(true));
-      assertThat(af.getAddressFamilyCapabilities().getAllowRemoteAsOut(), equalTo(true));
+      assertThat(af.getAddressFamilyCapabilities().getAllowRemoteAsOut(), equalTo(ALWAYS));
       assertThat(af.getRouteReflectorClient(), equalTo(false));
     }
     {
@@ -1491,8 +1492,9 @@ public class AristaGrammarTest {
       BgpActivePeerConfig neighbor =
           c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ip.toPrefix());
       assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
-      assertTrue(
-          neighbor.getEvpnAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut());
+      assertThat(
+          neighbor.getEvpnAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut(),
+          equalTo(ALWAYS));
       assertThat(
           neighbor.getEvpnAddressFamily().getL2VNIs(),
           equalTo(
