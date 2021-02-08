@@ -2,7 +2,6 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,9 +21,11 @@ public final class Layer1Node implements Comparable<Layer1Node> {
 
   @JsonCreator
   private static @Nonnull Layer1Node create(
-      @JsonProperty(PROP_HOSTNAME) String hostname,
-      @JsonProperty(PROP_INTERFACE_NAME) String interfaceName) {
-    return new Layer1Node(requireNonNull(hostname), requireNonNull(interfaceName));
+      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
+      @JsonProperty(PROP_INTERFACE_NAME) @Nullable String interfaceName) {
+    checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
+    checkArgument(interfaceName != null, "Missing %s", PROP_INTERFACE_NAME);
+    return new Layer1Node(hostname, interfaceName);
   }
 
   private final String _hostname;
