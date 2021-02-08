@@ -3319,11 +3319,6 @@ DISABLE_CONNECTED_CHECK
    'disable-connected-check'
 ;
 
-DISABLE_PEER_AS_CHECK
-:
-   'disable-peer-as-check'
-;
-
 DISCRIMINATOR
 :
    'discriminator'

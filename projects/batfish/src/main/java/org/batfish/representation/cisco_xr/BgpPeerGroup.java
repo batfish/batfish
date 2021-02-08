@@ -22,7 +22,6 @@ public abstract class BgpPeerGroup implements Serializable {
   protected Boolean _defaultOriginate;
   protected String _defaultOriginateMap;
   protected String _description;
-  protected Boolean _disablePeerAsCheck;
   protected Boolean _ebgpMultihop;
   private String _groupName;
   /** Name of IPv4 access list used to filter inbound BGP routes to this peer */
@@ -101,10 +100,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public String getDescription() {
     return _description;
-  }
-
-  public Boolean getDisablePeerAsCheck() {
-    return _disablePeerAsCheck;
   }
 
   public Boolean getEbgpMultihop() {
@@ -272,9 +267,6 @@ public abstract class BgpPeerGroup implements Serializable {
     if (_description == null) {
       _description = pg.getDescription();
     }
-    if (_disablePeerAsCheck == null) {
-      _disablePeerAsCheck = pg.getDisablePeerAsCheck();
-    }
     if (_ebgpMultihop == null) {
       _ebgpMultihop = pg.getEbgpMultihop();
     }
@@ -403,10 +395,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public void setDescription(String description) {
     _description = description;
-  }
-
-  public void setDisablePeerAsCheck(boolean disablePeerAsCheck) {
-    _disablePeerAsCheck = disablePeerAsCheck;
   }
 
   public void setEbgpMultihop(boolean ebgpMultihop) {
