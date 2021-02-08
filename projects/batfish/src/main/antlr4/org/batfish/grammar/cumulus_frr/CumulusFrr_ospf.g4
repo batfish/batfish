@@ -12,6 +12,7 @@ s_router_ospf
   (
     ro_log_adj_changes
     | ro_max_metric_router_lsa_administrative
+    | ro_network
     | ro_no
     | ro_passive_interface
     | ro_router_id
@@ -29,12 +30,23 @@ ro_max_metric_router_lsa_administrative
   MAX_METRIC ROUTER_LSA ADMINISTRATIVE NEWLINE
 ;
 
+ro_network
+:
+  NETWORK pfx = prefix AREA area = ospf_area NEWLINE
+;
+
 ro_no
 :
   NO
   (
-    rono_passive_interface
+    rono_network
+    | rono_passive_interface
   )
+;
+
+rono_network
+:
+  NETWORK pfx = prefix AREA area = ospf_area NEWLINE
 ;
 
 rono_passive_interface

@@ -27,5 +27,10 @@ public class ParseWarningMatchers {
     return new HasText(subMatcher);
   }
 
+  /** Provides a matcher that matches if the parse warning's text is the given text. */
+  public static Matcher<ParseWarning> hasText(String text) {
+    return hasText(equalTo(text));
+  }
+
   private ParseWarningMatchers() {}
 }

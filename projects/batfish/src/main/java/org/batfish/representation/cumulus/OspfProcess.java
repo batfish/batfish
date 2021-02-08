@@ -7,12 +7,14 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Prefix;
 
 /** Class for ospf process */
 public class OspfProcess implements Serializable {
 
   private final @Nonnull OspfVrf _defaultVrf;
   private boolean _defaultPassiveInterface;
+  private final @Nonnull Map<Prefix, OspfNetworkArea> _networkAreas;
   private final @Nonnull Map<String, OspfVrf> _vrfs;
   public static final double DEFAULT_REFERENCE_BANDWIDTH =
       100E9D; // https://docs.cumulusnetworks.com/cumulus-linux/Layer-3/Open-Shortest-Path-First-OSPF/#auto-cost-reference-bandwidth
@@ -25,12 +27,17 @@ public class OspfProcess implements Serializable {
     _defaultVrf = new OspfVrf(Configuration.DEFAULT_VRF_NAME);
     // default value
     _defaultPassiveInterface = false;
+    _networkAreas = new HashMap<>();
     _vrfs = new HashMap<>();
     _redistributionPolicies = new EnumMap<>(CumulusRoutingProtocol.class);
   }
 
   public @Nonnull OspfVrf getDefaultVrf() {
     return _defaultVrf;
+  }
+
+  public @Nonnull Map<Prefix, OspfNetworkArea> getNetworkAreas() {
+    return _networkAreas;
   }
 
   public @Nonnull Map<String, OspfVrf> getVrfs() {
