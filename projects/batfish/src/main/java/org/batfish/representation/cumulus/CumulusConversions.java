@@ -8,6 +8,7 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
@@ -627,7 +628,7 @@ public final class CumulusConversions {
                 .setAllowLocalAsIn(
                     (ipv4UnicastAddressFamily != null
                         && (firstNonNull(ipv4UnicastAddressFamily.getAllowAsIn(), 0) > 0)))
-                .setAllowRemoteAsOut(true) // this is always true
+                .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Cumulus
                 .build())
         .setExportPolicy(exportRoutingPolicy.getName())
         .setImportPolicy(importRoutingPolicy == null ? null : importRoutingPolicy.getName())
@@ -1165,7 +1166,7 @@ public final class CumulusConversions {
             AddressFamilyCapabilities.builder()
                 .setSendCommunity(true)
                 .setSendExtendedCommunity(true)
-                .setAllowRemoteAsOut(true) // this is always true
+                .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Cumulus
                 .build())
         .setRouteReflectorClient(
             firstNonNull(

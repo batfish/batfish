@@ -5,6 +5,7 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.arista.AristaConfiguration.MAX_ADMINISTRATIVE_COST;
 
@@ -408,7 +409,7 @@ final class AristaConversions {
               .setAllowLocalAsIn(
                   firstNonNull(neighbor.getAllowAsIn(), firstNonNull(vrfConfig.getAllowAsIn(), 0))
                       > 0)
-              .setAllowRemoteAsOut(true) // this is always true on Arista
+              .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Arista
               .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
               .setSendExtendedCommunity(
                   firstNonNull(neighbor.getSendExtendedCommunity(), Boolean.FALSE))
@@ -573,7 +574,7 @@ final class AristaConversions {
                       firstNonNull(
                               neighbor.getAllowAsIn(), firstNonNull(vrfConfig.getAllowAsIn(), 0))
                           > 0)
-                  .setAllowRemoteAsOut(true) // this is always true on Arista
+                  .setAllowRemoteAsOut(ALWAYS) // no outgoing remote-as check on Arista
                   .setSendCommunity(firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))
                   .setSendExtendedCommunity(
                       firstNonNull(neighbor.getSendCommunity(), Boolean.FALSE))

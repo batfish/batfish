@@ -12,6 +12,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
@@ -2117,8 +2118,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ipv4af.setAddressFamilyCapabilities(
         // TODO: need to support other setAddressFamilyCapabilities like sendCommunity, etc.
         AddressFamilyCapabilities.builder()
-            // PAN always sends routes, but may change AS path (enable-sender-side-loop-detection)
-            .setAllowRemoteAsOut(true)
+            // TODO: support 'enable-sender-side-loop-detection=No'
+            .setAllowRemoteAsOut(ALWAYS)
             // PAN always sends communities, but they can be updated (including remove all)
             .setSendCommunity(true)
             .setSendExtendedCommunity(true)

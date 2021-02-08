@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
@@ -1272,7 +1273,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               .setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll())
               .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
               .setAllowLocalAsIn(lpg.getAllowAsIn())
-              .setAllowRemoteAsOut(true) // TODO: verify default on IOS-XR
+              .setAllowRemoteAsOut(ALWAYS) // TODO: support 'as-path-loopcheck out disable'
               /*
                * On Cisco IOS, advertise-inactive is true by default. This can be modified by
                * "bgp suppress-inactive" command,
