@@ -1167,7 +1167,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       warn(
           ctx.getParent(),
           String.format(
-              "The area already defined for network %s is %d, not %d", prefix, na.getArea(), area));
+              "The area already defined for network %s is %s (%d), not %s (%d)",
+              prefix, Ip.create(na.getArea()), na.getArea(), Ip.create(area), area));
       return;
     }
     // Correctly remove the setting.

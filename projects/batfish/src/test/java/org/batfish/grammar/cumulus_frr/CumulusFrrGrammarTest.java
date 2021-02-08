@@ -1817,7 +1817,9 @@ public class CumulusFrrGrammarTest {
         contains(
             allOf(
                 hasText("no network 10.0.0.0/8 area 1.2.3.4"),
-                hasComment("The area already defined for network 10.0.0.0/8 is 0, not 16909060")),
+                hasComment(
+                    "The area already defined for network 10.0.0.0/8 is 0.0.0.0 (0), not 1.2.3.4"
+                        + " (16909060)")),
             allOf(
                 hasText("no network 30.0.0.0/8 area 0"),
                 hasComment("There is no area already defined for network 30.0.0.0/8"))));
