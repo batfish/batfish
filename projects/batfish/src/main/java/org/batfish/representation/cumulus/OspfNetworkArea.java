@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
 
 /**
- * Represents {@code network 1.2.3.4/5 area 6} under {@code router ospf}.
+ * Represents {@code network A.B.C.D/M area AREA} under {@code router ospf}.
  *
  * <p>See https://docs.frrouting.org/en/latest/ospfd.html#clicmd-networkA.B.C.D/MareaA.B.C.D.
  */
