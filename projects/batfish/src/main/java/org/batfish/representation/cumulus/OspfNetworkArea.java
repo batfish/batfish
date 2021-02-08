@@ -1,7 +1,7 @@
 package org.batfish.representation.cumulus;
 
-import com.google.common.base.Objects;
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
 
@@ -36,11 +36,11 @@ public final class OspfNetworkArea implements Serializable {
       return false;
     }
     OspfNetworkArea that = (OspfNetworkArea) o;
-    return _area == that._area && Objects.equal(_prefix, that._prefix);
+    return _area == that._area && Objects.equals(_prefix, that._prefix);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_area, _prefix);
+    return Objects.hash(_area, _prefix);
   }
 }
