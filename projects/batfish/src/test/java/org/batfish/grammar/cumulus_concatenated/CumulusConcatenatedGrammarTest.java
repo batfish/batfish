@@ -762,6 +762,12 @@ public class CumulusConcatenatedGrammarTest {
   }
 
   @Test
+  public void testOspfAreaNetwork() throws IOException {
+    Configuration c = parseConfig("ospf-network-area");
+    assertThat(c.getAllInterfaces().get("eth1").getOspfAreaName(), equalTo(10L));
+  }
+
+  @Test
   public void testLocalAs() throws IOException {
     Configuration c = parseConfig("local_as_test");
     org.batfish.datamodel.Vrf defaultVrf = c.getDefaultVrf();
