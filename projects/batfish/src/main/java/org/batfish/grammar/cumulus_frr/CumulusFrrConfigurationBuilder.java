@@ -92,8 +92,10 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_max_metric_router_lsa_administrativeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rono_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_defaultContext;
@@ -190,6 +192,7 @@ import org.batfish.representation.cumulus.IpCommunityListStandard;
 import org.batfish.representation.cumulus.IpCommunityListStandardLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
 import org.batfish.representation.cumulus.RedistributionPolicy;
@@ -763,6 +766,13 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRo_network(Ro_networkContext ctx) {
+    Prefix p = toPrefix(ctx.pfx);
+    long area = toLong(ctx.area);
+    _frr.getOspfProcess().getNetworkAreas().put(p, new OspfNetworkArea(p, area));
+  }
+
+  @Override
   public void exitRo_router_id(Ro_router_idContext ctx) {
     if (_frr.getOspfProcess() == null) {
       _w.addWarning(ctx, getFullText(ctx), _parser, "No OSPF process configured");
@@ -1139,6 +1149,30 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .computeIfAbsent(
                 sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
     _c.defineStructure(ROUTE_MAP, name, ctx);
+  }
+
+  @Override
+  public void exitRono_network(Rono_networkContext ctx) {
+    Prefix prefix = toPrefix(ctx.pfx);
+    Map<Prefix, OspfNetworkArea> networkAreas = _frr.getOspfProcess().getNetworkAreas();
+    OspfNetworkArea na = networkAreas.get(prefix);
+    if (na == null) {
+      warn(
+          ctx.getParent(),
+          String.format("There is no area already defined for network %s", prefix));
+      return;
+    }
+    long area = toLong(ctx.area);
+    if (na.getArea() != area) {
+      warn(
+          ctx.getParent(),
+          String.format(
+              "The area already defined for network %s is %s (%d), not %s (%d)",
+              prefix, Ip.create(na.getArea()), na.getArea(), Ip.create(area), area));
+      return;
+    }
+    // Correctly remove the setting.
+    networkAreas.remove(prefix);
   }
 
   @Override

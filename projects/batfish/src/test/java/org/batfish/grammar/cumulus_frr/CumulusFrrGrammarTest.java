@@ -5,6 +5,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
@@ -18,6 +19,7 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRE
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -104,6 +106,7 @@ import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
@@ -1775,6 +1778,51 @@ public class CumulusFrrGrammarTest {
   public void testInterface_ospf_cost_null() {
     parse("interface swp1\n ip ospf area 0\n");
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(null));
+  }
+
+  @Test
+  public void testRouterOspfNetwork() {
+    parse(
+        "router ospf\n"
+            + " network 10.0.0.0/8 area 0.0.0.0\n"
+            + " network 20.0.0.0/8 area 4000000000\n"
+            + " network 30.0.0.0/8 area 1.2.3.4\n");
+    Prefix ten8 = Prefix.parse("10.0.0.0/8");
+    Prefix twenty8 = Prefix.parse("20.0.0.0/8");
+    Prefix thirty8 = Prefix.parse("30.0.0.0/8");
+    assertThat(_frr.getOspfProcess().getNetworkAreas(), hasKeys(ten8, twenty8, thirty8));
+    assertThat(_warnings.getParseWarnings(), empty());
+    assertThat(
+        _frr.getOspfProcess().getNetworkAreas().get(ten8), equalTo(new OspfNetworkArea(ten8, 0)));
+    assertThat(
+        _frr.getOspfProcess().getNetworkAreas().get(twenty8),
+        equalTo(new OspfNetworkArea(twenty8, 4000000000L)));
+    assertThat(
+        _frr.getOspfProcess().getNetworkAreas().get(thirty8),
+        equalTo(new OspfNetworkArea(thirty8, Ip.parse("1.2.3.4").asLong())));
+  }
+
+  @Test
+  public void testRouterOspfNoNetwork() {
+    parse(
+        "router ospf\n"
+            + " network 10.0.0.0/8 area 0.0.0.0\n"
+            + " network 20.0.0.0/8 area 4000000000\n"
+            + " no network 10.0.0.0/8 area 1.2.3.4\n"
+            + " no network 10.0.0.0/8 area 0\n"
+            + " no network 30.0.0.0/8 area 0\n");
+    assertThat(_frr.getOspfProcess().getNetworkAreas(), hasKeys(Prefix.parse("20.0.0.0/8")));
+    assertThat(
+        _warnings.getParseWarnings(),
+        contains(
+            allOf(
+                hasText("no network 10.0.0.0/8 area 1.2.3.4"),
+                hasComment(
+                    "The area already defined for network 10.0.0.0/8 is 0.0.0.0 (0), not 1.2.3.4"
+                        + " (16909060)")),
+            allOf(
+                hasText("no network 30.0.0.0/8 area 0"),
+                hasComment("There is no area already defined for network 30.0.0.0/8"))));
   }
 
   @Test
