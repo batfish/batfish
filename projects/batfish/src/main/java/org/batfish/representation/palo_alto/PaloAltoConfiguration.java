@@ -2116,7 +2116,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
              https://docs.paloaltonetworks.com/pan-os/8-1/pan-os-admin/networking/bgp/configure-a-bgp-peer-with-mp-bgp-for-ipv4-or-ipv6-unicast.html
             */
             .setAllowRemoteAsOut(
-                Boolean.TRUE.equals(peer.getEnableSenderSideLoopDetection()) ? NEVER : ALWAYS)
+                firstNonNull(peer.getEnableSenderSideLoopDetection(), Boolean.TRUE)
+                    ? NEVER
+                    : ALWAYS)
             // PAN always sends communities, but they can be updated (including remove all)
             .setSendCommunity(true)
             .setSendExtendedCommunity(true)

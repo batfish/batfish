@@ -714,7 +714,7 @@ final class Conversions {
         .setAdvertiseInactive(!firstNonNull(naf.getSuppressInactive(), inheritedSupressInactive))
         .setAllowLocalAsIn(firstNonNull(naf.getAllowAsIn(), 0) > 0)
         .setAllowRemoteAsOut(
-            Boolean.TRUE.equals(naf.getDisablePeerAsCheck())
+            firstNonNull(naf.getDisablePeerAsCheck(), Boolean.FALSE)
                 ? AllowRemoteAsOutMode.ALWAYS
                 : AllowRemoteAsOutMode.EXCEPT_FIRST)
         .setSendCommunity(firstNonNull(naf.getSendCommunityStandard(), Boolean.FALSE))
