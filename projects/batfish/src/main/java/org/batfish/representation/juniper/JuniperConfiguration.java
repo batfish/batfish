@@ -7,7 +7,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
-import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
@@ -527,7 +527,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (advertisePeerAs == null) {
         advertisePeerAs = false;
       }
-      ipv4AfSettingsBuilder.setAllowRemoteAsOut(advertisePeerAs ? ALWAYS : NEVER);
+      ipv4AfSettingsBuilder.setAllowRemoteAsOut(advertisePeerAs ? ALWAYS : EXCEPT_FIRST);
       Boolean advertiseExternal = ig.getAdvertiseExternal();
       if (advertiseExternal == null) {
         advertiseExternal = false;
