@@ -5,6 +5,7 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +26,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
@@ -90,12 +92,17 @@ public final class BgpProtocolHelper {
     AddressFamily af = localNeighbor.getAddressFamily(afType);
     assert af != null;
 
-    // Do not export route if it has NO_ADVERTISE community, or if its AS path contains the remote
-    // peer's AS and local peer has not set getAllowRemoteOut
-    if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_ADVERTISE)
-        || (sessionProperties.isEbgp() && !af.getAddressFamilyCapabilities().getAllowRemoteAsOut())
-            && !route.getAsPath().getAsSets().isEmpty()
-            && route.getAsPath().getAsSets().get(0).containsAs(sessionProperties.getTailAs())) {
+    // Do not export route if it has NO_ADVERTISE community.
+    if (route.getCommunities().getCommunities().contains(StandardCommunity.NO_ADVERTISE)) {
+      return null;
+    }
+
+    // For eBGP, do not export if AS path contains the peer's AS in a disallowed position
+    if (sessionProperties.isEbgp()
+        && !allowAsPathOut(
+            route.getAsPath(),
+            sessionProperties.getTailAs(),
+            af.getAddressFamilyCapabilities().getAllowRemoteAsOut())) {
       return null;
     }
     // Also do not export if route has NO_EXPORT community and this is a true ebgp session
@@ -178,6 +185,29 @@ public final class BgpProtocolHelper {
             : BgpRoute.DEFAULT_LOCAL_PREFERENCE);
 
     return builder;
+  }
+
+  /**
+   * Return {@code true} if an outgoing eBGP advertisement with given {@code asPath} to {@code
+   * peerAs} should be allowed under the given {@code mode}.
+   */
+  @VisibleForTesting
+  static boolean allowAsPathOut(AsPath asPath, long peerAs, AllowRemoteAsOutMode mode) {
+    List<AsSet> asSets = asPath.getAsSets();
+    if (asPath.getAsSets().isEmpty()) {
+      return true;
+    }
+    switch (mode) {
+      case ALWAYS:
+        return true;
+      case NEVER:
+        return asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
+      case EXCEPT_FIRST:
+        return !asSets.get(0).containsAs(peerAs);
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unsupported AllowsRemoteAsOutMode: %s", mode));
+    }
   }
 
   /**

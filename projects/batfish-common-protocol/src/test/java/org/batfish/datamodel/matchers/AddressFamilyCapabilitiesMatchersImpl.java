@@ -2,6 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -19,13 +20,13 @@ final class AddressFamilyCapabilitiesMatchersImpl {
   }
 
   static final class HasAllowRemoteAsOut
-      extends FeatureMatcher<AddressFamilyCapabilities, Boolean> {
-    HasAllowRemoteAsOut(@Nonnull Matcher<? super Boolean> subMatcher) {
+      extends FeatureMatcher<AddressFamilyCapabilities, AllowRemoteAsOutMode> {
+    HasAllowRemoteAsOut(@Nonnull Matcher<? super AllowRemoteAsOutMode> subMatcher) {
       super(subMatcher, "An AddressFamilyCapabilities with allowRemoteAsOut:", "allowRemoteAsOut");
     }
 
     @Override
-    protected Boolean featureValueOf(AddressFamilyCapabilities actual) {
+    protected AllowRemoteAsOutMode featureValueOf(AddressFamilyCapabilities actual) {
       return actual.getAllowRemoteAsOut();
     }
   }

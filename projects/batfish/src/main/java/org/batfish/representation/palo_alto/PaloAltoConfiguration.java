@@ -12,6 +12,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerExportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.computeAndSetPerPeerImportPolicy;
 import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExportPolicy;
@@ -2107,18 +2109,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     Builder ipv4af = Ipv4UnicastAddressFamily.builder();
-    if (Boolean.TRUE.equals(peer.getEnableSenderSideLoopDetection())) {
-      /*
-       TODO: routes should be sent, but AS path should be modified to remove the peer's ASN
-       https://docs.paloaltonetworks.com/pan-os/8-1/pan-os-admin/networking/bgp/configure-a-bgp-peer-with-mp-bgp-for-ipv4-or-ipv6-unicast.html
-      */
-      getWarnings().redFlag("'enable-sender-side-loop-detection yes' is not supported");
-    }
     ipv4af.setAddressFamilyCapabilities(
         // TODO: need to support other setAddressFamilyCapabilities like sendCommunity, etc.
         AddressFamilyCapabilities.builder()
-            // PAN always sends routes, but may change AS path (enable-sender-side-loop-detection)
-            .setAllowRemoteAsOut(true)
+            /*
+             https://docs.paloaltonetworks.com/pan-os/8-1/pan-os-admin/networking/bgp/configure-a-bgp-peer-with-mp-bgp-for-ipv4-or-ipv6-unicast.html
+            */
+            .setAllowRemoteAsOut(
+                firstNonNull(peer.getEnableSenderSideLoopDetection(), Boolean.TRUE)
+                    ? NEVER
+                    : ALWAYS)
             // PAN always sends communities, but they can be updated (including remove all)
             .setSendCommunity(true)
             .setSendExtendedCommunity(true)

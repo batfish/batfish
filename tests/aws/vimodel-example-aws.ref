@@ -2418,7 +2418,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -18815,7 +18815,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -18995,7 +18995,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -19174,7 +19174,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -19324,7 +19324,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -22310,7 +22310,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -22335,7 +22335,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -22360,7 +22360,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -22385,7 +22385,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -22410,7 +22410,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -22435,7 +22435,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -45008,7 +45008,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : true,
+                      "allowRemoteAsOut" : "ALWAYS",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -45039,7 +45039,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : true,
+                      "allowRemoteAsOut" : "ALWAYS",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -45065,7 +45065,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : true,
+                      "allowRemoteAsOut" : "ALWAYS",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -45095,7 +45095,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : true,
+                      "allowRemoteAsOut" : "ALWAYS",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -45134,7 +45134,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : true,
+                      "allowRemoteAsOut" : "ALWAYS",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -45177,7 +45177,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : true,
+                      "allowRemoteAsOut" : "ALWAYS",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -48302,7 +48302,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -48328,7 +48328,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
@@ -48377,7 +48377,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : false,
+                      "allowRemoteAsOut" : "NEVER",
                       "sendCommunity" : false,
                       "sendExtendedCommunity" : false
                     },
