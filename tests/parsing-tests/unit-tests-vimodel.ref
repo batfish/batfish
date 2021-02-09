@@ -22069,7 +22069,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -22382,7 +22382,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -67830,7 +67830,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : true,
                       "allowLocalAsIn" : true,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -68209,7 +68209,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -68240,7 +68240,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -85669,7 +85669,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -85703,7 +85703,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -85737,7 +85737,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -85771,7 +85771,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -85802,7 +85802,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -85833,7 +85833,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
@@ -85864,7 +85864,7 @@
                       "advertiseExternal" : false,
                       "advertiseInactive" : false,
                       "allowLocalAsIn" : false,
-                      "allowRemoteAsOut" : "NEVER",
+                      "allowRemoteAsOut" : "EXCEPT_FIRST",
                       "sendCommunity" : true,
                       "sendExtendedCommunity" : true
                     },
