@@ -11,6 +11,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
@@ -1622,7 +1623,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll())
               .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
               .setAllowLocalAsIn(lpg.getAllowAsIn())
-              .setAllowRemoteAsOut(true) /* always true on IOS */
+              .setAllowRemoteAsOut(ALWAYS) /* no outgoing remote-as check on IOS */
               /*
                * On Cisco IOS, advertise-inactive is true by default. This can be modified by
                * "bgp suppress-inactive" command,

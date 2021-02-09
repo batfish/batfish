@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginType.EGP;
 import static org.batfish.datamodel.OriginType.IGP;
 import static org.batfish.datamodel.OriginType.INCOMPLETE;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
@@ -909,8 +910,9 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getLocalIp(), equalTo(Ip.parse("1.2.3.6")));
     assertThat(peer.getLocalAs(), equalTo(65001L));
     assertThat(peer.getRemoteAsns(), equalTo(LongSpace.of(65001)));
-    assertTrue(
-        peer.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut());
+    assertThat(
+        peer.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getAllowRemoteAsOut(),
+        equalTo(ALWAYS));
     assertTrue(
         peer.getIpv4UnicastAddressFamily().getAddressFamilyCapabilities().getSendCommunity());
     assertTrue(

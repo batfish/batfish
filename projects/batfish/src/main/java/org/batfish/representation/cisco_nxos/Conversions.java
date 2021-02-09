@@ -45,6 +45,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -712,7 +713,10 @@ final class Conversions {
     return AddressFamilyCapabilities.builder()
         .setAdvertiseInactive(!firstNonNull(naf.getSuppressInactive(), inheritedSupressInactive))
         .setAllowLocalAsIn(firstNonNull(naf.getAllowAsIn(), 0) > 0)
-        .setAllowRemoteAsOut(firstNonNull(naf.getDisablePeerAsCheck(), Boolean.FALSE))
+        .setAllowRemoteAsOut(
+            firstNonNull(naf.getDisablePeerAsCheck(), Boolean.FALSE)
+                ? AllowRemoteAsOutMode.ALWAYS
+                : AllowRemoteAsOutMode.EXCEPT_FIRST)
         .setSendCommunity(firstNonNull(naf.getSendCommunityStandard(), Boolean.FALSE))
         .setSendExtendedCommunity(firstNonNull(naf.getSendCommunityExtended(), Boolean.FALSE))
         .build();

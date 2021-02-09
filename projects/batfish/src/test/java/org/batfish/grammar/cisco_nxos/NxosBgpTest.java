@@ -2,6 +2,8 @@ package org.batfish.grammar.cisco_nxos;
 
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
@@ -196,7 +198,7 @@ public class NxosBgpTest {
                         hasRemoteAs(2L),
                         hasLocalAs(1L),
                         hasIpv4UnicastAddressFamily(
-                            hasAddressFamilyCapabilites(hasAllowRemoteAsOut(true))))))));
+                            hasAddressFamilyCapabilites(hasAllowRemoteAsOut(ALWAYS))))))));
     assertThat(
         c,
         ConfigurationMatchers.hasVrf(
@@ -205,7 +207,7 @@ public class NxosBgpTest {
                 hasActiveNeighbor(
                     Prefix.parse("3.3.3.3/32"),
                     hasIpv4UnicastAddressFamily(
-                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(false)))))));
+                        hasAddressFamilyCapabilites(hasAllowRemoteAsOut(EXCEPT_FIRST)))))));
   }
 
   @Test

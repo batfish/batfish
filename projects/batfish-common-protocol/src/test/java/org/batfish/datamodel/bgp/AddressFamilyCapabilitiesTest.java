@@ -1,6 +1,7 @@
 package org.batfish.datamodel.bgp;
 
 import static org.batfish.datamodel.bgp.AddressFamilyCapabilities.builder;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -25,7 +26,7 @@ public class AddressFamilyCapabilitiesTest {
         .addEqualityGroup(builder.setAdvertiseExternal(true).build())
         .addEqualityGroup(builder.setAdvertiseInactive(true).build())
         .addEqualityGroup(builder.setAllowLocalAsIn(true).build())
-        .addEqualityGroup(builder.setAllowRemoteAsOut(true).build())
+        .addEqualityGroup(builder.setAllowRemoteAsOut(ALWAYS).build())
         .addEqualityGroup(builder.setSendCommunity(true).build())
         .addEqualityGroup(builder.setSendExtendedCommunity(true).build())
         .addEqualityGroup(new Object())
@@ -42,7 +43,7 @@ public class AddressFamilyCapabilitiesTest {
             .setAdvertiseExternal(true)
             .setAdvertiseInactive(true)
             .setAllowLocalAsIn(true)
-            .setAllowRemoteAsOut(true)
+            .setAllowRemoteAsOut(ALWAYS)
             .setSendCommunity(true)
             .setSendExtendedCommunity(true)
             .build();
@@ -59,7 +60,7 @@ public class AddressFamilyCapabilitiesTest {
             .setAdvertiseExternal(true)
             .setAdvertiseInactive(true)
             .setAllowLocalAsIn(true)
-            .setAllowRemoteAsOut(true)
+            .setAllowRemoteAsOut(ALWAYS)
             .setSendCommunity(true)
             .setSendExtendedCommunity(true)
             .build();

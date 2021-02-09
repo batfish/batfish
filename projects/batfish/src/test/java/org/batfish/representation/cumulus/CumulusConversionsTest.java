@@ -7,6 +7,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.IBGP;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
@@ -1004,8 +1005,8 @@ public final class CumulusConversionsTest {
       AddressFamilyCapabilities capabilities =
           convertIpv4UnicastAddressFamily(null, true, policy, null).getAddressFamilyCapabilities();
       assertFalse(capabilities.getAllowLocalAsIn());
-      // Counter-part to allow-as-in. Always true
-      assertTrue(capabilities.getAllowRemoteAsOut());
+      // Counter-part to allow-as-in. Always allowed.
+      assertThat(capabilities.getAllowRemoteAsOut(), equalTo(ALWAYS));
     }
 
     {
@@ -1014,8 +1015,8 @@ public final class CumulusConversionsTest {
       AddressFamilyCapabilities capabilities =
           convertIpv4UnicastAddressFamily(af, true, policy, null).getAddressFamilyCapabilities();
       assertFalse(capabilities.getAllowLocalAsIn());
-      // Counter-part to allow-as-in. Always true
-      assertTrue(capabilities.getAllowRemoteAsOut());
+      // Counter-part to allow-as-in. Always allowed.
+      assertThat(capabilities.getAllowRemoteAsOut(), equalTo(ALWAYS));
     }
 
     {
@@ -1025,8 +1026,8 @@ public final class CumulusConversionsTest {
       AddressFamilyCapabilities capabilities =
           convertIpv4UnicastAddressFamily(af, true, policy, null).getAddressFamilyCapabilities();
       assertTrue(capabilities.getAllowLocalAsIn());
-      // Counter-part to allow-as-in. Always true
-      assertTrue(capabilities.getAllowRemoteAsOut());
+      // Counter-part to allow-as-in. Always allowed.
+      assertThat(capabilities.getAllowRemoteAsOut(), equalTo(ALWAYS));
     }
   }
 

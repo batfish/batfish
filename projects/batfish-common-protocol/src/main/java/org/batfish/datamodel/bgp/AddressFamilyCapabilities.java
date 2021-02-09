@@ -1,12 +1,14 @@
 package org.batfish.datamodel.bgp;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -35,7 +37,7 @@ public final class AddressFamilyCapabilities implements Serializable {
   private final boolean _advertiseExternal;
   private final boolean _advertiseInactive;
   private final boolean _allowLocalAsIn;
-  private final boolean _allowRemoteAsOut;
+  private final @Nonnull AllowRemoteAsOutMode _allowRemoteAsOut;
   private final boolean _sendCommunity;
   private final boolean _sendExtendedCommunity;
 
@@ -46,7 +48,7 @@ public final class AddressFamilyCapabilities implements Serializable {
       boolean advertiseExternal,
       boolean advertiseInactive,
       boolean allowLocalAsIn,
-      boolean allowRemoteAsOut,
+      AllowRemoteAsOutMode allowRemoteAsOut,
       boolean sendCommunity,
       boolean sendExtendedCommunity) {
     _additionalPathsReceive = additionalPathsReceive;
@@ -68,7 +70,7 @@ public final class AddressFamilyCapabilities implements Serializable {
       @Nullable @JsonProperty(PROP_ADVERTISE_EXTERNAL) Boolean advertiseExternal,
       @Nullable @JsonProperty(PROP_ADVERTISE_INACTIVE) Boolean advertiseInactive,
       @Nullable @JsonProperty(PROP_ALLOW_LOCAL_AS_IN) Boolean allowLocalAsIn,
-      @Nullable @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT) Boolean allowRemoteAsOut,
+      @Nullable @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT) AllowRemoteAsOutMode allowRemoteAsOut,
       @Nullable @JsonProperty(PROP_SEND_COMMUNITY) Boolean sendCommunity,
       @Nullable @JsonProperty(PROP_SEND_EXTENDED_COMMUNITY) Boolean sendExtendedCommunity) {
 
@@ -142,7 +144,7 @@ public final class AddressFamilyCapabilities implements Serializable {
 
   /** Whether to allow sending of advertisements containing the remote AS number in the AS-path */
   @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT)
-  public boolean getAllowRemoteAsOut() {
+  public @Nonnull AllowRemoteAsOutMode getAllowRemoteAsOut() {
     return _allowRemoteAsOut;
   }
 
@@ -214,8 +216,9 @@ public final class AddressFamilyCapabilities implements Serializable {
   }
 
   /**
-   * Return a builder for {@link AddressFamilyCapabilities} By default all values are initialized to
-   * {@code false}.
+   * Return a builder for {@link AddressFamilyCapabilities} By default all boolean values are
+   * initialized to {@code false}, and {@code _allowRemoteAsOut} is initialized to {@link
+   * AllowRemoteAsOutMode#NEVER}.
    */
   public static Builder builder() {
     return new Builder();
@@ -228,11 +231,13 @@ public final class AddressFamilyCapabilities implements Serializable {
     private boolean _advertiseExternal;
     private boolean _advertiseInactive;
     private boolean _allowLocalAsIn;
-    private boolean _allowRemoteAsOut;
+    private @Nonnull AllowRemoteAsOutMode _allowRemoteAsOut;
     private boolean _sendCommunity;
     private boolean _sendExtendedCommunity;
 
-    private Builder() {}
+    private Builder() {
+      _allowRemoteAsOut = NEVER;
+    }
 
     public Builder setAdditionalPathsReceive(boolean additionalPathsReceive) {
       _additionalPathsReceive = additionalPathsReceive;
@@ -264,7 +269,7 @@ public final class AddressFamilyCapabilities implements Serializable {
       return this;
     }
 
-    public Builder setAllowRemoteAsOut(boolean allowRemoteAsOut) {
+    public Builder setAllowRemoteAsOut(AllowRemoteAsOutMode allowRemoteAsOut) {
       _allowRemoteAsOut = allowRemoteAsOut;
       return this;
     }
