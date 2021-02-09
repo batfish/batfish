@@ -1623,7 +1623,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .setAdditionalPathsSelectAll(lpg.getAdditionalPathsSelectAll())
               .setAdditionalPathsSend(lpg.getAdditionalPathsSend())
               .setAllowLocalAsIn(lpg.getAllowAsIn())
-              .setAllowRemoteAsOut(ALWAYS) /* // no outgoing remote-as check on IOS */
+              .setAllowRemoteAsOut(ALWAYS) /* no outgoing remote-as check on IOS */
               /*
                * On Cisco IOS, advertise-inactive is true by default. This can be modified by
                * "bgp suppress-inactive" command,

@@ -4,6 +4,10 @@ import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_TAG;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.allowAsPathOut;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
@@ -11,6 +15,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -27,6 +33,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
@@ -337,5 +344,37 @@ public class BgpProtocolHelperTest {
             true);
 
     assertThat(result.getCommunities().getCommunities(), equalTo(ImmutableSet.of(community)));
+  }
+
+  @Test
+  public void testAllowAsPathOutEmptyAsPath() {
+    long peerAs = 1L;
+    AsPath asPath = AsPath.empty();
+    for (AllowRemoteAsOutMode mode : AllowRemoteAsOutMode.values()) {
+      assertTrue(allowAsPathOut(asPath, peerAs, mode));
+    }
+  }
+
+  @Test
+  public void testAllowAsPathOutAlways() {
+    long peerAs = 1L;
+    AsPath asPath = AsPath.ofSingletonAsSets(peerAs);
+    assertTrue(allowAsPathOut(asPath, peerAs, ALWAYS));
+  }
+
+  @Test
+  public void testAllowAsPathOutNever() {
+    long peerAs = 1L;
+    assertFalse(allowAsPathOut(AsPath.ofSingletonAsSets(peerAs), peerAs, NEVER));
+    assertFalse(allowAsPathOut(AsPath.ofSingletonAsSets(2L, peerAs), peerAs, NEVER));
+    assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L), peerAs, NEVER));
+  }
+
+  @Test
+  public void testAllowAsPathOutExceptFirst() {
+    long peerAs = 1L;
+    assertFalse(allowAsPathOut(AsPath.ofSingletonAsSets(peerAs), peerAs, EXCEPT_FIRST));
+    assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L, peerAs), peerAs, EXCEPT_FIRST));
+    assertTrue(allowAsPathOut(AsPath.ofSingletonAsSets(2L), peerAs, EXCEPT_FIRST));
   }
 }
