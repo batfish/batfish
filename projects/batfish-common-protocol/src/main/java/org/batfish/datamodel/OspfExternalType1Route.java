@@ -4,11 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** OSPF external route of type 1 */
 @ParametersAreNonnullByDefault
@@ -76,6 +78,17 @@ public class OspfExternalType1Route extends OspfExternalRoute {
 
   public static OspfExternalRoute.Builder builder() {
     return OspfExternalRoute.builder().setOspfMetricType(OspfMetricType.E1);
+  }
+
+  /** Return a route builder with pre-filled mandatory values. To be used in tests only */
+  @VisibleForTesting
+  public static OspfExternalRoute.Builder testBuilder() {
+    return builder()
+        .setAdvertiser("adv")
+        .setArea(0L)
+        .setCostToAdvertiser(1L)
+        .setLsaMetric(2L)
+        .setNextHop(NextHopDiscard.instance());
   }
 
   @Nonnull
