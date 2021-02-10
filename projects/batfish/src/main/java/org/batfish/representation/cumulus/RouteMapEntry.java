@@ -54,7 +54,12 @@ public final class RouteMapEntry implements Serializable {
   /** Return stream of match statements for this entry. */
   public @Nonnull Stream<RouteMapMatch> getMatches() {
     return Stream.of(
-            _matchAsPath, _matchInterface, _matchCommunity, _matchIpAddressPrefixList, _matchTag)
+            _matchAsPath,
+            _matchInterface,
+            _matchCommunity,
+            _matchIpAddressPrefixLen,
+            _matchIpAddressPrefixList,
+            _matchTag)
         .filter(Objects::nonNull);
   }
 
