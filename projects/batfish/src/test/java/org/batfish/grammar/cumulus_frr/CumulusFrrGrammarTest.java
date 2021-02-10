@@ -19,6 +19,7 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRE
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -49,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -112,6 +114,7 @@ import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 import org.junit.Before;
@@ -1200,6 +1203,31 @@ public class CumulusFrrGrammarTest {
             "PREFIX_LIST2",
             CumulusStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS_PREFIX_LIST);
     assertThat(reference, equalTo(ImmutableSet.of(3)));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchSourceProtocol() {
+    String name = "ROUTE-MAP-NAME";
+    StringBuilder sb = new StringBuilder();
+    List<String> protocols =
+        ImmutableList.of("bgp", "connected", "eigrp", "isis", "kernel", "ospf", "rip", "static");
+    for (int i = 0; i < protocols.size(); ++i) {
+      int seq = 10 * (i + 1);
+      sb.append("route-map ").append(name).append(" permit ").append(seq).append('\n');
+      sb.append(" match source-protocol").append(protocols.get(i)).append('\n');
+    }
+    parse(sb.toString());
+
+    SortedMap<Integer, RouteMapEntry> entries = _frr.getRouteMaps().get(name).getEntries();
+    assertThat(entries, aMapWithSize(protocols.size()));
+    assertThat(entries.get(10).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.BGP));
+    assertThat(entries.get(20).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.CONNECTED));
+    assertThat(entries.get(30).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.EIGRP));
+    assertThat(entries.get(40).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.ISIS));
+    assertThat(entries.get(50).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.KERNEL));
+    assertThat(entries.get(60).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.OSPF));
+    assertThat(entries.get(70).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.RIP));
+    assertThat(entries.get(80).getMatchSourceProtocol().getProtocol(), equalTo(Protocol.STATIC));
   }
 
   @Test

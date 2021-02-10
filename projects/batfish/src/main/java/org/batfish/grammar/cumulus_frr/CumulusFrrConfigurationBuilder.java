@@ -82,6 +82,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_source_protocolContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_lenContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
@@ -209,6 +210,8 @@ import org.batfish.representation.cumulus.RouteMapMatchCommunity;
 import org.batfish.representation.cumulus.RouteMapMatchInterface;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixLen;
 import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol;
+import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
 import org.batfish.representation.cumulus.RouteMapSetAsPath;
 import org.batfish.representation.cumulus.RouteMapSetCommListDelete;
@@ -1271,6 +1274,38 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRmm_community(Rmm_communityContext ctx) {
+    ctx.names.forEach(
+        name ->
+            _c.referenceStructure(
+                IP_COMMUNITY_LIST, name.getText(),
+                ROUTE_MAP_MATCH_COMMUNITY_LIST, name.getStart().getLine()));
+
+    _currentRouteMapEntry.setMatchCommunity(
+        new RouteMapMatchCommunity(
+            ImmutableList.<String>builder()
+                // add old names
+                .addAll(
+                    Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
+                        .map(RouteMapMatchCommunity::getNames)
+                        .orElse(ImmutableList.of()))
+                // add new names
+                .addAll(ctx.names.stream().map(RuleContext::getText).iterator())
+                .build()));
+  }
+
+  @Override
+  public void exitRmm_interface(Rmm_interfaceContext ctx) {
+    String name = ctx.name.getText();
+    _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of(name)));
+    _c.referenceStructure(
+        ABSTRACT_INTERFACE,
+        name,
+        CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
+        ctx.getStart().getLine());
+  }
+
+  @Override
   public void exitRmmipa_prefix_len(Rmmipa_prefix_lenContext ctx) {
     Optional<Integer> maybeLen = toInteger(ctx, ctx.len);
     maybeLen.ifPresent(
@@ -1299,35 +1334,27 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitRmm_interface(Rmm_interfaceContext ctx) {
-    String name = ctx.name.getText();
-    _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(ImmutableSet.of(name)));
-    _c.referenceStructure(
-        ABSTRACT_INTERFACE,
-        name,
-        CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
-        ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitRmm_community(Rmm_communityContext ctx) {
-    ctx.names.forEach(
-        name ->
-            _c.referenceStructure(
-                IP_COMMUNITY_LIST, name.getText(),
-                ROUTE_MAP_MATCH_COMMUNITY_LIST, name.getStart().getLine()));
-
-    _currentRouteMapEntry.setMatchCommunity(
-        new RouteMapMatchCommunity(
-            ImmutableList.<String>builder()
-                // add old names
-                .addAll(
-                    Optional.ofNullable(_currentRouteMapEntry.getMatchCommunity())
-                        .map(RouteMapMatchCommunity::getNames)
-                        .orElse(ImmutableList.of()))
-                // add new names
-                .addAll(ctx.names.stream().map(RuleContext::getText).iterator())
-                .build()));
+  public void exitRmm_source_protocol(Rmm_source_protocolContext ctx) {
+    RouteMapMatchSourceProtocol p = null;
+    if (ctx.BGP() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.BGP);
+    } else if (ctx.CONNECTED() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.CONNECTED);
+    } else if (ctx.EIGRP() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.EIGRP);
+    } else if (ctx.ISIS() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.ISIS);
+    } else if (ctx.KERNEL() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.KERNEL);
+    } else if (ctx.OSPF() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.OSPF);
+    } else if (ctx.RIP() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.RIP);
+    } else if (ctx.STATIC() != null) {
+      p = new RouteMapMatchSourceProtocol(Protocol.STATIC);
+    }
+    assert p != null; // or else we're missing something in the if statement.
+    _currentRouteMapEntry.setMatchSourceProtocol(p);
   }
 
   @Override

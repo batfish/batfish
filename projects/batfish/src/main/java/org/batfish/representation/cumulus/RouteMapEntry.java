@@ -20,6 +20,7 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchInterface _matchInterface;
   private @Nullable RouteMapMatchIpAddressPrefixLen _matchIpAddressPrefixLen;
   private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
+  private @Nullable RouteMapMatchSourceProtocol _matchSourceProtocol;
   private @Nullable RouteMapMatchTag _matchTag;
   private final int _number;
   private @Nullable String _description;
@@ -59,6 +60,7 @@ public final class RouteMapEntry implements Serializable {
             _matchCommunity,
             _matchIpAddressPrefixLen,
             _matchIpAddressPrefixList,
+            _matchSourceProtocol,
             _matchTag)
         .filter(Objects::nonNull);
   }
@@ -86,6 +88,14 @@ public final class RouteMapEntry implements Serializable {
 
   public @Nullable RouteMapMatchIpAddressPrefixList getMatchIpAddressPrefixList() {
     return _matchIpAddressPrefixList;
+  }
+
+  public @Nullable RouteMapMatchSourceProtocol getMatchSourceProtocol() {
+    return _matchSourceProtocol;
+  }
+
+  public void setMatchSourceProtocol(@Nullable RouteMapMatchSourceProtocol matchSourceProtocol) {
+    _matchSourceProtocol = matchSourceProtocol;
   }
 
   @Nullable

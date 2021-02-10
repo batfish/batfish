@@ -61,7 +61,7 @@ rm_match
     // | rmm_origin
     // | rmm_peer
     // | rmm_probability
-    // | rmm_source_protocol
+    | rmm_source_protocol
     // | rmm_source_vrf
     | rmm_tag
   )
@@ -121,6 +121,26 @@ rmm_ip
 rmm_ipv6
 :
   IPV6 null_rest_of_line
+;
+
+rmm_source_protocol
+:
+  SOURCE_PROTOCOL
+  (
+    // BABEL
+    BGP
+    | CONNECTED
+    | EIGRP
+    | ISIS
+    | KERNEL
+    // | NHRP
+    | OSPF
+    // | OSPF6
+    | RIP
+    // | RIPNG
+    | STATIC
+    // | SYSTEM
+  ) NEWLINE
 ;
 
 rmm_tag
