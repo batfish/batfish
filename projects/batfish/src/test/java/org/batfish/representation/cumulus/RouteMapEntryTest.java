@@ -36,6 +36,17 @@ public class RouteMapEntryTest {
   }
 
   @Test
+  public void testGetMatches_PrefixLen() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
+    entry.setMatchIpAddressPrefixLen(new RouteMapMatchIpAddressPrefixLen(3));
+
+    ImmutableList<RouteMapMatch> matches =
+        entry.getMatches().collect(ImmutableList.toImmutableList());
+
+    assertThat(matches, contains(isA(RouteMapMatchIpAddressPrefixLen.class)));
+  }
+
+  @Test
   public void testGetMatches_PrefixList() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchIpAddressPrefixList(
