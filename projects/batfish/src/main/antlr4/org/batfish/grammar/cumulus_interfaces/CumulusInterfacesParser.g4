@@ -96,14 +96,18 @@ i_address
 :
   IP? ADDRESS
   (
-    prefix
-    | prefix6
+    v4 = interface_address
+    | v6 = interface_address6
   ) NEWLINE
 ;
 
 i_address_virtual
 :
-  ADDRESS_VIRTUAL MAC_ADDRESS IP_PREFIX NEWLINE
+  ADDRESS_VIRTUAL MAC_ADDRESS
+  (
+    v4 = interface_address
+    | v6 = interface_address6
+  ) NEWLINE
 ;
 
 i_alias
@@ -193,12 +197,12 @@ i_clag_id
 
 i_clagd_backup_ip
 :
-  CLAGD_BACKUP_IP IP_ADDRESS (VRF vrf_name)? NEWLINE
+  CLAGD_BACKUP_IP address (VRF vrf_name)? NEWLINE
 ;
 
 i_clagd_peer_ip
 :
-  CLAGD_PEER_IP (IP_ADDRESS | LINK_LOCAL) NEWLINE
+  CLAGD_PEER_IP (address | LINK_LOCAL) NEWLINE
 ;
 
 i_clagd_priority
@@ -213,12 +217,12 @@ i_clagd_sys_mac
 
 i_clagd_vxlan_anycast_ip
 :
-  CLAGD_VXLAN_ANYCAST_IP IP_ADDRESS NEWLINE
+  CLAGD_VXLAN_ANYCAST_IP address NEWLINE
 ;
 
 i_gateway
 :
-  GATEWAY IP_ADDRESS NEWLINE
+  GATEWAY address NEWLINE
 ;
 
 i_hwaddress
@@ -296,11 +300,11 @@ ipui_route
 
 ipuir_add
 :
-   ADD IP_PREFIX
+   ADD prefix
    // this rule is more permissive than reality; it allows for multiple occurrences of dev/via
    // we check for conformance in the extractor
    (
-     VIA IP_ADDRESS
+     VIA address
      | DEV interface_name
    )+
    NEWLINE
@@ -333,5 +337,5 @@ i_vxlan_id
 
 i_vxlan_local_tunnel_ip
 :
-  VXLAN_LOCAL_TUNNEL_IP IP_ADDRESS NEWLINE
+  VXLAN_LOCAL_TUNNEL_IP address NEWLINE
 ;

@@ -218,8 +218,21 @@ public class CumulusInterfacesGrammarTest {
   }
 
   @Test
+  public void testIfaceAddress32() {
+    String input = "iface swp1\n address 10.12.13.14\n";
+    InterfacesInterface iface = parse(input).getInterfaces().get("swp1");
+    assertThat(iface.getAddresses(), contains(ConcreteInterfaceAddress.parse("10.12.13.14/32")));
+  }
+
+  @Test
   public void testIfaceAddressV6() {
     parse("iface swp1\n address ::1/128\n");
+    assertThat(_warnings.getParseWarnings().size(), equalTo(0));
+  }
+
+  @Test
+  public void testIfaceAddressV6_128() {
+    parse("iface swp1\n address ::1\n");
     assertThat(_warnings.getParseWarnings().size(), equalTo(0));
   }
 
@@ -233,6 +246,18 @@ public class CumulusInterfacesGrammarTest {
             ImmutableMap.of(
                 MacAddress.parse("00:00:00:00:00:00"),
                 ImmutableSet.of(ConcreteInterfaceAddress.parse("1.2.3.4/24")))));
+  }
+
+  @Test
+  public void testIfaceAddressVirtual_32() {
+    String input = "iface vlan1\n address-virtual 00:00:00:00:00:00 1.2.3.4\n";
+    InterfacesInterface iface = parse(input).getInterfaces().get("vlan1");
+    assertThat(
+        iface.getAddressVirtuals(),
+        equalTo(
+            ImmutableMap.of(
+                MacAddress.parse("00:00:00:00:00:00"),
+                ImmutableSet.of(ConcreteInterfaceAddress.parse("1.2.3.4/32")))));
   }
 
   @Test
