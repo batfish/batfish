@@ -8,10 +8,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 
-/**
- * A {@link RouteMapMatch} that matches routes based on whether the route's network has the given
- * prefix length.
- */
+/** A {@link RouteMapMatch} that implements {@code route-map match source-protocol}. */
 public final class RouteMapMatchSourceProtocol implements RouteMapMatch {
 
   public enum Protocol {
