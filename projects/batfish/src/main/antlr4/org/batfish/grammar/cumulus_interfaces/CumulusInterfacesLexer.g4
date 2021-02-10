@@ -339,6 +339,11 @@ IP_ADDRESS
   F_IpAddress
 ;
 
+IPV6_ADDRESS
+:
+  F_Ipv6Address
+;
+
 IP_PREFIX
 :
   F_IpPrefix
