@@ -22,6 +22,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.AddressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_address_virtualContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_aliasContext;
@@ -46,6 +47,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrfConte
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vrf_tableContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_idContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_vxlan_local_tunnel_ipContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Interface_nameContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Ipuir_addContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.NumberContext;
@@ -100,8 +102,22 @@ public final class CumulusInterfacesConfigurationBuilder
     return _config;
   }
 
-  private static @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(PrefixContext ctx) {
-    return ConcreteInterfaceAddress.parse(ctx.getText());
+  private static @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(
+      Interface_addressContext ctx) {
+    if (ctx.addr_32 != null) {
+      return ConcreteInterfaceAddress.create(toIp(ctx.addr_32), Prefix.MAX_PREFIX_LENGTH);
+    } else {
+      assert ctx.addr_mask != null;
+      return ConcreteInterfaceAddress.parse(ctx.addr_mask.getText());
+    }
+  }
+
+  private static @Nonnull Ip toIp(AddressContext ctx) {
+    return Ip.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(PrefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   @Override
@@ -160,16 +176,23 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_address(I_addressContext ctx) {
-    if (ctx.prefix() != null) { // ignore v6
-      _currentIface.addAddress(toConcreteInterfaceAddress(ctx.prefix()));
+    if (ctx.v4 != null) {
+      _currentIface.addAddress(toConcreteInterfaceAddress(ctx.v4));
+    } else {
+      assert ctx.v6 != null;
+      // ignore v6
     }
   }
 
   @Override
   public void exitI_address_virtual(I_address_virtualContext ctx) {
-    _currentIface.setAddressVirtual(
-        MacAddress.parse(ctx.MAC_ADDRESS().getText()),
-        ConcreteInterfaceAddress.parse(ctx.IP_PREFIX().getText()));
+    if (ctx.v4 != null) {
+      _currentIface.setAddressVirtual(
+          MacAddress.parse(ctx.MAC_ADDRESS().getText()), toConcreteInterfaceAddress(ctx.v4));
+    } else {
+      assert ctx.v6 != null;
+      // ignore v6
+    }
   }
 
   @Override
@@ -256,7 +279,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_clagd_backup_ip(I_clagd_backup_ipContext ctx) {
     InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
-    clag.setBackupIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    clag.setBackupIp(toIp(ctx.address()));
     if (ctx.VRF() != null) {
       String vrf = ctx.vrf_name().getText();
       clag.setBackupIpVrf(vrf);
@@ -273,8 +296,8 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_clagd_peer_ip(I_clagd_peer_ipContext ctx) {
     InterfaceClagSettings clag = _currentIface.createOrGetClagSettings();
-    if (ctx.IP_ADDRESS() != null) {
-      clag.setPeerIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    if (ctx.address() != null) {
+      clag.setPeerIp(toIp(ctx.address()));
     } else if (ctx.LINK_LOCAL() != null) {
       clag.setPeerIpLinkLocal(true);
     } else {
@@ -296,7 +319,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_clagd_vxlan_anycast_ip(I_clagd_vxlan_anycast_ipContext ctx) {
-    _currentIface.setClagVxlanAnycastIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    _currentIface.setClagVxlanAnycastIp(toIp(ctx.address()));
   }
 
   @Override
@@ -345,7 +368,7 @@ public final class CumulusInterfacesConfigurationBuilder
 
   @Override
   public void exitI_vxlan_local_tunnel_ip(I_vxlan_local_tunnel_ipContext ctx) {
-    _currentIface.setVxlanLocalTunnelIp(Ip.parse(ctx.IP_ADDRESS().getText()));
+    _currentIface.setVxlanLocalTunnelIp(toIp(ctx.address()));
   }
 
   @Override
@@ -362,7 +385,7 @@ public final class CumulusInterfacesConfigurationBuilder
             "Multiple occurrences of 'via' not allowed in 'post-up ip route add'");
         return;
       }
-      gatewayIp = Ip.parse(ctx.IP_ADDRESS(0).getText());
+      gatewayIp = toIp(ctx.address(0));
     }
 
     if (ctx.DEV().size() != 0) {
@@ -377,8 +400,7 @@ public final class CumulusInterfacesConfigurationBuilder
       nextHopInterface = ctx.interface_name(0).getText();
     }
 
-    StaticRoute sr =
-        new StaticRoute(Prefix.parse(ctx.IP_PREFIX().getText()), gatewayIp, nextHopInterface, null);
+    StaticRoute sr = new StaticRoute(toPrefix(ctx.prefix()), gatewayIp, nextHopInterface, null);
     _currentIface.addPostUpIpRoute(sr);
   }
 
