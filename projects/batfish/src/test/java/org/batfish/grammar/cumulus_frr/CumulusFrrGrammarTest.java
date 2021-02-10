@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -1157,6 +1158,20 @@ public class CumulusFrrGrammarTest {
     assertThat(
         getStructureReferences(IP_COMMUNITY_LIST, "CN2", ROUTE_MAP_MATCH_COMMUNITY_LIST),
         contains(3));
+  }
+
+  @Test
+  public void testCumulusFrrVrfRouteMapMatchPrefixLen() {
+    String name = "ROUTE-MAP-NAME";
+    String match1 = "match ip address prefix-len 7";
+    String match2 = "match ip address prefix-len 8";
+
+    parse(String.format("route-map %s permit 10\n%s\n%s\n", name, match1, match2));
+
+    RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
+    assertThat(entry.getMatchIpAddressPrefixLen(), notNullValue());
+    // Multiple commands overwrite - last one wins.
+    assertThat(entry.getMatchIpAddressPrefixLen().getLen(), equalTo(8));
   }
 
   @Test
