@@ -922,8 +922,15 @@ class FlowTracer {
 
               @Override
               public Void visitFibLookup(org.batfish.datamodel.flow.FibLookup fibLookup) {
+                Ip dstIp = _currentFlow.getDstIp();
+
+                // Accept if the flow is destined for this vrf on this host.
+                if (isAcceptedAtCurrentVrf(dstIp)) {
+                  return null;
+                }
+
                 fibLookup(
-                    _currentFlow.getDstIp(),
+                    dstIp,
                     currentNodeName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
                     (flowTracer, fibForward) -> {
