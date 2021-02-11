@@ -724,7 +724,7 @@ public class BatfishTest {
                 config.getHostname(), config, modeledConfig.getHostname(), modeledConfig)));
     assertThat(snapshotEdges, equalTo(ImmutableSet.of(edge, modeledEdge)));
     assertThat(
-        warnings.getRedFlagWarnings().get(0).getText(),
+        warnings.getRedFlagWarnings().stream().findFirst().get().getText(),
         containsString("Cannot add internet and ISP nodes"));
   }
 }

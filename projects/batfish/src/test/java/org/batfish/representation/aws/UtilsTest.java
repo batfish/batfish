@@ -205,7 +205,9 @@ public class UtilsTest {
         Utils.addNodeToSubnet(
             cfg, networkInterface, subnet, new ConvertedConfiguration(), warnings);
 
-    assertThat(warnings.getRedFlagWarnings().get(0).getText(), containsString("No valid address"));
+    assertThat(
+        warnings.getRedFlagWarnings().stream().findFirst().get().getText(),
+        containsString("No valid address"));
 
     assertThat(iface.getConcreteAddress(), nullValue());
   }
