@@ -237,6 +237,7 @@ snil_unit
     name = variable
     (
         if_common
+        | snil_ip
     )?
 ;
 
