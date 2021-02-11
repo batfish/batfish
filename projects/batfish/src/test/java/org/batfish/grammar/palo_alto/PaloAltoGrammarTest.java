@@ -2161,7 +2161,8 @@ public final class PaloAltoGrammarTest {
     assertThat(
         ifaceOutgoingFilter.getLines().get(0),
         equalTo(
-            ExprAclLine.REJECT_ALL.toBuilder()
+            ExprAclLine.REJECT_ALL
+                .toBuilder()
                 .setName("Not in a zone")
                 .setTraceElement(unzonedIfaceRejectTraceElement(ifaceName))
                 .build()));
@@ -3842,5 +3843,29 @@ public final class PaloAltoGrammarTest {
     assertThat(
         vsConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getAddressObjects(),
         hasKey("bippety.boppety_1.2.3.4"));
+  }
+
+  @Test
+  public void testSecurityRules() {
+    String hostname = "security-rules";
+    Configuration c = parseConfig(hostname);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    // Arbitrary source ports
+    // Specific dest port (matching security rule allowing custom service traffic)
+    Flow z1ToZ2permitted = createFlow("10.0.1.2", "10.0.2.2", IpProtocol.TCP, 10000, 1234);
+    Flow z1ToZ3rejected = createFlow("10.0.1.2", "10.0.3.2", IpProtocol.TCP, 10000, 1234);
+
+    // Confirm iface in z2 has rules accepting flow (doesn't match initial deny, matches permit)
+    assertThat(
+        c,
+        hasInterface(if2name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ2permitted, if1name, c))));
+
+    // Confirm iface in z3 has rules rejecting the flow (matches initial deny)
+    assertThat(
+        c,
+        hasInterface(if3name, hasOutgoingOriginalFlowFilter(rejects(z1ToZ3rejected, if1name, c))));
   }
 }
