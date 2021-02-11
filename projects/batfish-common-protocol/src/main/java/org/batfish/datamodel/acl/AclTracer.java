@@ -69,9 +69,11 @@ public final class AclTracer extends AclLineEvaluator {
     return tracer.getTrace();
   }
 
-  private final Map<String, IpSpaceMetadata> _ipSpaceMetadata;
+  private final @Nonnull Map<String, IpSpaceMetadata> _ipSpaceMetadata;
 
   private final @Nonnull Tracer _tracer;
+  private final @Nonnull IpSpaceTracer _dstIpTracer;
+  private final @Nonnull IpSpaceTracer _srcIpTracer;
 
   public AclTracer(
       @Nonnull Flow flow,
@@ -82,10 +84,12 @@ public final class AclTracer extends AclLineEvaluator {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceMetadata = namedIpSpaceMetadata;
     _tracer = new Tracer();
-  }
-
-  public Flow getFlow() {
-    return _flow;
+    _dstIpTracer =
+        new IpSpaceTracer(
+            _tracer, flow.getDstIp(), DEST_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces);
+    _srcIpTracer =
+        new IpSpaceTracer(
+            _tracer, flow.getSrcIp(), SRC_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces);
   }
 
   public @Nonnull List<TraceTree> getTrace() {
@@ -224,19 +228,12 @@ public final class AclTracer extends AclLineEvaluator {
     return null;
   }
 
-  public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip, @Nonnull String ipDescription) {
-    return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, ipDescription, _ipSpaceMetadata, _namedIpSpaces));
-  }
-
   private boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
-    return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, DEST_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces));
+    return ipSpace.accept(_dstIpTracer);
   }
 
   private boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
-    return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, SRC_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces));
+    return ipSpace.accept(_srcIpTracer);
   }
 
   @Override
