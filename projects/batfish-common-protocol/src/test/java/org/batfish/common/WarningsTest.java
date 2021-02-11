@@ -19,8 +19,8 @@ public class WarningsTest {
 
     // Add one warning twice and another once
     ws.redFlag(message1, tag1);
-    ws.redFlag(message1, tag1);
     ws.redFlag(message2, tag2);
+    ws.redFlag(message1, tag1);
 
     // Only unique warnings should show up
     assertThat(
@@ -38,8 +38,8 @@ public class WarningsTest {
 
     // Add one warning twice and another once
     ws.pedantic(message1, tag1);
-    ws.pedantic(message1, tag1);
     ws.pedantic(message2, tag2);
+    ws.pedantic(message1, tag1);
 
     // Only unique warnings should show up
     assertThat(
@@ -55,8 +55,8 @@ public class WarningsTest {
 
     // Add one warning twice and another once
     ws.unimplemented(message1);
-    ws.unimplemented(message1);
     ws.unimplemented(message2);
+    ws.unimplemented(message1);
 
     // Only unique warnings should show up
     assertThat(

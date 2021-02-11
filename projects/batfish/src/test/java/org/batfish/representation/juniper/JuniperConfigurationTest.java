@@ -618,8 +618,8 @@ public class JuniperConfigurationTest {
     assertThat(toRibId(hostname, "inet6.0", w), nullValue());
     assertThat(
         w.getUnimplementedWarnings(),
-        equalTo(
-            ImmutableList.of(
+        contains(
+            equalTo(
                 new Warning(
                     "Rib name conversion: inet6 address family is not supported",
                     TAG_UNIMPLEMENTED))));

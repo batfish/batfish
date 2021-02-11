@@ -1801,8 +1801,8 @@ public final class CumulusConversionsTest {
     assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
     assertThat(
         warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
+        contains(
+            equalTo(
                 new Warning("cannot find interface named lo for update-source", TAG_RED_FLAG))));
   }
 
@@ -1821,8 +1821,8 @@ public final class CumulusConversionsTest {
     assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
     assertThat(
         warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
+        contains(
+            equalTo(
                 new Warning(
                     "cannot find an address for interface named lo for update-source",
                     TAG_RED_FLAG))));
