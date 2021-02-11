@@ -98,6 +98,11 @@ public class NatRuleThenPoolTest {
     assertTrue(
         new NatRuleThenPool("POOL").toTransformationSteps(snat, null, Ip.ZERO, warnings).isEmpty());
     assertEquals(1, warnings.getRedFlagWarnings().size());
-    assertTrue(warnings.getRedFlagWarnings().get(0).getText().contains("NAT pool POOL is invalid"));
+    assertTrue(
+        warnings.getRedFlagWarnings().stream()
+            .findFirst()
+            .get()
+            .getText()
+            .contains("NAT pool POOL is invalid"));
   }
 }

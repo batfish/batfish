@@ -43,6 +43,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -166,8 +167,8 @@ public class IspModelingUtilsTest {
 
     assertThat(
         warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
+        contains(
+            equalTo(
                 new Warning(
                     "ISP Modeling: Non-existent border node conf1 specified in ISP configuration",
                     TAG_RED_FLAG))));
@@ -189,8 +190,8 @@ public class IspModelingUtilsTest {
 
     assertThat(
         warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
+        contains(
+            equalTo(
                 new Warning(
                     "ISP Modeling: Cannot find interface init on node conf", TAG_RED_FLAG))));
   }

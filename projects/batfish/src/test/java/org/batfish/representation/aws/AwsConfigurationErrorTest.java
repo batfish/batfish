@@ -40,7 +40,7 @@ public class AwsConfigurationErrorTest {
     assertThat(
         c, containsInAnyOrder(hasHostname(AWS_SERVICES_GATEWAY_NODE_NAME), hasHostname("vpc1")));
     assertThat(
-        w.getRedFlagWarnings().get(0).getText(),
+        w.getRedFlagWarnings().stream().findFirst().get().getText(),
         allOf(
             containsString("Failed conversion for"),
             containsString(NullPointerException.class.getSimpleName())));
