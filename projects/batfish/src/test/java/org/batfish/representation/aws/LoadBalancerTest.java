@@ -48,12 +48,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -130,6 +132,87 @@ public class LoadBalancerTest {
   }
 
   @Test
+  public void testEquals() {
+    LoadBalancer lb =
+        new LoadBalancer(
+            "arn",
+            ImmutableList.of(new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+            "lb.amazon-aws.com",
+            "lb-lb",
+            Scheme.INTERNET_FACING,
+            Type.NETWORK,
+            "vpc");
+    new EqualsTester()
+        .addEqualityGroup(5L)
+        .addEqualityGroup(lb, SerializationUtils.clone(lb))
+        .addEqualityGroup(
+            new LoadBalancer(
+                "arn2", // different
+                ImmutableList.of(new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+                "lb.amazon-aws.com",
+                "lb-lb",
+                Scheme.INTERNET_FACING,
+                Type.NETWORK,
+                "vpc"))
+        .addEqualityGroup(
+            new LoadBalancer(
+                "arn",
+                ImmutableList.of(
+                    new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2c")), // different
+                "lb.amazon-aws.com",
+                "lb-lb",
+                Scheme.INTERNET_FACING,
+                Type.NETWORK,
+                "vpc"))
+        .addEqualityGroup(
+            new LoadBalancer(
+                "arn",
+                ImmutableList.of(new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+                "lb2.amazon-aws.com", // different
+                "lb-lb",
+                Scheme.INTERNET_FACING,
+                Type.NETWORK,
+                "vpc"))
+        .addEqualityGroup(
+            new LoadBalancer(
+                "arn",
+                ImmutableList.of(new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+                "lb.amazon-aws.com",
+                "lb2-lb2", // different
+                Scheme.INTERNET_FACING,
+                Type.NETWORK,
+                "vpc"))
+        .addEqualityGroup(
+            new LoadBalancer(
+                "arn",
+                ImmutableList.of(new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+                "lb.amazon-aws.com",
+                "lb-lb",
+                Scheme.INTERNAL, // different
+                Type.NETWORK,
+                "vpc"))
+        .addEqualityGroup(
+            new LoadBalancer(
+                "arn",
+                ImmutableList.of(new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+                "lb.amazon-aws.com",
+                "lb-lb",
+                Scheme.INTERNET_FACING,
+                Type.APPLICATION, // different
+                "vpc"))
+        .addEqualityGroup(
+            new LoadBalancer(
+                "arn",
+                ImmutableList.of(new AvailabilityZone("subnet-09f78a95e9df6b959", "us-east-2b")),
+                "lb.amazon-aws.com",
+                "lb-lb",
+                Scheme.INTERNET_FACING,
+                Type.NETWORK,
+                "vpc2")) // different
+        .testEquals();
+  }
+
+  @Test
   public void testDeserialization() throws IOException {
     String text = readResource("org/batfish/representation/aws/LoadBalancerTest.json", UTF_8);
 
@@ -137,7 +220,7 @@ public class LoadBalancerTest {
     Region region = new Region("r1");
     region.addConfigElement(json, null, null);
 
-    /** inactive load balancer should not show */
+    /* inactive load balancer should not show */
     assertThat(
         region.getLoadBalancers(),
         equalTo(
