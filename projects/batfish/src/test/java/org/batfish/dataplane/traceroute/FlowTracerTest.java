@@ -650,7 +650,7 @@ public final class FlowTracerTest {
               0);
       flowTracer.processHop();
 
-      // Reverse trace should match session and get forwarded out original ingress interface
+      // Reverse trace should match session and get accepted.
       TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
       Trace trace = traceAndReverseFlow.getTrace();
       assertThat(trace, hasDisposition(ACCEPTED));
