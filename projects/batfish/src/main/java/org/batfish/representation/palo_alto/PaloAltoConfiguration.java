@@ -229,12 +229,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private final SortedMap<String, Vsys> _virtualSystems;
 
   /**
-   * Temporary map for translating SecurityRules in each Vsys into their corresponding ExprAclLine,
-   * used in conversion. Maps Vsys name to map of rule name to ExprAclLine.
-   */
-  private transient Map<String, Map<String, ExprAclLine>> _securityRuleToExprAclLine;
-
-  /**
    * Temporary map for translating NatRules in each Vsys into their corresponding Transformation,
    * used in conversion. Maps Vsys name to map of rule name to Transformation.
    */
@@ -605,52 +599,45 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         _natRuleToTransformation.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName));
   }
 
-  /**
-   * Build map of converted security rule for each Vsys. Populates transient map of Vsys name to map
-   * of SecurityRule name to corresponding ExprAclLine.
-   */
-  private void convertSecurityRules() {
-    ImmutableMap.Builder<String, Map<String, ExprAclLine>> vsysToRuleToExprAclLine =
-        new ImmutableMap.Builder<>();
-
+  /** Build list of converted security rules for the zone pair in the specified Vsys. */
+  private List<AclLine> convertSecurityRules(Vsys vsys, String fromZone, String toZone) {
+    // Note: using linked hash map to preserve insertion order
+    Map<String, ExprAclLine> ruleToExprAclLine = new LinkedHashMap<>();
     Vsys panorama = this.getPanorama();
-    Map<String, ExprAclLine> panoramaRules =
-        panorama == null ? ImmutableMap.of() : convertVsysSecurityRules(panorama);
 
-    for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
-      Map<String, ExprAclLine> ruleToExprAclLine = new HashMap<>();
-      Map<String, ExprAclLine> vsysRules = convertVsysSecurityRules(entry.getValue());
-      String vsysName = entry.getKey();
-
-      // Combine all relevant rules for this Vsys
-      ruleToExprAclLine.putAll(panoramaRules);
-      ruleToExprAclLine.putAll(vsysRules);
-      vsysToRuleToExprAclLine.put(vsysName, ImmutableMap.copyOf(ruleToExprAclLine));
+    // PreRulebase solely comes from Panorama, if it exists
+    if (panorama != null) {
+      addSecurityRulesToMap(
+          panorama.getPreRulebase(), panorama, fromZone, toZone, ruleToExprAclLine);
     }
 
-    _securityRuleToExprAclLine = vsysToRuleToExprAclLine.build();
-  }
+    // Regular Rulebase comes solely from this vsys
+    addSecurityRulesToMap(vsys.getRulebase(), vsys, fromZone, toZone, ruleToExprAclLine);
 
-  /** Convert SecurityRules in specified Vsys into a map of rule name to ExprAclLine. */
-  private Map<String, ExprAclLine> convertVsysSecurityRules(Vsys vsys) {
-    Map<String, ExprAclLine> ruleToExprAclLine = new HashMap<>();
-    addSecurityRulesToMap(vsys.getPreRulebase(), vsys, ruleToExprAclLine);
-    addSecurityRulesToMap(vsys.getRulebase(), vsys, ruleToExprAclLine);
-    addSecurityRulesToMap(vsys.getPostRulebase(), vsys, ruleToExprAclLine);
-    return ruleToExprAclLine;
+    // PostRulebase solely comes from Panorama, if it exists
+    if (panorama != null) {
+      addSecurityRulesToMap(
+          panorama.getPostRulebase(), panorama, fromZone, toZone, ruleToExprAclLine);
+    }
+
+    return ruleToExprAclLine.values().stream().collect(ImmutableList.toImmutableList());
   }
 
   /**
-   * Helper to add SecurityRules from specified Rulebase into specified map of rule name to
-   * ExprAclLine.
+   * Helper to build ExprAclLines from SecurityRules between zones in the specified Rulebase. Adds
+   * these to the specified map.
    */
   private void addSecurityRulesToMap(
-      Rulebase rulebase, Vsys vsys, Map<String, ExprAclLine> ruleToExprAclLine) {
+      Rulebase rulebase,
+      Vsys vsys,
+      String fromZone,
+      String toZone,
+      Map<String, ExprAclLine> ruleToExprAclLine) {
     for (Entry<String, SecurityRule> entry : rulebase.getSecurityRules().entrySet()) {
       String name = entry.getKey();
       SecurityRule rule = entry.getValue();
-      if (!rule.getDisabled() && !ruleToExprAclLine.containsKey(name)) {
-        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys));
+      if (securityRuleApplies(fromZone, toZone, rule, _w) && !ruleToExprAclLine.containsKey(name)) {
+        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys, fromZone, toZone));
       }
     }
   }
@@ -767,7 +754,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private IpAccessList generateCrossZoneFilter(
       Zone fromZone, Zone toZone, List<Map.Entry<SecurityRule, Vsys>> rules) {
     assert fromZone.getVsys() == toZone.getVsys();
-    String vsysName = fromZone.getVsys().getName();
+    Vsys vsys = fromZone.getVsys();
+    String vsysName = vsys.getName();
 
     String crossZoneFilterName =
         zoneToZoneFilter(
@@ -782,7 +770,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .setName(crossZoneFilterName)
           .setLines(
               ImmutableList.of(
-                  ExprAclLine.REJECT_ALL.toBuilder()
+                  ExprAclLine.REJECT_ALL
+                      .toBuilder()
                       .setName("No interfaces in zone")
                       .setTraceElement(
                           emptyZoneRejectTraceElement(
@@ -792,11 +781,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
-    List<AclLine> lines =
-        rules.stream()
-            .filter(e -> securityRuleApplies(fromZone.getName(), toZone.getName(), e.getKey(), _w))
-            .map(entry -> _securityRuleToExprAclLine.get(vsysName).get(entry.getKey().getName()))
-            .collect(ImmutableList.toImmutableList());
+    List<AclLine> lines = convertSecurityRules(vsys, fromZone.getName(), toZone.getName());
+
     // Intrazone traffic is allowed by default.
     if (fromZone == toZone) {
       lines =
@@ -1254,7 +1240,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   // constraints, and service (aka Protocol + Ports) constraints.
   //   However, services are a bit complicated when `service application-default` is used. In that
   //   case, we extract service definitions from the application that matches.
-  private ExprAclLine toIpAccessListLine(SecurityRule rule, Vsys vsys) {
+  private ExprAclLine toIpAccessListLine(
+      SecurityRule rule, Vsys vsys, String fromZone, String toZone) {
     assert !rule.getDisabled(); // handled by caller.
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1363,8 +1350,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (group != null) {
       return Optional.of(
           new OrMatchExpr(
-              group
-                  .getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
+              group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
                   .stream()
                   // Don't add trace for children; we've already flattened intermediate app groups
                   .map(a -> aclLineMatchExprForApplication(a, null))
@@ -2723,7 +2709,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     convertNamespaces();
 
     // Convert rules before using them in Vsys / Interfaces conversion
-    convertSecurityRules();
     convertNatRules();
 
     // Handle converting items within virtual systems
