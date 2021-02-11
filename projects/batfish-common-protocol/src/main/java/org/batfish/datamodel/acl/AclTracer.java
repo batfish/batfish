@@ -14,7 +14,6 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
@@ -123,11 +122,10 @@ public final class AclTracer extends AclLineEvaluator {
         && headerSpace.getNotDscps().contains(_flow.getDscp())) {
       return false;
     }
-    if (headerSpace.getDstIps() != null && !traceDstIp(headerSpace.getDstIps(), _flow.getDstIp())) {
+    if (headerSpace.getDstIps() != null && !traceDstIp(headerSpace.getDstIps())) {
       return false;
     }
-    if (headerSpace.getNotDstIps() != null
-        && traceDstIp(headerSpace.getNotDstIps(), _flow.getDstIp())) {
+    if (headerSpace.getNotDstIps() != null && traceDstIp(headerSpace.getNotDstIps())) {
       return false;
     }
     if (!headerSpace.getDstPorts().isEmpty()
@@ -179,8 +177,8 @@ public final class AclTracer extends AclLineEvaluator {
       return false;
     }
     if (headerSpace.getSrcOrDstIps() != null
-        && !(traceSrcIp(headerSpace.getSrcOrDstIps(), _flow.getSrcIp())
-            || traceDstIp(headerSpace.getSrcOrDstIps(), _flow.getDstIp()))) {
+        && !(traceSrcIp(headerSpace.getSrcOrDstIps())
+            || traceDstIp(headerSpace.getSrcOrDstIps()))) {
       return false;
     }
     if (!headerSpace.getSrcOrDstPorts().isEmpty()
@@ -188,11 +186,10 @@ public final class AclTracer extends AclLineEvaluator {
             || rangesContain(headerSpace.getSrcOrDstPorts(), _flow.getDstPort()))) {
       return false;
     }
-    if (headerSpace.getSrcIps() != null && !traceSrcIp(headerSpace.getSrcIps(), _flow.getSrcIp())) {
+    if (headerSpace.getSrcIps() != null && !traceSrcIp(headerSpace.getSrcIps())) {
       return false;
     }
-    if (headerSpace.getNotSrcIps() != null
-        && traceSrcIp(headerSpace.getNotSrcIps(), _flow.getSrcIp())) {
+    if (headerSpace.getNotSrcIps() != null && traceSrcIp(headerSpace.getNotSrcIps())) {
       return false;
     }
     if (!headerSpace.getSrcPorts().isEmpty()
@@ -228,11 +225,11 @@ public final class AclTracer extends AclLineEvaluator {
     return null;
   }
 
-  private boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
+  private boolean traceDstIp(@Nonnull IpSpace ipSpace) {
     return ipSpace.accept(_dstIpTracer);
   }
 
-  private boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
+  private boolean traceSrcIp(@Nonnull IpSpace ipSpace) {
     return ipSpace.accept(_srcIpTracer);
   }
 
