@@ -26,5 +26,6 @@ set network interface ethernet ethernet1/8 layer3 ip GRP1
 set network interface ethernet ethernet1/21 link-state down
 set network interface loopback ip 7.7.7.7/32
 set network interface loopback ip 7.7.7.8
+set network interface loopback units loopback.123 ip 1.2.3.4
 # Interfaces are not functionally active unless they are in a virtual-router
-set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/5 ethernet1/6 ethernet1/7 loopback ]
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/5 ethernet1/6 ethernet1/7 loopback loopback.123 ]

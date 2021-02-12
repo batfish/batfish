@@ -14,7 +14,6 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
@@ -69,9 +68,11 @@ public final class AclTracer extends AclLineEvaluator {
     return tracer.getTrace();
   }
 
-  private final Map<String, IpSpaceMetadata> _ipSpaceMetadata;
+  private final @Nonnull Map<String, IpSpaceMetadata> _ipSpaceMetadata;
 
   private final @Nonnull Tracer _tracer;
+  private final @Nonnull IpSpaceTracer _dstIpTracer;
+  private final @Nonnull IpSpaceTracer _srcIpTracer;
 
   public AclTracer(
       @Nonnull Flow flow,
@@ -82,10 +83,12 @@ public final class AclTracer extends AclLineEvaluator {
     super(flow, srcInterface, availableAcls, namedIpSpaces);
     _ipSpaceMetadata = namedIpSpaceMetadata;
     _tracer = new Tracer();
-  }
-
-  public Flow getFlow() {
-    return _flow;
+    _dstIpTracer =
+        new IpSpaceTracer(
+            _tracer, flow.getDstIp(), DEST_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces);
+    _srcIpTracer =
+        new IpSpaceTracer(
+            _tracer, flow.getSrcIp(), SRC_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces);
   }
 
   public @Nonnull List<TraceTree> getTrace() {
@@ -119,11 +122,10 @@ public final class AclTracer extends AclLineEvaluator {
         && headerSpace.getNotDscps().contains(_flow.getDscp())) {
       return false;
     }
-    if (headerSpace.getDstIps() != null && !traceDstIp(headerSpace.getDstIps(), _flow.getDstIp())) {
+    if (headerSpace.getDstIps() != null && !traceDstIp(headerSpace.getDstIps())) {
       return false;
     }
-    if (headerSpace.getNotDstIps() != null
-        && traceDstIp(headerSpace.getNotDstIps(), _flow.getDstIp())) {
+    if (headerSpace.getNotDstIps() != null && traceDstIp(headerSpace.getNotDstIps())) {
       return false;
     }
     if (!headerSpace.getDstPorts().isEmpty()
@@ -175,8 +177,8 @@ public final class AclTracer extends AclLineEvaluator {
       return false;
     }
     if (headerSpace.getSrcOrDstIps() != null
-        && !(traceSrcIp(headerSpace.getSrcOrDstIps(), _flow.getSrcIp())
-            || traceDstIp(headerSpace.getSrcOrDstIps(), _flow.getDstIp()))) {
+        && !(traceSrcIp(headerSpace.getSrcOrDstIps())
+            || traceDstIp(headerSpace.getSrcOrDstIps()))) {
       return false;
     }
     if (!headerSpace.getSrcOrDstPorts().isEmpty()
@@ -184,11 +186,10 @@ public final class AclTracer extends AclLineEvaluator {
             || rangesContain(headerSpace.getSrcOrDstPorts(), _flow.getDstPort()))) {
       return false;
     }
-    if (headerSpace.getSrcIps() != null && !traceSrcIp(headerSpace.getSrcIps(), _flow.getSrcIp())) {
+    if (headerSpace.getSrcIps() != null && !traceSrcIp(headerSpace.getSrcIps())) {
       return false;
     }
-    if (headerSpace.getNotSrcIps() != null
-        && traceSrcIp(headerSpace.getNotSrcIps(), _flow.getSrcIp())) {
+    if (headerSpace.getNotSrcIps() != null && traceSrcIp(headerSpace.getNotSrcIps())) {
       return false;
     }
     if (!headerSpace.getSrcPorts().isEmpty()
@@ -224,19 +225,12 @@ public final class AclTracer extends AclLineEvaluator {
     return null;
   }
 
-  public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip, @Nonnull String ipDescription) {
-    return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, ipDescription, _ipSpaceMetadata, _namedIpSpaces));
+  private boolean traceDstIp(@Nonnull IpSpace ipSpace) {
+    return ipSpace.accept(_dstIpTracer);
   }
 
-  private boolean traceDstIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
-    return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, DEST_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces));
-  }
-
-  private boolean traceSrcIp(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
-    return ipSpace.accept(
-        new IpSpaceTracer(_tracer, ip, SRC_IP_DESCRIPTION, _ipSpaceMetadata, _namedIpSpaces));
+  private boolean traceSrcIp(@Nonnull IpSpace ipSpace) {
+    return ipSpace.accept(_srcIpTracer);
   }
 
   @Override
