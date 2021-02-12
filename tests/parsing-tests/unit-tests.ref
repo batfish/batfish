@@ -77085,27 +77085,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net1"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Undefined network object or network object-group interface"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group interface"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net2"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net1"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net2"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77122,30 +77102,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Undefined network object or network object-group net4"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net1"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net2"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net1"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group net2"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group source-mapped"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Undefined network object or network object-group source-mapped"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77655,14 +77611,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface name 'vni10001' is invalid in: ports bond1,swp1,vni10001\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot add illegal ports glob 'bond1,swp1,vni10001' to bridge in: ports bond1,swp1,vni10001\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: net add vxlan vni10001 bridge access 5\n"
             },
             {
@@ -77688,6 +77636,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id <id>' before line: net add vxlan vni70004-70007 vxlan local-tunnelip 192.0.2.10\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot add illegal ports glob 'bond1,swp1,vni10001' to bridge in: ports bond1,swp1,vni10001\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Interface name 'vni10001' is invalid in: ports bond1,swp1,vni10001\n"
             }
           ]
         },
@@ -77695,11 +77651,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'lo' for bond in: bond lo bond slaves swp1\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'vrf1' for bond clashes with existing vrf in: bond vrf1 bond slaves swp2\n"
+              "text" : "Invalid name 'bond1.1000' for bond in: bond bond1.1000 bond slaves swp6\n"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77707,11 +77659,15 @@
             },
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for bond in: bond lo bond slaves swp1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'swp4' for bond in: bond swp4 bond slaves swp5\n"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'bond1.1000' for bond in: bond bond1.1000 bond slaves swp6\n"
+              "text" : "Invalid name 'v1' for bond clashes with existing vxlan in: bond v1 bond slaves swp8\n"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77719,7 +77675,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'v1' for bond clashes with existing vxlan in: bond v1 bond slaves swp8\n"
+              "text" : "Invalid name 'vrf1' for bond clashes with existing vrf in: bond vrf1 bond slaves swp2\n"
             }
           ]
         },
@@ -77727,11 +77683,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface name 'unknown_interface' is invalid in: slaves swp1,unknown_interface\n"
+              "text" : "Interface name 'unknown_interface' is invalid in: interface unknown_interface ip address 10.0.0.1/24\n"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Interface name 'unknown_interface' is invalid in: interface unknown_interface ip address 10.0.0.1/24\n"
+              "text" : "Interface name 'unknown_interface' is invalid in: slaves swp1,unknown_interface\n"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77759,10 +77715,6 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'lo' for vrf in: vrf lo,vrf1\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'bond1' for vrf clashes with existing bond interface in: vrf bond1\n"
             },
             {
@@ -77771,7 +77723,15 @@
             },
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for vrf in: vrf lo,vrf1\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'swp2' for vrf in: vrf swp2\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vlan1' for vrf in: vrf vlan1\n"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77780,10 +77740,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'vx1' for vrf clashes with existing vxlan in: vrf vx1\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'vlan1' for vrf in: vrf vlan1\n"
             }
           ]
         },
@@ -77791,15 +77747,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'lo' for vxlan in: vxlan lo vxlan id 10001\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'bond1' for vxlan clashes with existing bond interface in: vxlan bond1 vxlan id 10002\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'vrf1' for vxlan clashes with existing vrf in: vxlan vrf1 vxlan id 10003\n"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -77807,15 +77755,23 @@
             },
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'lo' for vxlan in: vxlan lo vxlan id 10001\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Invalid name 'swp0' for vxlan in: vxlan swp0 vxlan id 10005\n"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'vxlan1.1000' for vxlan in: vxlan vxlan1.1000 vxlan id 10006\n"
+              "text" : "Invalid name 'vlan1' for vxlan in: vxlan vlan1 vxlan id 10007\n"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Invalid name 'vlan1' for vxlan in: vxlan vlan1 vxlan id 10007\n"
+              "text" : "Invalid name 'vrf1' for vxlan clashes with existing vrf in: vxlan vrf1 vxlan id 10003\n"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Invalid name 'vxlan1.1000' for vxlan in: vxlan vxlan1.1000 vxlan id 10006\n"
             }
           ]
         },
@@ -77899,6 +77855,22 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Cannot add description to non-existent neighbor: 'undeclared' in: 'neighbor undeclared description hello\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign bgp neighbor to non-existent peer-group: 'undefined-peer-group' in: 'neighbor 3.3.3.3 peer-group undefined-peer-group\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign outbound route-map to non-existent neighbor: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group route-map rm1 out\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot assign remote-as to non-existent peer-group: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group remote-as 3\n'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "ge (min) arg '16' less than prefix-length '24' in: ip prefix-list pl1 seq 10 permit 10.0.0.0/24 ge 16\n"
             },
             {
@@ -77908,22 +77880,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "le (max) arg '26' less than ge (min) arg '28' in: ip prefix-list pl1 seq 30 permit 10.0.0.0/24 ge 28 le 26\n\n"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot add description to non-existent neighbor: 'undeclared' in: 'neighbor undeclared description hello\n'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign bgp neighbor to non-existent peer-group: 'undefined-peer-group' in: 'neighbor 3.3.3.3 peer-group undefined-peer-group\n'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign remote-as to non-existent peer-group: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group remote-as 3\n'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Cannot assign outbound route-map to non-existent neighbor: 'undeclared-peer-group' in: 'neighbor undeclared-peer-group route-map rm1 out\n'"
             }
           ]
         },
@@ -78079,11 +78035,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot set gateway IP '10.0.0.5' for route '/Common/mixed_protocols2' that is not on a directly-connected network in: gw 10.0.0.5\n"
+              "text" : "Cannot set gateway IP '10.0.0.1' for route '/Common/missing_network' that is not on a directly-connected network in: gw 10.0.0.1\n"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot set gateway IP '10.0.0.1' for route '/Common/missing_network' that is not on a directly-connected network in: gw 10.0.0.1\n"
+              "text" : "Cannot set gateway IP '10.0.0.5' for route '/Common/mixed_protocols2' that is not on a directly-connected network in: gw 10.0.0.5\n"
             }
           ]
         },
@@ -92073,11 +92029,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Network interface eni-dba5f6e8 not found for NAT gateway nat-08c21704416f06046."
+              "text" : "Network interface eni-3f245d1f not found for NAT gateway nat-09fd8f73171d2d9a3."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Network interface eni-3f245d1f not found for NAT gateway nat-09fd8f73171d2d9a3."
+              "text" : "Network interface eni-dba5f6e8 not found for NAT gateway nat-08c21704416f06046."
             }
           ]
         },
@@ -92177,11 +92133,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ROUTE_MAP, only prefix-lists are supported in dist-lists by Batfish"
+              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ACCESS_LIST, only prefix-lists are supported in dist-lists by Batfish"
+              "text" : "OSPF process default:1 in cisco_ospf uses distribute-list of type ROUTE_MAP, only prefix-lists are supported in dist-lists by Batfish"
             }
           ]
         },
@@ -92189,11 +92145,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp2'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp1'"
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -92201,15 +92153,19 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'bond1'"
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp1'"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Vxlan vni10004 is not configured properly: bridge access vlan is not defined"
+              "text" : "No support for VLAN switching options on non-'bridge bridge' port: 'swp2'"
             },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Vxlan vni10001 is not configured properly: bridge access vlan is not defined"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Vxlan vni10004 is not configured properly: bridge access vlan is not defined"
             }
           ]
         },
@@ -92262,10 +92218,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Virtual '/Common/SOME_VIRTUAL' refers to missing destination '/Common/192.0.2.7'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Virtual '/Common/SOME_VIRTUAL' refers to missing destination '/Common/192.0.2.7'"
             }
           ]
         },
@@ -92273,15 +92225,15 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Cannot convert /Common/mixed_protocols1 to static route because it has mixed IPv4 and IPv6 information"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Cannot convert /Common/missing_gw to static route because it is missing default gateway"
             },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Cannot convert /Common/missing_network to static route because it is missing network"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Cannot convert /Common/mixed_protocols1 to static route because it has mixed IPv4 and IPv6 information"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -92322,15 +92274,15 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine update source for BGP neighbor: '1.2.1.1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '1.2.1.2'"
             },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '1.2.1.3'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '1.2.1.1'"
             }
           ]
         },
@@ -92354,23 +92306,19 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Could not determine local ip for bgp peering with neighbor ip: 3.4.5.7"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Currently do not support per-neighbor BGP preference"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Currently do not support per-neighbor BGP preference"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 3.4.5.6/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Currently do not support per-neighbor BGP preference"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine local ip for bgp peering with neighbor ip: 3.4.5.7"
             }
           ]
         },
@@ -92431,35 +92379,11 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             }
           ]
         },
         "juniper_rib_groups~logical_system~logicalsystem" : {
           "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Missing local-as for neighbor: 1.1.1.1/32"
-            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
@@ -92478,11 +92402,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Network interface eni-dba5f6e8 not found for NAT gateway nat-08c21704416f06046."
+              "text" : "Network interface eni-3f245d1f not found for NAT gateway nat-09fd8f73171d2d9a3."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Network interface eni-3f245d1f not found for NAT gateway nat-09fd8f73171d2d9a3."
+              "text" : "Network interface eni-dba5f6e8 not found for NAT gateway nat-08c21704416f06046."
             }
           ]
         },
@@ -92490,11 +92414,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Network interface eni-dba5f6e8 not found for NAT gateway nat-08c21704416f06046."
+              "text" : "Network interface eni-3f245d1f not found for NAT gateway nat-09fd8f73171d2d9a3."
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Network interface eni-3f245d1f not found for NAT gateway nat-09fd8f73171d2d9a3."
+              "text" : "Network interface eni-dba5f6e8 not found for NAT gateway nat-08c21704416f06046."
             }
           ]
         },
@@ -92526,11 +92450,11 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
+              "text" : "Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
             }
           ]
         },
@@ -92582,7 +92506,7 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "NAT rule MISSING_TO ignored because it has no to zone configured"
+              "text" : "NAT rule MISSING_DESTINATION ignored because it has no destination addresses configured"
             },
             {
               "tag" : "MISCELLANEOUS",
@@ -92594,7 +92518,7 @@
             },
             {
               "tag" : "MISCELLANEOUS",
-              "text" : "NAT rule MISSING_DESTINATION ignored because it has no destination addresses configured"
+              "text" : "NAT rule MISSING_TO ignored because it has no to zone configured"
             }
           ]
         }
