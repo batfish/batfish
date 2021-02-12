@@ -4,6 +4,8 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -2204,12 +2206,13 @@ public final class CiscoNxosGrammarTest {
             .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
             .getWarnings()
             .get(hostname);
-    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
-        warnings.getRedFlagWarnings().get(0).getText(),
-        equalTo(
-            "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data shows"
-                + " speed 200000000 bps. Configured value will be used."));
+        warnings,
+        hasRedFlags(
+            contains(
+                hasText(
+                    "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data"
+                        + " shows speed 200000000 bps. Configured value will be used."))));
   }
 
   @Test
@@ -2262,12 +2265,13 @@ public final class CiscoNxosGrammarTest {
             .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
             .getWarnings()
             .get(hostname);
-    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
-        warnings.getRedFlagWarnings().get(0).getText(),
-        equalTo(
-            "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime data"
-                + " shows bandwidth 200000000 bps. Configured value will be used."));
+        warnings,
+        hasRedFlags(
+            contains(
+                hasText(
+                    "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime"
+                        + " data shows bandwidth 200000000 bps. Configured value will be used."))));
   }
 
   @Test
