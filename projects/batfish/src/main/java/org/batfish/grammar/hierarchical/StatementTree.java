@@ -1,7 +1,8 @@
 package org.batfish.grammar.hierarchical;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,6 +36,12 @@ public class StatementTree {
         Stream.of(this), _children.values().stream().flatMap(StatementTree::getSubtrees));
   }
 
+  /** Apply a visitor to the tree in pre-order. */
+  public void preOrder(Consumer<StatementTree> visitor) {
+    visitor.accept(this);
+    _children.values().forEach(child -> child.preOrder(visitor));
+  }
+
   public StatementTree() {
     this(null);
   }
@@ -43,7 +50,7 @@ public class StatementTree {
   private final @Nullable StatementTree _parent;
 
   private StatementTree(@Nullable StatementTree parent) {
-    _children = new HashMap<>();
+    _children = new LinkedHashMap<>();
     _parent = parent;
   }
 }
