@@ -1,7 +1,8 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.common.Warnings.TAG_PEDANTIC;
-import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasUnimplementedWarning;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
@@ -617,12 +618,9 @@ public class JuniperConfigurationTest {
     Warnings w = new Warnings(true, true, true);
     assertThat(toRibId(hostname, "inet6.0", w), nullValue());
     assertThat(
-        w.getUnimplementedWarnings(),
-        equalTo(
-            ImmutableList.of(
-                new Warning(
-                    "Rib name conversion: inet6 address family is not supported",
-                    TAG_UNIMPLEMENTED))));
+        w,
+        hasUnimplementedWarning(
+            hasText("Rib name conversion: inet6 address family is not supported")));
   }
 
   @Test

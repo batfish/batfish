@@ -1,13 +1,15 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.generateBgpImportPolicy;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -254,14 +256,15 @@ public class CiscoConversionsBgpPoliciesTest {
 
     RoutingPolicy bgpImportPolicy = _c.getRoutingPolicies().get(bgpImportPolicyName);
     assertThat(bgpImportPolicy, notNullValue());
-    assertThat(_w.getRedFlagWarnings(), hasSize(1));
     assertThat(
-        _w.getRedFlagWarnings().get(0).getText(),
-        equalTo(
-            "Batfish does not support configuring more than one filter"
-                + " (route-map/prefix-list/distribute-list) for incoming BGP routes. When this"
-                + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
-                + " configured."));
+        _w,
+        hasRedFlags(
+            contains(
+                hasText(
+                    "Batfish does not support configuring more than one filter"
+                        + " (route-map/prefix-list/distribute-list) for incoming BGP routes. When"
+                        + " this occurs, only the route-map will be used, or the prefix-list if no"
+                        + " route-map is configured."))));
 
     // Test that the generated policy matches the route map
     testPolicyMatchesRouteMap(bgpImportPolicy, Direction.IN);
@@ -281,14 +284,15 @@ public class CiscoConversionsBgpPoliciesTest {
         _c.getRoutingPolicies()
             .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, _peerGroup.getName()));
     assertThat(bgpExportPolicy, notNullValue());
-    assertThat(_w.getRedFlagWarnings(), hasSize(1));
     assertThat(
-        _w.getRedFlagWarnings().get(0).getText(),
-        equalTo(
-            "Batfish does not support configuring more than one filter"
-                + " (route-map/prefix-list/distribute-list) for outgoing BGP routes. When this"
-                + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
-                + " configured."));
+        _w,
+        hasRedFlags(
+            contains(
+                hasText(
+                    "Batfish does not support configuring more than one filter"
+                        + " (route-map/prefix-list/distribute-list) for outgoing BGP routes. When"
+                        + " this occurs, only the route-map will be used, or the prefix-list if no"
+                        + " route-map is configured."))));
 
     // Test that the generated policy matches the route map
     testPolicyMatchesRouteMap(bgpExportPolicy, Direction.OUT);
