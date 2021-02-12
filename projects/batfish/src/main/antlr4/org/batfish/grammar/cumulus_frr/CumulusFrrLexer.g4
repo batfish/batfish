@@ -251,6 +251,11 @@ DOUBLE_QUOTE
   '"' -> pushMode ( M_DoubleQuote )
 ;
 
+EIGRP
+:
+  'eigrp'
+;
+
 EMERGENCIES
 :
   'emergencies'
@@ -439,6 +444,16 @@ IPV6_PREFIX
   F_Ipv6Prefix
 ;
 
+ISIS
+:
+  'isis'
+;
+
+KERNEL
+:
+  'kernel'
+;
+
 L2VPN
 :
   'l2vpn'
@@ -609,6 +624,11 @@ POINT_TO_POINT
   'point-to-point'
 ;
 
+PREFIX_LEN
+:
+  'prefix-len'
+;
+
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
@@ -637,6 +657,11 @@ REMOTE_AS
 REPLACE_AS
 :
   'replace-as'
+;
+
+RIP
+:
+  'rip'
 ;
 
 ROUTE_MAP
@@ -687,6 +712,11 @@ SHUTDOWN
 SOFT_RECONFIGURATION
 :
   'soft-reconfiguration'
+;
+
+SOURCE_PROTOCOL
+:
+  'source-protocol'
 ;
 
 STANDARD

@@ -2,7 +2,8 @@ package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static junit.framework.TestCase.assertNotNull;
-import static org.batfish.common.Warnings.TAG_RED_FLAG;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
@@ -66,7 +67,6 @@ import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -1799,11 +1799,10 @@ public final class CumulusConversionsTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
 
     assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
+
     assertThat(
-        warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
-                new Warning("cannot find interface named lo for update-source", TAG_RED_FLAG))));
+        warnings,
+        hasRedFlags(contains(hasText("cannot find interface named lo for update-source"))));
   }
 
   @Test
@@ -1820,12 +1819,9 @@ public final class CumulusConversionsTest {
 
     assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
     assertThat(
-        warnings.getRedFlagWarnings(),
-        equalTo(
-            ImmutableList.of(
-                new Warning(
-                    "cannot find an address for interface named lo for update-source",
-                    TAG_RED_FLAG))));
+        warnings,
+        hasRedFlags(
+            contains(hasText("cannot find an address for interface named lo for update-source"))));
   }
 
   @Test

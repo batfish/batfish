@@ -5,10 +5,12 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 
 /** IS-IS route */
 public class IsisRoute extends AbstractRoute {
@@ -83,6 +85,17 @@ public class IsisRoute extends AbstractRoute {
       _systemId = systemId;
       return this;
     }
+  }
+
+  /** Return a route builder with pre-filled mandatory values. To be used in tests only */
+  @VisibleForTesting
+  public static IsisRoute.Builder testBuilder() {
+    return builder()
+        .setNextHop(NextHopDiscard.instance())
+        .setAdmin(115)
+        .setArea("49.0001")
+        .setSystemId("1921.6800.1077")
+        .setProtocol(RoutingProtocol.ISIS_L1);
   }
 
   /** Default Isis route metric, unless one is explicitly specified */

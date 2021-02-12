@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -40,15 +42,15 @@ public class Warnings implements Serializable {
 
   private transient boolean _pedanticRecord;
 
-  private final List<Warning> _pedanticWarnings;
+  private final SortedSet<Warning> _pedanticWarnings;
 
   private transient boolean _redFlagRecord;
 
-  private final List<Warning> _redFlagWarnings;
+  private final SortedSet<Warning> _redFlagWarnings;
 
   private transient boolean _unimplementedRecord;
 
-  private final List<Warning> _unimplementedWarnings;
+  private final SortedSet<Warning> _unimplementedWarnings;
 
   public static @Nonnull Warnings forLogger(BatfishLogger logger) {
     return new Warnings(
@@ -59,15 +61,15 @@ public class Warnings implements Serializable {
 
   @JsonCreator
   private Warnings(
-      @Nullable @JsonProperty(PROP_PEDANTIC) List<Warning> pedanticWarnings,
-      @Nullable @JsonProperty(PROP_RED_FLAGS) List<Warning> redFlagWarnings,
-      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) List<Warning> unimplementedWarnings,
+      @Nullable @JsonProperty(PROP_PEDANTIC) SortedSet<Warning> pedanticWarnings,
+      @Nullable @JsonProperty(PROP_RED_FLAGS) SortedSet<Warning> redFlagWarnings,
+      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) SortedSet<Warning> unimplementedWarnings,
       @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings,
       @Nullable @JsonProperty(PROP_ERROR_DETAILS) ErrorDetails errorDetails) {
-    _pedanticWarnings = firstNonNull(pedanticWarnings, new LinkedList<>());
-    _redFlagWarnings = firstNonNull(redFlagWarnings, new LinkedList<>());
+    _pedanticWarnings = firstNonNull(pedanticWarnings, new TreeSet<>());
+    _redFlagWarnings = firstNonNull(redFlagWarnings, new TreeSet<>());
     _parseWarnings = firstNonNull(parseWarnings, new LinkedList<>());
-    _unimplementedWarnings = firstNonNull(unimplementedWarnings, new LinkedList<>());
+    _unimplementedWarnings = firstNonNull(unimplementedWarnings, new TreeSet<>());
     _errorDetails = errorDetails;
   }
 
@@ -89,17 +91,17 @@ public class Warnings implements Serializable {
   }
 
   @JsonProperty(PROP_PEDANTIC)
-  public List<Warning> getPedanticWarnings() {
+  public SortedSet<Warning> getPedanticWarnings() {
     return _pedanticWarnings;
   }
 
   @JsonProperty(PROP_RED_FLAGS)
-  public List<Warning> getRedFlagWarnings() {
+  public SortedSet<Warning> getRedFlagWarnings() {
     return _redFlagWarnings;
   }
 
   @JsonProperty(PROP_UNIMPLEMENTED)
-  public List<Warning> getUnimplementedWarnings() {
+  public SortedSet<Warning> getUnimplementedWarnings() {
     return _unimplementedWarnings;
   }
 

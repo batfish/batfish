@@ -1404,6 +1404,7 @@ public final class PaloAltoGrammarTest {
     String eth1_8 = "ethernet1/8";
     String eth1_21 = "ethernet1/21";
     String loopback = "loopback";
+    String loopback_123 = "loopback.123";
     Configuration c = parseConfig(hostname);
     Configuration cLoopbackRef = parseConfig(hostnameLoopbackRef);
     Configuration cLoopbackRefInvalid = parseConfig(hostnameLoopbackRefInvalid);
@@ -1412,8 +1413,18 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c.getAllInterfaces().keySet(),
         containsInAnyOrder(
-            eth1_1, eth1_2, eth1_3, eth1_3_11, eth1_4, eth1_5, eth1_6, eth1_7, eth1_8, eth1_21,
-            loopback));
+            eth1_1,
+            eth1_2,
+            eth1_3,
+            eth1_3_11,
+            eth1_4,
+            eth1_5,
+            eth1_6,
+            eth1_7,
+            eth1_8,
+            eth1_21,
+            loopback,
+            loopback_123));
     assertThat(cLoopbackRef.getAllInterfaces().keySet(), contains(loopback));
     assertThat(cLoopbackRefInvalid.getAllInterfaces().keySet(), contains(loopback));
     assertThat(cLoopbackRefInvalidRange.getAllInterfaces().keySet(), contains(loopback));
@@ -1458,6 +1469,10 @@ public final class PaloAltoGrammarTest {
         cLoopbackRef,
         hasInterface(
             loopback, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.10.10/32")))));
+    assertThat(
+        c,
+        hasInterface(
+            loopback_123, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.2.3.4/32")))));
     // Bad address object references
     assertThat(cLoopbackRefInvalid, hasInterface(loopback, hasAllAddresses(emptyIterable())));
     assertThat(cLoopbackRefInvalidRange, hasInterface(loopback, hasAllAddresses(emptyIterable())));
