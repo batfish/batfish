@@ -1,6 +1,9 @@
 package org.batfish.common;
 
 import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
+import static org.batfish.common.matchers.WarningsMatchers.hasPedanticWarnings;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
+import static org.batfish.common.matchers.WarningsMatchers.hasUnimplementedWarnings;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -24,8 +27,9 @@ public class WarningsTest {
 
     // Only unique warnings should show up
     assertThat(
-        ws.getRedFlagWarnings(),
-        contains(equalTo(new Warning(message1, tag1)), equalTo(new Warning(message2, tag2))));
+        ws,
+        hasRedFlags(
+            contains(equalTo(new Warning(message1, tag1)), equalTo(new Warning(message2, tag2)))));
   }
 
   @Test
@@ -43,8 +47,9 @@ public class WarningsTest {
 
     // Only unique warnings should show up
     assertThat(
-        ws.getPedanticWarnings(),
-        contains(equalTo(new Warning(message1, tag1)), equalTo(new Warning(message2, tag2))));
+        ws,
+        hasPedanticWarnings(
+            contains(equalTo(new Warning(message1, tag1)), equalTo(new Warning(message2, tag2)))));
   }
 
   @Test
@@ -60,9 +65,10 @@ public class WarningsTest {
 
     // Only unique warnings should show up
     assertThat(
-        ws.getUnimplementedWarnings(),
-        contains(
-            equalTo(new Warning(message1, TAG_UNIMPLEMENTED)),
-            equalTo(new Warning(message2, TAG_UNIMPLEMENTED))));
+        ws,
+        hasUnimplementedWarnings(
+            contains(
+                equalTo(new Warning(message1, TAG_UNIMPLEMENTED)),
+                equalTo(new Warning(message2, TAG_UNIMPLEMENTED)))));
   }
 }

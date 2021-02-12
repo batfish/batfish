@@ -3,6 +3,8 @@ package org.batfish.main;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.BfConsts.RELPATH_AWS_CONFIGS_FILE;
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.common.util.Resources.readResourceBytes;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
@@ -723,8 +725,6 @@ public class BatfishTest {
             ImmutableMap.of(
                 config.getHostname(), config, modeledConfig.getHostname(), modeledConfig)));
     assertThat(snapshotEdges, equalTo(ImmutableSet.of(edge, modeledEdge)));
-    assertThat(
-        warnings.getRedFlagWarnings().stream().findFirst().get().getText(),
-        containsString("Cannot add internet and ISP nodes"));
+    assertThat(warnings, hasRedFlag(hasText(containsString("Cannot add internet and ISP nodes"))));
   }
 }

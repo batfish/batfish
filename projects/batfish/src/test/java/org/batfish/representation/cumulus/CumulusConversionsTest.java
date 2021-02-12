@@ -3,6 +3,8 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.common.Warnings.TAG_RED_FLAG;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
@@ -1799,6 +1801,7 @@ public final class CumulusConversionsTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
 
     assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
+
     assertThat(
         warnings.getRedFlagWarnings(),
         contains(
@@ -1820,12 +1823,8 @@ public final class CumulusConversionsTest {
 
     assertNull(resolveLocalIpFromUpdateSource(source, c, warnings));
     assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(
-            equalTo(
-                new Warning(
-                    "cannot find an address for interface named lo for update-source",
-                    TAG_RED_FLAG))));
+        warnings,
+        hasRedFlag(hasText("cannot find an address for interface named lo for update-source")));
   }
 
   @Test

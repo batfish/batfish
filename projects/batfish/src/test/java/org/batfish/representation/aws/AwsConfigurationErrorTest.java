@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_SERVICES_GATEWAY_NODE_NAME;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTestVpc;
@@ -40,9 +42,11 @@ public class AwsConfigurationErrorTest {
     assertThat(
         c, containsInAnyOrder(hasHostname(AWS_SERVICES_GATEWAY_NODE_NAME), hasHostname("vpc1")));
     assertThat(
-        w.getRedFlagWarnings().stream().findFirst().get().getText(),
-        allOf(
-            containsString("Failed conversion for"),
-            containsString(NullPointerException.class.getSimpleName())));
+        w,
+        hasRedFlag(
+            hasText(
+                allOf(
+                    containsString("Failed conversion for"),
+                    containsString(NullPointerException.class.getSimpleName())))));
   }
 }

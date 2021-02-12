@@ -1,8 +1,10 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -97,12 +99,7 @@ public class NatRuleThenPoolTest {
     Warnings warnings = new Warnings(false, true, false);
     assertTrue(
         new NatRuleThenPool("POOL").toTransformationSteps(snat, null, Ip.ZERO, warnings).isEmpty());
-    assertEquals(1, warnings.getRedFlagWarnings().size());
-    assertTrue(
-        warnings.getRedFlagWarnings().stream()
-            .findFirst()
-            .get()
-            .getText()
-            .contains("NAT pool POOL is invalid"));
+    assertThat(
+        warnings, hasRedFlags(contains(hasText(containsString("NAT pool POOL is invalid")))));
   }
 }

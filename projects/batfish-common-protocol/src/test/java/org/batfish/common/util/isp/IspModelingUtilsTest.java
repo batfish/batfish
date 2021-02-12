@@ -1,7 +1,8 @@
 package org.batfish.common.util.isp;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
-import static org.batfish.common.Warnings.TAG_RED_FLAG;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.FROM_INTERNET_ACL_NAME;
 import static org.batfish.common.util.isp.BlockReservedAddressesAtInternet.TO_INTERNET_ACL_NAME;
 import static org.batfish.common.util.isp.IspModelingUtils.EXPORT_POLICY_ON_ISP_TO_CUSTOMERS;
@@ -43,7 +44,6 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -66,7 +66,6 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
@@ -166,12 +165,10 @@ public class IspModelingUtilsTest {
         warnings);
 
     assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(
-            equalTo(
-                new Warning(
-                    "ISP Modeling: Non-existent border node conf1 specified in ISP configuration",
-                    TAG_RED_FLAG))));
+        warnings,
+        hasRedFlag(
+            hasText(
+                "ISP Modeling: Non-existent border node conf1 specified in ISP configuration")));
   }
 
   @Test
@@ -189,11 +186,7 @@ public class IspModelingUtilsTest {
         warnings);
 
     assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(
-            equalTo(
-                new Warning(
-                    "ISP Modeling: Cannot find interface init on node conf", TAG_RED_FLAG))));
+        warnings, hasRedFlag(hasText("ISP Modeling: Cannot find interface init on node conf")));
   }
 
   @Test

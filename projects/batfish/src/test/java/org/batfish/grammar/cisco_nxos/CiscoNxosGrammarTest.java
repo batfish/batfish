@@ -4,7 +4,8 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.batfish.common.Warnings.TAG_RED_FLAG;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
@@ -147,7 +148,6 @@ import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
@@ -2208,13 +2208,12 @@ public final class CiscoNxosGrammarTest {
             .get(hostname);
     assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(
-            equalTo(
-                new Warning(
+        warnings,
+        hasRedFlags(
+            contains(
+                hasText(
                     "Interface c1:Ethernet1/1 has configured speed 100000000 bps but runtime data"
-                        + " shows speed 200000000 bps. Configured value will be used.",
-                    TAG_RED_FLAG))));
+                        + " shows speed 200000000 bps. Configured value will be used."))));
   }
 
   @Test
@@ -2269,13 +2268,12 @@ public final class CiscoNxosGrammarTest {
             .get(hostname);
     assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(
-            equalTo(
-                new Warning(
+        warnings,
+        hasRedFlags(
+            contains(
+                hasText(
                     "Interface c2:Ethernet1/1 has configured bandwidth 100000000 bps but runtime"
-                        + " data shows bandwidth 200000000 bps. Configured value will be used.",
-                    TAG_RED_FLAG))));
+                        + " data shows bandwidth 200000000 bps. Configured value will be used."))));
   }
 
   @Test
