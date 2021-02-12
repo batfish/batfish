@@ -2206,7 +2206,6 @@ public final class CiscoNxosGrammarTest {
             .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
             .getWarnings()
             .get(hostname);
-    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
         warnings,
         hasRedFlags(
@@ -2266,7 +2265,6 @@ public final class CiscoNxosGrammarTest {
             .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
             .getWarnings()
             .get(hostname);
-    assertThat(warnings.getRedFlagWarnings().size(), equalTo(1));
     assertThat(
         warnings,
         hasRedFlags(
