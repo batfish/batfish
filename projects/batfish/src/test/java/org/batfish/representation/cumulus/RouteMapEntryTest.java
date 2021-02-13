@@ -10,6 +10,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
 import org.junit.Test;
 
 public class RouteMapEntryTest {
@@ -36,6 +37,17 @@ public class RouteMapEntryTest {
   }
 
   @Test
+  public void testGetMatches_PrefixLen() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
+    entry.setMatchIpAddressPrefixLen(new RouteMapMatchIpAddressPrefixLen(3));
+
+    ImmutableList<RouteMapMatch> matches =
+        entry.getMatches().collect(ImmutableList.toImmutableList());
+
+    assertThat(matches, contains(isA(RouteMapMatchIpAddressPrefixLen.class)));
+  }
+
+  @Test
   public void testGetMatches_PrefixList() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setMatchIpAddressPrefixList(
@@ -45,6 +57,28 @@ public class RouteMapEntryTest {
         entry.getMatches().collect(ImmutableList.toImmutableList());
 
     assertThat(matches, contains(isA(RouteMapMatchIpAddressPrefixList.class)));
+  }
+
+  @Test
+  public void testGetMatches_SourceProtocol() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
+    entry.setMatchSourceProtocol(new RouteMapMatchSourceProtocol(Protocol.EIGRP));
+
+    ImmutableList<RouteMapMatch> matches =
+        entry.getMatches().collect(ImmutableList.toImmutableList());
+
+    assertThat(matches, contains(isA(RouteMapMatchSourceProtocol.class)));
+  }
+
+  @Test
+  public void testGetMatches_Tag() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
+    entry.setMatchTag(new RouteMapMatchTag(5L));
+
+    ImmutableList<RouteMapMatch> matches =
+        entry.getMatches().collect(ImmutableList.toImmutableList());
+
+    assertThat(matches, contains(isA(RouteMapMatchTag.class)));
   }
 
   @Test

@@ -4,9 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -142,7 +142,7 @@ final class IssueAggregation {
   @Nonnull
   @VisibleForTesting
   static Map<Warning, SortedSet<String>> aggregateDuplicateWarnings(
-      Map<String, Warnings> nodeToWarnings, Function<Warnings, List<Warning>> warningFunc) {
+      Map<String, Warnings> nodeToWarnings, Function<Warnings, Set<Warning>> warningFunc) {
     Map<Warning, SortedSet<String>> map = new HashMap<>();
     nodeToWarnings.forEach(
         (node, warnings) -> {

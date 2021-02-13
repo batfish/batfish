@@ -18,7 +18,9 @@ public final class RouteMapEntry implements Serializable {
   private @Nullable RouteMapMatchAsPath _matchAsPath;
   private @Nullable RouteMapMatchCommunity _matchCommunity;
   private @Nullable RouteMapMatchInterface _matchInterface;
+  private @Nullable RouteMapMatchIpAddressPrefixLen _matchIpAddressPrefixLen;
   private @Nullable RouteMapMatchIpAddressPrefixList _matchIpAddressPrefixList;
+  private @Nullable RouteMapMatchSourceProtocol _matchSourceProtocol;
   private @Nullable RouteMapMatchTag _matchTag;
   private final int _number;
   private @Nullable String _description;
@@ -53,7 +55,13 @@ public final class RouteMapEntry implements Serializable {
   /** Return stream of match statements for this entry. */
   public @Nonnull Stream<RouteMapMatch> getMatches() {
     return Stream.of(
-            _matchAsPath, _matchInterface, _matchCommunity, _matchIpAddressPrefixList, _matchTag)
+            _matchAsPath,
+            _matchInterface,
+            _matchCommunity,
+            _matchIpAddressPrefixLen,
+            _matchIpAddressPrefixList,
+            _matchSourceProtocol,
+            _matchTag)
         .filter(Objects::nonNull);
   }
 
@@ -69,8 +77,25 @@ public final class RouteMapEntry implements Serializable {
     return _matchCommunity;
   }
 
+  public @Nullable RouteMapMatchIpAddressPrefixLen getMatchIpAddressPrefixLen() {
+    return _matchIpAddressPrefixLen;
+  }
+
+  public void setMatchIpAddressPrefixLen(
+      @Nullable RouteMapMatchIpAddressPrefixLen matchIpAddressPrefixLen) {
+    _matchIpAddressPrefixLen = matchIpAddressPrefixLen;
+  }
+
   public @Nullable RouteMapMatchIpAddressPrefixList getMatchIpAddressPrefixList() {
     return _matchIpAddressPrefixList;
+  }
+
+  public @Nullable RouteMapMatchSourceProtocol getMatchSourceProtocol() {
+    return _matchSourceProtocol;
+  }
+
+  public void setMatchSourceProtocol(@Nullable RouteMapMatchSourceProtocol matchSourceProtocol) {
+    _matchSourceProtocol = matchSourceProtocol;
   }
 
   @Nullable
