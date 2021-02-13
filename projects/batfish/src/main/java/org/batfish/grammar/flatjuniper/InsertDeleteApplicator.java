@@ -1,14 +1,9 @@
 package org.batfish.grammar.flatjuniper;
 
-import static com.google.common.base.Predicates.not;
-import static java.util.stream.Collectors.toList;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -28,7 +23,7 @@ import org.batfish.grammar.hierarchical.StatementTree;
  * as delete statements themselves.
  */
 @ParametersAreNonnullByDefault
-public class Deleter extends FlatJuniperParserBaseListener {
+public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
 
   /*
    * Implementation overview:
@@ -36,28 +31,28 @@ public class Deleter extends FlatJuniperParserBaseListener {
    * Iterate through each child parse-tree of the configuration. Each corresponds to a set,
    * deactivate, or delete line.
    *
-   * Each time a 'deactivate' or 'set' parse-tree is encountered:
-   * - record the words following 'deactivate' or 'set'
-   * - build out the deactivate (or set) StatementTree, using each word as a key.
+   * Each time a 'set' parse-tree is encountered:
+   * - record the words following 'set'
+   * - build out the set StatementTree, using each word as a key.
+   * - add the parse-tree to the set of parse-trees stored at the node corresponding to the last word
+   *
+   * Each time a 'deactivate' parse-tree is encountered:
+   * - record the words following 'deactivate'
+   * - find the StatementTree node corresponding to the recorded words
    * - add the parse-tree to the set of parse-trees stored at the node corresponding to the last word
    *
    * Each time a 'delete' parse-tree is encountered:
    * - record the words following 'delete'
-   * - for both the 'deactivate' and 'set' StatementTrees
-   *   - find the node corresponding to the last word
-   *   - collect all parse-trees stored there and in its subtrees
-   *   - mark those parse-trees as deleted
-   *   - remove the node (and therefore its subtrees) from the tree
-   * - Mark the 'delete' parse-tree itself as deleted
+   * - find the node corresponding to the last word
+   * - remove the node (and therefore its subtrees) from the tree
+   *   - note that this removes both 'set' and 'deactivate' lines
    *
    * After visiting all child parse-trees of the configuration, replace its list of children with a
-   * new list containing only those parse-trees not marked for deletion.
+   * new corresponding to a pre-order traversal of the statement tree.
    */
 
-  public Deleter() {
-    _deactivateStatementTree = new StatementTree();
-    _deletedStatements = new HashSet<>();
-    _setStatementTree = new StatementTree();
+  public InsertDeleteApplicator() {
+    _statementTree = new StatementTree();
     _statementsByTree = HashMultimap.create();
   }
 
@@ -74,12 +69,12 @@ public class Deleter extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitDeactivate_line(Deactivate_lineContext ctx) {
-    addStatementToTree(_deactivateStatementTree, ctx);
+    addStatementToTree(_statementTree, ctx);
   }
 
   @Override
   public void exitSet_line(Set_lineContext ctx) {
-    addStatementToTree(_setStatementTree, ctx);
+    addStatementToTree(_statementTree, ctx);
   }
 
   @Override
@@ -95,9 +90,8 @@ public class Deleter extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitDelete_line(Delete_lineContext ctx) {
-    _deletedStatements.add(ctx);
-    deleteSubtree(_deactivateStatementTree);
-    deleteSubtree(_setStatementTree);
+    deleteSubtree(_statementTree);
+    _dirty = true;
   }
 
   @Override
@@ -131,13 +125,13 @@ public class Deleter extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFlat_juniper_configuration(Flat_juniper_configurationContext ctx) {
-    if (_deletedStatements.isEmpty()) {
+    if (!_dirty) {
       return;
     }
-    // Replace the list of children with a new list containing only those nodes not marked for
-    // deletion.
-    ctx.children =
-        ctx.children.stream().filter(not(_deletedStatements::contains)).collect(toList());
+    // Replace the list of children by dumping statements from a pre-order traversal of the
+    // StatementTree.
+    ctx.children.clear();
+    _statementTree.getSubtrees().forEach(tree -> ctx.children.addAll(_statementsByTree.get(tree)));
   }
 
   @Override
@@ -176,17 +170,15 @@ public class Deleter extends FlatJuniperParserBaseListener {
         .getSubtrees()
         .forEach(
             t -> {
-              _deletedStatements.addAll(_statementsByTree.get(t));
               _statementsByTree.removeAll(t);
             });
     subtree.getParent().deleteSubtree(lastWord);
   }
 
+  private boolean _dirty;
   private boolean _enablePathRecording;
   private boolean _reenablePathRecording;
-  private final @Nonnull StatementTree _deactivateStatementTree;
-  private final @Nonnull StatementTree _setStatementTree;
+  private final @Nonnull StatementTree _statementTree;
   private List<String> _words;
-  private final Set<ParseTree> _deletedStatements;
   private final Multimap<StatementTree, ParseTree> _statementsByTree;
 }

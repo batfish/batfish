@@ -29,6 +29,7 @@ public final class PreprocessJuniperExtractor {
    * <p>Pre-processing consists of:
    *
    * <ol>
+   *   <li>Applying insertions (moves) and deleteions
    *   <li>Pruning lines deactivated by 'deactivate' lines
    *   <li>Pruning 'deactivate' lines
    *   <li>Generating lines corresponding to 'apply-groups' lines, while respecting
@@ -48,10 +49,10 @@ public final class PreprocessJuniperExtractor {
   static void preprocess(
       ParserRuleContext tree, Hierarchy hierarchy, FlatJuniperCombinedParser parser, Warnings w) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
-    Span deleterSpan = GlobalTracer.get().buildSpan("FlatJuniper::Deleter").start();
+    Span deleterSpan = GlobalTracer.get().buildSpan("FlatJuniper::InsertDeleteApplicator").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(deleterSpan)) {
       assert scope != null; // avoid unused warning
-      Deleter d = new Deleter();
+      InsertDeleteApplicator d = new InsertDeleteApplicator();
       walker.walk(d, tree);
     } finally {
       deleterSpan.finish();
