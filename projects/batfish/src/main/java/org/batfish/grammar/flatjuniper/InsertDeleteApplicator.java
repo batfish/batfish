@@ -48,6 +48,7 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
    * - record the words following 'delete'
    * - find the node corresponding to the last word
    * - remove the node (and therefore its subtrees) from the tree
+   *   - note that this removes both 'set' and 'deactivate' lines
    *
    * After visiting all child parse-trees of the configuration, replace its list of children with a
    * new corresponding to a pre-order traversal of the statement tree.
