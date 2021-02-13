@@ -130,7 +130,7 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
     // Replace the list of children by dumping statements from a pre-order traversal of the
     // StatementTree.
     ctx.children.clear();
-    _statementTree.preOrder(tree -> ctx.children.addAll(_statementsByTree.get(tree)));
+    _statementTree.getSubtrees().forEach(tree -> ctx.children.addAll(_statementsByTree.get(tree)));
   }
 
   @Override
