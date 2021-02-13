@@ -1,5 +1,7 @@
 package org.batfish.representation.aws;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.representation.aws.AwsConfiguration.AWS_BACKBONE_ASN;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_FACING_INTERFACE_NAME;
 import static org.batfish.representation.aws.AwsConfiguration.BACKBONE_PEERING_ASN;
@@ -205,7 +207,7 @@ public class UtilsTest {
         Utils.addNodeToSubnet(
             cfg, networkInterface, subnet, new ConvertedConfiguration(), warnings);
 
-    assertThat(warnings.getRedFlagWarnings().get(0).getText(), containsString("No valid address"));
+    assertThat(warnings, hasRedFlag(hasText(containsString("No valid address"))));
 
     assertThat(iface.getConcreteAddress(), nullValue());
   }
