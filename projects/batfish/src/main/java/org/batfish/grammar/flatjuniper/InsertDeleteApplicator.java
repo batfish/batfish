@@ -13,6 +13,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_line_tailCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Delete_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Delete_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_dstContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_srcContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
@@ -105,6 +108,42 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterInsert_src(Insert_srcContext ctx) {
+    _enablePathRecording = true;
+    _words = new LinkedList<>();
+  }
+
+  @Override
+  public void exitInsert_src(Insert_srcContext ctx) {
+    _enablePathRecording = false;
+    _insertSrcWords = _words;
+  }
+
+  @Override
+  public void enterInsert_dst(Insert_dstContext ctx) {
+    _enablePathRecording = true;
+    _words = new LinkedList<>();
+  }
+
+  @Override
+  public void exitInsert_dst(Insert_dstContext ctx) {
+    _enablePathRecording = false;
+    _insertDstWords = _words;
+  }
+
+  @Override
+  public void exitInsert_line(Insert_lineContext ctx) {
+    if (ctx.BEFORE() != null) {
+      moveSubtree(true);
+    } else {
+      assert ctx.AFTER() != null;
+      moveSubtree(false);
+    }
+    _insertSrcWords = null;
+    _insertDstWords = null;
+  }
+
+  @Override
   public void enterInterface_id(Interface_idContext ctx) {
     if (_enablePathRecording && (ctx.unit != null || ctx.chnl != null || ctx.node != null)) {
       _enablePathRecording = false;
@@ -174,10 +213,58 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
     subtree.getParent().deleteSubtree(lastWord);
   }
 
+  /*
+   * - Find the node of tree corresponding to _insertSrcWords
+   * - Remove the node from the tree
+   * - Re-insert the node after or before the node corresponding to _insertDstWords
+   *   - note that _insertDstWords only contains a suffix
+   */
+  private void moveSubtree(boolean before) {
+    StatementTree subtree = _statementTree;
+    String lastWord = null;
+    String lastSrcWord;
+    String lastDstWord;
+    for (String word : _insertSrcWords) {
+      subtree = subtree.getSubtree(word);
+      if (subtree == null) {
+        // TODO: warn
+        return;
+      }
+      lastWord = word;
+    }
+    assert lastWord != null;
+    lastSrcWord = lastWord;
+    StatementTree treeToMove = subtree;
+    for (int i = 0; i < _insertDstWords.size(); i++) {
+      subtree = subtree.getParent();
+    }
+    lastWord = null;
+    // make sure dst node exists
+    for (String word : _insertDstWords) {
+      subtree = subtree.getSubtree(word);
+      if (subtree == null) {
+        // TODO: warn
+        return;
+      }
+      lastWord = word;
+    }
+    assert lastWord != null;
+    lastDstWord = lastWord;
+    StatementTree parent = treeToMove.getParent();
+    parent.deleteSubtree(lastSrcWord);
+    if (before) {
+      parent.insertBefore(lastDstWord, lastSrcWord, treeToMove);
+    } else {
+      parent.insertAfter(lastDstWord, lastSrcWord, treeToMove);
+    }
+  }
+
   private boolean _dirty;
   private boolean _enablePathRecording;
   private boolean _reenablePathRecording;
   private final @Nonnull StatementTree _statementTree;
   private List<String> _words;
+  private List<String> _insertSrcWords;
+  private List<String> _insertDstWords;
   private final Multimap<StatementTree, ParseTree> _statementsByTree;
 }

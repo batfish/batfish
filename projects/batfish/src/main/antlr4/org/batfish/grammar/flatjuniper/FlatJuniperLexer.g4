@@ -130,6 +130,8 @@ AFS
    'afs'
 ;
 
+AFTER: 'after';
+
 AGGREGATE
 :
    'aggregate'
@@ -520,6 +522,8 @@ BASIC
 :
    'basic'
 ;
+
+BEFORE: 'before';
 
 BFD
 :
@@ -2004,6 +2008,8 @@ INSECURE
 :
    'insecure'
 ;
+
+INSERT: 'insert';
 
 INSTALL
 :

@@ -5,3 +5,5 @@ set interfaces lo0 unit 0 family inet address 192.0.2.1/24
 set interfaces et-0/0/2 disable
 set interfaces et-0/0/2 unit 0 family iso
 set interfaces et-0/0/4 disable
+set policy-options policy-statement p1 term t3 then accept
+set policy-options policy-statement p1 term t2 then accept

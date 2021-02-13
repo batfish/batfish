@@ -18,3 +18,8 @@ delete interfaces et-0/0/2
 delete interfaces et-0/0/4
 delete groups g3 interfaces
 set interfaces et-0/0/2 unit 0 family iso
+set policy-options policy-statement p1 term t1 then accept
+set policy-options policy-statement p1 term t2 then accept
+set policy-options policy-statement p1 term t3 then accept
+insert policy-options policy-statement p1 term t3 before term t1
+delete policy-options policy-statement p1 term t1 then accept
