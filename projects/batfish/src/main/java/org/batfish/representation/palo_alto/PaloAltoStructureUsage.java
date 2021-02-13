@@ -5,6 +5,12 @@ import org.batfish.vendor.StructureUsage;
 public enum PaloAltoStructureUsage implements StructureUsage {
   ADDRESS_GROUP_STATIC("address-group static"),
   APPLICATION_GROUP_MEMBERS("application-group members"),
+  APPLICATION_OVERRIDE_RULE_APPLICATION("rulebase application-override rules application"),
+  APPLICATION_OVERRIDE_RULE_DESTINATION("rulebase application-override rules destination"),
+  APPLICATION_OVERRIDE_RULE_FROM_ZONE("rulebase application-override rules from"),
+  APPLICATION_OVERRIDE_RULE_SELF_REF("rulebase application-override rules"),
+  APPLICATION_OVERRIDE_RULE_SOURCE("rulebase application-override rules source"),
+  APPLICATION_OVERRIDE_RULE_TO_ZONE("rulebase application-override rules to"),
   BGP_PEER_LOCAL_ADDRESS_INTERFACE("bgp peer local-address interface"),
   ETHERNET_AGGREGATE_GROUP("ethernet aggregate-group"),
   IMPORT_INTERFACE("import network interface"),

@@ -37,7 +37,7 @@ srao_definition
 
 srao_application
 :
-    APPLICATION variable
+    APPLICATION application = variable
 ;
 
 srao_description
@@ -62,16 +62,12 @@ srao_negate_source
 
 srao_port
 :
-    PORT port_number
+    PORT port = port_number
 ;
 
 srao_protocol
 :
-    PROTOCOL
-    (
-        TCP
-        | UDP
-    )
+    PROTOCOL protocol = tcp_or_udp
 ;
 
 srao_destination
@@ -91,7 +87,7 @@ srao_source
 
 srao_tag
 :
-    TAG tags = variable_list
+    TAG variable_list
 ;
 
 srao_to

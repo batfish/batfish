@@ -179,3 +179,8 @@ yes_or_no
 :
     YES | NO
 ;
+
+tcp_or_udp
+:
+    TCP | UDP
+;
