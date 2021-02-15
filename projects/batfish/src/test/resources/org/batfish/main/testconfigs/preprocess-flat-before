@@ -23,5 +23,5 @@ set policy-options policy-statement p1 term t2 then accept
 set policy-options policy-statement p1 term t3 then accept
 set policy-options policy-statement p1 term t4 then accept
 insert policy-options policy-statement p1 term t3 before term t1
-delete policy-options policy-statement p1 term t1 then accept
+delete policy-options policy-statement p1 term t1
 insert policy-options policy-statement p1 term t4 after term t3
