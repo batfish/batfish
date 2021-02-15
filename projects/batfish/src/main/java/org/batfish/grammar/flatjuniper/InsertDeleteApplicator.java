@@ -8,11 +8,17 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.batfish.common.Warnings;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Delete_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Delete_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_dstContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_srcContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
@@ -23,7 +29,8 @@ import org.batfish.grammar.hierarchical.StatementTree;
  * as delete statements themselves.
  */
 @ParametersAreNonnullByDefault
-public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
+public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
+    implements BatfishListener {
 
   /*
    * Implementation overview:
@@ -51,9 +58,29 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
    * new corresponding to a pre-order traversal of the statement tree.
    */
 
-  public InsertDeleteApplicator() {
+  public InsertDeleteApplicator(BatfishCombinedParser<?, ?> parser, Warnings warnings) {
+    _parser = parser;
+    _warnings = warnings;
     _statementTree = new StatementTree();
     _statementsByTree = HashMultimap.create();
+  }
+
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _parser.getInput();
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _warnings;
   }
 
   @Override
@@ -103,6 +130,48 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
   @Override
   public void exitDelete_line_tail(Delete_line_tailContext ctx) {
     _enablePathRecording = false;
+  }
+
+  @Override
+  public void enterInsert_src(Insert_srcContext ctx) {
+    _enablePathRecording = true;
+    _words = new LinkedList<>();
+  }
+
+  @Override
+  public void exitInsert_src(Insert_srcContext ctx) {
+    _enablePathRecording = false;
+    _insertSrcWords = _words;
+  }
+
+  @Override
+  public void enterInsert_dst(Insert_dstContext ctx) {
+    _enablePathRecording = true;
+    _words = new LinkedList<>();
+  }
+
+  @Override
+  public void exitInsert_dst(Insert_dstContext ctx) {
+    _enablePathRecording = false;
+    _insertDstWords = _words;
+  }
+
+  @Override
+  public void enterInsert_line(Insert_lineContext ctx) {
+    _currentInsert = ctx;
+  }
+
+  @Override
+  public void exitInsert_line(Insert_lineContext ctx) {
+    if (ctx.BEFORE() != null) {
+      moveSubtree(true);
+    } else {
+      assert ctx.AFTER() != null;
+      moveSubtree(false);
+    }
+    _currentInsert = null;
+    _insertSrcWords = null;
+    _insertDstWords = null;
   }
 
   @Override
@@ -175,10 +244,75 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener {
     subtree.getParent().deleteSubtree(lastWord);
   }
 
+  /*
+   * - Find the node of tree corresponding to _insertSrcWords
+   * - Remove the node from the tree
+   * - Re-insert the node after or before the node corresponding to _insertDstWords
+   *   - note that _insertDstWords only contains a suffix
+   */
+  private void moveSubtree(boolean before) {
+    StatementTree subtree = _statementTree;
+    String lastWord = null;
+    String lastSrcWord;
+    String lastDstWord;
+    for (String word : _insertSrcWords) {
+      subtree = subtree.getSubtree(word);
+      if (subtree == null) {
+        warn(_currentInsert, "source does not exist");
+        return;
+      }
+      lastWord = word;
+    }
+    assert lastWord != null;
+    lastSrcWord = lastWord;
+    StatementTree treeToMove = subtree;
+    for (int i = 0; i < _insertDstWords.size(); i++) {
+      subtree = subtree.getParent();
+    }
+    lastWord = null;
+    // make sure dst node exists
+    for (String word : _insertDstWords) {
+      subtree = subtree.getSubtree(word);
+      if (subtree == null) {
+        warn(_currentInsert, "destination does not exist");
+        return;
+      }
+      lastWord = word;
+    }
+    assert lastWord != null;
+    lastDstWord = lastWord;
+    // make sure there are at least two src words
+    int numSrcWords = _insertSrcWords.size();
+    int numDstWords = _insertDstWords.size();
+    if (numSrcWords < 2) {
+      warn(_currentInsert, "source must be at least 2 words");
+      return;
+    }
+    // make sure dst is tail of src except last element
+    if (!_insertSrcWords
+        .subList(numSrcWords - numDstWords, numSrcWords - 1)
+        .equals(_insertDstWords.subList(0, numDstWords - 1))) {
+      warn(_currentInsert, "source and destination types do not match");
+      return;
+    }
+    StatementTree parent = treeToMove.getParent();
+    parent.deleteSubtree(lastSrcWord);
+    if (before) {
+      parent.insertBefore(lastDstWord, lastSrcWord, treeToMove);
+    } else {
+      parent.insertAfter(lastDstWord, lastSrcWord, treeToMove);
+    }
+  }
+
+  private Insert_lineContext _currentInsert;
   private boolean _dirty;
   private boolean _enablePathRecording;
   private boolean _reenablePathRecording;
   private final @Nonnull StatementTree _statementTree;
   private List<String> _words;
+  private List<String> _insertSrcWords;
+  private List<String> _insertDstWords;
   private final Multimap<StatementTree, ParseTree> _statementsByTree;
+  private final @Nonnull BatfishCombinedParser<?, ?> _parser;
+  private final @Nonnull Warnings _warnings;
 }

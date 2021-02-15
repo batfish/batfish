@@ -52,7 +52,7 @@ public final class PreprocessJuniperExtractor {
     Span deleterSpan = GlobalTracer.get().buildSpan("FlatJuniper::InsertDeleteApplicator").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(deleterSpan)) {
       assert scope != null; // avoid unused warning
-      InsertDeleteApplicator d = new InsertDeleteApplicator();
+      InsertDeleteApplicator d = new InsertDeleteApplicator(parser, w);
       walker.walk(d, tree);
     } finally {
       deleterSpan.finish();
