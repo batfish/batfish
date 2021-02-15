@@ -413,7 +413,7 @@ public final class CumulusConversionsTest {
     Vrf vrf = nf.vrfBuilder().setName(vrfName).setOwner(c).build();
     org.batfish.datamodel.Interface.Builder ib = nf.interfaceBuilder().setVrf(vrf);
 
-    // Should not accept interface whose subnet doesn't iconcatenatedde the remote IP
+    // Should not accept interface whose subnet doesn't include the remote IP
     InterfaceAddress addr1 = ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24);
     ib.setType(PHYSICAL).setOwner(c).setName("i1").setAddress(addr1).build();
     assertNull(computeLocalIpForBgpNeighbor(remoteIp, c, vrfName));
@@ -423,7 +423,7 @@ public final class CumulusConversionsTest {
     ib.setType(PHYSICAL).setOwner(c).setName("i2").setAddress(addr2).build();
     assertNull(computeLocalIpForBgpNeighbor(remoteIp, c, vrfName));
 
-    // Should accept interface that doesn't own the remote IP but whose subnet does iconcatenatedde
+    // Should accept interface that doesn't own the remote IP but whose subnet does include
     // it
     Ip ifaceIp = Ip.parse("1.1.1.2");
     InterfaceAddress addr3 = ConcreteInterfaceAddress.create(ifaceIp, 24);
