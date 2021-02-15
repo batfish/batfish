@@ -13,13 +13,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
-import org.junit.Before;
 import org.junit.Test;
 
 /** Test for Cumulus {@link CumulusInterfacesConfiguration} {@link InterfaceConverter}. */
@@ -67,13 +65,6 @@ public class InterfaceConverterTest {
     VXLAN_IFACE.setVxlanId(1);
     VXLAN_IFACE.setVxlanLocalTunnelIp(Ip.parse("1.2.3.4"));
     VXLAN_IFACE.createOrGetBridgeSettings().setAccess(2);
-  }
-
-  private Warnings _w;
-
-  @Before
-  public void setup() {
-    _w = new Warnings();
   }
 
   @Test
