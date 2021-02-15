@@ -10,6 +10,7 @@ import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.IBGP;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
+import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
@@ -43,7 +44,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.toOspfProces
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterLine;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteFilterList;
 import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarget;
-import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
