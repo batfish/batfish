@@ -13,7 +13,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.vendor.VendorConfiguration;
 
-/** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
+/** A {@link VendorConfiguration} specifically for {@code /etc/frr/frr.conf}. */
 public class CumulusFrrConfiguration implements Serializable {
 
   private @Nullable BgpProcess _bgpProcess;

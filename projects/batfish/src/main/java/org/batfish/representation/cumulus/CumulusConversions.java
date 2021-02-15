@@ -392,7 +392,7 @@ public final class CumulusConversions {
                 vrf.setBgpProcess(
                     org.batfish.datamodel.BgpProcess.builder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
-                        .setAdminCostsToVendorDefaults(ConfigurationFormat.CUMULUS_NCLU)
+                        .setAdminCostsToVendorDefaults(ConfigurationFormat.CUMULUS_CONCATENATED)
                         .build());
               }
             });
@@ -614,8 +614,8 @@ public final class CumulusConversions {
     // route-reflector-client to take effect:
     // https://docs.cumulusnetworks.com/display/DOCS/Border+Gateway+Protocol+-+BGP#BorderGatewayProtocol-BGP-RouteReflectors
     //
-    // The docs appear to be wrong: explicit activation is not enforced by either NCLU or FRR, and
-    // we have tested that route reflection works without it.
+    // The docs appear to be wrong: explicit activation is not enforced by FRR, and we have tested
+    // that route reflection works without it.
     boolean routeReflectorClient =
         Optional.ofNullable(ipv4UnicastAddressFamily)
             .map(af -> Boolean.TRUE.equals(af.getRouteReflectorClient()))

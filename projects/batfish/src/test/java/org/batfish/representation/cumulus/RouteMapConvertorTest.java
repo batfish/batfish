@@ -84,7 +84,7 @@ public class RouteMapConvertorTest {
     VC = new CumulusConcatenatedConfiguration();
     VC.setHostname(HOSTNAME);
     VC.setWarnings(W);
-    C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_NCLU);
+    C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_CONCATENATED);
     initRouteMap();
     _originalRouteBuilder =
         Bgpv4Route.testBuilder()

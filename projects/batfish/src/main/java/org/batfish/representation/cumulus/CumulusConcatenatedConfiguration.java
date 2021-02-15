@@ -61,7 +61,10 @@ import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.batfish.vendor.VendorConfiguration;
 
-/** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
+/**
+ * A {@link VendorConfiguration} for FRR based on many files (/etc/hostname,
+ * /etc/network/interfaces, /etc/frr/frr.conf, etc.).
+ */
 @ParametersAreNonnullByDefault
 public class CumulusConcatenatedConfiguration extends VendorConfiguration {
 
