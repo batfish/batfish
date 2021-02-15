@@ -669,7 +669,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @Override
-  @Nullable
+  @Nonnull
   public Map<String, Vxlan> getVxlans() {
     return _interfacesConfiguration.getInterfaces().values().stream()
         .filter(InterfaceConverter::isVxlan)
