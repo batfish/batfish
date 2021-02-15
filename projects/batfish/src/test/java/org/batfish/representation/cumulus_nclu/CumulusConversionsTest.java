@@ -951,13 +951,9 @@ public final class CumulusConversionsTest {
   public void testConvertIpv4UnicastAddressFamily_deactivated() {
     // setup vi model
     NetworkFactory nf = new NetworkFactory();
-    Configuration viConfig =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
     RoutingPolicy policy = nf.routingPolicyBuilder().build();
 
     // setup vs model
-    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
-    vsConfig.setConfiguration(viConfig);
     BgpNeighborIpv4UnicastAddressFamily af = new BgpNeighborIpv4UnicastAddressFamily();
     af.setRouteReflectorClient(true);
 
@@ -981,13 +977,7 @@ public final class CumulusConversionsTest {
   public void testConvertIpv4UnicastAddressFamily_allowAsIn() {
     // setup vi model
     NetworkFactory nf = new NetworkFactory();
-    Configuration viConfig =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
     RoutingPolicy policy = nf.routingPolicyBuilder().build();
-
-    // setup vs model
-    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
-    vsConfig.setConfiguration(viConfig);
 
     {
       // address family is null
@@ -1025,13 +1015,7 @@ public final class CumulusConversionsTest {
 
     // setup vi model
     NetworkFactory nf = new NetworkFactory();
-    Configuration viConfig =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CUMULUS_NCLU).build();
     RoutingPolicy policy = nf.routingPolicyBuilder().build();
-
-    // setup vs model
-    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
-    vsConfig.setConfiguration(viConfig);
 
     // route-reflector-client is false if ipv4af is null
     assertFalse(
