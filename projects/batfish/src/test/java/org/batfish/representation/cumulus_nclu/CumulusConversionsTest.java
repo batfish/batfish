@@ -43,7 +43,7 @@ import static org.batfish.representation.cumulus_nclu.CumulusConversions.toOspfP
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.toRouteFilterLine;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.toRouteFilterList;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.toRouteTarget;
-import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;

@@ -38,6 +38,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,9 +62,18 @@ import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.vendor.VendorConfiguration;
 
 /** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
-public class CumulusNcluConfiguration extends VendorConfiguration
-    implements CumulusNodeConfiguration {
+public class CumulusNcluConfiguration extends VendorConfiguration {
 
+  public static final String LOOPBACK_INTERFACE_NAME = "lo";
+
+  public static final Pattern PHYSICAL_INTERFACE_PATTERN =
+      Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
+
+  public static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
+
+  public static final Pattern VXLAN_INTERFACE_PATTERN = Pattern.compile("^vxlan([0-9]+)$");
+
+  public static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
   @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
 
   private @Nullable BgpProcess _bgpProcess;
@@ -302,7 +312,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     _vrfs.forEach(this::initVrf);
   }
 
-  @Override
   @Nullable
   public String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
     if (bridgeAccessVlan == null) {
@@ -315,7 +324,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
         .orElse(null);
   }
 
-  @Override
   public @Nullable BgpProcess getBgpProcess() {
     return _bgpProcess;
   }
@@ -349,12 +357,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     return _loopback;
   }
 
-  @Override
   public @Nullable OspfProcess getOspfProcess() {
     return _ospfProcess;
   }
 
-  @Override
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
@@ -371,7 +377,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     return _vrfs;
   }
 
-  @Override
   public @Nonnull Map<String, Vxlan> getVxlans() {
     return _vxlans;
   }
@@ -380,12 +385,10 @@ public class CumulusNcluConfiguration extends VendorConfiguration
     return _ipAsPathAccessLists;
   }
 
-  @Override
   public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
   }
 
-  @Override
   public @Nonnull Map<String, IpCommunityList> getIpCommunityLists() {
     return _ipCommunityLists;
   }
@@ -688,13 +691,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration
         });
   }
 
-  @Override
   @Nullable
   public Vrf getVrf(String vrfName) {
     return _vrfs.get(vrfName);
   }
 
-  @Override
   @Nonnull
   public Map<String, InterfaceClagSettings> getClagSettings() {
     return _interfaces.values().stream()
@@ -702,7 +703,6 @@ public class CumulusNcluConfiguration extends VendorConfiguration
         .collect(ImmutableMap.toImmutableMap(Interface::getName, Interface::getClag));
   }
 
-  @Override
   public Optional<OspfInterface> getOspfInterface(String ifaceName) {
     if (!_interfaces.containsKey(ifaceName)) {
       return Optional.empty();

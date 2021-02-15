@@ -12,8 +12,8 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus_nclu.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
-import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
-import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.SUBINTERFACE_PATTERN;
+import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.SUBINTERFACE_PATTERN;
 import static org.batfish.representation.cumulus_nclu.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
 import static org.batfish.representation.cumulus_nclu.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cumulus_nclu.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
@@ -366,7 +366,7 @@ public final class CumulusConversions {
         ImmutableList.of());
   }
 
-  static void convertBgpProcess(Configuration c, CumulusNodeConfiguration vsConfig, Warnings w) {
+  static void convertBgpProcess(Configuration c, CumulusNcluConfiguration vsConfig, Warnings w) {
     BgpProcess bgpProcess = vsConfig.getBgpProcess();
     if (bgpProcess == null) {
       return;
@@ -418,7 +418,7 @@ public final class CumulusConversions {
    */
   @Nullable
   static org.batfish.datamodel.BgpProcess toBgpProcess(
-      Configuration c, CumulusNodeConfiguration vsConfig, String vrfName, BgpVrf bgpVrf) {
+      Configuration c, CumulusNcluConfiguration vsConfig, String vrfName, BgpVrf bgpVrf) {
     BgpProcess bgpProcess = vsConfig.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
     if (routerId == null) {
@@ -470,7 +470,7 @@ public final class CumulusConversions {
   @VisibleForTesting
   static void addBgpNeighbor(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       BgpVrf bgpVrf,
       BgpNeighbor neighbor,
       Warnings w) {
@@ -512,7 +512,7 @@ public final class CumulusConversions {
 
   private static void addInterfaceBgpNeighbor(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       BgpInterfaceNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -556,7 +556,7 @@ public final class CumulusConversions {
   @VisibleForTesting
   static void generateBgpCommonPeerConfig(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -639,7 +639,7 @@ public final class CumulusConversions {
 
   private static void addIpv4BgpNeighbor(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       BgpIpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -1052,7 +1052,7 @@ public final class CumulusConversions {
   @Nullable
   private static EvpnAddressFamily toEvpnAddressFamily(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       BgpNeighbor neighbor,
       @Nullable Long localAs,
       BgpVrf bgpVrf,
@@ -1199,7 +1199,7 @@ public final class CumulusConversions {
             .anyMatch(Predicate.isEqual(ifaceName));
   }
 
-  static void convertOspfProcess(Configuration c, CumulusNodeConfiguration vsConfig, Warnings w) {
+  static void convertOspfProcess(Configuration c, CumulusNcluConfiguration vsConfig, Warnings w) {
     @Nullable OspfProcess ospfProcess = vsConfig.getOspfProcess();
     if (ospfProcess == null) {
       return;
@@ -1225,7 +1225,7 @@ public final class CumulusConversions {
 
   private static void convertOspfVrf(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       OspfVrf ospfVrf,
       org.batfish.datamodel.Vrf vrf,
       Warnings w) {
@@ -1237,7 +1237,7 @@ public final class CumulusConversions {
   @VisibleForTesting
   static org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       OspfVrf ospfVrf,
       Map<String, org.batfish.datamodel.Interface> vrfInterfaces,
       Warnings w) {
@@ -1367,7 +1367,7 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static void addOspfInterfaces(
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       Map<String, org.batfish.datamodel.Interface> viIfaces,
       String processId,
       Warnings w) {
@@ -1400,7 +1400,7 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static SortedMap<Long, OspfArea> computeOspfAreas(
-      CumulusNodeConfiguration vsConfig, Collection<String> vrfIfaceNames) {
+      CumulusNcluConfiguration vsConfig, Collection<String> vrfIfaceNames) {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
             .filter(
@@ -1601,7 +1601,7 @@ public final class CumulusConversions {
   }
 
   static void convertRouteMaps(
-      Configuration c, CumulusNodeConfiguration vc, Map<String, RouteMap> routeMaps, Warnings w) {
+      Configuration c, CumulusNcluConfiguration vc, Map<String, RouteMap> routeMaps, Warnings w) {
     routeMaps.forEach((name, routeMap) -> new RouteMapConvertor(c, vc, routeMap, w).toRouteMap());
   }
 
@@ -1622,7 +1622,7 @@ public final class CumulusConversions {
     return null;
   }
 
-  static void convertClags(Configuration c, CumulusNodeConfiguration vsConfig, Warnings w) {
+  static void convertClags(Configuration c, CumulusNcluConfiguration vsConfig, Warnings w) {
     Map<String, InterfaceClagSettings> clagSourceInterfaces = vsConfig.getClagSettings();
     if (clagSourceInterfaces.isEmpty()) {
       return;
@@ -1666,7 +1666,7 @@ public final class CumulusConversions {
    */
   static void convertVxlans(
       Configuration c,
-      CumulusNodeConfiguration vsConfig,
+      CumulusNcluConfiguration vsConfig,
       Map<Integer, String> vniToVrf,
       @Nullable Ip loopbackClagVxlanAnycastIp,
       @Nullable Ip loopbackVxlanLocalTunnelIp,

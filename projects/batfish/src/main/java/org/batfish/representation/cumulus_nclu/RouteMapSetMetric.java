@@ -23,7 +23,7 @@ public class RouteMapSetMetric implements RouteMapSet {
 
   @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
+  public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
     return Stream.of(new SetMetric(_metric));
   }
 }
