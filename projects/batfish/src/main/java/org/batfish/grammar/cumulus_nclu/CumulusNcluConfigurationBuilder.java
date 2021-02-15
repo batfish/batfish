@@ -5,12 +5,12 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Predicates.not;
 import static java.lang.Long.parseLong;
 import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.PHYSICAL_INTERFACE_PATTERN;
+import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.SUBINTERFACE_PATTERN;
+import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.VLAN_INTERFACE_PATTERN;
 import static org.batfish.representation.cumulus_nclu.CumulusStructureType.INTERFACE;
 import static org.batfish.representation.cumulus_nclu.CumulusStructureUsage.BOND_SLAVE;
 import static org.batfish.representation.cumulus_nclu.CumulusStructureUsage.NET_ADD_INTERFACE;
-import static org.batfish.representation.cumulus_nclu.InterfacesInterface.PHYSICAL_INTERFACE_PATTERN;
-import static org.batfish.representation.cumulus_nclu.InterfacesInterface.SUBINTERFACE_PATTERN;
-import static org.batfish.representation.cumulus_nclu.InterfacesInterface.VLAN_INTERFACE_PATTERN;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.BoundType;

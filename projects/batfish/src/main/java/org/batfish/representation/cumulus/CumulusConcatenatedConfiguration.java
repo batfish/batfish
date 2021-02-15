@@ -16,7 +16,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertOspfP
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
+import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PVID;

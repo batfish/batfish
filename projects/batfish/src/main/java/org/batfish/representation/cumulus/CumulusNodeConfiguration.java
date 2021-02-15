@@ -1,14 +1,21 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
+
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.LinkLocalAddress;
 
 /** A shared interfaces for the two Cumulus configuration types -- concatenated, nclu */
 public interface CumulusNodeConfiguration {
 
   String LOOPBACK_INTERFACE_NAME = "lo";
+  @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
+  public static final @Nonnull LinkLocalAddress LINK_LOCAL_ADDRESS =
+      LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
   Map<String, IpCommunityList> getIpCommunityLists();
 

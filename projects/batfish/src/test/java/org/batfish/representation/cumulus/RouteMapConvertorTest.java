@@ -40,7 +40,7 @@ public class RouteMapConvertorTest {
 
   //  private static final String FILENAME = "";
   private static final String HOSTNAME = "host";
-  private static CumulusNcluConfiguration VC;
+  private static CumulusConcatenatedConfiguration VC;
   private static Warnings W;
   private static Configuration C;
   private static RouteMap ROUTEMAP;
@@ -81,7 +81,7 @@ public class RouteMapConvertorTest {
   @Before
   public void setup() {
     W = new Warnings();
-    VC = new CumulusNcluConfiguration();
+    VC = new CumulusConcatenatedConfiguration();
     VC.setHostname(HOSTNAME);
     VC.setWarnings(W);
     C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_NCLU);

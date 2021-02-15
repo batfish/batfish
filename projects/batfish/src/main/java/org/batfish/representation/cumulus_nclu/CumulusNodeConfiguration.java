@@ -2,6 +2,7 @@ package org.batfish.representation.cumulus_nclu;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -9,6 +10,15 @@ import javax.annotation.Nullable;
 public interface CumulusNodeConfiguration {
 
   String LOOPBACK_INTERFACE_NAME = "lo";
+
+  public static final Pattern PHYSICAL_INTERFACE_PATTERN =
+      Pattern.compile("^(swp[0-9]+(s[0-9])?)|(eth[0-9]+)$");
+
+  public static final Pattern VLAN_INTERFACE_PATTERN = Pattern.compile("^vlan([0-9]+)$");
+
+  public static final Pattern VXLAN_INTERFACE_PATTERN = Pattern.compile("^vxlan([0-9]+)$");
+
+  public static final Pattern SUBINTERFACE_PATTERN = Pattern.compile("^(.*)\\.([0-9]+)$");
 
   Map<String, IpCommunityList> getIpCommunityLists();
 

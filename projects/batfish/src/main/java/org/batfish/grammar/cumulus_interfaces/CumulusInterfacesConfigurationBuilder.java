@@ -59,7 +59,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetCon
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
-import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus.CumulusNodeConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 import org.batfish.representation.cumulus.InterfaceClagSettings;
@@ -149,7 +149,7 @@ public final class CumulusInterfacesConfigurationBuilder
   public void enterSi_inet(Si_inetContext ctx) {
     checkArgument(_currentIfaceName != null, "not find interface name");
     if (ctx.LOOPBACK() != null) {
-      if (!_currentIfaceName.equals(CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME)) {
+      if (!_currentIfaceName.equals(CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME)) {
         _w.addWarning(
             ctx, ctx.getStart().getText(), _parser, "expected loopback device to have name 'lo'");
       }

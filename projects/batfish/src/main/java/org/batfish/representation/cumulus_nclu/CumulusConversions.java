@@ -13,8 +13,8 @@ import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus_nclu.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
+import static org.batfish.representation.cumulus_nclu.CumulusNodeConfiguration.SUBINTERFACE_PATTERN;
 import static org.batfish.representation.cumulus_nclu.CumulusRoutingProtocol.VI_PROTOCOLS_MAP;
-import static org.batfish.representation.cumulus_nclu.InterfaceConverter.getSuperInterfaceName;
 import static org.batfish.representation.cumulus_nclu.OspfInterface.DEFAULT_OSPF_DEAD_INTERVAL;
 import static org.batfish.representation.cumulus_nclu.OspfInterface.DEFAULT_OSPF_HELLO_INTERVAL;
 import static org.batfish.representation.cumulus_nclu.OspfProcess.DEFAULT_OSPF_PROCESS_NAME;
@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -1609,6 +1610,16 @@ public final class CumulusConversions {
         ipv4Nameservers.stream()
             .map(Object::toString)
             .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder())));
+  }
+
+  @VisibleForTesting
+  @Nullable
+  public static String getSuperInterfaceName(String ifaceName) {
+    Matcher matcher = SUBINTERFACE_PATTERN.matcher(ifaceName);
+    if (matcher.matches()) {
+      return matcher.group(1);
+    }
+    return null;
   }
 
   static void convertClags(Configuration c, CumulusNodeConfiguration vsConfig, Warnings w) {

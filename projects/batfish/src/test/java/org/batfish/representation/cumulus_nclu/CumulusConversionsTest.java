@@ -821,7 +821,7 @@ public final class CumulusConversionsTest {
   /** Test that L2 VNIs from all VRFs are injected into BGP neighbor */
   @Test
   public void testGenerateBgpCommonPeerConfig_allL2Vni() {
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_NCLU);
 
     Vrf vrf1 = Vrf.builder().setName("vrf1").build();
     vrf1.setLayer2Vnis(
@@ -845,23 +845,16 @@ public final class CumulusConversionsTest {
 
     c.setVrfs(ImmutableMap.of(vrf1.getName(), vrf1, vrf2.getName(), vrf2));
 
-    InterfacesInterface vxlan1 = new InterfacesInterface("vxlan1");
-    vxlan1.setVxlanId(1);
-    vxlan1.createOrGetBridgeSettings().setAccess(1);
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setHostname(c.getHostname());
+    vsConfig.setBgpProcess(new BgpProcess());
 
-    InterfacesInterface vxlan2 = new InterfacesInterface("vxlan2");
-    vxlan2.setVxlanId(2);
-    vxlan2.createOrGetBridgeSettings().setAccess(2);
-
-    CumulusFrrConfiguration frrConfiguration = new CumulusFrrConfiguration();
-    frrConfiguration.setBgpProcess(new BgpProcess());
-
-    CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder()
-            .setHostname("c")
-            .addInterfaces(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2))
-            .setFrrConfiguration(frrConfiguration)
-            .build();
+    Vxlan vxlan1 = new Vxlan("vxlan1");
+    vxlan1.setId(1);
+    Vxlan vxlan2 = new Vxlan("vxlan2");
+    vxlan2.setId(2);
+    vxlan2.setBridgeAccessVlan(2);
+    vsConfig.setVxlans(ImmutableMap.of(vxlan1.getName(), vxlan1, vxlan2.getName(), vxlan2));
 
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
     bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
@@ -886,7 +879,7 @@ public final class CumulusConversionsTest {
         neighbor,
         localAs,
         bgpVrf,
-        new org.batfish.datamodel.BgpProcess(routerId, ConfigurationFormat.CUMULUS_CONCATENATED),
+        new org.batfish.datamodel.BgpProcess(routerId, ConfigurationFormat.CUMULUS_NCLU),
         peerConfigBuilder,
         new Warnings());
 
@@ -911,11 +904,9 @@ public final class CumulusConversionsTest {
   /** Test that L2 VPN EVPN address family route reflect is set correctly */
   @Test
   public void testGenerateBgpCommonPeerConfig_L2vpnRouteReflector() {
-    CumulusConcatenatedConfiguration vsConfig =
-        CumulusConcatenatedConfiguration.builder()
-            .setHostname("c")
-            .setBgpProcess(new BgpProcess())
-            .build();
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setHostname("c");
+    vsConfig.setBgpProcess(new BgpProcess());
 
     BgpVrf bgpVrf = new BgpVrf(DEFAULT_VRF_NAME);
     bgpVrf.setL2VpnEvpn(new BgpL2vpnEvpnAddressFamily());
@@ -932,13 +923,12 @@ public final class CumulusConversionsTest {
 
     // we didn't set route reflector yet
     generateBgpCommonPeerConfig(
-        new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
+        new Configuration("c", ConfigurationFormat.CUMULUS_NCLU),
         vsConfig,
         neighbor,
         101L,
         bgpVrf,
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED),
+        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU),
         peerConfigBuilder,
         new Warnings());
     assertFalse(peerConfigBuilder.build().getEvpnAddressFamily().getRouteReflectorClient());
@@ -946,13 +936,12 @@ public final class CumulusConversionsTest {
     // now set and test again
     bgpNeighborL2vpnEvpnAddressFamily.setRouteReflectorClient(true);
     generateBgpCommonPeerConfig(
-        new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED),
+        new Configuration("c", ConfigurationFormat.CUMULUS_NCLU),
         vsConfig,
         neighbor,
         101L,
         bgpVrf,
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED),
+        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU),
         peerConfigBuilder,
         new Warnings());
     assertTrue(peerConfigBuilder.build().getEvpnAddressFamily().getRouteReflectorClient());
@@ -1328,8 +1317,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferClusterId_with_ClusterId() {
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED);
+        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU);
 
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setClusterId(Ip.parse("2.2.2.2"));
@@ -1346,8 +1334,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferClusterId_without_ClusterId() {
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED);
+        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU);
 
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setAutonomousSystem(123L);
@@ -1364,8 +1351,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferClusterId_eBGP() {
     org.batfish.datamodel.BgpProcess newProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_CONCATENATED);
+        new org.batfish.datamodel.BgpProcess(Ip.parse("1.1.1.1"), ConfigurationFormat.CUMULUS_NCLU);
 
     BgpVrf bgpVrf = new BgpVrf("bgpVrf");
     bgpVrf.setClusterId(Ip.parse("2.2.2.2"));
@@ -1851,14 +1837,13 @@ public final class CumulusConversionsTest {
   public void testAddBgpNeighbor_numberedInterface() {
     // set up the VI bgp process
     org.batfish.datamodel.BgpProcess bgpProc =
-        new org.batfish.datamodel.BgpProcess(
-            Ip.parse("0.0.0.0"), ConfigurationFormat.CUMULUS_CONCATENATED);
+        new org.batfish.datamodel.BgpProcess(Ip.parse("0.0.0.0"), ConfigurationFormat.CUMULUS_NCLU);
     Vrf viVrf = Vrf.builder().setName("vrf").build();
     viVrf.setBgpProcess(bgpProc);
 
     // set up the vi interface
     ConcreteInterfaceAddress ifaceAddress = ConcreteInterfaceAddress.parse("1.1.1.1/31");
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_NCLU);
     org.batfish.datamodel.Interface viIface =
         org.batfish.datamodel.Interface.builder()
             .setName("iface")
@@ -1871,12 +1856,10 @@ public final class CumulusConversionsTest {
     BgpNeighbor neighbor = new BgpInterfaceNeighbor("iface");
     neighbor.setRemoteAs(RemoteAs.explicit(123));
 
+    CumulusNcluConfiguration vsConfig = new CumulusNcluConfiguration();
+    vsConfig.setHostname("c");
     addBgpNeighbor(
-        c,
-        CumulusConcatenatedConfiguration.builder().setHostname("c").build(),
-        new BgpVrf(viVrf.getName()),
-        neighbor,
-        new Warnings());
+        c, new CumulusNcluConfiguration(), new BgpVrf(viVrf.getName()), neighbor, new Warnings());
 
     Prefix peerPrefix = Prefix.parse("1.1.1.0/32");
     assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
@@ -1965,7 +1948,7 @@ public final class CumulusConversionsTest {
 
   @Test
   public void testConvertVxlan_localIpPrecedence() {
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_NCLU);
     Vrf vrf = new Vrf("vrf");
     c.setVrfs(ImmutableMap.of(vrf.getName(), vrf));
 

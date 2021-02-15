@@ -7,7 +7,7 @@ import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguratio
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.populateLoopbackProperties;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
+import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,7 +31,7 @@ import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.junit.Test;
 
-/** Test for {@link CumulusNcluConfiguration}. */
+/** Test for {@link CumulusConcatenatedConfiguration}. */
 public class CumulusConcatenatedConfigurationTest {
 
   /** Test that loopback interface is unconditionally created */
