@@ -1,7 +1,10 @@
 package org.batfish.grammar.hierarchical;
 
+import com.google.common.collect.ImmutableList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,6 +20,11 @@ public class StatementTree {
   /** Returns subtree for {@code partialStatementText}. Creates if absent. */
   public @Nonnull StatementTree getOrAddSubtree(String partialStatementText) {
     return _children.computeIfAbsent(partialStatementText, t -> new StatementTree(this));
+  }
+
+  /** Returns subtree for {@code partialStatementText} if it exists, else {@code null}. */
+  public @Nullable StatementTree getSubtree(String partialStatementText) {
+    return _children.get(partialStatementText);
   }
 
   /** Returns parent {@link StatementTree}. */
@@ -45,5 +53,31 @@ public class StatementTree {
   private StatementTree(@Nullable StatementTree parent) {
     _children = new LinkedHashMap<>();
     _parent = parent;
+  }
+
+  /** Insert a new tree with its new key before an existing reference key. */
+  public void insertBefore(String referenceKey, String newKey, StatementTree newTree) {
+    List<Entry<String, StatementTree>> entries = ImmutableList.copyOf(_children.entrySet());
+    _children.clear();
+    for (Entry<String, StatementTree> entry : entries) {
+      String key = entry.getKey();
+      if (key.equals(referenceKey)) {
+        _children.put(newKey, newTree);
+      }
+      _children.put(key, entry.getValue());
+    }
+  }
+
+  /** Insert a new tree with its new key after an existing reference key. */
+  public void insertAfter(String referenceKey, String newKey, StatementTree newTree) {
+    List<Entry<String, StatementTree>> entries = ImmutableList.copyOf(_children.entrySet());
+    _children.clear();
+    for (Entry<String, StatementTree> entry : entries) {
+      String key = entry.getKey();
+      _children.put(key, entry.getValue());
+      if (key.equals(referenceKey)) {
+        _children.put(newKey, newTree);
+      }
+    }
   }
 }
