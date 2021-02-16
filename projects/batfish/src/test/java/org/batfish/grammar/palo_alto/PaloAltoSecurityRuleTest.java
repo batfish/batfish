@@ -454,4 +454,45 @@ public class PaloAltoSecurityRuleTest {
     assertEquals(
         traces.get(flowPermit).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
   }
+
+  @Test
+  public void testApplicationOverride() throws IOException {
+    String hostname = "application-override";
+    Configuration c = parseConfig(hostname);
+
+    int customAppPort = 7653;
+    String if2name = "ethernet1/2"; // 10.0.2.1/24
+    String if3name = "ethernet1/3"; // 10.0.3.1/24
+    String if4name = "ethernet1/4"; // 10.0.4.1/24
+    Builder baseFlow =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if3name)
+            .setSrcIp(Ip.parse("10.0.3.2"))
+            .setDstIp(Ip.parse("10.0.2.2"));
+
+    Flow flowPermit = baseFlow.setDstPort(customAppPort).build();
+    Flow flowRejectPort =
+        baseFlow
+            // Some dest port other than our custom app port
+            .setDstPort(customAppPort - 1)
+            .build();
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowPermit, flowRejectPort), false);
+
+    // Confirm flow not matching rule (bad port) is denied out
+    assertEquals(traces.get(flowRejectPort).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    // Confirm flow matching rule is successful
+    assertTrue(traces.get(flowPermit).get(0).getDisposition().isSuccessful());
+  }
 }

@@ -602,6 +602,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Build list of converted security rules for the zone pair in the specified Vsys. */
   private List<AclLine> convertSecurityRules(Vsys vsys, String fromZone, String toZone) {
     // Note: using linked hash map to preserve insertion order
+    // Note: using map internally to avoid duplicating rulenames (not allowed on PAN devices)
     Map<String, ExprAclLine> ruleToExprAclLine = new LinkedHashMap<>();
     Vsys panorama = this.getPanorama();
 
@@ -770,8 +771,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .setName(crossZoneFilterName)
           .setLines(
               ImmutableList.of(
-                  ExprAclLine.REJECT_ALL
-                      .toBuilder()
+                  ExprAclLine.REJECT_ALL.toBuilder()
                       .setName("No interfaces in zone")
                       .setTraceElement(
                           emptyZoneRejectTraceElement(
@@ -1276,7 +1276,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match services.
-    getServiceExpr(rule, vsys).ifPresent(conjuncts::add);
+    getServiceExpr(rule, vsys, fromZone, toZone).ifPresent(conjuncts::add);
 
     return ExprAclLine.builder()
         .setName(rule.getName())
@@ -1290,7 +1290,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Returns an expression describing the protocol/port combinations permitted by this rule, or
    * {@link Optional#empty()} if all are allowed.
    */
-  private Optional<AclLineMatchExpr> getServiceExpr(SecurityRule rule, Vsys vsys) {
+  private Optional<AclLineMatchExpr> getServiceExpr(
+      SecurityRule rule, Vsys vsys, String fromZone, String toZone) {
     SortedSet<ServiceOrServiceGroupReference> services = rule.getService();
     if (services.isEmpty()) {
       // No filtering.
@@ -1350,7 +1351,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (group != null) {
       return Optional.of(
           new OrMatchExpr(
-              group.getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
+              group
+                  .getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
                   .stream()
                   // Don't add trace for children; we've already flattened intermediate app groups
                   .map(a -> aclLineMatchExprForApplication(a, null))
