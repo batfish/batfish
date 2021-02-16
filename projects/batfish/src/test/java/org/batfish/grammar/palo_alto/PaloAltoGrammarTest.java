@@ -29,6 +29,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructu
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingOriginalFlowFilter;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
@@ -207,6 +208,7 @@ import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AddressPrefix;
 import org.batfish.representation.palo_alto.AdminDistances;
 import org.batfish.representation.palo_alto.Application;
+import org.batfish.representation.palo_alto.ApplicationOverrideRule;
 import org.batfish.representation.palo_alto.BgpConnectionOptions;
 import org.batfish.representation.palo_alto.BgpPeer;
 import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
@@ -3857,5 +3859,75 @@ public final class PaloAltoGrammarTest {
     assertThat(
         vsConfig.getVirtualSystems().get(DEFAULT_VSYS_NAME).getAddressObjects(),
         hasKey("bippety.boppety_1.2.3.4"));
+  }
+
+  @Test
+  public void testApplicationOverrideRuleReferences() throws IOException {
+    String hostname = "application-override-rule";
+    String filename = "configs/" + hostname;
+
+    String ruleName1 = computeObjectName(DEFAULT_VSYS_NAME, "OVERRIDE_APP_RULE1");
+    String addrName1 = computeObjectName(DEFAULT_VSYS_NAME, "ADDR1");
+    String addrName2 = computeObjectName(DEFAULT_VSYS_NAME, "ADDR2");
+    String appName = computeObjectName(DEFAULT_VSYS_NAME, "OVERRIDE_APP");
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Confirm self-reference is recorded
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            PaloAltoStructureType.APPLICATION_OVERRIDE_RULE,
+            ruleName1,
+            PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SELF_REF));
+
+    // Address objects referenced in rule
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_OBJECT, addrName1, 1));
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.ADDRESS_OBJECT, addrName2, 1));
+    // Application used in application-override rule
+    assertThat(ccae, hasNumReferrers(filename, PaloAltoStructureType.APPLICATION, appName, 1));
+    // Undefined application used in rule
+    assertThat(
+        ccae, hasUndefinedReference(filename, PaloAltoStructureType.APPLICATION, "APP_UNDEF"));
+    // There shouldn't be an undef ref for a built-in app
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, PaloAltoStructureType.APPLICATION, "amazon-cloud-drive-base")));
+  }
+
+  @Test
+  public void testApplicationOverrideRuleExtraction() throws IOException {
+    String hostname = "application-override-rule";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, ApplicationOverrideRule> rules = vsys.getRulebase().getApplicationOverrideRules();
+    String ruleName = "OVERRIDE_APP_RULE2";
+
+    assertThat(rules.keySet(), hasItem(ruleName));
+    ApplicationOverrideRule rule = rules.get(ruleName);
+
+    assertThat(rule.getFrom(), contains("z1", "zone_undef"));
+    assertThat(rule.getTo(), contains("z2", "z3"));
+    assertThat(
+        rule.getSource(),
+        contains(
+            new RuleEndpoint(IP_ADDRESS, "10.10.10.10"), new RuleEndpoint(REFERENCE, "ADDR1")));
+    assertTrue(rule.getNegateSource());
+    assertThat(
+        rule.getDestination(),
+        contains(
+            new RuleEndpoint(IP_ADDRESS, "10.10.10.10"), new RuleEndpoint(REFERENCE, "ADDR2")));
+    assertTrue(rule.getNegateDestination());
+    assertThat(rule.getPort(), equalTo(8642));
+    assertThat(rule.getProtocol(), equalTo(ApplicationOverrideRule.Protocol.UDP));
+    assertThat(rule.getApplication(), equalTo("APP_UNDEF"));
+    assertThat(rule.getDescription(), equalTo("longish description"));
+    assertThat(rule.getTags(), contains("TAG1", "TAG2"));
+    assertTrue(rule.getDisabled());
   }
 }
