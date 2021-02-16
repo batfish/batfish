@@ -18,7 +18,7 @@ public class RouteMapMatchIpAddressPrefixListTest {
     RouteMapMatchIpAddressPrefixList match =
         new RouteMapMatchIpAddressPrefixList(ImmutableList.of("N1", "N2"));
 
-    CumulusNcluConfiguration config = new CumulusNcluConfiguration();
+    CumulusConcatenatedConfiguration config = new CumulusConcatenatedConfiguration();
     config
         .getIpPrefixLists()
         .putAll(

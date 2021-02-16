@@ -239,7 +239,7 @@ public final class InterfacesInterface implements Serializable {
     _vxlanId = vxlanId;
   }
 
-  public void setVxlanLocalTunnelIp(Ip vxlanLocalTunnelIp) {
+  public void setVxlanLocalTunnelIp(@Nullable Ip vxlanLocalTunnelIp) {
     _vxlanLocalTunnelIp = vxlanLocalTunnelIp;
   }
 

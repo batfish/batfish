@@ -1,6 +1,6 @@
-package org.batfish.representation.cumulus;
+package org.batfish.representation.cumulus_nclu;
 
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
+import static org.batfish.representation.cumulus_nclu.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -91,8 +91,8 @@ public class CumulusNcluConfigurationTest {
     iface3.setVrf("vrf0");
     iface3.setDisabled(true);
 
-    org.batfish.representation.cumulus.Vrf oldVrf0 =
-        new org.batfish.representation.cumulus.Vrf("vrf0");
+    org.batfish.representation.cumulus_nclu.Vrf oldVrf0 =
+        new org.batfish.representation.cumulus_nclu.Vrf("vrf0");
     Vrf newVrf0 = new Vrf("vrf0");
 
     vendorConfiguration.setInterfaces(
