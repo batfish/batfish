@@ -6,7 +6,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.representation.cumulus.CumulusNcluConfiguration;
+import org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 /**

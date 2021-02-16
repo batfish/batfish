@@ -2,13 +2,13 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.DEFAULT_MTU;
+import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LINK_LOCAL_ADDRESS;
+import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.isValidVIInterface;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.populateCommonInterfaceProperties;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.populateLoopbackProperties;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
-import static org.batfish.representation.cumulus.CumulusNodeConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -31,7 +31,7 @@ import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.junit.Test;
 
-/** Test for {@link CumulusNcluConfiguration}. */
+/** Test for {@link CumulusConcatenatedConfiguration}. */
 public class CumulusConcatenatedConfigurationTest {
 
   /** Test that loopback interface is unconditionally created */
