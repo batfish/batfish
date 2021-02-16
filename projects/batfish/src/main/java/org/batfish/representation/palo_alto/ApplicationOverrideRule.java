@@ -10,6 +10,8 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
+import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.SubRange;
 
 /** PAN datamodel component containing application-override rule configuration */
 @ParametersAreNullableByDefault
@@ -44,7 +46,7 @@ public final class ApplicationOverrideRule implements Serializable {
 
   // Traffic characteristics to match
   @Nullable private Protocol _protocol;
-  @Nullable private Integer _port;
+  @Nonnull private IntegerSpace _port;
 
   @Nonnull private final Set<String> _tags;
 
@@ -58,6 +60,7 @@ public final class ApplicationOverrideRule implements Serializable {
     _to = new TreeSet<>();
     _tags = new HashSet<>(1);
     _name = name;
+    _port = IntegerSpace.EMPTY;
   }
 
   @Nonnull
@@ -113,7 +116,7 @@ public final class ApplicationOverrideRule implements Serializable {
   }
 
   @Nullable
-  public Integer getPort() {
+  public IntegerSpace getPort() {
     return _port;
   }
 
@@ -146,7 +149,11 @@ public final class ApplicationOverrideRule implements Serializable {
     _protocol = protocol;
   }
 
-  public void setPort(Integer port) {
-    _port = port;
+  public void addPort(int port) {
+    _port = IntegerSpace.builder().including(_port).including(port).build();
+  }
+
+  public void addPorts(@Nonnull SubRange ports) {
+    _port = IntegerSpace.builder().including(_port).including(ports).build();
   }
 }

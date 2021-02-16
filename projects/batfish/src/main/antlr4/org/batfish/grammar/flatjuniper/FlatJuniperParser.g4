@@ -13,12 +13,15 @@ deactivate_line
    DEACTIVATE deactivate_line_tail NEWLINE
 ;
 
+hierarchy_element:
+  interface_id
+  | ~NEWLINE
+;
+
+
 deactivate_line_tail
 :
-   (
-      interface_id
-      | ~NEWLINE
-   )*
+   hierarchy_element*
 ;
 
 delete_line
@@ -28,10 +31,33 @@ delete_line
 
 delete_line_tail
 :
-   (
-      interface_id
-      | ~NEWLINE
-   )*
+   hierarchy_element*
+;
+
+insert_line
+:
+  INSERT insert_src (AFTER|BEFORE) insert_dst NEWLINE
+;
+
+insert_src
+:
+  insert_src_element+
+;
+
+insert_src_element
+:
+  interface_id
+  |
+  ~(
+    NEWLINE
+    | AFTER
+    | BEFORE
+  )
+;
+
+insert_dst
+:
+  hierarchy_element name=hierarchy_element
 ;
 
 flat_juniper_configuration
@@ -39,6 +65,7 @@ flat_juniper_configuration
    (
       deactivate_line
       | delete_line
+      | insert_line
       | protect_line
       | set_line
       | newline
@@ -52,7 +79,7 @@ newline
 
 protect_line
 :
-   PROTECT ~NEWLINE* NEWLINE
+   PROTECT hierarchy_element* NEWLINE
 ;
 
 statement

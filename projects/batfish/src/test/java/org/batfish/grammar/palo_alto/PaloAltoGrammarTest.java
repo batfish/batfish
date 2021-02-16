@@ -128,6 +128,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -167,6 +168,7 @@ import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
@@ -3946,7 +3948,9 @@ public final class PaloAltoGrammarTest {
         contains(
             new RuleEndpoint(IP_ADDRESS, "10.10.10.10"), new RuleEndpoint(REFERENCE, "ADDR2")));
     assertTrue(rule.getNegateDestination());
-    assertThat(rule.getPort(), equalTo(8642));
+    assertThat(
+        rule.getPort(),
+        equalTo(IntegerSpace.unionOf(Range.closed(8642, 8643), Range.closed(8765, 8888))));
     assertThat(rule.getProtocol(), equalTo(ApplicationOverrideRule.Protocol.UDP));
     assertThat(rule.getApplication(), equalTo("APP_UNDEF"));
     assertThat(rule.getDescription(), equalTo("longish description"));
