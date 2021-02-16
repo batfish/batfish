@@ -3863,7 +3863,7 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testApplicationOverrideRuleReferences() throws IOException {
-    String hostname = "application-override-rule-reference";
+    String hostname = "application-override-rule";
     String filename = "configs/" + hostname;
 
     String ruleName1 = computeObjectName(DEFAULT_VSYS_NAME, "OVERRIDE_APP_RULE1");
@@ -3902,7 +3902,7 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testApplicationOverrideRuleExtraction() throws IOException {
-    String hostname = "application-override-rule-reference";
+    String hostname = "application-override-rule";
     PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
     Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
     Map<String, ApplicationOverrideRule> rules = vsys.getRulebase().getApplicationOverrideRules();

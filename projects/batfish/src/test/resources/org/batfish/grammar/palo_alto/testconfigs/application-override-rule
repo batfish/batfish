@@ -1,4 +1,4 @@
-set deviceconfig system hostname application-override-rule-reference
+set deviceconfig system hostname application-override-rule
 
 set address ADDR1 ip-netmask 10.0.1.1/24
 set address ADDR2 ip-netmask 10.0.2.1/24
