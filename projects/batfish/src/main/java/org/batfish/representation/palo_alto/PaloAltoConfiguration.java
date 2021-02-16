@@ -599,6 +599,41 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         _natRuleToTransformation.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName));
   }
 
+  /** Build map of (overridden) application name to AclLine matching that application. */
+  private Map<String, ExprAclLine> buildApplicationOverrideMap(
+      Vsys vsys, String fromZone, String toZone) {
+    Map<String, ExprAclLine> appToAcl = new HashMap<>();
+
+    // TODO panorama pre- and post- rulebase
+
+    Map<String, ApplicationOverrideRule> rules = vsys.getRulebase().getApplicationOverrideRules();
+    for (Entry<String, ApplicationOverrideRule> entry : rules.entrySet()) {
+      String appName = entry.getKey();
+      ApplicationOverrideRule rule = entry.getValue();
+
+      // TODO collapse into better logic, e.g. ifPresent w/ default or  w/e
+      if (appToAcl.containsKey(appName)) {
+        // TODO append
+      } else {
+        appToAcl.put(appName, new AndMatchExpr());
+      }
+    }
+
+    return appToAcl;
+  }
+
+  /** Build an {@link ExprAclLine} for the specified (overridden) application name. */
+  private ExprAclLine buildApplicationOverrideExpr(
+      String appName, Map<String, ApplicationOverrideRule> rules, String fromZone, String toZone) {
+    // TODO build it
+    AndMatchExpr condition = new AndMatchExpr(null);
+    // TODO set traceElement
+    return ExprAclLine.accepting()
+        .setName("Accept app " + appName)
+        .setMatchCondition(condition)
+        .build();
+  }
+
   /** Build list of converted security rules for the zone pair in the specified Vsys. */
   private List<AclLine> convertSecurityRules(Vsys vsys, String fromZone, String toZone) {
     // Note: using linked hash map to preserve insertion order
