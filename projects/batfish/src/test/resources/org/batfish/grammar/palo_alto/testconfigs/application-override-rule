@@ -24,7 +24,7 @@ set rulebase application-override rules OVERRIDE_APP_RULE2 source [ 10.10.10.10 
 set rulebase application-override rules OVERRIDE_APP_RULE2 negate-source yes
 set rulebase application-override rules OVERRIDE_APP_RULE2 destination [ 10.10.10.10 ADDR2 ]
 set rulebase application-override rules OVERRIDE_APP_RULE2 negate-destination yes
-set rulebase application-override rules OVERRIDE_APP_RULE2 port 8642
+set rulebase application-override rules OVERRIDE_APP_RULE2 port 8642,8643,8765-8888
 set rulebase application-override rules OVERRIDE_APP_RULE2 protocol udp
 set rulebase application-override rules OVERRIDE_APP_RULE2 application APP_UNDEF
 set rulebase application-override rules OVERRIDE_APP_RULE2 description "longish description"

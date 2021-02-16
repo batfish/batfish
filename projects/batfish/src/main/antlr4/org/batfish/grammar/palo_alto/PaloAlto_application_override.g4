@@ -62,7 +62,7 @@ srao_negate_source
 
 srao_port
 :
-    PORT port = port_number
+    PORT variable_port_list
 ;
 
 srao_protocol
