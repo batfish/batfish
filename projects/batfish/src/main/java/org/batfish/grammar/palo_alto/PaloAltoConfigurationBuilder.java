@@ -2481,7 +2481,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSrao_port(Srao_portContext ctx) {
-    _currentApplicationOverrideRule.setPort(toInteger(ctx.port));
+    for (Port_or_rangeContext item : ctx.variable_port_list().port_or_range()) {
+      if (item.port != null) {
+        _currentApplicationOverrideRule.addPort(toInteger(item.port));
+      } else {
+        assert item.range != null;
+        _currentApplicationOverrideRule.addPorts(new SubRange(getText(item.range)));
+      }
+    }
   }
 
   @Override
