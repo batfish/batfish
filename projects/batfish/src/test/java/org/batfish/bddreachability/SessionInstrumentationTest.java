@@ -34,9 +34,9 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -282,7 +282,7 @@ public final class SessionInstrumentationTest {
     BDD sessionHeaders = PKT.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
+            FW, ImmutableSet.of(FW_I1), PostNatFibLookup.INSTANCE, sessionHeaders, IDENTITY);
 
     assertThat(
         fibLookupSessionEdges(sessionInfo),
@@ -302,7 +302,7 @@ public final class SessionInstrumentationTest {
     Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), FibLookup.INSTANCE, sessionHeaders, nat);
+            FW, ImmutableSet.of(FW_I1), PostNatFibLookup.INSTANCE, sessionHeaders, nat);
 
     assertThat(
         fibLookupSessionEdges(sessionInfo),
@@ -322,7 +322,11 @@ public final class SessionInstrumentationTest {
     BDD sessionHeaders = PKT.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
+            FW,
+            new OriginatingSessionScope(FW_VRF),
+            PostNatFibLookup.INSTANCE,
+            sessionHeaders,
+            IDENTITY);
 
     BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
     Matcher<Transition> expectedTransition =
@@ -347,7 +351,11 @@ public final class SessionInstrumentationTest {
     Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
     BDDFirewallSessionTraceInfo natSessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, nat);
+            FW,
+            new OriginatingSessionScope(FW_VRF),
+            PostNatFibLookup.INSTANCE,
+            sessionHeaders,
+            nat);
 
     BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
     Matcher<Transition> expectedTransition =

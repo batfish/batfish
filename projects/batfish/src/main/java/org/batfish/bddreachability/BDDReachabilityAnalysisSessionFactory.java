@@ -42,9 +42,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.symbolic.state.StateExpr;
 import org.batfish.symbolic.state.VrfAccept;
@@ -295,7 +295,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                   assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
 
                   SessionAction action =
-                      fibLookup ? FibLookup.INSTANCE : new ForwardOutInterface(src, null);
+                      fibLookup ? PostNatFibLookup.INSTANCE : new ForwardOutInterface(src, null);
 
                   BDD incomingTransformationRange =
                       _reverseTransformationRanges.reverseIncomingTransformationRange(
@@ -334,7 +334,9 @@ final class BDDReachabilityAnalysisSessionFactory {
                       NodeInterfacePair lastHop =
                           lastHopOutIface == NO_LAST_HOP ? null : lastHopOutIface;
                       SessionAction action =
-                          fibLookup ? FibLookup.INSTANCE : new ForwardOutInterface(src, lastHop);
+                          fibLookup
+                              ? PostNatFibLookup.INSTANCE
+                              : new ForwardOutInterface(src, lastHop);
 
                       BDD incomingTransformationRange =
                           _reverseTransformationRanges.reverseIncomingTransformationRange(
@@ -417,7 +419,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                         hostname,
                         new OriginatingSessionScope(vrfName),
                         // Batfish does not support VRF-originating sessions with other actions
-                        FibLookup.INSTANCE,
+                        PostNatFibLookup.INSTANCE,
                         getSessionFlowMatchBdd(srcToAcceptBdd),
                         compose(incomingTransformation, constraint(incomingTransformationRange))));
                 return;
@@ -447,7 +449,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                             hostname,
                             new OriginatingSessionScope(vrfName),
                             // Batfish does not support VRF-originating sessions with other actions
-                            FibLookup.INSTANCE,
+                            PostNatFibLookup.INSTANCE,
                             sessionBdd,
                             compose(
                                 incomingTransformation, constraint(incomingTransformationRange))));

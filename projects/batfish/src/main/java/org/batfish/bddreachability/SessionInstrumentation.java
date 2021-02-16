@@ -34,10 +34,10 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionScopeVisitor;
 import org.batfish.datamodel.visitors.SessionActionVisitor;
@@ -147,7 +147,7 @@ public class SessionInstrumentation {
             initializedSessionsEntry ->
                 initializedSessionsEntry.getValue().stream()
                     .map(BDDFirewallSessionTraceInfo::getAction)
-                    .anyMatch(FibLookup.class::isInstance))
+                    .anyMatch(PostNatFibLookup.class::isInstance))
         .map(Entry::getKey)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -227,7 +227,7 @@ public class SessionInstrumentation {
               }
 
               @Override
-              public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
+              public Stream<Edge> visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
                 // Does not necessarily lead to success; handled separately in fibLookupSessionEdges
                 return Stream.of();
               }
@@ -251,14 +251,14 @@ public class SessionInstrumentation {
   }
 
   /**
-   * Produce edges representing matching the given {@link FibLookup} session. These edges are
+   * Produce edges representing matching the given {@link PostNatFibLookup} session. These edges are
    * conditioned on the {@code sessionFlows} BDD and include PreInInterface->PostInVrfSession,
    * OriginateVrf->PostInVrfSession, and OriginateInterface->PostInVrfSession transitions.
    */
   private Stream<Edge> computeFibLookupSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     SessionAction action = sessionInfo.getAction();
     checkArgument(
-        action instanceof FibLookup,
+        action instanceof PostNatFibLookup,
         "Unsupported session action for FibLookup session: %s",
         action);
 
@@ -286,7 +286,7 @@ public class SessionInstrumentation {
               }
 
               @Override
-              public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
+              public Stream<Edge> visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
                 return computeFibLookupSessionEdges(sessionInfo);
               }
 
@@ -385,7 +385,7 @@ public class SessionInstrumentation {
               }
 
               @Override
-              public Stream<Edge> visitFibLookup(FibLookup fibLookup) {
+              public Stream<Edge> visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
                 return Stream.of();
               }
 

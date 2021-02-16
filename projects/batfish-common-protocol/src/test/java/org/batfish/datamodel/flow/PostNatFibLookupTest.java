@@ -1,6 +1,6 @@
 package org.batfish.datamodel.flow;
 
-import static org.batfish.datamodel.flow.FibLookup.INSTANCE;
+import static org.batfish.datamodel.flow.PostNatFibLookup.INSTANCE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -9,9 +9,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-/** Test of {@link FibLookup}. */
+/** Test of {@link PostNatFibLookup}. */
 @ParametersAreNonnullByDefault
-public final class FibLookupTest {
+public final class PostNatFibLookupTest {
 
   @Test
   public void testEquals() {
@@ -23,7 +23,7 @@ public final class FibLookupTest {
 
   @Test
   public void testSerialization() {
-    SessionAction clone = BatfishObjectMapper.clone(FibLookup.INSTANCE, SessionAction.class);
-    assertThat(clone, equalTo(FibLookup.INSTANCE));
+    SessionAction clone = BatfishObjectMapper.clone(PostNatFibLookup.INSTANCE, SessionAction.class);
+    assertThat(clone, equalTo(PostNatFibLookup.INSTANCE));
   }
 }

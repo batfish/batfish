@@ -9,17 +9,17 @@ import org.batfish.datamodel.visitors.SessionActionVisitor;
  * A {@link SessionAction} whereby return traffic is forwarded according to the result of a lookup
  * on the FIB of the interface on which the return traffic is received.
  */
-@JsonTypeName("FibLookup")
+@JsonTypeName("PostNatFibLookup")
 @ParametersAreNonnullByDefault
-public final class FibLookup implements SessionAction {
+public final class PostNatFibLookup implements SessionAction {
 
-  public static final FibLookup INSTANCE = new FibLookup();
+  public static final PostNatFibLookup INSTANCE = new PostNatFibLookup();
 
-  private FibLookup() {}
+  private PostNatFibLookup() {}
 
   @Override
   public <T> T accept(SessionActionVisitor<T> visitor) {
-    return visitor.visitFibLookup(this);
+    return visitor.visitPostNatFibLookup(this);
   }
 
   @Override
@@ -27,7 +27,7 @@ public final class FibLookup implements SessionAction {
     if (this == o) {
       return true;
     }
-    return o instanceof FibLookup;
+    return o instanceof PostNatFibLookup;
   }
 
   @Override

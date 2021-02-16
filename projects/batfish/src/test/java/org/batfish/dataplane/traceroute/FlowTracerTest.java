@@ -96,7 +96,6 @@ import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
 import org.batfish.datamodel.flow.DeliveredStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
@@ -105,6 +104,7 @@ import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -340,7 +340,7 @@ public final class FlowTracerTest {
       FirewallSessionTraceInfo expectedNewSession =
           new FirewallSessionTraceInfo(
               hostname,
-              FibLookup.INSTANCE,
+              PostNatFibLookup.INSTANCE,
               new OriginatingSessionScope(vrfName),
               flowMatchingNewSession,
               null);
@@ -600,7 +600,7 @@ public final class FlowTracerTest {
     FirewallSessionTraceInfo incomingSession =
         new FirewallSessionTraceInfo(
             c.getHostname(),
-            FibLookup.INSTANCE,
+            PostNatFibLookup.INSTANCE,
             new IncomingSessionScope(ImmutableSet.of(ifaceName)),
             flowMatchingNewSession,
             null);
@@ -1257,10 +1257,11 @@ public final class FlowTracerTest {
 
     // Fib lookup true: action should always be fib lookup
     assertThat(
-        getSessionAction(true, null, lastHopNodeAndOutgoingInterface), equalTo(FibLookup.INSTANCE));
+        getSessionAction(true, null, lastHopNodeAndOutgoingInterface),
+        equalTo(PostNatFibLookup.INSTANCE));
     assertThat(
         getSessionAction(true, ingressIface, lastHopNodeAndOutgoingInterface),
-        equalTo(FibLookup.INSTANCE));
+        equalTo(PostNatFibLookup.INSTANCE));
 
     // Ingress interface defined: action should be forward to last hop node and interface
     assertThat(

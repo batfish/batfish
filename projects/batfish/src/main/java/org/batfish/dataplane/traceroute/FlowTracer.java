@@ -96,6 +96,7 @@ import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -921,7 +922,7 @@ class FlowTracer {
               }
 
               @Override
-              public Void visitFibLookup(org.batfish.datamodel.flow.FibLookup fibLookup) {
+              public Void visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
                 Ip dstIp = _currentFlow.getDstIp();
 
                 // Accept if the flow is destined for this vrf on this host.
@@ -1203,7 +1204,7 @@ class FlowTracer {
       @Nullable String ingressInterface,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
     return fibLookup
-        ? org.batfish.datamodel.flow.FibLookup.INSTANCE
+        ? PostNatFibLookup.INSTANCE
         : ingressInterface != null
             ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
             : Accept.INSTANCE;
