@@ -2817,6 +2817,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     markConcreteStructure(PaloAltoStructureType.IPSEC_CRYPTO_PROFILE);
     markConcreteStructure(PaloAltoStructureType.INTERFACE);
     markConcreteStructure(PaloAltoStructureType.REDIST_PROFILE);
+    markConcreteStructure(PaloAltoStructureType.APPLICATION_OVERRIDE_RULE);
     markConcreteStructure(PaloAltoStructureType.SECURITY_RULE);
     markConcreteStructure(PaloAltoStructureType.TEMPLATE);
     markConcreteStructure(PaloAltoStructureType.ZONE);
@@ -2831,6 +2832,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         true,
         PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS,
         PaloAltoStructureUsage.SECURITY_RULE_APPLICATION);
+    // Handle application objects that may overlap with built-in names
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.APPLICATION_OR_NONE,
+        ImmutableList.of(PaloAltoStructureType.APPLICATION),
+        true,
+        PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_APPLICATION);
 
     // Handle service objects/groups that may overlap with built-in names
     markAbstractStructureFromUnknownNamespace(
@@ -2858,7 +2865,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             PaloAltoStructureType.EXTERNAL_LIST),
         true,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
-        PaloAltoStructureUsage.SECURITY_RULE_SOURCE);
+        PaloAltoStructureUsage.SECURITY_RULE_SOURCE,
+        PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_DESTINATION,
+        PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE);
     // Handle ambiguous interface addresses (e.g. address object names can look like IP addresses)
     markAbstractStructureFromUnknownNamespace(
         PaloAltoStructureType.ADDRESS_OBJECT_OR_NONE,
@@ -2876,7 +2885,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             PaloAltoStructureType.EXTERNAL_LIST),
         PaloAltoStructureUsage.ADDRESS_GROUP_STATIC,
         PaloAltoStructureUsage.SECURITY_RULE_DESTINATION,
-        PaloAltoStructureUsage.SECURITY_RULE_SOURCE);
+        PaloAltoStructureUsage.SECURITY_RULE_SOURCE,
+        PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_DESTINATION,
+        PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE);
 
     // Handle interface addresses
     markAbstractStructureFromUnknownNamespace(
@@ -2893,6 +2904,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             PaloAltoStructureType.APPLICATION_GROUP, PaloAltoStructureType.APPLICATION),
         PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS,
         PaloAltoStructureUsage.SECURITY_RULE_APPLICATION);
+    // Applications
+    markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.APPLICATION,
+        ImmutableList.of(PaloAltoStructureType.APPLICATION),
+        PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_APPLICATION);
 
     return _c;
   }
