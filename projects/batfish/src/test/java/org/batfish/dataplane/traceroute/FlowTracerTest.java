@@ -66,6 +66,7 @@ import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
@@ -1255,22 +1256,23 @@ public final class FlowTracerTest {
     NodeInterfacePair lastHopNodeAndOutgoingInterface = NodeInterfacePair.of("node", "iface");
     String ingressIface = "ingressIface";
 
-    // Fib lookup true: action should always be fib lookup
+    // Post-NAT FIB lookup: action should always be post-NAT FIB lookup
     assertThat(
-        getSessionAction(true, null, lastHopNodeAndOutgoingInterface),
+        getSessionAction(Action.POST_NAT_FIB_LOOKUP, null, lastHopNodeAndOutgoingInterface),
         equalTo(PostNatFibLookup.INSTANCE));
     assertThat(
-        getSessionAction(true, ingressIface, lastHopNodeAndOutgoingInterface),
+        getSessionAction(Action.POST_NAT_FIB_LOOKUP, ingressIface, lastHopNodeAndOutgoingInterface),
         equalTo(PostNatFibLookup.INSTANCE));
 
     // Ingress interface defined: action should be forward to last hop node and interface
     assertThat(
-        getSessionAction(false, ingressIface, lastHopNodeAndOutgoingInterface),
+        getSessionAction(Action.NO_FIB_LOOKUP, ingressIface, lastHopNodeAndOutgoingInterface),
         equalTo(new ForwardOutInterface(ingressIface, lastHopNodeAndOutgoingInterface)));
 
     // Ingress interface null: action should be accept (flow that set up session originated here)
     assertThat(
-        getSessionAction(false, null, lastHopNodeAndOutgoingInterface), equalTo(Accept.INSTANCE));
+        getSessionAction(Action.NO_FIB_LOOKUP, null, lastHopNodeAndOutgoingInterface),
+        equalTo(Accept.INSTANCE));
   }
 
   @Test

@@ -62,6 +62,7 @@ import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -1162,7 +1163,7 @@ class FlowTracer {
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     SessionAction action =
         getSessionAction(
-            firewallSessionInterfaceInfo.getFibLookup(),
+            firewallSessionInterfaceInfo.getAction(),
             _ingressInterface,
             _lastHopNodeAndOutgoingInterface);
     return buildFirewallSessionTraceInfo(
@@ -1200,14 +1201,19 @@ class FlowTracer {
   @VisibleForTesting
   @Nonnull
   static SessionAction getSessionAction(
-      boolean fibLookup,
+      Action action,
       @Nullable String ingressInterface,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
-    return fibLookup
-        ? PostNatFibLookup.INSTANCE
-        : ingressInterface != null
+    switch (action) {
+      case NO_FIB_LOOKUP:
+        return ingressInterface != null
             ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
             : Accept.INSTANCE;
+      case POST_NAT_FIB_LOOKUP:
+        return PostNatFibLookup.INSTANCE;
+      default:
+        throw new UnsupportedOperationException("Unrecognized action " + action);
+    }
   }
 
   @VisibleForTesting
@@ -1241,12 +1247,14 @@ class FlowTracer {
     if (_ingressInterface != null && firewallSessionVrfInfo != null) {
       // Set up a session that will match return traffic originating from this VRF.
       // TODO Ensure this behavior is valid for all vendors.
-      //  - Is FibLookup the right action for all vendors?
+      //  - Is PostNatFibLookup the right action for all vendors?
       //  - Do any vendors set up sessions for intranode traffic? AWS should not. If others do, then
       //    for those cases we would need to set up a session even if ingressInterface is null.
       SessionAction action =
           getSessionAction(
-              firewallSessionVrfInfo.getFibLookup(),
+              firewallSessionVrfInfo.getFibLookup()
+                  ? Action.POST_NAT_FIB_LOOKUP
+                  : Action.NO_FIB_LOOKUP,
               _ingressInterface,
               _lastHopNodeAndOutgoingInterface);
       @Nullable

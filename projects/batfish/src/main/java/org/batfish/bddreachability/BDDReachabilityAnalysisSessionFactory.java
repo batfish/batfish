@@ -36,13 +36,13 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
-import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.SessionAction;
@@ -256,7 +256,7 @@ final class BDDReachabilityAnalysisSessionFactory {
         _reverseFlowTransformationFactory.reverseFlowOutgoingTransformation(
             hostname, outIface.getName());
 
-    boolean fibLookup = outIface.getFirewallSessionInterfaceInfo().getFibLookup();
+    Action matchAction = outIface.getFirewallSessionInterfaceInfo().getAction();
     ImmutableList.Builder<BDDFirewallSessionTraceInfo> builder = ImmutableList.builder();
     srcMgr
         .getSourceBDDs()
@@ -294,8 +294,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                   // The src interface has no neighbors
                   assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
 
-                  SessionAction action =
-                      fibLookup ? PostNatFibLookup.INSTANCE : new ForwardOutInterface(src, null);
+                  SessionAction action = matchAction.toSessionAction(src, null);
 
                   BDD incomingTransformationRange =
                       _reverseTransformationRanges.reverseIncomingTransformationRange(
@@ -333,10 +332,7 @@ final class BDDReachabilityAnalysisSessionFactory {
                       // Next hop for session flows
                       NodeInterfacePair lastHop =
                           lastHopOutIface == NO_LAST_HOP ? null : lastHopOutIface;
-                      SessionAction action =
-                          fibLookup
-                              ? PostNatFibLookup.INSTANCE
-                              : new ForwardOutInterface(src, lastHop);
+                      SessionAction action = matchAction.toSessionAction(src, lastHop);
 
                       BDD incomingTransformationRange =
                           _reverseTransformationRanges.reverseIncomingTransformationRange(
