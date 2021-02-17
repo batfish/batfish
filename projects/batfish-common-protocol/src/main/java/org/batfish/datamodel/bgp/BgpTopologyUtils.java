@@ -277,7 +277,7 @@ public final class BgpTopologyUtils {
                     // initiate the session), don't bother checking in this direction
                     !alreadyEstablished.contains(candidateId)
                         // Ensure candidate has compatible local/remote IP, AS, & hostname
-                        && bgpCandidatePassesSanityChecks(neighbor, candidateId, nc)
+                        && bgpCandidatePassesSanityChecks(neighborId, neighbor, candidateId, nc)
                         // If checking reachability, ensure candidate is reachable
                         && (!checkReachability
                             // We initiate the session from the initiator to the listener since the
@@ -312,7 +312,7 @@ public final class BgpTopologyUtils {
                 // initiate the session), don't bother checking in this direction
                 !alreadyEstablished.contains(candidateId)
                     //  Ensure candidate is unnumbered and has compatible local/remote AS
-                    && bgpCandidatePassesSanityChecks(hostname, neighbor, candidateId, nc)
+                    && bgpCandidatePassesSanityChecks(neighborId, neighbor, candidateId, nc)
                     // Check layer 2 connectivity
                     && layer2Topology.inSameBroadcastDomain(
                         peerNip,
@@ -389,9 +389,15 @@ public final class BgpTopologyUtils {
    * local/remote AS and local/remote IP to peer with active peer {@code neighbor}.
    */
   private static boolean bgpCandidatePassesSanityChecks(
+      @Nonnull BgpPeerConfigId neighborId,
       @Nonnull BgpActivePeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
       @Nonnull NetworkConfigurations nc) {
+    if (neighborId.getHostname().equals(candidateId.getHostname())
+        && neighborId.getVrfName().equals(candidateId.getVrfName())) {
+      // Do not let the same node/VRF peer with itself.
+      return false;
+    }
     // Ensure candidate exists and has compatible local and remote AS
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     if (candidate == null) {
@@ -429,18 +435,22 @@ public final class BgpTopologyUtils {
    * peer {@code neighbor}. This means:
    *
    * <ul>
-   *   <li>The candidate is not on the same node as the neighbor
    *   <li>The candidate's possible remote ASNs include the neighbor's local AS, and vice versa
+   *   <li>These are not two sessions in the same node and VRF.
    * </ul>
    */
   private static boolean bgpCandidatePassesSanityChecks(
-      @Nonnull String neighborHostname,
+      @Nonnull BgpPeerConfigId neighborId,
       @Nonnull BgpUnnumberedPeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
       @Nonnull NetworkConfigurations nc) {
+    if (neighborId.getHostname().equals(candidateId.getHostname())
+        && neighborId.getVrfName().equals(candidateId.getVrfName())) {
+      // Do not let the same node/VRF peer with itself.
+      return false;
+    }
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     return candidate instanceof BgpUnnumberedPeerConfig
-        && !neighborHostname.equals(candidateId.getHostname())
         && computeAsPair(
                 neighbor.getLocalAs(),
                 neighbor.getConfederationAsn(),
