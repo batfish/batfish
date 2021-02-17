@@ -98,6 +98,7 @@ import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
 import org.batfish.datamodel.flow.PostNatFibLookup;
+import org.batfish.datamodel.flow.PreNatFibLookup;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -961,6 +962,12 @@ class FlowTracer {
               }
 
               @Override
+              public Void visitPreNatFibLookup(PreNatFibLookup preNatFibLookup) {
+                // TODO
+                return null;
+              }
+
+              @Override
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
                 // cycle detection
                 Breadcrumb breadcrumb =
@@ -1211,6 +1218,8 @@ class FlowTracer {
             : Accept.INSTANCE;
       case POST_NAT_FIB_LOOKUP:
         return PostNatFibLookup.INSTANCE;
+      case PRE_NAT_FIB_LOOKUP:
+        return PreNatFibLookup.INSTANCE;
       default:
         throw new UnsupportedOperationException("Unrecognized action " + action);
     }

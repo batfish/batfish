@@ -38,6 +38,7 @@ import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PostNatFibLookup;
+import org.batfish.datamodel.flow.PreNatFibLookup;
 import org.batfish.datamodel.flow.SessionAction;
 import org.batfish.datamodel.flow.SessionScopeVisitor;
 import org.batfish.datamodel.visitors.SessionActionVisitor;
@@ -147,6 +148,7 @@ public class SessionInstrumentation {
             initializedSessionsEntry ->
                 initializedSessionsEntry.getValue().stream()
                     .map(BDDFirewallSessionTraceInfo::getAction)
+                    // TODO Update when reachability supports PreNatFibLookup
                     .anyMatch(PostNatFibLookup.class::isInstance))
         .map(Entry::getKey)
         .collect(ImmutableSet.toImmutableSet());
@@ -233,6 +235,13 @@ public class SessionInstrumentation {
               }
 
               @Override
+              public Stream<Edge> visitPreNatFibLookup(PreNatFibLookup preNatFibLookup) {
+                // TODO
+                throw new UnsupportedOperationException(
+                    "Reachability does not yet support PreNatFibLookup");
+              }
+
+              @Override
               public Stream<Edge> visitForwardOutInterface(
                   ForwardOutInterface forwardOutInterface) {
                 if (forwardOutInterface.getNextHop() == null) {
@@ -257,6 +266,7 @@ public class SessionInstrumentation {
    */
   private Stream<Edge> computeFibLookupSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     SessionAction action = sessionInfo.getAction();
+    // TODO Update when reachability supports PreNatFibLookup
     checkArgument(
         action instanceof PostNatFibLookup,
         "Unsupported session action for FibLookup session: %s",
@@ -288,6 +298,13 @@ public class SessionInstrumentation {
               @Override
               public Stream<Edge> visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
                 return computeFibLookupSessionEdges(sessionInfo);
+              }
+
+              @Override
+              public Stream<Edge> visitPreNatFibLookup(PreNatFibLookup preNatFibLookup) {
+                // TODO
+                throw new UnsupportedOperationException(
+                    "Reachability does not yet support PreNatFibLookup");
               }
 
               @Override
@@ -387,6 +404,13 @@ public class SessionInstrumentation {
               @Override
               public Stream<Edge> visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
                 return Stream.of();
+              }
+
+              @Override
+              public Stream<Edge> visitPreNatFibLookup(PreNatFibLookup preNatFibLookup) {
+                // TODO
+                throw new UnsupportedOperationException(
+                    "Reachability does not yet support PreNatFibLookup");
               }
 
               @Override

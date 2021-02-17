@@ -15,6 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.PostNatFibLookup;
+import org.batfish.datamodel.flow.PreNatFibLookup;
 import org.batfish.datamodel.flow.SessionAction;
 
 /**
@@ -27,18 +28,24 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   public enum Action {
     /** Forward traffic directly out the interface where the original flow entered */
     NO_FIB_LOOKUP,
+    /** Do a FIB lookup on the untransformed return flow to determine egress interface */
+    PRE_NAT_FIB_LOOKUP,
     /** Do a FIB lookup on the transformed return flow to determine egress interface */
     POST_NAT_FIB_LOOKUP;
 
     /**
      * Converts this {@link Action} to the corresponding {@link SessionAction}. Parameters are only
-     * necessary when creating a {@link ForwardOutInterface} action.
+     * necessary when creating a {@link ForwardOutInterface} action. Never returns {@link
+     * org.batfish.datamodel.flow.Accept}; caller is expected to determine whether a return flow
+     * should be accepted.
      */
     public SessionAction toSessionAction(
         String originalFlowIngressIface, @Nullable NodeInterfacePair nextHop) {
       switch (this) {
         case NO_FIB_LOOKUP:
           return new ForwardOutInterface(originalFlowIngressIface, nextHop);
+        case PRE_NAT_FIB_LOOKUP:
+          return PreNatFibLookup.INSTANCE;
         case POST_NAT_FIB_LOOKUP:
           return PostNatFibLookup.INSTANCE;
         default:

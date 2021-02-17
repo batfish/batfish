@@ -7,27 +7,24 @@ import org.batfish.datamodel.visitors.SessionActionVisitor;
 
 /**
  * A {@link SessionAction} whereby return traffic is forwarded according to a FIB lookup using the
- * post-transformation packet.
+ * pre-transformation packet.
  */
-@JsonTypeName("PostNatFibLookup")
+@JsonTypeName("PreNatFibLookup")
 @ParametersAreNonnullByDefault
-public final class PostNatFibLookup implements SessionAction {
+public final class PreNatFibLookup implements SessionAction {
 
-  public static final PostNatFibLookup INSTANCE = new PostNatFibLookup();
+  public static final PreNatFibLookup INSTANCE = new PreNatFibLookup();
 
-  private PostNatFibLookup() {}
+  private PreNatFibLookup() {}
 
   @Override
   public <T> T accept(SessionActionVisitor<T> visitor) {
-    return visitor.visitPostNatFibLookup(this);
+    return visitor.visitPreNatFibLookup(this);
   }
 
   @Override
   public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    return o instanceof PostNatFibLookup;
+    return o instanceof PreNatFibLookup;
   }
 
   @Override

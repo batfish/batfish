@@ -106,6 +106,7 @@ import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.MatchSessionStep;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PostNatFibLookup;
+import org.batfish.datamodel.flow.PreNatFibLookup;
 import org.batfish.datamodel.flow.RouteInfo;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -1258,10 +1259,16 @@ public final class FlowTracerTest {
     NodeInterfacePair lastHopNodeAndOutgoingInterface = NodeInterfacePair.of("node", "iface");
     String ingressIface = "ingressIface";
 
-    // Post-NAT FIB lookup: action should always be post-NAT FIB lookup
+    // Pre- or post- NAT FIB lookup: action should always be the corresponding FIB lookup
+    assertThat(
+        getSessionAction(Action.PRE_NAT_FIB_LOOKUP, null, lastHopNodeAndOutgoingInterface),
+        equalTo(PreNatFibLookup.INSTANCE));
     assertThat(
         getSessionAction(Action.POST_NAT_FIB_LOOKUP, null, lastHopNodeAndOutgoingInterface),
         equalTo(PostNatFibLookup.INSTANCE));
+    assertThat(
+        getSessionAction(Action.PRE_NAT_FIB_LOOKUP, ingressIface, lastHopNodeAndOutgoingInterface),
+        equalTo(PreNatFibLookup.INSTANCE));
     assertThat(
         getSessionAction(Action.POST_NAT_FIB_LOOKUP, ingressIface, lastHopNodeAndOutgoingInterface),
         equalTo(PostNatFibLookup.INSTANCE));
