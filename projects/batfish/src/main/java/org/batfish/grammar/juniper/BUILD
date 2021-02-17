@@ -11,7 +11,6 @@ java_library(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/java/org/batfish/grammar/juniper/parsing:juniper_base",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/juniper",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",

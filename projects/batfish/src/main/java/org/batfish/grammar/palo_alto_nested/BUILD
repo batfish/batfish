@@ -10,7 +10,6 @@ java_library(
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto_nested/parsing:palo_alto_nested_base",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto_nested",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
