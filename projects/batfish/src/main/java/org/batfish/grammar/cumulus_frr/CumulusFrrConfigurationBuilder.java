@@ -74,6 +74,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_area_range_costContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_redist_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
@@ -96,10 +97,12 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_areaContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_max_metric_router_lsa_administrativeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Roa_rangeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rono_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
@@ -197,9 +200,11 @@ import org.batfish.representation.cumulus.IpCommunityListStandard;
 import org.batfish.representation.cumulus.IpCommunityListStandardLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfAreaRange;
 import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfProcess;
+import org.batfish.representation.cumulus.OspfVrf;
 import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapCall;
@@ -225,6 +230,8 @@ import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
+  private static final IntegerSpace OSPF_AREA_RANGE_COST_SPACE =
+      IntegerSpace.of(Range.closed(0, 16777215));
   private static final IntegerSpace PREFIX_LENGTH_SPACE =
       IntegerSpace.of(Range.closed(0, Prefix.MAX_PREFIX_LENGTH));
 
@@ -242,6 +249,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
   private @Nullable FrrInterface _currentInterface;
+  private Long _currentOspfArea;
+  private OspfVrf _currentOspfVrf;
 
   public CumulusFrrConfigurationBuilder(
       CumulusConcatenatedConfiguration configuration,
@@ -389,6 +398,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, Ip_prefix_lengthContext len) {
     return toIntegerInSpace(ctx, len, PREFIX_LENGTH_SPACE, "prefix length");
+  }
+
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Ospf_area_range_costContext cost) {
+    return toIntegerInSpace(ctx, cost, OSPF_AREA_RANGE_COST_SPACE, "ospf area range cost");
   }
 
   private void clearOspfPassiveInterface() {
@@ -795,6 +808,22 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (_frr.getOspfProcess() == null) {
       _frr.setOspfProcess(new OspfProcess());
     }
+    _currentOspfVrf = _frr.getOspfProcess().getDefaultVrf();
+  }
+
+  @Override
+  public void exitS_router_ospf(S_router_ospfContext ctx) {
+    _currentOspfVrf = null;
+  }
+
+  @Override
+  public void enterRo_area(Ro_areaContext ctx) {
+    _currentOspfArea = toLong(ctx.area);
+  }
+
+  @Override
+  public void exitRo_area(Ro_areaContext ctx) {
+    _currentOspfArea = null;
   }
 
   @Override
@@ -865,6 +894,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           String.format(
               "overwriting BgpRedistributionPolicy for vrf %s, protocol %s",
               proc.getDefaultVrf().getVrfName(), srcProtocol));
+    }
+  }
+
+  @Override
+  public void exitRoa_range(Roa_rangeContext ctx) {
+    assert _currentOspfArea != null;
+    Prefix pfx = toPrefix(ctx.pfx);
+    OspfAreaRange range = _currentOspfVrf.getOrCreateAreaRange(_currentOspfArea, pfx);
+    if (ctx.cost != null) {
+      toInteger(ctx.getParent(), ctx.cost).ifPresent(range::setCost);
     }
   }
 
