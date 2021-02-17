@@ -526,7 +526,7 @@ popst_local_preference
 :
    LOCAL_PREFERENCE
    (
-      localpref = DEC
+      (ADD | SUBTRACT)? localpref = DEC
       | apply_groups
    )
 ;
