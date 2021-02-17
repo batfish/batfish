@@ -5027,7 +5027,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPopst_local_preference(Popst_local_preferenceContext ctx) {
     int localPreference = toInt(ctx.localpref);
-    PsThenLocalPreference then = new PsThenLocalPreference(localPreference);
+    PsThenLocalPreference.Operator op =
+        ctx.ADD() != null
+            ? PsThenLocalPreference.Operator.ADD
+            : (ctx.SUBTRACT() != null
+                ? PsThenLocalPreference.Operator.SUBTRACT
+                : PsThenLocalPreference.Operator.SET);
+    PsThenLocalPreference then = new PsThenLocalPreference(localPreference, op);
     _currentPsThens.add(then);
   }
 
