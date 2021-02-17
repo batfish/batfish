@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -111,6 +112,7 @@ import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
 import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
+import org.batfish.representation.cumulus.OspfVrf;
 import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
@@ -1821,6 +1823,21 @@ public class CumulusFrrGrammarTest {
   public void testInterface_ospf_cost_null() {
     parse("interface swp1\n ip ospf area 0\n");
     assertThat(_frr.getInterfaces().get("swp1").getOspf().getCost(), equalTo(null));
+  }
+
+  @Test
+  public void testRouterOspfAreaRange() {
+    parse(
+        "router ospf\n"
+            + " area 1.1.1.0 range 1.255.0.0/17 cost 10\n"
+            + " area 5 range 1.255.0.0/17\n");
+    Prefix prefix = Prefix.parse("1.255.0.0/17");
+    OspfVrf vrf = _frr.getOspfProcess().getDefaultVrf();
+    assertThat(vrf.getAreaRanges(), hasSize(2));
+    assertThat(vrf.getAreaRange(Ip.parse("1.1.1.0").asLong(), prefix), notNullValue());
+    assertThat(vrf.getAreaRange(Ip.parse("1.1.1.0").asLong(), prefix).getCost(), equalTo(10));
+    assertThat(vrf.getAreaRange(5L, prefix), notNullValue());
+    assertThat(vrf.getAreaRange(5L, prefix).getCost(), nullValue());
   }
 
   @Test
