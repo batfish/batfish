@@ -72,6 +72,6 @@ public final class PsThenLocalPreference extends PsThen {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_localPreference, _op);
+    return Objects.hash(_localPreference, _op.ordinal());
   }
 }
