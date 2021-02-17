@@ -1,0 +1,23 @@
+ospf-network-area
+# This file describes the network interfaces
+
+iface lo inet loopback
+ address 2.3.0.0/32
+
+auto eth1
+iface eth1
+ address 10.20.50.1/24
+
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+!
+router ospf
+ ospf router-id 2.3.0.0
+ network 10.20.0.0/16 area 10
+!
+!### end frr.conf
