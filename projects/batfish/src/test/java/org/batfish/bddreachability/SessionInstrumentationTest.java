@@ -28,6 +28,7 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
@@ -241,7 +242,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         nodeAcceptEdges(sessionInfo),
         contains(
@@ -410,7 +412,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
@@ -430,7 +433,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
@@ -508,7 +512,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
@@ -522,7 +527,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
@@ -574,7 +580,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         nodeDropAclInEdges(sessionInfo),
         contains(
@@ -606,7 +613,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         nodeDropAclOutEdges(sessionInfo),
         contains(

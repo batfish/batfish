@@ -98,6 +98,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
@@ -1761,7 +1762,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
               outgoingFilterName));
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              true, sharedGateway.getImportedInterfaces(), null, null));
+              Action.POST_NAT_FIB_LOOKUP, sharedGateway.getImportedInterfaces(), null, null));
     } else if (zone != null) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
@@ -1776,7 +1777,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 ifaceOutgoingTraceElement(
                     iface.getName(), zone.getName(), zone.getVsys().getName())));
         newIface.setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, zone.getInterfaceNames(), null, null));
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, zone.getInterfaceNames(), null, null));
       }
     } else {
       // Do not allow any traffic to exit an unzoned interface

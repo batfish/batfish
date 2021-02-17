@@ -58,19 +58,6 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   private final @Nullable String _incomingAclName;
   private final @Nullable String _outgoingAclName;
 
-  // backwards compatible constructor
-  public FirewallSessionInterfaceInfo(
-      boolean fibLookup,
-      Iterable<String> sessionInterfaces,
-      @Nullable String incomingAclName,
-      @Nullable String outgoingAclName) {
-    this(
-        fibLookup ? Action.POST_NAT_FIB_LOOKUP : Action.NO_FIB_LOOKUP,
-        sessionInterfaces,
-        incomingAclName,
-        outgoingAclName);
-  }
-
   public FirewallSessionInterfaceInfo(
       Action action,
       Iterable<String> sessionInterfaces,

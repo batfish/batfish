@@ -42,6 +42,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -406,7 +407,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // To make life easier, just use both network ACLs in subnets' VPC ifaces session info.
     subnetToVpcIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            false, ImmutableList.of(subnetToVpcIfaceName), incomingAclName, outgoingAclName));
+            Action.NO_FIB_LOOKUP,
+            ImmutableList.of(subnetToVpcIfaceName),
+            incomingAclName,
+            outgoingAclName));
 
     // For each NLB in the subnet: new interface connecting to NLB, no filters
     for (LoadBalancer nlb : nlbs) {
@@ -424,7 +428,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
       String nlbIfaceName = interfaceNameToRemote(subnetCfg, NLB_INSTANCE_TARGETS_IFACE_SUFFIX);
       Interface nlbIface = nlbConfig.getAllInterfaces().get(nlbIfaceName);
       nlbIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(false, ImmutableList.of(nlbIfaceName), null, null));
+          new FirewallSessionInterfaceInfo(
+              Action.NO_FIB_LOOKUP, ImmutableList.of(nlbIfaceName), null, null));
     }
 
     // Add static routes in subnet's new VRF and connect subnet to its instance targets
@@ -469,7 +474,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
         // Subnet needs to set up a session for return traffic from the instance
         subnetToInstanceIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableList.of(subnetToInstanceIfaceName), null, null));
+                Action.NO_FIB_LOOKUP, ImmutableList.of(subnetToInstanceIfaceName), null, null));
 
         staticRouteNextHopIface = subnetToInstanceIfaceName;
 
@@ -480,7 +485,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
             toStaticRoute(instancePrefix, vpcToSubnetIfaceName, AwsConfiguration.LINK_LOCAL_IP));
         vpcToSubnetIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableList.of(vpcToSubnetIfaceName), null, null));
+                Action.NO_FIB_LOOKUP, ImmutableList.of(vpcToSubnetIfaceName), null, null));
       }
 
       /*

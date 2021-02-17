@@ -62,6 +62,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -411,7 +412,7 @@ public class LoadBalancerTest {
         viIface.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableList.of(viIface.getName()), null, null)));
+                Action.NO_FIB_LOOKUP, ImmutableList.of(viIface.getName()), null, null)));
   }
 
   @Test
@@ -425,7 +426,7 @@ public class LoadBalancerTest {
         viIface.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableList.of(viIface.getName()), null, null)));
+                Action.NO_FIB_LOOKUP, ImmutableList.of(viIface.getName()), null, null)));
   }
 
   /** Test that we skip over bad actions and create the right transformation for the good one */

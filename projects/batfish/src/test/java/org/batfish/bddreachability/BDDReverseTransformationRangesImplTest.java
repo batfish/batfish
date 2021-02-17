@@ -20,6 +20,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -200,7 +201,8 @@ public class BDDReverseTransformationRangesImplTest {
 
     // make the node a session node.
     iface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(iName), null, null));
+        new FirewallSessionInterfaceInfo(
+            Action.NO_FIB_LOOKUP, ImmutableList.of(iName), null, null));
 
     _lastHopManager =
         new LastHopOutgoingInterfaceManager(

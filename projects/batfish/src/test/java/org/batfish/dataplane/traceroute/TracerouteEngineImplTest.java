@@ -84,6 +84,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
@@ -1345,7 +1346,8 @@ public class TracerouteEngineImplTest {
     ib.setName("i2")
         .setAddresses(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(i2Name), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(i2Name), null, null))
         .build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, c);
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _tempFolder);
@@ -1408,7 +1410,8 @@ public class TracerouteEngineImplTest {
         .setVrf(vrf2)
         .setAddresses(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(i2Name), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(i2Name), null, null))
         .build();
     vrf1.getStaticRoutes()
         .add(
@@ -1600,7 +1603,7 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableSet.of(i2Name), incomingAclName, outgoingAclName))
+                Action.NO_FIB_LOOKUP, ImmutableSet.of(i2Name), incomingAclName, outgoingAclName))
         .build();
 
     String i3Name = "iface3";
@@ -1617,7 +1620,7 @@ public class TracerouteEngineImplTest {
             always().apply(assignSourceIp(poolIp, poolIp), assignSourcePort(2000, 2000)).build())
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
+                Action.NO_FIB_LOOKUP, ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
         .build();
 
     // Compute data plane
@@ -1828,7 +1831,8 @@ public class TracerouteEngineImplTest {
     ib.setName(c2i2Name)
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(false, ImmutableSet.of(c2i2Name), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.NO_FIB_LOOKUP, ImmutableSet.of(c2i2Name), null, null))
         .build();
 
     // Compute data plane
@@ -1931,7 +1935,10 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableSet.of(c1i1Name), sessionIngressFilter.getName(), null))
+                Action.NO_FIB_LOOKUP,
+                ImmutableSet.of(c1i1Name),
+                sessionIngressFilter.getName(),
+                null))
         .build();
 
     String c1i2Name = "c1i2";
@@ -1942,7 +1949,10 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableSet.of(c1i2Name), null, sessionEgressFilter.getName()))
+                Action.NO_FIB_LOOKUP,
+                ImmutableSet.of(c1i2Name),
+                null,
+                sessionEgressFilter.getName()))
         .build();
 
     Configuration c2 = cb.build();
@@ -2536,7 +2546,8 @@ public class TracerouteEngineImplTest {
         .setVrf(fwVrf)
         .setAddress(ConcreteInterfaceAddress.parse("20.0.0.1/24"))
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(fwOutName), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(fwOutName), null, null))
         .build();
 
     // set up a static route for the reverse flow
@@ -2657,7 +2668,8 @@ public class TracerouteEngineImplTest {
         .setVrf(fwVrf)
         .setAddress(ConcreteInterfaceAddress.parse("20.0.0.1/24"))
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(fwOutName), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(fwOutName), null, null))
         .build();
 
     // set up a dummy interface to cause arp failure for return flow

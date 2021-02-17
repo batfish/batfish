@@ -37,6 +37,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -193,7 +194,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
         addNodeToSubnet(cfgNode, networkInterface, subnet, awsConfiguration, warnings);
     ifaceToSubnet.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            false, ImmutableList.of(ifaceToSubnet.getName()), null, null));
+            Action.NO_FIB_LOOKUP, ImmutableList.of(ifaceToSubnet.getName()), null, null));
 
     // post transformation filter on the interface to the subnet
     IpAccessList postTransformationFilter =
@@ -223,7 +224,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       ifaceToVpc.setIncomingTransformation(computeOutgoingNatTransformation(getPrivateIp()));
       ifaceToVpc.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              false,
+              Action.NO_FIB_LOOKUP,
               ImmutableList.of(ifaceToVpc.getName()),
               null,
               egressAcl == null ? null : egressAcl.getName()));

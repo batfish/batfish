@@ -37,6 +37,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
@@ -188,7 +189,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
       // Create sessions for flows exiting FW:I3
       fwi3.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(false, ImmutableSet.of(FWI3), null, null));
+          new FirewallSessionInterfaceInfo(
+              Action.NO_FIB_LOOKUP, ImmutableSet.of(FWI3), null, null));
     }
 
     _configs = ImmutableMap.of(FW, fw, R1, r1, R2, r2, R3, r3);
@@ -196,7 +198,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     // temporarily add a FirewallSessionInterfaceInfo to FW to force its last hops to be tracked
     fwi1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FWI2), null, null));
+        new FirewallSessionInterfaceInfo(Action.NO_FIB_LOOKUP, ImmutableList.of(FWI2), null, null));
     Set<org.batfish.datamodel.Edge> edges =
         ImmutableSet.of(
             // R1:I1 -- FW:I1

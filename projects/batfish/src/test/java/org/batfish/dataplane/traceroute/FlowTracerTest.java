@@ -451,7 +451,8 @@ public final class FlowTracerTest {
         .setVrf(vrf)
         .setName(ifaceName)
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(false, ImmutableSet.of(ifaceName), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.NO_FIB_LOOKUP, ImmutableSet.of(ifaceName), null, null))
         .build();
 
     // To match session, return flow must have same protocol and port and swapped src/dst IPs
@@ -577,7 +578,8 @@ public final class FlowTracerTest {
         .setVrf(vrf)
         .setName(ifaceName)
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(ifaceName), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(ifaceName), null, null))
         .setAddress(address)
         .build();
 
