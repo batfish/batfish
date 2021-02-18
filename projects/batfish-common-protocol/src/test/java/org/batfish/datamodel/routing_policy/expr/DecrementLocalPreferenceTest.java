@@ -31,26 +31,25 @@ public class DecrementLocalPreferenceTest {
             .build();
     Bgpv4Route testRoute =
         Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).setLocalPreference(0L).build();
-    DecrementLocalPreference add5 = new DecrementLocalPreference(5);
-    // Clips 0 to 0
+    DecrementLocalPreference sub5 = new DecrementLocalPreference(5);
+    // Clips to 0
     assertThat(
-        add5.evaluate(Environment.builder(c).setOriginalRoute(testRoute).build()), equalTo(0L));
-    // Normal math
+        sub5.evaluate(Environment.builder(c).setOriginalRoute(testRoute).build()), equalTo(0L));
     assertThat(
-        add5.evaluate(
+        sub5.evaluate(
             Environment.builder(c)
-                .setOriginalRoute(testRoute.toBuilder().setLocalPreference(10L).build())
+                .setOriginalRoute(testRoute.toBuilder().setLocalPreference(2).build())
                 .build()),
-        equalTo(5L));
+        equalTo(0L));
     assertThat(
-        add5.evaluate(
+        sub5.evaluate(
             Environment.builder(c)
                 .setOriginalRoute(testRoute.toBuilder().setLocalPreference(105).build())
                 .build()),
         equalTo(100L));
     // Check operation near bounds
     assertThat(
-        add5.evaluate(
+        sub5.evaluate(
             Environment.builder(c)
                 .setOriginalRoute(
                     testRoute.toBuilder().setLocalPreference(MAX_LOCAL_PREFERENCE).build())

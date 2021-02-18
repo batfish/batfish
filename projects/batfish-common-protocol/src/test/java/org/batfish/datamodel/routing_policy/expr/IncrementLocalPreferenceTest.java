@@ -44,6 +44,13 @@ public class IncrementLocalPreferenceTest {
         add5.evaluate(
             Environment.builder(c)
                 .setOriginalRoute(
+                    testRoute.toBuilder().setLocalPreference(MAX_LOCAL_PREFERENCE - 4).build())
+                .build()),
+        equalTo(MAX_LOCAL_PREFERENCE));
+    assertThat(
+        add5.evaluate(
+            Environment.builder(c)
+                .setOriginalRoute(
                     testRoute.toBuilder().setLocalPreference(MAX_LOCAL_PREFERENCE).build())
                 .build()),
         equalTo(MAX_LOCAL_PREFERENCE));
