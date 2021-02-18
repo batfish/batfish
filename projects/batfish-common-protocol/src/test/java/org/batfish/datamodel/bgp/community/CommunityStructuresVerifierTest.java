@@ -131,7 +131,7 @@ public final class CommunityStructuresVerifierTest {
     assertNull(MatchIpv4.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(MatchIpv6.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(
-        new MatchLocalPreference(IntComparator.EQ, new LiteralInt(1))
+        new MatchLocalPreference(IntComparator.EQ, new LiteralLong(1))
             .accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(
         new MatchLocalRouteSourcePrefixLength(SubRange.singleton(1))
