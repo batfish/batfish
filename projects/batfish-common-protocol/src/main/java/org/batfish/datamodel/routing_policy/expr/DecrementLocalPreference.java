@@ -1,5 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -12,6 +15,14 @@ public final class DecrementLocalPreference extends LongExpr {
   private DecrementLocalPreference() {}
 
   public DecrementLocalPreference(long subtrahend) {
+    checkArgument(
+        subtrahend >= 0,
+        "To subtract a negative number (%s), use IncrementLocalPreference",
+        subtrahend);
+    checkArgument(
+        subtrahend <= MAX_LOCAL_PREFERENCE,
+        "Value (%s) is out of range for local preference",
+        subtrahend);
     _subtrahend = subtrahend;
   }
 
@@ -24,8 +35,7 @@ public final class DecrementLocalPreference extends LongExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (!(obj instanceof DecrementLocalPreference)) {
+    } else if (!(obj instanceof DecrementLocalPreference)) {
       return false;
     }
     return _subtrahend == ((DecrementLocalPreference) obj)._subtrahend;
@@ -34,9 +44,7 @@ public final class DecrementLocalPreference extends LongExpr {
   @Override
   public long evaluate(Environment environment) {
     BgpRoute<?, ?> oldRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
-    long oldLp = oldRoute.getLocalPreference();
-    long newVal = oldLp - _subtrahend;
-    return newVal;
+    return Math.max(oldRoute.getLocalPreference() - _subtrahend, 0L);
   }
 
   public long getSubtrahend() {
