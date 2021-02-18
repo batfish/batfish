@@ -1,5 +1,7 @@
 package org.batfish.job;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -8,29 +10,33 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
+import org.batfish.grammar.PreprocessExtractor;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.PreprocessJuniperExtractor;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
+import org.batfish.grammar.palo_alto.PaloAltoCombinedParser;
+import org.batfish.grammar.palo_alto.PreprocessPaloAltoExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.ParserBatfishException;
 
 /**
- * {@link BatfishJob} that performs Juniper pre-processing on a configuration file and returns the
- * output in a {@link PreprocessJuniperResult}. If the input text is not recognized as a Juniper
+ * {@link BatfishJob} that performs pre-processing on a configuration file and returns the output in
+ * a {@link PreprocessResult}. If the input text is not recognized as a preprocessible
  * configuration, it is returned unmodified.
  */
 @ParametersAreNonnullByDefault
-public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResult> {
+public final class PreprocessJob extends BatfishJob<PreprocessResult> {
 
   private @Nonnull String _fileText;
   private @Nonnull Path _inputFile;
   private @Nonnull Path _outputFile;
   private @Nonnull Warnings _warnings;
 
-  public PreprocessJuniperJob(
+  public PreprocessJob(
       Settings settings, String fileText, Path inputFile, Path outputFile, Warnings warnings) {
     super(settings);
     _fileText = fileText;
@@ -40,37 +46,42 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
   }
 
   @Override
-  public @Nonnull PreprocessJuniperResult call() {
+  public @Nonnull PreprocessResult call() {
     long startTime = System.currentTimeMillis();
     long elapsedTime;
     String inputFileAsString = _inputFile.toAbsolutePath().toString();
     String flatConfigText;
     FlattenerLineMap lineMap;
-    // If flat Juniper, proceed with original input text. If hierarchical Juniper, flatten first. If
-    // non-Juniper, just return the original text.
-    switch (VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText)) {
+    // If flat, proceed with original input text. If hierarchical, flatten first. If
+    // not non-preprocessible, just return the original text.
+    String header = null;
+    ConfigurationFormat format =
+        VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
+    switch (format) {
+      case PALO_ALTO:
       case FLAT_JUNIPER:
         flatConfigText = _fileText;
         lineMap = null;
         break;
 
       case JUNIPER:
+        header =
+            firstNonNull(
+                header, VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+      case PALO_ALTO_NESTED:
+        header =
+            firstNonNull(
+                header, VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
         {
           try {
             Flattener flattener =
-                Batfish.flatten(
-                    _fileText,
-                    _logger,
-                    _settings,
-                    _warnings,
-                    ConfigurationFormat.JUNIPER,
-                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+                Batfish.flatten(_fileText, _logger, _settings, _warnings, format, header);
             flatConfigText = flattener.getFlattenedConfigurationText();
             lineMap = flattener.getOriginalLineMap();
           } catch (ParserBatfishException e) {
             String error = "Error parsing configuration file: \"" + inputFileAsString + "\"";
             elapsedTime = System.currentTimeMillis() - startTime;
-            return new PreprocessJuniperResult(
+            return new PreprocessResult(
                 elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
           } catch (Exception e) {
             String error =
@@ -78,7 +89,7 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
                     + inputFileAsString
                     + "\"";
             elapsedTime = System.currentTimeMillis() - startTime;
-            return new PreprocessJuniperResult(
+            return new PreprocessResult(
                 elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
           } finally {
             Batfish.logWarnings(_logger, _warnings);
@@ -89,16 +100,32 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
       default:
         _logger.debugf("Skipping: \"%s\"\n", _inputFile);
         elapsedTime = System.currentTimeMillis() - startTime;
-        return new PreprocessJuniperResult(
-            elapsedTime, _logger.getHistory(), _outputFile, _fileText);
+        return new PreprocessResult(elapsedTime, _logger.getHistory(), _outputFile, _fileText);
     }
 
-    _logger.debugf("Preprocessing Juniper config: \"%s\"...", _inputFile);
-    FlatJuniperCombinedParser parser =
-        new FlatJuniperCombinedParser(flatConfigText, _settings, lineMap);
-    PreprocessJuniperExtractor extractor = new PreprocessJuniperExtractor(parser, _warnings);
+    _logger.debugf("Preprocessing config: \"%s\"...", _inputFile);
+    BatfishCombinedParser<?, ?> parser = null;
+    PreprocessExtractor extractor = null;
+    switch (format) {
+      case JUNIPER:
+      case FLAT_JUNIPER:
+        FlatJuniperCombinedParser juniperParser =
+            new FlatJuniperCombinedParser(flatConfigText, _settings, lineMap);
+        extractor = new PreprocessJuniperExtractor(juniperParser, _warnings);
+        parser = juniperParser;
+        break;
+      case PALO_ALTO:
+      case PALO_ALTO_NESTED:
+        PaloAltoCombinedParser paloAltoParser =
+            new PaloAltoCombinedParser(flatConfigText, _settings, lineMap);
+        extractor = new PreprocessPaloAltoExtractor(paloAltoParser, _warnings);
+        parser = paloAltoParser;
+        break;
+      default:
+        throw new IllegalArgumentException(String.format("Unsupported format: %s", format));
+    }
     _logger.info("\tParsing...");
-    // Parse the flat Juniper text
+    // Parse the flat text
     ParserRuleContext tree = Batfish.parse(parser, _logger, _settings);
 
     if (!parser.getErrors().isEmpty()) {
@@ -112,7 +139,7 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
       _logger.info("\tPost-processing...");
 
       try {
-        // Pre-process the initial flat Juniper parse tree
+        // Pre-process the initial flat parse tree
         extractor.processParseTree(tree);
       } catch (BatfishParseException e) {
         _warnings.setErrorDetails(e.getErrorDetails());
@@ -126,7 +153,7 @@ public final class PreprocessJuniperJob extends BatfishJob<PreprocessJuniperResu
 
     elapsedTime = System.currentTimeMillis() - startTime;
     // Return configuration text corresponding to the pre-processed parse tree.
-    return new PreprocessJuniperResult(
+    return new PreprocessResult(
         elapsedTime,
         _logger.getHistory(),
         _outputFile,

@@ -20,10 +20,10 @@ import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.job.BatfishJobExecutor;
-import org.batfish.job.PreprocessJuniperJob;
+import org.batfish.job.PreprocessJob;
 
-/** Utility to dump output of Juniper configuration pre-processing. */
-public final class PreprocessJuniper {
+/** Utility to dump output of configuration pre-processing. */
+public final class Preprocess {
 
   public static void main(String[] args) throws IOException {
     checkArgument(args.length == 2, "Expected arguments: <input_dir> <output_dir>");
@@ -40,14 +40,14 @@ public final class PreprocessJuniper {
     Settings settings = new Settings(new String[] {"-storagebase", "/"});
     BatfishLogger logger = new BatfishLogger(BatfishLogger.LEVELSTR_WARN, false, System.out);
     settings.setLogger(logger);
-    preprocessJuniper(inputPath, outputPath, settings);
+    preprocess(inputPath, outputPath, settings);
   }
 
   /**
-   * Pre-process Juniper configs in snapshot stored at {@code inputPath}, and dump to {@code
-   * outputPath}. Non-Juniper configs are copied unprocessed.
+   * Pre-process configs in snapshot stored at {@code inputPath}, and dump to {@code outputPath}.
+   * Non-preprocessible configs are copied unprocessed.
    */
-  private static void preprocessJuniper(
+  private static void preprocess(
       @Nonnull Path inputPath, @Nonnull Path outputPath, Settings settings) throws IOException {
     BatfishLogger logger = settings.getLogger();
     logger.info("\n*** READING INPUT FILES ***\n");
@@ -59,15 +59,14 @@ public final class PreprocessJuniper {
     createDirectories(outputConfigDir);
     logger.info("\n*** COMPUTING OUTPUT FILES ***\n");
     logger.resetTimer();
-    List<PreprocessJuniperJob> jobs = new ArrayList<>();
+    List<PreprocessJob> jobs = new ArrayList<>();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
       Path inputFile = configFile.getKey();
       String fileText = configFile.getValue();
       Warnings warnings = forLogger(logger);
       String name = inputFile.getFileName().toString();
       Path outputFile = outputConfigDir.resolve(name);
-      PreprocessJuniperJob job =
-          new PreprocessJuniperJob(settings, fileText, inputFile, outputFile, warnings);
+      PreprocessJob job = new PreprocessJob(settings, fileText, inputFile, outputFile, warnings);
       jobs.add(job);
     }
     BatfishJobExecutor.runJobsInExecutor(
@@ -77,7 +76,7 @@ public final class PreprocessJuniper {
         outputConfigurationData,
         null,
         settings.getFlatten() || settings.getHaltOnParseError(),
-        "Preprocesss Juniper configurations");
+        "Preprocesss configurations");
     logger.printElapsedTime();
     for (Entry<Path, String> e : outputConfigurationData.entrySet()) {
       Path outputFile = e.getKey();
