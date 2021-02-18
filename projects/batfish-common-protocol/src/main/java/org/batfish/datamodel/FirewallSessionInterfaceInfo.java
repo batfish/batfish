@@ -118,7 +118,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   }
 
   /** What {@link Action} should be taken for return traffic that matches a session */
-  @JsonProperty(PROP_FIB_LOOKUP)
+  @JsonProperty(PROP_ACTION)
   public Action getAction() {
     return _action;
   }
