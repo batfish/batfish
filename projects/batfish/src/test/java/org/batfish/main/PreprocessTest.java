@@ -60,6 +60,11 @@ public final class PreprocessTest {
   }
 
   @Test
+  public void testFlatPaloAlto() throws IOException {
+    assertValidPair("preprocess-flat-pa-before", "preprocess-flat-pa-after");
+  }
+
+  @Test
   public void testHierarchical() throws IOException {
     assertValidPair("preprocess-hierarchical-before", "preprocess-hierarchical-after");
   }
