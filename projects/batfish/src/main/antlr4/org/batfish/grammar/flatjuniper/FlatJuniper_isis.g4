@@ -49,7 +49,7 @@ is_level
 :
   LEVEL
   (
-    DEC
+    dec
     | wildcard
   )
   (
@@ -118,7 +118,7 @@ isi_disable
 
 isi_level
 :
-  LEVEL DEC
+  LEVEL dec
   (
     isil_disable
     | isil_hello_authentication_key
@@ -155,12 +155,12 @@ isi_point_to_point
 
 isib_minimum_interval
 :
-  MINIMUM_INTERVAL DEC
+  MINIMUM_INTERVAL dec
 ;
 
 isib_multiplier
 :
-  MULTIPLIER DEC
+  MULTIPLIER dec
 ;
 
 isil_disable
@@ -180,17 +180,17 @@ isil_hello_authentication_type
 
 isil_hello_interval
 :
-  HELLO_INTERVAL DEC
+  HELLO_INTERVAL dec
 ;
 
 isil_hold_time
 :
-  HOLD_TIME DEC
+  HOLD_TIME dec
 ;
 
 isil_metric
 :
-  METRIC DEC
+  METRIC dec
 ;
 
 isil_passive
@@ -200,12 +200,12 @@ isil_passive
 
 isil_priority
 :
-  PRIORITY DEC
+  PRIORITY dec
 ;
 
 isil_te_metric
 :
-  TE_METRIC DEC
+  TE_METRIC dec
 ;
 
 isl_disable
@@ -234,7 +234,7 @@ ist_credibility_protocol_preference
 
 iso_timeout
 :
-  TIMEOUT DEC
+  TIMEOUT dec
 ;
 
 ist_family_shortcuts

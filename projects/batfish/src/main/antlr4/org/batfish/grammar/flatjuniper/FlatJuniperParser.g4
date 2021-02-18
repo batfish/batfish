@@ -217,5 +217,5 @@ vlt_l3_interface
 
 vlt_vlan_id
 :
-   VLAN_ID id = DEC
+   VLAN_ID id = dec
 ;
