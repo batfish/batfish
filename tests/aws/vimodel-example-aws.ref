@@ -26,7 +26,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To subnet subnet-1641fa70",
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "NO_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "subnet-1641fa70"
               ]
@@ -256,7 +256,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To subnet subnet-7044ff16",
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "NO_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "subnet-7044ff16"
               ]
@@ -501,7 +501,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To AWS services",
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "NO_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "aws-services"
               ]
@@ -529,7 +529,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "NO_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "backbone"
               ]
@@ -47374,7 +47374,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To subnet subnet-1641fa70",
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "NO_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "test-rds-subnet-1641fa70"
               ]
