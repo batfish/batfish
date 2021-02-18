@@ -69,7 +69,6 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
@@ -97,6 +96,7 @@ import org.batfish.datamodel.flow.Accept;
 import org.batfish.datamodel.flow.ArpErrorStep;
 import org.batfish.datamodel.flow.DeliveredStep;
 import org.batfish.datamodel.flow.EnterInputIfaceStep;
+import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.Hop;
@@ -117,11 +117,8 @@ import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
-import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
-import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -567,6 +564,12 @@ public final class FlowTracerTest {
 
   @Test
   public void testFlowMatchingSessionCanBeAccepted() {
+    // Accept traces should be the same whether ingress interface does routing before or after NAT
+    testFlowMatchingSessionCanBeAccepted(Action.PRE_NAT_FIB_LOOKUP);
+    testFlowMatchingSessionCanBeAccepted(Action.POST_NAT_FIB_LOOKUP);
+  }
+
+  private void testFlowMatchingSessionCanBeAccepted(Action ingressIfaceSessionAction) {
     /* Simulates a reverse flow to a device where a session has been set up. */
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
@@ -580,7 +583,7 @@ public final class FlowTracerTest {
         .setName(ifaceName)
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(ifaceName), null, null))
+                ingressIfaceSessionAction, ImmutableSet.of(ifaceName), null, null))
         .setAddress(address)
         .build();
 
@@ -599,15 +602,20 @@ public final class FlowTracerTest {
             .setSrcPort(dstPort)
             .setDstPort(srcPort)
             .build();
+    // Include transformation to be sure the post-NAT flow is accepted, not pre-NAT
+    Transformation transformation =
+        Transformation.always()
+            .apply(assignDestinationIp(address.getIp(), address.getIp()))
+            .build();
     SessionMatchExpr flowMatchingNewSession =
         new SessionMatchExpr(IpProtocol.TCP, origDstIp, origSrcIp, dstPort, srcPort);
     FirewallSessionTraceInfo incomingSession =
         new FirewallSessionTraceInfo(
             c.getHostname(),
-            PostNatFibLookup.INSTANCE,
+            ingressIfaceSessionAction.toSessionAction("originalIngressIface", null),
             new IncomingSessionScope(ImmutableSet.of(ifaceName)),
             flowMatchingNewSession,
-            null);
+            transformation);
 
     ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
 
@@ -663,6 +671,7 @@ public final class FlowTracerTest {
           contains(
               instanceOf(EnterInputIfaceStep.class),
               instanceOf(MatchSessionStep.class),
+              instanceOf(TransformationStep.class),
               instanceOf(InboundStep.class)));
       assertThat(traceAndReverseFlow.getNewFirewallSessions(), empty());
     }
@@ -699,6 +708,163 @@ public final class FlowTracerTest {
           contains(instanceOf(EnterInputIfaceStep.class), instanceOf(RoutingStep.class)));
       assertThat(traceAndReverseFlow.getNewFirewallSessions(), empty());
     }
+  }
+
+  @Test
+  public void testFlowMatchingSessionRoutedCorrectly() {
+    // Test that return flows are routed correctly using PRE_NAT_FIB_LOOKUP or POST_NAT_FIB_LOOKUP.
+    testFlowMatchingSessionRoutedCorrectly(Action.PRE_NAT_FIB_LOOKUP, false);
+    testFlowMatchingSessionRoutedCorrectly(Action.POST_NAT_FIB_LOOKUP, true);
+  }
+
+  /**
+   * Tests that a return flow matching a session on an interface with session action {@code
+   * ingressIfaceSessionAction} will apply NAT in the correct order relative to routing.
+   */
+  private void testFlowMatchingSessionRoutedCorrectly(
+      Action ingressIfaceSessionAction, boolean natBeforeRouting) {
+    /*
+    We will process a return flow arriving with dst IP 1.1.1.1, which will be transformed to 2.2.2.2.
+    The FIB has two entries:
+     - Traffic to 1.1.1.1/32 is routed out interface preNatEgressIface
+     - Traffic to 2.2.2.2/32 is routed out interface postNatEgressIface
+    Which route is selected will depend on whether routing happens before or after NAT.
+     */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    String ingressIface = "ingressIface";
+    String preNatEgressIface = "preNatEgressIface";
+    String postNatEgressIface = "postNatEgressIface";
+    Interface.Builder ifaceBuilder = nf.interfaceBuilder().setOwner(c).setVrf(vrf);
+    ifaceBuilder.setName(preNatEgressIface).build();
+    ifaceBuilder.setName(postNatEgressIface).build();
+    ifaceBuilder
+        .setName(ingressIface)
+        .setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of(ingressIface), null, null))
+        .build();
+
+    Ip preNatDstIp = Ip.parse("1.1.1.1"); // return flow dst IP before NAT
+    Ip postNatDstIp = Ip.parse("2.2.2.2"); // return flow dst IP after NAT
+    Ip srcIp = Ip.parse("10.10.10.10");
+    int srcPort = 40;
+    int dstPort = 22;
+    Flow returnFlow =
+        Flow.builder()
+            .setSrcIp(srcIp)
+            .setDstIp(preNatDstIp)
+            .setIngressNode(c.getHostname())
+            .setIngressInterface(ingressIface)
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(srcPort)
+            .setDstPort(dstPort)
+            .build();
+
+    SessionMatchExpr flowMatchingNewSession =
+        new SessionMatchExpr(IpProtocol.TCP, srcIp, preNatDstIp, srcPort, dstPort);
+    Transformation dstTransform =
+        Transformation.always().apply(assignDestinationIp(postNatDstIp, postNatDstIp)).build();
+    FirewallSessionTraceInfo incomingSession =
+        new FirewallSessionTraceInfo(
+            c.getHostname(),
+            ingressIfaceSessionAction.toSessionAction("originalIngressIface", null),
+            new IncomingSessionScope(ImmutableSet.of(ingressIface)),
+            flowMatchingNewSession,
+            dstTransform);
+
+    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
+
+    // Create separate FIB entries for traffic routed to the pre- and post-NAT dst IPs.
+    // Routes and NHIPs don't really matter; we will differentiate based on egress interface used.
+    FibEntry origDstFibEntry =
+        new FibEntry(
+            new FibForward(Ip.parse("12.12.12.12"), preNatEgressIface),
+            ImmutableList.of(StaticRoute.testBuilder().setNetwork(preNatDstIp.toPrefix()).build()));
+    FibEntry transformedDstFibEntry =
+        new FibEntry(
+            new FibForward(Ip.parse("13.13.13.13"), postNatEgressIface),
+            ImmutableList.of(
+                StaticRoute.testBuilder().setNetwork(postNatDstIp.toPrefix()).build()));
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            MockDataPlane.builder()
+                .setForwardingAnalysis(
+                    MockForwardingAnalysis.builder()
+                        // Transformed return flow out either egress iface is delivered to subnet
+                        .setDeliveredToSubnet(
+                            ImmutableMap.of(
+                                c.getHostname(),
+                                ImmutableMap.of(
+                                    vrf.getName(),
+                                    ImmutableMap.of(
+                                        // Use postNatDstIp for both since the flow will be
+                                        // transformed by the time ARP happens.
+                                        preNatEgressIface,
+                                        postNatDstIp.toIpSpace(),
+                                        postNatEgressIface,
+                                        postNatDstIp.toIpSpace()))))
+                        .build())
+                .build(),
+            Topology.EMPTY,
+            ImmutableSet.of(incomingSession),
+            ImmutableSet.of(),
+            ImmutableMap.of(
+                c.getHostname(),
+                ImmutableMap.of(
+                    vrf.getName(),
+                    MockFib.builder()
+                        .setFibEntries(
+                            ImmutableMap.of(
+                                // If routing happens before NAT, use FIB entry for original dst
+                                preNatDstIp,
+                                ImmutableSet.of(origDstFibEntry),
+                                // If routing happens after NAT, use FIB entry for transformed dst
+                                postNatDstIp,
+                                ImmutableSet.of(transformedDstFibEntry)))
+                        .build())),
+            false,
+            configs);
+    // Flow to interface where routing happens before NAT should use 10.10.10.1 route
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
+    FlowTracer flowTracer =
+        new FlowTracer(
+            ctxt,
+            c,
+            ingressIface,
+            new Node(c.getHostname()),
+            new LegacyTraceRecorder(traces::add),
+            null,
+            new ArrayList<>(),
+            returnFlow,
+            vrf.getName(),
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new Stack<>(),
+            returnFlow,
+            0,
+            0);
+    flowTracer.processHop();
+
+    TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
+    Hop hop = Iterables.getOnlyElement(traceAndReverseFlow.getTrace().getHops());
+    assertThat(
+        hop.getSteps(),
+        contains(
+            instanceOf(EnterInputIfaceStep.class),
+            instanceOf(MatchSessionStep.class),
+            natBeforeRouting ? instanceOf(TransformationStep.class) : instanceOf(RoutingStep.class),
+            natBeforeRouting ? instanceOf(RoutingStep.class) : instanceOf(TransformationStep.class),
+            instanceOf(ExitOutputIfaceStep.class),
+            instanceOf(DeliveredStep.class)));
+    assertThat(
+        ((ExitOutputIfaceStep) (hop.getSteps().get(4)))
+            .getDetail()
+            .getOutputInterface()
+            .getInterface(),
+        equalTo(natBeforeRouting ? postNatEgressIface : preNatEgressIface));
   }
 
   @Test
@@ -1697,7 +1863,7 @@ public final class FlowTracerTest {
 
     // must add a breadcrumb before forking
     breadcrumbs.push(new Breadcrumb(c.getHostname(), vrf.getName(), null, flow));
-    FlowTracer flowTracer2 = flowTracer.forkTracerSameNode();
+    FlowTracer flowTracer2 = flowTracer.forkTracerSameNode(true);
 
     // only current flow is transformed
     assertThat(flowTracer2.getOriginalFlow().getDstIp(), equalTo(dstIp1));
@@ -1798,20 +1964,8 @@ public final class FlowTracerTest {
             false,
             configs);
 
-    // There's a sanity check in FlowTracer constructor that requires there to be a PolicyStep or
-    // TransformationStep if the current and original flows don't match. Doesn't matter if this
-    // doesn't accurately represent the transformation.
-    FlowDiff flowDiff = FlowDiff.flowDiff(IpField.SOURCE, blockedSrcIp, permittedSrcIp);
-    TransformationStep placeholderTransformationStep =
-        new TransformationStep(
-            new TransformationStepDetail(
-                TransformationType.SOURCE_NAT, ImmutableSortedSet.of(flowDiff)),
-            StepAction.TRANSFORMED);
-
     {
       // When original flow has the blocked src IP, it should get denied out
-      List<Step<?>> steps = new ArrayList<>();
-      steps.add(placeholderTransformationStep);
       List<TraceAndReverseFlow> traces = new ArrayList<>();
       FlowTracer flowTracer =
           new FlowTracer(
@@ -1825,11 +1979,12 @@ public final class FlowTracerTest {
               flowWithBlockedSrc, // original flow
               vrf.getName(),
               new ArrayList<>(),
-              steps,
+              new ArrayList<>(),
               new Stack<>(),
               flowWithPermittedSrc, // current flow
               0,
-              0);
+              0,
+              true);
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
@@ -1838,8 +1993,6 @@ public final class FlowTracerTest {
 
     {
       // When current flow has the blocked src IP (but original doesn't), it should succeed
-      List<Step<?>> steps = new ArrayList<>();
-      steps.add(placeholderTransformationStep);
       List<TraceAndReverseFlow> traces = new ArrayList<>();
       FlowTracer flowTracer =
           new FlowTracer(
@@ -1853,11 +2006,12 @@ public final class FlowTracerTest {
               flowWithPermittedSrc, // original flow
               vrf.getName(),
               new ArrayList<>(),
-              steps,
+              new ArrayList<>(),
               new Stack<>(),
               flowWithBlockedSrc, // current flow
               0,
-              0);
+              0,
+              true);
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
