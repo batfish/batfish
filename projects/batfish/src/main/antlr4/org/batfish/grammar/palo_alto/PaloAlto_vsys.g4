@@ -6,12 +6,6 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
-m_vsys
-:
-    VSYS name = variable
-    m_rulebase
-;
-
 s_vsys
 :
     VSYS s_vsys_definition?
