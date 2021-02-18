@@ -113,7 +113,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressC
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_noContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
@@ -456,8 +456,11 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafi_no(Sbafi_noContext ctx) {
-    todo(ctx);
+  public void exitSbafi_no_activate(Sbafi_no_activateContext ctx) {
+   if(_currentBgpNeighborIpv4UnicastAddressFamily==null){
+     return;
+   }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
   }
 
   @Override

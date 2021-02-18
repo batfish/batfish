@@ -3,14 +3,29 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/projects" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/allinone" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/allinone/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/allinone/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/batfish" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/batfish-client" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/batfish-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/batfish-client/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/batfish-common-protocol" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/batfish-common-protocol/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/batfish-common-protocol/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/batfish/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/batfish/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/bdd" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/bdd/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/build-tools" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/build-tools/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/coordinator" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/coordinator/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/coordinator/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/minesweeper" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/minesweeper/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/question" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/question/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/projects/symbolic" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/projects/symbolic/src/main/java" charset="UTF-8" />
   </component>
 </project>

@@ -274,11 +274,11 @@ public class CumulusFrrGrammarTest {
     parseLines(
         "router bgp 1",
         " address-family ipv4 unicast",
-        "  no neighbor 2001:100:1:31::2 activate",
+        "  no neighbor N activate",
         " exit-address-family");
-    assertThat(
-        _warnings.getParseWarnings(),
-        contains(hasText(equalTo("no neighbor 2001:100:1:31::2 activate"))));
+    Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
+    assertTrue(
+            neighbors.get("N").getIpv4UnicastAddressFamily().getActivated());
   }
 
   @Test

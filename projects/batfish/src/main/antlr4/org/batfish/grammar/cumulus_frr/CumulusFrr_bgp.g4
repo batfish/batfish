@@ -132,7 +132,7 @@ sbaf_ipv4_unicast
     | sbafi_maximum_paths
     | sbafi_network
     | sbafi_neighbor
-    | sbafi_no
+    | sbafi_no_activate
     | sbafi_redistribute
   )*
 ;
@@ -361,7 +361,7 @@ sbafi_neighbor
   NEWLINE
 ;
 
-sbafi_no
+sbafi_no_activate
 :
    NO NEIGHBOR (IP_ADDRESS | IPV6_ADDRESS) ACTIVATE NEWLINE
 ;
