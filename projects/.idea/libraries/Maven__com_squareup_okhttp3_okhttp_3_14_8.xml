@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.squareup.okhttp3:okhttp:3.14.8">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/squareup/okhttp3/okhttp/3.14.8/okhttp-3.14.8-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,21 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+      "answer" : [
+        "org.batfish.common.BatfishException: No valid configurations found in snapshot\r",
+        "   at org.batfish.main.Batfish.serializeVendorConfigs(Batfish.java:2830)\r",
+        "   at org.batfish.main.Batfish.run(Batfish.java:2159)\r",
+        "   at org.batfish.main.Driver.lambda$runBatfish$0(Driver.java:312)\r",
+        "   at java.base/java.lang.Thread.run(Thread.java:834)\r",
+        ""
+      ]
+    }
+  ],
+  "status" : "FAILURE",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

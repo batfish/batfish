@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/allinone/allinone.iml" filepath="$PROJECT_DIR$/allinone/allinone.iml" />
+      <module fileurl="file://$PROJECT_DIR$/batfish/batfish.iml" filepath="$PROJECT_DIR$/batfish/batfish.iml" />
+      <module fileurl="file://$PROJECT_DIR$/batfish-client/batfish-client.iml" filepath="$PROJECT_DIR$/batfish-client/batfish-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/batfish-common-protocol/batfish-common-protocol.iml" filepath="$PROJECT_DIR$/batfish-common-protocol/batfish-common-protocol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/batfish-parent.iml" filepath="$PROJECT_DIR$/batfish-parent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bdd/bdd.iml" filepath="$PROJECT_DIR$/bdd/bdd.iml" />
+      <module fileurl="file://$PROJECT_DIR$/build-tools/build-tools.iml" filepath="$PROJECT_DIR$/build-tools/build-tools.iml" />
+      <module fileurl="file://$PROJECT_DIR$/coordinator/coordinator.iml" filepath="$PROJECT_DIR$/coordinator/coordinator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/minesweeper/minesweeper.iml" filepath="$PROJECT_DIR$/minesweeper/minesweeper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/question/question.iml" filepath="$PROJECT_DIR$/question/question.iml" />
+      <module fileurl="file://$PROJECT_DIR$/symbolic/symbolic.iml" filepath="$PROJECT_DIR$/symbolic/symbolic.iml" />
+    </modules>
+  </component>
+</project>

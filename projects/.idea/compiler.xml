@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <option name="BUILD_PROCESS_HEAP_SIZE" value="2048" />
-    <option name="USE_RELEASE_OPTION" value="false" />
+    <option name="BUILD_PROCESS_HEAP_SIZE" value="1024" />
     <annotationProcessing>
       <profile name="Annotation profile for Batfish" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -41,7 +40,7 @@
         <module name="minesweeper" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="11">
       <module name="allinone" target="1.8" />
       <module name="batfish" target="1.8" />
       <module name="batfish-client" target="1.8" />
