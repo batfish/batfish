@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
+import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
@@ -426,13 +427,17 @@ public final class FlatJuniperGrammarTest {
     BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
         new FlatJuniperCombinedParser(src, settings, null);
+    Warnings w = new Warnings();
     FlatJuniperControlPlaneExtractor extractor =
-        new FlatJuniperControlPlaneExtractor(src, flatJuniperParser, new Warnings());
+        new FlatJuniperControlPlaneExtractor(src, flatJuniperParser, w);
     ParserRuleContext tree =
         Batfish.parse(
             flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
-    return SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
+    JuniperConfiguration ret =
+        SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
+    ret.setWarnings(w);
+    return ret;
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -3535,15 +3540,15 @@ public final class FlatJuniperGrammarTest {
     {
       PolicyStatement policy =
           c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
-      assertThat(policy.getTerms(), hasKeys("T1", "T2", "T3"));
+      assertThat(policy.getTerms(), hasKeys("TSETMIN", "TADDMAX", "TSUB3"));
       assertThat(
-          policy.getTerms().get("T1").getThens(),
-          contains(new PsThenLocalPreference(1, Operator.SET)));
+          policy.getTerms().get("TSETMIN").getThens(),
+          contains(new PsThenLocalPreference(0, Operator.SET)));
       assertThat(
-          policy.getTerms().get("T2").getThens(),
-          contains(new PsThenLocalPreference(2, Operator.ADD)));
+          policy.getTerms().get("TADDMAX").getThens(),
+          contains(new PsThenLocalPreference(MAX_LOCAL_PREFERENCE, Operator.ADD)));
       assertThat(
-          policy.getTerms().get("T3").getThens(),
+          policy.getTerms().get("TSUB3").getThens(),
           contains(new PsThenLocalPreference(3, Operator.SUBTRACT)));
     }
   }

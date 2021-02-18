@@ -600,6 +600,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
@@ -1766,6 +1767,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private static long toLong(DecContext ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
+  private static long toLong(Uint32Context ctx) {
     return Long.parseLong(ctx.getText());
   }
 
@@ -4856,8 +4861,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_local_preference(Popsf_local_preferenceContext ctx) {
-    int localPreference = toInt(ctx.localpref);
-    _currentPsTerm.getFroms().setFromLocalPreference(new PsFromLocalPreference(localPreference));
+    _currentPsTerm
+        .getFroms()
+        .setFromLocalPreference(new PsFromLocalPreference(toLong(ctx.localpref)));
   }
 
   @Override
@@ -5022,15 +5028,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_local_preference(Popst_local_preferenceContext ctx) {
-    int localPreference = toInt(ctx.localpref);
     PsThenLocalPreference.Operator op =
         ctx.ADD() != null
             ? PsThenLocalPreference.Operator.ADD
             : (ctx.SUBTRACT() != null
                 ? PsThenLocalPreference.Operator.SUBTRACT
                 : PsThenLocalPreference.Operator.SET);
-    PsThenLocalPreference then = new PsThenLocalPreference(localPreference, op);
-    _currentPsThens.add(then);
+    _currentPsThens.add(new PsThenLocalPreference(toLong(ctx.localpref), op));
   }
 
   @Override
