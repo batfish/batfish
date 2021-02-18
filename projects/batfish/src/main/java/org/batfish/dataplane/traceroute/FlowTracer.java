@@ -1072,6 +1072,7 @@ class FlowTracer {
 
               @Override
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
+                _steps.addAll(transformationSteps);
                 // cycle detection
                 Breadcrumb breadcrumb =
                     new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, originalFlow);
