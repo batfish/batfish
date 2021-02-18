@@ -1,10 +1,13 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class IncrementLocalPreference extends LongExpr {
+public final class IncrementLocalPreference extends LongExpr {
 
   private long _addend;
 
@@ -12,6 +15,10 @@ public class IncrementLocalPreference extends LongExpr {
   private IncrementLocalPreference() {}
 
   public IncrementLocalPreference(long addend) {
+    checkArgument(
+        addend >= 0, "To add a negative number (%s), use DecrementLocalPreference", addend);
+    checkArgument(
+        addend <= MAX_LOCAL_PREFERENCE, "Value (%s) is out of range for local preference", addend);
     _addend = addend;
   }
 
@@ -24,26 +31,17 @@ public class IncrementLocalPreference extends LongExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof IncrementLocalPreference)) {
       return false;
     }
     IncrementLocalPreference other = (IncrementLocalPreference) obj;
-    if (_addend != other._addend) {
-      return false;
-    }
-    return true;
+    return _addend == other._addend;
   }
 
   @Override
   public long evaluate(Environment environment) {
     BgpRoute<?, ?> oldRoute = (BgpRoute) environment.getOriginalRoute();
-    long oldLp = oldRoute.getLocalPreference();
-    long newVal = oldLp + _addend;
-    return newVal;
+    return Math.min(oldRoute.getLocalPreference() + _addend, MAX_LOCAL_PREFERENCE);
   }
 
   public long getAddend() {
