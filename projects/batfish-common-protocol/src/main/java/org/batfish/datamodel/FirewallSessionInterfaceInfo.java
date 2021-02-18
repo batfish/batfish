@@ -89,12 +89,10 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
       @JsonProperty(PROP_INCOMING_ACL_NAME) @Nullable String incomingAclName,
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
     checkNotNull(sessionInterfaces, PROP_SESSION_INTERFACES + " cannot be null");
-    if (action == null) {
-      // for backwards compatibility
-      action = fibLookup ? Action.POST_NAT_FIB_LOOKUP : Action.NO_FIB_LOOKUP;
-    }
+    Action backwardsCompatibleAction =
+        action != null ? action : fibLookup ? Action.POST_NAT_FIB_LOOKUP : Action.NO_FIB_LOOKUP;
     return new FirewallSessionInterfaceInfo(
-        action, sessionInterfaces, incomingAclName, outgoingAclName);
+        backwardsCompatibleAction, sessionInterfaces, incomingAclName, outgoingAclName);
   }
 
   @Override
