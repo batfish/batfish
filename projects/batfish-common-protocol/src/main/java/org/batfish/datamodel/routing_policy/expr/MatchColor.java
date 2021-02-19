@@ -2,7 +2,6 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -11,14 +10,14 @@ public final class MatchColor extends BooleanExpr {
 
   private static final String PROP_COLOR = "color";
 
-  private final int _color;
+  private final long _color;
 
   @JsonCreator
   private static MatchColor create(@JsonProperty(PROP_COLOR) int color) {
     return new MatchColor(color);
   }
 
-  public MatchColor(int color) {
+  public MatchColor(long color) {
     _color = color;
   }
 
@@ -33,7 +32,7 @@ public final class MatchColor extends BooleanExpr {
   }
 
   @JsonProperty(PROP_COLOR)
-  public int getColor() {
+  public long getColor() {
     return _color;
   }
 
@@ -41,8 +40,7 @@ public final class MatchColor extends BooleanExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (!(obj instanceof MatchColor)) {
+    } else if (!(obj instanceof MatchColor)) {
       return false;
     }
     MatchColor other = (MatchColor) obj;
@@ -51,6 +49,6 @@ public final class MatchColor extends BooleanExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(_color);
+    return Long.hashCode(_color);
   }
 }
