@@ -117,7 +117,7 @@ b_disable_4byte_as
 
 b_drop_path_attributes
 :
-   DROP_PATH_ATTRIBUTES attr = DEC
+   DROP_PATH_ATTRIBUTES attr = dec
 ;
 
 b_enable
@@ -246,7 +246,7 @@ b_peer_as
 
 b_preference
 :
-  PREFERENCE pref = DEC
+  PREFERENCE pref = dec
 ;
 
 b_remove_private
@@ -262,7 +262,7 @@ b_remove_private
 
 b_tcp_mss
 :
-   TCP_MSS DEC
+   TCP_MSS dec
 ;
 
 b_type
@@ -279,15 +279,15 @@ bf_accepted_prefix_limit
    ACCEPTED_PREFIX_LIMIT
    (
       (
-         MAXIMUM max = DEC
+         MAXIMUM max = dec
       )
       |
       (
-         TEARDOWN limit_threshold = DEC?
+         TEARDOWN limit_threshold = dec?
          (
             IDLE_TIMEOUT
             (
-               idle_timeout = DEC
+               idle_timeout = dec
                | FOREVER
             )
          )?
@@ -403,7 +403,7 @@ bfiu_add_path
 
 bfiu_loops
 :
-   LOOPS count = DEC
+   LOOPS count = dec
 ;
 
 bfiu_prefix_limit
@@ -432,7 +432,7 @@ bfiua_send
 
 bfiuas_path_count
 :
-   PATH_COUNT count = DEC
+   PATH_COUNT count = dec
 ;
 
 bfiuas_prefix_policy
@@ -454,7 +454,7 @@ bl_common
 
 bl_loops
 :
-   LOOPS DEC
+   LOOPS dec
 ;
 
 bl_number
@@ -474,7 +474,7 @@ bm_no_nexthop_change
 
 bm_ttl
 :
-   TTL DEC
+   TTL dec
 ;
 
 bpa_as

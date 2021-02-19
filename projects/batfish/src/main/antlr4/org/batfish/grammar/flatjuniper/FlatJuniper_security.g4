@@ -149,7 +149,7 @@ nat_pool_utilization_alarm
 
 nat_pool_default_port_range
 :
-   POOL_DEFAULT_PORT_RANGE low = DEC (TO high = DEC)?
+   POOL_DEFAULT_PORT_RANGE low = dec (TO high = dec)?
 ;
 
 nat_port_randomization
@@ -173,7 +173,7 @@ nati_port_overloading
 
 nati_port_overloading_factor
 :
-   PORT_OVERLOADING_FACTOR factor = DEC
+   PORT_OVERLOADING_FACTOR factor = dec
 ;
 
 natp_address
@@ -191,7 +191,7 @@ natp_address
       )
       |
       (
-         ip_address = IP_ADDRESS PORT port_num = DEC
+         ip_address = IP_ADDRESS PORT port_num = dec
       )
    )
 ;
@@ -201,7 +201,7 @@ natp_port
    PORT
    (
       NO_TRANSLATION
-      | RANGE from = DEC (TO to = DEC)?
+      | RANGE from = dec (TO to = dec)?
    )
 ;
 
@@ -300,9 +300,9 @@ rsrm_destination_address_name
 
 rsrm_destination_port
 :
-   DESTINATION_PORT from = DEC
+   DESTINATION_PORT from = dec
    (
-      TO to = DEC
+      TO to = dec
    )?
 ;
 
@@ -318,9 +318,9 @@ rsrm_source_address_name
 
 rsrm_source_port
 :
-   SOURCE_PORT from = DEC
+   SOURCE_PORT from = dec
     (
-        TO to = DEC
+        TO to = dec
     )?
 ;
 
@@ -383,12 +383,12 @@ rsrtnp_persistent_nat
 
 rsrtnpp_inactivity_timeout
 :
-   INACTIVITY_TIMEOUT seconds = DEC
+   INACTIVITY_TIMEOUT seconds = dec
 ;
 
 rsrtnpp_max_session_number
 :
-   MAX_SESSION_NUMBER max = DEC
+   MAX_SESSION_NUMBER max = dec
 ;
 
 rsrtnpp_permit
@@ -422,9 +422,9 @@ rsrtst_prefix_name
 
 rsrtstp_mapped_port
 :
-   MAPPED_PORT low = DEC
+   MAPPED_PORT low = dec
    (
-      TO high = DEC
+      TO high = dec
    )?
 ;
 
@@ -577,7 +577,7 @@ sea_key
 
 sea_tolerance
 :
-   TOLERANCE DEC
+   TOLERANCE dec
 ;
 
 sead_address
@@ -760,7 +760,7 @@ seikg_xauth
 
 seikgd_connections_limit
 :
-   CONNECTIONS_LIMIT limit = DEC
+   CONNECTIONS_LIMIT limit = dec
 ;
 
 seikgd_hostname
@@ -838,7 +838,7 @@ seikpr_encryption_algorithm
 
 seikpr_lifetime_seconds
 :
-   LIFETIME_SECONDS seconds = DEC
+   LIFETIME_SECONDS seconds = dec
 ;
 
 seip_policy
@@ -909,12 +909,12 @@ seippr_encryption_algorithm
 
 seippr_lifetime_kilobytes
 :
-   LIFETIME_KILOBYTES kilobytes = DEC
+   LIFETIME_KILOBYTES kilobytes = dec
 ;
 
 seippr_lifetime_seconds
 :
-   LIFETIME_SECONDS seconds = DEC
+   LIFETIME_SECONDS seconds = dec
 ;
 
 seippr_protocol
@@ -1305,8 +1305,8 @@ seso_limit_session
 :
    LIMIT_SESSION
    (
-      DESTINATION_IP_BASED DEC
-      | SOURCE_IP_BASED DEC
+      DESTINATION_IP_BASED dec
+      | SOURCE_IP_BASED dec
    )
 ;
 
@@ -1397,7 +1397,7 @@ sesop_ipv6_extension_header
 
 sesop_ipv6_extension_header_limit
 :
-   IPV6_EXTENSION_HEADER_LIMIT limit=DEC
+   IPV6_EXTENSION_HEADER_LIMIT limit=dec
 ;
 
 sesop_ipv6_malformed_header
@@ -1494,7 +1494,7 @@ sesop6_hop_header
 
 sesop6_user_option
 :
-   USER_DEFINED_OPTION_TYPE type_low=DEC (TO type_high=DEC)?
+   USER_DEFINED_OPTION_TYPE type_low=dec (TO type_high=dec)?
 ;
 
 sesot_fin_no_ack
@@ -1557,27 +1557,27 @@ sesot_winnuke
 
 sesots_alarm_thred
 :
-   ALARM_THRESHOLD number=DEC
+   ALARM_THRESHOLD number=dec
 ;
 
 sesots_attack_thred
 :
-   ATTACK_THRESHOLD number=DEC
+   ATTACK_THRESHOLD number=dec
 ;
 
 sesots_dst_thred
 :
-   DESTINATION_THRESHOLD number=DEC
+   DESTINATION_THRESHOLD number=dec
 ;
 
 sesots_src_thred
 :
-   SOURCE_THRESHOLD number=DEC
+   SOURCE_THRESHOLD number=dec
 ;
 
 sesots_timeout
 :
-   TIMEOUT seconds=DEC
+   TIMEOUT seconds=dec
 ;
 
 sesots_whitelist

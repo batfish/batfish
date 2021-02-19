@@ -1,0 +1,12 @@
+#
+set system host-name juniper-policy-statement-from
+#
+set policy-options policy-statement COLOR_POLICY term TMIN from color 0
+set policy-options policy-statement COLOR_POLICY term TMAX from color 4294967295
+#
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TMIN from local-preference 0
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TMAX from local-preference 4294967295
+#
+set policy-options policy-statement TAG_POLICY term TMIN from tag 0
+set policy-options policy-statement TAG_POLICY term TMAX from tag 4294967295
+#

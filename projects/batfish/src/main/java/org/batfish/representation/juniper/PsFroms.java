@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -106,8 +107,8 @@ public final class PsFroms implements Serializable {
     return _fromAsPaths;
   }
 
-  @Nullable
-  PsFromColor getFromColor() {
+  @VisibleForTesting
+  public @Nullable PsFromColor getFromColor() {
     return _fromColor;
   }
 
@@ -130,8 +131,8 @@ public final class PsFroms implements Serializable {
     return _fromInterfaces;
   }
 
-  @Nullable
-  PsFromLocalPreference getFromLocalPreference() {
+  @VisibleForTesting
+  public @Nullable PsFromLocalPreference getFromLocalPreference() {
     return _fromLocalPreference;
   }
 
@@ -175,8 +176,8 @@ public final class PsFroms implements Serializable {
     return _fromRouteFilters;
   }
 
-  @Nonnull
-  Set<PsFromTag> getFromTags() {
+  @VisibleForTesting
+  public @Nonnull Set<PsFromTag> getFromTags() {
     return _fromTags;
   }
 

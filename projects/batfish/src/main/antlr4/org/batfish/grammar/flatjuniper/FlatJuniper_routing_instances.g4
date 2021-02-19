@@ -77,9 +77,9 @@ ri_route_distinguisher
 :
    ROUTE_DISTINGUISHER
    (
-      DEC
+      dec
       | IP_ADDRESS
-   ) COLON DEC
+   ) COLON dec
 ;
 
 ri_snmp
@@ -171,9 +171,9 @@ ro_bmp
 
 ro_confederation
 :
-  CONFEDERATION num = DEC?
+  CONFEDERATION num = dec?
   (
-    MEMBERS member += DEC
+    MEMBERS member += dec
   )*
 ;
 
@@ -335,7 +335,7 @@ roa_policy
 
 roa_preference
 :
-   PREFERENCE preference = DEC
+   PREFERENCE preference = dec
 ;
 
 roa_route
@@ -353,12 +353,12 @@ roa_route
 
 roa_tag
 :
-   TAG tag = DEC
+   TAG tag = dec
 ;
 
 roaa_aggregator
 :
-   AGGREGATOR as = DEC ip = IP_ADDRESS
+   AGGREGATOR as = dec ip = IP_ADDRESS
 ;
 
 roaa_origin
@@ -378,7 +378,7 @@ roas_asdot_notation
 
 roas_loops
 :
-   LOOPS DEC
+   LOOPS dec
 ;
 
 rob_station_address
@@ -388,7 +388,7 @@ rob_station_address
 
 rob_station_port
 :
-   STATION_PORT DEC
+   STATION_PORT dec
 ;
 
 rof_export
@@ -442,7 +442,7 @@ rog_discard
 
 rog_metric
 :
-   METRIC metric = DEC
+   METRIC metric = dec
 ;
 
 rog_passive
@@ -545,12 +545,12 @@ ros_route
 
 roslrg_srlg_cost
 :
-   SRLG_COST cost = DEC
+   SRLG_COST cost = dec
 ;
 
 roslrg_srlg_value
 :
-   SRLG_VALUE value = DEC
+   SRLG_VALUE value = dec
 ;
 
 rosr_active
@@ -562,7 +562,7 @@ rosr_as_path
 :
    AS_PATH PATH
    (
-      path += DEC
+      path += dec
    )+
 ;
 
@@ -605,9 +605,9 @@ rosr_install
 
 rosr_metric
 :
-   METRIC metric = DEC
+   METRIC metric = dec
    (
-      TYPE DEC
+      TYPE dec
    )?
 ;
 
@@ -648,7 +648,7 @@ rosr_passive
 
 rosr_preference
 :
-   PREFERENCE pref = DEC
+   PREFERENCE pref = dec
 ;
 
 rosr_qualified_next_hop
@@ -683,7 +683,7 @@ rosr_retain
 
 rosr_tag
 :
-   TAG tag = DEC
+   TAG tag = dec
 ;
 
 rosrqnh_common
@@ -697,17 +697,17 @@ rosrqnh_common
 
 rosrqnhc_metric
 :
-   METRIC metric = DEC
+   METRIC metric = dec
 ;
 
 rosrqnhc_preference
 :
-   PREFERENCE pref = DEC
+   PREFERENCE pref = dec
 ;
 
 rosrqnhc_tag
 :
-   TAG tag = DEC
+   TAG tag = dec
 ;
 
 s_routing_instances
