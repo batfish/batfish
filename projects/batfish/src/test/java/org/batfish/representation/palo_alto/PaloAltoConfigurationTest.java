@@ -1,7 +1,5 @@
 package org.batfish.representation.palo_alto;
 
-import static org.batfish.common.matchers.WarningMatchers.hasText;
-import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -10,6 +8,7 @@ import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejectsByDefault;
+import static org.batfish.representation.palo_alto.PaloAltoConfiguration.checkIntrazoneValidityAndWarn;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.computeObjectName;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCalls;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.generateCrossZoneCallsFromExternal;
@@ -25,13 +24,13 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -682,22 +681,24 @@ public final class PaloAltoConfigurationTest {
   }
 
   @Test
-  public void testSecurityRuleAppliesIntrazoneWarn() {
+  public void testCheckIntrazoneValidityAndWarn() {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
     rule.getTo().addAll(ImmutableList.of("A", "B"));
 
-    // universal (non-intrazone)
-    assertTrue(securityRuleApplies("A", "A", rule, new Warnings()));
+    // non-intrazone
+    assertTrue(checkIntrazoneValidityAndWarn(rule, new Warnings()));
 
     // valid intrazone
     rule.setRuleType(RuleType.INTRAZONE);
-    assertTrue(securityRuleApplies("A", "A", rule, new Warnings()));
+    assertTrue(checkIntrazoneValidityAndWarn(rule, new Warnings()));
 
     // invalid intrazone
     Warnings w = new Warnings(true, true, true);
     rule.getTo().add("C");
-    assertFalse(securityRuleApplies("A", "C", rule, w));
-    assertThat(w, hasRedFlag(hasText(containsString("Skipping invalid intrazone security rule"))));
+    assertFalse(checkIntrazoneValidityAndWarn(rule, w));
+    assertThat(
+        Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
+        containsString("Skipping invalid intrazone security rule"));
   }
 }

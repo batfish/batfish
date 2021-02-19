@@ -58,6 +58,7 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
 import com.google.common.collect.TreeRangeSet;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -659,6 +660,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
+      checkAllSecurityRuleValidity(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -818,15 +820,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
     switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
       case INTRAZONE:
-        boolean intrazone = fromZoneName.equals(toZoneName);
-        if (!intrazone) {
-          warnings.redFlag(
-              String.format(
-                  "Skipping invalid intrazone security rule: %s. It has different From and To"
-                      + " zones: %s vs %s",
-                  rule.getName(), fromZoneName, toZoneName));
-        }
-        return intrazone;
+        return fromZoneName.equals(toZoneName);
       case INTERZONE:
         return !fromZoneName.equals(toZoneName);
       case UNIVERSAL:
@@ -838,6 +832,45 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 rule.getRuleType(), fromZoneName, toZoneName));
         return false;
     }
+  }
+
+  /**
+   * Check security rules from this Vsys and pre-/post-rulebases from Panorama and warn about
+   * invalid intrazone rules.
+   */
+  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
+  private void checkAllSecurityRuleValidity(Vsys vsys) {
+    Stream<Map.Entry<SecurityRule, Vsys>> pre =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPreRulebase().getSecurityRules().values().stream()
+                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
+    Stream<Map.Entry<SecurityRule, Vsys>> post =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPostRulebase().getSecurityRules().values().stream()
+                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
+    Stream<Map.Entry<SecurityRule, Vsys>> rules =
+        vsys.getRulebase().getSecurityRules().values().stream()
+            .map(r -> new SimpleImmutableEntry<>(r, vsys));
+    Stream.concat(Stream.concat(pre, rules), post)
+        .forEach(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w));
+  }
+  /**
+   * Check if the intrazone security rule is valid, and log a warning if it is not. Returns true for
+   * non-intrazone rules.
+   */
+  @VisibleForTesting
+  static boolean checkIntrazoneValidityAndWarn(SecurityRule rule, Warnings w) {
+    if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
+      w.redFlag(
+          String.format(
+              "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
+                  + " %s vs %s",
+              rule.getName(), rule.getFrom(), rule.getTo()));
+      return false;
+    }
+    return true;
   }
 
   /**
