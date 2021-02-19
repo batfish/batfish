@@ -118,7 +118,9 @@ public final class ApplicationOverrideRule implements Serializable {
 
   @Nullable
   public IpProtocol getIpProtocol() {
-    return _protocol == Protocol.TCP ? IpProtocol.TCP : IpProtocol.UDP;
+    return _protocol == Protocol.TCP
+        ? IpProtocol.TCP
+        : _protocol == Protocol.UDP ? IpProtocol.UDP : null;
   }
 
   @Nonnull

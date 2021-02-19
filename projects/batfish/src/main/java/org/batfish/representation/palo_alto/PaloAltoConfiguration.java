@@ -676,11 +676,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // For each rule corresponding to the app we're interested in, add another appMatchExpr
       if (app.equals(rule.getApplication())) {
 
-        // Add match expr which corresponds to preceding rules *not* matching but matches this rule
+        // Add match expr which corresponds to this rule matching but *not* preceding rules
         ImmutableList.Builder<AclLineMatchExpr> childMatchExprs = ImmutableList.builder();
         preceding.build().forEach(p -> childMatchExprs.add(new NotMatchExpr(p)));
         childMatchExprs.add(ruleAcl);
-        // TODO confirm traceElement
         appMatchExprs.add(
             new AndMatchExpr(
                 childMatchExprs.build(),
@@ -690,14 +689,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       preceding.add(ruleAcl);
     }
-    // TODO traceElement?
     return new OrMatchExpr(
         appMatchExprs, matchApplicationObjectTraceElement(app, vsys.getName(), _filename));
   }
 
   /**
    * Collects the application-override rules from this Vsys and merges the common
-   * pre-/post-rulebases from Panorama. Filters out rules that aren't applicable.
+   * pre-/post-rulebases from Panorama. Filters out rules that aren't applicable or are invalid.
    */
   private List<ApplicationOverrideRule> getApplicableApplicationOverrideRules(
       Vsys vsys, String fromZone, String toZone) {
@@ -712,10 +710,45 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Stream<ApplicationOverrideRule> rules =
         vsys.getRulebase().getApplicationOverrideRules().values().stream();
 
-    // TODO add validation and warnings somewhere, e.g. missing port or protocol
     return Stream.concat(Stream.concat(pre, rules), post)
+        .filter(this::applicationOverrideRuleValid)
         .filter(e -> applicationOverrideRuleApplies(fromZone, toZone, e))
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /** Returns a bool indicating if application override rule is valid or not. */
+  private boolean applicationOverrideRuleValid(ApplicationOverrideRule rule) {
+    String ruleName = rule.getName();
+    boolean valid = true;
+    if (rule.getApplication() == null) {
+      _w.redFlag(String.format("No application set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getDestination().isEmpty()) {
+      _w.redFlag(String.format("No destination set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getSource().isEmpty()) {
+      _w.redFlag(String.format("No source set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getFrom().isEmpty()) {
+      _w.redFlag(String.format("No from-zone set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getTo().isEmpty()) {
+      _w.redFlag(String.format("No to-zone set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getPort().equals(IntegerSpace.EMPTY)) {
+      _w.redFlag(String.format("No port set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getProtocol() == null) {
+      _w.redFlag(String.format("No protocol set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    return valid;
   }
 
   /**
@@ -723,12 +756,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * used by security rules.
    */
   private Map<String, AclLineMatchExpr> buildApplicationOverrideMap(
-      Vsys vsys, String fromZone, String toZone) {
-    // Ordered map of *rule* name to rule
-    // Map<String, ApplicationOverrideRule> rules =
-    // vsys.getRulebase().getApplicationOverrideRules();
-
-    // Ordered list of rules that are applicable to the current fromZone, toZone, and vsys
+      Vsys vsys,
+      String fromZone,
+      String toZone) { // Ordered list of rules that are applicable to the current fromZone, toZone,
+    // and vsys
     List<ApplicationOverrideRule> rules =
         getApplicableApplicationOverrideRules(vsys, fromZone, toZone);
 
@@ -738,12 +769,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         r ->
             ruleNameToAcl.put(
                 r.getName(), buildApplicationOverrideRuleAcl(vsys, r, fromZone, toZone)));
-    //    for (Entry<String, ApplicationOverrideRule> entry : rules.entrySet()) {
-    //      String ruleName = entry.getKey();
-    //      ApplicationOverrideRule rule = entry.getValue();
-    //      ruleNameToAcl.put(ruleName, buildApplicationOverrideRuleAcl(vsys, rule, fromZone,
-    // toZone));
-    //    }
 
     // Next, build map of app name to ACL, using the converted rules from above
     Map<String, AclLineMatchExpr> appNameToAcl = new HashMap<>();
@@ -760,23 +785,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return appNameToAcl;
   }
 
-  /** Build an {@link ExprAclLine} for the specified (overridden) application name. */
-  private ExprAclLine buildApplicationOverrideExpr(
-      String appName, Map<String, ApplicationOverrideRule> rules, String fromZone, String toZone) {
-    // TODO build it
-    AndMatchExpr condition = new AndMatchExpr(null);
-    // TODO set traceElement
-    return ExprAclLine.accepting()
-        .setName("Accept app " + appName)
-        .setMatchCondition(condition)
-        .build();
-  }
-
   /** Build list of converted security rules for the zone pair in the specified Vsys. */
   private List<AclLine> convertSecurityRules(
       Vsys vsys, String fromZone, String toZone, Map<String, AclLineMatchExpr> appOverrideAcls) {
     // Note: using linked hash map to preserve insertion order
-    // Note: using map internally to avoid duplicating rulenames (not allowed on PAN devices)
+    // Note: using map to avoid duplicating rulenames (not allowed on PAN devices)
     Map<String, ExprAclLine> ruleToExprAclLine = new LinkedHashMap<>();
     Vsys panorama = this.getPanorama();
 
@@ -1584,12 +1597,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (name.equals(CATCHALL_APPLICATION_NAME)) {
       return Optional.of(new TrueExpr(matchApplicationAnyTraceElement()));
     }
-
-    //    // See if the application has relevant application-override logic
-    //    AclLineMatchExpr appOverrideAcl = appOverrideAclsMap.get(name);
-    //    if (appOverrideAcl != null) {
-    //      return Optional.of(appOverrideAcl);
-    //    }
 
     ApplicationGroup group = vsys.getApplicationGroups().get(name);
     if (group != null) {
