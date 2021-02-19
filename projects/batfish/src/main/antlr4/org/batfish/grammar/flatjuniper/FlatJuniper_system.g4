@@ -97,7 +97,7 @@ syn_source_address
 
 syn_server_key
 :
-    KEY DEC
+    KEY dec
 ;
 
 syn_server_prefer

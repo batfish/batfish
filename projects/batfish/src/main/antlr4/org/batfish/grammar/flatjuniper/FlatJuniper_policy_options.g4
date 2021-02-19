@@ -11,9 +11,9 @@ metric_expression
    (
       METRIC
       | METRIC2
-   ) MULTIPLIER multiplier = DEC
+   ) MULTIPLIER multiplier = dec
    (
-      OFFSET offset = DEC
+      OFFSET offset = dec
    )?
 ;
 
@@ -183,7 +183,7 @@ popsf_as_path_group
 
 popsf_color
 :
-   COLOR color = DEC
+   COLOR color = dec
 ;
 
 popsf_community
@@ -222,14 +222,14 @@ popsf_interface
 
 popsf_level
 :
-   LEVEL DEC
+   LEVEL dec
 ;
 
 popsf_local_preference
 :
    LOCAL_PREFERENCE
    (
-      localpref = DEC
+      localpref = dec
       | apply_groups
    )
 ;
@@ -238,7 +238,7 @@ popsf_metric
 :
    METRIC
    (
-      metric = DEC
+      metric = dec
       | apply_groups
    )
 ;
@@ -330,7 +330,7 @@ popsf_source_address_filter
 
 popsf_tag
 :
-   TAG DEC
+   TAG dec
 ;
 
 popsfpl_exact
@@ -385,7 +385,7 @@ popsfrf_orlonger
 
 popsfrf_prefix_length_range
 :
-   PREFIX_LENGTH_RANGE FORWARD_SLASH low = DEC DASH FORWARD_SLASH high = DEC
+   PREFIX_LENGTH_RANGE FORWARD_SLASH low = dec DASH FORWARD_SLASH high = dec
 ;
 
 popsfrf_then
@@ -404,7 +404,7 @@ popsfrf_through
 
 popsfrf_upto
 :
-   UPTO FORWARD_SLASH high = DEC
+   UPTO FORWARD_SLASH high = dec
 ;
 
 popst_accept
@@ -414,7 +414,7 @@ popst_accept
 
 popst_as_path_expand
 :
-   AS_PATH_EXPAND LAST_AS COUNT DEC
+   AS_PATH_EXPAND LAST_AS COUNT dec
 ;
 
 popst_as_path_prepend
@@ -509,7 +509,7 @@ popst_default_action_reject
 
 popst_external
 :
-   EXTERNAL TYPE DEC
+   EXTERNAL TYPE dec
 ;
 
 popst_forwarding_class
@@ -526,7 +526,7 @@ popst_local_preference
 :
    LOCAL_PREFERENCE
    (
-      (ADD | SUBTRACT)? localpref = DEC
+      (ADD | SUBTRACT)? localpref = dec
       | apply_groups
    )
 ;
@@ -535,19 +535,19 @@ popst_metric
 :
    METRIC
    (
-      metric = DEC
+      metric = dec
       | apply_groups
    )
 ;
 
 popst_metric_add
 :
-   METRIC ADD metric = DEC
+   METRIC ADD metric = dec
 ;
 
 popst_metric2
 :
-   METRIC2 metric2 = DEC
+   METRIC2 metric2 = dec
 ;
 
 popst_metric_expression
@@ -557,7 +557,7 @@ popst_metric_expression
 
 popst_metric_igp
 :
-   METRIC IGP offset = DEC?
+   METRIC IGP offset = dec?
 ;
 
 popst_metric2_expression
@@ -607,7 +607,7 @@ popst_origin
 
 popst_preference
 :
-   PREFERENCE preference = DEC
+   PREFERENCE preference = dec
 ;
 
 popst_priority
@@ -626,32 +626,32 @@ popst_reject
 
 popst_tag
 :
-   TAG DEC
+   TAG dec
 ;
 
 popstc_add_color
 :
-   ADD color = DEC
+   ADD color = dec
 ;
 
 popstc_color
 :
-   color = DEC
+   color = dec
 ;
 
 popstc2_add_color
 :
-   ADD color2 = DEC
+   ADD color2 = dec
 ;
 
 popstc2_color
 :
-   color2 = DEC
+   color2 = dec
 ;
 
 popsto_level
 :
-   LEVEL DEC
+   LEVEL dec
 ;
 
 popsto_rib

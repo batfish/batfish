@@ -96,19 +96,19 @@ aat_icmp_type
 
 aat_icmp6_code
 :
-   ICMP6_CODE code = DEC
+   ICMP6_CODE code = dec
 ;
 
 aat_icmp6_type
 :
-   ICMP6_TYPE type = DEC
+   ICMP6_TYPE type = dec
 ;
 
 aat_inactivity_timeout
 :
    INACTIVITY_TIMEOUT
    (
-      DEC
+      dec
       | NEVER
    )
 ;
@@ -120,7 +120,7 @@ aat_protocol
 
 aat_rpc_program_number
 :
-   RPC_PROGRAM_NUMBER DEC
+   RPC_PROGRAM_NUMBER dec
 ;
 
 aat_source_port

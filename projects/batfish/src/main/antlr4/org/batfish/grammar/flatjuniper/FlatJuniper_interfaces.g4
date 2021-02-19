@@ -53,7 +53,7 @@ eo_redundant_parent
 
 eo_speed
 :
-   SPEED DEC speed_abbreviation
+   SPEED dec speed_abbreviation
 ;
 
 eo8023ad_interface
@@ -186,12 +186,12 @@ i_mac
 
 i_mtu
 :
-   MTU size = DEC
+   MTU size = dec
 ;
 
 i_native_vlan_id
 :
-   NATIVE_VLAN_ID id = DEC
+   NATIVE_VLAN_ID id = dec
 ;
 
 i_null
@@ -217,7 +217,7 @@ i_null
 
 i_peer_unit
 :
-   PEER_UNIT unit = DEC
+   PEER_UNIT unit = dec
 ;
 
 i_per_unit_scheduler
@@ -232,7 +232,7 @@ i_redundant_ether_options
 
 i_speed
 :
-   SPEED DEC speed_abbreviation
+   SPEED dec speed_abbreviation
 ;
 
 i_unit
@@ -240,7 +240,7 @@ i_unit
    UNIT
    (
       wildcard
-      | num = DEC
+      | num = dec
    )
    (
       i_common
@@ -251,7 +251,7 @@ i_unit
 
 i_vlan_id
 :
-   VLAN_ID id = DEC
+   VLAN_ID id = dec
 ;
 
 i_vlan_id_list
@@ -353,7 +353,7 @@ ifbr_interface_mode
 
 ifbr_vlan_id_list
 :
-   VLAN_ID_LIST DEC
+   VLAN_ID_LIST dec
 ;
 
 ife_filter
@@ -372,7 +372,7 @@ ife_interface_mode
 
 ife_native_vlan_id
 :
-   NATIVE_VLAN_ID id = DEC
+   NATIVE_VLAN_ID id = dec
 ;
 
 ife_port_mode
@@ -444,7 +444,7 @@ ifi_rpf_check
 
 ifi_tcp_mss
 :
-  TCP_MSS size = DEC
+  TCP_MSS size = dec
 ;
 
 ifia_arp
@@ -478,7 +478,7 @@ ifia_vrrp_group
 :
    VRRP_GROUP
    (
-      number = DEC
+      number = dec
       | name = variable
    )
    (
@@ -501,7 +501,7 @@ ifiav_accept_data
 
 ifiav_advertise_interval
 :
-   ADVERTISE_INTERVAL DEC
+   ADVERTISE_INTERVAL dec
 ;
 
 ifiav_authentication_key
@@ -520,12 +520,12 @@ ifiav_authentication_type
 
 ifiav_preempt
 :
-   PREEMPT (HOLD_TIME DEC)?
+   PREEMPT (HOLD_TIME dec)?
 ;
 
 ifiav_priority
 :
-   PRIORITY priority = DEC
+   PRIORITY priority = dec
 ;
 
 ifiav_track
@@ -552,12 +552,12 @@ ifiavt_interface
 
 ifiavt_route
 :
-   ROUTE IP_PREFIX ROUTING_INSTANCE variable PRIORITY_COST DEC
+   ROUTE IP_PREFIX ROUTING_INSTANCE variable PRIORITY_COST dec
 ;
 
 ifiavti_priority_cost
 :
-   PRIORITY_COST cost = DEC
+   PRIORITY_COST cost = dec
 ;
 
 ifiso_address
@@ -567,7 +567,7 @@ ifiso_address
 
 ifiso_mtu
 :
-   MTU DEC
+   MTU dec
 ;
 
 ifm_filter
@@ -577,12 +577,12 @@ ifm_filter
 
 ifm_maximum_labels
 :
-   MAXIMUM_LABELS num = DEC
+   MAXIMUM_LABELS num = dec
 ;
 
 ifm_mtu
 :
-   MTU DEC
+   MTU dec
 ;
 
 int_interface_range
