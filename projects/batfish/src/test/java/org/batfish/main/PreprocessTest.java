@@ -76,7 +76,7 @@ public final class PreprocessTest {
   }
 
   @Test
-  public void testNonJuniper() throws IOException {
-    assertValidPair(TESTCONFIGS_PREFIX, "non-juniper", "non-juniper");
+  public void testNop() throws IOException {
+    assertValidPair(TESTCONFIGS_PREFIX, "nop-preprocess", "nop-preprocess");
   }
 }

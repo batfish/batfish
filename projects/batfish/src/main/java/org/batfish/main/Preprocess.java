@@ -45,7 +45,7 @@ public final class Preprocess {
 
   /**
    * Pre-process configs in snapshot stored at {@code inputPath}, and dump to {@code outputPath}.
-   * Non-preprocessible configs are copied unprocessed.
+   * Depending on vendor, pre-processing may be a no-op.
    */
   private static void preprocess(
       @Nonnull Path inputPath, @Nonnull Path outputPath, Settings settings) throws IOException {
