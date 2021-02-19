@@ -1,6 +1,7 @@
 parser grammar PaloAlto_rulebase;
 
 import
+    PaloAlto_application_override,
     PaloAlto_common,
     PaloAlto_nat;
 
@@ -50,7 +51,8 @@ s_pre_rulebase
 
 rulebase_inner
 :
-    sr_nat
+    sr_application_override
+    | sr_nat
     | sr_security
 ;
 

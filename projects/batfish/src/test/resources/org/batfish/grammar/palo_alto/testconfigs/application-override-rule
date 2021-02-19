@@ -1,0 +1,41 @@
+set deviceconfig system hostname application-override-rule
+
+set address ADDR1 ip-netmask 10.0.1.1/24
+set address ADDR2 ip-netmask 10.0.2.1/24
+
+set application OVERRIDE_APP category networking
+set application OVERRIDE_APP subcategory remote-access
+set application OVERRIDE_APP technology client-server
+set application OVERRIDE_APP risk 2
+
+# Reference custom application
+set rulebase application-override rules OVERRIDE_APP_RULE1 from any
+set rulebase application-override rules OVERRIDE_APP_RULE1 to any
+set rulebase application-override rules OVERRIDE_APP_RULE1 source any
+set rulebase application-override rules OVERRIDE_APP_RULE1 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE1 port 8642
+set rulebase application-override rules OVERRIDE_APP_RULE1 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE1 application OVERRIDE_APP
+
+# Exercise the extraction logic
+set rulebase application-override rules OVERRIDE_APP_RULE2 from [ z1 zone_undef ]
+set rulebase application-override rules OVERRIDE_APP_RULE2 to [ z2 z3 ]
+set rulebase application-override rules OVERRIDE_APP_RULE2 source [ 10.10.10.10 ADDR1 ]
+set rulebase application-override rules OVERRIDE_APP_RULE2 negate-source yes
+set rulebase application-override rules OVERRIDE_APP_RULE2 destination [ 10.10.10.10 ADDR2 ]
+set rulebase application-override rules OVERRIDE_APP_RULE2 negate-destination yes
+set rulebase application-override rules OVERRIDE_APP_RULE2 port 8642,8643,8765-8888
+set rulebase application-override rules OVERRIDE_APP_RULE2 protocol udp
+set rulebase application-override rules OVERRIDE_APP_RULE2 application APP_UNDEF
+set rulebase application-override rules OVERRIDE_APP_RULE2 description "longish description"
+set rulebase application-override rules OVERRIDE_APP_RULE2 tag [ TAG1 TAG2 ]
+set rulebase application-override rules OVERRIDE_APP_RULE2 disabled yes
+
+# Reference a built-in application
+set rulebase application-override rules OVERRIDE_APP_RULE3 from any
+set rulebase application-override rules OVERRIDE_APP_RULE3 to any
+set rulebase application-override rules OVERRIDE_APP_RULE3 source any
+set rulebase application-override rules OVERRIDE_APP_RULE3 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE3 port 8642
+set rulebase application-override rules OVERRIDE_APP_RULE3 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE3 application amazon-cloud-drive-base

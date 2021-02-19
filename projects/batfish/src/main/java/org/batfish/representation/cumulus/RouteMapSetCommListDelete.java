@@ -21,7 +21,8 @@ public class RouteMapSetCommListDelete implements RouteMapSet {
 
   @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNodeConfiguration vc, Warnings w) {
+  public Stream<Statement> toStatements(
+      Configuration c, CumulusConcatenatedConfiguration vc, Warnings w) {
     return Stream.of(
         new SetCommunities(
             new CommunitySetDifference(

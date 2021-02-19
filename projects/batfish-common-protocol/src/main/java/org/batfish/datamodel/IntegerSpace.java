@@ -149,6 +149,12 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
       return getThis();
     }
 
+    /** Exclude given {@link SubRange subRanges}. */
+    public final @Nonnull Builder excludingAllSubRanges(Iterable<SubRange> subRanges) {
+      subRanges.forEach(this::excluding);
+      return getThis();
+    }
+
     private Builder() {
       super();
     }
@@ -187,7 +193,7 @@ public final class IntegerSpace extends NumberSpace<Integer, IntegerSpace, Integ
       super(space);
     }
 
-    /** Include a {@link SubRange} */
+    /** Exclude a {@link SubRange} */
     public @Nonnull Builder excluding(SubRange range) {
       if (!range.isEmpty()) {
         excluding(

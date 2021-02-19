@@ -417,4 +417,26 @@ public final class IntegerSpaceTest {
 
     assertThat(IntegerSpace.builder().build().toString(), equalTo(""));
   }
+
+  @Test
+  public void testExcludingAllSubranges() {
+    // excluding 2 from 1 leaves 1
+    assertThat(
+        IntegerSpace.of(1).toBuilder()
+            .excludingAllSubRanges(ImmutableList.of(SubRange.singleton(2)))
+            .build(),
+        equalTo(IntegerSpace.of(1)));
+    // excluding 2 from 1-2 leaves 1
+    assertThat(
+        IntegerSpace.of(new SubRange(1, 2)).toBuilder()
+            .excludingAllSubRanges(ImmutableList.of(SubRange.singleton(2)))
+            .build(),
+        equalTo(IntegerSpace.of(1)));
+    // excluding 2,3 from 1-3 leaves 1
+    assertThat(
+        IntegerSpace.of(new SubRange(1, 3)).toBuilder()
+            .excludingAllSubRanges(ImmutableList.of(SubRange.singleton(2), SubRange.singleton(3)))
+            .build(),
+        equalTo(IntegerSpace.of(1)));
+  }
 }

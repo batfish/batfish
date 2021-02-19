@@ -3,6 +3,7 @@ package org.batfish.representation.cumulus;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
@@ -16,7 +17,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertOspfP
 import static org.batfish.representation.cumulus.CumulusConversions.convertRouteMaps;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.isUsedForBgpUnnumbered;
-import static org.batfish.representation.cumulus.CumulusNcluConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PORTS;
 import static org.batfish.representation.cumulus.InterfaceConverter.DEFAULT_BRIDGE_PVID;
@@ -53,6 +53,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -60,10 +61,17 @@ import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.batfish.vendor.VendorConfiguration;
 
-/** A {@link VendorConfiguration} for the Cumulus NCLU configuration language. */
+/**
+ * A {@link VendorConfiguration} for FRR based on many files (/etc/hostname,
+ * /etc/network/interfaces, /etc/frr/frr.conf, etc.).
+ */
 @ParametersAreNonnullByDefault
-public class CumulusConcatenatedConfiguration extends VendorConfiguration
-    implements CumulusNodeConfiguration {
+public class CumulusConcatenatedConfiguration extends VendorConfiguration {
+
+  public static final String LOOPBACK_INTERFACE_NAME = "lo";
+  @VisibleForTesting public static final String CUMULUS_CLAG_DOMAIN_ID = "~CUMULUS_CLAG_DOMAIN~";
+  public static final @Nonnull LinkLocalAddress LINK_LOCAL_ADDRESS =
+      LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
   @Nonnull private String _hostname;
 
@@ -89,8 +97,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     _portsConfiguration = ports;
   }
 
-  @Nonnull
   @Override
+  @Nonnull
   public String getHostname() {
     return _hostname;
   }
@@ -211,7 +219,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
   }
 
   @Nullable
-  @Override
   public String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
     if (bridgeAccessVlan == null) {
       return null;
@@ -634,27 +641,22 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     return _portsConfiguration;
   }
 
-  @Override
   public Map<String, IpCommunityList> getIpCommunityLists() {
     return _frrConfiguration.getIpCommunityLists();
   }
 
-  @Override
   public Map<String, IpPrefixList> getIpPrefixLists() {
     return _frrConfiguration.getIpPrefixLists();
   }
 
-  @Override
   public Map<String, RouteMap> getRouteMaps() {
     return _frrConfiguration.getRouteMaps();
   }
 
-  @Override
   public BgpProcess getBgpProcess() {
     return _frrConfiguration.getBgpProcess();
   }
 
-  @Override
   public Optional<OspfInterface> getOspfInterface(String ifaceName) {
     if (!_frrConfiguration.getInterfaces().containsKey(ifaceName)) {
       return Optional.empty();
@@ -662,14 +664,12 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
     return Optional.ofNullable(_frrConfiguration.getInterfaces().get(ifaceName).getOspf());
   }
 
-  @Override
   @Nullable
   public Vrf getVrf(String vrfName) {
     return _frrConfiguration.getVrfs().get(vrfName);
   }
 
-  @Override
-  @Nullable
+  @Nonnull
   public Map<String, Vxlan> getVxlans() {
     return _interfacesConfiguration.getInterfaces().values().stream()
         .filter(InterfaceConverter::isVxlan)
@@ -677,7 +677,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
         .collect(ImmutableMap.toImmutableMap(Vxlan::getName, vxlan -> vxlan));
   }
 
-  @Override
   @Nonnull
   public Map<String, InterfaceClagSettings> getClagSettings() {
     return _interfacesConfiguration.getInterfaces().values().stream()
@@ -687,7 +686,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration
                 InterfacesInterface::getName, InterfacesInterface::getClagSettings));
   }
 
-  @Override
   public OspfProcess getOspfProcess() {
     return _frrConfiguration.getOspfProcess();
   }

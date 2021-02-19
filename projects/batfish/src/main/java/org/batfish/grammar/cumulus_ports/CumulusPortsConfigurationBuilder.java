@@ -15,12 +15,11 @@ import org.batfish.grammar.cumulus_ports.CumulusPortsParser.DisabledContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Port_definitionContext;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.SpeedContext;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusNcluConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
 import org.batfish.representation.cumulus.CumulusStructureUsage;
 
 /**
- * Populates a {@link CumulusNcluConfiguration} from the data in a {@link
+ * Populates a {@link CumulusConcatenatedConfiguration} from the data in a {@link
  * org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser cumulus ports file parse tree}.
  */
 public class CumulusPortsConfigurationBuilder extends CumulusPortsParserBaseListener {

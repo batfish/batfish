@@ -16,6 +16,8 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICA
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_GROUP_OR_APPLICATION_OR_NONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_OR_NONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.APPLICATION_OVERRIDE_RULE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.EXTERNAL_LIST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.NAT_RULE;
@@ -30,6 +32,12 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.VIRTUAL
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ADDRESS_GROUP_STATIC;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_GROUP_MEMBERS;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_APPLICATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_DESTINATION;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_FROM_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SELF_REF;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ETHERNET_AGGREGATE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
@@ -277,6 +285,19 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_display_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsg_zone_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgi_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snsgzn_layer3Context;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_applicationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_descriptionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_disabledContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_negate_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_negate_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_portContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_protocolContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_tagContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srao_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Src_or_dst_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
@@ -324,6 +345,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer2Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_layer3Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_tapContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_virtual_wireContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Tcp_or_udpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Translated_address_list_itemContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Uint16Context;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Uint32Context;
@@ -366,6 +388,8 @@ import org.batfish.representation.palo_alto.AddressPrefix;
 import org.batfish.representation.palo_alto.Application;
 import org.batfish.representation.palo_alto.ApplicationBuiltIn;
 import org.batfish.representation.palo_alto.ApplicationGroup;
+import org.batfish.representation.palo_alto.ApplicationOverrideRule;
+import org.batfish.representation.palo_alto.ApplicationOverrideRule.Protocol;
 import org.batfish.representation.palo_alto.BgpPeer;
 import org.batfish.representation.palo_alto.BgpPeer.ReflectorClient;
 import org.batfish.representation.palo_alto.BgpPeerGroup;
@@ -462,6 +486,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private String _currentDeviceName;
   private String _currentExternalListName;
   private Interface _currentInterface;
+  private ApplicationOverrideRule _currentApplicationOverrideRule;
   private NatRule _currentNatRule;
   private DestinationTranslation _currentNatRuleDestinationTranslation;
   private boolean _currentNtpServerPrimary;
@@ -1626,7 +1651,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       String name = getText(var);
       _currentApplicationGroup.getMembers().add(name);
       String uniqueName = computeObjectName(_currentVsys, name);
-      referenceApplicationLike(name, uniqueName, APPLICATION_GROUP_MEMBERS, var);
+      referenceApplicationOrGroupLike(name, uniqueName, APPLICATION_GROUP_MEMBERS, var);
     }
   }
 
@@ -2415,6 +2440,149 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSrao_definition(Srao_definitionContext ctx) {
+    String name = getText(ctx.name);
+    Rulebase rulebase = getRulebase();
+    _currentApplicationOverrideRule =
+        rulebase.getApplicationOverrideRules().computeIfAbsent(name, ApplicationOverrideRule::new);
+
+    // Use constructed name so same-named defs across vsys are unique
+    String uniqueName = computeObjectName(_currentVsys, name);
+    defineFlattenedStructure(APPLICATION_OVERRIDE_RULE, uniqueName, ctx);
+    referenceStructure(
+        APPLICATION_OVERRIDE_RULE,
+        uniqueName,
+        APPLICATION_OVERRIDE_RULE_SELF_REF,
+        getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitSrao_definition(Srao_definitionContext ctx) {
+    _currentApplicationOverrideRule = null;
+  }
+
+  @Override
+  public void exitSrao_application(Srao_applicationContext ctx) {
+    String application = getText(ctx.application);
+    _currentApplicationOverrideRule.setApplication(application);
+    String uniqueName = computeObjectName(_currentVsys, application);
+    referenceApplicationLike(application, uniqueName, APPLICATION_OVERRIDE_RULE_APPLICATION, ctx);
+  }
+
+  @Override
+  public void exitSrao_description(Srao_descriptionContext ctx) {
+    _currentApplicationOverrideRule.setDescription(getText(ctx.description));
+  }
+
+  @Override
+  public void exitSrao_disabled(Srao_disabledContext ctx) {
+    _currentApplicationOverrideRule.setDisabled(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitSrao_port(Srao_portContext ctx) {
+    for (Port_or_rangeContext item : ctx.variable_port_list().port_or_range()) {
+      if (item.port != null) {
+        _currentApplicationOverrideRule.addPort(toInteger(item.port));
+      } else {
+        assert item.range != null;
+        _currentApplicationOverrideRule.addPorts(new SubRange(getText(item.range)));
+      }
+    }
+  }
+
+  @Override
+  public void exitSrao_protocol(Srao_protocolContext ctx) {
+    _currentApplicationOverrideRule.setProtocol(toApplicationOverrideProtocol(ctx.protocol));
+  }
+
+  @Override
+  public void exitSrao_destination(Srao_destinationContext ctx) {
+    for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
+      RuleEndpoint endpoint = toRuleEndpoint(var);
+      _currentApplicationOverrideRule.getDestination().add(endpoint);
+
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
+
+      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
+      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
+      if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
+        // We know this reference doesn't look like a valid constant, so it must be pointing to an
+        // object
+        type = ADDRESS_LIKE;
+      }
+      referenceStructure(
+          type, uniqueName, APPLICATION_OVERRIDE_RULE_DESTINATION, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void exitSrao_negate_destination(Srao_negate_destinationContext ctx) {
+    _currentApplicationOverrideRule.setNegateDestination(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitSrao_source(Srao_sourceContext ctx) {
+    for (Src_or_dst_list_itemContext var : ctx.src_or_dst_list().src_or_dst_list_item()) {
+      RuleEndpoint endpoint = toRuleEndpoint(var);
+      _currentApplicationOverrideRule.getSource().add(endpoint);
+      // Use constructed object name so same-named refs across vsys are unique
+      String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
+
+      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
+      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
+      if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
+        type = ADDRESS_LIKE;
+      }
+      referenceStructure(type, uniqueName, APPLICATION_OVERRIDE_RULE_SOURCE, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void exitSrao_negate_source(Srao_negate_sourceContext ctx) {
+    _currentApplicationOverrideRule.setNegateSource(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitSrao_tag(Srao_tagContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      _currentApplicationOverrideRule.getTags().add(getText(var));
+    }
+  }
+
+  @Override
+  public void exitSrao_from(Srao_fromContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String zoneName = getText(var);
+      _currentApplicationOverrideRule.getFrom().add(zoneName);
+
+      if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
+        // Use constructed object name so same-named refs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys, zoneName);
+        referenceStructure(
+            ZONE, uniqueName, APPLICATION_OVERRIDE_RULE_FROM_ZONE, getLine(var.start));
+      }
+    }
+  }
+
+  @Override
+  public void exitSrao_to(Srao_toContext ctx) {
+    for (Variable_list_itemContext var : variables(ctx.variable_list())) {
+      String zoneName = getText(var);
+      _currentApplicationOverrideRule.getTo().add(zoneName);
+
+      if (!zoneName.equals(CATCHALL_ZONE_NAME)) {
+        // Use constructed object name so same-named refs across vsys are unique
+        String uniqueName = computeObjectName(_currentVsys, zoneName);
+        referenceStructure(ZONE, uniqueName, APPLICATION_OVERRIDE_RULE_TO_ZONE, getLine(var.start));
+      }
+    }
+  }
+
+  @Override
   public void enterSrn_definition(Srn_definitionContext ctx) {
     String name = getText(ctx.name);
     Rulebase rulebase = getRulebase();
@@ -2622,7 +2790,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     }
   }
 
-  private void referenceApplicationLike(
+  private void referenceApplicationOrGroupLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
         name.equals(CATCHALL_APPLICATION_NAME)
@@ -2637,6 +2805,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     referenceStructure(type, uniqueName, usage, getLine(var.start));
   }
 
+  private void referenceApplicationLike(
+      String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
+    PaloAltoStructureType type =
+        name.equals(CATCHALL_APPLICATION_NAME)
+                || ApplicationBuiltIn.getBuiltInApplication(name).isPresent()
+            /*
+             * Since the name matches a builtin, we'll add a reference if the user defined
+             * over the builtin, but it's okay if they did not.
+             */
+            ? APPLICATION_OR_NONE
+            /* This is not a pre-defined name, the application must be defined in config. */
+            : APPLICATION;
+    referenceStructure(type, uniqueName, usage, getLine(var.start));
+  }
+
   @Override
   public void exitSrs_application(Srs_applicationContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
@@ -2644,7 +2827,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentSecurityRule.getApplications().add(name);
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, name);
-      referenceApplicationLike(name, uniqueName, SECURITY_RULE_APPLICATION, var);
+      referenceApplicationOrGroupLike(name, uniqueName, SECURITY_RULE_APPLICATION, var);
     }
   }
 
@@ -2997,6 +3180,15 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _currentConfiguration.setPanorama(panorama);
     }
     return panorama;
+  }
+
+  private static ApplicationOverrideRule.Protocol toApplicationOverrideProtocol(
+      Tcp_or_udpContext ctx) {
+    if (ctx.TCP() != null) {
+      return Protocol.TCP;
+    }
+    assert ctx.UDP() != null;
+    return Protocol.UDP;
   }
 
   private static boolean toBoolean(Yes_or_noContext ctx) {
