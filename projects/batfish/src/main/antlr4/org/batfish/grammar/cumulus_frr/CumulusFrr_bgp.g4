@@ -18,6 +18,7 @@ s_bgp
   | sb_no
   | sb_redistribute
   | sbafi_neighbor
+  | sbafi_no_neighbor
   )*
 ;
 
@@ -132,7 +133,7 @@ sbaf_ipv4_unicast
     | sbafi_maximum_paths
     | sbafi_network
     | sbafi_neighbor
-    | sbafi_no_activate
+    | sbafi_no_neighbor
     | sbafi_redistribute
   )*
 ;
@@ -361,9 +362,19 @@ sbafi_neighbor
   NEWLINE
 ;
 
+sbafi_no_neighbor
+
+:
+  NO NEIGHBOR (ip=IP_ADDRESS | ip=IPV6_ADDRESS | name = word)
+  (
+   sbafi_no_activate
+   )
+   NEWLINE
+;
+
 sbafi_no_activate
 :
-   NO NEIGHBOR (IP_ADDRESS | IPV6_ADDRESS) ACTIVATE NEWLINE
+   ACTIVATE
 ;
 
 sbafin_activate
