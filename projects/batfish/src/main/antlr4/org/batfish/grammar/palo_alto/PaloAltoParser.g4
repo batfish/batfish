@@ -54,13 +54,18 @@ delete_line_tail
    ~NEWLINE*
 ;
 
-move_line
+move_line: MOVE move_src move_action NEWLINE;
+
+move_src: move_src_element+;
+
+move_src_element: ~(NEWLINE | AFTER | BEFORE | BOTTOM | TOP);
+
+move_action
 :
-   MOVE
-   (
-      m_vsys
-      | m_rulebase
-   )
+    AFTER name = variable
+    | BEFORE name = variable
+    | BOTTOM
+    | TOP
 ;
 
 newline

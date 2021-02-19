@@ -4,7 +4,7 @@ import static com.google.common.io.MoreFiles.createParentDirectories;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.common.util.Resources.readResource;
-import static org.batfish.main.PreprocessJuniper.main;
+import static org.batfish.main.Preprocess.main;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -18,21 +18,21 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-/** Test of {@link PreprocessJuniper}. */
+/** Test of {@link Preprocess}. */
 @ParametersAreNonnullByDefault
-public final class PreprocessJuniperTest {
+public final class PreprocessTest {
 
-  private static final String JUNIPER_TESTCONFIGS_PREFIX = "org/batfish/main/testconfigs/";
+  private static final String TESTCONFIGS_PREFIX = "org/batfish/main/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   /**
-   * Equivalent to calling {@link PreprocessJuniperTest#assertValidPair(String,String,String)} with
-   * {@code prefix} set to {@code JUNIPER_TESTCONFIGS_PREFIX}.
+   * Equivalent to calling {@link PreprocessTest#assertValidPair(String,String,String)} with {@code
+   * prefix} set to {@link #TESTCONFIGS_PREFIX}.
    */
   private void assertValidPair(String before, String after) throws IOException {
-    assertValidPair(JUNIPER_TESTCONFIGS_PREFIX, before, after);
+    assertValidPair(TESTCONFIGS_PREFIX, before, after);
   }
 
   /**
@@ -60,6 +60,11 @@ public final class PreprocessJuniperTest {
   }
 
   @Test
+  public void testFlatPaloAlto() throws IOException {
+    assertValidPair("preprocess-flat-pa-before", "preprocess-flat-pa-after");
+  }
+
+  @Test
   public void testHierarchical() throws IOException {
     assertValidPair("preprocess-hierarchical-before", "preprocess-hierarchical-after");
   }
@@ -71,7 +76,7 @@ public final class PreprocessJuniperTest {
   }
 
   @Test
-  public void testNonJuniper() throws IOException {
-    assertValidPair(JUNIPER_TESTCONFIGS_PREFIX, "non-juniper", "non-juniper");
+  public void testNop() throws IOException {
+    assertValidPair(TESTCONFIGS_PREFIX, "nop-preprocess", "nop-preprocess");
   }
 }

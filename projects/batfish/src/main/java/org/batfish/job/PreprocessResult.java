@@ -9,22 +9,21 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.datamodel.answers.AnswerElement;
 
-/** Result storing output of {@link PreprocessJuniperJob}. */
+/** Result storing output of {@link PreprocessJob}. */
 @ParametersAreNonnullByDefault
-public final class PreprocessJuniperResult
-    extends BatfishJobResult<Map<Path, String>, AnswerElement> {
+public final class PreprocessResult extends BatfishJobResult<Map<Path, String>, AnswerElement> {
 
   private final @Nonnull Path _outputFile;
   private final @Nullable String _outputText;
 
-  public PreprocessJuniperResult(
+  public PreprocessResult(
       long elapsedTime, BatfishLoggerHistory history, Path outputFile, String outputText) {
     super(elapsedTime, history);
     _outputFile = outputFile;
     _outputText = outputText;
   }
 
-  public PreprocessJuniperResult(
+  public PreprocessResult(
       long elapsedTime, BatfishLoggerHistory history, Path outputFile, Throwable failureCause) {
     super(elapsedTime, history, failureCause);
     _outputFile = outputFile;

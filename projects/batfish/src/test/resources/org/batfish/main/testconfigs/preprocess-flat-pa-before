@@ -1,0 +1,14 @@
+#
+set deviceconfig system hostname preprocess-flat-pa
+#
+set rulebase security rules rule1 action allow
+set rulebase security rules rule2 action allow
+set rulebase security rules rule3 action allow
+set rulebase security rules rule4 action allow
+set rulebase security rules rule5 action allow
+set rulebase security rules rule6 action allow
+move rulebase security rules rule4 top
+move rulebase security rules rule2 bottom
+move rulebase security rules rule5 before rule1
+delete rulebase security rules rule1
+move rulebase security rules rule6 after rule4
