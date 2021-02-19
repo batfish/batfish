@@ -422,10 +422,15 @@ public class PaloAltoSecurityRuleTest {
             .setIngressInterface(if1name)
             .setSrcIp(Ip.parse("10.0.1.2"));
 
-    Flow flowPermit =
+    Flow flowPermitZ2 =
         baseFlow
             .setDstPort(customAppPort)
             // Destined for z2, which allows this traffic
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    Flow flowPermitZ4 =
+        flowPermitZ2.toBuilder()
+            // Destined for z4, which allows this traffic
             .setDstIp(Ip.parse("10.0.2.2"))
             .build();
     Flow flowReject =
@@ -442,12 +447,14 @@ public class PaloAltoSecurityRuleTest {
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine(snapshot)
-            .computeTraces(ImmutableSet.of(flowPermit, flowReject), false);
+            .computeTraces(ImmutableSet.of(flowPermitZ2, flowPermitZ4, flowReject), false);
 
     // Confirm flow matching deny rule (matching rejected to-zone) is not successful
     assertEquals(traces.get(flowReject).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
-    // Confirm flow matching allow rule (permitted to-zone) is successful
+    // Confirm flows matching allow rule (permitted to-zone) are successful
     assertEquals(
-        traces.get(flowPermit).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+        traces.get(flowPermitZ2).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+    assertEquals(
+        traces.get(flowPermitZ4).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
   }
 }
