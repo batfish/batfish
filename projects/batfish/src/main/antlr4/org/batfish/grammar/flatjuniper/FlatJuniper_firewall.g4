@@ -169,7 +169,7 @@ fftf_dscp
 
 fftf_exp
 :
-   EXP DEC
+   EXP dec
 ;
 
 fftf_extension_header
@@ -233,7 +233,7 @@ fftf_is_fragment
 
 fftf_learn_vlan_1p_priority
 :
-   LEARN_VLAN_1P_PRIORITY DEC
+   LEARN_VLAN_1P_PRIORITY dec
 ;
 
 fftf_next_header
@@ -270,7 +270,7 @@ fftf_port
 
 fftf_precedence
 :
-   PRECEDENCE precedence = DEC
+   PRECEDENCE precedence = dec
 ;
 
 fftf_prefix_list
@@ -295,7 +295,7 @@ fftf_source_address
 
 fftf_source_mac_address
 :
-   SOURCE_MAC_ADDRESS address = MAC_ADDRESS FORWARD_SLASH length = DEC
+   SOURCE_MAC_ADDRESS address = MAC_ADDRESS FORWARD_SLASH length = dec
 ;
 
 fftf_source_port
