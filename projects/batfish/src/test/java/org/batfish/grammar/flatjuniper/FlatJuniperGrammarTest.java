@@ -2,6 +2,7 @@ package org.batfish.grammar.flatjuniper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
@@ -353,9 +354,12 @@ import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
+import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromLocalPreference;
+import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
+import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
@@ -3539,6 +3543,15 @@ public final class FlatJuniperGrammarTest {
   public void testJuniperPolicyStatementTermFromExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-from");
     {
+      PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("COLOR_POLICY");
+      assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
+      assertThat(
+          policy.getTerms().get("TMIN").getFroms().getFromColor(), equalTo(new PsFromColor(0)));
+      assertThat(
+          policy.getTerms().get("TMAX").getFroms().getFromColor(),
+          equalTo(new PsFromColor(0xFFFFFFFFL)));
+    }
+    {
       PolicyStatement policy =
           c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
       assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
@@ -3549,11 +3562,27 @@ public final class FlatJuniperGrammarTest {
           policy.getTerms().get("TMAX").getFroms().getFromLocalPreference(),
           equalTo(new PsFromLocalPreference(MAX_LOCAL_PREFERENCE)));
     }
+    {
+      PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("TAG_POLICY");
+      assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
+      assertThat(
+          policy.getTerms().get("TMIN").getFroms().getFromTags(), contains(new PsFromTag(0)));
+      assertThat(
+          policy.getTerms().get("TMAX").getFroms().getFromTags(),
+          contains(new PsFromTag(MAX_LOCAL_PREFERENCE)));
+    }
   }
 
   @Test
   public void testJuniperPolicyStatementTermThenExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-then");
+    {
+      PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("COLOR_POLICY");
+      assertThat(
+          policy.getTerms(),
+          hasKeys("TSETMIN", "TADDMAX", "TSUB3", "T2SETMIN", "T2ADDMAX", "T2SUB3"));
+      // TODO: implement then color, then color2
+    }
     {
       PolicyStatement policy =
           c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
@@ -3567,6 +3596,12 @@ public final class FlatJuniperGrammarTest {
       assertThat(
           policy.getTerms().get("TSUB3").getThens(),
           contains(new PsThenLocalPreference(3, Operator.SUBTRACT)));
+    }
+    {
+      PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("TAG_POLICY");
+      assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
+      assertThat(policy.getTerms().get("TMIN").getThens(), contains(new PsThenTag(0)));
+      assertThat(policy.getTerms().get("TMAX").getThens(), contains(new PsThenTag(MAX_TAG)));
     }
   }
 

@@ -400,6 +400,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_color2Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_deleteContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setContext;
@@ -416,6 +418,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ProposalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_listContext;
@@ -761,6 +764,7 @@ import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
+import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.RibGroup;
@@ -4813,7 +4817,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_color(Popsf_colorContext ctx) {
-    int color = toInt(ctx.color);
+    long color = toLong(ctx.color);
     _currentPsTerm.getFroms().setFromColor(new PsFromColor(color));
   }
 
@@ -4957,7 +4961,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_tag(Popsf_tagContext ctx) {
-    int tag = toInt(ctx.dec());
+    long tag = toLong(ctx.uint32());
     _currentPsTerm.getFroms().addFromTag(new PsFromTag(tag));
   }
 
@@ -4976,6 +4980,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     List<Long> asPaths =
         ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
+  }
+
+  @Override
+  public void exitPopst_color(Popst_colorContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPopst_color2(Popst_color2Context ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -5108,6 +5122,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPopst_reject(Popst_rejectContext ctx) {
     _currentPsThens.add(PsThenReject.INSTANCE);
+  }
+
+  @Override
+  public void exitPopst_tag(Popst_tagContext ctx) {
+    _currentPsThens.add(new PsThenTag(toLong(ctx.uint32())));
   }
 
   @Override
