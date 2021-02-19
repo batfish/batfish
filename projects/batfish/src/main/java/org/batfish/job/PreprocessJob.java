@@ -1,7 +1,5 @@
 package org.batfish.job;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -57,50 +55,24 @@ public final class PreprocessJob extends BatfishJob<PreprocessResult> {
     String header = null;
     ConfigurationFormat format =
         VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
-    switch (format) {
-      case PALO_ALTO:
-      case FLAT_JUNIPER:
-        flatConfigText = _fileText;
-        lineMap = null;
-        break;
-
-      case JUNIPER:
-        header =
-            firstNonNull(
-                header, VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-      case PALO_ALTO_NESTED:
-        header =
-            firstNonNull(
-                header, VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
-        {
-          try {
-            Flattener flattener =
-                Batfish.flatten(_fileText, _logger, _settings, _warnings, format, header);
-            flatConfigText = flattener.getFlattenedConfigurationText();
-            lineMap = flattener.getOriginalLineMap();
-          } catch (ParserBatfishException e) {
-            String error = "Error parsing configuration file: \"" + inputFileAsString + "\"";
-            elapsedTime = System.currentTimeMillis() - startTime;
-            return new PreprocessResult(
-                elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
-          } catch (Exception e) {
-            String error =
-                "Error post-processing parse tree of configuration file: \""
-                    + inputFileAsString
-                    + "\"";
-            elapsedTime = System.currentTimeMillis() - startTime;
-            return new PreprocessResult(
-                elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
-          } finally {
-            Batfish.logWarnings(_logger, _warnings);
-          }
-          break;
-        }
-
-      default:
-        _logger.debugf("Skipping: \"%s\"\n", _inputFile);
-        elapsedTime = System.currentTimeMillis() - startTime;
-        return new PreprocessResult(elapsedTime, _logger.getHistory(), _outputFile, _fileText);
+    try {
+      Flattener flattener =
+          Batfish.flatten(_fileText, _logger, _settings, _warnings, format, header);
+      flatConfigText = flattener.getFlattenedConfigurationText();
+      lineMap = flattener.getOriginalLineMap();
+    } catch (ParserBatfishException e) {
+      String error = "Error parsing configuration file: \"" + inputFileAsString + "\"";
+      elapsedTime = System.currentTimeMillis() - startTime;
+      return new PreprocessResult(
+          elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
+    } catch (Exception e) {
+      String error =
+          "Error post-processing parse tree of configuration file: \"" + inputFileAsString + "\"";
+      elapsedTime = System.currentTimeMillis() - startTime;
+      return new PreprocessResult(
+          elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
+    } finally {
+      Batfish.logWarnings(_logger, _warnings);
     }
 
     _logger.debugf("Preprocessing config: \"%s\"...", _inputFile);
@@ -122,7 +94,9 @@ public final class PreprocessJob extends BatfishJob<PreprocessResult> {
         parser = paloAltoParser;
         break;
       default:
-        throw new IllegalArgumentException(String.format("Unsupported format: %s", format));
+        _logger.debugf("Skipping: \"%s\"\n", _inputFile);
+        elapsedTime = System.currentTimeMillis() - startTime;
+        return new PreprocessResult(elapsedTime, _logger.getHistory(), _outputFile, _fileText);
     }
     _logger.info("\tParsing...");
     // Parse the flat text
