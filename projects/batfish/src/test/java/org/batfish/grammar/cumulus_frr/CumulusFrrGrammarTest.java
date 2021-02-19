@@ -273,13 +273,19 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamilyIpv4UnicastNo() {
     parseLines(
         "router bgp 1",
-        " address-family ipv4 unicast",
-        "  no neighbor 2001:100:100:21::2 activate",
-        " exit-address-family");
-    Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
-    assertTrue(
-            neighbors.get("2001:100:100:21::2").getIpv4UnicastAddressFamily().getActivated());
-  }
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "no neighbor N activate",
+        "exit-address-family");
+        assertFalse(
+            _frr.getBgpProcess()
+                    .getDefaultVrf()
+                    .getNeighbors()
+                    .get("N")
+                    .getIpv4UnicastAddressFamily()
+                    .getActivated());
+            }
 
   @Test
   public void testBgpAddressFamilyIpv4UnicastNetwork() {

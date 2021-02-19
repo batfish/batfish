@@ -112,6 +112,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi6_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
@@ -459,6 +460,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitSbafi_no_activate(Sbafi_no_activateContext ctx) {
    if(_currentBgpNeighborIpv4UnicastAddressFamily==null){
      return;
+
    }
     _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
   }
@@ -644,6 +646,39 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       }
     }
   }
+  @Override
+  public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx){
+      String name;
+      if (ctx.ip != null) {
+        name = ctx.ip.getText();
+      } else if (ctx.name != null) {
+        name = ctx.name.getText();
+      } else {
+        throw new BatfishException("neightbor name or address");
+      }
+
+    BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
+    if (bgpNeighbor == null) {
+      _w.addWarning(
+              ctx,
+              ctx.getStart().getText(),
+              _parser,
+              String.format("neighbor %s does not exist", name));
+    } else {
+      _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
+      if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+        _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
+        bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
+      }
+    }
+
+  }
+
+  @Override
+  public void exitSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
+    _currentBgpNeighborIpv4UnicastAddressFamily = null;
+  }
+
 
   @Override
   public void exitSbafi_neighbor(Sbafi_neighborContext ctx) {

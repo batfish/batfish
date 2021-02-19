@@ -21,8 +21,9 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     return _activated;
   }
 
-  public void setActivated(@Nullable Boolean activated) {
+  public BgpNeighborIpv4UnicastAddressFamily setActivated(@Nullable Boolean activated) {
     _activated = activated;
+      return null;
   }
 
   /** Whether the neighbor is a route reflector client */
