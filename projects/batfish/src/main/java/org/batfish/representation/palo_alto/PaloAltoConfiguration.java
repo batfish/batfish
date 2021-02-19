@@ -613,30 +613,28 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     List<AclLineMatchExpr> conjuncts = new LinkedList<>();
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // 2. Match SRC IPs if specified.
+    // 2. Match SRC IPs.
     List<MatchHeaderSpace> srcExprs =
         aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
-    if (!srcExprs.isEmpty()) {
-      conjuncts.add(
-          rule.getNegateSource()
-              // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
-              // And(Not(...)) to push Not further down in trace
-              ? new AndMatchExpr(negateMatchIps(srcExprs), matchSourceAddressTraceElement())
-              : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
-    }
+    assert !srcExprs.isEmpty();
+    conjuncts.add(
+        rule.getNegateSource()
+            // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
+            // And(Not(...)) to push Not further down in trace
+            ? new AndMatchExpr(negateMatchIps(srcExprs), matchSourceAddressTraceElement())
+            : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // 3. Match DST IPs if specified.
+    // 3. Match DST IPs.
     List<MatchHeaderSpace> dstExprs =
         aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
-    if (!dstExprs.isEmpty()) {
-      conjuncts.add(
-          rule.getNegateDestination()
-              // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
-              // And(Not(...)) to push Not further down in trace
-              ? new AndMatchExpr(negateMatchIps(dstExprs), matchDestinationAddressTraceElement())
-              : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
-    }
+    assert !dstExprs.isEmpty();
+    conjuncts.add(
+        rule.getNegateDestination()
+            // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
+            // And(Not(...)) to push Not further down in trace
+            ? new AndMatchExpr(negateMatchIps(dstExprs), matchDestinationAddressTraceElement())
+            : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match protocol and ports
@@ -664,7 +662,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       String fromZone,
       String toZone) {
     // Exprs that match the specified application name
-    // Common case is a list of length 1, but it's possible for multiple rules to flag the same app
+    // Using list as it's possible for multiple rules to override the same app
     List<AclLineMatchExpr> appMatchExprs = new LinkedList<>();
 
     // Running list of app-override rules that precede the one we're evaluating
@@ -756,10 +754,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * used by security rules.
    */
   private Map<String, AclLineMatchExpr> buildApplicationOverrideMap(
-      Vsys vsys,
-      String fromZone,
-      String toZone) { // Ordered list of rules that are applicable to the current fromZone, toZone,
-    // and vsys
+      Vsys vsys, String fromZone, String toZone) {
+    // Ordered list of rules that are applicable to the current fromZone, toZone, and vsys
     List<ApplicationOverrideRule> rules =
         getApplicableApplicationOverrideRules(vsys, fromZone, toZone);
 
