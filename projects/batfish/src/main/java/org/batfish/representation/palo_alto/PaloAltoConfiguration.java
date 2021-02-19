@@ -856,6 +856,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Stream.concat(Stream.concat(pre, rules), post)
         .forEach(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w));
   }
+
   /**
    * Check if the intrazone security rule is valid, and log a warning if it is not. Returns true for
    * non-intrazone rules.
