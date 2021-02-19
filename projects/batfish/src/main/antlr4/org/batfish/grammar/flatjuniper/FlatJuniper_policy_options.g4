@@ -229,7 +229,7 @@ popsf_local_preference
 :
    LOCAL_PREFERENCE
    (
-      localpref = dec
+      localpref = uint32
       | apply_groups
    )
 ;
@@ -526,7 +526,7 @@ popst_local_preference
 :
    LOCAL_PREFERENCE
    (
-      (ADD | SUBTRACT)? localpref = dec
+      (ADD | SUBTRACT)? localpref = uint32
       | apply_groups
    )
 ;

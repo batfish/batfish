@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
+import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
@@ -352,6 +353,7 @@ import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
+import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.RoutingInstance;
@@ -426,13 +428,17 @@ public final class FlatJuniperGrammarTest {
     BatfishTestUtils.configureBatfishTestSettings(settings);
     FlatJuniperCombinedParser flatJuniperParser =
         new FlatJuniperCombinedParser(src, settings, null);
+    Warnings w = new Warnings();
     FlatJuniperControlPlaneExtractor extractor =
-        new FlatJuniperControlPlaneExtractor(src, flatJuniperParser, new Warnings());
+        new FlatJuniperControlPlaneExtractor(src, flatJuniperParser, w);
     ParserRuleContext tree =
         Batfish.parse(
             flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
-    return SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
+    JuniperConfiguration ret =
+        SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
+    ret.setWarnings(w);
+    return ret;
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -3530,20 +3536,36 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperPolicyStatementTermFromExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-from");
+    {
+      PolicyStatement policy =
+          c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
+      assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
+      assertThat(
+          policy.getTerms().get("TMIN").getFroms().getFromLocalPreference(),
+          equalTo(new PsFromLocalPreference(0)));
+      assertThat(
+          policy.getTerms().get("TMAX").getFroms().getFromLocalPreference(),
+          equalTo(new PsFromLocalPreference(MAX_LOCAL_PREFERENCE)));
+    }
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermThenExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-then");
     {
       PolicyStatement policy =
           c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
-      assertThat(policy.getTerms(), hasKeys("T1", "T2", "T3"));
+      assertThat(policy.getTerms(), hasKeys("TSETMIN", "TADDMAX", "TSUB3"));
       assertThat(
-          policy.getTerms().get("T1").getThens(),
-          contains(new PsThenLocalPreference(1, Operator.SET)));
+          policy.getTerms().get("TSETMIN").getThens(),
+          contains(new PsThenLocalPreference(0, Operator.SET)));
       assertThat(
-          policy.getTerms().get("T2").getThens(),
-          contains(new PsThenLocalPreference(2, Operator.ADD)));
+          policy.getTerms().get("TADDMAX").getThens(),
+          contains(new PsThenLocalPreference(MAX_LOCAL_PREFERENCE, Operator.ADD)));
       assertThat(
-          policy.getTerms().get("T3").getThens(),
+          policy.getTerms().get("TSUB3").getThens(),
           contains(new PsThenLocalPreference(3, Operator.SUBTRACT)));
     }
   }
