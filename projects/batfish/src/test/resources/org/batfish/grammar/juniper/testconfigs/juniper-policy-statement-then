@@ -1,7 +1,7 @@
 #
 set system host-name juniper-policy-statement-then
 #
-set policy-options policy-statement LOCAL_PREFERENCE_POLICY term T1 then local-preference 1
-set policy-options policy-statement LOCAL_PREFERENCE_POLICY term T2 then local-preference add 2
-set policy-options policy-statement LOCAL_PREFERENCE_POLICY term T3 then local-preference subtract 3
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TSETMIN then local-preference 0
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TADDMAX then local-preference add 4294967295
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TSUB3 then local-preference subtract 3
 #
