@@ -3673,6 +3673,28 @@ public final class FlatJuniperGrammarTest {
             envWithRoute(c, new ConnectedRoute(Prefix.parse("10.0.0.9/30"), "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
 
+    {
+      /*
+       * Local-pref policy should accept route with local-pref 2, but not other values.
+       * Last "from local-preference" statement overrides previous statements
+       */
+      RoutingPolicy localPrefPolicy = c.getRoutingPolicies().get("LOCAL_PREFERENCE_POLICY");
+      Builder bgpRouteBuilder =
+          Bgpv4Route.testBuilder()
+              .setOriginatorIp(Ip.ZERO)
+              .setNetwork(Prefix.ZERO)
+              .setProtocol(RoutingProtocol.BGP)
+              .setOriginType(OriginType.INCOMPLETE);
+      result = localPrefPolicy.call(envWithRoute(c, bgpRouteBuilder.setLocalPreference(2).build()));
+      assertTrue(result.getBooleanValue());
+
+      result = localPrefPolicy.call(envWithRoute(c, bgpRouteBuilder.setLocalPreference(1).build()));
+      assertFalse(result.getBooleanValue());
+
+      result = localPrefPolicy.call(envWithRoute(c, bgpRouteBuilder.setLocalPreference(3).build()));
+      assertFalse(result.getBooleanValue());
+    }
+
     /*
     Metric policy should accept route with metric 100, but not other metrics.
     Last "from metric" statement overrides previous statements
