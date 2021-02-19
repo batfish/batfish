@@ -58,7 +58,6 @@ import com.google.common.collect.SortedMultiset;
 import com.google.common.collect.Streams;
 import com.google.common.collect.TreeMultiset;
 import com.google.common.collect.TreeRangeSet;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -660,7 +659,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllValidSecurityRules(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -675,7 +673,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           }
           if (fromType == Type.LAYER3 || toType == Type.LAYER3) {
             // only generate IP ACL when at least one zone is layer-3
-            IpAccessList acl = generateCrossZoneFilter(fromZone, toZone, rules);
+            IpAccessList acl = generateCrossZoneFilter(fromZone, toZone);
             _c.getIpAccessLists().put(acl.getName(), acl);
           }
         }
@@ -752,8 +750,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Generates a cross-zone ACL from the two given zones in the same Vsys using the given rules. */
-  private IpAccessList generateCrossZoneFilter(
-      Zone fromZone, Zone toZone, List<Map.Entry<SecurityRule, Vsys>> rules) {
+  private IpAccessList generateCrossZoneFilter(Zone fromZone, Zone toZone) {
     assert fromZone.getVsys() == toZone.getVsys();
     Vsys vsys = fromZone.getVsys();
     String vsysName = vsys.getName();
@@ -821,7 +818,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
     switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
       case INTRAZONE:
-        return fromZoneName.equals(toZoneName);
+        boolean intrazone = fromZoneName.equals(toZoneName);
+        if (!intrazone) {
+          warnings.redFlag(
+              String.format(
+                  "Skipping invalid intrazone security rule: %s. It has different From and To"
+                      + " zones: %s vs %s",
+                  rule.getName(), fromZoneName, toZoneName));
+        }
+        return intrazone;
       case INTERZONE:
         return !fromZoneName.equals(toZoneName);
       case UNIVERSAL:
@@ -833,48 +838,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 rule.getRuleType(), fromZoneName, toZoneName));
         return false;
     }
-  }
-
-  /**
-   * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
-   * Panorama. Filters out invalid intrazone rules.
-   */
-  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
-  private List<Map.Entry<SecurityRule, Vsys>> getAllValidSecurityRules(Vsys vsys) {
-    Stream<Map.Entry<SecurityRule, Vsys>> pre =
-        _panorama == null
-            ? Stream.of()
-            : _panorama.getPreRulebase().getSecurityRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
-    Stream<Map.Entry<SecurityRule, Vsys>> post =
-        _panorama == null
-            ? Stream.of()
-            : _panorama.getPostRulebase().getSecurityRules().values().stream()
-                .map(r -> new SimpleImmutableEntry<>(r, _panorama));
-    Stream<Map.Entry<SecurityRule, Vsys>> rules =
-        vsys.getRulebase().getSecurityRules().values().stream()
-            .map(r -> new SimpleImmutableEntry<>(r, vsys));
-
-    return Stream.concat(Stream.concat(pre, rules), post)
-        .filter(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w))
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  /**
-   * Check if the intrazone security rule is valid, and log a warning if it is not. Returns true for
-   * non-intrazone rules.
-   */
-  @VisibleForTesting
-  static boolean checkIntrazoneValidityAndWarn(SecurityRule rule, Warnings w) {
-    if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
-      w.redFlag(
-          String.format(
-              "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
-                  + " %s vs %s",
-              rule.getName(), rule.getFrom(), rule.getTo()));
-      return false;
-    }
-    return true;
   }
 
   /**
@@ -1240,6 +1203,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   // constraints, and service (aka Protocol + Ports) constraints.
   //   However, services are a bit complicated when `service application-default` is used. In that
   //   case, we extract service definitions from the application that matches.
+  @SuppressWarnings("PMD.UnusedFormalParameter")
   private ExprAclLine toIpAccessListLine(
       SecurityRule rule, Vsys vsys, String fromZone, String toZone) {
     assert !rule.getDisabled(); // handled by caller.
