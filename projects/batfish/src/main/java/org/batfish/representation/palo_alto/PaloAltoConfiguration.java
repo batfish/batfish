@@ -602,6 +602,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /** Build list of converted security rules for the zone pair in the specified Vsys. */
   private List<AclLine> convertSecurityRules(Vsys vsys, String fromZone, String toZone) {
     // Note: using linked hash map to preserve insertion order
+    // Note: using map to avoid duplicating rulenames (not allowed on PAN devices)
     Map<String, ExprAclLine> ruleToExprAclLine = new LinkedHashMap<>();
     Vsys panorama = this.getPanorama();
 
