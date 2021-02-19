@@ -3877,7 +3877,7 @@ public final class PaloAltoGrammarTest {
     Flow z2ToZ1permitted = createFlow("10.0.2.2", "10.0.1.2", IpProtocol.TCP, 10000, 1234);
     Flow z1ToZ3rejected = createFlow("10.0.1.2", "10.0.3.2", IpProtocol.TCP, 10000, 1234);
 
-    // Confirm ifaces in z1 and z2 have rules accepting flow
+    // Confirm ifaces in multiple zones have rules accepting flow
     // (doesn't match initial deny, matches permit)
     assertThat(
         c,
