@@ -276,6 +276,7 @@ public class CumulusFrrGrammarTest {
         "neighbor N interface description N",
         "address-family ipv4 unicast",
         "redistribute connected",
+        "neighbor N activate",
         "no neighbor N activate",
         "exit-address-family");
         assertFalse(

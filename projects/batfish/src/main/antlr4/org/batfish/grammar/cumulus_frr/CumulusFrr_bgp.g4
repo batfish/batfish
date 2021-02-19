@@ -365,7 +365,7 @@ sbafi_neighbor
 sbafi_no_neighbor
 
 :
-  NO NEIGHBOR (ip=IP_ADDRESS | ip=IPV6_ADDRESS | name = word)
+  NO NEIGHBOR (ipv4=IP_ADDRESS | ipv6=IPV6_ADDRESS | name = word)
   (
    sbafi_no_activate
    )

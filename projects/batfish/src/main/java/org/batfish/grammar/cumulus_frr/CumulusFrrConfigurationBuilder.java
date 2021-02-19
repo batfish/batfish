@@ -649,11 +649,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @Override
   public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx){
       String name;
-      if (ctx.ip != null) {
-        name = ctx.ip.getText();
+      if (ctx.ipv4 != null) {
+        name = ctx.ipv4.getText();
       } else if (ctx.name != null) {
         name = ctx.name.getText();
-      } else {
+      } else if (ctx.ipv6!=null){
+        name= ctx.ipv6.getText();
+      }
+      else {
         throw new BatfishException("neightbor name or address");
       }
 
