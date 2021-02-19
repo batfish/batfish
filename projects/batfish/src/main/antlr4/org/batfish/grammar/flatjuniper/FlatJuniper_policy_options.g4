@@ -183,7 +183,7 @@ popsf_as_path_group
 
 popsf_color
 :
-   COLOR color = dec
+   COLOR color = uint32
 ;
 
 popsf_community
@@ -330,7 +330,7 @@ popsf_source_address_filter
 
 popsf_tag
 :
-   TAG dec
+   TAG uint32
 ;
 
 popsfpl_exact
@@ -427,8 +427,7 @@ popst_color
    COLOR
    (
       apply
-      | popstc_add_color
-      | popstc_color
+      | (ADD | SUBTRACT)? uint32
    )
 ;
 
@@ -437,8 +436,7 @@ popst_color2
    COLOR2
    (
       apply
-      | popstc2_add_color
-      | popstc2_color
+      | (ADD | SUBTRACT)? uint32
    )
 ;
 
@@ -626,27 +624,7 @@ popst_reject
 
 popst_tag
 :
-   TAG dec
-;
-
-popstc_add_color
-:
-   ADD color = dec
-;
-
-popstc_color
-:
-   color = dec
-;
-
-popstc2_add_color
-:
-   ADD color2 = dec
-;
-
-popstc2_color
-:
-   color2 = dec
+   TAG uint32
 ;
 
 popsto_level
