@@ -3871,10 +3871,11 @@ public final class PaloAltoGrammarTest {
     String if1name = "ethernet1/1";
     String if2name = "ethernet1/2";
     String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
     // Arbitrary source ports
     // Specific dest port (matching security rule allowing custom service traffic)
     Flow z1ToZ2permitted = createFlow("10.0.1.2", "10.0.2.2", IpProtocol.TCP, 10000, 1234);
-    Flow z2ToZ1permitted = createFlow("10.0.2.2", "10.0.1.2", IpProtocol.TCP, 10000, 1234);
+    Flow z1ToZ4permitted = createFlow("10.0.1.2", "10.0.4.2", IpProtocol.TCP, 10000, 1234);
     Flow z1ToZ3rejected = createFlow("10.0.1.2", "10.0.3.2", IpProtocol.TCP, 10000, 1234);
 
     // Confirm ifaces in multiple zones have rules accepting flow
@@ -3884,7 +3885,7 @@ public final class PaloAltoGrammarTest {
         hasInterface(if2name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ2permitted, if1name, c))));
     assertThat(
         c,
-        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(z2ToZ1permitted, if2name, c))));
+        hasInterface(if4name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ4permitted, if1name, c))));
 
     // Confirm iface in z3 has rules rejecting the flow (matches initial deny)
     assertThat(
