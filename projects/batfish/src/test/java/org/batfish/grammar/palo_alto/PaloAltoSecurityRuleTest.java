@@ -413,9 +413,6 @@ public class PaloAltoSecurityRuleTest {
 
     int customAppPort = 1234;
     String if1name = "ethernet1/1"; // 10.0.1.1/24
-    String if2name = "ethernet1/2"; // 10.0.2.1/24
-    String if3name = "ethernet1/3"; // 10.0.3.1/24
-    String if4name = "ethernet1/4"; // 10.0.4.1/24
     Builder baseFlow =
         Flow.builder()
             .setIngressNode(c.getHostname())
@@ -433,7 +430,6 @@ public class PaloAltoSecurityRuleTest {
             .build();
     Flow flowReject =
         baseFlow
-            // Some dest port other than our custom app port
             .setDstPort(customAppPort)
             // Destined for z3, which has a deny rule for this traffic
             .setDstIp(Ip.parse("10.0.3.2"))

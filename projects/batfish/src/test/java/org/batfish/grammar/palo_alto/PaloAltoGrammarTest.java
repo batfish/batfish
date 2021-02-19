@@ -3874,12 +3874,17 @@ public final class PaloAltoGrammarTest {
     // Arbitrary source ports
     // Specific dest port (matching security rule allowing custom service traffic)
     Flow z1ToZ2permitted = createFlow("10.0.1.2", "10.0.2.2", IpProtocol.TCP, 10000, 1234);
+    Flow z2ToZ1permitted = createFlow("10.0.2.2", "10.0.1.2", IpProtocol.TCP, 10000, 1234);
     Flow z1ToZ3rejected = createFlow("10.0.1.2", "10.0.3.2", IpProtocol.TCP, 10000, 1234);
 
-    // Confirm iface in z2 has rules accepting flow (doesn't match initial deny, matches permit)
+    // Confirm ifaces in z1 and z2 have rules accepting flow
+    // (doesn't match initial deny, matches permit)
     assertThat(
         c,
         hasInterface(if2name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ2permitted, if1name, c))));
+    assertThat(
+        c,
+        hasInterface(if1name, hasOutgoingOriginalFlowFilter(accepts(z2ToZ1permitted, if2name, c))));
 
     // Confirm iface in z3 has rules rejecting the flow (matches initial deny)
     assertThat(
