@@ -353,6 +353,7 @@ import org.batfish.representation.juniper.NatRuleThenPrefixName;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
+import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.RoutingInstance;
@@ -3532,6 +3533,22 @@ public final class FlatJuniperGrammarTest {
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.0/24"), "nextHop"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  @Test
+  public void testJuniperPolicyStatementTermFromExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-from");
+    {
+      PolicyStatement policy =
+          c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
+      assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
+      assertThat(
+          policy.getTerms().get("TMIN").getFroms().getFromLocalPreference(),
+          equalTo(new PsFromLocalPreference(0)));
+      assertThat(
+          policy.getTerms().get("TMAX").getFroms().getFromLocalPreference(),
+          equalTo(new PsFromLocalPreference(MAX_LOCAL_PREFERENCE)));
+    }
   }
 
   @Test
