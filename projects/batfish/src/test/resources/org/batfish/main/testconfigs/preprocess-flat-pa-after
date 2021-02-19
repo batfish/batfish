@@ -1,0 +1,7 @@
+####BATFISH PRE-PROCESSED PALO ALTO CONFIG####
+set deviceconfig system hostname preprocess-flat-pa
+set rulebase security rules rule4 action allow
+set rulebase security rules rule6 action allow
+set rulebase security rules rule5 action allow
+set rulebase security rules rule3 action allow
+set rulebase security rules rule2 action allow

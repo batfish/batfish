@@ -55,7 +55,7 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
    *   - note that this removes both 'set' and 'deactivate' lines
    *
    * After visiting all child parse-trees of the configuration, replace its list of children with a
-   * new corresponding to a pre-order traversal of the statement tree.
+   * new list corresponding to a pre-order traversal of the statement tree.
    */
 
   public InsertDeleteApplicator(BatfishCombinedParser<?, ?> parser, Warnings warnings) {
@@ -169,6 +169,7 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
       assert ctx.AFTER() != null;
       moveSubtree(false);
     }
+    _dirty = true;
     _currentInsert = null;
     _insertSrcWords = null;
     _insertDstWords = null;
@@ -224,7 +225,6 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
 
   /*
    * - Find the node corresponding to the last word of tree
-   * - Mark for deletion all parse-trees stored there and in its subtrees
    * - Remove the node (and therefore its subtrees) from tree
    */
   private void deleteSubtree(StatementTree tree) {

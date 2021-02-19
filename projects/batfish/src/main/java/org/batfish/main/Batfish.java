@@ -183,7 +183,9 @@ import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.NopFlattener;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
@@ -282,7 +284,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static Flattener flatten(
+  public static @Nonnull Flattener flatten(
       String input,
       BatfishLogger logger,
       Settings settings,
@@ -294,7 +296,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         {
           PaloAltoNestedCombinedParser parser = new PaloAltoNestedCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
-          PaloAltoNestedFlattener flattener = new PaloAltoNestedFlattener(header);
+          PaloAltoNestedFlattener flattener =
+              new PaloAltoNestedFlattener(
+                  VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
           ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);
@@ -310,7 +314,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
-          JuniperFlattener flattener = new JuniperFlattener(header, input);
+          JuniperFlattener flattener =
+              new JuniperFlattener(
+                  VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER, input);
           ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);
@@ -326,7 +332,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         {
           VyosCombinedParser parser = new VyosCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
-          VyosFlattener flattener = new VyosFlattener(header);
+          VyosFlattener flattener =
+              new VyosFlattener(VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER);
           ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
           try {
             walker.walk(flattener, tree);
@@ -340,7 +347,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
         // $CASES-OMITTED$
       default:
-        throw new BatfishException("Invalid format for flattening");
+        return new NopFlattener(input);
     }
   }
 

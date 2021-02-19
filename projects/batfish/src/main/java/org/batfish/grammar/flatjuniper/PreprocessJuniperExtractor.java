@@ -9,13 +9,14 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.PreprocessExtractor;
 
 /**
  * Parse tree extractor used for generating pre-processed Juniper configuration text from an initial
  * unprocessed flat Juniper parse tree.
  */
 @ParametersAreNonnullByDefault
-public final class PreprocessJuniperExtractor {
+public final class PreprocessJuniperExtractor implements PreprocessExtractor {
 
   private static final String HEADER = "####BATFISH PRE-PROCESSED JUNIPER CONFIG####\n";
 
@@ -161,6 +162,7 @@ public final class PreprocessJuniperExtractor {
     _w = warnings;
   }
 
+  @Override
   public @Nonnull String getPreprocessedConfigurationText() {
     return _preprocessedConfigurationText;
   }
@@ -169,6 +171,7 @@ public final class PreprocessJuniperExtractor {
    * Pre-process a flat Juniper parse {@code tree}, after which pre-processed configuration text
    * will be available via {@link #getPreprocessedConfigurationText}.
    */
+  @Override
   public void processParseTree(ParserRuleContext tree) {
     preprocess(tree, new Hierarchy(), _parser, _w);
     Hierarchy finalHierarchy = new Hierarchy();
