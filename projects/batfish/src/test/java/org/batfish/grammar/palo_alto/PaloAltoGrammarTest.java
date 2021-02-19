@@ -3871,15 +3871,21 @@ public final class PaloAltoGrammarTest {
     String if1name = "ethernet1/1";
     String if2name = "ethernet1/2";
     String if3name = "ethernet1/3";
+    String if4name = "ethernet1/4";
     // Arbitrary source ports
     // Specific dest port (matching security rule allowing custom service traffic)
     Flow z1ToZ2permitted = createFlow("10.0.1.2", "10.0.2.2", IpProtocol.TCP, 10000, 1234);
+    Flow z1ToZ4permitted = createFlow("10.0.1.2", "10.0.4.2", IpProtocol.TCP, 10000, 1234);
     Flow z1ToZ3rejected = createFlow("10.0.1.2", "10.0.3.2", IpProtocol.TCP, 10000, 1234);
 
-    // Confirm iface in z2 has rules accepting flow (doesn't match initial deny, matches permit)
+    // Confirm ifaces in multiple zones have rules accepting flow
+    // (doesn't match initial deny, matches permit)
     assertThat(
         c,
         hasInterface(if2name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ2permitted, if1name, c))));
+    assertThat(
+        c,
+        hasInterface(if4name, hasOutgoingOriginalFlowFilter(accepts(z1ToZ4permitted, if1name, c))));
 
     // Confirm iface in z3 has rules rejecting the flow (matches initial deny)
     assertThat(
@@ -3887,6 +3893,7 @@ public final class PaloAltoGrammarTest {
         hasInterface(if3name, hasOutgoingOriginalFlowFilter(rejects(z1ToZ3rejected, if1name, c))));
   }
 
+  @Test
   public void testApplicationOverrideRuleReferences() throws IOException {
     String hostname = "application-override-rule";
     String filename = "configs/" + hostname;

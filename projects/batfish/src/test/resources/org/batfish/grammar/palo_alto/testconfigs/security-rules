@@ -35,7 +35,7 @@ set rulebase security rules BLOCK_TCP_1234 action deny
 
 # Allow TCP/1234
 set rulebase security rules PERMIT_TCP_1234 from any
-set rulebase security rules PERMIT_TCP_1234 to any
+set rulebase security rules PERMIT_TCP_1234 to [ z2 z4 ]
 set rulebase security rules PERMIT_TCP_1234 source any
 set rulebase security rules PERMIT_TCP_1234 source-user any
 set rulebase security rules PERMIT_TCP_1234 destination any

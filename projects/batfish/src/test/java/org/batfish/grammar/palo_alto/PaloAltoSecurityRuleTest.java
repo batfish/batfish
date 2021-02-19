@@ -413,9 +413,6 @@ public class PaloAltoSecurityRuleTest {
 
     int customAppPort = 1234;
     String if1name = "ethernet1/1"; // 10.0.1.1/24
-    String if2name = "ethernet1/2"; // 10.0.2.1/24
-    String if3name = "ethernet1/3"; // 10.0.3.1/24
-    String if4name = "ethernet1/4"; // 10.0.4.1/24
     Builder baseFlow =
         Flow.builder()
             .setIngressNode(c.getHostname())
@@ -425,15 +422,19 @@ public class PaloAltoSecurityRuleTest {
             .setIngressInterface(if1name)
             .setSrcIp(Ip.parse("10.0.1.2"));
 
-    Flow flowPermit =
+    Flow flowPermitZ2 =
         baseFlow
             .setDstPort(customAppPort)
             // Destined for z2, which allows this traffic
             .setDstIp(Ip.parse("10.0.2.2"))
             .build();
+    Flow flowPermitZ4 =
+        flowPermitZ2.toBuilder()
+            // Destined for z4, which allows this traffic
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
     Flow flowReject =
         baseFlow
-            // Some dest port other than our custom app port
             .setDstPort(customAppPort)
             // Destined for z3, which has a deny rule for this traffic
             .setDstIp(Ip.parse("10.0.3.2"))
@@ -446,13 +447,15 @@ public class PaloAltoSecurityRuleTest {
     SortedMap<Flow, List<Trace>> traces =
         batfish
             .getTracerouteEngine(snapshot)
-            .computeTraces(ImmutableSet.of(flowPermit, flowReject), false);
+            .computeTraces(ImmutableSet.of(flowPermitZ2, flowPermitZ4, flowReject), false);
 
     // Confirm flow matching deny rule (matching rejected to-zone) is not successful
     assertEquals(traces.get(flowReject).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
-    // Confirm flow matching allow rule (permitted to-zone) is successful
+    // Confirm flows matching allow rule (permitted to-zone) are successful
     assertEquals(
-        traces.get(flowPermit).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+        traces.get(flowPermitZ2).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+    assertEquals(
+        traces.get(flowPermitZ4).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
   }
 
   @Test
