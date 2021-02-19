@@ -3893,6 +3893,7 @@ public final class PaloAltoGrammarTest {
         hasInterface(if3name, hasOutgoingOriginalFlowFilter(rejects(z1ToZ3rejected, if1name, c))));
   }
 
+  @Test
   public void testApplicationOverrideRuleReferences() throws IOException {
     String hostname = "application-override-rule";
     String filename = "configs/" + hostname;
