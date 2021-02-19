@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 
 /** PAN datamodel component containing application-override rule configuration */
@@ -116,6 +117,11 @@ public final class ApplicationOverrideRule implements Serializable {
   }
 
   @Nullable
+  public IpProtocol getIpProtocol() {
+    return _protocol == Protocol.TCP ? IpProtocol.TCP : IpProtocol.UDP;
+  }
+
+  @Nonnull
   public IntegerSpace getPort() {
     return _port;
   }

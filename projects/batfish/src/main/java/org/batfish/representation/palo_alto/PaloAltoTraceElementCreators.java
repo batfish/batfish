@@ -106,6 +106,20 @@ public final class PaloAltoTraceElementCreators {
   }
 
   @VisibleForTesting
+  public static TraceElement matchApplicationOverrideRuleTraceElement(
+      String name, String vsysName, String filename) {
+    return TraceElement.builder()
+        .add("Matched application-override rule ")
+        .add(
+            name,
+            new VendorStructureId(
+                filename,
+                PaloAltoStructureType.APPLICATION_OVERRIDE_RULE.getDescription(),
+                computeObjectName(vsysName, name)))
+        .build();
+  }
+
+  @VisibleForTesting
   public static TraceElement matchBuiltInApplicationTraceElement(String name) {
     return TraceElement.of(String.format("Matched built-in application %s", name));
   }

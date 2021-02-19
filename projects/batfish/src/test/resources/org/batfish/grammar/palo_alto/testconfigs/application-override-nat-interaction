@@ -1,0 +1,71 @@
+set deviceconfig system hostname application-override-nat-interaction
+
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 10.0.3.1/24
+set network interface ethernet ethernet1/4 layer3 ip 10.0.4.1/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4 ]
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+set zone z3 network layer3 ethernet1/3
+set zone z4 network layer3 ethernet1/4
+
+set application CUSTOM_APP_DNAT category networking
+set application CUSTOM_APP_DNAT subcategory remote-access
+set application CUSTOM_APP_DNAT technology client-server
+set application CUSTOM_APP_DNAT risk 2
+
+set application CUSTOM_APP_SNAT category networking
+set application CUSTOM_APP_SNAT subcategory remote-access
+set application CUSTOM_APP_SNAT technology client-server
+set application CUSTOM_APP_DNAT risk 2
+
+# NAT
+# Make some traffic from z1 appear like its from z3
+set rulebase nat rules SNAT source-translation dynamic-ip-and-port translated-address 10.0.3.100
+set rulebase nat rules SNAT from z1
+set rulebase nat rules SNAT to z2
+set rulebase nat rules SNAT source 10.0.1.2
+set rulebase nat rules SNAT destination any
+
+# Make some traffic that is addressed to z3 go to z2
+set rulebase nat rules DNAT destination-translation translated-address 10.0.2.2
+set rulebase nat rules DNAT from any
+set rulebase nat rules DNAT to z3
+set rulebase nat rules DNAT source any
+set rulebase nat rules DNAT destination 10.0.3.100
+
+
+set rulebase security rules PERMIT action allow
+set rulebase security rules PERMIT from any
+set rulebase security rules PERMIT to any
+set rulebase security rules PERMIT application [ CUSTOM_APP_DNAT CUSTOM_APP_SNAT ]
+set rulebase security rules PERMIT source any
+set rulebase security rules PERMIT destination any
+set rulebase security rules PERMIT service application-default
+
+set rulebase security rules DENY action deny
+set rulebase security rules DENY from any
+set rulebase security rules DENY to any
+set rulebase security rules DENY application any
+set rulebase security rules DENY source any
+set rulebase security rules DENY destination any
+set rulebase security rules DENY service any
+
+# Matches on pre-NAT address and post-NAT zone
+set rulebase application-override rules OVERRIDE_APP_RULE_DNAT from z1
+set rulebase application-override rules OVERRIDE_APP_RULE_DNAT to z2
+set rulebase application-override rules OVERRIDE_APP_RULE_DNAT source 10.0.0.0/8
+set rulebase application-override rules OVERRIDE_APP_RULE_DNAT destination 10.0.3.100
+set rulebase application-override rules OVERRIDE_APP_RULE_DNAT port 7653
+set rulebase application-override rules OVERRIDE_APP_RULE_DNAT protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE_DNAT application CUSTOM_APP_DNAT
+
+# Matches on pre-NAT address and post-NAT zone
+set rulebase application-override rules OVERRIDE_APP_RULE_SNAT from z1
+set rulebase application-override rules OVERRIDE_APP_RULE_SNAT to z2
+set rulebase application-override rules OVERRIDE_APP_RULE_SNAT source 10.0.1.2
+set rulebase application-override rules OVERRIDE_APP_RULE_SNAT destination 10.0.0.0/8
+set rulebase application-override rules OVERRIDE_APP_RULE_SNAT port 6542
+set rulebase application-override rules OVERRIDE_APP_RULE_SNAT protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE_SNAT application CUSTOM_APP_SNAT
