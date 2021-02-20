@@ -26,6 +26,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -403,5 +404,57 @@ public class PaloAltoSecurityRuleTest {
                           isTraceTree(matchAddressValueTraceElement("10.11.11.0/24")))),
                   isTraceTree(matchServiceAnyTraceElement()))));
     }
+  }
+
+  @Test
+  public void testSecurityRules() throws IOException {
+    String hostname = "security-rules";
+    Configuration c = parseConfig(hostname);
+
+    int customAppPort = 1234;
+    String if1name = "ethernet1/1"; // 10.0.1.1/24
+    Builder baseFlow =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"));
+
+    Flow flowPermitZ2 =
+        baseFlow
+            .setDstPort(customAppPort)
+            // Destined for z2, which allows this traffic
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    Flow flowPermitZ4 =
+        flowPermitZ2.toBuilder()
+            // Destined for z4, which allows this traffic
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    Flow flowReject =
+        baseFlow
+            .setDstPort(customAppPort)
+            // Destined for z3, which has a deny rule for this traffic
+            .setDstIp(Ip.parse("10.0.3.2"))
+            .build();
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowPermitZ2, flowPermitZ4, flowReject), false);
+
+    // Confirm flow matching deny rule (matching rejected to-zone) is not successful
+    assertEquals(traces.get(flowReject).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    // Confirm flows matching allow rule (permitted to-zone) are successful
+    assertEquals(
+        traces.get(flowPermitZ2).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+    assertEquals(
+        traces.get(flowPermitZ4).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
   }
 }
