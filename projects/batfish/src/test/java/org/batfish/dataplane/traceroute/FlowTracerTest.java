@@ -70,6 +70,7 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
@@ -118,8 +119,11 @@ import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
+import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
+import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1880,7 +1884,7 @@ public final class FlowTracerTest {
 
     // must add a breadcrumb before forking
     breadcrumbs.push(new Breadcrumb(c.getHostname(), vrf.getName(), null, flow));
-    FlowTracer flowTracer2 = flowTracer.forkTracerSameNode(true);
+    FlowTracer flowTracer2 = flowTracer.forkTracerSameNode();
 
     // only current flow is transformed
     assertThat(flowTracer2.getOriginalFlow().getDstIp(), equalTo(dstIp1));
@@ -1981,8 +1985,20 @@ public final class FlowTracerTest {
             false,
             configs);
 
+    // There's a sanity check in FlowTracer constructor that requires there to be a PolicyStep or
+    // TransformationStep if the current and original flows don't match. Doesn't matter if this
+    // doesn't accurately represent the transformation.
+    FlowDiff flowDiff = FlowDiff.flowDiff(IpField.SOURCE, blockedSrcIp, permittedSrcIp);
+    TransformationStep placeholderTransformationStep =
+        new TransformationStep(
+            new TransformationStepDetail(
+                TransformationType.SOURCE_NAT, ImmutableSortedSet.of(flowDiff)),
+            StepAction.TRANSFORMED);
+
     {
       // When original flow has the blocked src IP, it should get denied out
+      List<Step<?>> steps = new ArrayList<>();
+      steps.add(placeholderTransformationStep);
       List<TraceAndReverseFlow> traces = new ArrayList<>();
       FlowTracer flowTracer =
           new FlowTracer(
@@ -1996,12 +2012,11 @@ public final class FlowTracerTest {
               flowWithBlockedSrc, // original flow
               vrf.getName(),
               new ArrayList<>(),
-              new ArrayList<>(),
+              steps,
               new Stack<>(),
               flowWithPermittedSrc, // current flow
               0,
-              0,
-              true);
+              0);
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
@@ -2010,6 +2025,8 @@ public final class FlowTracerTest {
 
     {
       // When current flow has the blocked src IP (but original doesn't), it should succeed
+      List<Step<?>> steps = new ArrayList<>();
+      steps.add(placeholderTransformationStep);
       List<TraceAndReverseFlow> traces = new ArrayList<>();
       FlowTracer flowTracer =
           new FlowTracer(
@@ -2023,12 +2040,11 @@ public final class FlowTracerTest {
               flowWithPermittedSrc, // original flow
               vrf.getName(),
               new ArrayList<>(),
-              new ArrayList<>(),
+              steps,
               new Stack<>(),
               flowWithBlockedSrc, // current flow
               0,
-              0,
-              true);
+              0);
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));

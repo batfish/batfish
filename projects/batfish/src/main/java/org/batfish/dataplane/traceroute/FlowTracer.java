@@ -335,46 +335,9 @@ class FlowTracer {
       Flow currentFlow,
       int origNewSessionsSize,
       int origBreadcrumbsSize) {
-    this(
-        tracerouteContext,
-        currentConfig,
-        ingressInterface,
-        currentNode,
-        traceRecorder,
-        lastHopNodeAndOutgoingInterface,
-        newSessions,
-        originalFlow,
-        vrfName,
-        hops,
-        steps,
-        breadcrumbs,
-        currentFlow,
-        origNewSessionsSize,
-        origBreadcrumbsSize,
-        steps.stream()
-            .anyMatch(step -> step instanceof TransformationStep || step instanceof PolicyStep));
-  }
-
-  /** Construct a {@link FlowTracer} with explicitly-provided fields. */
-  @VisibleForTesting
-  FlowTracer(
-      TracerouteEngineImplContext tracerouteContext,
-      Configuration currentConfig,
-      @Nullable String ingressInterface,
-      Node currentNode,
-      TraceRecorder traceRecorder,
-      @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface,
-      List<FirewallSessionTraceInfo> newSessions,
-      Flow originalFlow,
-      @Nonnull String vrfName,
-      List<HopInfo> hops,
-      List<Step<?>> steps,
-      Stack<Breadcrumb> breadcrumbs,
-      Flow currentFlow,
-      int origNewSessionsSize,
-      int origBreadcrumbsSize,
-      boolean transformationOrPolicyOccurred) {
-    assert transformationOrPolicyOccurred || originalFlow.equals(currentFlow)
+    assert originalFlow.equals(currentFlow)
+            || steps.stream()
+                .anyMatch(step -> step instanceof TransformationStep || step instanceof PolicyStep)
         : "Original flow and current flow must be equal unless there's a transformation step or a"
             + " policy step";
     _tracerouteContext = tracerouteContext;
@@ -450,16 +413,15 @@ class FlowTracer {
   /** Return forked {@link FlowTracer} on same node and VRF. Used for taking ECMP actions. */
   @VisibleForTesting
   @Nonnull
-  FlowTracer forkTracerSameNode(boolean transformationOrPolicyOccurred) {
-    return forkTracerSameNode(_vrfName, transformationOrPolicyOccurred);
+  FlowTracer forkTracerSameNode() {
+    return forkTracerSameNode(_vrfName);
   }
 
   /**
    * Return forked {@link FlowTracer} on same node and VRF identified by {@code newVrfName}. Used
    * for taking next-vrf action (different VRF) or ECMP action (same VRF).
    */
-  private @Nonnull FlowTracer forkTracerSameNode(
-      String newVrfName, boolean transformationOrPolicyOccurred) {
+  private @Nonnull FlowTracer forkTracerSameNode(String newVrfName) {
     checkState(_hops.size() == _breadcrumbs.size() - 1, "Must be just ready to add another hop");
 
     // hops and sessions are per-trace.
@@ -478,8 +440,7 @@ class FlowTracer {
         _breadcrumbs,
         _currentFlow,
         _origNewSessionsSize,
-        _origBreadcrumbsSize,
-        transformationOrPolicyOccurred);
+        _origBreadcrumbsSize);
   }
 
   private void processOutgoingInterfaceEdges(
@@ -809,34 +770,6 @@ class FlowTracer {
       Fib fib,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
       Stack<Breadcrumb> intraHopBreadcrumbs) {
-    fibLookup(
-        dstIp,
-        currentNodeName,
-        fib,
-        forwardOutInterfaceHandler,
-        intraHopBreadcrumbs,
-        ImmutableList.of());
-  }
-
-  /**
-   * Perform a FIB lookup of {@code dstIp} on {@code fib} of {@code currentNodeName} and take
-   * corresponding actions given {@code intraHopBreadcrumbs} already produced at this node. Use
-   * {@code forwardOutInterfaceHandler} to handle forwarding action.
-   *
-   * @param postSuccessfulRoutingSteps Steps that will be added after a successful (i.e., not LOOP
-   *     or NO_ROUTE) routing step is added. Currently only used for transformation steps in cases
-   *     where routing should occur before NAT, which can come up for session-matching flows in
-   *     bidirectional traceroute. (In these cases _currentFlow is already the transformed return
-   *     flow, but dstIp is the untransformed destination.
-   */
-  @VisibleForTesting
-  void fibLookup(
-      Ip dstIp,
-      String currentNodeName,
-      Fib fib,
-      BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
-      Stack<Breadcrumb> intraHopBreadcrumbs,
-      List<Step<?>> postSuccessfulRoutingSteps) {
     // Loop detection
     Breadcrumb breadcrumb =
         new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, _currentFlow);
@@ -864,14 +797,9 @@ class FlowTracer {
       }
 
       // For every action corresponding to ECMP LPM FibEntry
-      boolean transformationOrPolicyOccurred =
-          !postSuccessfulRoutingSteps.isEmpty()
-              || _steps.stream()
-                  .anyMatch(
-                      step -> step instanceof TransformationStep || step instanceof PolicyStep);
       groupedByFibAction.forEach(
           ((fibAction, fibEntriesForFibAction) -> {
-            forkTracerSameNode(transformationOrPolicyOccurred)
+            forkTracerSameNode()
                 .forward(
                     fibAction,
                     fibEntriesForFibAction,
@@ -879,9 +807,7 @@ class FlowTracer {
                     currentNodeName,
                     forwardOutInterfaceHandler,
                     intraHopBreadcrumbs,
-                    breadcrumb,
-                    postSuccessfulRoutingSteps,
-                    transformationOrPolicyOccurred);
+                    breadcrumb);
           }));
     } finally {
       if (intraHopBreadcrumbs.isEmpty()) {
@@ -990,14 +916,13 @@ class FlowTracer {
                 }
 
                 // Accept if the flow is destined for this vrf on this host.
-                Ip dstIp = _currentFlow.getDstIp();
-                if (isAcceptedAtCurrentVrf(dstIp)) {
+                if (isAcceptedAtCurrentVrf(_currentFlow.getDstIp())) {
                   buildAcceptTrace();
                   return null;
                 }
 
                 fibLookup(
-                    dstIp,
+                    _currentFlow.getDstIp(),
                     currentNodeName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
                     (flowTracer, fibForward) -> {
@@ -1027,29 +952,24 @@ class FlowTracer {
 
               @Override
               public Void visitPreNatFibLookup(PreNatFibLookup preNatFibLookup) {
-                Ip preNatDstIp = _currentFlow.getDstIp();
-
                 // Accept if the flow is destined for this vrf on this host.
                 // TODO Confirm it is possible to accept at this point in pipeline.
-                if (isAcceptedAtCurrentVrf(preNatDstIp)) {
+                if (isAcceptedAtCurrentVrf(_currentFlow.getDstIp())) {
                   buildAcceptTrace();
                   return null;
                 }
 
-                // Apply transformation, if any
-                List<Step<?>> transformationSteps =
-                    finalTransformationResult == null
-                        ? ImmutableList.of()
-                        : finalTransformationResult.getTraceSteps();
-                if (finalTransformationResult != null) {
-                  _currentFlow = finalTransformationResult.getOutputFlow();
-                }
-
                 fibLookup(
-                    preNatDstIp,
+                    _currentFlow.getDstIp(),
                     currentNodeName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
                     (flowTracer, fibForward) -> {
+                      // Routing happened, so it's finally time to apply transformation
+                      if (finalTransformationResult != null) {
+                        flowTracer._currentFlow = finalTransformationResult.getOutputFlow();
+                        flowTracer._steps.addAll(finalTransformationResult.getTraceSteps());
+                      }
+
                       String outgoingIfaceName = fibForward.getInterfaceName();
 
                       // TODO: handle ACLs
@@ -1063,16 +983,16 @@ class FlowTracer {
                       if (neighborIfaces.isEmpty()) {
                         FlowDisposition disposition =
                             _tracerouteContext.computeDisposition(
-                                currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
+                                currentNodeName,
+                                outgoingIfaceName,
+                                flowTracer._currentFlow.getDstIp());
                         flowTracer.buildArpFailureTrace(
-                            outgoingIfaceName, _currentFlow.getDstIp(), disposition);
+                            outgoingIfaceName, flowTracer._currentFlow.getDstIp(), disposition);
                       } else {
                         flowTracer.processOutgoingInterfaceEdges(
                             outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
                       }
-                    },
-                    new Stack<>(),
-                    transformationSteps);
+                    });
                 return null;
               }
 
@@ -1536,11 +1456,6 @@ class FlowTracer {
 
   /**
    * Forwards the current flow using the given FIB action and entries and the given {@code dstIp}.
-   *
-   * @param postRoutingSteps Steps to add after the routing step is added. Currently only used for
-   *     transformation steps in cases where routing should occur before NAT, which can come up for
-   *     session-matching flows in bidirectional traceroute. (In these cases {@code _currentFlow} is
-   *     already the transformed return flow, but {@code dstIp} is the untransformed destination.)
    */
   private void forward(
       FibAction fibAction,
@@ -1549,12 +1464,9 @@ class FlowTracer {
       String currentNodeName,
       BiConsumer<FlowTracer, FibForward> forwardOutInterfaceHandler,
       Stack<Breadcrumb> intraHopBreadcrumbs,
-      Breadcrumb breadcrumb,
-      List<Step<?>> postRoutingSteps,
-      boolean transformationOrPolicyOccurred) {
+      Breadcrumb breadcrumb) {
     FlowTracer flowTracer = this;
     _steps.add(buildRoutingStep(fibAction, fibEntries));
-    _steps.addAll(postRoutingSteps);
     fibAction.accept(
         new FibActionVisitor<Void>() {
           @Override
@@ -1571,7 +1483,7 @@ class FlowTracer {
             }
             intraHopBreadcrumbs.push(breadcrumb);
             String nextVrf = fibNextVrf.getNextVrf();
-            FlowTracer forkedTracer = forkTracerSameNode(nextVrf, transformationOrPolicyOccurred);
+            FlowTracer forkedTracer = forkTracerSameNode(nextVrf);
             // Accept if the flow is destined for next vrf.
             if (forkedTracer.isAcceptedAtCurrentVrf(dstIp)) {
               forkedTracer.buildAcceptTrace();
