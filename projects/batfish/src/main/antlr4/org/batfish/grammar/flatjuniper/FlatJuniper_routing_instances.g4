@@ -226,7 +226,6 @@ ro_null
       | NONSTOP_ROUTING
       | OPTIONS
       | PPM
-      | RESOLUTION
       | TRACEOPTIONS
    ) null_filler
 ;
