@@ -603,10 +603,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /**
    * Build an ACL for a specific application-override rule. This ACL ignores interaction between
-   * rules (e.g. ignoring shadowing).
+   * rules (e.g. ignoring shadowing) and does not encode zone matching.
    */
   private AclLineMatchExpr buildApplicationOverrideRuleAcl(
-      Vsys vsys, ApplicationOverrideRule rule, String fromZone, String toZone) {
+      Vsys vsys, ApplicationOverrideRule rule) {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 1. Initialize the list of conditions.
@@ -658,9 +658,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Vsys vsys,
       List<ApplicationOverrideRule> rules,
       Map<String, AclLineMatchExpr> ruleNameToAcl,
-      String app,
-      String fromZone,
-      String toZone) {
+      String app) {
     // Exprs that match the specified application name
     // Using list as it's possible for multiple rules to override the same app
     List<AclLineMatchExpr> appMatchExprs = new LinkedList<>();
@@ -695,6 +693,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Collects the application-override rules from this Vsys and merges the common
    * pre-/post-rulebases from Panorama. Filters out rules that aren't applicable or are invalid.
    */
+  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private List<ApplicationOverrideRule> getApplicableApplicationOverrideRules(
       Vsys vsys, String fromZone, String toZone) {
     Stream<ApplicationOverrideRule> pre =
@@ -761,10 +760,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // First, build independent ACLs for each rule (ignoring things like shadowing)
     Map<String, AclLineMatchExpr> ruleNameToAcl = new HashMap<>();
-    rules.forEach(
-        r ->
-            ruleNameToAcl.put(
-                r.getName(), buildApplicationOverrideRuleAcl(vsys, r, fromZone, toZone)));
+    rules.forEach(r -> ruleNameToAcl.put(r.getName(), buildApplicationOverrideRuleAcl(vsys, r)));
 
     // Next, build map of app name to ACL, using the converted rules from above
     Map<String, AclLineMatchExpr> appNameToAcl = new HashMap<>();
@@ -774,9 +770,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .forEach(
             a ->
                 appNameToAcl.put(
-                    a,
-                    buildApplicationOverrideApplicationAcl(
-                        vsys, rules, ruleNameToAcl, a, fromZone, toZone)));
+                    a, buildApplicationOverrideApplicationAcl(vsys, rules, ruleNameToAcl, a)));
 
     return appNameToAcl;
   }
@@ -833,8 +827,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       String name = entry.getKey();
       SecurityRule rule = entry.getValue();
       if (securityRuleApplies(fromZone, toZone, rule, _w) && !ruleToExprAclLine.containsKey(name)) {
-        ruleToExprAclLine.put(
-            name, toIpAccessListLine(rule, vsys, fromZone, toZone, appOverrideAcls));
+        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys, appOverrideAcls));
       }
     }
   }
@@ -1455,11 +1448,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   //   However, services are a bit complicated when `service application-default` is used. In that
   //   case, we extract service definitions from the application that matches.
   private ExprAclLine toIpAccessListLine(
-      SecurityRule rule,
-      Vsys vsys,
-      String fromZone,
-      String toZone,
-      Map<String, AclLineMatchExpr> appOverrideAcls) {
+      SecurityRule rule, Vsys vsys, Map<String, AclLineMatchExpr> appOverrideAcls) {
     assert !rule.getDisabled(); // handled by caller.
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1494,7 +1483,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match services.
-    getServiceExpr(rule, vsys, fromZone, toZone, appOverrideAcls).ifPresent(conjuncts::add);
+    getServiceExpr(rule, vsys, appOverrideAcls).ifPresent(conjuncts::add);
 
     return ExprAclLine.builder()
         .setName(rule.getName())
@@ -1509,11 +1498,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * {@link Optional#empty()} if all are allowed.
    */
   private Optional<AclLineMatchExpr> getServiceExpr(
-      SecurityRule rule,
-      Vsys vsys,
-      String fromZone,
-      String toZone,
-      Map<String, AclLineMatchExpr> appOverrideAcls) {
+      SecurityRule rule, Vsys vsys, Map<String, AclLineMatchExpr> appOverrideAcls) {
     SortedSet<ServiceOrServiceGroupReference> services = rule.getService();
     if (services.isEmpty()) {
       // No filtering.
