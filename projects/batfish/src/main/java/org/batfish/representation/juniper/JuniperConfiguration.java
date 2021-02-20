@@ -3439,6 +3439,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.ADDRESS_BOOK, JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE);
     markConcreteStructure(
         JuniperStructureType.AS_PATH, JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH);
+    markConcreteStructure(JuniperStructureType.AS_PATH_GROUP_AS_PATH);
     markConcreteStructure(
         JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
         JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY);
