@@ -81580,11 +81580,11 @@
           "as-path-group as-path" : {
             "AS_PATH_REGEX_NAME1" : {
               "definitionLines" : "5",
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "AS_PATH_REGEX_NAME2" : {
               "definitionLines" : "6",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
