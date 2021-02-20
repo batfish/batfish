@@ -5263,6 +5263,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentLogicalSystem.getDefaultRoutingInstance().setForwardingTableExportPolicy(name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, FORWARDING_TABLE_EXPORT_POLICY, getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override
