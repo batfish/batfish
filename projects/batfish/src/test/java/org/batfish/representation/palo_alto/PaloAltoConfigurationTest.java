@@ -1,5 +1,7 @@
 package org.batfish.representation.palo_alto;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -24,6 +26,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -31,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -686,20 +688,20 @@ public final class PaloAltoConfigurationTest {
     SecurityRule rule = new SecurityRule("rule", new Vsys(VSYS_NAME));
     rule.getFrom().addAll(ImmutableList.of("A", "B"));
     rule.getTo().addAll(ImmutableList.of("A", "B"));
+    Warnings w = new Warnings(true, true, true);
 
     // non-intrazone
-    assertTrue(checkIntrazoneValidityAndWarn(rule, new Warnings()));
+    assertTrue(checkIntrazoneValidityAndWarn(rule, w));
+    assertThat(w.getRedFlagWarnings(), empty());
 
     // valid intrazone
     rule.setRuleType(RuleType.INTRAZONE);
-    assertTrue(checkIntrazoneValidityAndWarn(rule, new Warnings()));
+    assertTrue(checkIntrazoneValidityAndWarn(rule, w));
+    assertThat(w.getRedFlagWarnings(), empty());
 
     // invalid intrazone
-    Warnings w = new Warnings(true, true, true);
     rule.getTo().add("C");
     assertFalse(checkIntrazoneValidityAndWarn(rule, w));
-    assertThat(
-        Iterables.getOnlyElement(w.getRedFlagWarnings()).getText(),
-        containsString("Skipping invalid intrazone security rule"));
+    assertThat(w, hasRedFlag(hasText(containsString("Skipping invalid intrazone security rule"))));
   }
 }

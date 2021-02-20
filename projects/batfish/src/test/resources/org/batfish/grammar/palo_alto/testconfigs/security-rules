@@ -1,0 +1,54 @@
+set deviceconfig system hostname security-rules
+
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 10.0.3.1/24
+set network interface ethernet ethernet1/4 layer3 ip 10.0.4.1/24
+set network interface ethernet ethernet1/5 layer3 ip 10.0.5.1/24
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+set zone z3 network layer3 ethernet1/3
+set zone z4 network layer3 [ ethernet1/4 ethernet1/5 ]
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4 ethernet1/5 ]
+
+set service TCP_1234 protocol tcp port 1234
+
+# Initial block all rule is disabled, so should have no impact
+set rulebase security rules "disabled rule" disabled yes
+set rulebase security rules "disabled rule" from any
+set rulebase security rules "disabled rule" to any
+set rulebase security rules "disabled rule" source any
+set rulebase security rules "disabled rule" destination any
+set rulebase security rules "disabled rule" service any
+set rulebase security rules "disabled rule" application any
+set rulebase security rules "disabled rule" action deny
+
+# Block TCP/1234 to z3
+set rulebase security rules BLOCK_TCP_1234 from any
+set rulebase security rules BLOCK_TCP_1234 to z3
+set rulebase security rules BLOCK_TCP_1234 source any
+set rulebase security rules BLOCK_TCP_1234 source-user any
+set rulebase security rules BLOCK_TCP_1234 destination any
+set rulebase security rules BLOCK_TCP_1234 service "TCP_1234"
+set rulebase security rules BLOCK_TCP_1234 application any
+set rulebase security rules BLOCK_TCP_1234 action deny
+
+# Allow TCP/1234
+set rulebase security rules PERMIT_TCP_1234 from any
+set rulebase security rules PERMIT_TCP_1234 to [ z2 z4 ]
+set rulebase security rules PERMIT_TCP_1234 source any
+set rulebase security rules PERMIT_TCP_1234 source-user any
+set rulebase security rules PERMIT_TCP_1234 destination any
+set rulebase security rules PERMIT_TCP_1234 service "TCP_1234"
+set rulebase security rules PERMIT_TCP_1234 application any
+set rulebase security rules PERMIT_TCP_1234 action allow
+
+# Override default behavior with default deny
+# This last rule comes before the others alphabetically but should be processed last
+set rulebase security rules 33rd_RULE from any
+set rulebase security rules 33rd_RULE to any
+set rulebase security rules 33rd_RULE source any
+set rulebase security rules 33rd_RULE destination any
+set rulebase security rules 33rd_RULE service any
+set rulebase security rules 33rd_RULE application any
+set rulebase security rules 33rd_RULE action deny
