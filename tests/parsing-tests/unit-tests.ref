@@ -78376,6 +78376,16 @@
             }
           ]
         },
+        "configs/gh-2658-juniper-vrf-import-export.cfg" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 112,
+              "Parser_Context" : "[rof_export ro_forwarding_table s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "export lbpp"
+            }
+          ]
+        },
         "configs/ios_bgp" : {
           "Parse warnings" : [
             {

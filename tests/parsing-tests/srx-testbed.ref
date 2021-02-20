@@ -6218,6 +6218,12 @@
               "Line" : 47,
               "Parser_Context" : "[sesot_land seso_tcp ses_ids_option se_screen s_security s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "land"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 104,
+              "Parser_Context" : "[rof_export ro_forwarding_table s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "export loadbal"
             }
           ]
         },
