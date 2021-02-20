@@ -85,6 +85,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
@@ -2137,6 +2138,7 @@ public final class PaloAltoGrammarTest {
                         isTraceTree(
                             matchDestinationAddressTraceElement(),
                             isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(matchApplicationAnyTraceElement()),
                         isTraceTree(matchServiceAnyTraceElement()))))));
 
     // Flow matching PERMIT security rule should generate a trace pointing to that rule.
@@ -2164,6 +2166,7 @@ public final class PaloAltoGrammarTest {
                         isTraceTree(
                             matchDestinationAddressTraceElement(),
                             isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(matchApplicationAnyTraceElement()),
                         isTraceTree(matchServiceAnyTraceElement()))))));
   }
 

@@ -1670,8 +1670,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // If we're not using application-default services,
     // Assume application matches regardless of service-y signature
     if (!applicationDefaultService) {
-      // Intentionally not adding a traceElement here, since the match isn't interesting
-      return TrueExpr.INSTANCE;
+      return new TrueExpr(traceElement);
     }
 
     AclLineMatchExpr appExpr =

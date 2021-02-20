@@ -291,6 +291,7 @@ public class PaloAltoSecurityRuleTest {
     Flow rule2bFlow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 179);
     Flow rule3Flow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 1234);
     Flow rule4Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
+    Flow rule3pt5Flow = createFlow("1.1.1.10", "10.12.14.16", IpProtocol.TCP, 0, 80);
 
     IpAccessList filter = c.getIpAccessLists().get(crossZoneFilterName);
     BiFunction<String, Flow, List<TraceTree>> trace =
@@ -316,6 +317,7 @@ public class PaloAltoSecurityRuleTest {
                   isTraceTree(
                       matchDestinationAddressTraceElement(),
                       isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
+                  isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchServiceTraceElement()))));
     }
     {
@@ -331,6 +333,7 @@ public class PaloAltoSecurityRuleTest {
                   isTraceTree(
                       matchDestinationAddressTraceElement(),
                       isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
+                  isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchBuiltInServiceTraceElement()))));
     }
     {
@@ -386,6 +389,21 @@ public class PaloAltoSecurityRuleTest {
                       isTraceTree(matchApplicationAnyTraceElement())))));
     }
     {
+      List<TraceTree> traces = trace.apply(iface1, rule3pt5Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE3pt5", "vsys1", filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressValueTraceElement("10.12.14.16"))),
+                  isTraceTree(matchBuiltInApplicationTraceElement("aol-messageboard-posting")),
+                  isTraceTree(matchBuiltInServiceTraceElement()))));
+    }
+    {
       List<TraceTree> traces = trace.apply(iface1, rule4Flow);
       assertThat(
           traces,
@@ -402,6 +420,7 @@ public class PaloAltoSecurityRuleTest {
                       isTraceTree(
                           matchNegatedAddressTraceElement(),
                           isTraceTree(matchAddressValueTraceElement("10.11.11.0/24")))),
+                  isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchServiceAnyTraceElement()))));
     }
   }
