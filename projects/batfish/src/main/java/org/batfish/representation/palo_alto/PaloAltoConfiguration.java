@@ -856,7 +856,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       }
 
       // Create cross-zone ACLs for each pair of zones, including self-zone.
-      List<Map.Entry<SecurityRule, Vsys>> rules = getAllValidSecurityRules(vsys);
+      checkAllSecurityRuleValidity(vsys);
       for (Zone fromZone : vsys.getZones().values()) {
         Type fromType = fromZone.getType();
         for (Zone toZone : vsys.getZones().values()) {
@@ -871,7 +871,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           }
           if (fromType == Type.LAYER3 || toType == Type.LAYER3) {
             // only generate IP ACL when at least one zone is layer-3
-            IpAccessList acl = generateCrossZoneFilter(fromZone, toZone, rules);
+            IpAccessList acl = generateCrossZoneFilter(fromZone, toZone);
             _c.getIpAccessLists().put(acl.getName(), acl);
           }
         }
@@ -948,8 +948,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Generates a cross-zone ACL from the two given zones in the same Vsys using the given rules. */
-  private IpAccessList generateCrossZoneFilter(
-      Zone fromZone, Zone toZone, List<Map.Entry<SecurityRule, Vsys>> rules) {
+  private IpAccessList generateCrossZoneFilter(Zone fromZone, Zone toZone) {
     assert fromZone.getVsys() == toZone.getVsys();
     Vsys vsys = fromZone.getVsys();
     String vsysName = vsys.getName();
@@ -1053,11 +1052,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Collects the security rules from this Vsys and merges the common pre-/post-rulebases from
-   * Panorama. Filters out invalid intrazone rules.
+   * Check security rules from this Vsys and pre-/post-rulebases from Panorama and warn about
+   * invalid intrazone rules.
    */
   @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
-  private List<Map.Entry<SecurityRule, Vsys>> getAllValidSecurityRules(Vsys vsys) {
+  private void checkAllSecurityRuleValidity(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
             ? Stream.of()
@@ -1071,10 +1070,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     Stream<Map.Entry<SecurityRule, Vsys>> rules =
         vsys.getRulebase().getSecurityRules().values().stream()
             .map(r -> new SimpleImmutableEntry<>(r, vsys));
-
-    return Stream.concat(Stream.concat(pre, rules), post)
-        .filter(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w))
-        .collect(ImmutableList.toImmutableList());
+    Stream.concat(Stream.concat(pre, rules), post)
+        .forEach(e -> checkIntrazoneValidityAndWarn(e.getKey(), _w));
   }
 
   /**

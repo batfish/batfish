@@ -31,7 +31,7 @@ e_multicast_mode
 
 e_vni_options
 :
-    VNI_OPTIONS VNI id = DEC (
+    VNI_OPTIONS VNI id = dec (
         evo_designated_forwarder_election_hold_time
         | evo_vrf_target
     )+
@@ -39,7 +39,7 @@ e_vni_options
 
 evo_designated_forwarder_election_hold_time
 :
-    DESIGNATED_FORWARDER_ELECTION_HOLD_TIME secs = DEC
+    DESIGNATED_FORWARDER_ELECTION_HOLD_TIME secs = dec
 ;
 
 evo_vrf_target
@@ -85,5 +85,5 @@ p_evpn
 
 vt_community
 :
-    TARGET COLON x = DEC COLON y = DEC
+    TARGET COLON x = dec COLON y = dec
 ;

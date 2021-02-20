@@ -6,22 +6,22 @@ options {
 
 administrator_as
 :
-  DEC L
+  dec L
 ;
 
 administrator_dec
 :
-  DEC
+  dec
 ;
 
 administrator_dotted_as
 :
-  DEC PERIOD DEC
+  dec PERIOD dec
 ;
 
 administrator_ip
 :
-  DEC PERIOD DEC PERIOD DEC PERIOD DEC
+  dec PERIOD dec PERIOD dec PERIOD dec
 ;
 
 apply
@@ -65,8 +65,16 @@ as_unit
 
 bgp_asn
 :
-    asn = DEC
-    | asn4hi = DEC PERIOD asn4lo = DEC
+    asn = dec
+    | asn4hi = dec PERIOD asn4lo = dec
+;
+
+dec
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | DEC
 ;
 
 description
@@ -84,12 +92,12 @@ ec_administrator
 
 ec_literal
 :
-  DEC COLON DEC COLON DEC
+  dec COLON dec COLON dec
 ;
 
 ec_named
 :
-  ec_type COLON ec_administrator COLON assigned_number = DEC
+  ec_type COLON ec_administrator COLON assigned_number = dec
 ;
 
 ec_type
@@ -106,7 +114,7 @@ extended_community
 
 icmp_code
 :
-  DEC
+  dec
   | COMMUNICATION_PROHIBITED_BY_FILTERING
   | DESTINATION_HOST_PROHIBITED
   | DESTINATION_HOST_UNKNOWN
@@ -135,7 +143,7 @@ icmp_code
 
 icmp_type
 :
-  DEC
+  dec
   | DESTINATION_UNREACHABLE
   | ECHO_REPLY
   | ECHO_REQUEST
@@ -164,7 +172,7 @@ icmp6_only_type
 
 interface_id
 :
-   (node=variable COLON)? name = INTERFACE_NAME (COLON chnl=DEC)? (PERIOD unit = DEC)?
+   (node=variable COLON)? name = INTERFACE_NAME (COLON chnl=dec)? (PERIOD unit = dec)?
 ;
 
 
@@ -183,7 +191,7 @@ ip_option
 ip_protocol
 :
   AH
-  | DEC
+  | dec
   | DSTOPTS
   | EGP
   | ESP
@@ -474,7 +482,7 @@ port
   | BOOTPS
   | CMD
   | CVSPSERVER
-  | DEC
+  | dec
   | DHCP
   | DOMAIN
   | EKLOGIN
@@ -564,7 +572,7 @@ range
 
 bandwidth
 :
-  base = DEC
+  base = dec
   (
     C
     | K
@@ -605,15 +613,33 @@ string
 
 subrange
 :
-  low = DEC
+  low = dec
   (
-    DASH high = DEC
+    DASH high = dec
   )?
 ;
 
 threshold
 :
-  THRESHOLD value = DEC
+  THRESHOLD value = dec
+;
+
+uint8
+:
+  UINT8
+;
+
+uint16
+:
+  UINT8
+  | UINT16
+;
+
+uint32
+:
+  UINT8
+  | UINT16
+  | UINT32
 ;
 
 variable

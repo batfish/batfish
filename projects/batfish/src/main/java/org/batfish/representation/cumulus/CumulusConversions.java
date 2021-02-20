@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -1256,6 +1257,29 @@ public final class CumulusConversions {
             .setProcessId(DEFAULT_OSPF_PROCESS_NAME)
             .setReferenceBandwidth(OspfProcess.DEFAULT_REFERENCE_BANDWIDTH)
             .build();
+
+    // Configure any interfaces grabbed by the network statement
+    for (OspfNetworkArea na : vsConfig.getOspfProcess().getNetworkAreas().values()) {
+      Prefix network = na.getPrefix();
+      long area = na.getArea();
+      for (Interface i : vrfInterfaces.values()) {
+        if (i.getAllConcreteAddresses().stream()
+            .noneMatch(ip -> network.containsPrefix(ip.getPrefix()))) {
+          // Skip i unless it has a concrete address that is fully contained in the OSPF network.
+          continue;
+        }
+
+        // Make sure it has OSPF Interface settings, creating one if not.
+        FrrInterface iface = vsConfig.getFrrConfiguration().getInterfaces().get(i.getName());
+        checkState(iface != null, "Internal error: interface in VI but not in FRR");
+        OspfInterface ospfInterface = iface.getOrCreateOspf();
+
+        // If area was not already set at the interface level, set it here.
+        if (ospfInterface.getOspfArea() == null) {
+          ospfInterface.setOspfArea(area);
+        }
+      }
+    }
 
     addOspfInterfaces(vsConfig, vrfInterfaces, proc.getProcessId(), w);
     proc.setAreas(computeOspfAreas(vsConfig, vrfInterfaces.keySet()));

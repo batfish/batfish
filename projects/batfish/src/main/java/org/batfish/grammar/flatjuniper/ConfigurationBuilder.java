@@ -120,7 +120,6 @@ import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -217,6 +216,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.DecContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Dh_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DirectionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Encryption_algorithmContext;
@@ -400,6 +400,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_color2Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_deleteContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setContext;
@@ -416,6 +418,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ProposalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_listContext;
@@ -600,6 +603,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Uint32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_l3_interfaceContext;
@@ -760,6 +764,7 @@ import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
+import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.RibGroup;
@@ -950,8 +955,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   public static int getPortNumber(PortContext ctx) {
-    if (ctx.DEC() != null) {
-      int port = toInt(ctx.DEC());
+    if (ctx.dec() != null) {
+      int port = toInt(ctx.dec());
       return port;
     } else {
       NamedPort namedPort = getNamedPort(ctx);
@@ -1559,8 +1564,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
     if (ctx.COMMUNICATION_PROHIBITED_BY_FILTERING() != null) {
       return IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
-    } else if (ctx.DEC() != null) {
-      return Integer.parseInt(ctx.DEC().getText());
+    } else if (ctx.dec() != null) {
+      return Integer.parseInt(ctx.dec().getText());
     } else if (ctx.DESTINATION_HOST_PROHIBITED() != null) {
       return IcmpCode.DESTINATION_HOST_PROHIBITED;
     } else if (ctx.DESTINATION_HOST_UNKNOWN() != null) {
@@ -1616,8 +1621,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
    */
   @Nullable
   private static Integer toIcmpType(Icmp_typeContext ctx, Warnings w) {
-    if (ctx.DEC() != null) {
-      return Integer.parseInt(ctx.DEC().getText());
+    if (ctx.dec() != null) {
+      return Integer.parseInt(ctx.dec().getText());
     } else if (ctx.DESTINATION_UNREACHABLE() != null) {
       return IcmpType.DESTINATION_UNREACHABLE;
     } else if (ctx.ECHO_REPLY() != null) {
@@ -1742,12 +1747,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static int toInt(TerminalNode node) {
-    return toInt(node.getSymbol());
-  }
-
-  private static int toInt(Token token) {
-    return Integer.parseInt(token.getText());
+  private static int toInt(DecContext ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
@@ -1769,13 +1770,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     throw new IllegalArgumentException("unsupported");
   }
 
-  private static long toLong(Token token) {
-    return Long.parseLong(token.getText());
+  private static long toLong(DecContext ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
-    if (ctx.DEC() != null) {
-      int protocolNum = toInt(ctx.DEC());
+    if (ctx.dec() != null) {
+      int protocolNum = toInt(ctx.dec());
       return IpProtocol.fromNumber(protocolNum);
     } else if (ctx.AH() != null) {
       return IpProtocol.AHP;
@@ -2339,7 +2344,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentInterfaceOrRange.setDefined(true);
     _configuration.defineFlattenedStructure(INTERFACE, unitFullName, ctx, _parser);
     _configuration.referenceStructure(
-        INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, getLine(ctx.num));
+        INTERFACE, unitFullName, INTERFACE_SELF_REFERENCE, getLine(ctx.num.start));
   }
 
   @Override
@@ -2451,7 +2456,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterIs_level(Is_levelContext ctx) {
     IsisSettings isisSettings = _currentRoutingInstance.getIsisSettings();
-    int level = toInt(ctx.DEC());
+    int level = toInt(ctx.dec());
     switch (level) {
       case 1:
         _currentIsisLevelSettings = isisSettings.getLevel1Settings();
@@ -2466,7 +2471,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterIsi_level(Isi_levelContext ctx) {
-    int level = toInt(ctx.DEC());
+    int level = toInt(ctx.dec());
     switch (level) {
       case 1:
         _currentIsisInterfaceLevelSettings =
@@ -2640,7 +2645,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOas_default_metric(Oas_default_metricContext ctx) {
     _currentArea.setInjectDefaultRoute(true);
-    _currentArea.setMetricOfDefaultRoute(Integer.parseInt(ctx.DEC().getText()));
+    _currentArea.setMetricOfDefaultRoute(Integer.parseInt(ctx.dec().getText()));
   }
 
   @Override
@@ -3795,7 +3800,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitBfiu_loops(Bfiu_loopsContext ctx) {
-    _currentBgpGroup.setLoops(toInt(ctx.DEC()));
+    _currentBgpGroup.setLoops(toInt(ctx.dec()));
   }
 
   @Override
@@ -3809,7 +3814,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitBl_loops(Bl_loopsContext ctx) {
     todo(ctx);
-    int loops = toInt(ctx.DEC());
+    int loops = toInt(ctx.dec());
     _currentBgpGroup.setLoops(loops);
   }
 
@@ -4232,7 +4237,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitI_vlan_id(I_vlan_idContext ctx) {
-    _currentInterfaceOrRange.setVlanId(toInt(ctx.DEC()));
+    _currentInterfaceOrRange.setVlanId(toInt(ctx.dec()));
   }
 
   @Override
@@ -4438,7 +4443,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIs_overload(Is_overloadContext ctx) {
     _currentRoutingInstance.getIsisSettings().setOverload(true);
     if (ctx.iso_timeout() != null) {
-      _currentRoutingInstance.getIsisSettings().setOverloadTimeout(toInt(ctx.iso_timeout().DEC()));
+      _currentRoutingInstance.getIsisSettings().setOverloadTimeout(toInt(ctx.iso_timeout().dec()));
     }
   }
 
@@ -4472,12 +4477,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIsib_minimum_interval(Isib_minimum_intervalContext ctx) {
     _currentIsisInterface
         .getIsisSettings()
-        .setBfdLivenessDetectionMinimumInterval(toInt(ctx.DEC()));
+        .setBfdLivenessDetectionMinimumInterval(toInt(ctx.dec()));
   }
 
   @Override
   public void exitIsib_multiplier(Isib_multiplierContext ctx) {
-    _currentIsisInterface.getIsisSettings().setBfdLivenessDetectionMultiplier(toInt(ctx.DEC()));
+    _currentIsisInterface.getIsisSettings().setBfdLivenessDetectionMultiplier(toInt(ctx.dec()));
   }
 
   @Override
@@ -4500,17 +4505,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIsil_hello_interval(Isil_hello_intervalContext ctx) {
-    _currentIsisInterfaceLevelSettings.setHelloInterval(toInt(ctx.DEC()));
+    _currentIsisInterfaceLevelSettings.setHelloInterval(toInt(ctx.dec()));
   }
 
   @Override
   public void exitIsil_hold_time(Isil_hold_timeContext ctx) {
-    _currentIsisInterfaceLevelSettings.setHoldTime(toInt(ctx.DEC()));
+    _currentIsisInterfaceLevelSettings.setHoldTime(toInt(ctx.dec()));
   }
 
   @Override
   public void exitIsil_metric(Isil_metricContext ctx) {
-    int metric = toInt(ctx.DEC());
+    int metric = toInt(ctx.dec());
     _currentIsisInterfaceLevelSettings.setMetric(metric);
   }
 
@@ -4526,7 +4531,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitIsil_te_metric(Isil_te_metricContext ctx) {
-    int teMetric = toInt(ctx.DEC());
+    int teMetric = toInt(ctx.dec());
     _currentIsisInterfaceLevelSettings.setTeMetric(teMetric);
   }
 
@@ -4661,7 +4666,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOaa_override_metric(FlatJuniperParser.Oaa_override_metricContext ctx) {
-    _currentAreaRangeMetric = Long.parseLong(ctx.DEC().getText());
+    _currentAreaRangeMetric = Long.parseLong(ctx.dec().getText());
   }
 
   @Override
@@ -4689,7 +4694,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOai_dead_interval(Oai_dead_intervalContext ctx) {
-    int seconds = toInt(ctx.DEC());
+    int seconds = toInt(ctx.dec());
     // Must be between 1 and 65535:
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/dead-interval-edit-protocols-ospf.html
     if (seconds < 1 || seconds > 65535) {
@@ -4701,7 +4706,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOai_hello_interval(Oai_hello_intervalContext ctx) {
-    int seconds = toInt(ctx.DEC());
+    int seconds = toInt(ctx.dec());
     // Must be between 1 and 255:
     // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
     if (seconds < 1 || seconds > 255) {
@@ -4723,7 +4728,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitOai_metric(FlatJuniperParser.Oai_metricContext ctx) {
-    int ospfCost = toInt(ctx.DEC());
+    int ospfCost = toInt(ctx.dec());
     _currentOspfInterface.setOspfCost(ospfCost);
   }
 
@@ -4812,7 +4817,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_color(Popsf_colorContext ctx) {
-    int color = toInt(ctx.color);
+    long color = toLong(ctx.color);
     _currentPsTerm.getFroms().setFromColor(new PsFromColor(color));
   }
 
@@ -4860,8 +4865,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_local_preference(Popsf_local_preferenceContext ctx) {
-    int localPreference = toInt(ctx.localpref);
-    _currentPsTerm.getFroms().setFromLocalPreference(new PsFromLocalPreference(localPreference));
+    todo(ctx.getParent());
+    _currentPsTerm
+        .getFroms()
+        .setFromLocalPreference(new PsFromLocalPreference(toLong(ctx.localpref)));
   }
 
   @Override
@@ -4954,7 +4961,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_tag(Popsf_tagContext ctx) {
-    int tag = toInt(ctx.DEC());
+    long tag = toLong(ctx.uint32());
     _currentPsTerm.getFroms().addFromTag(new PsFromTag(tag));
   }
 
@@ -4973,6 +4980,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     List<Long> asPaths =
         ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
     _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
+  }
+
+  @Override
+  public void exitPopst_color(Popst_colorContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPopst_color2(Popst_color2Context ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -5014,7 +5031,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_external(Popst_externalContext ctx) {
-    int type = toInt(ctx.DEC());
+    int type = toInt(ctx.dec());
     if (type == 1) {
       _currentPsThens.add(new PsThenExternal(OspfMetricType.E1));
     } else if (type == 2) {
@@ -5026,9 +5043,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_local_preference(Popst_local_preferenceContext ctx) {
-    int localPreference = toInt(ctx.localpref);
-    PsThenLocalPreference then = new PsThenLocalPreference(localPreference);
-    _currentPsThens.add(then);
+    PsThenLocalPreference.Operator op =
+        ctx.ADD() != null
+            ? PsThenLocalPreference.Operator.ADD
+            : (ctx.SUBTRACT() != null
+                ? PsThenLocalPreference.Operator.SUBTRACT
+                : PsThenLocalPreference.Operator.SET);
+    _currentPsThens.add(new PsThenLocalPreference(toLong(ctx.localpref), op));
   }
 
   @Override
@@ -5101,6 +5122,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPopst_reject(Popst_rejectContext ctx) {
     _currentPsThens.add(PsThenReject.INSTANCE);
+  }
+
+  @Override
+  public void exitPopst_tag(Popst_tagContext ctx) {
+    _currentPsThens.add(new PsThenTag(toLong(ctx.uint32())));
   }
 
   @Override
@@ -5225,8 +5251,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitRoas_loops(Roas_loopsContext ctx) {
-    if (ctx.DEC() != null) {
-      _currentRoutingInstance.setLoops(toInt(ctx.DEC()));
+    if (ctx.dec() != null) {
+      _currentRoutingInstance.setLoops(toInt(ctx.dec()));
       todo(ctx);
     }
   }
@@ -5493,7 +5519,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSea_tolerance(Sea_toleranceContext ctx) {
-    _currentAuthenticationKeyChain.setTolerance(toInt(ctx.DEC()));
+    _currentAuthenticationKeyChain.setTolerance(toInt(ctx.dec()));
   }
 
   @Override

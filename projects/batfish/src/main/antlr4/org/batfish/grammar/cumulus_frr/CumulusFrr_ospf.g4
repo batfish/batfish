@@ -6,11 +6,18 @@ options {
   tokenVocab = CumulusFrrLexer;
 }
 
+ospf_area_range_cost
+:
+// 0-16777215
+  uint32
+;
+
 s_router_ospf
 :
   ROUTER OSPF NEWLINE
   (
-    ro_log_adj_changes
+    ro_area
+    | ro_log_adj_changes
     | ro_max_metric_router_lsa_administrative
     | ro_network
     | ro_no
@@ -18,6 +25,19 @@ s_router_ospf
     | ro_router_id
     | ro_redistribute
   )*
+;
+
+ro_area
+:
+  AREA area = ospf_area
+  roa_range
+;
+
+roa_range
+:
+  RANGE pfx = prefix (COST cost = ospf_area_range_cost)? NEWLINE
+  // todo: there are more valid options, but note that vtysh is not a good proxy for what can be
+  // in frr.conf. For now, these are all we support.
 ;
 
 ro_log_adj_changes

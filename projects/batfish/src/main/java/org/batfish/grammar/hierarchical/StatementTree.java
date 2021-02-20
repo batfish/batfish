@@ -80,4 +80,19 @@ public class StatementTree {
       }
     }
   }
+
+  /** Insert a new tree with its new key as the first child. */
+  public void insertTop(String newKey, StatementTree newTree) {
+    List<Entry<String, StatementTree>> entries = ImmutableList.copyOf(_children.entrySet());
+    _children.clear();
+    _children.put(newKey, newTree);
+    for (Entry<String, StatementTree> entry : entries) {
+      _children.put(entry.getKey(), entry.getValue());
+    }
+  }
+
+  /** Insert a new tree with its new key as the last child. */
+  public void insertBottom(String newKey, StatementTree newTree) {
+    _children.put(newKey, newTree);
+  }
 }

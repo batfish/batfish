@@ -30,6 +30,9 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>>
     extends AbstractRoute {
 
+  /** Local-preference has a maximum value of u32 max. */
+  public static final long MAX_LOCAL_PREFERENCE = (1L << 32) - 1;
+
   // Soft values: let it be garbage collected in times of pressure.
   // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
   //   (8 bytes seems smallest possible entry (set(long)), would be 1 MiB total).

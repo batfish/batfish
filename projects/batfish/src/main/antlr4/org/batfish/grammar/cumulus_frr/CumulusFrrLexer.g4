@@ -644,6 +644,11 @@ RA_INTERVAL
    'ra-interval'
 ;
 
+RANGE
+:
+   'range'
+;
+
 REDISTRIBUTE
 :
   'redistribute'

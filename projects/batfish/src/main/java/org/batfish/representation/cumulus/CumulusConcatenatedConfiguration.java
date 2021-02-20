@@ -485,11 +485,13 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   void initializeAllInterfaces(Configuration c) {
+    // Ensure that frrConfiguration contains every valid interface that is declared in either file.
     _interfacesConfiguration.getInterfaces().values().stream()
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
-        .forEach(iface -> initializeInterface(c, iface.getName(), iface.getVrf()));
-    _frrConfiguration.getInterfaces().values().stream()
-        .filter(iface -> !c.getAllInterfaces().containsKey(iface.getName()))
+        .forEach(iface -> _frrConfiguration.getOrCreateInterface(iface.getName(), iface.getVrf()));
+    _frrConfiguration
+        .getInterfaces()
+        .values()
         .forEach(iface -> initializeInterface(c, iface.getName(), iface.getVrfName()));
 
     // initialize super interfaces of sub-interfaces if needed

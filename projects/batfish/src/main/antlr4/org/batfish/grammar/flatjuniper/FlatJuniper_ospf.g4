@@ -10,7 +10,7 @@ o_area
 :
    AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
       | wildcard
    )
@@ -58,7 +58,7 @@ o_export
 
 o_external_preference
 :
-   EXTERNAL_PREFERENCE DEC
+   EXTERNAL_PREFERENCE dec
 ;
 
 o_import
@@ -184,7 +184,7 @@ oa_stub
 
 oaa_override_metric
 :
-   OVERRIDE_METRIC DEC
+   OVERRIDE_METRIC dec
 ;
 
 oaa_restrict
@@ -194,7 +194,7 @@ oaa_restrict
 
 oai_dead_interval
 :
-   DEAD_INTERVAL DEC
+   DEAD_INTERVAL dec
 ;
 
 oai_disable
@@ -209,7 +209,7 @@ oai_enable
 
 oai_hello_interval
 :
-   HELLO_INTERVAL DEC
+   HELLO_INTERVAL dec
 ;
 
 oai_interface_type
@@ -239,12 +239,12 @@ oai_ls_disable
 
 oai_ls_hold_time
 :
-   HOLD_TIME time = DEC
+   HOLD_TIME time = dec
 ;
 
 oai_metric
 :
-   METRIC DEC
+   METRIC dec
 ;
 
 oai_neighbor
@@ -269,17 +269,17 @@ oai_passive
 
 oai_priority
 :
-   PRIORITY DEC
+   PRIORITY dec
 ;
 
 oai_te_metric
 :
-   TE_METRIC DEC
+   TE_METRIC dec
 ;
 
 oal_metric
 :
-   METRIC DEC
+   METRIC dec
 ;
 
 oan_area_range
@@ -305,7 +305,7 @@ oan_no_summaries
 
 oand_default_metric
 :
-   DEFAULT_METRIC DEC
+   DEFAULT_METRIC dec
 ;
 
 oand_metric_type
@@ -329,7 +329,7 @@ oas_no_summaries
 
 oas_default_metric
 :
-   DEFAULT_METRIC DEC
+   DEFAULT_METRIC dec
 ;
 
 ospf_interface_type

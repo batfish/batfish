@@ -1,0 +1,17 @@
+#
+set system host-name juniper-policy-statement-then
+#
+set policy-options policy-statement COLOR_POLICY term TSETMIN then color 0
+set policy-options policy-statement COLOR_POLICY term TADDMAX then color add 4294967295
+set policy-options policy-statement COLOR_POLICY term TSUB3 then color subtract 3
+set policy-options policy-statement COLOR_POLICY term T2SETMIN then color2 0
+set policy-options policy-statement COLOR_POLICY term T2ADDMAX then color2 add 4294967295
+set policy-options policy-statement COLOR_POLICY term T2SUB3 then color2 subtract 4294967295
+#
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TSETMIN then local-preference 0
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TADDMAX then local-preference add 4294967295
+set policy-options policy-statement LOCAL_PREFERENCE_POLICY term TSUB3 then local-preference subtract 3
+#
+set policy-options policy-statement TAG_POLICY term TMIN then tag 0
+set policy-options policy-statement TAG_POLICY term TMAX then tag 4294967295
+#

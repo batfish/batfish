@@ -8,7 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -18,18 +18,18 @@ public final class MatchLocalPreference extends BooleanExpr {
   private static final String PROP_METRIC = "metric";
 
   @Nonnull private final IntComparator _comparator;
-  @Nonnull private final IntExpr _metric;
+  @Nonnull private final LongExpr _metric;
 
   @JsonCreator
   private static MatchLocalPreference jsonCreator(
       @Nullable @JsonProperty(PROP_COMPARATOR) IntComparator comparator,
-      @Nullable @JsonProperty(PROP_METRIC) IntExpr metric) {
+      @Nullable @JsonProperty(PROP_METRIC) LongExpr metric) {
     checkArgument(comparator != null, "%s must be provided", PROP_COMPARATOR);
     checkArgument(metric != null, "%s must be provided", PROP_METRIC);
     return new MatchLocalPreference(comparator, metric);
   }
 
-  public MatchLocalPreference(IntComparator comparator, IntExpr metric) {
+  public MatchLocalPreference(IntComparator comparator, LongExpr metric) {
     _comparator = comparator;
     _metric = metric;
   }
@@ -41,7 +41,22 @@ public final class MatchLocalPreference extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    throw new BatfishException("No implementation for MatchLocalPreference.evaluate()");
+    long localPref;
+    if (environment.getUseOutputAttributes()
+        && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
+      BgpRoute.Builder<?, ?> bgpRouteBuilder =
+          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
+      localPref = bgpRouteBuilder.getLocalPreference();
+    } else if (environment.getReadFromIntermediateBgpAttributes()) {
+      localPref = environment.getIntermediateBgpAttributes().getLocalPreference();
+    } else if (environment.getOriginalRoute() instanceof BgpRoute) {
+      BgpRoute<?, ?> bgpRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
+      localPref = bgpRoute.getLocalPreference();
+    } else {
+      return new Result(false);
+    }
+    long rhs = _metric.evaluate(environment);
+    return _comparator.apply(localPref, rhs);
   }
 
   @JsonProperty(PROP_COMPARATOR)
@@ -52,7 +67,7 @@ public final class MatchLocalPreference extends BooleanExpr {
 
   @JsonProperty(PROP_METRIC)
   @Nonnull
-  public IntExpr getMetric() {
+  public LongExpr getMetric() {
     return _metric;
   }
 
