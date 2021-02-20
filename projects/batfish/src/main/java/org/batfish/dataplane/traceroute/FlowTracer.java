@@ -965,30 +965,29 @@ class FlowTracer {
       }
     }
 
-    // apply transformation
-    Flow originalFlow = _currentFlow;
-    List<Step<?>> transformationSteps =
-        transformationResult == null ? ImmutableList.of() : transformationResult.getTraceSteps();
-    if (transformationResult != null) {
-      _currentFlow = transformationResult.getOutputFlow();
-    }
-
+    TransformationResult finalTransformationResult = transformationResult;
     session
         .getAction()
         .accept(
             new SessionActionVisitor<Void>() {
               @Override
               public Void visitAcceptVrf(Accept acceptVrf) {
-                // Apply transformation to flow if necessary, then accept
-                _steps.addAll(transformationSteps);
+                // Apply transformation to flow if present, then accept
+                if (finalTransformationResult != null) {
+                  _currentFlow = finalTransformationResult.getOutputFlow();
+                  _steps.addAll(finalTransformationResult.getTraceSteps());
+                }
                 buildAcceptTrace();
                 return null;
               }
 
               @Override
               public Void visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
-                // Add transformation steps first, if any
-                _steps.addAll(transformationSteps);
+                // Apply transformation first, if any
+                if (finalTransformationResult != null) {
+                  _currentFlow = finalTransformationResult.getOutputFlow();
+                  _steps.addAll(finalTransformationResult.getTraceSteps());
+                }
 
                 // Accept if the flow is destined for this vrf on this host.
                 Ip dstIp = _currentFlow.getDstIp();
@@ -1028,15 +1027,22 @@ class FlowTracer {
 
               @Override
               public Void visitPreNatFibLookup(PreNatFibLookup preNatFibLookup) {
-                Ip preNatDstIp = originalFlow.getDstIp();
-                Ip postNatDstIp = _currentFlow.getDstIp();
+                Ip preNatDstIp = _currentFlow.getDstIp();
 
                 // Accept if the flow is destined for this vrf on this host.
-                // TODO Confirm this should only check the post-NAT flow
-                if (isAcceptedAtCurrentVrf(postNatDstIp)) {
-                  _steps.addAll(transformationSteps);
+                // TODO Confirm it is possible to accept at this point in pipeline.
+                if (isAcceptedAtCurrentVrf(preNatDstIp)) {
                   buildAcceptTrace();
                   return null;
+                }
+
+                // Apply transformation, if any
+                List<Step<?>> transformationSteps =
+                    finalTransformationResult == null
+                        ? ImmutableList.of()
+                        : finalTransformationResult.getTraceSteps();
+                if (finalTransformationResult != null) {
+                  _currentFlow = finalTransformationResult.getOutputFlow();
                 }
 
                 fibLookup(
@@ -1057,9 +1063,9 @@ class FlowTracer {
                       if (neighborIfaces.isEmpty()) {
                         FlowDisposition disposition =
                             _tracerouteContext.computeDisposition(
-                                currentNodeName, outgoingIfaceName, postNatDstIp);
+                                currentNodeName, outgoingIfaceName, _currentFlow.getDstIp());
                         flowTracer.buildArpFailureTrace(
-                            outgoingIfaceName, postNatDstIp, disposition);
+                            outgoingIfaceName, _currentFlow.getDstIp(), disposition);
                       } else {
                         flowTracer.processOutgoingInterfaceEdges(
                             outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
@@ -1072,7 +1078,12 @@ class FlowTracer {
 
               @Override
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
-                _steps.addAll(transformationSteps);
+                // Apply transformation first, if any
+                Flow originalFlow = _currentFlow;
+                if (finalTransformationResult != null) {
+                  _currentFlow = finalTransformationResult.getOutputFlow();
+                  _steps.addAll(finalTransformationResult.getTraceSteps());
+                }
                 // cycle detection
                 Breadcrumb breadcrumb =
                     new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, originalFlow);
@@ -1316,7 +1327,7 @@ class FlowTracer {
       @Nullable String ingressInterface,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
     switch (action) {
-      case NO_FIB_LOOKUP:
+      case FORWARD_OUT_IFACE:
         return ingressInterface != null
             ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
             : Accept.INSTANCE;
@@ -1367,7 +1378,7 @@ class FlowTracer {
           getSessionAction(
               firewallSessionVrfInfo.getFibLookup()
                   ? Action.POST_NAT_FIB_LOOKUP
-                  : Action.NO_FIB_LOOKUP,
+                  : Action.FORWARD_OUT_IFACE,
               _ingressInterface,
               _lastHopNodeAndOutgoingInterface);
       @Nullable

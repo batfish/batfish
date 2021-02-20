@@ -194,7 +194,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
         addNodeToSubnet(cfgNode, networkInterface, subnet, awsConfiguration, warnings);
     ifaceToSubnet.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            Action.NO_FIB_LOOKUP, ImmutableList.of(ifaceToSubnet.getName()), null, null));
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(ifaceToSubnet.getName()), null, null));
 
     // post transformation filter on the interface to the subnet
     IpAccessList postTransformationFilter =
@@ -224,7 +224,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
       ifaceToVpc.setIncomingTransformation(computeOutgoingNatTransformation(getPrivateIp()));
       ifaceToVpc.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              Action.NO_FIB_LOOKUP,
+              Action.FORWARD_OUT_IFACE,
               ImmutableList.of(ifaceToVpc.getName()),
               null,
               egressAcl == null ? null : egressAcl.getName()));

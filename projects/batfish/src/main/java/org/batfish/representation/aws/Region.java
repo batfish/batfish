@@ -919,7 +919,7 @@ public final class Region implements Serializable {
     // Set up reverse sessions for outbound traffic.
     i.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            Action.NO_FIB_LOOKUP, ImmutableList.of(i.getName()), null, null));
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(i.getName()), null, null));
     i.getVrf().setFirewallSessionVrfInfo(new FirewallSessionVrfInfo(false));
   }
 

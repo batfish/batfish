@@ -224,7 +224,7 @@ public class RdsInstanceTest {
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(
               new FirewallSessionInterfaceInfo(
-                  Action.NO_FIB_LOOKUP, ImmutableList.of(iface.getName()), null, null)));
+                  Action.FORWARD_OUT_IFACE, ImmutableList.of(iface.getName()), null, null)));
     }
   }
 

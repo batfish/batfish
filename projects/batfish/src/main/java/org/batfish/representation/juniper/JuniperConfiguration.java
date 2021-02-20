@@ -1754,7 +1754,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create session info
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              Action.NO_FIB_LOOKUP,
+              Action.FORWARD_OUT_IFACE,
               zone.getInterfaces(),
               iface.getIncomingFilter(),
               iface.getOutgoingFilter()));

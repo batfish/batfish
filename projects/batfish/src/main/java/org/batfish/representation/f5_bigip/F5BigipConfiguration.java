@@ -1493,7 +1493,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // this point
     newIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            Action.NO_FIB_LOOKUP, ImmutableList.of(newIface.getName()), null, null));
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 

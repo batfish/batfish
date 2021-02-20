@@ -202,7 +202,7 @@ public class BDDReverseTransformationRangesImplTest {
     // make the node a session node.
     iface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            Action.NO_FIB_LOOKUP, ImmutableList.of(iName), null, null));
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(iName), null, null));
 
     _lastHopManager =
         new LastHopOutgoingInterfaceManager(

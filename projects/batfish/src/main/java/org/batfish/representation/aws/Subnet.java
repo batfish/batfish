@@ -407,7 +407,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
     // To make life easier, just use both network ACLs in subnets' VPC ifaces session info.
     subnetToVpcIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            Action.NO_FIB_LOOKUP,
+            Action.FORWARD_OUT_IFACE,
             ImmutableList.of(subnetToVpcIfaceName),
             incomingAclName,
             outgoingAclName));
@@ -429,7 +429,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
       Interface nlbIface = nlbConfig.getAllInterfaces().get(nlbIfaceName);
       nlbIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              Action.NO_FIB_LOOKUP, ImmutableList.of(nlbIfaceName), null, null));
+              Action.FORWARD_OUT_IFACE, ImmutableList.of(nlbIfaceName), null, null));
     }
 
     // Add static routes in subnet's new VRF and connect subnet to its instance targets
@@ -474,7 +474,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
         // Subnet needs to set up a session for return traffic from the instance
         subnetToInstanceIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableList.of(subnetToInstanceIfaceName), null, null));
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(subnetToInstanceIfaceName), null, null));
 
         staticRouteNextHopIface = subnetToInstanceIfaceName;
 
@@ -485,7 +485,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
             toStaticRoute(instancePrefix, vpcToSubnetIfaceName, AwsConfiguration.LINK_LOCAL_IP));
         vpcToSubnetIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableList.of(vpcToSubnetIfaceName), null, null));
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(vpcToSubnetIfaceName), null, null));
       }
 
       /*

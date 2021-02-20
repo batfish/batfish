@@ -27,7 +27,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   /** Possible actions for traffic matching a session on this interface */
   public enum Action {
     /** Forward traffic directly out the interface where the original flow entered */
-    NO_FIB_LOOKUP,
+    FORWARD_OUT_IFACE,
     /** Do a FIB lookup on the untransformed return flow to determine egress interface */
     PRE_NAT_FIB_LOOKUP,
     /** Do a FIB lookup on the transformed return flow to determine egress interface */
@@ -42,7 +42,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
     public SessionAction toSessionAction(
         String originalFlowIngressIface, @Nullable NodeInterfacePair nextHop) {
       switch (this) {
-        case NO_FIB_LOOKUP:
+        case FORWARD_OUT_IFACE:
           return new ForwardOutInterface(originalFlowIngressIface, nextHop);
         case PRE_NAT_FIB_LOOKUP:
           return PreNatFibLookup.INSTANCE;
@@ -90,7 +90,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
     checkNotNull(sessionInterfaces, PROP_SESSION_INTERFACES + " cannot be null");
     Action backwardsCompatibleAction =
-        action != null ? action : fibLookup ? Action.POST_NAT_FIB_LOOKUP : Action.NO_FIB_LOOKUP;
+        action != null ? action : fibLookup ? Action.POST_NAT_FIB_LOOKUP : Action.FORWARD_OUT_IFACE;
     return new FirewallSessionInterfaceInfo(
         backwardsCompatibleAction, sessionInterfaces, incomingAclName, outgoingAclName);
   }

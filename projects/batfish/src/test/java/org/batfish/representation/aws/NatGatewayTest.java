@@ -151,7 +151,7 @@ public class NatGatewayTest {
         ifaceToSubnet.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableList.of(ifaceToSubnet.getName()), null, null)));
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(ifaceToSubnet.getName()), null, null)));
     assertThat(
         ifaceToSubnet.getPostTransformationIncomingFilter().getName(),
         equalTo(ILLEGAL_PACKET_FILTER_NAME));
@@ -170,7 +170,7 @@ public class NatGatewayTest {
         ifaceToVpc.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP,
+                Action.FORWARD_OUT_IFACE,
                 ImmutableList.of(ifaceToVpc.getName()),
                 null,
                 nacl.getEgressAcl().getName())));

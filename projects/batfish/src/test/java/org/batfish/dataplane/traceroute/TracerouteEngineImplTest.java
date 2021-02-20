@@ -1603,7 +1603,10 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableSet.of(i2Name), incomingAclName, outgoingAclName))
+                Action.FORWARD_OUT_IFACE,
+                ImmutableSet.of(i2Name),
+                incomingAclName,
+                outgoingAclName))
         .build();
 
     String i3Name = "iface3";
@@ -1620,7 +1623,10 @@ public class TracerouteEngineImplTest {
             always().apply(assignSourceIp(poolIp, poolIp), assignSourcePort(2000, 2000)).build())
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableSet.of(i4Name), incomingAclName, outgoingAclName))
+                Action.FORWARD_OUT_IFACE,
+                ImmutableSet.of(i4Name),
+                incomingAclName,
+                outgoingAclName))
         .build();
 
     // Compute data plane
@@ -1832,7 +1838,7 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableSet.of(c2i2Name), null, null))
+                Action.FORWARD_OUT_IFACE, ImmutableSet.of(c2i2Name), null, null))
         .build();
 
     // Compute data plane
@@ -1935,7 +1941,7 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP,
+                Action.FORWARD_OUT_IFACE,
                 ImmutableSet.of(c1i1Name),
                 sessionIngressFilter.getName(),
                 null))
@@ -1949,7 +1955,7 @@ public class TracerouteEngineImplTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.1.2.1/24"))
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP,
+                Action.FORWARD_OUT_IFACE,
                 ImmutableSet.of(c1i2Name),
                 null,
                 sessionEgressFilter.getName()))

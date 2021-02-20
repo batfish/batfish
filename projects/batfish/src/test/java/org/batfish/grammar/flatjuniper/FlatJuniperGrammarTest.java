@@ -5485,19 +5485,19 @@ public final class FlatJuniperGrammarTest {
         c.getAllInterfaces().get(i0Name).getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableList.of(i0Name, i1Name), "FILTER1", "FILTER2")));
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(i0Name, i1Name), "FILTER1", "FILTER2")));
 
     assertThat(
         c.getAllInterfaces().get(i1Name).getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableList.of(i0Name, i1Name), null, null)));
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(i0Name, i1Name), null, null)));
 
     assertThat(
         c.getAllInterfaces().get(i2Name).getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableList.of(i2Name), null, null)));
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(i2Name), null, null)));
 
     // ge-0/0/0.3 is not part of any zoone, so no firewall session interface info.
     assertThat(c.getAllInterfaces().get(i3Name).getFirewallSessionInterfaceInfo(), nullValue());

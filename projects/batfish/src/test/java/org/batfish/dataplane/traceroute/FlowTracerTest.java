@@ -55,6 +55,7 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -450,7 +451,7 @@ public final class FlowTracerTest {
         .setName(ifaceName)
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP, ImmutableSet.of(ifaceName), null, null))
+                Action.FORWARD_OUT_IFACE, ImmutableSet.of(ifaceName), null, null))
         .build();
 
     // To match session, return flow must have same protocol and port and swapped src/dst IPs
@@ -565,18 +566,25 @@ public final class FlowTracerTest {
   @Test
   public void testFlowMatchingSessionCanBeAccepted() {
     // Accept traces should be the same whether ingress interface does routing before or after NAT
-    testFlowMatchingSessionCanBeAccepted(Action.PRE_NAT_FIB_LOOKUP);
-    testFlowMatchingSessionCanBeAccepted(Action.POST_NAT_FIB_LOOKUP);
+    testFlowMatchingSessionCanBeAccepted(Action.PRE_NAT_FIB_LOOKUP, true);
+    testFlowMatchingSessionCanBeAccepted(Action.POST_NAT_FIB_LOOKUP, false);
   }
 
-  private void testFlowMatchingSessionCanBeAccepted(Action ingressIfaceSessionAction) {
-    /* Simulates a reverse flow to a device where a session has been set up. */
+  /**
+   * Simulates a reverse flow to a device where a session has been set up. Tests that the device
+   * accepts session-matching return flows at the right point in the NAT pipeline.
+   *
+   * @param ingressIfaceSessionAction NAT action that matching flows should take
+   * @param acceptBeforeNat Whether the device is supposed to accept return flows before
+   *     transforming them (depends on session action)
+   */
+  private void testFlowMatchingSessionCanBeAccepted(
+      Action ingressIfaceSessionAction, boolean acceptBeforeNat) {
     NetworkFactory nf = new NetworkFactory();
     Configuration c =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Vrf vrf = nf.vrfBuilder().setOwner(c).build();
     String ifaceName = "ifaceName";
-    ConcreteInterfaceAddress address = ConcreteInterfaceAddress.parse("1.1.1.1/31");
     nf.interfaceBuilder()
         .setOwner(c)
         .setVrf(vrf)
@@ -584,31 +592,28 @@ public final class FlowTracerTest {
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 ingressIfaceSessionAction, ImmutableSet.of(ifaceName), null, null))
-        .setAddress(address)
         .build();
 
-    // To match session, return flow must have same protocol and port and swapped src/dst IPs
-    Ip origSrcIp = address.getIp();
-    Ip origDstIp = Ip.parse("2.2.2.2");
+    // Fields for return flow. Return flow's dst will be translated.
+    Ip srcIp = Ip.parse("1.1.1.1");
+    Ip preNatDstIp = Ip.parse("2.2.2.2");
+    Ip postNatDstIp = Ip.parse("3.3.3.3");
     int srcPort = 22;
     int dstPort = 40;
     Flow returnFlow =
         Flow.builder()
-            .setSrcIp(origDstIp)
-            .setDstIp(origSrcIp)
+            .setSrcIp(srcIp)
+            .setDstIp(preNatDstIp)
             .setIngressNode(c.getHostname())
             .setIngressInterface(ifaceName)
             .setIpProtocol(IpProtocol.TCP)
             .setSrcPort(dstPort)
             .setDstPort(srcPort)
             .build();
-    // Include transformation to be sure the post-NAT flow is accepted, not pre-NAT
     Transformation transformation =
-        Transformation.always()
-            .apply(assignDestinationIp(address.getIp(), address.getIp()))
-            .build();
+        Transformation.always().apply(assignDestinationIp(postNatDstIp, postNatDstIp)).build();
     SessionMatchExpr flowMatchingNewSession =
-        new SessionMatchExpr(IpProtocol.TCP, origDstIp, origSrcIp, dstPort, srcPort);
+        new SessionMatchExpr(IpProtocol.TCP, srcIp, preNatDstIp, dstPort, srcPort);
     FirewallSessionTraceInfo incomingSession =
         new FirewallSessionTraceInfo(
             c.getHostname(),
@@ -619,6 +624,8 @@ public final class FlowTracerTest {
 
     ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
 
+    // Make NAT node capable of accepting both pre- and post-NAT return flows
+    IpSpace acceptedIps = AclIpSpace.union(preNatDstIp.toIpSpace(), postNatDstIp.toIpSpace());
     TracerouteEngineImplContext ctxt =
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
@@ -628,8 +635,7 @@ public final class FlowTracerTest {
                             ImmutableMap.of(
                                 c.getHostname(),
                                 ImmutableMap.of(
-                                    vrf.getName(),
-                                    ImmutableMap.of(ifaceName, address.getIp().toIpSpace()))))
+                                    vrf.getName(), ImmutableMap.of(ifaceName, acceptedIps))))
                         .build())
                 .build(),
             Topology.EMPTY,
@@ -666,18 +672,29 @@ public final class FlowTracerTest {
       TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
       Trace trace = traceAndReverseFlow.getTrace();
       assertThat(trace, hasDisposition(ACCEPTED));
-      assertThat(
-          trace.getHops().get(0).getSteps(),
-          contains(
-              instanceOf(EnterInputIfaceStep.class),
-              instanceOf(MatchSessionStep.class),
-              instanceOf(TransformationStep.class),
-              instanceOf(InboundStep.class)));
+      if (acceptBeforeNat) {
+        // If the flow was accepted before NAT was applied, there should be no transformation step.
+        // TODO Should there even be a MatchSessionStep in this case?
+        assertThat(
+            trace.getHops().get(0).getSteps(),
+            contains(
+                instanceOf(EnterInputIfaceStep.class),
+                instanceOf(MatchSessionStep.class),
+                instanceOf(InboundStep.class)));
+      } else {
+        assertThat(
+            trace.getHops().get(0).getSteps(),
+            contains(
+                instanceOf(EnterInputIfaceStep.class),
+                instanceOf(MatchSessionStep.class),
+                instanceOf(TransformationStep.class),
+                instanceOf(InboundStep.class)));
+      }
       assertThat(traceAndReverseFlow.getNewFirewallSessions(), empty());
     }
 
     {
-      // Return flow does not match session or origSrcIp
+      // Return flow does not match session or accepted IPs
       Flow nonMatchingReturnFlow = returnFlow.toBuilder().setDstIp(Ip.parse("1.1.1.2")).build();
       List<TraceAndReverseFlow> traces = new ArrayList<>();
       FlowTracer flowTracer =
@@ -1441,12 +1458,12 @@ public final class FlowTracerTest {
 
     // Ingress interface defined: action should be forward to last hop node and interface
     assertThat(
-        getSessionAction(Action.NO_FIB_LOOKUP, ingressIface, lastHopNodeAndOutgoingInterface),
+        getSessionAction(Action.FORWARD_OUT_IFACE, ingressIface, lastHopNodeAndOutgoingInterface),
         equalTo(new ForwardOutInterface(ingressIface, lastHopNodeAndOutgoingInterface)));
 
     // Ingress interface null: action should be accept (flow that set up session originated here)
     assertThat(
-        getSessionAction(Action.NO_FIB_LOOKUP, null, lastHopNodeAndOutgoingInterface),
+        getSessionAction(Action.FORWARD_OUT_IFACE, null, lastHopNodeAndOutgoingInterface),
         equalTo(Accept.INSTANCE));
   }
 

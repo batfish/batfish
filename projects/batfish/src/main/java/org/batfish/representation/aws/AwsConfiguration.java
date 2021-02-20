@@ -374,14 +374,14 @@ public class AwsConfiguration extends VendorConfiguration {
         .get(BACKBONE_FACING_INTERFACE_NAME)
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                Action.NO_FIB_LOOKUP,
+                Action.FORWARD_OUT_IFACE,
                 ImmutableList.of(BACKBONE_FACING_INTERFACE_NAME),
                 null,
                 null));
 
     outInterface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            Action.NO_FIB_LOOKUP, ImmutableList.of(outInterface.getName()), null, null));
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(outInterface.getName()), null, null));
 
     // configure location info
     IpSpace servicesIpSpace =

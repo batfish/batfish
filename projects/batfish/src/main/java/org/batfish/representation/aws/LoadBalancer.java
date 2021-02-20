@@ -371,7 +371,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     }
     viIface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            Action.NO_FIB_LOOKUP, ImmutableList.of(viIface.getName()), null, null));
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(viIface.getName()), null, null));
   }
 
   /**
