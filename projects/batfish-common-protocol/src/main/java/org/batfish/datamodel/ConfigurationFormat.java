@@ -20,6 +20,7 @@ public enum ConfigurationFormat {
   FLAT_JUNIPER("juniper"),
   FLAT_VYOS("vyos"),
   FORCE10("force10"),
+  FORTIOS("fortios"),
   FOUNDRY("foundry"),
   HOST("host"),
   IBM_BNT("ibmbnt"),
