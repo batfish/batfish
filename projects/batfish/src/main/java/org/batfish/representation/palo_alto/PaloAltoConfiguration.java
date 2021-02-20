@@ -639,6 +639,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match protocol and ports
     IpProtocol protocol = rule.getIpProtocol();
+    assert protocol != null;
     conjuncts.add(
         new MatchHeaderSpace(
             HeaderSpace.builder().setIpProtocols(protocol).build(),
@@ -652,7 +653,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Build an ACL for a specific application name. This ACL handles shadowing from previous rules.
+   * Build an ACL for a specific application name. This ACL permits the flow iff an
+   * application-override rule would match it. This ACL does not encode zone matching.
    */
   private AclLineMatchExpr buildApplicationOverrideApplicationAcl(
       Vsys vsys,
@@ -672,7 +674,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // For each rule corresponding to the app we're interested in, add another appMatchExpr
       if (app.equals(rule.getApplication())) {
 
-        // Add match expr which corresponds to this rule matching but *not* preceding rules
+        // Add match expr which corresponds to this rule matching and *not* matching preceding rules
         ImmutableList.Builder<AclLineMatchExpr> childMatchExprs = ImmutableList.builder();
         preceding.build().forEach(p -> childMatchExprs.add(new NotMatchExpr(p)));
         childMatchExprs.add(ruleAcl);
@@ -713,7 +715,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  /** Returns a bool indicating if application override rule is valid or not. */
+  /**
+   * Returns a bool indicating if application override rule is valid or not and adds warnings about
+   * a rule that is invalid.
+   */
   private boolean applicationOverrideRuleValid(ApplicationOverrideRule rule) {
     String ruleName = rule.getName();
     boolean valid = true;
@@ -994,6 +999,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
   }
 
+  /**
+   * Returns a boolean indicating if specified rule applies for specified from-zone name and to-zone
+   * name.
+   */
   static boolean applicationOverrideRuleApplies(
       String fromZone, String toZone, ApplicationOverrideRule rule) {
     if (rule.getDisabled()) {
@@ -1494,8 +1503,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Returns an expression describing the protocol/port combinations permitted by this rule, or
-   * {@link Optional#empty()} if all are allowed.
+   * Returns an expression describing the headerspaces permitted by this rule, or {@link
+   * Optional#empty()} if all are allowed.
    */
   private Optional<AclLineMatchExpr> getServiceExpr(
       SecurityRule rule, Vsys vsys, Map<String, AclLineMatchExpr> appOverrideAcls) {
@@ -1619,23 +1628,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return Optional.empty();
   }
 
-  /**
-   * Helper to build {@link Optional} {@link AclLineMatchExpr} composed of a conjunction of *not*
-   * matching the specified application override exprs and also matching the specified expr.
-   */
-  private Optional<AclLineMatchExpr> matchExprAndNotOtherExprs(
-      AclLineMatchExpr expr, Collection<AclLineMatchExpr> otherExprs) {
-    // Short-circuit is there are no other exprs to *not* match
-    if (otherExprs.isEmpty()) {
-      return Optional.of(expr);
-    }
-
-    ImmutableList.Builder<AclLineMatchExpr> conjunctions = ImmutableList.builder();
-    otherExprs.forEach(o -> conjunctions.add(new NotMatchExpr(o)));
-    conjunctions.add(expr);
-    return Optional.of(new AndMatchExpr(conjunctions.build()));
-  }
-
   /** Create an {@link AclLineMatchExpr} matching any services in the specified application. */
   private AclLineMatchExpr aclLineMatchExprForApplication(
       Application application,
@@ -1644,7 +1636,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       boolean applicationDefaultService) {
     String appName = application.getName();
 
-    // If there is an application-override for this application, use it
     if (appOverrideAclsMap.containsKey(appName)) {
       return appOverrideAclsMap.get(appName);
     }
@@ -1662,7 +1653,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                 .collect(ImmutableList.toImmutableList()),
             traceElement);
 
-    // If there are no app-override rules to avoid matching, simply use application expr
     if (appOverrideAclsMap.isEmpty()) {
       return appExpr;
     }
