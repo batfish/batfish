@@ -21,7 +21,7 @@ public class AclLineEvaluator extends Evaluator implements GenericAclLineVisitor
 
   public AclLineEvaluator(
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
     super(flow, srcInterface, availableAcls, namedIpSpaces);

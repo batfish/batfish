@@ -42,6 +42,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -369,7 +370,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       viIface.setIncomingTransformation(chainListenerTransformations(listenerTransformations));
     }
     viIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(viIface.getName()), null, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(viIface.getName()), null, null));
   }
 
   /**

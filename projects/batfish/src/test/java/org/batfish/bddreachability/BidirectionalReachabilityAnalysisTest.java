@@ -65,6 +65,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Flow.Builder;
@@ -305,7 +306,8 @@ public final class BidirectionalReachabilityAnalysisTest {
     Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
 
     fwI2.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI2.getName()), null, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(fwI2.getName()), null, null));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
@@ -566,7 +568,8 @@ public final class BidirectionalReachabilityAnalysisTest {
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(ExprAclLine.REJECT_ALL)).build());
 
     fwI2.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI2.getName()), null, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(fwI2.getName()), null, null));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
@@ -742,7 +745,10 @@ public final class BidirectionalReachabilityAnalysisTest {
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(permitUdpLine)).build();
     fwI2.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            false, ImmutableList.of(fwI2.getName()), null, permitUdpAcl.getName()));
+            Action.FORWARD_OUT_IFACE,
+            ImmutableList.of(fwI2.getName()),
+            null,
+            permitUdpAcl.getName()));
 
     // transform source IP before setting up session on fwI3
     Ip poolIp = Ip.parse("5.5.5.5");
@@ -752,7 +758,8 @@ public final class BidirectionalReachabilityAnalysisTest {
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(ExprAclLine.REJECT_ALL)).build());
 
     fwI3.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(fwI3.getName()), null, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(fwI3.getName()), null, null));
 
     SortedMap<String, Configuration> configurations =
         ImmutableSortedMap.of(
@@ -942,7 +949,8 @@ public final class BidirectionalReachabilityAnalysisTest {
         .setVrf(separateEgressVrf ? egressVrf : ingressVrf)
         .setAddress(SFL_EGRESS_IFACE_ADDRESS)
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(SFL_EGRESS_IFACE), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(SFL_EGRESS_IFACE), null, null))
         .setIncomingFilter(
             blockNonSessionReverse
                 ? IpAccessList.builder()
@@ -1035,7 +1043,8 @@ public final class BidirectionalReachabilityAnalysisTest {
                 .setLines(ExprAclLine.rejecting(AclLineMatchExprs.TRUE))
                 .build())
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(true, ImmutableSet.of(SFL_INGRESS_IFACE), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(SFL_INGRESS_IFACE), null, null))
         .build();
 
     // Sanity check: VRF currently does NOT originate sessions. All return flows should be blocked

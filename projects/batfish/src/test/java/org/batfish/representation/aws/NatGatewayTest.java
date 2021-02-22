@@ -31,6 +31,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -150,7 +151,7 @@ public class NatGatewayTest {
         ifaceToSubnet.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableList.of(ifaceToSubnet.getName()), null, null)));
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(ifaceToSubnet.getName()), null, null)));
     assertThat(
         ifaceToSubnet.getPostTransformationIncomingFilter().getName(),
         equalTo(ILLEGAL_PACKET_FILTER_NAME));
@@ -169,7 +170,7 @@ public class NatGatewayTest {
         ifaceToVpc.getFirewallSessionInterfaceInfo(),
         equalTo(
             new FirewallSessionInterfaceInfo(
-                false,
+                Action.FORWARD_OUT_IFACE,
                 ImmutableList.of(ifaceToVpc.getName()),
                 null,
                 nacl.getEgressAcl().getName())));

@@ -50,6 +50,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
@@ -1491,7 +1492,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // packet filter for established connections. However, packet filters are not fully supported at
     // this point
     newIface.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(newIface.getName()), null, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(newIface.getName()), null, null));
     return newIface;
   }
 

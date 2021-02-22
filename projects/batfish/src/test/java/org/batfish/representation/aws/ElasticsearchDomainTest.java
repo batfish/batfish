@@ -50,6 +50,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -286,7 +287,7 @@ public class ElasticsearchDomainTest {
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(
               new FirewallSessionInterfaceInfo(
-                  false, ImmutableList.of(iface.getName()), null, null)));
+                  Action.FORWARD_OUT_IFACE, ImmutableList.of(iface.getName()), null, null)));
     }
   }
 

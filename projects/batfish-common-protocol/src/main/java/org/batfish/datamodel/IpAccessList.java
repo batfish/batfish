@@ -141,7 +141,7 @@ public class IpAccessList implements Serializable {
 
   public FilterResult filter(
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
     AclLineEvaluator lineEvaluator =

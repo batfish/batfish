@@ -62,6 +62,7 @@ import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.FibNextVrf;
 import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -96,6 +97,8 @@ import org.batfish.datamodel.flow.OriginateStep.OriginateStepDetail;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
 import org.batfish.datamodel.flow.PolicyStep;
 import org.batfish.datamodel.flow.PolicyStep.PolicyStepDetail;
+import org.batfish.datamodel.flow.PostNatFibLookup;
+import org.batfish.datamodel.flow.PreNatFibLookup;
 import org.batfish.datamodel.flow.RoutingStep;
 import org.batfish.datamodel.flow.RoutingStep.Builder;
 import org.batfish.datamodel.flow.RoutingStep.RoutingStepDetail;
@@ -617,6 +620,7 @@ class FlowTracer {
 
         // Accept if the flow is destined for this vrf on this host.
         if (isAcceptedAtCurrentVrf(dstIp)) {
+          buildAcceptTrace();
           return null;
         }
 
@@ -634,6 +638,7 @@ class FlowTracer {
 
         // Accept if the flow is destined for this vrf on this host.
         if (isAcceptedAtCurrentVrf(result.getFinalFlow().getDstIp())) {
+          buildAcceptTrace();
           return null;
         }
 
@@ -686,18 +691,9 @@ class FlowTracer {
     return true;
   }
 
-  /**
-   * Check if the packet should be accepted in current VRF. If yes, build accept trace, returns
-   * true. If no, returns false.
-   */
+  /** Check if the packet to {@code dstIp} should be accepted in current VRF. No effect on state. */
   private boolean isAcceptedAtCurrentVrf(Ip dstIp) {
-    String currentNodeName = _currentNode.getName();
-
-    if (_tracerouteContext.vrfAcceptsIp(currentNodeName, _vrfName, dstIp)) {
-      buildAcceptTrace();
-      return true;
-    }
-    return false;
+    return _tracerouteContext.vrfAcceptsIp(_currentNode.getName(), _vrfName, dstIp);
   }
 
   /** Apply the input {@link Transformation} to the current flow in the current context. */
@@ -797,15 +793,7 @@ class FlowTracer {
       TreeMap<FibAction, Set<FibEntry>> groupedByFibAction =
           new TreeMap<>(FibActionComparator.INSTANCE);
       for (FibEntry e : fibEntries) {
-        groupedByFibAction.compute(
-            e.getAction(),
-            (action, set) -> {
-              if (set == null) {
-                set = new HashSet<>();
-              }
-              set.add(e);
-              return set;
-            });
+        groupedByFibAction.computeIfAbsent(e.getAction(), k -> new HashSet<>()).add(e);
       }
 
       // For every action corresponding to ECMP LPM FibEntry
@@ -878,11 +866,14 @@ class FlowTracer {
 
     // compute transformation. it will be applied after applying incoming ACL
     Transformation transformation = session.getTransformation();
-    TransformationResult transformationResult = null;
+    TransformationResult transformationResult =
+        Optional.ofNullable(transformation)
+            .map(
+                t ->
+                    TransformationEvaluator.eval(
+                        t, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces))
+            .orElse(null);
     if (transformation != null) {
-      transformationResult =
-          TransformationEvaluator.eval(
-              transformation, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces);
       matchDetail.setTransformation(flowDiffs(_currentFlow, transformationResult.getOutputFlow()));
     }
 
@@ -903,34 +894,37 @@ class FlowTracer {
       }
     }
 
-    // apply transformation
-    Flow originalFlow = _currentFlow;
-    if (transformationResult != null) {
-      _steps.addAll(transformationResult.getTraceSteps());
-      _currentFlow = transformationResult.getOutputFlow();
-    }
-
     session
         .getAction()
         .accept(
             new SessionActionVisitor<Void>() {
               @Override
               public Void visitAcceptVrf(Accept acceptVrf) {
+                // Apply transformation to flow if present, then accept
+                if (transformationResult != null) {
+                  _currentFlow = transformationResult.getOutputFlow();
+                  _steps.addAll(transformationResult.getTraceSteps());
+                }
                 buildAcceptTrace();
                 return null;
               }
 
               @Override
-              public Void visitFibLookup(org.batfish.datamodel.flow.FibLookup fibLookup) {
-                Ip dstIp = _currentFlow.getDstIp();
+              public Void visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
+                // Apply transformation first, if any
+                if (transformationResult != null) {
+                  _currentFlow = transformationResult.getOutputFlow();
+                  _steps.addAll(transformationResult.getTraceSteps());
+                }
 
                 // Accept if the flow is destined for this vrf on this host.
-                if (isAcceptedAtCurrentVrf(dstIp)) {
+                if (isAcceptedAtCurrentVrf(_currentFlow.getDstIp())) {
+                  buildAcceptTrace();
                   return null;
                 }
 
                 fibLookup(
-                    dstIp,
+                    _currentFlow.getDstIp(),
                     currentNodeName,
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
                     (flowTracer, fibForward) -> {
@@ -959,7 +953,59 @@ class FlowTracer {
               }
 
               @Override
+              public Void visitPreNatFibLookup(PreNatFibLookup preNatFibLookup) {
+                // Accept if the flow is destined for this vrf on this host.
+                // TODO Confirm it is possible to accept at this point in pipeline.
+                if (isAcceptedAtCurrentVrf(_currentFlow.getDstIp())) {
+                  buildAcceptTrace();
+                  return null;
+                }
+
+                fibLookup(
+                    _currentFlow.getDstIp(),
+                    currentNodeName,
+                    _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
+                    (flowTracer, fibForward) -> {
+                      // Routing happened, so it's finally time to apply transformation
+                      if (transformationResult != null) {
+                        flowTracer._currentFlow = transformationResult.getOutputFlow();
+                        flowTracer._steps.addAll(transformationResult.getTraceSteps());
+                      }
+
+                      String outgoingIfaceName = fibForward.getInterfaceName();
+
+                      // TODO: handle ACLs
+
+                      // add ExitOutputIfaceStep
+                      flowTracer._steps.add(buildExitOutputIfaceStep(outgoingIfaceName));
+
+                      SortedSet<NodeInterfacePair> neighborIfaces =
+                          _tracerouteContext.getInterfaceNeighbors(
+                              currentNodeName, outgoingIfaceName);
+                      if (neighborIfaces.isEmpty()) {
+                        FlowDisposition disposition =
+                            _tracerouteContext.computeDisposition(
+                                currentNodeName,
+                                outgoingIfaceName,
+                                flowTracer._currentFlow.getDstIp());
+                        flowTracer.buildArpFailureTrace(
+                            outgoingIfaceName, flowTracer._currentFlow.getDstIp(), disposition);
+                      } else {
+                        flowTracer.processOutgoingInterfaceEdges(
+                            outgoingIfaceName, fibForward.getArpIp(), neighborIfaces);
+                      }
+                    });
+                return null;
+              }
+
+              @Override
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
+                // Apply transformation first, if any
+                Flow originalFlow = _currentFlow;
+                if (transformationResult != null) {
+                  _currentFlow = transformationResult.getOutputFlow();
+                  _steps.addAll(transformationResult.getTraceSteps());
+                }
                 // cycle detection
                 Breadcrumb breadcrumb =
                     new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, originalFlow);
@@ -1161,7 +1207,7 @@ class FlowTracer {
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     SessionAction action =
         getSessionAction(
-            firewallSessionInterfaceInfo.getFibLookup(),
+            firewallSessionInterfaceInfo.getAction(),
             _ingressInterface,
             _lastHopNodeAndOutgoingInterface);
     return buildFirewallSessionTraceInfo(
@@ -1199,14 +1245,21 @@ class FlowTracer {
   @VisibleForTesting
   @Nonnull
   static SessionAction getSessionAction(
-      boolean fibLookup,
+      Action action,
       @Nullable String ingressInterface,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
-    return fibLookup
-        ? org.batfish.datamodel.flow.FibLookup.INSTANCE
-        : ingressInterface != null
+    switch (action) {
+      case FORWARD_OUT_IFACE:
+        return ingressInterface != null
             ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
             : Accept.INSTANCE;
+      case POST_NAT_FIB_LOOKUP:
+        return PostNatFibLookup.INSTANCE;
+      case PRE_NAT_FIB_LOOKUP:
+        return PreNatFibLookup.INSTANCE;
+      default:
+        throw new UnsupportedOperationException("Unrecognized action " + action);
+    }
   }
 
   @VisibleForTesting
@@ -1240,12 +1293,14 @@ class FlowTracer {
     if (_ingressInterface != null && firewallSessionVrfInfo != null) {
       // Set up a session that will match return traffic originating from this VRF.
       // TODO Ensure this behavior is valid for all vendors.
-      //  - Is FibLookup the right action for all vendors?
+      //  - Is PostNatFibLookup the right action for all vendors?
       //  - Do any vendors set up sessions for intranode traffic? AWS should not. If others do, then
       //    for those cases we would need to set up a session even if ingressInterface is null.
       SessionAction action =
           getSessionAction(
-              firewallSessionVrfInfo.getFibLookup(),
+              firewallSessionVrfInfo.getFibLookup()
+                  ? Action.POST_NAT_FIB_LOOKUP
+                  : Action.FORWARD_OUT_IFACE,
               _ingressInterface,
               _lastHopNodeAndOutgoingInterface);
       @Nullable
@@ -1401,6 +1456,9 @@ class FlowTracer {
     return routingStepBuilder.setDetail(routingStepDetailBuilder.build()).build();
   }
 
+  /**
+   * Forwards the current flow using the given FIB action and entries and the given {@code dstIp}.
+   */
   private void forward(
       FibAction fibAction,
       Set<FibEntry> fibEntries,
@@ -1429,14 +1487,16 @@ class FlowTracer {
             String nextVrf = fibNextVrf.getNextVrf();
             FlowTracer forkedTracer = forkTracerSameNode(nextVrf);
             // Accept if the flow is destined for next vrf.
-            if (!forkedTracer.isAcceptedAtCurrentVrf(dstIp)) {
+            if (forkedTracer.isAcceptedAtCurrentVrf(dstIp)) {
+              forkedTracer.buildAcceptTrace();
+            } else {
               forkedTracer.fibLookup(
                   dstIp,
                   currentNodeName,
                   _tracerouteContext.getFib(currentNodeName, nextVrf).get(),
                   forwardOutInterfaceHandler,
                   intraHopBreadcrumbs);
-            } // else do nothing. buildAcceptTrace has been called inside isAcceptedAtCurrentVrf
+            }
             intraHopBreadcrumbs.pop();
             return null;
           }

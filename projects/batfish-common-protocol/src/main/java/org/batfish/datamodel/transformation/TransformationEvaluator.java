@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.Ip;
@@ -25,7 +26,7 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 /** Evaluates a {@link Transformation} on an input {@link Flow}. */
 public class TransformationEvaluator {
   private final Flow.Builder _flowBuilder;
-  private final String _srcInterface;
+  @Nullable private final String _srcInterface;
   private final Map<String, IpAccessList> _namedAcls;
   private final Map<String, IpSpace> _namedIpSpaces;
   private final ImmutableList.Builder<Step<?>> _traceSteps;
@@ -193,7 +194,7 @@ public class TransformationEvaluator {
 
   private TransformationEvaluator(
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> namedAcls,
       Map<String, IpSpace> namedIpSpaces) {
     _currentFlow = flow;
@@ -227,7 +228,7 @@ public class TransformationEvaluator {
   public static TransformationResult eval(
       Transformation transformation,
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> namedAcls,
       Map<String, IpSpace> namedIpSpaces) {
     TransformationEvaluator evaluator =

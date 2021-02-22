@@ -31,7 +31,7 @@ public class TraceAndReverseFlowTest {
     return ImmutableList.of(
         new FirewallSessionTraceInfo(
             hostname,
-            FibLookup.INSTANCE,
+            PostNatFibLookup.INSTANCE,
             new OriginatingSessionScope("vrf"),
             new SessionMatchExpr(IpProtocol.TCP, Ip.ZERO, Ip.ZERO, 0, 0),
             null));
