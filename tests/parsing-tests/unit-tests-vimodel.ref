@@ -22,7 +22,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To AWS services",
             "firewallSessionInterfaceInfo" : {
-              "action" : "NO_FIB_LOOKUP",
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "aws-services"
               ]
@@ -50,7 +50,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "firewallSessionInterfaceInfo" : {
-              "action" : "NO_FIB_LOOKUP",
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "backbone"
               ]
@@ -38054,7 +38054,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "firewallSessionInterfaceInfo" : {
-              "action" : "NO_FIB_LOOKUP",
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "/Common/MYVLAN"
               ]
@@ -70710,7 +70710,7 @@
               "ge-0/0/0.0"
             ],
             "firewallSessionInterfaceInfo" : {
-              "action" : "NO_FIB_LOOKUP",
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "ge-0/0/0.0"
               ]
@@ -72871,7 +72871,7 @@
               "xe-0/0/0.0"
             ],
             "firewallSessionInterfaceInfo" : {
-              "action" : "NO_FIB_LOOKUP",
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "xe-0/0/0.0"
               ]
@@ -72929,7 +72929,7 @@
               "xe-1/0/0.0"
             ],
             "firewallSessionInterfaceInfo" : {
-              "action" : "NO_FIB_LOOKUP",
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "xe-1/0/0.0"
               ]
