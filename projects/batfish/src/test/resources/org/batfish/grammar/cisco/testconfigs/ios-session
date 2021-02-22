@@ -1,0 +1,16 @@
+!
+hostname ios-session
+!
+!
+interface Ethernet1/1
+ ip nat inside
+ ip address 1.1.1.1 255.255.255.0
+!
+interface Ethernet1/2
+ ip nat outside
+ ip address 2.2.2.2 255.255.255.0
+!
+interface Ethernet1/3
+ ip address 3.3.3.3 255.255.255.0
+!
+!

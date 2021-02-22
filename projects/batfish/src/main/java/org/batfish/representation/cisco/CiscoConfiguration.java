@@ -1914,8 +1914,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
     List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
-    int natTypes = (ciscoAsaNats.isEmpty() ? 0 : 1) + (ciscoIosNats.isEmpty() ? 0 : 1);
-    if (natTypes > 1) {
+    if (!ciscoAsaNats.isEmpty() && !ciscoIosNats.isEmpty()) {
       _w.redFlag("Multiple NAT types should not be present in same configuration.");
     } else if (!ciscoAsaNats.isEmpty()) {
       generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
@@ -1932,7 +1931,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setPostTransformationIncomingFilter(newIface.getIncomingFilter());
       newIface.setPreTransformationOutgoingFilter(newIface.getOutgoingFilter());
       newIface.setIncomingFilter(null);
-      newIface.setOutgoingFilter((IpAccessList) null);
+      newIface.setOutgoingFilter(null);
 
       // Assume each interface has its own session info (sessions are not shared by interfaces).
       // That is, return flows can only enter the interface the forward flow exited in order to
@@ -1940,6 +1939,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
+    } else if (_vendor == ConfigurationFormat.CISCO_IOS
+        || _vendor == ConfigurationFormat.CISCO_IOS_XR) {
+      // IOS routes using the original dst IP for flows from inside to outside, but the transformed
+      // dst IP for flows from outside to inside.
+      // TODO Determine what assumptions break if this node doesn't have session info on every
+      //  interface (i.e. if any interfaces are neither inside nor outside).
+      if (getNatInside().contains(ifaceName)) {
+        newIface.setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
+      } else if (getNatOutside().contains(ifaceName)) {
+        newIface.setFirewallSessionInterfaceInfo(
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
+      }
     }
     return newIface;
   }

@@ -7393,6 +7393,29 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosSession() throws IOException {
+    Configuration c = parseConfig("ios-session");
+    FirewallSessionInterfaceInfo inside =
+        c.getAllInterfaces().get("Ethernet1/1").getFirewallSessionInterfaceInfo();
+    FirewallSessionInterfaceInfo outside =
+        c.getAllInterfaces().get("Ethernet1/2").getFirewallSessionInterfaceInfo();
+    FirewallSessionInterfaceInfo neitherInsideNorOutside =
+        c.getAllInterfaces().get("Ethernet1/3").getFirewallSessionInterfaceInfo();
+    // Confirm that each interface has the correct firewall session info attached to it
+    assertThat(
+        inside,
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of("Ethernet1/1"), null, null)));
+    assertThat(
+        outside,
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of("Ethernet1/2"), null, null)));
+    assertNull(neitherInsideNorOutside);
+  }
+
+  @Test
   public void testVasiInterface() throws IOException {
     Configuration c = parseConfig("iosxe-vasi-interface");
     assertThat(c, hasInterface("vasileft1", hasAddress("1.1.1.2/31")));
