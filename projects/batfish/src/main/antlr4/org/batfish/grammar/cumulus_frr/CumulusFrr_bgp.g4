@@ -363,6 +363,7 @@ sbafi_neighbor
 
 sbafi_no
 :
+
 sbafi_no_neighbor
 ;
 
