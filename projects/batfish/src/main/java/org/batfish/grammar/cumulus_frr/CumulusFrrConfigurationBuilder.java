@@ -460,8 +460,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitSbafi_no_activate(Sbafi_no_activateContext ctx) {
    if(_currentBgpNeighborIpv4UnicastAddressFamily==null){
      return;
-   }
-    _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
+   }_currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
   }
 
   @Override
@@ -654,8 +653,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         name = ctx.name.getText();
       } else if (ctx.ipv6!=null){
         name= ctx.ipv6.getText();
-      }
-      else {
+      }else {
         throw new BatfishException("neightbor name or address");
       }
 
@@ -666,7 +664,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
               ctx.getStart().getText(),
               _parser,
               String.format("neighbor %s does not exist", name));
-    } else {
+    }else {
       _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
       if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
         _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();

@@ -279,6 +279,7 @@ public class CumulusFrrGrammarTest {
         "neighbor N activate",
         "no neighbor N activate",
         "exit-address-family");
+
         assertFalse(
             _frr.getBgpProcess()
                     .getDefaultVrf()

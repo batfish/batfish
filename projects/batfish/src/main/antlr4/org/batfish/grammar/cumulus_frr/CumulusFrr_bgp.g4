@@ -376,7 +376,6 @@ sbafi_no_neighbor
    )
    NEWLINE
 ;
-
 sbafi_no_activate
 :
   ACTIVATE
