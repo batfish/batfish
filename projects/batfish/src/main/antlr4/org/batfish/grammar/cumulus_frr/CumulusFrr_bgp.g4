@@ -18,6 +18,7 @@ s_bgp
   | sb_no
   | sb_redistribute
   | sbafi_no
+  | sbafi_neighbor
   )*
 ;
 
@@ -361,14 +362,13 @@ sbafi_neighbor
   NEWLINE
 ;
 
+
 sbafi_no
 :
-
 sbafi_no_neighbor
 ;
 
 sbafi_no_neighbor
-
 :
   NO NEIGHBOR (ipv4=IP_ADDRESS | ipv6=IPV6_ADDRESS | name = word)
   (
@@ -379,7 +379,7 @@ sbafi_no_neighbor
 
 sbafi_no_activate
 :
-   ACTIVATE
+  ACTIVATE
 ;
 
 sbafin_activate
