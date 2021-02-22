@@ -17,8 +17,7 @@ s_bgp
   | sb_network
   | sb_no
   | sb_redistribute
-  | sbafi_neighbor
-  | sbafi_no_neighbor
+  | sbafi_no
   )*
 ;
 
@@ -133,7 +132,7 @@ sbaf_ipv4_unicast
     | sbafi_maximum_paths
     | sbafi_network
     | sbafi_neighbor
-    | sbafi_no_neighbor
+    | sbafi_no
     | sbafi_redistribute
   )*
 ;
@@ -360,6 +359,11 @@ sbafi_neighbor
   | sbafin_route_map
   )
   NEWLINE
+;
+
+sbafi_no
+:
+sbafi_no_neighbor
 ;
 
 sbafi_no_neighbor
