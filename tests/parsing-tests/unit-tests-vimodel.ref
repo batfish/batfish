@@ -22,7 +22,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To AWS services",
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "aws-services"
               ]
@@ -50,7 +50,7 @@
             "bandwidth" : 1.0E12,
             "description" : "To AWS backbone",
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "backbone"
               ]
@@ -20197,7 +20197,7 @@
               "GigabitEthernet0/1"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "GigabitEthernet0/1"
               ]
@@ -20227,7 +20227,7 @@
               "GigabitEthernet0/2"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "GigabitEthernet0/2"
               ]
@@ -20257,7 +20257,7 @@
               "Redundant1"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "Redundant1"
               ]
@@ -20286,7 +20286,7 @@
               "Redundant2"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "Redundant2"
               ]
@@ -20320,7 +20320,7 @@
             ],
             "encapsulationVlan" : 2,
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "redundant1sub"
               ]
@@ -20356,7 +20356,7 @@
             ],
             "encapsulationVlan" : 2,
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "redundant2sub"
               ]
@@ -21400,7 +21400,7 @@
               "ifname"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "ifname"
               ]
@@ -21631,7 +21631,7 @@
               "blah"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "blah"
               ]
@@ -38054,7 +38054,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E12,
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "/Common/MYVLAN"
               ]
@@ -70710,7 +70710,7 @@
               "ge-0/0/0.0"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "ge-0/0/0.0"
               ]
@@ -72871,7 +72871,7 @@
               "xe-0/0/0.0"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "xe-0/0/0.0"
               ]
@@ -72929,7 +72929,7 @@
               "xe-1/0/0.0"
             ],
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : false,
+              "action" : "FORWARD_OUT_IFACE",
               "sessionInterfaces" : [
                 "xe-1/0/0.0"
               ]
@@ -79354,7 +79354,7 @@
             "autostate" : true,
             "bandwidth" : 1.0E9,
             "firewallSessionInterfaceInfo" : {
-              "fibLookup" : true,
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "ethernet1/2"
               ]

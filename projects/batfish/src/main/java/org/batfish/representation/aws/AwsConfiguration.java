@@ -37,6 +37,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
@@ -373,11 +374,14 @@ public class AwsConfiguration extends VendorConfiguration {
         .get(BACKBONE_FACING_INTERFACE_NAME)
         .setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
-                false, ImmutableList.of(BACKBONE_FACING_INTERFACE_NAME), null, null));
+                Action.FORWARD_OUT_IFACE,
+                ImmutableList.of(BACKBONE_FACING_INTERFACE_NAME),
+                null,
+                null));
 
     outInterface.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
-            false, ImmutableList.of(outInterface.getName()), null, null));
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(outInterface.getName()), null, null));
 
     // configure location info
     IpSpace servicesIpSpace =

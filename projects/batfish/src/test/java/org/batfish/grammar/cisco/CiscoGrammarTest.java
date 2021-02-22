@@ -312,6 +312,7 @@ import org.batfish.datamodel.EigrpRoute;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRib;
@@ -7381,10 +7382,14 @@ public final class CiscoGrammarTest {
     // attached to it
     assertThat(
         inside,
-        equalTo(new FirewallSessionInterfaceInfo(true, ImmutableSet.of("inside"), null, null)));
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of("inside"), null, null)));
     assertThat(
         outside,
-        equalTo(new FirewallSessionInterfaceInfo(true, ImmutableSet.of("outside"), null, null)));
+        equalTo(
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of("outside"), null, null)));
   }
 
   @Test

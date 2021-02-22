@@ -37,6 +37,7 @@ import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
@@ -45,9 +46,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.symbolic.state.OriginateVrf;
 import org.batfish.symbolic.state.PreInInterface;
 import org.batfish.symbolic.state.PreOutEdgePostNat;
@@ -188,7 +189,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
       // Create sessions for flows exiting FW:I3
       fwi3.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(false, ImmutableSet.of(FWI3), null, null));
+          new FirewallSessionInterfaceInfo(
+              Action.FORWARD_OUT_IFACE, ImmutableSet.of(FWI3), null, null));
     }
 
     _configs = ImmutableMap.of(FW, fw, R1, r1, R2, r2, R3, r3);
@@ -196,7 +198,8 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
     // temporarily add a FirewallSessionInterfaceInfo to FW to force its last hops to be tracked
     fwi1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FWI2), null, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FWI2), null, null));
     Set<org.batfish.datamodel.Edge> edges =
         ImmutableSet.of(
             // R1:I1 -- FW:I1
@@ -608,7 +611,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             allOf(
                 hasHostname(FW),
                 hasSessionScope(new OriginatingSessionScope(FW_VRF)),
-                hasAction(FibLookup.INSTANCE),
+                hasAction(PostNatFibLookup.INSTANCE),
                 hasSessionFlows(srcBdd(routePrefix)),
                 hasTransformation(FWI1_REVERSE_TRANSFORMATION))));
   }
@@ -671,7 +674,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 // R1:I1 -> FW:I1
                 hasHostname(FW),
                 hasSessionScope(new OriginatingSessionScope(FW_VRF)),
-                hasAction(FibLookup.INSTANCE),
+                hasAction(PostNatFibLookup.INSTANCE),
                 hasSessionFlows(r1I1SessionFlows),
                 hasTransformation(
                     compose(
@@ -680,7 +683,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 // R2:I1 -> FW:I1
                 hasHostname(FW),
                 hasSessionScope(new OriginatingSessionScope(FW_VRF)),
-                hasAction(FibLookup.INSTANCE),
+                hasAction(PostNatFibLookup.INSTANCE),
                 hasSessionFlows(r2I1SessionFlows),
                 hasTransformation(
                     compose(
@@ -739,14 +742,14 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
                 // R1:I1 -> FW:I1
                 hasHostname(FW),
                 hasSessionScope(new OriginatingSessionScope(FW_VRF)),
-                hasAction(FibLookup.INSTANCE),
+                hasAction(PostNatFibLookup.INSTANCE),
                 hasSessionFlows(r1I1SessionFlows),
                 hasTransformation(FWI1_REVERSE_TRANSFORMATION)),
             allOf(
                 // R3:I1 -> FW:I2
                 hasHostname(FW),
                 hasSessionScope(new OriginatingSessionScope(FW_VRF)),
-                hasAction(FibLookup.INSTANCE),
+                hasAction(PostNatFibLookup.INSTANCE),
                 hasSessionFlows(r3I1SessionFlows),
                 hasTransformation(FWI2_REVERSE_TRANSFORMATION))));
   }
@@ -776,7 +779,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             allOf(
                 hasHostname(FW),
                 hasSessionScope(new OriginatingSessionScope(FW_VRF)),
-                hasAction(FibLookup.INSTANCE),
+                hasAction(PostNatFibLookup.INSTANCE),
                 hasSessionFlows(srcBdd(routePrefix)),
                 hasTransformation(FWI1_REVERSE_TRANSFORMATION))));
   }

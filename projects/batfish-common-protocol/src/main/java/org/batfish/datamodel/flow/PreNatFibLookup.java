@@ -6,28 +6,25 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.SessionActionVisitor;
 
 /**
- * A {@link SessionAction} whereby return traffic is forwarded according to the result of a lookup
- * on the FIB of the interface on which the return traffic is received.
+ * A {@link SessionAction} whereby return traffic is forwarded according to a FIB lookup using the
+ * pre-transformation packet.
  */
-@JsonTypeName("FibLookup")
+@JsonTypeName("PreNatFibLookup")
 @ParametersAreNonnullByDefault
-public final class FibLookup implements SessionAction {
+public final class PreNatFibLookup implements SessionAction {
 
-  public static final FibLookup INSTANCE = new FibLookup();
+  public static final PreNatFibLookup INSTANCE = new PreNatFibLookup();
 
-  private FibLookup() {}
+  private PreNatFibLookup() {}
 
   @Override
   public <T> T accept(SessionActionVisitor<T> visitor) {
-    return visitor.visitFibLookup(this);
+    return visitor.visitPreNatFibLookup(this);
   }
 
   @Override
   public boolean equals(@Nullable Object o) {
-    if (this == o) {
-      return true;
-    }
-    return o instanceof FibLookup;
+    return o instanceof PreNatFibLookup;
   }
 
   @Override

@@ -8,7 +8,8 @@ import org.batfish.datamodel.visitors.SessionActionVisitor;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = Accept.class, name = "Accept"),
-  @JsonSubTypes.Type(value = FibLookup.class, name = "FibLookup"),
+  @JsonSubTypes.Type(value = PreNatFibLookup.class, name = "PreNatFibLookup"),
+  @JsonSubTypes.Type(value = PostNatFibLookup.class, name = "PostNatFibLookup"),
   @JsonSubTypes.Type(value = ForwardOutInterface.class, name = "ForwardOutInterface"),
 })
 public interface SessionAction {

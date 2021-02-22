@@ -67,6 +67,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -1753,7 +1754,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create session info
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              false, zone.getInterfaces(), iface.getIncomingFilter(), iface.getOutgoingFilter()));
+              Action.FORWARD_OUT_IFACE,
+              zone.getInterfaces(),
+              iface.getIncomingFilter(),
+              iface.getOutgoingFilter()));
     }
 
     String incomingFilterName = iface.getIncomingFilter();

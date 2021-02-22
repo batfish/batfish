@@ -22,6 +22,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
@@ -63,7 +64,8 @@ public final class LastHopOutgoingInterfaceManagerTest {
     Configuration c = _cb.build();
     Vrf vrf = _vb.setOwner(c).build();
     FirewallSessionInterfaceInfo firewallSessionInterfaceInfo =
-        new FirewallSessionInterfaceInfo(false, ImmutableSet.of("iface"), null, null);
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableSet.of("iface"), null, null);
     _ib.setActive(true)
         .setName("iface")
         .setOwner(c)

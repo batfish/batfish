@@ -91,6 +91,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
@@ -1937,7 +1938,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // That is, return flows can only enter the interface the forward flow exited in order to
       // match the session setup by the forward flow.
       newIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(true, ImmutableSet.of(newIface.getName()), null, null));
+          new FirewallSessionInterfaceInfo(
+              Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
     }
     return newIface;
   }

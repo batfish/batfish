@@ -15,10 +15,10 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.SessionMatchExpr;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
@@ -39,7 +39,7 @@ public class TraceDagImplTest {
     FirewallSessionTraceInfo session =
         new FirewallSessionTraceInfo(
             "B1",
-            FibLookup.INSTANCE,
+            PostNatFibLookup.INSTANCE,
             new OriginatingSessionScope("vrf"),
             new SessionMatchExpr(IpProtocol.TCP, Ip.ZERO, Ip.ZERO, 0, 0),
             null);

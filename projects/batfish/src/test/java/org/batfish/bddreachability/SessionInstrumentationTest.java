@@ -28,15 +28,16 @@ import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Accept;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.ForwardOutInterface;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.symbolic.state.NodeAccept;
 import org.batfish.symbolic.state.NodeDropAclIn;
 import org.batfish.symbolic.state.NodeDropAclOut;
@@ -241,7 +242,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         nodeAcceptEdges(sessionInfo),
         contains(
@@ -282,7 +284,7 @@ public final class SessionInstrumentationTest {
     BDD sessionHeaders = PKT.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
+            FW, ImmutableSet.of(FW_I1), PostNatFibLookup.INSTANCE, sessionHeaders, IDENTITY);
 
     assertThat(
         fibLookupSessionEdges(sessionInfo),
@@ -302,7 +304,7 @@ public final class SessionInstrumentationTest {
     Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, ImmutableSet.of(FW_I1), FibLookup.INSTANCE, sessionHeaders, nat);
+            FW, ImmutableSet.of(FW_I1), PostNatFibLookup.INSTANCE, sessionHeaders, nat);
 
     assertThat(
         fibLookupSessionEdges(sessionInfo),
@@ -322,7 +324,11 @@ public final class SessionInstrumentationTest {
     BDD sessionHeaders = PKT.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, IDENTITY);
+            FW,
+            new OriginatingSessionScope(FW_VRF),
+            PostNatFibLookup.INSTANCE,
+            sessionHeaders,
+            IDENTITY);
 
     BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
     Matcher<Transition> expectedTransition =
@@ -347,7 +353,11 @@ public final class SessionInstrumentationTest {
     Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
     BDDFirewallSessionTraceInfo natSessionInfo =
         new BDDFirewallSessionTraceInfo(
-            FW, new OriginatingSessionScope(FW_VRF), FibLookup.INSTANCE, sessionHeaders, nat);
+            FW,
+            new OriginatingSessionScope(FW_VRF),
+            PostNatFibLookup.INSTANCE,
+            sessionHeaders,
+            nat);
 
     BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
     Matcher<Transition> expectedTransition =
@@ -402,7 +412,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
@@ -422,7 +433,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         preInInterfaceEdges(sessionInfo),
         contains(
@@ -500,7 +512,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
@@ -514,7 +527,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         deliveredToSubnetEdges(sessionInfo),
         contains(
@@ -566,7 +580,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), PERMIT_TCP, null));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FW_I1), PERMIT_TCP, null));
     assertThat(
         nodeDropAclInEdges(sessionInfo),
         contains(
@@ -598,7 +613,8 @@ public final class SessionInstrumentationTest {
 
     // FW_I1 has an outgoing session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
-        new FirewallSessionInterfaceInfo(false, ImmutableList.of(FW_I1), null, PERMIT_TCP));
+        new FirewallSessionInterfaceInfo(
+            Action.FORWARD_OUT_IFACE, ImmutableList.of(FW_I1), null, PERMIT_TCP));
     assertThat(
         nodeDropAclOutEdges(sessionInfo),
         contains(

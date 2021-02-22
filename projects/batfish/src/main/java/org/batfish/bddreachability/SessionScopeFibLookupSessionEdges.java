@@ -13,9 +13,9 @@ import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.flow.FibLookup;
 import org.batfish.datamodel.flow.IncomingSessionScope;
 import org.batfish.datamodel.flow.OriginatingSessionScope;
+import org.batfish.datamodel.flow.PostNatFibLookup;
 import org.batfish.datamodel.flow.SessionScope;
 import org.batfish.datamodel.flow.SessionScopeVisitor;
 import org.batfish.symbolic.state.OriginateInterface;
@@ -26,9 +26,10 @@ import org.batfish.symbolic.state.StateExpr;
 
 /**
  * Visitor for a {@link SessionScope} that returns the {@link Edge edges} that flows can traverse
- * when they match a session with action {@link FibLookup}. These edges all terminate in {@link
- * PostInVrfSession}, and may start with {@link PreInInterface} (for {@link IncomingSessionScope})
- * or {@link OriginateInterface} or {@link OriginateVrf} (for {@link OriginatingSessionScope}).
+ * when they match a session with action {@link PostNatFibLookup}. These edges all terminate in
+ * {@link PostInVrfSession}, and may start with {@link PreInInterface} (for {@link
+ * IncomingSessionScope}) or {@link OriginateInterface} or {@link OriginateVrf} (for {@link
+ * OriginatingSessionScope}).
  */
 @ParametersAreNonnullByDefault
 public class SessionScopeFibLookupSessionEdges implements SessionScopeVisitor<Stream<Edge>> {

@@ -108,7 +108,7 @@ public final class MatchSessionStepTest {
             new MatchSessionStep(
                 MatchSessionStepDetail.builder()
                     .setSessionScope(sessionScope2)
-                    .setSessionAction(FibLookup.INSTANCE)
+                    .setSessionAction(PostNatFibLookup.INSTANCE)
                     .setMatchCriteria(matchCriteria)
                     .setTransformation(transformation)
                     .build()))
@@ -116,7 +116,7 @@ public final class MatchSessionStepTest {
             new MatchSessionStep(
                 MatchSessionStepDetail.builder()
                     .setSessionScope(sessionScope2)
-                    .setSessionAction(FibLookup.INSTANCE)
+                    .setSessionAction(PostNatFibLookup.INSTANCE)
                     .setMatchCriteria(matchCriteria2)
                     .setTransformation(transformation)
                     .build()))
@@ -124,7 +124,7 @@ public final class MatchSessionStepTest {
             new MatchSessionStep(
                 MatchSessionStepDetail.builder()
                     .setSessionScope(sessionScope2)
-                    .setSessionAction(FibLookup.INSTANCE)
+                    .setSessionAction(PostNatFibLookup.INSTANCE)
                     .setMatchCriteria(matchCriteria2)
                     .setTransformation(transformation2)
                     .build()))

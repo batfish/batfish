@@ -24,6 +24,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
@@ -181,7 +182,8 @@ public class BDDSourceManagerTest {
     ib.setName(IFACE2).build();
     ib.setName(IFACE3)
         .setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(false, ImmutableList.of(IFACE3), null, null))
+            new FirewallSessionInterfaceInfo(
+                Action.FORWARD_OUT_IFACE, ImmutableList.of(IFACE3), null, null))
         .build();
 
     String hostname = config.getHostname();
