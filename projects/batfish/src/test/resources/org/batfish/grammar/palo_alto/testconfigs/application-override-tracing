@@ -1,0 +1,59 @@
+set deviceconfig system hostname application-override-tracing
+
+# Basic zone configuration so rules are attached to interfaces
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 10.0.3.1/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+set zone z3 network layer3 ethernet1/3
+
+set address ADDR2 ip-netmask 10.0.2.1/24
+
+set application OVERRIDE_APP category networking
+set application OVERRIDE_APP subcategory remote-access
+set application OVERRIDE_APP technology client-server
+set application OVERRIDE_APP risk 2
+
+set rulebase security rules SR1 from any
+set rulebase security rules SR1 to z2
+set rulebase security rules SR1 source any
+set rulebase security rules SR1 destination any
+set rulebase security rules SR1 service application-default
+set rulebase security rules SR1 application OVERRIDE_APP
+set rulebase security rules SR1 action allow
+
+set rulebase security rules SR2 from any
+set rulebase security rules SR2 to z3
+set rulebase security rules SR2 source any
+set rulebase security rules SR2 destination any
+set rulebase security rules SR2 service any
+set rulebase security rules SR2 application ssh
+set rulebase security rules SR2 action allow
+
+set rulebase security rules DENY from any
+set rulebase security rules DENY to any
+set rulebase security rules DENY source any
+set rulebase security rules DENY destination any
+set rulebase security rules DENY service any
+set rulebase security rules DENY application any
+set rulebase security rules DENY action deny
+
+# To zone z2, tcp/8642
+set rulebase application-override rules OVERRIDE_APP_RULE1 from z1
+set rulebase application-override rules OVERRIDE_APP_RULE1 to z2
+set rulebase application-override rules OVERRIDE_APP_RULE1 source 10.0.1.1/24
+set rulebase application-override rules OVERRIDE_APP_RULE1 destination ADDR2
+set rulebase application-override rules OVERRIDE_APP_RULE1 port 8642
+set rulebase application-override rules OVERRIDE_APP_RULE1 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE1 application OVERRIDE_APP
+
+# To zone z3, udp/1-65535 (override built-in app ssh)
+set rulebase application-override rules OVERRIDE_APP_RULE2 from z1
+set rulebase application-override rules OVERRIDE_APP_RULE2 to z3
+set rulebase application-override rules OVERRIDE_APP_RULE2 source any
+set rulebase application-override rules OVERRIDE_APP_RULE2 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE2 port 1-65535
+set rulebase application-override rules OVERRIDE_APP_RULE2 protocol udp
+set rulebase application-override rules OVERRIDE_APP_RULE2 application ssh

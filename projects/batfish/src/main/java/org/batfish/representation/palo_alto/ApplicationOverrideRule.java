@@ -21,7 +21,8 @@ public final class ApplicationOverrideRule implements Serializable {
   // Possible protocols for traffic to match an application-override rule
   public enum Protocol {
     TCP,
-    UDP
+    UDP,
+    UNSPECIFIED
   }
 
   // Name of the rule
@@ -46,7 +47,7 @@ public final class ApplicationOverrideRule implements Serializable {
   private boolean _negateDestination;
 
   // Traffic characteristics to match
-  @Nullable private Protocol _protocol;
+  @Nonnull private Protocol _protocol;
   @Nonnull private IntegerSpace _port;
 
   @Nonnull private final Set<String> _tags;
@@ -62,6 +63,7 @@ public final class ApplicationOverrideRule implements Serializable {
     _tags = new HashSet<>(1);
     _name = name;
     _port = IntegerSpace.EMPTY;
+    _protocol = Protocol.UNSPECIFIED;
   }
 
   @Nonnull
@@ -111,16 +113,22 @@ public final class ApplicationOverrideRule implements Serializable {
     return _negateDestination;
   }
 
-  @Nullable
+  @Nonnull
   public Protocol getProtocol() {
     return _protocol;
   }
 
   @Nullable
   public IpProtocol getIpProtocol() {
-    return _protocol == Protocol.TCP
-        ? IpProtocol.TCP
-        : _protocol == Protocol.UDP ? IpProtocol.UDP : null;
+    switch (_protocol) {
+      case TCP:
+        return IpProtocol.TCP;
+      case UDP:
+        return IpProtocol.UDP;
+      case UNSPECIFIED:
+      default:
+        return null;
+    }
   }
 
   @Nonnull
@@ -153,7 +161,7 @@ public final class ApplicationOverrideRule implements Serializable {
     _negateDestination = negateDestination;
   }
 
-  public void setProtocol(Protocol protocol) {
+  public void setProtocol(@Nonnull Protocol protocol) {
     _protocol = protocol;
   }
 

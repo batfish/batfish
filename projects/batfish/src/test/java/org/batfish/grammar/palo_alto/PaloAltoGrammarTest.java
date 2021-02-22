@@ -2,6 +2,8 @@ package org.batfish.grammar.palo_alto;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.PALO_ALTO_NESTED;
 import static org.batfish.datamodel.Interface.DependencyType.BIND;
@@ -84,11 +86,15 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationObjectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
@@ -192,6 +198,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.NssaSettingsMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.OspfProcessMatchers;
+import org.batfish.datamodel.matchers.TraceTreeMatchers;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfNetworkType;
@@ -3933,6 +3940,151 @@ public final class PaloAltoGrammarTest {
         not(
             hasUndefinedReference(
                 filename, PaloAltoStructureType.APPLICATION, "amazon-cloud-drive-base")));
+  }
+
+  @Test
+  public void testApplicationOverrideRuleTraceElements() {
+    String hostname = "application-override-tracing";
+    String filename = "configs/" + hostname;
+    Configuration c = parseConfig(hostname);
+    String vsysName = "vsys1";
+    String zone1Name = "z1";
+    String zone2Name = "z2";
+    String zone3Name = "z3";
+
+    TraceElement intrazoneMatchRulesZ2Te =
+        zoneToZoneMatchTraceElement(zone1Name, zone2Name, vsysName);
+    TraceElement intrazoneMatchRulesZ3Te =
+        zoneToZoneMatchTraceElement(zone1Name, zone3Name, vsysName);
+
+    String if1name = "ethernet1/1";
+    String if2name = "ethernet1/2";
+    String if3name = "ethernet1/3";
+    IpAccessList if2OutgoingFilter = c.getIpAccessLists().get(computeOutgoingFilterName(if2name));
+    IpAccessList if3OutgoingFilter = c.getIpAccessLists().get(computeOutgoingFilterName(if3name));
+
+    TraceElement if2OutgoingTe = ifaceOutgoingTraceElement(if2name, zone2Name, vsysName);
+    TraceElement if3OutgoingTe = ifaceOutgoingTraceElement(if3name, zone3Name, vsysName);
+
+    // Matches security rule SR1
+    Flow flowSR1 =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(8642)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    List<TraceTree> flowTraceSR1 =
+        AclTracer.trace(
+            if2OutgoingFilter,
+            flowSR1,
+            if1name,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+
+    // Matches security rule SR2
+    Flow flowSR2 =
+        flowSR1.toBuilder()
+            .setDstPort(1)
+            .setIpProtocol(IpProtocol.UDP)
+            .setDstIp(Ip.parse("10.0.3.2"))
+            .build();
+    List<TraceTree> flowTraceSR2 =
+        AclTracer.trace(
+            if3OutgoingFilter,
+            flowSR2,
+            if1name,
+            c.getIpAccessLists(),
+            ImmutableMap.of(),
+            ImmutableMap.of());
+
+    // Flow matching SR1 security rule should generate a trace pointing to that rule
+    assertThat(
+        flowTraceSR1,
+        contains(
+            isTraceTree(
+                if2OutgoingTe,
+                isTraceTree(
+                    intrazoneMatchRulesZ2Te,
+                    isTraceTree(
+                        matchSecurityRuleTraceElement("SR1", vsysName, filename),
+                        isTraceTree(
+                            matchSourceAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(
+                            matchDestinationAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(
+                            matchServiceApplicationDefaultTraceElement(),
+                            isTraceTree(
+                                matchApplicationObjectTraceElement(
+                                    "OVERRIDE_APP", vsysName, filename),
+                                isTraceTree(
+                                    matchApplicationOverrideRuleTraceElement(
+                                        "OVERRIDE_APP_RULE1", vsysName, filename),
+                                    isTraceTree(
+                                        matchSourceAddressTraceElement(),
+                                        isTraceTree(matchAddressValueTraceElement("10.0.1.1/24"))),
+                                    isTraceTree(
+                                        matchDestinationAddressTraceElement(),
+                                        isTraceTree(
+                                            matchAddressObjectTraceElement(
+                                                "ADDR2", vsysName, filename))),
+                                    TraceTreeMatchers.hasTraceElement("Matched protocol TCP"),
+                                    TraceTreeMatchers.hasTraceElement("Matched port")))))))));
+
+    // Flow matching SR2 security rule should generate a trace pointing to that rule
+    assertThat(
+        flowTraceSR2,
+        contains(
+            isTraceTree(
+                if3OutgoingTe,
+                isTraceTree(
+                    intrazoneMatchRulesZ3Te,
+                    isTraceTree(
+                        matchSecurityRuleTraceElement("SR2", vsysName, filename),
+                        isTraceTree(
+                            matchSourceAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(
+                            matchDestinationAddressTraceElement(),
+                            isTraceTree(matchAddressAnyTraceElement())),
+                        isTraceTree(
+                            matchApplicationObjectTraceElement("ssh", vsysName, filename),
+                            isTraceTree(
+                                matchApplicationOverrideRuleTraceElement(
+                                    "OVERRIDE_APP_RULE2", vsysName, filename),
+                                isTraceTree(
+                                    matchSourceAddressTraceElement(),
+                                    isTraceTree(matchAddressAnyTraceElement())),
+                                isTraceTree(
+                                    matchDestinationAddressTraceElement(),
+                                    isTraceTree(matchAddressAnyTraceElement())),
+                                TraceTreeMatchers.hasTraceElement("Matched protocol UDP"),
+                                TraceTreeMatchers.hasTraceElement("Matched port"))),
+                        isTraceTree(matchServiceAnyTraceElement()))))));
+  }
+
+  @Test
+  public void testApplicationOverrideRuleInvalidWarnings() throws IOException {
+    String hostname = "application-override-invalid";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    Warnings warn = ccae.getWarnings().get(hostname);
+
+    assertThat(warn, hasRedFlag(hasText(containsString("No application set"))));
+    assertThat(warn, hasRedFlag(hasText(containsString("No destination set"))));
+    assertThat(warn, hasRedFlag(hasText(containsString("No source set"))));
+    assertThat(warn, hasRedFlag(hasText(containsString("No from-zone set"))));
+    assertThat(warn, hasRedFlag(hasText(containsString("No to-zone set"))));
+    assertThat(warn, hasRedFlag(hasText(containsString("No port set"))));
+    assertThat(warn, hasRedFlag(hasText(containsString("No protocol set"))));
   }
 
   @Test

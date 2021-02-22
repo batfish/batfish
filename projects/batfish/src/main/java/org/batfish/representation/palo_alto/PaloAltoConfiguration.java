@@ -746,7 +746,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       _w.redFlag(String.format("No port set for application-override rule %s", ruleName));
       valid = false;
     }
-    if (rule.getProtocol() == null) {
+    if (rule.getIpProtocol() == null) {
       _w.redFlag(String.format("No protocol set for application-override rule %s", ruleName));
       valid = false;
     }
@@ -1503,7 +1503,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Returns an expression describing the headerspaces permitted by this rule, or {@link
+   * Returns an expression describing the packets permitted by this rule, or {@link
    * Optional#empty()} if all are allowed.
    */
   private Optional<AclLineMatchExpr> getServiceExpr(

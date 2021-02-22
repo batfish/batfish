@@ -547,9 +547,11 @@ public class PaloAltoSecurityRuleTest {
     Configuration c = parseConfig(hostname);
 
     int customApp1Port = 7653;
-    int customApp4Port = 6542;
+    int customApp4abPort = 6542;
+    int customApp4cPort = 5431;
     int sshPort = 22;
     String if1name = "ethernet1/1"; // 10.0.1.1/24
+    String if3name = "ethernet1/3"; // 10.0.3.1/24
 
     Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -577,14 +579,21 @@ public class PaloAltoSecurityRuleTest {
     // Match one source address for CUSTOM_APP4
     Flow flowCustomApp4a =
         flowCustomApp1.toBuilder()
-            .setDstPort(customApp4Port)
+            .setDstPort(customApp4abPort)
             .setSrcIp(Ip.parse("10.0.1.2"))
             .build();
     // Match another source address for CUSTOM_APP4
     Flow flowCustomApp4b =
         flowCustomApp1.toBuilder()
-            .setDstPort(customApp4Port)
+            .setDstPort(customApp4abPort)
             .setSrcIp(Ip.parse("10.0.1.3"))
+            .build();
+    // Match different zone and port for CUSTOM_APP4
+    Flow flowCustomApp4c =
+        flowCustomApp1.toBuilder()
+            .setIngressInterface(if3name)
+            .setDstPort(customApp4cPort)
+            .setSrcIp(Ip.parse("10.0.3.3"))
             .build();
 
     SortedMap<Flow, List<Trace>> traces =
@@ -597,7 +606,8 @@ public class PaloAltoSecurityRuleTest {
                     flowCustomApp3,
                     flowSSH,
                     flowCustomApp4a,
-                    flowCustomApp4b),
+                    flowCustomApp4b,
+                    flowCustomApp4c),
                 false);
 
     // Test application-override rule shadowing another application-override rule
@@ -615,8 +625,10 @@ public class PaloAltoSecurityRuleTest {
     // Confirm application definition can come from multiple application-override rules
     // Flow matching OVERRIDE_APP_RULE4 (CUSTOM_APP4) is allowed
     assertTrue(traces.get(flowCustomApp4a).get(0).getDisposition().isSuccessful());
-    // Flow matching OVERRIDE_APP_RULE5 (CUSTOM_APP4) is allowed
+    // Flow matching OVERRIDE_APP_RULE5 (CUSTOM_APP4) is allowed, not shadowed
     assertTrue(traces.get(flowCustomApp4b).get(0).getDisposition().isSuccessful());
+    // Flow matching OVERRIDE_APP_RULE6 (CUSTOM_APP4) is allowed, not shadowed
+    assertTrue(traces.get(flowCustomApp4c).get(0).getDisposition().isSuccessful());
   }
 
   @Test
