@@ -866,11 +866,14 @@ class FlowTracer {
 
     // compute transformation. it will be applied after applying incoming ACL
     Transformation transformation = session.getTransformation();
-    TransformationResult transformationResult = null;
+    TransformationResult transformationResult =
+        Optional.ofNullable(transformation)
+            .map(
+                t ->
+                    TransformationEvaluator.eval(
+                        t, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces))
+            .orElse(null);
     if (transformation != null) {
-      transformationResult =
-          TransformationEvaluator.eval(
-              transformation, _currentFlow, inputIfaceName, ipAccessLists, ipSpaces);
       matchDetail.setTransformation(flowDiffs(_currentFlow, transformationResult.getOutputFlow()));
     }
 
@@ -891,7 +894,6 @@ class FlowTracer {
       }
     }
 
-    TransformationResult finalTransformationResult = transformationResult;
     session
         .getAction()
         .accept(
@@ -899,9 +901,9 @@ class FlowTracer {
               @Override
               public Void visitAcceptVrf(Accept acceptVrf) {
                 // Apply transformation to flow if present, then accept
-                if (finalTransformationResult != null) {
-                  _currentFlow = finalTransformationResult.getOutputFlow();
-                  _steps.addAll(finalTransformationResult.getTraceSteps());
+                if (transformationResult != null) {
+                  _currentFlow = transformationResult.getOutputFlow();
+                  _steps.addAll(transformationResult.getTraceSteps());
                 }
                 buildAcceptTrace();
                 return null;
@@ -910,9 +912,9 @@ class FlowTracer {
               @Override
               public Void visitPostNatFibLookup(PostNatFibLookup postNatFibLookup) {
                 // Apply transformation first, if any
-                if (finalTransformationResult != null) {
-                  _currentFlow = finalTransformationResult.getOutputFlow();
-                  _steps.addAll(finalTransformationResult.getTraceSteps());
+                if (transformationResult != null) {
+                  _currentFlow = transformationResult.getOutputFlow();
+                  _steps.addAll(transformationResult.getTraceSteps());
                 }
 
                 // Accept if the flow is destined for this vrf on this host.
@@ -965,9 +967,9 @@ class FlowTracer {
                     _tracerouteContext.getFib(currentNodeName, _vrfName).get(),
                     (flowTracer, fibForward) -> {
                       // Routing happened, so it's finally time to apply transformation
-                      if (finalTransformationResult != null) {
-                        flowTracer._currentFlow = finalTransformationResult.getOutputFlow();
-                        flowTracer._steps.addAll(finalTransformationResult.getTraceSteps());
+                      if (transformationResult != null) {
+                        flowTracer._currentFlow = transformationResult.getOutputFlow();
+                        flowTracer._steps.addAll(transformationResult.getTraceSteps());
                       }
 
                       String outgoingIfaceName = fibForward.getInterfaceName();
@@ -1000,9 +1002,9 @@ class FlowTracer {
               public Void visitForwardOutInterface(ForwardOutInterface forwardOutInterface) {
                 // Apply transformation first, if any
                 Flow originalFlow = _currentFlow;
-                if (finalTransformationResult != null) {
-                  _currentFlow = finalTransformationResult.getOutputFlow();
-                  _steps.addAll(finalTransformationResult.getTraceSteps());
+                if (transformationResult != null) {
+                  _currentFlow = transformationResult.getOutputFlow();
+                  _steps.addAll(transformationResult.getTraceSteps());
                 }
                 // cycle detection
                 Breadcrumb breadcrumb =

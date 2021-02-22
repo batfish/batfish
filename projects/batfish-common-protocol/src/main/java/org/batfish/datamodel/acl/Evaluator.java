@@ -1,6 +1,7 @@
 package org.batfish.datamodel.acl;
 
 import java.util.Map;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -23,11 +24,11 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   protected final Map<String, IpSpace> _namedIpSpaces;
 
-  protected final String _srcInterface;
+  @Nullable protected final String _srcInterface;
 
   public Evaluator(
       Flow flow,
-      String srcInterface,
+      @Nullable String srcInterface,
       Map<String, IpAccessList> availableAcls,
       Map<String, IpSpace> namedIpSpaces) {
     _srcInterface = srcInterface;
