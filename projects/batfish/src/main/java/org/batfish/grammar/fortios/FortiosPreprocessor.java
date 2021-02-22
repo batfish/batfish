@@ -11,6 +11,9 @@ public final class FortiosPreprocessor extends FortiosParserBaseListener {
     _w = warnings;
   }
 
+  @SuppressWarnings("unused")
   private final @Nonnull FortiosCombinedParser _parser;
+
+  @SuppressWarnings("unused")
   private final @Nonnull Warnings _w;
 }

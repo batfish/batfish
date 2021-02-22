@@ -53,11 +53,19 @@ public final class FortiosGrammarTest {
 
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+
+  @SuppressWarnings("unused")
   private static final IpAccessListToBdd ACL_TO_BDD;
+
+  @SuppressWarnings("unused")
   private static final IpSpaceToBDD DST_IP_BDD;
+
+  @SuppressWarnings("unused")
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/fortios/testconfigs/";
+
+  @SuppressWarnings("unused")
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/fortios/snapshots/";
 
   static {
