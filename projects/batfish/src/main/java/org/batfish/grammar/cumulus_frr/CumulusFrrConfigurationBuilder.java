@@ -1,9 +1,44 @@
 package org.batfish.grammar.cumulus_frr;
 
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.Long.parseLong;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
+import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV4_UNICAST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_OSPF_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_NETWORK;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
@@ -12,33 +47,173 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.datamodel.*;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.UnrecognizedLineToken;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.*;
-import org.batfish.representation.cumulus.*;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Bgp_redist_typeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Interface_ospf_costContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_as_pathContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_community_list_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_prefix_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ip_routeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Line_actionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Literal_standard_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ospf_redist_typeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Pl_line_actionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.PrefixContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_callContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rm_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_as_pathContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmm_tagContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmmipa_prefix_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_gotoContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmom_nextContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_as_pathContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_comm_listContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_max_metric_router_lsa_administrativeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_redistributeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ro_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_defaultContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ronopi_interface_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_defaultContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Ropi_interface_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_bgpContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_routemapContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_router_ospfContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.S_vrfContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_networkContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sb_redistributeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbaf_l2vpn_evpnContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi6_importContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_noContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_default_originateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_all_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_default_gwContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafla_ipv6_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_mapContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafln_route_reflector_clientContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_cluster_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_confederationContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_max_med_administrativeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbb_router_idContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbbb_aspath_multipath_relaxContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_interfaceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ip6Context;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_ipContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_nameContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbn_peer_group_declContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnobd_ipv4_unicastContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_ebgp_multihopContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_local_asContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_peer_groupContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_remote_asContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbnp_update_sourceContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_descriptionContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Si_shutdownContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siip_addressContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_areaContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_costContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Siipo_network_p2pContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Snoip_forwardingContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
+import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
+import org.batfish.representation.cumulus.BgpIpNeighbor;
+import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpIpv6Neighbor;
+import org.batfish.representation.cumulus.BgpL2VpnEvpnIpv4Unicast;
+import org.batfish.representation.cumulus.BgpL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighbor;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
+import org.batfish.representation.cumulus.BgpNeighborIpv4UnicastAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighborL2vpnEvpnAddressFamily;
+import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
+import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
+import org.batfish.representation.cumulus.BgpNetwork;
+import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
 import org.batfish.representation.cumulus.BgpProcess;
+import org.batfish.representation.cumulus.BgpRedistributionPolicy;
+import org.batfish.representation.cumulus.BgpVrf;
+import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
+import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
+import org.batfish.representation.cumulus.CumulusFrrConfiguration;
+import org.batfish.representation.cumulus.CumulusRoutingProtocol;
+import org.batfish.representation.cumulus.CumulusStructureUsage;
+import org.batfish.representation.cumulus.FrrInterface;
+import org.batfish.representation.cumulus.InterfacesInterface;
+import org.batfish.representation.cumulus.IpAsPathAccessList;
+import org.batfish.representation.cumulus.IpAsPathAccessListLine;
+import org.batfish.representation.cumulus.IpCommunityList;
+import org.batfish.representation.cumulus.IpCommunityListExpanded;
+import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
+import org.batfish.representation.cumulus.IpCommunityListStandard;
+import org.batfish.representation.cumulus.IpCommunityListStandardLine;
+import org.batfish.representation.cumulus.IpPrefixList;
+import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfNetworkType;
+import org.batfish.representation.cumulus.OspfProcess;
+import org.batfish.representation.cumulus.RedistributionPolicy;
+import org.batfish.representation.cumulus.RouteMap;
+import org.batfish.representation.cumulus.RouteMapCall;
+import org.batfish.representation.cumulus.RouteMapContinue;
+import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.RouteMapMatchAsPath;
+import org.batfish.representation.cumulus.RouteMapMatchCommunity;
+import org.batfish.representation.cumulus.RouteMapMatchInterface;
+import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
+import org.batfish.representation.cumulus.RouteMapMatchTag;
+import org.batfish.representation.cumulus.RouteMapSetAsPath;
+import org.batfish.representation.cumulus.RouteMapSetCommListDelete;
+import org.batfish.representation.cumulus.RouteMapSetCommunity;
+import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
+import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
+import org.batfish.representation.cumulus.RouteMapSetMetric;
+import org.batfish.representation.cumulus.RouteMapSetTag;
+import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
-import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.*;
-
-import static com.google.common.base.Preconditions.checkState;
-import static java.lang.Long.parseLong;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.*;
-import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
-import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
-import static org.batfish.representation.cumulus.CumulusStructureType.*;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.*;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
   private final CumulusConcatenatedConfiguration _c;
@@ -474,39 +649,42 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
 
+
   @Override
-  public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
+  public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx){
     String name;
     if (ctx.ipv4 != null) {
       name = ctx.ipv4.getText();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-    } else if (ctx.ipv6 != null) {
-      name = ctx.ipv6.getText();
-    } else {
+    } else if (ctx.ipv6!=null){
+      name= ctx.ipv6.getText();
+    }else {
       throw new BatfishException("neightbor name or address");
     }
 
     BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
     if (bgpNeighbor == null) {
       _w.addWarning(
-          ctx,
-          ctx.getStart().getText(),
-          _parser,
-          String.format("neighbor %s does not exist", name));
-    } else {
+              ctx,
+              ctx.getStart().getText(),
+              _parser,
+              String.format("neighbor %s does not exist", name));
+    }else {
       _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
       if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
         _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
         bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
       }
     }
+
   }
 
   @Override
   public void exitSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
+
 
   @Override
   public void exitSb_network(Sb_networkContext ctx) {
@@ -709,10 +887,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafi_no_activate(Sbafi_no_activateContext ctx) {
-    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+    if(_currentBgpNeighborIpv4UnicastAddressFamily==null){
       return;
-    }
-    _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
+    }_currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
   }
 
   @Override
