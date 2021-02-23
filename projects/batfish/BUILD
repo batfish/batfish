@@ -38,6 +38,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_nclu",
         "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/java/org/batfish/grammar/flatjuniper",
+        "//projects/batfish/src/main/java/org/batfish/grammar/fortios",
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto_nested",

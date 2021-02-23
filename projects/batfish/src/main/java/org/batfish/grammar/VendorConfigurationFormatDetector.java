@@ -377,6 +377,14 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  @Nullable
+  private ConfigurationFormat checkFortios() {
+    if (_fileText.contains("config system global")) {
+      return ConfigurationFormat.FORTIOS;
+    }
+    return null;
+  }
+
   private ConfigurationFormat identifyConfigurationFormat() {
     ConfigurationFormat format;
     format = checkEmpty();
@@ -392,6 +400,10 @@ public final class VendorConfigurationFormatDetector {
     // formats we know this file does not match.
     configureHeuristicBlacklist();
 
+    format = checkFortios();
+    if (format != null) {
+      return format;
+    }
     format = checkRuckusIcx();
     if (format != null) {
       return format;
