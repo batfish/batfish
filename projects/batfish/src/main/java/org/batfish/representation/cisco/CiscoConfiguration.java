@@ -1939,22 +1939,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
-    } else if (_vendor == ConfigurationFormat.CISCO_IOS
-        || _vendor == ConfigurationFormat.CISCO_IOS_XR) {
-      // IOS routes using the original dst IP for flows from inside to outside, but the transformed
-      // dst IP for flows from outside to inside.
-      // TODO Determine what assumptions break if this node doesn't have session info on every
-      //  interface (i.e. if any interfaces are neither inside nor outside).
-      if (getNatInside().contains(ifaceName)) {
-        newIface.setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(
-                Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
-      } else if (getNatOutside().contains(ifaceName)) {
-        newIface.setFirewallSessionInterfaceInfo(
-            new FirewallSessionInterfaceInfo(
-                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
-      }
     }
+    // For IOS and XR, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
     return newIface;
   }
 
@@ -3230,6 +3216,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           c.getAllInterfaces().put(newIfaceName, newInterface);
         });
+    /*
+     * If this isn't ASA, add a single FirewallSessionInterfaceInfo for all inside interfaces and a
+     * single FirewallSessionInterfaceInfo for all outside interfaces. This way, when an outgoing
+     * flow exits an [inside|outside] interface, return flows will match the session if they enter
+     * any [inside|outside] interface.
+     */
+    if (_vendor == ConfigurationFormat.CISCO_IOS || _vendor == ConfigurationFormat.CISCO_IOS_XR) {
+      // IOS does FIB lookups with the original dst IP for flows from inside to outside, but the
+      // transformed dst IP for flows from outside to inside.
+      if (!getNatInside().isEmpty()) {
+        FirewallSessionInterfaceInfo insideIfaceInfo =
+            new FirewallSessionInterfaceInfo(Action.PRE_NAT_FIB_LOOKUP, getNatInside(), null, null);
+        getNatInside().stream()
+            .map(c.getAllInterfaces()::get)
+            .forEach(iface -> iface.setFirewallSessionInterfaceInfo(insideIfaceInfo));
+      }
+      if (!getNatOutside().isEmpty()) {
+        FirewallSessionInterfaceInfo outsideIfaceInfo =
+            new FirewallSessionInterfaceInfo(
+                Action.POST_NAT_FIB_LOOKUP, getNatOutside(), null, null);
+        getNatOutside().stream()
+            .map(c.getAllInterfaces()::get)
+            .forEach(iface -> iface.setFirewallSessionInterfaceInfo(outsideIfaceInfo));
+      }
+    }
+
     /*
      * Second pass over the interfaces to set dependency pointers correctly for:
      * - portchannels

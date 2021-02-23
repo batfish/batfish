@@ -7395,24 +7395,28 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosSession() throws IOException {
     Configuration c = parseConfig("ios-session");
-    FirewallSessionInterfaceInfo inside =
-        c.getAllInterfaces().get("Ethernet1/1").getFirewallSessionInterfaceInfo();
-    FirewallSessionInterfaceInfo outside =
-        c.getAllInterfaces().get("Ethernet1/2").getFirewallSessionInterfaceInfo();
-    FirewallSessionInterfaceInfo neitherInsideNorOutside =
-        c.getAllInterfaces().get("Ethernet1/3").getFirewallSessionInterfaceInfo();
-    // Confirm that each interface has the correct firewall session info attached to it
-    assertThat(
-        inside,
-        equalTo(
-            new FirewallSessionInterfaceInfo(
-                Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of("Ethernet1/1"), null, null)));
-    assertThat(
-        outside,
-        equalTo(
-            new FirewallSessionInterfaceInfo(
-                Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of("Ethernet1/2"), null, null)));
-    assertNull(neitherInsideNorOutside);
+    Interface inside1 = c.getAllInterfaces().get("Ethernet1/1");
+    Interface inside2 = c.getAllInterfaces().get("Ethernet1/2");
+    Interface outside1 = c.getAllInterfaces().get("Ethernet1/3");
+    Interface outside2 = c.getAllInterfaces().get("Ethernet1/4");
+    Interface neitherInsideNorOutside = c.getAllInterfaces().get("Ethernet1/5");
+    FirewallSessionInterfaceInfo insideInfo =
+        new FirewallSessionInterfaceInfo(
+            Action.PRE_NAT_FIB_LOOKUP,
+            ImmutableSet.of(inside1.getName(), inside2.getName()),
+            null,
+            null);
+    FirewallSessionInterfaceInfo outsideInfo =
+        new FirewallSessionInterfaceInfo(
+            Action.POST_NAT_FIB_LOOKUP,
+            ImmutableSet.of(outside1.getName(), outside2.getName()),
+            null,
+            null);
+    assertThat(inside1.getFirewallSessionInterfaceInfo(), equalTo(insideInfo));
+    assertThat(inside2.getFirewallSessionInterfaceInfo(), equalTo(insideInfo));
+    assertThat(outside1.getFirewallSessionInterfaceInfo(), equalTo(outsideInfo));
+    assertThat(outside2.getFirewallSessionInterfaceInfo(), equalTo(outsideInfo));
+    assertNull(neitherInsideNorOutside.getFirewallSessionInterfaceInfo());
   }
 
   @Test
