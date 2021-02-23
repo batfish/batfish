@@ -1,0 +1,122 @@
+set deviceconfig system hostname application-override-shadowing
+
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 10.0.3.1/24
+set network interface ethernet ethernet1/4 layer3 ip 10.0.4.1/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4 ]
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+set zone z3 network layer3 ethernet1/3
+set zone z4 network layer3 ethernet1/4
+
+set application CUSTOM_APP1 category networking
+set application CUSTOM_APP1 subcategory remote-access
+set application CUSTOM_APP1 technology client-server
+set application CUSTOM_APP1 risk 2
+
+set application CUSTOM_APP2 category networking
+set application CUSTOM_APP2 subcategory remote-access
+set application CUSTOM_APP2 technology client-server
+set application CUSTOM_APP2 risk 2
+
+set application CUSTOM_APP3 category networking
+set application CUSTOM_APP3 subcategory remote-access
+set application CUSTOM_APP3 technology client-server
+set application CUSTOM_APP3 risk 2
+
+set application CUSTOM_APP4 category networking
+set application CUSTOM_APP4 subcategory remote-access
+set application CUSTOM_APP4 technology client-server
+set application CUSTOM_APP4 risk 2
+
+# Most SSH traffic will be categorized as CUSTOM_APP2, so this rule is mostly shadowed
+set rulebase security rules PERMIT_SSH action allow
+set rulebase security rules PERMIT_SSH from any
+set rulebase security rules PERMIT_SSH to any
+set rulebase security rules PERMIT_SSH application ssh
+set rulebase security rules PERMIT_SSH source any
+set rulebase security rules PERMIT_SSH destination any
+set rulebase security rules PERMIT_SSH service application-default
+
+# CUSTOM_APP1 is evaluated first and matches the most of the traffic CUSTOM_APP3 does
+set rulebase security rules PERMIT action allow
+set rulebase security rules PERMIT from any
+set rulebase security rules PERMIT to any
+set rulebase security rules PERMIT application CUSTOM_APP3
+set rulebase security rules PERMIT source any
+set rulebase security rules PERMIT destination any
+set rulebase security rules PERMIT service application-default
+
+# Permit CUSTOM_APP4 which is defined by multiple application-override rules
+set rulebase security rules PERMIT_OTHER action allow
+set rulebase security rules PERMIT_OTHER from any
+set rulebase security rules PERMIT_OTHER to any
+set rulebase security rules PERMIT_OTHER application CUSTOM_APP4
+set rulebase security rules PERMIT_OTHER source any
+set rulebase security rules PERMIT_OTHER destination any
+set rulebase security rules PERMIT_OTHER service application-default
+
+set rulebase security rules DENY action deny
+set rulebase security rules DENY from any
+set rulebase security rules DENY to any
+set rulebase security rules DENY application any
+set rulebase security rules DENY source any
+set rulebase security rules DENY destination any
+set rulebase security rules DENY service any
+
+# Match TCP/7653 (with source constraint)
+set rulebase application-override rules OVERRIDE_APP_RULE1 from any
+set rulebase application-override rules OVERRIDE_APP_RULE1 to any
+set rulebase application-override rules OVERRIDE_APP_RULE1 source 10.0.0.0/8
+set rulebase application-override rules OVERRIDE_APP_RULE1 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE1 port 7653
+set rulebase application-override rules OVERRIDE_APP_RULE1 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE1 application CUSTOM_APP1
+
+# Match TCP/22 (with source constraint)
+set rulebase application-override rules OVERRIDE_APP_RULE2 from any
+set rulebase application-override rules OVERRIDE_APP_RULE2 to any
+set rulebase application-override rules OVERRIDE_APP_RULE2 source 10.0.0.0/8
+set rulebase application-override rules OVERRIDE_APP_RULE2 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE2 port 22
+set rulebase application-override rules OVERRIDE_APP_RULE2 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE2 application CUSTOM_APP2
+
+# Match TCP/7653
+# This rule is partly shadowed by OVERRIDE_APP_RULE1 (source condition is different)
+set rulebase application-override rules OVERRIDE_APP_RULE3 from any
+set rulebase application-override rules OVERRIDE_APP_RULE3 to any
+set rulebase application-override rules OVERRIDE_APP_RULE3 source any
+set rulebase application-override rules OVERRIDE_APP_RULE3 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE3 port 7653
+set rulebase application-override rules OVERRIDE_APP_RULE3 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE3 application CUSTOM_APP3
+
+# Match TCP/6542
+# Flag CUSTOM_APP4 from one source address
+set rulebase application-override rules OVERRIDE_APP_RULE4 from z1
+set rulebase application-override rules OVERRIDE_APP_RULE4 to z2
+set rulebase application-override rules OVERRIDE_APP_RULE4 source 10.0.1.2
+set rulebase application-override rules OVERRIDE_APP_RULE4 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE4 port 6542
+set rulebase application-override rules OVERRIDE_APP_RULE4 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE4 application CUSTOM_APP4
+
+# Flag CUSTOM_APP4 from a different source address
+set rulebase application-override rules OVERRIDE_APP_RULE5 from z1
+set rulebase application-override rules OVERRIDE_APP_RULE5 to z2
+set rulebase application-override rules OVERRIDE_APP_RULE5 source 10.0.1.3
+set rulebase application-override rules OVERRIDE_APP_RULE5 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE5 port 6542
+set rulebase application-override rules OVERRIDE_APP_RULE5 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE5 application CUSTOM_APP4
+
+# Flag CUSTOM_APP4 from a different port and source address
+set rulebase application-override rules OVERRIDE_APP_RULE6 from z3
+set rulebase application-override rules OVERRIDE_APP_RULE6 to z2
+set rulebase application-override rules OVERRIDE_APP_RULE6 source any
+set rulebase application-override rules OVERRIDE_APP_RULE6 destination any
+set rulebase application-override rules OVERRIDE_APP_RULE6 port 5431
+set rulebase application-override rules OVERRIDE_APP_RULE6 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE6 application CUSTOM_APP4

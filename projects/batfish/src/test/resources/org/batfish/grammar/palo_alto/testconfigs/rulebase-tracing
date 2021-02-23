@@ -40,6 +40,15 @@ set rulebase security rules RULE3 service application-default
 set rulebase security rules RULE3 application any
 set rulebase security rules RULE3 action allow
 
+set rulebase security rules RULE3pt5 from any
+set rulebase security rules RULE3pt5 to any
+set rulebase security rules RULE3pt5 source any
+set rulebase security rules RULE3pt5 source-user any
+set rulebase security rules RULE3pt5 destination 10.12.14.16
+set rulebase security rules RULE3pt5 service service-http
+set rulebase security rules RULE3pt5 application aol-messageboard-posting
+set rulebase security rules RULE3pt5 action allow
+
 set rulebase security rules RULE4 from any
 set rulebase security rules RULE4 to any
 set rulebase security rules RULE4 source any
@@ -49,3 +58,4 @@ set rulebase security rules RULE4 negate-destination yes
 set rulebase security rules RULE4 service any
 set rulebase security rules RULE4 application any
 set rulebase security rules RULE4 action allow
+

@@ -30,6 +30,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationGroupTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationObjectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedAddressTraceElement;
@@ -106,6 +107,7 @@ import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
@@ -600,8 +602,188 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         _natRuleToTransformation.getOrDefault(vsysName, ImmutableMap.of()).get(ruleName));
   }
 
+  /**
+   * Build an ACL for a specific application-override rule. This ACL ignores interaction between
+   * rules (e.g. ignoring shadowing) and does not encode zone matching.
+   */
+  private AclLineMatchExpr buildApplicationOverrideRuleAcl(
+      Vsys vsys, ApplicationOverrideRule rule) {
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 1. Initialize the list of conditions.
+    List<AclLineMatchExpr> conjuncts = new LinkedList<>();
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Match SRC IPs.
+    List<MatchHeaderSpace> srcExprs =
+        aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
+    assert !srcExprs.isEmpty();
+    conjuncts.add(
+        rule.getNegateSource()
+            // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
+            // And(Not(...)) to push Not further down in trace
+            ? new AndMatchExpr(negateMatchIps(srcExprs), matchSourceAddressTraceElement())
+            : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 3. Match DST IPs.
+    List<MatchHeaderSpace> dstExprs =
+        aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
+    assert !dstExprs.isEmpty();
+    conjuncts.add(
+        rule.getNegateDestination()
+            // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
+            // And(Not(...)) to push Not further down in trace
+            ? new AndMatchExpr(negateMatchIps(dstExprs), matchDestinationAddressTraceElement())
+            : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 4. Match protocol and ports
+    IpProtocol protocol = rule.getIpProtocol();
+    assert protocol != null;
+    conjuncts.add(
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setIpProtocols(protocol).build(),
+            TraceElement.of("Matched protocol " + protocol.name())));
+    conjuncts.add(
+        new MatchHeaderSpace(
+            HeaderSpace.builder().setDstPorts(rule.getPort().getSubRanges()).build(),
+            TraceElement.of("Matched port")));
+
+    return new AndMatchExpr(conjuncts);
+  }
+
+  /**
+   * Build an ACL for a specific application name. This ACL permits the flow iff an
+   * application-override rule would match it. This ACL does not encode zone matching.
+   */
+  private AclLineMatchExpr buildApplicationOverrideApplicationAcl(
+      Vsys vsys,
+      List<ApplicationOverrideRule> rules,
+      Map<String, AclLineMatchExpr> ruleNameToAcl,
+      String app) {
+    // Exprs that match the specified application name
+    // Using list as it's possible for multiple rules to override the same app
+    List<AclLineMatchExpr> appMatchExprs = new LinkedList<>();
+
+    // Running list of app-override rules that precede the one we're evaluating
+    ImmutableList.Builder<AclLineMatchExpr> preceding = ImmutableList.builder();
+
+    for (ApplicationOverrideRule rule : rules) {
+      AclLineMatchExpr ruleAcl = ruleNameToAcl.get(rule.getName());
+
+      // For each rule corresponding to the app we're interested in, add another appMatchExpr
+      if (app.equals(rule.getApplication())) {
+
+        // Add match expr which corresponds to this rule matching and *not* matching preceding rules
+        ImmutableList.Builder<AclLineMatchExpr> childMatchExprs = ImmutableList.builder();
+        preceding.build().forEach(p -> childMatchExprs.add(new NotMatchExpr(p)));
+        childMatchExprs.add(ruleAcl);
+        appMatchExprs.add(
+            new AndMatchExpr(
+                childMatchExprs.build(),
+                matchApplicationOverrideRuleTraceElement(
+                    rule.getName(), vsys.getName(), _filename)));
+      }
+
+      preceding.add(ruleAcl);
+    }
+    return new OrMatchExpr(
+        appMatchExprs, matchApplicationObjectTraceElement(app, vsys.getName(), _filename));
+  }
+
+  /**
+   * Collects the application-override rules from this Vsys and merges the common
+   * pre-/post-rulebases from Panorama. Filters out rules that aren't applicable or are invalid.
+   */
+  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
+  private List<ApplicationOverrideRule> getApplicableApplicationOverrideRules(
+      Vsys vsys, String fromZone, String toZone) {
+    Stream<ApplicationOverrideRule> pre =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPreRulebase().getApplicationOverrideRules().values().stream();
+    Stream<ApplicationOverrideRule> post =
+        _panorama == null
+            ? Stream.of()
+            : _panorama.getPostRulebase().getApplicationOverrideRules().values().stream();
+    Stream<ApplicationOverrideRule> rules =
+        vsys.getRulebase().getApplicationOverrideRules().values().stream();
+
+    return Stream.concat(Stream.concat(pre, rules), post)
+        .filter(this::applicationOverrideRuleValid)
+        .filter(e -> applicationOverrideRuleApplies(fromZone, toZone, e))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns a bool indicating if application override rule is valid or not and adds warnings about
+   * a rule that is invalid.
+   */
+  private boolean applicationOverrideRuleValid(ApplicationOverrideRule rule) {
+    String ruleName = rule.getName();
+    boolean valid = true;
+    if (rule.getApplication() == null) {
+      _w.redFlag(String.format("No application set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getDestination().isEmpty()) {
+      _w.redFlag(String.format("No destination set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getSource().isEmpty()) {
+      _w.redFlag(String.format("No source set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getFrom().isEmpty()) {
+      _w.redFlag(String.format("No from-zone set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getTo().isEmpty()) {
+      _w.redFlag(String.format("No to-zone set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getPort().equals(IntegerSpace.EMPTY)) {
+      _w.redFlag(String.format("No port set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    if (rule.getIpProtocol() == null) {
+      _w.redFlag(String.format("No protocol set for application-override rule %s", ruleName));
+      valid = false;
+    }
+    return valid;
+  }
+
+  /**
+   * Build map of (overridden) application name to AclLine matching that application. This map is
+   * used by security rules.
+   */
+  private Map<String, AclLineMatchExpr> buildApplicationOverrideMap(
+      Vsys vsys, String fromZone, String toZone) {
+    // Ordered list of rules that are applicable to the current fromZone, toZone, and vsys
+    List<ApplicationOverrideRule> rules =
+        getApplicableApplicationOverrideRules(vsys, fromZone, toZone);
+
+    // First, build independent ACLs for each rule (ignoring things like shadowing)
+    Map<String, AclLineMatchExpr> ruleNameToAcl = new HashMap<>();
+    rules.forEach(r -> ruleNameToAcl.put(r.getName(), buildApplicationOverrideRuleAcl(vsys, r)));
+
+    // Next, build map of app name to ACL, using the converted rules from above
+    Map<String, AclLineMatchExpr> appNameToAcl = new HashMap<>();
+    rules.stream()
+        .map(ApplicationOverrideRule::getApplication)
+        .collect(ImmutableSet.toImmutableSet())
+        .forEach(
+            a ->
+                appNameToAcl.put(
+                    a, buildApplicationOverrideApplicationAcl(vsys, rules, ruleNameToAcl, a)));
+
+    return appNameToAcl;
+  }
+
   /** Build list of converted security rules for the zone pair in the specified Vsys. */
-  private List<AclLine> convertSecurityRules(Vsys vsys, String fromZone, String toZone) {
+  private List<AclLine> convertSecurityRules(
+      Vsys vsys, String fromZone, String toZone, Map<String, AclLineMatchExpr> appOverrideAcls) {
     // Note: using linked hash map to preserve insertion order
     // Note: using map to avoid duplicating rulenames (not allowed on PAN devices)
     Map<String, ExprAclLine> ruleToExprAclLine = new LinkedHashMap<>();
@@ -610,16 +792,27 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // PreRulebase solely comes from Panorama, if it exists
     if (panorama != null) {
       addSecurityRulesToMap(
-          panorama.getPreRulebase(), panorama, fromZone, toZone, ruleToExprAclLine);
+          panorama.getPreRulebase(),
+          panorama,
+          fromZone,
+          toZone,
+          appOverrideAcls,
+          ruleToExprAclLine);
     }
 
     // Regular Rulebase comes solely from this vsys
-    addSecurityRulesToMap(vsys.getRulebase(), vsys, fromZone, toZone, ruleToExprAclLine);
+    addSecurityRulesToMap(
+        vsys.getRulebase(), vsys, fromZone, toZone, appOverrideAcls, ruleToExprAclLine);
 
     // PostRulebase solely comes from Panorama, if it exists
     if (panorama != null) {
       addSecurityRulesToMap(
-          panorama.getPostRulebase(), panorama, fromZone, toZone, ruleToExprAclLine);
+          panorama.getPostRulebase(),
+          panorama,
+          fromZone,
+          toZone,
+          appOverrideAcls,
+          ruleToExprAclLine);
     }
 
     return ruleToExprAclLine.values().stream().collect(ImmutableList.toImmutableList());
@@ -634,12 +827,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Vsys vsys,
       String fromZone,
       String toZone,
+      Map<String, AclLineMatchExpr> appOverrideAcls,
       Map<String, ExprAclLine> ruleToExprAclLine) {
     for (Entry<String, SecurityRule> entry : rulebase.getSecurityRules().entrySet()) {
       String name = entry.getKey();
       SecurityRule rule = entry.getValue();
       if (securityRuleApplies(fromZone, toZone, rule, _w) && !ruleToExprAclLine.containsKey(name)) {
-        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys, fromZone, toZone));
+        ruleToExprAclLine.put(name, toIpAccessListLine(rule, vsys, appOverrideAcls));
       }
     }
   }
@@ -757,6 +951,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert fromZone.getVsys() == toZone.getVsys();
     Vsys vsys = fromZone.getVsys();
     String vsysName = vsys.getName();
+    String fromZoneName = fromZone.getName();
+    String toZoneName = toZone.getName();
 
     String crossZoneFilterName =
         zoneToZoneFilter(
@@ -780,8 +976,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .build();
     }
 
+    Map<String, AclLineMatchExpr> appOverrideAcls =
+        buildApplicationOverrideMap(vsys, fromZoneName, toZoneName);
+
     // Build an ACL Line for each rule that is enabled and applies to this from/to zone pair.
-    List<AclLine> lines = convertSecurityRules(vsys, fromZone.getName(), toZone.getName());
+    List<AclLine> lines = convertSecurityRules(vsys, fromZoneName, toZoneName, appOverrideAcls);
 
     // Intrazone traffic is allowed by default.
     if (fromZone == toZone) {
@@ -799,6 +998,26 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Create a new ACL with a vsys-specific name.
     return IpAccessList.builder().setName(crossZoneFilterName).setLines(lines).build();
+  }
+
+  /**
+   * Returns a boolean indicating if specified rule applies for specified from-zone name and to-zone
+   * name.
+   */
+  static boolean applicationOverrideRuleApplies(
+      String fromZone, String toZone, ApplicationOverrideRule rule) {
+    if (rule.getDisabled()) {
+      return false;
+    }
+    boolean fromZoneInRuleFrom =
+        !Sets.intersection(rule.getFrom(), ImmutableSet.of(fromZone, CATCHALL_ZONE_NAME)).isEmpty();
+    boolean toZoneInRuleTo =
+        !Sets.intersection(rule.getTo(), ImmutableSet.of(toZone, CATCHALL_ZONE_NAME)).isEmpty();
+
+    if (!fromZoneInRuleFrom || !toZoneInRuleTo) {
+      return false;
+    }
+    return true;
   }
 
   @VisibleForTesting
@@ -1238,9 +1457,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   // constraints, and service (aka Protocol + Ports) constraints.
   //   However, services are a bit complicated when `service application-default` is used. In that
   //   case, we extract service definitions from the application that matches.
-  @SuppressWarnings("PMD.UnusedFormalParameter")
   private ExprAclLine toIpAccessListLine(
-      SecurityRule rule, Vsys vsys, String fromZone, String toZone) {
+      SecurityRule rule, Vsys vsys, Map<String, AclLineMatchExpr> appOverrideAcls) {
     assert !rule.getDisabled(); // handled by caller.
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1275,7 +1493,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match services.
-    getServiceExpr(rule, vsys).ifPresent(conjuncts::add);
+    getServiceExpr(rule, vsys, appOverrideAcls).ifPresent(conjuncts::add);
 
     return ExprAclLine.builder()
         .setName(rule.getName())
@@ -1286,15 +1504,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Returns an expression describing the protocol/port combinations permitted by this rule, or
-   * {@link Optional#empty()} if all are allowed.
+   * Returns an expression describing the packets permitted by this rule, or {@link
+   * Optional#empty()} if all are allowed.
    */
-  private Optional<AclLineMatchExpr> getServiceExpr(SecurityRule rule, Vsys vsys) {
+  private Optional<AclLineMatchExpr> getServiceExpr(
+      SecurityRule rule, Vsys vsys, Map<String, AclLineMatchExpr> appOverrideAcls) {
     SortedSet<ServiceOrServiceGroupReference> services = rule.getService();
     if (services.isEmpty()) {
       // No filtering.
       return Optional.empty();
     }
+
+    // Common application matching for any service except deferred / application-default
+    AclLineMatchExpr applicationMatchNotDefault =
+        new OrMatchExpr(matchServicesForApplications(rule, vsys, appOverrideAcls, false));
 
     List<AclLineMatchExpr> serviceDisjuncts = new LinkedList<>();
     for (ServiceOrServiceGroupReference service : services) {
@@ -1303,13 +1526,21 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // Check for matching object before using built-ins
       String vsysName = service.getVsysName(this, vsys);
       if (vsysName != null) {
-        serviceDisjuncts.add(
+        // Service object found
+
+        AclLineMatchExpr serviceMatch =
             permittedByAcl(
                 computeServiceGroupMemberAclName(vsysName, serviceName),
-                matchServiceTraceElement()));
+                matchServiceTraceElement());
+
+        serviceDisjuncts.add(
+            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
       } else if (serviceName.equals(ServiceBuiltIn.ANY.getName())) {
-        // Anything is allowed.
-        serviceDisjuncts.add(ServiceBuiltIn.ANY.toAclLineMatchExpr());
+        // Any service is allowed.
+        AclLineMatchExpr serviceMatch = ServiceBuiltIn.ANY.toAclLineMatchExpr();
+
+        serviceDisjuncts.add(
+            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
       } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
         if (rule.getAction() == LineAction.PERMIT) {
           // Since Batfish cannot currently match above L4, we follow Cisco-fragments-like logic:
@@ -1318,13 +1549,19 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           // not block all matching L4 traffic, since we can't know it is this specific application.
           serviceDisjuncts.add(
               new OrMatchExpr(
-                  matchServicesForApplications(rule, vsys),
+                  matchServicesForApplications(rule, vsys, appOverrideAcls, true),
                   matchServiceApplicationDefaultTraceElement()));
         }
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
-        serviceDisjuncts.add(ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr());
+        AclLineMatchExpr serviceMatch = ServiceBuiltIn.SERVICE_HTTP.toAclLineMatchExpr();
+
+        serviceDisjuncts.add(
+            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTPS.getName())) {
-        serviceDisjuncts.add(ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr());
+        AclLineMatchExpr serviceMatch = ServiceBuiltIn.SERVICE_HTTPS.toAclLineMatchExpr();
+
+        serviceDisjuncts.add(
+            new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
       } else {
         _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
       }
@@ -1337,7 +1574,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * If no corresponding application/group is found, then {@link Optional#empty()} is returned.
    */
   private Optional<AclLineMatchExpr> aclLineMatchExprForApplicationOrGroup(
-      String name, SecurityRule rule, Vsys vsys) {
+      String name,
+      SecurityRule rule,
+      Vsys vsys,
+      Map<String, AclLineMatchExpr> appOverrideAclsMap,
+      boolean applicationDefaultService) {
     String vsysName = vsys.getName();
 
     // Assume all traffic matches some application under the "any" definition
@@ -1353,7 +1594,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                   .getDescendantObjects(vsys.getApplications(), vsys.getApplicationGroups())
                   .stream()
                   // Don't add trace for children; we've already flattened intermediate app groups
-                  .map(a -> aclLineMatchExprForApplication(a, null))
+                  .map(
+                      a ->
+                          aclLineMatchExprForApplication(
+                              a, appOverrideAclsMap, null, applicationDefaultService))
                   .collect(ImmutableList.toImmutableList()),
               matchApplicationGroupTraceElement(name, vsysName, _filename)));
     }
@@ -1362,13 +1606,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (a != null) {
       return Optional.of(
           aclLineMatchExprForApplication(
-              a, matchApplicationObjectTraceElement(name, vsysName, _filename)));
+              a,
+              appOverrideAclsMap,
+              matchApplicationObjectTraceElement(name, vsysName, _filename),
+              applicationDefaultService));
     }
 
     Optional<Application> builtIn = ApplicationBuiltIn.getBuiltInApplication(name);
     if (builtIn.isPresent()) {
       return Optional.of(
-          aclLineMatchExprForApplication(builtIn.get(), matchBuiltInApplicationTraceElement(name)));
+          aclLineMatchExprForApplication(
+              builtIn.get(),
+              appOverrideAclsMap,
+              matchBuiltInApplicationTraceElement(name),
+              applicationDefaultService));
     }
     // Did not find in the right hierarchy, so stop and warn.
     _w.redFlag(
@@ -1380,17 +1631,51 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   /** Create an {@link AclLineMatchExpr} matching any services in the specified application. */
   private AclLineMatchExpr aclLineMatchExprForApplication(
-      Application application, @Nullable TraceElement traceElement) {
-    return new OrMatchExpr(
-        application.getServices().stream()
-            .map(s -> s.toMatchHeaderSpace(_w))
-            .collect(ImmutableList.toImmutableList()),
-        traceElement);
+      Application application,
+      Map<String, AclLineMatchExpr> appOverrideAclsMap,
+      @Nullable TraceElement traceElement,
+      boolean applicationDefaultService) {
+    String appName = application.getName();
+
+    if (appOverrideAclsMap.containsKey(appName)) {
+      return appOverrideAclsMap.get(appName);
+    }
+
+    // If we're not using application-default services,
+    // Assume application matches regardless of service-y signature
+    if (!applicationDefaultService) {
+      return new TrueExpr(traceElement);
+    }
+
+    AclLineMatchExpr appExpr =
+        new OrMatchExpr(
+            application.getServices().stream()
+                .map(s -> s.toMatchHeaderSpace(_w))
+                .collect(ImmutableList.toImmutableList()),
+            traceElement);
+
+    if (appOverrideAclsMap.isEmpty()) {
+      return appExpr;
+    }
+
+    // Match the application expr iff no app-override rules are matched
+    // Since app-override rule matches occur first and stop further app identification
+    ImmutableList.Builder<AclLineMatchExpr> conjunctions = ImmutableList.builder();
+    appOverrideAclsMap.values().forEach(o -> conjunctions.add(new NotMatchExpr(o)));
+    conjunctions.add(appExpr);
+    return new AndMatchExpr(conjunctions.build());
   }
 
-  private List<AclLineMatchExpr> matchServicesForApplications(SecurityRule rule, Vsys vsys) {
+  private List<AclLineMatchExpr> matchServicesForApplications(
+      SecurityRule rule,
+      Vsys vsys,
+      Map<String, AclLineMatchExpr> appOverrideAcls,
+      boolean applicationDefaultService) {
     return rule.getApplications().stream()
-        .map(a -> aclLineMatchExprForApplicationOrGroup(a, rule, vsys))
+        .map(
+            a ->
+                aclLineMatchExprForApplicationOrGroup(
+                    a, rule, vsys, appOverrideAcls, applicationDefaultService))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(ImmutableList.toImmutableList());
