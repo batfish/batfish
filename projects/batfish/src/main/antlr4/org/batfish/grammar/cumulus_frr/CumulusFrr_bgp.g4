@@ -363,7 +363,7 @@ sbafi_neighbor
 ;
 sbafi_no
 :
-sbafi_no_neighbor
+  sbafi_no_neighbor
 ;
 
 sbafi_no_neighbor
@@ -372,13 +372,11 @@ sbafi_no_neighbor
   (
    sbafi_no_activate
    )
-   NEWLINE
 ;
 sbafi_no_activate
 :
-  ACTIVATE
+  ACTIVATE NEWLINE
 ;
-
 
 sbafin_activate
 :
