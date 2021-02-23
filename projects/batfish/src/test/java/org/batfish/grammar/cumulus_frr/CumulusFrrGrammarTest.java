@@ -282,12 +282,20 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamilyIpv4UnicastNo() {
     parseLines(
         "router bgp 1",
-        " address-family ipv4 unicast",
-        "  no neighbor 2001:100:1:31::2 activate",
-        " exit-address-family");
-    assertThat(
-        _warnings.getParseWarnings(),
-        contains(hasText(equalTo("no neighbor 2001:100:1:31::2 activate"))));
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "neighbor N activate",
+        "no neighbor N activate",
+        "exit-address-family");
+
+    assertFalse(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getActivated());
   }
 
   @Test
