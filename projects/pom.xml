@@ -254,6 +254,11 @@
               <sourceFileExclude>**/FlatVyosParserBaseListener.java</sourceFileExclude>
               <sourceFileExclude>**/FlatVyosParserListener.java</sourceFileExclude>
 
+              <sourceFileExclude>**/FortiosLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/FortiosParser.java</sourceFileExclude>
+              <sourceFileExclude>**/FortiosParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/FortiosParserListener.java</sourceFileExclude>
+
               <sourceFileExclude>**/IptablesLexer.java</sourceFileExclude>
               <sourceFileExclude>**/IptablesParser.java</sourceFileExclude>
               <sourceFileExclude>**/IptablesParserBaseListener.java</sourceFileExclude>

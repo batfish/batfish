@@ -183,6 +183,19 @@
             </configuration>
           </execution>
           <execution>
+            <id>antlr4-fortios</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/FortiosLexer.g4,**/FortiosParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/fortios
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-fortios
+              </statusDirectory>
+            </configuration>
+          </execution>
+          <execution>
             <id>antlr4-cumulus-ports</id>
             <goals>
               <goal>antlr4</goal>
@@ -268,7 +281,7 @@
             <configuration>
               <includes>**/*.g4</includes>
               <excludes>
-                **/arista/*.g4,**/cisco/*.g4,**/cisco_nxos/*.g4,**/cisco_xr/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+                **/arista/*.g4,**/cisco/*.g4,**/cisco_nxos/*.g4,**/cisco_xr/*.g4,**/cumulus_concatenated/*.g4,**/cumulus_frr/*.g4,**/cumulus_interfaces/*.g4,**/cumulus_nclu/*.g4,**/cumulus_ports/*.g4,**/flatjuniper/*.g4,**/fortios/*.g4,**/f5_bigip_imish/*.g4,**/f5_bigip_structured/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
               </excludes>
             </configuration>
           </execution>

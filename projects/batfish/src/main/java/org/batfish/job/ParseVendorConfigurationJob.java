@@ -48,6 +48,8 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
+import org.batfish.grammar.fortios.FortiosCombinedParser;
+import org.batfish.grammar.fortios.FortiosControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
@@ -224,18 +226,28 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           }
 
         case F5_BIGIP_STRUCTURED:
-          F5BigipStructuredCombinedParser parser =
-              new F5BigipStructuredCombinedParser(_fileText, _settings);
-          combinedParser = parser;
-          extractor =
-              new F5BigipStructuredControlPlaneExtractor(
-                  _fileText,
-                  parser,
-                  _warnings,
-                  _filename,
-                  _settings.getPrintParseTree() ? () -> _ptSentences : null,
-                  _settings.getPrintParseTreeLineNums());
-          break;
+          {
+            F5BigipStructuredCombinedParser parser =
+                new F5BigipStructuredCombinedParser(_fileText, _settings);
+            combinedParser = parser;
+            extractor =
+                new F5BigipStructuredControlPlaneExtractor(
+                    _fileText,
+                    parser,
+                    _warnings,
+                    _filename,
+                    _settings.getPrintParseTree() ? () -> _ptSentences : null,
+                    _settings.getPrintParseTreeLineNums());
+            break;
+          }
+
+        case FORTIOS:
+          {
+            FortiosCombinedParser parser = new FortiosCombinedParser(_fileText, _settings);
+            combinedParser = parser;
+            extractor = new FortiosControlPlaneExtractor(_fileText, parser, _warnings);
+            break;
+          }
 
         case HOST:
           try {
