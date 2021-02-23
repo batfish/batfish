@@ -411,6 +411,6 @@ mode M_DoubleQuote;
 
 M_DoubleQuote_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), popMode;
 
-M_DoubleQUote_ESCAPED_TEXT: '\\' . -> type(QUOTED_TEXT);
+M_DoubleQuote_ESCAPED_TEXT: '\\' . -> type(QUOTED_TEXT);
 
 M_DoubleQuote_QUOTED_TEXT: ~["\\]+ -> type(QUOTED_TEXT);
