@@ -1,52 +1,7 @@
 package org.batfish.grammar.cumulus_frr;
 
-import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
-import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
-import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
-import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
-import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.OSPF;
-import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
-import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
-import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
-import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
-import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.hasToString;
-import static org.hamcrest.Matchers.isA;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import com.google.common.graph.ValueGraph;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
@@ -55,24 +10,9 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConnectedRouteMetadata;
-import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfExternalType2Route;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.*;
 import org.batfish.datamodel.StaticRoute.Builder;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -81,40 +21,35 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
-import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
-import org.batfish.representation.cumulus.BgpIpNeighbor;
-import org.batfish.representation.cumulus.BgpNeighbor;
-import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
-import org.batfish.representation.cumulus.BgpNeighborSourceAddress;
-import org.batfish.representation.cumulus.BgpNeighborSourceInterface;
-import org.batfish.representation.cumulus.BgpNetwork;
-import org.batfish.representation.cumulus.BgpPeerGroupNeighbor;
-import org.batfish.representation.cumulus.BgpRedistributionPolicy;
-import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
-import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.batfish.representation.cumulus.CumulusFrrConfiguration;
-import org.batfish.representation.cumulus.CumulusRoutingProtocol;
-import org.batfish.representation.cumulus.CumulusStructureType;
-import org.batfish.representation.cumulus.CumulusStructureUsage;
-import org.batfish.representation.cumulus.FrrInterface;
-import org.batfish.representation.cumulus.InterfacesInterface;
-import org.batfish.representation.cumulus.IpAsPathAccessList;
-import org.batfish.representation.cumulus.IpAsPathAccessListLine;
-import org.batfish.representation.cumulus.IpCommunityListExpanded;
-import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
-import org.batfish.representation.cumulus.IpPrefixList;
-import org.batfish.representation.cumulus.IpPrefixListLine;
-import org.batfish.representation.cumulus.OspfNetworkType;
-import org.batfish.representation.cumulus.RedistributionPolicy;
-import org.batfish.representation.cumulus.RouteMap;
-import org.batfish.representation.cumulus.RouteMapEntry;
+import org.batfish.representation.cumulus.*;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
+import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
+import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
+import static org.batfish.representation.cumulus.CumulusRoutingProtocol.*;
+import static org.batfish.representation.cumulus.CumulusStructureType.*;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.*;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /** Tests for {@link CumulusFrrParser}. */
 public class CumulusFrrGrammarTest {
@@ -272,22 +207,20 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testBgpAddressFamilyIpv4UnicastNo() {
     parseLines(
-            "router bgp 1",
-            "neighbor N interface description N",
-            "address-family ipv4 unicast",
-            "redistribute connected",
-            "neighbor N activate",
-            "no neighbor N activate",
-            "exit-address-family");
-
+        "router bgp 1",
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "neighbor N activate",
+        "no neighbor N activate",
+        "exit-address-family");
     assertFalse(
-            _frr.getBgpProcess()
-                    .getDefaultVrf()
-                    .getNeighbors()
-                    .get("N")
-                    .getIpv4UnicastAddressFamily()
-                    .getActivated());
-
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getActivated());
   }
 
   @Test

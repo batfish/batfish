@@ -370,7 +370,7 @@ sbafi_no_neighbor
 :
   NO NEIGHBOR (ipv4=IP_ADDRESS | ipv6=IPV6_ADDRESS | name = word)
   (
-   sbafi_no_activate
+    sbafi_no_activate
   )
 ;
 
