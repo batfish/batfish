@@ -1,0 +1,41 @@
+set deviceconfig system hostname application-override-conditions
+
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 10.0.3.1/24
+set network interface ethernet ethernet1/4 layer3 ip 10.0.4.1/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4 ]
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+set zone z3 network layer3 ethernet1/3
+set zone z4 network layer3 ethernet1/4
+
+set application CUSTOM_APP1 category networking
+set application CUSTOM_APP1 subcategory remote-access
+set application CUSTOM_APP1 technology client-server
+set application CUSTOM_APP1 risk 2
+
+set rulebase security rules ALLOW action allow
+set rulebase security rules ALLOW from any
+set rulebase security rules ALLOW to any
+set rulebase security rules ALLOW application CUSTOM_APP1
+set rulebase security rules ALLOW source any
+set rulebase security rules ALLOW destination any
+set rulebase security rules ALLOW service application-default
+
+set rulebase security rules DENY action deny
+set rulebase security rules DENY from any
+set rulebase security rules DENY to any
+set rulebase security rules DENY application any
+set rulebase security rules DENY source any
+set rulebase security rules DENY destination any
+set rulebase security rules DENY service any
+
+# Match TCP/7653 on from-zone, to-zone, source, destination
+set rulebase application-override rules OVERRIDE_APP_RULE1 from z1
+set rulebase application-override rules OVERRIDE_APP_RULE1 to z2
+set rulebase application-override rules OVERRIDE_APP_RULE1 source 10.0.1.2
+set rulebase application-override rules OVERRIDE_APP_RULE1 destination 1.0.0.0-10.0.2.2
+set rulebase application-override rules OVERRIDE_APP_RULE1 port 7653
+set rulebase application-override rules OVERRIDE_APP_RULE1 protocol tcp
+set rulebase application-override rules OVERRIDE_APP_RULE1 application CUSTOM_APP1

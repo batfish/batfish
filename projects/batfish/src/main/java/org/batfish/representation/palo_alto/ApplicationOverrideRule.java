@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 
 /** PAN datamodel component containing application-override rule configuration */
@@ -20,7 +21,8 @@ public final class ApplicationOverrideRule implements Serializable {
   // Possible protocols for traffic to match an application-override rule
   public enum Protocol {
     TCP,
-    UDP
+    UDP,
+    UNSPECIFIED
   }
 
   // Name of the rule
@@ -45,7 +47,7 @@ public final class ApplicationOverrideRule implements Serializable {
   private boolean _negateDestination;
 
   // Traffic characteristics to match
-  @Nullable private Protocol _protocol;
+  @Nonnull private Protocol _protocol;
   @Nonnull private IntegerSpace _port;
 
   @Nonnull private final Set<String> _tags;
@@ -61,6 +63,7 @@ public final class ApplicationOverrideRule implements Serializable {
     _tags = new HashSet<>(1);
     _name = name;
     _port = IntegerSpace.EMPTY;
+    _protocol = Protocol.UNSPECIFIED;
   }
 
   @Nonnull
@@ -110,12 +113,25 @@ public final class ApplicationOverrideRule implements Serializable {
     return _negateDestination;
   }
 
-  @Nullable
+  @Nonnull
   public Protocol getProtocol() {
     return _protocol;
   }
 
   @Nullable
+  public IpProtocol getIpProtocol() {
+    switch (_protocol) {
+      case TCP:
+        return IpProtocol.TCP;
+      case UDP:
+        return IpProtocol.UDP;
+      case UNSPECIFIED:
+      default:
+        return null;
+    }
+  }
+
+  @Nonnull
   public IntegerSpace getPort() {
     return _port;
   }
@@ -145,7 +161,7 @@ public final class ApplicationOverrideRule implements Serializable {
     _negateDestination = negateDestination;
   }
 
-  public void setProtocol(Protocol protocol) {
+  public void setProtocol(@Nonnull Protocol protocol) {
     _protocol = protocol;
   }
 
