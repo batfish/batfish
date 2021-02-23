@@ -112,10 +112,10 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi6_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_neighborContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_noContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
@@ -649,42 +649,39 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
 
-
   @Override
-  public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx){
+  public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
     String name;
     if (ctx.ipv4 != null) {
       name = ctx.ipv4.getText();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-    } else if (ctx.ipv6!=null){
-      name= ctx.ipv6.getText();
-    }else {
+    } else if (ctx.ipv6 != null) {
+      name = ctx.ipv6.getText();
+    } else {
       throw new BatfishException("neightbor name or address");
     }
 
     BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
     if (bgpNeighbor == null) {
       _w.addWarning(
-              ctx,
-              ctx.getStart().getText(),
-              _parser,
-              String.format("neighbor %s does not exist", name));
-    }else {
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format("neighbor %s does not exist", name));
+    } else {
       _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
       if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
         _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
         bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
       }
     }
-
   }
 
   @Override
   public void exitSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
-
 
   @Override
   public void exitSb_network(Sb_networkContext ctx) {
@@ -887,9 +884,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitSbafi_no_activate(Sbafi_no_activateContext ctx) {
-    if(_currentBgpNeighborIpv4UnicastAddressFamily==null){
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
-    }_currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
+    }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
   }
 
   @Override

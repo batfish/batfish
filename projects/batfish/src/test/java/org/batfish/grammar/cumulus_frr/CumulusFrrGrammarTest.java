@@ -272,22 +272,21 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testBgpAddressFamilyIpv4UnicastNo() {
     parseLines(
-            "router bgp 1",
-            "neighbor N interface description N",
-            "address-family ipv4 unicast",
-            "redistribute connected",
-            "neighbor N activate",
-            "no neighbor N activate",
-            "exit-address-family");
+        "router bgp 1",
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "neighbor N activate",
+        "no neighbor N activate",
+        "exit-address-family");
 
     assertFalse(
-            _frr.getBgpProcess()
-                    .getDefaultVrf()
-                    .getNeighbors()
-                    .get("N")
-                    .getIpv4UnicastAddressFamily()
-                    .getActivated());
-
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getActivated());
   }
 
   @Test
