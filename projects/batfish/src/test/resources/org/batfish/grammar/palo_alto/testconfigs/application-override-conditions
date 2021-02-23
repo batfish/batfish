@@ -39,9 +39,3 @@ set rulebase application-override rules OVERRIDE_APP_RULE1 destination 1.0.0.0-1
 set rulebase application-override rules OVERRIDE_APP_RULE1 port 7653
 set rulebase application-override rules OVERRIDE_APP_RULE1 protocol tcp
 set rulebase application-override rules OVERRIDE_APP_RULE1 application CUSTOM_APP1
-
-set rulebase application-override rules INVALID_RULE1 description "this rule is missing all required fields"
-
-set rulebase application-override rules INVALID_RULE2 description "this rule is missing all required fields except zones"
-set rulebase application-override rules INVALID_RULE2 from any
-set rulebase application-override rules INVALID_RULE2 to any
