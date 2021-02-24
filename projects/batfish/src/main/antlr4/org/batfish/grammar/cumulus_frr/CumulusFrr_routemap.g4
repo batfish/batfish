@@ -93,6 +93,7 @@ rm_set
     | rms_ip
     | rms_local_preference
     | rms_metric
+    | rms_metric_type
     | rms_tag
     | rms_weight
   )
@@ -106,6 +107,15 @@ rms_weight
 rms_metric
 :
   METRIC metric = int_expr NEWLINE
+;
+
+rms_metric_type
+:
+  METRIC_TYPE
+  (
+    TYPE_1
+    | TYPE_2
+  ) NEWLINE
 ;
 
 rmm_ip

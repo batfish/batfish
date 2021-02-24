@@ -759,6 +759,9 @@ TRADITIONAL
   'traditional'
 ;
 
+TYPE_1: 'type-1';
+TYPE_2: 'type-2';
+
 WARNINGS
 :
   'warnings'
@@ -773,6 +776,8 @@ METRIC
 :
   'metric'
 ;
+
+METRIC_TYPE: 'metric-type';
 
 NEWLINE
 :
