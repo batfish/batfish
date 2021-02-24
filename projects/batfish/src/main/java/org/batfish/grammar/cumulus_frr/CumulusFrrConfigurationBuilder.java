@@ -202,6 +202,7 @@ import org.batfish.representation.cumulus.IpCommunityListStandard;
 import org.batfish.representation.cumulus.IpCommunityListStandardLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfArea;
 import org.batfish.representation.cumulus.OspfAreaRange;
 import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
@@ -251,7 +252,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
   private @Nullable FrrInterface _currentInterface;
-  private Long _currentOspfArea;
+  private OspfArea _currentOspfArea;
   private OspfVrf _currentOspfVrf;
 
   public CumulusFrrConfigurationBuilder(
@@ -854,7 +855,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterRo_area(Ro_areaContext ctx) {
-    _currentOspfArea = toLong(ctx.area);
+    long area = toLong(ctx.area);
+    _currentOspfArea = _currentOspfVrf.getOrCreateArea(area);
   }
 
   @Override
@@ -935,9 +937,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRoa_range(Roa_rangeContext ctx) {
-    assert _currentOspfArea != null;
     Prefix pfx = toPrefix(ctx.pfx);
-    OspfAreaRange range = _currentOspfVrf.getOrCreateAreaRange(_currentOspfArea, pfx);
+    OspfAreaRange range = _currentOspfArea.getOrCreateRange(pfx);
     if (ctx.cost != null) {
       toInteger(ctx.getParent(), ctx.cost).ifPresent(range::setCost);
     }
