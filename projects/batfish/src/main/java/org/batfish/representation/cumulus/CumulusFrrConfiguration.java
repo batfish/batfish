@@ -64,6 +64,13 @@ public class CumulusFrrConfiguration implements Serializable {
     _bgpProcess = bgpProcess;
   }
 
+  public @Nonnull OspfProcess getOrCreateOspfProcess() {
+    if (_ospfProcess == null) {
+      _ospfProcess = new OspfProcess();
+    }
+    return _ospfProcess;
+  }
+
   @Nullable
   public OspfProcess getOspfProcess() {
     return _ospfProcess;

@@ -1,6 +1,7 @@
 package org.batfish.representation.cumulus;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -25,6 +26,10 @@ public class OspfVrf implements Serializable {
 
   public @Nullable OspfArea getArea(long area) {
     return _areas.get(area);
+  }
+
+  public @Nonnull Map<Long, OspfArea> getAreas() {
+    return Collections.unmodifiableMap(_areas);
   }
 
   @Nullable
