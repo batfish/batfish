@@ -466,7 +466,7 @@ LE
 
 LOCAL_AS
 :
-  'local-as'
+  [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
 
 LOCAL_PREFERENCE
