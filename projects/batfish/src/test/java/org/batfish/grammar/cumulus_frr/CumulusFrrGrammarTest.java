@@ -1378,12 +1378,23 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVrfRouteMapSetCommunity() {
     String name = "ROUTE-MAP-NAME";
 
-    parse(String.format("route-map %s permit 10\nset community 10000:1 20000:2\n", name));
+    parse(
+        String.format(
+            "route-map %s permit 10\n"
+                + "set community 10000:1 20000:2 local-AS no-advertise no-export internet\n",
+            name));
 
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
     assertThat(
         entry.getSetCommunity().getCommunities(),
-        equalTo(ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2))));
+        equalTo(
+            ImmutableList.of(
+                StandardCommunity.of(10000, 1),
+                StandardCommunity.of(20000, 2),
+                StandardCommunity.NO_EXPORT_SUBCONFED,
+                StandardCommunity.NO_ADVERTISE,
+                StandardCommunity.NO_EXPORT,
+                StandardCommunity.INTERNET)));
   }
 
   @Test

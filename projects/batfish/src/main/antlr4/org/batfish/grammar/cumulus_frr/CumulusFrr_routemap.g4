@@ -230,7 +230,7 @@ rms_comm_list
 
 rms_community
 :
-  COMMUNITY communities += literal_standard_community+ ADDITIVE? NEWLINE
+  COMMUNITY communities += standard_community+ ADDITIVE? NEWLINE
 ;
 
 rms_local_preference
