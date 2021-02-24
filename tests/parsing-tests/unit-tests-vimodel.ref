@@ -28568,7 +28568,7 @@
               "172.17.0.1"
             ],
             "firewallSessionInterfaceInfo" : {
-              "action" : "PRE_NAT_FIB_LOOKUP",
+              "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "Ethernet0"
               ]
