@@ -92,6 +92,16 @@ public class RouteMapEntryTest {
   }
 
   @Test
+  public void testGetSets_MetricType() {
+    RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
+    entry.setSetMetricType(new RouteMapSetMetricType(RouteMapMetricType.TYPE_1));
+
+    ImmutableList<RouteMapSet> sets = entry.getSets().collect(ImmutableList.toImmutableList());
+
+    assertThat(sets, contains(isA(RouteMapSetMetricType.class)));
+  }
+
+  @Test
   public void testGetSets_NextHop() {
     RouteMapEntry entry = new RouteMapEntry(10, LineAction.DENY);
     entry.setSetIpNextHop(new RouteMapSetIpNextHopLiteral(Ip.parse("10.0.0.1")));

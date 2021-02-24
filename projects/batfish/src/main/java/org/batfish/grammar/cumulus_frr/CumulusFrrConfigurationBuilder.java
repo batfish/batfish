@@ -94,6 +94,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_comm_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metric_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
@@ -221,12 +222,14 @@ import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
+import org.batfish.representation.cumulus.RouteMapMetricType;
 import org.batfish.representation.cumulus.RouteMapSetAsPath;
 import org.batfish.representation.cumulus.RouteMapSetCommListDelete;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
+import org.batfish.representation.cumulus.RouteMapSetMetricType;
 import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -1468,6 +1471,21 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   public void exitRms_metric(Rms_metricContext ctx) {
     LongExpr val = toMetricLongExpr(ctx.metric);
     _currentRouteMapEntry.setSetMetric(new RouteMapSetMetric(val));
+  }
+
+  @Override
+  public void exitRms_metric_type(Rms_metric_typeContext ctx) {
+    RouteMapMetricType type;
+    if (ctx.TYPE_1() != null) {
+      type = RouteMapMetricType.TYPE_1;
+    } else if (ctx.TYPE_2() != null) {
+      type = RouteMapMetricType.TYPE_2;
+    } else {
+      // assume valid but unsupported
+      todo(ctx);
+      return;
+    }
+    _currentRouteMapEntry.setSetMetricType(new RouteMapSetMetricType(type));
   }
 
   @Override

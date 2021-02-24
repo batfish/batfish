@@ -118,6 +118,7 @@ import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
+import org.batfish.representation.cumulus.RouteMapMetricType;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 import org.junit.Before;
@@ -1257,6 +1258,25 @@ public class CumulusFrrGrammarTest {
 
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
     assertThat(entry.getSetMetric().getMetric(), equalTo(new LiteralLong(30)));
+  }
+
+  @Test
+  public void testCumulusFrrRouteMapSetMetricType() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(
+        String.format(
+            "route-map %s permit 10\nset metric-type type-1\n"
+                + "route-map %s permit 20\nset metric-type type-2\n",
+            name, name));
+    {
+      RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
+      assertThat(entry.getSetMetricType().getMetricType(), equalTo(RouteMapMetricType.TYPE_1));
+    }
+    {
+      RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(20);
+      assertThat(entry.getSetMetricType().getMetricType(), equalTo(RouteMapMetricType.TYPE_2));
+    }
   }
 
   @Test
