@@ -8,17 +8,11 @@ import org.batfish.datamodel.Prefix;
 /** OSPF configuration for {@code area A range A.B.C.D/M [cost C]}. */
 public class OspfAreaRange implements Serializable {
 
-  private final long _area;
   private final @Nonnull Prefix _range;
   private @Nullable Integer _cost;
 
-  public OspfAreaRange(long area, @Nonnull Prefix range) {
-    _area = area;
+  public OspfAreaRange(@Nonnull Prefix range) {
     _range = range;
-  }
-
-  public long getArea() {
-    return _area;
   }
 
   public @Nonnull Prefix getRange() {

@@ -110,6 +110,7 @@ import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfArea;
 import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfVrf;
@@ -1841,11 +1842,14 @@ public class CumulusFrrGrammarTest {
             + " area 5 range 1.255.0.0/17\n");
     Prefix prefix = Prefix.parse("1.255.0.0/17");
     OspfVrf vrf = _frr.getOspfProcess().getDefaultVrf();
-    assertThat(vrf.getAreaRanges(), hasSize(2));
-    assertThat(vrf.getAreaRange(Ip.parse("1.1.1.0").asLong(), prefix), notNullValue());
-    assertThat(vrf.getAreaRange(Ip.parse("1.1.1.0").asLong(), prefix).getCost(), equalTo(10));
-    assertThat(vrf.getAreaRange(5L, prefix), notNullValue());
-    assertThat(vrf.getAreaRange(5L, prefix).getCost(), nullValue());
+    OspfArea area1110 = vrf.getArea(Ip.parse("1.1.1.0").asLong());
+    assertThat(area1110, notNullValue());
+    assertThat(area1110.getRanges(), hasKeys(prefix));
+    assertThat(area1110.getRange(prefix).getCost(), equalTo(10));
+    OspfArea area5 = vrf.getArea(5L);
+    assertThat(area5, notNullValue());
+    assertThat(area5.getRanges(), hasKeys(prefix));
+    assertThat(area5.getRange(prefix).getCost(), nullValue());
   }
 
   @Test
