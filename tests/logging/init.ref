@@ -2,6 +2,9 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileFormats" : {
+        "configs/node1" : "CISCO_IOS"
+      },
       "fileMap" : {
         "node1" : [
           "configs/node1"

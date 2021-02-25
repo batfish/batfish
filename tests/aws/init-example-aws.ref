@@ -1,6 +1,9 @@
 [
   {
     "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+    "fileFormats" : {
+      "configs/lhr-border-02.cfg" : "CISCO_IOS"
+    },
     "fileMap" : {
       "aws_configs" : [
         "aws_configs/us-west-2/Addresses.json",
