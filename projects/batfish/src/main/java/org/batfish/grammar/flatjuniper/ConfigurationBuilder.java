@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.AS_PATH_GR
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
@@ -77,6 +78,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPO
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_CONDITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
@@ -299,6 +301,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_memberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Intir_member_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_optionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
@@ -362,12 +365,16 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_conditionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_policy_statementContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poapg_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_members_memberContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocond_if_route_existsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_prefixContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_tableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_ip6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
@@ -378,6 +385,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_conditionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_interfaceContext;
@@ -629,6 +637,7 @@ import org.batfish.representation.juniper.BgpGroup;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.CommunityMember;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
+import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayGroup;
 import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.Family;
@@ -730,6 +739,7 @@ import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCommunity;
+import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromFamily;
 import org.batfish.representation.juniper.PsFromInstance;
 import org.batfish.representation.juniper.PsFromInterface;
@@ -2008,6 +2018,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private NatRule _currentNatRule;
 
   private NatRuleSet _currentNatRuleSet;
+
+  private Condition _currentCondition;
 
   private PolicyStatement _currentPolicyStatement;
 
@@ -6132,6 +6144,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _configuration.referenceStructure(
         INTERFACE, name, VLAN_L3_INTERFACE, getLine(ctx.interface_id().getStart()));
     _currentNamedVlan.setL3Interface(name);
+  }
+
+  @Override
+  public void enterPo_condition(Po_conditionContext ctx) {
+    String name = toString(ctx.name);
+    _currentCondition = _currentLogicalSystem.getConditions().computeIfAbsent(name, Condition::new);
+    _configuration.defineFlattenedStructure(CONDITION, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitPo_condition(Po_conditionContext ctx) {
+    _currentCondition = null;
+  }
+
+  @Override
+  public void enterPocond_if_route_exists(Pocond_if_route_existsContext ctx) {
+    _currentCondition.getOrCreateIfRouteExists();
+  }
+
+  @Override
+  public void exitPocondi_prefix(Pocondi_prefixContext ctx) {
+    _currentCondition.getIfRouteExists().setPrefix(toPrefix(ctx.prefix));
+  }
+
+  @Override
+  public void exitPocondi_table(Pocondi_tableContext ctx) {
+    _currentCondition.getIfRouteExists().setTable(unquote(ctx.name.getText()));
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
+  }
+
+  @Override
+  public void exitPopsf_condition(Popsf_conditionContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        CONDITION, name, POLICY_STATEMENT_FROM_CONDITION, getLine(ctx.getStart()));
+    _currentPsTerm.getFroms().addFromCondition(new PsFromCondition(name));
   }
 
   @Nullable

@@ -38,8 +38,25 @@ po_community
 
 po_condition
 :
-   CONDITION null_filler
+  CONDITION name = junos_name
+  (
+    apply
+    | pocond_if_route_exists
+  )
 ;
+
+pocond_if_route_exists
+:
+  IF_ROUTE_EXISTS
+  (
+    pocondi_prefix
+    | pocondi_table
+  )
+;
+
+pocondi_prefix: prefix=ip_prefix;
+
+pocondi_table: TABLE name=variable;
 
 po_policy_statement
 :
@@ -124,6 +141,7 @@ pops_from
       | popsf_as_path_group
       | popsf_color
       | popsf_community
+      | popsf_condition
       | popsf_family
       | popsf_instance
       | popsf_interface
@@ -190,6 +208,8 @@ popsf_community
 :
    COMMUNITY name = variable
 ;
+
+popsf_condition: CONDITION name = junos_name;
 
 popsf_family
 :

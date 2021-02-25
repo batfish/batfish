@@ -8,6 +8,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
@@ -199,6 +201,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public static @Nonnull String computeSecurityPolicyTermName(
       @Nonnull String policyName, @Nonnull String termName) {
     return String.format("%s %s", policyName, termName);
+  }
+
+  @VisibleForTesting
+  public static @Nonnull String computeConditionRoutingPolicyName(@Nonnull String conditionName) {
+    return String.format("~CONDITION~%s", conditionName);
   }
 
   @VisibleForTesting
@@ -1319,7 +1326,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         RoutingProtocol.STATIC,
                         RoutingProtocol.AGGREGATE),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+                    ImmutableList.of(ReturnFalse.toStaticStatement()))))
         .build();
   }
 
@@ -2598,7 +2605,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 new If(
                     new FirstMatchChain(policyCalls),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+                    ImmutableList.of(ReturnFalse.toStaticStatement()))))
         .build();
   }
 
@@ -2638,7 +2645,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 new If(
                     new FirstMatchChain(policyCalls),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))))
+                    ImmutableList.of(ReturnFalse.toStaticStatement()))))
         .build();
     return new org.batfish.datamodel.dataplane.rib.RibGroup(
         rg.getName(), importRibs, policyName, exportRib);
@@ -2751,6 +2758,33 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return new PacketPolicy(filter.getName(), builder.build(), new Return(Drop.instance()));
   }
 
+  private @Nonnull RoutingPolicy toRoutingPolicy(@Nonnull Condition condition) {
+    String name = computeConditionRoutingPolicyName(condition.getName());
+    RoutingPolicy rp = new RoutingPolicy(name, _c);
+    If top = new If();
+    top.getTrueStatements().add(ReturnTrue.toStaticStatement());
+    top.getFalseStatements().add(ReturnFalse.toStaticStatement());
+    top.setGuard(toBooleanExpr(condition));
+    rp.getStatements().add(top);
+    return rp;
+  }
+
+  private @Nonnull BooleanExpr toBooleanExpr(@Nonnull Condition condition) {
+    IfRouteExists ifr = condition.getIfRouteExists();
+    if (ifr == null) {
+      // TODO: verify empty condition means true
+      return BooleanExprs.TRUE;
+    }
+    Prefix prefix = ifr.getPrefix();
+    if (prefix == null) {
+      // TODO: verify missing prefix means true
+      return BooleanExprs.TRUE;
+    }
+    // TODO: handle table
+    // TODO: implement in VI
+    return BooleanExprs.FALSE;
+  }
+
   private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
     // Ensure map of VRFs referenced in routing policies is initialized
     if (_vrfReferencesInPolicies == null) {
@@ -2831,6 +2865,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     if (!froms.getFromCommunities().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromCommunities())));
+    }
+    if (!froms.getFromConditions().isEmpty()) {
+      // TODO: verify these are disjoined
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromConditions())));
     }
     if (froms.getFromFamily() != null) {
       conj.getConjuncts().add(froms.getFromFamily().toBooleanExpr(this, _c, _w));
@@ -3042,6 +3080,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.setNatStatic(ls.getNatStatic());
     // TODO: something with NTP servers?
     _masterLogicalSystem.getPolicyStatements().putAll(ls.getPolicyStatements());
+    _masterLogicalSystem.getConditions().putAll(ls.getConditions());
     _masterLogicalSystem.getPrefixLists().putAll(ls.getPrefixLists());
     _masterLogicalSystem.getRouteFilters().putAll(ls.getRouteFilters());
     _masterLogicalSystem.getRoutingInstances().clear();
@@ -3173,6 +3212,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // convert interfaces. Before policies because some policies depend on interfaces
     convertInterfaces();
+
+    // convert conditions to RoutingPolicy objects
+    _masterLogicalSystem
+        .getConditions()
+        .forEach(
+            (conditionName, condition) -> {
+              RoutingPolicy rp = toRoutingPolicy(condition);
+              _c.getRoutingPolicies().put(rp.getName(), rp);
+            });
 
     // convert policy-statements to RoutingPolicy objects
     for (Entry<String, PolicyStatement> e : _masterLogicalSystem.getPolicyStatements().entrySet()) {
@@ -3468,6 +3516,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY,
         JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY,
         JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY);
+    markConcreteStructure(JuniperStructureType.CONDITION);
     markConcreteStructure(
         JuniperStructureType.FIREWALL_FILTER,
         JuniperStructureUsage.INTERFACE_FILTER,
