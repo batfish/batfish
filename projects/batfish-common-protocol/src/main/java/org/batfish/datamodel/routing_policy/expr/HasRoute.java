@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -34,8 +35,7 @@ public final class HasRoute extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    // TODO: implement
-    return new Result(false);
+    throw new BatfishException("No implementation for HasRoute.evaluate()");
   }
 
   @JsonProperty(PROP_EXPR)

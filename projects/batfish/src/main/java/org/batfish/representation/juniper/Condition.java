@@ -27,6 +27,6 @@ public final class Condition implements Serializable {
     return _name;
   }
 
-  private final String _name;
+  private final @Nonnull String _name;
   private @Nullable IfRouteExists _ifRouteExists;
 }

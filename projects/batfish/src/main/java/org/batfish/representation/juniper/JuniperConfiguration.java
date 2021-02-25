@@ -154,7 +154,6 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
@@ -2782,7 +2781,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return BooleanExprs.TRUE;
     }
     // TODO: handle table
-    return new HasRoute(new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix))));
+    // TODO: implement in VI
+    return BooleanExprs.FALSE;
   }
 
   private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {

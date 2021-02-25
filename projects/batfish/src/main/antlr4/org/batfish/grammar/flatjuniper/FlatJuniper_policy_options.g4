@@ -38,7 +38,8 @@ po_community
 
 po_condition
 :
-  CONDITION name = junos_name (
+  CONDITION name = junos_name
+  (
     apply
     | pocond_if_route_exists
   )

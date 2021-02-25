@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
 
-import com.google.common.base.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
@@ -36,7 +35,7 @@ public final class PsFromCondition extends PsFrom {
       return false;
     }
     PsFromCondition that = (PsFromCondition) o;
-    return Objects.equal(_name, that._name);
+    return _name.equals(that._name);
   }
 
   @Override
