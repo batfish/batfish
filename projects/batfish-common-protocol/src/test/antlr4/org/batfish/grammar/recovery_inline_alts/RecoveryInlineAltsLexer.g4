@@ -10,55 +10,28 @@ tokens {
 
 // Keywords
 
-ADDRESS
-:
-  'address'
-;
+ADDRESS: 'address';
 
-COST
-:
-  'cost'
-;
+COST: 'cost';
 
-DNS
-:
-  'dns'
-;
+DNS: 'dns';
 
 INTERFACE
 :
   'interface' -> pushMode ( M_Word )
 ;
 
-IP
-:
-  'ip'
-;
+IP: 'ip';
 
-MTU
-:
-  'mtu'
-;
+MTU: 'mtu';
 
-OSPF
-:
-  'ospf'
-;
+OSPF: 'ospf';
 
-PERMIT
-:
-  'permit'
-;
+PERMIT: 'permit';
 
-ROUTING
-:
-  'routing'
-;
+ROUTING: 'routing';
 
-SSH
-:
-  'ssh'
-;
+SSH: 'ssh';
 
 // Complext tokens
 

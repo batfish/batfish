@@ -10,465 +10,195 @@ tokens {
 
 // Mrv Keywords
 
-ACCESS
-:
-   'Access'
-;
+ACCESS: 'Access';
 
-ASYNC
-:
-   'Async'
-;
+ASYNC: 'Async';
 
-AUTHTYPE
-:
-   'AuthType'
-;
+AUTHTYPE: 'AuthType';
 
-AUTOHANG
-:
-   'AutoHang'
-;
+AUTOHANG: 'AutoHang';
 
-BANNER
-:
-   'Banner'
-;
+BANNER: 'Banner';
 
-BONDDEVS
-:
-   'BondDevs'
-;
+BONDDEVS: 'BondDevs';
 
-BONDMIIMON
-:
-   'BondMiimon'
-;
+BONDMIIMON: 'BondMiimon';
 
-BONDMODE
-:
-   'BondMode'
-;
+BONDMODE: 'BondMode';
 
-CONFIGVERSION
-:
-   'ConfigVersion'
-;
+CONFIGVERSION: 'ConfigVersion';
 
-DESPASSWORD
-:
-   'DesPassword'
-;
+DESPASSWORD: 'DesPassword';
 
-DHCP
-:
-   'Dhcp'
-;
+DHCP: 'Dhcp';
 
-DNS1
-:
-   'Dns1'
-;
+DNS1: 'Dns1';
 
-DNS2
-:
-   'Dns2'
-;
+DNS2: 'Dns2';
 
-DSRWAIT
-:
-   'DSRWait'
-;
+DSRWAIT: 'DSRWait';
 
-FLOWCONT
-:
-   'FlowCont'
-;
+FLOWCONT: 'FlowCont';
 
-GATEWAY1
-:
-   'Gateway1'
-;
+GATEWAY1: 'Gateway1';
 
-GUI
-:
-   'Gui'
-;
+GUI: 'Gui';
 
-GUIMENUNAME
-:
-   'GUIMenuName'
-;
+GUIMENUNAME: 'GUIMenuName';
 
-IDLETIMEOUT
-:
-   'IdleTimeout'
-;
+IDLETIMEOUT: 'IdleTimeout';
 
-IFNAME
-:
-   'ifName'
-;
+IFNAME: 'ifName';
 
-INTERFACE
-:
-   'Interface'
-;
+INTERFACE: 'Interface';
 
-IPADDRESS
-:
-   'IpAddress'
-;
+IPADDRESS: 'IpAddress';
 
-IPBROADCAST
-:
-   'IpBroadcast'
-;
+IPBROADCAST: 'IpBroadcast';
 
-IPMASK
-:
-   'IpMask'
-;
+IPMASK: 'IpMask';
 
 LX
 :
    'LX' F_NonNewline* F_Newline -> channel ( HIDDEN )
 ;
 
-MAXCONNECTIONS
-:
-   'MaxConnections'
-;
+MAXCONNECTIONS: 'MaxConnections';
 
-MAXSUBS
-:
-   'MaxSubs'
-;
+MAXSUBS: 'MaxSubs';
 
-MENUNAME
-:
-   'MenuName'
-;
+MENUNAME: 'MenuName';
 
-NAME
-:
-   'Name'
-;
+NAME: 'Name';
 
-NOTIFFACILITY
-:
-   'NotifFacility'
-;
+NOTIFFACILITY: 'NotifFacility';
 
-NOTIFPRIORITY
-:
-   'NotifPriority'
-;
+NOTIFPRIORITY: 'NotifPriority';
 
-NOTIFYADDRESSNAME
-:
-   'NotifyAddressName'
-;
+NOTIFYADDRESSNAME: 'NotifyAddressName';
 
-NOTIFYADDRESSSERVICE
-:
-   'NotifyAddressService'
-;
+NOTIFYADDRESSSERVICE: 'NotifyAddressService';
 
-NOTIFYADDRESSSTATE
-:
-   'NotifyAddressState'
-;
+NOTIFYADDRESSSTATE: 'NotifyAddressState';
 
-NOTIFYSERVICENAME
-:
-   'NotifyServiceName'
-;
+NOTIFYSERVICENAME: 'NotifyServiceName';
 
-NOTIFYSERVICEPROTOCOL
-:
-   'NotifyServiceProtocol'
-;
+NOTIFYSERVICEPROTOCOL: 'NotifyServiceProtocol';
 
-NOTIFYSERVICERAW
-:
-   'NotifyServiceRaw'
-;
+NOTIFYSERVICERAW: 'NotifyServiceRaw';
 
-NTP
-:
-   'Ntp'
-;
+NTP: 'Ntp';
 
-NTPADDRESS
-:
-   'NtpAddress'
-;
+NTPADDRESS: 'NtpAddress';
 
-NTPALTADDRESS
-:
-   'NtpAltAddress'
-;
+NTPALTADDRESS: 'NtpAltAddress';
 
-NTPSOURCEINTERFACE
-:
-   'NtpSourceInterface'
-;
+NTPSOURCEINTERFACE: 'NtpSourceInterface';
 
-OUTAUTHTYPE
-:
-   'OutAuthType'
-;
+OUTAUTHTYPE: 'OutAuthType';
 
-PROMPT
-:
-   'Prompt'
-;
+PROMPT: 'Prompt';
 
-RADPRIMACCTSECRET
-:
-   'RadPrimAcctSecret'
-;
+RADPRIMACCTSECRET: 'RadPrimAcctSecret';
 
-RADPRIMSECRET
-:
-   'RadPrimSecret'
-;
+RADPRIMSECRET: 'RadPrimSecret';
 
-RADSECACCTSECRET
-:
-   'RadSecAcctSecret'
-;
+RADSECACCTSECRET: 'RadSecAcctSecret';
 
-RADSECSECRET
-:
-   'RadSecSecret'
-;
+RADSECSECRET: 'RadSecSecret';
 
-REMOTEACCESSLIST
-:
-   'RemoteAccessList'
-;
+REMOTEACCESSLIST: 'RemoteAccessList';
 
-SECURITYV3
-:
-   'SecurityV3'
-;
+SECURITYV3: 'SecurityV3';
 
-SHAPASSWORD
-:
-   'ShaPassword'
-;
+SHAPASSWORD: 'ShaPassword';
 
 SIGNATURE
 :
    'Signature' F_NonNewline* F_Newline -> channel ( HIDDEN )
 ;
 
-SNMP
-:
-   'Snmp'
-;
+SNMP: 'Snmp';
 
-SNMPGETCLIENT
-:
-   'SnmpGetClient'
-;
+SNMPGETCLIENT: 'SnmpGetClient';
 
-SNMPGETCOMMUNITY
-:
-   'SnmpGetCommunity'
-;
+SNMPGETCOMMUNITY: 'SnmpGetCommunity';
 
-SNMPSOURCEINTERFACE
-:
-   'SnmpSourceInterface'
-;
+SNMPSOURCEINTERFACE: 'SnmpSourceInterface';
 
-SNMPTRAPCLIENT
-:
-   'SnmpTrapClient'
-;
+SNMPTRAPCLIENT: 'SnmpTrapClient';
 
-SNMPTRAPCOMMUNITY
-:
-   'SnmpTrapCommunity'
-;
+SNMPTRAPCOMMUNITY: 'SnmpTrapCommunity';
 
-SPEED
-:
-   'Speed'
-;
+SPEED: 'Speed';
 
-SSH
-:
-   'SSH'
-;
+SSH: 'SSH';
 
-SSHPORTLIST
-:
-   'SshPortList'
-;
+SSHPORTLIST: 'SshPortList';
 
-STAT
-:
-   'Stat'
-;
+STAT: 'Stat';
 
-SUBSCRIBER
-:
-   'Subscriber'
-;
+SUBSCRIBER: 'Subscriber';
 
-SUBSTAT
-:
-   'SubStat'
-;
+SUBSTAT: 'SubStat';
 
-SUBTEMPLATE
-:
-   'SubTemplate'
-;
+SUBTEMPLATE: 'SubTemplate';
 
-SUPERPASSWORD
-:
-   'SuperPassword'
-;
+SUPERPASSWORD: 'SuperPassword';
 
-SYSTEM
-:
-   'System'
-;
+SYSTEM: 'System';
 
-SYSTEMNAME
-:
-   'SystemName'
-;
+SYSTEMNAME: 'SystemName';
 
-T_BOOL
-:
-   'BOOL'
-;
+T_BOOL: 'BOOL';
 
-T_FACILITY
-:
-   'FACILITY'
-;
+T_FACILITY: 'FACILITY';
 
-T_INTEGER
-:
-   'INTEGER'
-;
+T_INTEGER: 'INTEGER';
 
-T_IPADDR
-:
-   'IPADDR'
-;
+T_IPADDR: 'IPADDR';
 
-T_OCTET
-:
-   'OCTET'
-;
+T_OCTET: 'OCTET';
 
-T_OCTETSTRING
-:
-   'OCTETSTRING'
-;
+T_OCTETSTRING: 'OCTETSTRING';
 
-T_PASSWORD
-:
-   'PASSWORD'
-;
+T_PASSWORD: 'PASSWORD';
 
-T_PRIORITY
-:
-   'PRIORITY'
-;
+T_PRIORITY: 'PRIORITY';
 
-T_SHORT
-:
-   'SHORT'
-;
+T_SHORT: 'SHORT';
 
-T_SHORTSTRING
-:
-   'SHORTSTRING'
-;
+T_SHORTSTRING: 'SHORTSTRING';
 
-T_SPEED
-:
-   'SPEED'
-;
+T_SPEED: 'SPEED';
 
-T_STRING
-:
-   'STRING'
-;
+T_STRING: 'STRING';
 
-TACPLUSPRIMADDR
-:
-   'TacPlusPrimAddr'
-;
+TACPLUSPRIMADDR: 'TacPlusPrimAddr';
 
-TACPLUSPRIMACCTSECRET
-:
-   'TacPlusPrimAcctSecret'
-;
+TACPLUSPRIMACCTSECRET: 'TacPlusPrimAcctSecret';
 
-TACPLUSPRIMAUTHORSECRET
-:
-   'TacPlusPrimAuthorSecret'
-;
+TACPLUSPRIMAUTHORSECRET: 'TacPlusPrimAuthorSecret';
 
-TACPLUSPRIMSECRET
-:
-   'TacPlusPrimSecret'
-;
+TACPLUSPRIMSECRET: 'TacPlusPrimSecret';
 
-TACPLUSSECADDR
-:
-   'TacPlusSecAddr'
-;
+TACPLUSSECADDR: 'TacPlusSecAddr';
 
-TACPLUSSECACCTSECRET
-:
-   'TacPlusSecAcctSecret'
-;
+TACPLUSSECACCTSECRET: 'TacPlusSecAcctSecret';
 
-TACPLUSSECAUTHORSECRET
-:
-   'TacPlusSecAuthorSecret'
-;
+TACPLUSSECAUTHORSECRET: 'TacPlusSecAuthorSecret';
 
-TACPLUSSECSECRET
-:
-   'TacPlusSecSecret'
-;
+TACPLUSSECSECRET: 'TacPlusSecSecret';
 
-TACPLUSUSESUB
-:
-   'TacPlusUseSub'
-;
+TACPLUSUSESUB: 'TacPlusUseSub';
 
-TELNET
-:
-   'Telnet'
-;
+TELNET: 'Telnet';
 
-TELNETCLIENT
-:
-   'TelnetClient'
-;
+TELNETCLIENT: 'TelnetClient';
 
-TYPE
-:
-   'TYPE'
-;
+TYPE: 'TYPE';
 
-VALUE
-:
-   'VALUE'
-;
+VALUE: 'VALUE';
 
 // Other tokens
 

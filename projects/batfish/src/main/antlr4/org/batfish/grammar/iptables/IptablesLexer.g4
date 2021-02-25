@@ -22,35 +22,17 @@ public String printStateVariables() {
 
 // Iptables Keywords
 
-ACCEPT
-:
-   'ACCEPT'
-;
+ACCEPT: 'ACCEPT';
 
-AH
-:
-   'ah'
-;
+AH: 'ah';
 
-ALL
-:
-   'all'
-;
+ALL: 'all';
 
-COMMIT
-:
-   'COMMIT'
-;
+COMMIT: 'COMMIT';
 
-DROP
-:
-   'DROP'
-;
+DROP: 'DROP';
 
-ESP
-:
-   'esp'
-;
+ESP: 'esp';
 
 FLAG_APPEND
 :
@@ -82,10 +64,7 @@ FLAG_FLUSH
    | '--flush'
 ;
 
-FLAG_HELP
-:
-   '-h'
-;
+FLAG_HELP: '-h';
 
 FLAG_INSERT
 :
@@ -141,40 +120,19 @@ FLAG_ZERO
    | '--zero'
 ;
 
-FORWARD
-:
-   'FORWARD'
-;
+FORWARD: 'FORWARD';
 
-ICMP
-:
-   'icmp'
-;
+ICMP: 'icmp';
 
-ICMPV6
-:
-   'icmpv6'
-;
+ICMPV6: 'icmpv6';
 
-INPUT
-:
-   'INPUT'
-;
+INPUT: 'INPUT';
 
-IPTABLES
-:
-   'iptables'
-;
+IPTABLES: 'iptables';
 
-MH
-:
-   'mh'
-;
+MH: 'mh';
 
-OUTPUT
-:
-   'OUTPUT'
-;
+OUTPUT: 'OUTPUT';
 
 OPTION_DESTINATION
 :
@@ -262,65 +220,29 @@ OPTION_VERBOSE
    | '--verbose'
 ;
 
-POSTROUTING
-:
-   'POSTROUTING'
-;
+POSTROUTING: 'POSTROUTING';
 
-PREROUTING
-:
-   'PREROUTING'
-;
+PREROUTING: 'PREROUTING';
 
-RETURN
-:
-   'RETURN'
-;
+RETURN: 'RETURN';
 
-SCTP
-:
-   'sctp'
-;
+SCTP: 'sctp';
 
-TABLE_FILTER
-:
-   'filter'
-;
+TABLE_FILTER: 'filter';
 
-TABLE_MANGLE
-:
-   'mangle'
-;
+TABLE_MANGLE: 'mangle';
 
-TABLE_NAT
-:
-   'nat'
-;
+TABLE_NAT: 'nat';
 
-TABLE_RAW
-:
-   'raw'
-;
+TABLE_RAW: 'raw';
 
-TABLE_SECURITY
-:
-   'security'
-;
+TABLE_SECURITY: 'security';
 
-TCP
-:
-   'tcp'
-;
+TCP: 'tcp';
 
-UDP
-:
-   'udp'
-;
+UDP: 'udp';
 
-UDPLITE
-:
-   'udplite'
-;
+UDPLITE: 'udplite';
 
 // Other tokens
 
@@ -344,10 +266,7 @@ COLON
    ':'
 ;
 
-DASH
-:
-   '-'
-;
+DASH: '-';
 
 DEC
 :
