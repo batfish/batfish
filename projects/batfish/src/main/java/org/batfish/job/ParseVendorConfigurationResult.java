@@ -13,6 +13,7 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.ErrorDetails;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.vendor.VendorConfiguration;
@@ -25,6 +26,7 @@ public class ParseVendorConfigurationResult
   private Multimap<String, String> _duplicateHostnames;
 
   private final String _filename;
+  private final @Nonnull ConfigurationFormat _format;
 
   @Nonnull private ParseTreeSentences _parseTree;
 
@@ -38,11 +40,13 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
+      @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
       @Nonnull ParseTreeSentences parseTree,
       @Nonnull Throwable failureCause) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
+    _format = format;
     _parseTree = parseTree;
     _status = ParseStatus.FAILED;
     _warnings = warnings;
@@ -52,6 +56,7 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
+      @Nonnull ConfigurationFormat format,
       VendorConfiguration vc,
       @Nonnull Warnings warnings,
       @Nonnull ParseTreeSentences parseTree,
@@ -59,6 +64,7 @@ public class ParseVendorConfigurationResult
       @Nonnull Multimap<String, String> duplicateHostnames) {
     super(elapsedTime, history);
     _filename = filename;
+    _format = format;
     _parseTree = parseTree;
     _vc = vc;
     _warnings = warnings;
@@ -70,10 +76,12 @@ public class ParseVendorConfigurationResult
       long elapsedTime,
       BatfishLoggerHistory history,
       String filename,
+      @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
       @Nonnull ParseStatus status) {
     super(elapsedTime, history);
     _filename = filename;
+    _format = format;
     _parseTree = new ParseTreeSentences();
     _status = status;
     _warnings = warnings;
@@ -99,6 +107,7 @@ public class ParseVendorConfigurationResult
       ParseVendorConfigurationAnswerElement answerElement) {
     appendHistory(logger);
     answerElement.getParseStatus().put(_filename, _status);
+    answerElement.getFileFormats().put(_filename, _format);
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {

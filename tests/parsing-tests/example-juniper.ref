@@ -2,6 +2,22 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileFormats" : {
+        "configs/as1border1.cfg" : "FLAT_JUNIPER",
+        "configs/as1border2.cfg" : "FLAT_JUNIPER",
+        "configs/as1core1.cfg" : "CISCO_IOS",
+        "configs/as2border1.cfg" : "CISCO_IOS",
+        "configs/as2border2.cfg" : "CISCO_IOS",
+        "configs/as2core1.cfg" : "CISCO_IOS",
+        "configs/as2core2.cfg" : "CISCO_IOS",
+        "configs/as2dept1.cfg" : "CISCO_IOS",
+        "configs/as2dist1.cfg" : "CISCO_IOS",
+        "configs/as2dist2.cfg" : "CISCO_IOS",
+        "configs/as2host1.cfg" : "CISCO_IOS",
+        "configs/as3border1.cfg" : "CISCO_IOS",
+        "configs/as3border2.cfg" : "CISCO_IOS",
+        "configs/as3core1.cfg" : "CISCO_IOS"
+      },
       "fileMap" : {
         "as1border1" : [
           "configs/as1border1.cfg"
