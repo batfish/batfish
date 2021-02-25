@@ -135,6 +135,7 @@ import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateInstanceImportPolicyName;
@@ -328,6 +329,7 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationSetMember;
+import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -356,6 +358,7 @@ import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
+import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsThenLocalPreference;
@@ -5976,5 +5979,32 @@ public final class FlatJuniperGrammarTest {
           c.getAllInterfaces().get(iface).getOspfSettings().getHelloInterval(), equalTo(222));
       assertThat(c.getAllInterfaces().get(iface).getOspfSettings().getDeadInterval(), equalTo(333));
     }
+  }
+
+  @Test
+  public void testConditionExtraction() {
+    String hostname = "juniper-condition";
+    JuniperConfiguration jc = parseJuniperConfig(hostname);
+    assertThat(
+        jc.getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("p1")
+            .getTerms()
+            .get("t1")
+            .getFroms()
+            .getFromConditions(),
+        contains(new PsFromCondition("c1")));
+    assertThat(jc.getMasterLogicalSystem().getConditions(), hasKeys("c1", "c2"));
+    Condition c = jc.getMasterLogicalSystem().getConditions().get("c1");
+    assertThat(c.getIfRouteExists(), notNullValue());
+    assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("1.0.0.0/24")));
+    assertThat(c.getIfRouteExists().getTable(), equalTo("inet.0"));
+  }
+
+  @Test
+  public void testConditionConversion() {
+    String hostname = "juniper-condition";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getRoutingPolicies(), hasKey(computeConditionRoutingPolicyName("c1")));
   }
 }

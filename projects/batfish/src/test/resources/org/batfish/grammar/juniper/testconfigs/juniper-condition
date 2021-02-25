@@ -1,0 +1,17 @@
+#
+set system host-name juniper-condition
+#
+set policy-options condition c1 if-route-exists 1.0.0.0/24
+set policy-options condition c1 if-route-exists table inet.0
+set policy-options condition c2 if-route-exists 2.0.0.0/24
+set policy-options condition c2 if-route-exists table inet.0
+#
+set policy-options policy-statement p1 term t1 from condition c1
+set policy-options policy-statement p1 term t1 then accept
+set policy-options policy-statement p1 term t2 then reject
+set policy-options policy-statement p2 term t1 from condition c2
+set policy-options policy-statement p2 term t1 then accept
+set policy-options policy-statement p2 term t2 then reject
+#
+set interfaces xe-0/0/1 unit 0 family inet address 1.0.0.1/24
+#
