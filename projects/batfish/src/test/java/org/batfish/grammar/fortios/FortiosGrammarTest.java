@@ -3,10 +3,12 @@ package org.batfish.grammar.fortios;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -40,15 +42,44 @@ public final class FortiosGrammarTest {
   @Test
   public void testHostnameExtraction() {
     String filename = "fortios_hostname";
-    String hostname = "my_fortios_hostname";
+    String hostname = "my_fortios-hostname1";
     assertThat(parseVendorConfig(filename).getHostname(), equalTo(hostname));
   }
 
   @Test
   public void testHostnameConversion() throws IOException {
     String filename = "fortios_hostname";
-    String hostname = "my_fortios_hostname";
+    String hostname = "my_fortios-hostname1";
     assertThat(parseTextConfigs(filename), hasEntry(equalTo(hostname), hasHostname(hostname)));
+  }
+
+  @Test
+  public void testInvalidHostnameWithDotExtraction() {
+    String filename = "fortios_bad_hostname_dot";
+    // invalid hostname from config file is thrown away
+    assertThat(parseVendorConfig(filename).getHostname(), nullValue());
+  }
+
+  @Test
+  public void testInvalidHostnameWithWsExtraction() {
+    String filename = "fortios_bad_hostname_ws";
+    // invalid hostname from config file is thrown away
+    assertThat(parseVendorConfig(filename).getHostname(), nullValue());
+  }
+
+  @Test
+  public void testReplacemsgExtraction() {
+    String hostname = "fortios_replacemsg";
+    String majorType = "admin";
+    String minorTypePre = "pre_admin-disclaimer-text";
+    String minorTypePost = "post_admin-disclaimer-text";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getReplacemsgs(), hasEntry(equalTo(majorType), hasKeys(minorTypePre, minorTypePost)));
+    assertThat(
+        vc.getReplacemsgs().get(majorType).get(minorTypePre).getBuffer(),
+        equalTo("\"npre\"''\\\\nabc\\\\\\\" \"\nlastline"));
+    assertThat(vc.getReplacemsgs().get(majorType).get(minorTypePost).getBuffer(), nullValue());
   }
 
   private static final BddTestbed BDD_TESTBED =

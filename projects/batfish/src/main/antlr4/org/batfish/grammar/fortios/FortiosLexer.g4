@@ -5,17 +5,44 @@ options {
 }
 
 tokens {
-  QUOTED_TEXT
+  QUOTED_TEXT,
+  UNQUOTED_ESCAPED_CHAR,
+  WORD
 }
 
 // Keyword Tokens
 
+ADMIN:
+  'admin'
+  {
+    if (lastTokenType() == REPLACEMSG) {
+      pushMode(M_Word);
+    }
+  }
+;
+
+ALERTMAIL: 'alertmail';
+AUTH: 'auth';
+BUFFER: 'buffer' -> pushMode(M_Word);
 CONFIG: 'config';
 END: 'end';
+FORTIGUARD_WF: 'fortiguard-wf';
+FTP: 'ftp';
 GLOBAL: 'global';
-HOSTNAME: 'hostname';
+HOSTNAME: 'hostname' -> pushMode(M_Word);
+HTTP: 'http';
+ICAP: 'icap';
+MAIL: 'mail';
+NAC_QUAR: 'nac-quar';
+REPLACEMSG: 'replacemsg';
 SET: 'set';
+SPAM: 'spam';
+SSLVPN: 'sslvpn';
 SYSTEM: 'system';
+TRAFFIC_QUOTA: 'traffic-quota';
+UNSET: 'unset';
+UTM: 'utm';
+WEBPROXY: 'webproxy';
 
 // Other Tokens
 
@@ -33,10 +60,7 @@ COMMENT_LINE
   F_NonNewline* (F_Newline+ | EOF) -> channel(HIDDEN)
 ;
 
-DOUBLE_QUOTE
-:
-  '"' -> pushMode(M_DoubleQuote)
-;
+DOUBLE_QUOTE: '"' -> pushMode(M_DoubleQuote);
 
 SUBNET_MASK
 :
@@ -72,6 +96,8 @@ NEWLINE
 :
   F_Newline+
 ;
+
+SINGLE_QUOTE: ['] -> pushMode(M_SingleQuote);
 
 UINT8
 :
@@ -306,7 +332,7 @@ F_MacAddress
 fragment
 F_Newline
 :
-  [\n\r]
+  '\r'? '\n'
 ;
 
 fragment
@@ -407,10 +433,48 @@ F_Whitespace
   | '\u00A0'
 ;
 
+fragment
+F_LineContinuation: '\\' F_Newline;
+
+fragment
+F_UnquotedEscapedChar: '\\' ~[\n];
+
+fragment
+F_QuotedEscapedChar: '\\' ["'\\];
+
+fragment
+F_WordChar: ~[ \t\u000C\u00A0\r\n#()<>?'"\\];
+
 mode M_DoubleQuote;
 
 M_DoubleQuote_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), popMode;
 
-M_DoubleQuote_ESCAPED_TEXT: '\\' . -> type(QUOTED_TEXT);
+M_DoubleQuote_QUOTED_TEXT: (F_QuotedEscapedChar | ~'"')+ -> type(QUOTED_TEXT);
 
-M_DoubleQuote_QUOTED_TEXT: ~["\\]+ -> type(QUOTED_TEXT);
+mode M_SingleQuote;
+
+M_SingleQuote_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), popMode;
+
+M_SingleQuote_QUOTED_TEXT: ~[']+ -> type(QUOTED_TEXT);
+
+mode M_Word;
+
+M_WordWs_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+
+M_WordWs_WS: F_Whitespace+ -> skip, mode(M_Word2);
+
+mode M_Word2;
+
+M_Word_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+
+M_Word_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+
+M_Word_LINE_CONTINUATION: F_LineContinuation -> skip;
+
+M_Word_UNQUOTED_ESCAPED_CHAR: F_UnquotedEscapedChar -> type(UNQUOTED_ESCAPED_CHAR);
+
+M_Word_WORD: F_WordChar+ -> type(WORD);
+
+M_Word_WS: F_Whitespace+ -> skip, popMode;
+
+M_Word_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;

@@ -6,6 +6,8 @@ options {
 
 double_quoted_string: DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE;
 
+single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
+
 quoted_text: QUOTED_TEXT+;
 
 ip_address: IP_ADDRESS | SUBNET_MASK;
@@ -37,3 +39,8 @@ uint32
   | UINT32
 ;
 
+// extractor should disallow whitespace, newlines
+word: str;
+
+// can include whitespace, newlines, html tags, etc.
+str: (double_quoted_string | single_quoted_string | UNQUOTED_ESCAPED_CHAR | WORD)+;
