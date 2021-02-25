@@ -9,20 +9,11 @@ tokens {
 
 // Keyword tokens
 
-ADD
-:
-  'add'
-;
+ADD: 'add';
 
-ADDRESS
-:
-  'address'
-;
+ADDRESS: 'address';
 
-ADDRESS_VIRTUAL
-:
-  'address-virtual'
-;
+ADDRESS_VIRTUAL: 'address-virtual';
 
 ALIAS
 :
@@ -79,10 +70,7 @@ BRIDGE_PORTS
   'bridge-ports' -> pushMode(M_Words)
 ;
 
-BRIDGE_ACCESS
-:
-  'bridge-access'
-;
+BRIDGE_ACCESS: 'bridge-access';
 
 BRIDGE_ARP_ND_SUPPRESS
 :
@@ -94,75 +82,36 @@ BRIDGE_LEARNING
   'bridge-learning' -> pushMode(M_DropUntilNewline)
 ;
 
-BRIDGE_PVID
-:
-  'bridge-pvid'
-;
+BRIDGE_PVID: 'bridge-pvid';
 
-BRIDGE_VIDS
-:
-  'bridge-vids'
-;
+BRIDGE_VIDS: 'bridge-vids';
 
-BRIDGE_VLAN_AWARE
-:
-  'bridge-vlan-aware'
-;
+BRIDGE_VLAN_AWARE: 'bridge-vlan-aware';
 
-CLAG_ID
-:
-  'clag-id'
-;
+CLAG_ID: 'clag-id';
 
-CLAGD_VXLAN_ANYCAST_IP
-:
-  'clagd-vxlan-anycast-ip'
-;
+CLAGD_VXLAN_ANYCAST_IP: 'clagd-vxlan-anycast-ip';
 
-CLAGD_BACKUP_IP
-:
-  'clagd-backup-ip'
-;
+CLAGD_BACKUP_IP: 'clagd-backup-ip';
 
-CLAGD_PEER_IP
-:
-  'clagd-peer-ip'
-;
+CLAGD_PEER_IP: 'clagd-peer-ip';
 
-CLAGD_PRIORITY
-:
-  'clagd-priority'
-;
+CLAGD_PRIORITY: 'clagd-priority';
 
-CLAGD_SYS_MAC
-:
-  'clagd-sys-mac'
-;
+CLAGD_SYS_MAC: 'clagd-sys-mac';
 
-DASH
-:
-  '-'
-;
+DASH: '-';
 
 DEV
 :
   'dev'-> pushMode(M_Word)
 ;
 
-DHCP
-:
-  'dhcp'
-;
+DHCP: 'dhcp';
 
-GATEWAY
-:
-  'gateway'
-;
+GATEWAY: 'gateway';
 
-HWADDRESS
-:
-  'hwaddress'
-;
+HWADDRESS: 'hwaddress';
 
 IFACE
 :
@@ -174,60 +123,27 @@ INTERFACE
   'interface' -> pushMode(M_Word)
 ;
 
-INET
-:
-  'inet'
-;
+INET: 'inet';
 
-IP
-:
-  'ip'
-;
+IP: 'ip';
 
-LINK
-:
-  'link'
-;
+LINK: 'link';
 
-LINK_LOCAL
-:
-  'linklocal'
-;
+LINK_LOCAL: 'linklocal';
 
-LINK_SPEED
-:
-  'link-speed'
-;
+LINK_SPEED: 'link-speed';
 
-LINK_AUTONEG
-:
-  'link-autoneg'
-;
+LINK_AUTONEG: 'link-autoneg';
 
-LOOPBACK
-:
-  'loopback'
-;
+LOOPBACK: 'loopback';
 
-MANUAL
-:
-  'manual'
-;
+MANUAL: 'manual';
 
-MTU
-:
-   'mtu'
-;
+MTU: 'mtu';
 
-OFF
-:
-  'off'
-;
+OFF: 'off';
 
-ON
-:
-  'on'
-;
+ON: 'on';
 
 MSTPCTL_BPDUGUARD
 :
@@ -244,40 +160,22 @@ MSTPCTL_PORTBPDUFILTER
   'mstpctl-portbpdufilter' -> pushMode(M_DropUntilNewline)
 ;
 
-NO
-:
-  'no'
-;
+NO: 'no';
 
-POST_UP
-:
-  'post-up'
-;
+POST_UP: 'post-up';
 
-ROUTE
-:
-  'route'
-;
+ROUTE: 'route';
 
 SET
 :
   'set' -> pushMode(M_DropUntilNewline)
 ;
 
-STATIC
-:
-  'static'
-;
+STATIC: 'static';
 
-VIA
-:
-  'via'
-;
+VIA: 'via';
 
-VLAN_ID
-:
-  'vlan-id'
-;
+VLAN_ID: 'vlan-id';
 
 VLAN_RAW_DEVICE
 :
@@ -294,20 +192,11 @@ VRF_TABLE
   'vrf-table' -> pushMode(M_Word)
 ;
 
-VXLAN_ID
-:
-  'vxlan-id'
-;
+VXLAN_ID: 'vxlan-id';
 
-VXLAN_LOCAL_TUNNEL_IP
-:
-  'vxlan-local-tunnelip'
-;
+VXLAN_LOCAL_TUNNEL_IP: 'vxlan-local-tunnelip';
 
-YES
-:
-  'yes'
-;
+YES: 'yes';
 
 // Complex tokens
 BLANK_LINE

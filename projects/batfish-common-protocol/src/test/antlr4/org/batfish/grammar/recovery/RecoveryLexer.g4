@@ -17,25 +17,13 @@ public void emit(Token token) {
 }
 
 /* Simple tokens */
-BLOCK
-:
-   'block'
-;
+BLOCK: 'block';
 
-INNER
-:
-   'inner'
-;
+INNER: 'inner';
 
-OTHER
-:
-  'other'
-;
+OTHER: 'other';
 
-SIMPLE
-:
-   'simple'
-;
+SIMPLE: 'simple';
 
 /* Complex tokens */
 BLANK_LINE
@@ -99,7 +87,4 @@ ENTER_BAD_MODE
 
 mode M_BadMode;
 
-M_BadMode_nonexistent
-:
-    'nonexistent'
-;
+M_BadMode_nonexistent: 'nonexistent';

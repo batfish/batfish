@@ -28,90 +28,39 @@ tokens {
 
 // Simple tokens
 
-ATTACHED
-:
-   'attached'
-;
+ATTACHED: 'attached';
 
-BGP
-:
-   'bgp'
-;
+BGP: 'bgp';
 
-DIRECT
-:
-   'direct'
-;
+DIRECT: 'direct';
 
-ETH
-:
-   'Eth'
-;
+ETH: 'Eth';
 
-EXTERNAL
-:
-   'external'
-;
+EXTERNAL: 'external';
 
-INTER
-:
-   'inter'
-;
+INTER: 'inter';
 
-INTERNAL
-:
-   'internal'
-;
+INTERNAL: 'internal';
 
-INTRA
-:
-   'intra'
-;
+INTRA: 'intra';
 
-LO
-:
-   'Lo'
-;
+LO: 'Lo';
 
-LOCAL
-:
-   'local'
-;
+LOCAL: 'local';
 
-NULL
-:
-   'Null'
-;
+NULL: 'Null';
 
-OSPF
-:
-   'ospf'
-;
+OSPF: 'ospf';
 
-STATIC
-:
-   'static'
-;
+STATIC: 'static';
 
-TAG
-:
-   'tag'
-;
+TAG: 'tag';
 
-TYPE_1
-:
-   'type-1'
-;
+TYPE_1: 'type-1';
 
-TYPE_2
-:
-   'type-2'
-;
+TYPE_2: 'type-2';
 
-VIA
-:
-   'via'
-;
+VIA: 'via';
 
 VRF_HEADER
 :
@@ -150,10 +99,7 @@ COMMENT
    '\'' F_NonNewline+ F_Newline -> channel ( HIDDEN )
 ;
 
-DASH
-:
-   '-'
-;
+DASH: '-';
 
 DEC
 :

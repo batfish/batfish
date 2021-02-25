@@ -28,20 +28,11 @@ tokens {
   WORD
 }
 
-AAA
-:
-  'aaa'
-;
+AAA: 'aaa';
 
-ABSOLUTE_TIMEOUT
-:
-  'absolute-timeout'
-;
+ABSOLUTE_TIMEOUT: 'absolute-timeout';
 
-ACCESS
-:
-  'access'
-;
+ACCESS: 'access';
 
 ACCESS_CLASS
 :
@@ -63,85 +54,37 @@ ACCESS_LIST
   'access-list' -> pushMode ( M_Word )
 ;
 
-ACCESS_MAP
-:
-  'access-map'
-;
+ACCESS_MAP: 'access-map';
 
-ACCOUNTING
-:
-  'accounting'
-;
+ACCOUNTING: 'accounting';
 
-ACK
-:
-  'ack'
-;
+ACK: 'ack';
 
-ACL_COMMON_IP_OPTIONS
-:
-  'acl_common_ip_options'
-;
+ACL_COMMON_IP_OPTIONS: 'acl_common_ip_options';
 
-ACL_GLOBAL_OPTIONS
-:
-  'acl_global_options'
-;
+ACL_GLOBAL_OPTIONS: 'acl_global_options';
 
-ACL_ICMP
-:
-  'acl_icmp'
-;
+ACL_ICMP: 'acl_icmp';
 
-ACL_IGMP
-:
-  'acl_igmp'
-;
+ACL_IGMP: 'acl_igmp';
 
-ACL_INDICES
-:
-  'acl_indices'
-;
+ACL_INDICES: 'acl_indices';
 
-ACL_SIMPLE_PROTOCOLS
-:
-  'acl_simple_protocols'
-;
+ACL_SIMPLE_PROTOCOLS: 'acl_simple_protocols';
 
-ACL_TCP
-:
-  'acl_tcp'
-;
+ACL_TCP: 'acl_tcp';
 
-ACL_UDP
-:
-  'acl_udp'
-;
+ACL_UDP: 'acl_udp';
 
-ACTION
-:
-  'action'
-;
+ACTION: 'action';
 
-ACTIVE
-:
-  'active'
-;
+ACTIVE: 'active';
 
-ADD
-:
-  'add'
-;
+ADD: 'add';
 
-ADDITIONAL_PATHS
-:
-  'additional-paths'
-;
+ADDITIONAL_PATHS: 'additional-paths';
 
-ADDITIVE
-:
-  'additive'
-;
+ADDITIVE: 'additive';
 
 ADDRESS
 :
@@ -157,185 +100,83 @@ ADDRESS
 
 ;
 
-ADDRESS_FAMILY
-:
-  'address-family'
-;
+ADDRESS_FAMILY: 'address-family';
 
 ADDRGROUP
 :
   'addrgroup' -> pushMode ( M_Word )
 ;
 
-ADMINISTRATIVELY_PROHIBITED
-:
-  'administratively-prohibited'
-;
+ADMINISTRATIVELY_PROHIBITED: 'administratively-prohibited';
 
-ADVERTISE
-:
-  'advertise'
-;
+ADVERTISE: 'advertise';
 
-ADVERTISE_MAP
-:
-  'advertise-map'
-;
+ADVERTISE_MAP: 'advertise-map';
 
-ADVERTISEMENT_INTERVAL
-:
-  'advertisement-interval'
-;
+ADVERTISEMENT_INTERVAL: 'advertisement-interval';
 
-AES_128
-:
-  'aes-128'
-;
+AES_128: 'aes-128';
 
-AF11
-:
-  'af11'
-;
+AF11: 'af11';
 
-AF12
-:
-  'af12'
-;
+AF12: 'af12';
 
-AF13
-:
-  'af13'
-;
+AF13: 'af13';
 
-AF21
-:
-  'af21'
-;
+AF21: 'af21';
 
-AF22
-:
-  'af22'
-;
+AF22: 'af22';
 
-AF23
-:
-  'af23'
-;
+AF23: 'af23';
 
-AF31
-:
-  'af31'
-;
+AF31: 'af31';
 
-AF32
-:
-  'af32'
-;
+AF32: 'af32';
 
-AF33
-:
-  'af33'
-;
+AF33: 'af33';
 
-AF41
-:
-  'af41'
-;
+AF41: 'af41';
 
-AF42
-:
-  'af42'
-;
+AF42: 'af42';
 
-AF43
-:
-  'af43'
-;
+AF43: 'af43';
 
-AGGREGATE_ADDRESS
-:
-  'aggregate-address'
-;
+AGGREGATE_ADDRESS: 'aggregate-address';
 
-AGGRESSIVE
-:
-  'aggressive'
-;
+AGGRESSIVE: 'aggressive';
 
 AH_MD5
 :
   'ah-md5' -> pushMode ( M_Password )
 ;
 
-AHP
-:
-  'ahp'
-;
+AHP: 'ahp';
 
-ALIAS
-:
-  'alias'
-;
+ALIAS: 'alias';
 
-ALL
-:
-  'all'
-;
+ALL: 'all';
 
-ALLOW
-:
-  'allow'
-;
+ALLOW: 'allow';
 
-ALLOWAS_IN
-:
-  'allowas-in'
-;
+ALLOWAS_IN: 'allowas-in';
 
-ALLOWED
-:
-  'allowed'
-;
+ALLOWED: 'allowed';
 
-ALTERNATE_ADDRESS
-:
-  'alternate-address'
-;
+ALTERNATE_ADDRESS: 'alternate-address';
 
-ALWAYS
-:
-  'always'
-;
+ALWAYS: 'always';
 
-ALWAYS_COMPARE_MED
-:
-  'always-compare-med'
-;
+ALWAYS_COMPARE_MED: 'always-compare-med';
 
-ANY
-:
-  'any'
-;
+ANY: 'any';
 
-AREA
-:
-  'area'
-;
+AREA: 'area';
 
-ARP
-:
-  'arp'
-;
+ARP: 'arp';
 
-AS_NUMBER
-:
-  'as-number'
-;
+AS_NUMBER: 'as-number';
 
-AS_OVERRIDE
-:
-  'as-override'
-;
+AS_OVERRIDE: 'as-override';
 
 AS_PATH
 :
@@ -349,245 +190,107 @@ AS_PATH
 
 ;
 
-AS_SET
-:
-  'as-set'
-;
+AS_SET: 'as-set';
 
-ASSOCIATE
-:
-  'associate'
-;
+ASSOCIATE: 'associate';
 
-ASSOCIATE_VRF
-:
-  'associate-vrf'
-;
+ASSOCIATE_VRF: 'associate-vrf';
 
 ATTRIBUTE_MAP
 :
   'attribute-map' -> pushMode ( M_Word )
 ;
 
-AUTH
-:
-  'auth'
-;
+AUTH: 'auth';
 
-AUTHENTICATE
-:
-  'authenticate'
-;
+AUTHENTICATE: 'authenticate';
 
-AUTHENTICATION
-:
-  'authentication'
-;
+AUTHENTICATION: 'authentication';
 
-AUTHENTICATION_KEY
-:
-  'authentication-key'
-;
+AUTHENTICATION_KEY: 'authentication-key';
 
-AUTHORIZATION
-:
-  'authorization'
-;
+AUTHORIZATION: 'authorization';
 
-AUTHPRIV
-:
-  'authpriv'
-;
+AUTHPRIV: 'authpriv';
 
-AUTO
-:
-  'auto'
-;
+AUTO: 'auto';
 
-AUTO_COST
-:
-  'auto-cost'
-;
+AUTO_COST: 'auto-cost';
 
-AUTOCONFIG
-:
-  'autoconfig'
-;
+AUTOCONFIG: 'autoconfig';
 
-AUTONOMOUS_SYSTEM
-:
-  'autonomous-system'
-;
+AUTONOMOUS_SYSTEM: 'autonomous-system';
 
-AUTOSTATE
-:
-  'autostate'
-;
+AUTOSTATE: 'autostate';
 
-BACKUP
-:
-  'backup'
-;
+BACKUP: 'backup';
 
-BANDWIDTH
-:
-  'bandwidth'
-;
+BANDWIDTH: 'bandwidth';
 
 BANNER
 :
   'banner' -> pushMode ( M_Banner )
 ;
 
-BASH_SHELL
-:
-  'bash-shell'
-;
+BASH_SHELL: 'bash-shell';
 
-BASIC
-:
-  'basic'
-;
+BASIC: 'basic';
 
-BC
-:
-  'bc'
-;
+BC: 'bc';
 
-BEACON
-:
-  'beacon'
-;
+BEACON: 'beacon';
 
-BESTPATH
-:
-  'bestpath'
-;
+BESTPATH: 'bestpath';
 
-BESTPATH_LIMIT
-:
-  'bestpath-limit'
-;
+BESTPATH_LIMIT: 'bestpath-limit';
 
-BFD
-:
-  'bfd'
-;
+BFD: 'bfd';
 
-BFD_INSTANCE
-:
-  'bfd-instance'
-;
+BFD_INSTANCE: 'bfd-instance';
 
-BGP
-:
-  'bgp'
-;
+BGP: 'bgp';
 
-BIDIR
-:
-  'bidir'
-;
+BIDIR: 'bidir';
 
-BIDIR_RP_LIMIT
-:
-  'bidir-rp-limit'
-;
+BIDIR_RP_LIMIT: 'bidir-rp-limit';
 
-BIFF
-:
-  'biff'
-;
+BIFF: 'biff';
 
-BLOCK
-:
-  'block'
-;
+BLOCK: 'block';
 
-BOOT
-:
-  'boot'
-;
+BOOT: 'boot';
 
-BOOTPC
-:
-  'bootpc'
-;
+BOOTPC: 'bootpc';
 
-BOOTPS
-:
-  'bootps'
-;
+BOOTPS: 'bootps';
 
-BORDER
-:
-  'border'
-;
+BORDER: 'border';
 
-BOTH
-:
-  'both'
-;
+BOTH: 'both';
 
-BPDUFILTER
-:
-  'bpdufilter'
-;
+BPDUFILTER: 'bpdufilter';
 
-BPDUGUARD
-:
-  'bpduguard'
-;
+BPDUGUARD: 'bpduguard';
 
-BPS
-:
-  'bps'
-;
+BPS: 'bps';
 
-BREAKOUT
-:
-  'breakout'
-;
+BREAKOUT: 'breakout';
 
-BRIDGE
-:
-  'bridge'
-;
+BRIDGE: 'bridge';
 
-BROADCAST
-:
-  'broadcast'
-;
+BROADCAST: 'broadcast';
 
-BUFFER_LIMIT
-:
-  'buffer-limit'
-;
+BUFFER_LIMIT: 'buffer-limit';
 
-BYTES
-:
-  'bytes'
-;
+BYTES: 'bytes';
 
-CALLHOME
-:
-  'callhome'
-;
+CALLHOME: 'callhome';
 
-CAPABILITY
-:
-  'capability'
-;
+CAPABILITY: 'capability';
 
-CARRIER_DELAY
-:
-  'carrier-delay'
-;
+CARRIER_DELAY: 'carrier-delay';
 
-CAUSE
-:
-  'cause'
-;
+CAUSE: 'cause';
 
 CCMCLIRUNNINGCONFIGCHANGED
 :
@@ -595,105 +298,54 @@ CCMCLIRUNNINGCONFIGCHANGED
   [Nn] [Ff] [Ii] [Gg] [Cc] [Hh] [Aa] [Nn] [Gg] [Ee] [Dd]
 ;
 
-CDP
-:
-  'cdp'
-;
+CDP: 'cdp';
 
-CFS
-:
-  'cfs'
-;
+CFS: 'cfs';
 
 CHAIN
 :
   'chain' -> pushMode ( M_Word )
 ;
 
-CHANNEL_GROUP
-:
-  'channel-group'
-;
+CHANNEL_GROUP: 'channel-group';
 
-CHARGEN
-:
-  'chargen'
-;
+CHARGEN: 'chargen';
 
-CIR
-:
-  'cir'
-;
+CIR: 'cir';
 
 CLASS
 :
   'class' -> pushMode ( M_Class )
 ;
 
-CLASS_DEFAULT
-:
-  'class-default'
-;
+CLASS_DEFAULT: 'class-default';
 
 CLASS_MAP
 :
   'class-map' -> pushMode ( M_ClassMap )
 ;
 
-CLEAR
-:
-  'clear'
-;
+CLEAR: 'clear';
 
-CLI
-:
-  'cli'
-;
+CLI: 'cli';
 
-CLIENT_IDENTITY
-:
-  'client-identity'
-;
+CLIENT_IDENTITY: 'client-identity';
 
-CLIENT_TO_CLIENT
-:
-  'client-to-client'
-;
+CLIENT_TO_CLIENT: 'client-to-client';
 
-CLOCK
-:
-  'clock'
-;
+CLOCK: 'clock';
 
-CLUSTER_ID
-:
-  'cluster-id'
-;
+CLUSTER_ID: 'cluster-id';
 
-CMD
-:
-  'cmd'
-;
+CMD: 'cmd';
 
-COLLECT
-:
-  'collect'
-;
+COLLECT: 'collect';
 
-COMMAND
-:
-  'command'
-;
+COMMAND: 'command';
 
-COMMANDS
-:
-  'commands'
-;
+COMMANDS: 'commands';
 
-COMMIT
-:
-  'commit'
-;
+COMMIT: 'commit';
 
 COMMUNITY
 :
@@ -719,65 +371,29 @@ COMM_LIST
   'comm-list' -> pushMode ( M_Word )
 ;
 
-COMMUNITY_LIST
-:
-  'community-list'
-;
+COMMUNITY_LIST: 'community-list';
 
-COMPARE_ROUTERID
-:
-  'compare-routerid'
-;
+COMPARE_ROUTERID: 'compare-routerid';
 
-CONFIG
-:
-  'config'
-;
+CONFIG: 'config';
 
-CONFIG_COMMANDS
-:
-  'config-commands'
-;
+CONFIG_COMMANDS: 'config-commands';
 
-CONFIGURATION
-:
-  'configuration'
-;
+CONFIGURATION: 'configuration';
 
-CONFED
-:
-  'confed'
-;
+CONFED: 'confed';
 
-CONFEDERATION
-:
-  'confederation'
-;
+CONFEDERATION: 'confederation';
 
-CONFORM
-:
-  'conform'
-;
+CONFORM: 'conform';
 
-CONGESTION_CONTROL
-:
-  'congestion-control'
-;
+CONGESTION_CONTROL: 'congestion-control';
 
-CONNECT
-:
-  'connect'
-;
+CONNECT: 'connect';
 
-CONNECTION_MODE
-:
-  'connection-mode'
-;
+CONNECTION_MODE: 'connection-mode';
 
-CONSOLE
-:
-  'console'
-;
+CONSOLE: 'console';
 
 CONTACT
 :
@@ -790,465 +406,204 @@ CONTEXT
   'context' -> pushMode ( M_Word )
 ;
 
-CONTINUE
-:
-  'continue'
-;
+CONTINUE: 'continue';
 
-CONTROL
-:
-  'control'
-;
+CONTROL: 'control';
 
-CONTROL_PLANE
-:
-  'control-plane'
-;
+CONTROL_PLANE: 'control-plane';
 
-CONVERSION_ERROR
-:
-  'conversion-error'
-;
+CONVERSION_ERROR: 'conversion-error';
 
-COPY
-:
-  'copy'
-;
+COPY: 'copy';
 
-COPY_ATTRIBUTES
-:
-  'copy-attributes'
-;
+COPY_ATTRIBUTES: 'copy-attributes';
 
-COS
-:
-  'cos'
-;
+COS: 'cos';
 
-COST
-:
-  'cost'
-;
+COST: 'cost';
 
-COST_COMMUNITY
-:
-  'cost-community'
-;
+COST_COMMUNITY: 'cost-community';
 
-COUNTER
-:
-  'counter'
-;
+COUNTER: 'counter';
 
-COUNTERS
-:
-  'counters'
-;
+COUNTERS: 'counters';
 
-CRITICAL
-:
-  'critical'
-;
+CRITICAL: 'critical';
 
-CRON
-:
-  'cron'
-;
+CRON: 'cron';
 
-CRYPTO
-:
-  'crypto'
-;
+CRYPTO: 'crypto';
 
-CS1
-:
-  'cs1'
-;
+CS1: 'cs1';
 
-CS2
-:
-  'cs2'
-;
+CS2: 'cs2';
 
-CS3
-:
-  'cs3'
-;
+CS3: 'cs3';
 
-CS4
-:
-  'cs4'
-;
+CS4: 'cs4';
 
-CS5
-:
-  'cs5'
-;
+CS5: 'cs5';
 
-CS6
-:
-  'cs6'
-;
+CS6: 'cs6';
 
-CS7
-:
-  'cs7'
-;
+CS7: 'cs7';
 
-DAEMON
-:
-  'daemon'
-;
+DAEMON: 'daemon';
 
-DAMPEN_IGP_METRIC
-:
-  'dampen-igp-metric'
-;
+DAMPEN_IGP_METRIC: 'dampen-igp-metric';
 
-DAMPENING
-:
-  'dampening'
-;
+DAMPENING: 'dampening';
 
-DAYTIME
-:
-  'daytime'
-;
+DAYTIME: 'daytime';
 
-DEAD_INTERVAL
-:
-  'dead-interval'
-;
+DEAD_INTERVAL: 'dead-interval';
 
-DEADTIME
-:
-  'deadtime'
-;
+DEADTIME: 'deadtime';
 
-DEBOUNCE
-:
-  'debounce'
-;
+DEBOUNCE: 'debounce';
 
-DECREMENT
-:
-  'decrement'
-;
+DECREMENT: 'decrement';
 
-DEFAULT
-:
-  'default'
-;
+DEFAULT: 'default';
 
-DEFAULT_COST
-:
-  'default-cost'
-;
+DEFAULT_COST: 'default-cost';
 
-DEFAULT_GRACETIME
-:
-  'default-gracetime'
-;
+DEFAULT_GRACETIME: 'default-gracetime';
 
-DEFAULT_INFORMATION
-:
-  'default-information'
-;
+DEFAULT_INFORMATION: 'default-information';
 
-DEFAULT_INFORMATION_ORIGINATE
-:
-  'default-information-originate'
-;
+DEFAULT_INFORMATION_ORIGINATE: 'default-information-originate';
 
-DEFAULT_LIFETIME
-:
-  'default-lifetime'
-;
+DEFAULT_LIFETIME: 'default-lifetime';
 
-DEFAULT_METRIC
-:
-  'default-metric'
-;
+DEFAULT_METRIC: 'default-metric';
 
-DEFAULT_ORIGINATE
-:
-  'default-originate'
-;
+DEFAULT_ORIGINATE: 'default-originate';
 
-DEFAULT_WARNTIME
-:
-  'default-warntime'
-;
+DEFAULT_WARNTIME: 'default-warntime';
 
-DELAY
-:
-  'delay'
-;
+DELAY: 'delay';
 
-DELAYED_LINK_STATE_CHANGE
-:
-  'delayed-link-state-change'
-;
+DELAYED_LINK_STATE_CHANGE: 'delayed-link-state-change';
 
-DELETE
-:
-  'delete'
-;
+DELETE: 'delete';
 
-DENY
-:
-  'deny'
-;
+DENY: 'deny';
 
-DENY_ALL
-:
-  'deny-all'
-;
+DENY_ALL: 'deny-all';
 
 DESCRIPTION
 :
   'description' -> pushMode ( M_Remark )
 ;
 
-DEST_IP
-:
-  'dest-ip'
-;
+DEST_IP: 'dest-ip';
 
-DEST_MISS
-:
-  'dest-miss'
-;
+DEST_MISS: 'dest-miss';
 
-DESTINATION
-:
-  'destination'
-;
+DESTINATION: 'destination';
 
-DETAIL
-:
-  'detail'
-;
+DETAIL: 'detail';
 
-DHCP
-:
-  'dhcp'
-;
+DHCP: 'dhcp';
 
-DHCP_SNOOPING_VLAN
-:
-  'dhcp-snooping-vlan'
-;
+DHCP_SNOOPING_VLAN: 'dhcp-snooping-vlan';
 
-DIR
-:
-  'dir'
-;
+DIR: 'dir';
 
-DIRECT
-:
-  'direct'
-;
+DIRECT: 'direct';
 
-DIRECTED_BROADCAST
-:
-  'directed-broadcast'
-;
+DIRECTED_BROADCAST: 'directed-broadcast';
 
-DIRECTED_REQUEST
-:
-  'directed-request'
-;
+DIRECTED_REQUEST: 'directed-request';
 
-DIRECTLY_CONNECTED_SOURCES
-:
-  'directly-connected-sources'
-;
+DIRECTLY_CONNECTED_SOURCES: 'directly-connected-sources';
 
-DISABLE
-:
-  'disable'
-;
+DISABLE: 'disable';
 
-DISABLE_CONNECTED_CHECK
-:
-  'disable-connected-check'
-;
+DISABLE_CONNECTED_CHECK: 'disable-connected-check';
 
-DISABLE_PEER_AS_CHECK
-:
-  'disable-peer-as-check'
-;
+DISABLE_PEER_AS_CHECK: 'disable-peer-as-check';
 
-DISCARD
-:
-  'discard'
-;
+DISCARD: 'discard';
 
-DISCARD_ROUTE
-:
-  'discard-route'
-;
+DISCARD_ROUTE: 'discard-route';
 
-DISTANCE
-:
-  'distance'
-;
+DISTANCE: 'distance';
 
-DISTRIBUTE
-:
-  'distribute'
-;
+DISTRIBUTE: 'distribute';
 
-DISTRIBUTE_LIST
-:
-  'distribute-list'
-;
+DISTRIBUTE_LIST: 'distribute-list';
 
 DNS
 :
   'dns' -> pushMode(M_Words)
 ;
 
-DNSIX
-:
-  'dnsix'
-;
+DNSIX: 'dnsix';
 
-DOD_HOST_PROHIBITED
-:
-  'dod-host-prohibited'
-;
+DOD_HOST_PROHIBITED: 'dod-host-prohibited';
 
-DOD_NET_PROHIBITED
-:
-  'dod-net-prohibited'
-;
+DOD_NET_PROHIBITED: 'dod-net-prohibited';
 
-DOMAIN
-:
-  'domain'
-;
+DOMAIN: 'domain';
 
 DOMAIN_LIST
 :
   'domain-list' -> pushMode(M_Word)
 ;
 
-DOMAIN_LOOKUP
-:
-  'domain-lookup'
-;
+DOMAIN_LOOKUP: 'domain-lookup';
 
 DOMAIN_NAME
 :
   'domain-name' -> pushMode(M_Word)
 ;
 
-DONT_CAPABILITY_NEGOTIATE
-:
-  'dont-capability-negotiate'
-;
+DONT_CAPABILITY_NEGOTIATE: 'dont-capability-negotiate';
 
 DOT1Q
 :
   [Dd] [Oo] [Tt] '1' [Qq]
 ;
 
-DOT1Q_TUNNEL
-:
-  'dot1q-tunnel'
-;
+DOT1Q_TUNNEL: 'dot1q-tunnel';
 
-DR_DELAY
-:
-  'dr-delay'
-;
+DR_DELAY: 'dr-delay';
 
-DR_PRIORITY
-:
-  'dr-priority'
-;
+DR_PRIORITY: 'dr-priority';
 
-DRIP
-:
-  'drip'
-;
+DRIP: 'drip';
 
-DROP
-:
-  'drop'
-;
+DROP: 'drop';
 
-DROP_ON_FAIL
-:
-  'drop-on-fail'
-;
+DROP_ON_FAIL: 'drop-on-fail';
 
-DSCP
-:
-  'dscp'
-;
+DSCP: 'dscp';
 
-DST_MAC
-:
-  'dst-mac'
-;
+DST_MAC: 'dst-mac';
 
-DUAL_AS
-:
-  'dual-as'
-;
+DUAL_AS: 'dual-as';
 
-DUPLEX
-:
-  'duplex'
-;
+DUPLEX: 'duplex';
 
-DVMRP
-:
-  'dvmrp'
-;
+DVMRP: 'dvmrp';
 
-DYNAMIC_CAPABILITY
-:
-  'dynamic-capability'
-;
+DYNAMIC_CAPABILITY: 'dynamic-capability';
 
-EBGP_MULTIHOP
-:
-  'ebgp-multihop'
-;
+EBGP_MULTIHOP: 'ebgp-multihop';
 
-ECHO
-:
-  'echo'
-;
+ECHO: 'echo';
 
-ECHO_REPLY
-:
-  'echo-reply'
-;
+ECHO_REPLY: 'echo-reply';
 
-EDGE
-:
-  'edge'
-;
+EDGE: 'edge';
 
-EF
-:
-  'ef'
-;
+EF: 'ef';
 
-EGP
-:
-  'egp'
-;
+EGP: 'egp';
 
-EIBGP
-:
-  'eibgp'
-;
+EIBGP: 'eibgp';
 
 
 EIGRP
@@ -1278,210 +633,96 @@ EIGRP
   }
 ;
 
-ENABLE
-:
-  'enable'
-;
+ENABLE: 'enable';
 
-ENCAPSULATION
-:
-  'encapsulation'
-;
+ENCAPSULATION: 'encapsulation';
 
-ENFORCE_BGP_MDT_SAFI
-:
-  'enforce-bgp-mdt-safi'
-;
+ENFORCE_BGP_MDT_SAFI: 'enforce-bgp-mdt-safi';
 
-ENFORCE_FIRST_AS
-:
-  'enforce-first-as'
-;
+ENFORCE_FIRST_AS: 'enforce-first-as';
 
-ENTRIES
-:
-  'entries'
-;
+ENTRIES: 'entries';
 
-EQ
-:
-  'eq'
-;
+EQ: 'eq';
 
-ERRDISABLE
-:
-  'errdisable'
-;
+ERRDISABLE: 'errdisable';
 
-ERROR_ENABLE
-:
-  'error-enable'
-;
+ERROR_ENABLE: 'error-enable';
 
-ERRORS
-:
-  'errors'
-;
+ERRORS: 'errors';
 
-ESP
-:
-  'esp'
-;
+ESP: 'esp';
 
-ESTABLISHED
-:
-  'established'
-;
+ESTABLISHED: 'established';
 
 ETHERNET
 :
   [Ee] [Tt] [Hh] [Ee] [Rr] [Nn] [Ee] [Tt]
 ;
 
-ETHERTYPE
-:
-  'ethertype'
-;
+ETHERTYPE: 'ethertype';
 
-EVENT
-:
-  'event'
-;
+EVENT: 'event';
 
-EVENT_HISTORY
-:
-  'event-history'
-;
+EVENT_HISTORY: 'event-history';
 
-EVENT_NOTIFY
-:
-  'event-notify'
-;
+EVENT_NOTIFY: 'event-notify';
 
-EVENTS
-:
-  'events'
-;
+EVENTS: 'events';
 
-EVPN
-:
-  'evpn'
-;
+EVPN: 'evpn';
 
-EXCEPT
-:
-  'except'
-;
+EXCEPT: 'except';
 
-EXCEPTION
-:
-  'exception'
-;
+EXCEPTION: 'exception';
 
-EXEC
-:
-  'exec'
-;
+EXEC: 'exec';
 
-EXEC_TIMEOUT
-:
-  'exec-timeout'
-;
+EXEC_TIMEOUT: 'exec-timeout';
 
-EXEMPT
-:
-  'exempt'
-;
+EXEMPT: 'exempt';
 
-EXIST_MAP
-:
-  'exist-map'
-;
+EXIST_MAP: 'exist-map';
 
 EXPANDED
 :
   'expanded' -> pushMode ( M_Expanded )
 ;
 
-EXPLICIT_TRACKING
-:
-  'explicit-tracking'
-;
+EXPLICIT_TRACKING: 'explicit-tracking';
 
-EXPORT
-:
-  'export'
-;
+EXPORT: 'export';
 
 EXPORTER
 :
   'exporter' -> pushMode(M_Word)
 ;
 
-EXTEND
-:
-  'extend'
-;
+EXTEND: 'extend';
 
-EXTENDED
-:
-  'extended'
-;
+EXTENDED: 'extended';
 
-EXTERNAL
-:
-  'external'
-;
+EXTERNAL: 'external';
 
-EXTERNAL_LSA
-:
-  'external-lsa'
-;
+EXTERNAL_LSA: 'external-lsa';
 
-FACILITY
-:
-  'facility'
-;
+FACILITY: 'facility';
 
-FAST_EXTERNAL_FALLOVER
-:
-  'fast-external-fallover'
-;
+FAST_EXTERNAL_FALLOVER: 'fast-external-fallover';
 
-FAST_LEAVE
-:
-  'fast-leave'
-;
+FAST_LEAVE: 'fast-leave';
 
-FAST_SELECT_HOT_STANDBY
-:
-  'fast-select-hot-standby'
-;
+FAST_SELECT_HOT_STANDBY: 'fast-select-hot-standby';
 
-FCOE
-:
-  'fcoe'
-;
+FCOE: 'fcoe';
 
-FCOE_FIB_MISS
-:
-  'fcoe-fib-miss'
-;
+FCOE_FIB_MISS: 'fcoe-fib-miss';
 
-FEATURE
-:
-  'feature'
-;
+FEATURE: 'feature';
 
-FEATURE_CONTROL
-:
-  'feature-control'
-;
+FEATURE_CONTROL: 'feature-control';
 
-FEATURE_SET
-:
-  'feature-set'
-;
+FEATURE_SET: 'feature-set';
 
 FEATUREOPSTATUSCHANGE
 :
@@ -1489,175 +730,76 @@ FEATUREOPSTATUSCHANGE
   [Cc] [Hh] [Aa] [Nn] [Gg] [Ee]
 ;
 
-FEX
-:
-  'fex'
-;
+FEX: 'fex';
 
-FEX_FABRIC
-:
-  'fex-fabric'
-;
+FEX_FABRIC: 'fex-fabric';
 
-FILTER
-:
-  'filter'
-;
+FILTER: 'filter';
 
-FILTER_LIST
-:
-  'filter-list'
-;
+FILTER_LIST: 'filter-list';
 
-FILTERING
-:
-  'filtering'
-;
+FILTERING: 'filtering';
 
-FIN
-:
-  'fin'
-;
+FIN: 'fin';
 
-FINGER
-:
-  'finger'
-;
+FINGER: 'finger';
 
-FLASH
-:
-  'flash'
-;
+FLASH: 'flash';
 
-FLASH_OVERRIDE
-:
-  'flash-override'
-;
+FLASH_OVERRIDE: 'flash-override';
 
-FLOW
-:
-  'flow'
-;
+FLOW: 'flow';
 
-FLOWCONTROL
-:
-  'flowcontrol'
-;
+FLOWCONTROL: 'flowcontrol';
 
-FORCE
-:
-  'force'
-;
+FORCE: 'force';
 
-FORCE_ORDER
-:
-  'force-order'
-;
+FORCE_ORDER: 'force-order';
 
-FORWARD
-:
-  'forward'
-;
+FORWARD: 'forward';
 
-FORWARDING_THRESHOLD
-:
-  'forwarding-threshold'
-;
+FORWARDING_THRESHOLD: 'forwarding-threshold';
 
-FLUSH_ROUTES
-:
-  'flush-routes'
-;
+FLUSH_ROUTES: 'flush-routes';
 
-FOUR_BYTE_AS
-:
-  'four-byte-as'
-;
+FOUR_BYTE_AS: 'four-byte-as';
 
-FRAGMENTS
-:
-  'fragments'
-;
+FRAGMENTS: 'fragments';
 
-FREQUENCY
-:
-  'frequency'
-;
+FREQUENCY: 'frequency';
 
-FTP_DATA
-:
-  'ftp-data'
-;
+FTP_DATA: 'ftp-data';
 
-FTP
-:
-  'ftp'
-;
+FTP: 'ftp';
 
-FULL
-:
-  'full'
-;
+FULL: 'full';
 
 GBPS
 :
   [Gg] [Bb] [Pp] [Ss]
 ;
 
-GENERAL_PARAMETER_PROBLEM
-:
-  'general-parameter-problem'
-;
+GENERAL_PARAMETER_PROBLEM: 'general-parameter-problem';
 
-GE
-:
-  'ge'
-;
+GE: 'ge';
 
-GET
-:
-  'get'
-;
+GET: 'get';
 
-GLEAN
-:
-  'glean'
-;
+GLEAN: 'glean';
 
-GLOBAL
-:
-  'global'
-;
+GLOBAL: 'global';
 
-GOPHER
-:
-  'gopher'
-;
+GOPHER: 'gopher';
 
-GRACE_PERIOD
-:
-  'grace-period'
-;
+GRACE_PERIOD: 'grace-period';
 
-GRACEFUL_RESTART
-:
-  'graceful-restart'
-;
+GRACEFUL_RESTART: 'graceful-restart';
 
-GRACEFUL_RESTART_HELPER
-:
-  'graceful-restart-helper'
-;
+GRACEFUL_RESTART_HELPER: 'graceful-restart-helper';
 
-GRATUITOUS
-:
-  'gratuitous'
-;
+GRATUITOUS: 'gratuitous';
 
-GRE
-:
-  'gre'
-;
+GRE: 'gre';
 
 GROUP
 :
@@ -1674,65 +816,32 @@ GROUP
   }
 ;
 
-GROUP_LIST
-:
-  'group-list'
-;
+GROUP_LIST: 'group-list';
 
-GROUP_TIMEOUT
-:
-  'group-timeout'
-;
+GROUP_TIMEOUT: 'group-timeout';
 
-GT
-:
-  'gt'
-;
+GT: 'gt';
 
-GUARD
-:
-  'guard'
-;
+GUARD: 'guard';
 
-HARDWARE
-:
-  'hardware'
-;
+HARDWARE: 'hardware';
 
-HEAD
-:
-  'head'
-;
+HEAD: 'head';
 
-HELLO_AUTHENTICATION
-:
-  'hello-authentication'
-;
+HELLO_AUTHENTICATION: 'hello-authentication';
 
-HELLO_INTERVAL
-:
-  'hello-interval'
-;
+HELLO_INTERVAL: 'hello-interval';
 
-HELPER_DISABLE
-:
-  'helper-disable'
-;
+HELPER_DISABLE: 'helper-disable';
 
 HEX_UINT32
 :
   F_HexUint32
 ;
 
-HMM
-:
-  'hmm'
-;
+HMM: 'hmm';
 
-HOLD_TIME
-:
-  'hold-time'
-;
+HOLD_TIME: 'hold-time';
 
 HOST
 :
@@ -1744,55 +853,25 @@ HOST
   }
 ;
 
-HOST_ISOLATED
-:
-  'host-isolated'
-;
+HOST_ISOLATED: 'host-isolated';
 
-HOST_PRECEDENCE_UNREACHABLE
-:
-  'host-precedence-unreachable'
-;
+HOST_PRECEDENCE_UNREACHABLE: 'host-precedence-unreachable';
 
-HOST_QUERY
-:
-  'host-query'
-;
+HOST_QUERY: 'host-query';
 
-HOST_REACHABILITY
-:
-  'host-reachability'
-;
+HOST_REACHABILITY: 'host-reachability';
 
-HOST_REDIRECT
-:
-  'host-redirect'
-;
+HOST_REDIRECT: 'host-redirect';
 
-HOST_REPORT
-:
-  'host-report'
-;
+HOST_REPORT: 'host-report';
 
-HOST_TOS_REDIRECT
-:
-  'host-tos-redirect'
-;
+HOST_TOS_REDIRECT: 'host-tos-redirect';
 
-HOST_TOS_UNREACHABLE
-:
-  'host-tos-unreachable'
-;
+HOST_TOS_UNREACHABLE: 'host-tos-unreachable';
 
-HOST_UNKNOWN
-:
-  'host-unknown'
-;
+HOST_UNKNOWN: 'host-unknown';
 
-HOST_UNREACHABLE
-:
-  'host-unreachable'
-;
+HOST_UNREACHABLE: 'host-unreachable';
 
 HOSTNAME
 :
@@ -1808,150 +887,69 @@ HOSTNAME
 
 ;
 
-HSRP
-:
-  'hsrp'
-;
+HSRP: 'hsrp';
 
 HTTP
 :
   'http' -> pushMode(M_Words)
 ;
 
-HTTP_METHOD
-:
-  'http-method'
-;
+HTTP_METHOD: 'http-method';
 
-HTTP_SERVER
-:
-  'http-server'
-;
+HTTP_SERVER: 'http-server';
 
-HW_HASH
-:
-  'hw-hash'
-;
+HW_HASH: 'hw-hash';
 
-IBGP
-:
-  'ibgp'
-;
+IBGP: 'ibgp';
 
-ICMP
-:
-  'icmp'
-;
+ICMP: 'icmp';
 
 ICMP_ECHO
 :
   'icmp-echo' -> pushMode(M_Words)
 ;
 
-ID
-:
-  'id'
-;
+ID: 'id';
 
-IDENT
-:
-  'ident'
-;
+IDENT: 'ident';
 
-IDENTIFIER
-:
-  'identifier'
-;
+IDENTIFIER: 'identifier';
 
-IGMP
-:
-  'igmp'
-;
+IGMP: 'igmp';
 
-IGNORE
-:
-  'ignore'
-;
+IGNORE: 'ignore';
 
-IGP
-:
-  'igp'
-;
+IGP: 'igp';
 
-IMMEDIATE
-:
-  'immediate'
-;
+IMMEDIATE: 'immediate';
 
-IMPORT
-:
-  'import'
-;
+IMPORT: 'import';
 
-IN
-:
-  'in'
-;
+IN: 'in';
 
-INBOUND
-:
-  'inbound'
-;
+INBOUND: 'inbound';
 
-INCLUDE_STUB
-:
-  'include-stub'
-;
+INCLUDE_STUB: 'include-stub';
 
-INCOMPLETE
-:
-  'incomplete'
-;
+INCOMPLETE: 'incomplete';
 
-INCONSISTENCY
-:
-  'inconsistency'
-;
+INCONSISTENCY: 'inconsistency';
 
-INFORM
-:
-  'inform'
-;
+INFORM: 'inform';
 
-INFORMATION
-:
-  'information'
-;
+INFORMATION: 'information';
 
-INFORMATION_REPLY
-:
-  'information-reply'
-;
+INFORMATION_REPLY: 'information-reply';
 
-INFORMATION_REQUEST
-:
-  'information-request'
-;
+INFORMATION_REQUEST: 'information-request';
 
-INFORMS
-:
-  'informs'
-;
+INFORMS: 'informs';
 
-INGRESS_REPLICATION
-:
-  'ingress-replication'
-;
+INGRESS_REPLICATION: 'ingress-replication';
 
-INHERIT
-:
-  'inherit'
-;
+INHERIT: 'inherit';
 
-INJECT_MAP
-:
-  'inject-map'
-;
+INJECT_MAP: 'inject-map';
 
 INPUT
 :
@@ -1963,20 +961,11 @@ INPUT
   }
 ;
 
-INSPECTION
-:
-  'inspection'
-;
+INSPECTION: 'inspection';
 
-INSTALL
-:
-  'install'
-;
+INSTALL: 'install';
 
-INTER_AREA_PREFIX_LSA
-:
-  'inter-area-prefix-lsa'
-;
+INTER_AREA_PREFIX_LSA: 'inter-area-prefix-lsa';
 
 INTERFACE
 :
@@ -1987,90 +976,45 @@ INTERFACE
   )?
 ;
 
-INTERFACE_VLAN
-:
-  'interface-vlan'
-;
+INTERFACE_VLAN: 'interface-vlan';
 
-INTERNAL
-:
-  'internal'
-;
+INTERNAL: 'internal';
 
-INTERNET
-:
-  'internet'
-;
+INTERNET: 'internet';
 
-INTERVAL
-:
-  'interval'
-;
+INTERVAL: 'interval';
 
-IP
-:
-  'ip'
-;
+IP: 'ip';
 
-IPV4
-:
-  'ipv4'
-;
+IPV4: 'ipv4';
 
-IPV6
-:
-  'ipv6'
-;
+IPV6: 'ipv6';
 
-IPV6_DEST_MISS
-:
-  'ipv6-dest-miss'
-;
+IPV6_DEST_MISS: 'ipv6-dest-miss';
 
-IPV6_RPF_FAILURE
-:
-  'ipv6-rpf-failure'
-;
+IPV6_RPF_FAILURE: 'ipv6-rpf-failure';
 
-IPV6_SG_RPF_FAILURE
-:
-  'ipv6-sg-rpf-failure'
-;
+IPV6_SG_RPF_FAILURE: 'ipv6-sg-rpf-failure';
 
-IRC
-:
-  'irc'
-;
+IRC: 'irc';
 
-ISAKMP
-:
-  'isakmp'
-;
+ISAKMP: 'isakmp';
 
 ISIS
 :
   'isis' -> pushMode ( M_Word )
 ;
 
-ISOLATE
-:
-  'isolate'
-;
+ISOLATE: 'isolate';
 
-JP_INTERVAL
-:
-  'jp-interval'
-;
+JP_INTERVAL: 'jp-interval';
 
 JP_POLICY
 :
   'jp-policy' -> pushMode ( M_PrefixListOrWord )
 ;
 
-KBPS
-:
-  'kbps'
-;
+KBPS: 'kbps';
 
 KERNEL
 :
@@ -2126,220 +1070,100 @@ KICKSTART
   }
 ;
 
-KLOGIN
-:
-  'klogin'
-;
+KLOGIN: 'klogin';
 
-KSHELL
-:
-  'kshell'
-;
+KSHELL: 'kshell';
 
 L2
 :
   [lL] '2'
 ;
 
-L2VPN
-:
-  'l2vpn'
-;
+L2VPN: 'l2vpn';
 
-L3
-:
-  'L3'
-;
+L3: 'L3';
 
 LABEL
 :
   'label' -> pushMode(M_Word)
 ;
 
-LACP
-:
-  'lacp'
-;
+LACP: 'lacp';
 
-LAN
-:
-  'lan'
-;
+LAN: 'lan';
 
-LARGE
-:
-  'large'
-;
+LARGE: 'large';
 
-LAST_AS
-:
-  'last-as'
-;
+LAST_AS: 'last-as';
 
-LAST_MEMBER_QUERY_INTERVAL
-:
-  'last-member-query-interval'
-;
+LAST_MEMBER_QUERY_INTERVAL: 'last-member-query-interval';
 
-LATENCY
-:
-  'latency'
-;
+LATENCY: 'latency';
 
-LE
-:
-  'le'
-;
+LE: 'le';
 
-LEVEL
-:
-  'level'
-;
+LEVEL: 'level';
 
-LICENSE
-:
-  'license'
-;
+LICENSE: 'license';
 
-LIMIT_RESOURCE
-:
-  'limit-resource'
-;
+LIMIT_RESOURCE: 'limit-resource';
 
-LINE
-:
-  'line'
-;
+LINE: 'line';
 
-LINE_PROTOCOL
-:
-  'line-protocol'
-;
+LINE_PROTOCOL: 'line-protocol';
 
-LINK
-:
-  'link'
-;
+LINK: 'link';
 
-LINK_FLAP
-:
-  'link-flap'
-;
+LINK_FLAP: 'link-flap';
 
-LINK_LOCAL_GROUPS_SUPPRESSION
-:
-  'link-local-groups-suppression'
-;
+LINK_LOCAL_GROUPS_SUPPRESSION: 'link-local-groups-suppression';
 
-LINK_STATE
-:
-  'link-state'
-;
+LINK_STATE: 'link-state';
 
-LINK_STATUS
-:
-  'link-status'
-;
+LINK_STATUS: 'link-status';
 
-LINK_TYPE
-:
-  'link-type'
-;
+LINK_TYPE: 'link-type';
 
-LINK_UP
-:
-  'link-up'
-;
+LINK_UP: 'link-up';
 
-LISP
-:
-  'lisp'
-;
+LISP: 'lisp';
 
-LLDP
-:
-  'lldp'
-;
+LLDP: 'lldp';
 
-LOAD_DEFER
-:
-  'load-defer'
-;
+LOAD_DEFER: 'load-defer';
 
-LOAD_INTERVAL
-:
-  'load-interval'
-;
+LOAD_INTERVAL: 'load-interval';
 
-LOAD_SHARE
-:
-  'load-share'
-;
+LOAD_SHARE: 'load-share';
 
-LOCAL
-:
-  'local'
-;
+LOCAL: 'local';
 
-LOCAL_LABELED_ROUTE
-:
-  'local-labeled-route'
-;
+LOCAL_LABELED_ROUTE: 'local-labeled-route';
 
 LOCAL_AS
 :
   [Ll] [Oo] [Cc] [Aa] [Ll] '-' [Aa] [Ss]
 ;
 
-LOCAL_PREFERENCE
-:
-  'local-preference'
-;
+LOCAL_PREFERENCE: 'local-preference';
 
-LOCAL0
-:
-  'local0'
-;
+LOCAL0: 'local0';
 
-LOCAL1
-:
-  'local1'
-;
+LOCAL1: 'local1';
 
-LOCAL2
-:
-  'local2'
-;
+LOCAL2: 'local2';
 
-LOCAL3
-:
-  'local3'
-;
+LOCAL3: 'local3';
 
-LOCAL4
-:
-  'local4'
-;
+LOCAL4: 'local4';
 
-LOCAL5
-:
-  'local5'
-;
+LOCAL5: 'local5';
 
-LOCAL6
-:
-  'local6'
-;
+LOCAL6: 'local6';
 
-LOCAL7
-:
-  'local7'
-;
+LOCAL7: 'local7';
 
-LOCALIZEDKEY
-:
-  'localizedkey'
-;
+LOCALIZEDKEY: 'localizedkey';
 
 LOCATION
 :
@@ -2347,60 +1171,27 @@ LOCATION
   'location' -> pushMode ( M_Remark )
 ;
 
-LOG
-:
-  'log'
-;
+LOG: 'log';
 
-LOG_ADJACENCY_CHANGES
-:
-  'log-adjacency-changes'
-;
+LOG_ADJACENCY_CHANGES: 'log-adjacency-changes';
 
-LOG_BUFFER
-:
-  'log-buffer'
-;
+LOG_BUFFER: 'log-buffer';
 
-LOG_NEIGHBOR_CHANGES
-:
-  'log-neighbor-changes'
-;
+LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
 
-LOGGING
-:
-  'logging'
-;
+LOGGING: 'logging';
 
-LOGIN
-:
-  'login'
-;
+LOGIN: 'login';
 
-LOGIN_ATTEMPTS
-:
-  'login-attempts'
-;
+LOGIN_ATTEMPTS: 'login-attempts';
 
-LOGOUT_WARNING
-:
-  'logout-warning'
-;
+LOGOUT_WARNING: 'logout-warning';
 
-LONG
-:
-  'long'
-;
+LONG: 'long';
 
-LOOP
-:
-  'loop'
-;
+LOOP: 'loop';
 
-LOOP_INCONSISTENCY
-:
-  'loop-inconsistency'
-;
+LOOP_INCONSISTENCY: 'loop-inconsistency';
 
 LOOPBACK
 :
@@ -2411,190 +1202,82 @@ LOOPBACK
   )?
 ;
 
-LOW_MEMORY
-:
-  'low-memory'
-;
+LOW_MEMORY: 'low-memory';
 
-LOWER
-:
-  'lower'
-;
+LOWER: 'lower';
 
-LPD
-:
-  'lpd'
-;
+LPD: 'lpd';
 
-LPR
-:
-  'lpr'
-;
+LPR: 'lpr';
 
-LSA
-:
-  'lsa'
-;
+LSA: 'lsa';
 
-LSA_ARRIVAL
-:
-  'lsa-arrival'
-;
+LSA_ARRIVAL: 'lsa-arrival';
 
-LSA_GROUP_PACING
-:
-  'lsa-group-pacing'
-;
+LSA_GROUP_PACING: 'lsa-group-pacing';
 
-LT
-:
-  'lt'
-;
+LT: 'lt';
 
-M4ROUTE_MEM
-:
-  'm4route-mem'
-;
+M4ROUTE_MEM: 'm4route-mem';
 
-M6ROUTE_MEM
-:
-  'm6route-mem'
-;
+M6ROUTE_MEM: 'm6route-mem';
 
-MAC
-:
-  'mac'
-;
+MAC: 'mac';
 
-MAC_ADDRESS
-:
-  'mac-address'
-;
+MAC_ADDRESS: 'mac-address';
 
-MAIL
-:
-  'mail'
-;
+MAIL: 'mail';
 
-MAINTENANCE
-:
-  'maintenance'
-;
+MAINTENANCE: 'maintenance';
 
-MANAGED_CONFIG_FLAG
-:
-  'managed-config-flag'
-;
+MANAGED_CONFIG_FLAG: 'managed-config-flag';
 
-MANAGEMENT
-:
-  'management'
-;
+MANAGEMENT: 'management';
 
-MANAGEMENT_ADDRESS
-:
-  'management-address'
-;
+MANAGEMENT_ADDRESS: 'management-address';
 
-MAP
-:
-  'map'
-;
+MAP: 'map';
 
-MAPPING
-:
-  'mapping'
-;
+MAPPING: 'mapping';
 
-MASK
-:
-  'mask'
-;
+MASK: 'mask';
 
-MASK_REPLY
-:
-  'mask-reply'
-;
+MASK_REPLY: 'mask-reply';
 
-MASK_REQUEST
-:
-  'mask-request'
-;
+MASK_REQUEST: 'mask-request';
 
-MATCH
-:
-  'match'
-;
+MATCH: 'match';
 
-MATCH_ALL
-:
-  'match-all'
-;
+MATCH_ALL: 'match-all';
 
-MATCH_ANY
-:
-  'match-any'
-;
+MATCH_ANY: 'match-any';
 
-MAX_LENGTH
-:
-  'max-length'
-;
+MAX_LENGTH: 'max-length';
 
-MAX_LINKS
-:
-  'max-links'
-;
+MAX_LINKS: 'max-links';
 
-MAX_LSA
-:
-  'max-lsa'
-;
+MAX_LSA: 'max-lsa';
 
-MAX_METRIC
-:
-  'max-metric'
-;
+MAX_METRIC: 'max-metric';
 
-MAXAS_LIMIT
-:
-  'maxas-limit'
-;
+MAXAS_LIMIT: 'maxas-limit';
 
-MAXIMUM
-:
-  'maximum'
-;
+MAXIMUM: 'maximum';
 
-MAXIMUM_PATHS
-:
-  'maximum-paths'
-;
+MAXIMUM_PATHS: 'maximum-paths';
 
-MAXIMUM_PEERS
-:
-  'maximum-peers'
-;
+MAXIMUM_PEERS: 'maximum-peers';
 
-MAXIMUM_PREFIX
-:
-  'maximum-prefix'
-;
+MAXIMUM_PREFIX: 'maximum-prefix';
 
-MAXPOLL
-:
-  'maxpoll'
-;
+MAXPOLL: 'maxpoll';
 
 MBPS
 :
   [Mm] [Bb] [Pp] [Ss]
 ;
 
-MCAST_GROUP
-:
-  'mcast-group'
-;
+MCAST_GROUP: 'mcast-group';
 
 MD5
 :
@@ -2607,30 +1290,15 @@ MD5
   }
 ;
 
-MDIX
-:
-  'mdix'
-;
+MDIX: 'mdix';
 
-MDT
-:
-  'mdt'
-;
+MDT: 'mdt';
 
-MED
-:
-  'med'
-;
+MED: 'med';
 
-MEDIA
-:
-  'media'
-;
+MEDIA: 'media';
 
-MEDIUM
-:
-  'medium'
-;
+MEDIUM: 'medium';
 
 MEMBER
 :
@@ -2644,105 +1312,51 @@ MEMBER
 
 ;
 
-MERGE_FAILURE
-:
-  'merge-failure'
-;
+MERGE_FAILURE: 'merge-failure';
 
-MESSAGE_DIGEST
-:
-  'message-digest'
-;
+MESSAGE_DIGEST: 'message-digest';
 
 MESSAGE_DIGEST_KEY
 :
   'message-digest-key' -> pushMode ( M_Password )
 ;
 
-METHOD
-:
-  'method'
-;
+METHOD: 'method';
 
-METRIC
-:
-  'metric'
-;
+METRIC: 'metric';
 
-METRIC_TYPE
-:
-  'metric-type'
-;
+METRIC_TYPE: 'metric-type';
 
 MGMT
 :
   [Mm] [Gg] [Mm] [Tt]
 ;
 
-MIN_LENGTH
-:
-  'min-length'
-;
+MIN_LENGTH: 'min-length';
 
-MIN_LINKS
-:
-  'min-links'
-;
+MIN_LINKS: 'min-links';
 
-MIN_RX
-:
-  'min_rx'
-;
+MIN_RX: 'min_rx';
 
-MINIMUM
-:
-  'minimum'
-;
+MINIMUM: 'minimum';
 
-MINPOLL
-:
-  'minpoll'
-;
+MINPOLL: 'minpoll';
 
-MISSING_AS_WORST
-:
-  'missing-as-worst'
-;
+MISSING_AS_WORST: 'missing-as-worst';
 
-MIXED
-:
-  'mixed'
-;
+MIXED: 'mixed';
 
-MLD
-:
-  'mld'
-;
+MLD: 'mld';
 
-MOBILE_IP
-:
-  'mobile-ip'
-;
+MOBILE_IP: 'mobile-ip';
 
-MOBILE_REDIRECT
-:
-  'mobile-redirect'
-;
+MOBILE_REDIRECT: 'mobile-redirect';
 
-MODE
-:
-  'mode'
-;
+MODE: 'mode';
 
-MODULE
-:
-  'module'
-;
+MODULE: 'module';
 
-MODULUS
-:
-  'modulus'
-;
+MODULUS: 'modulus';
 
 MONITOR
 :
@@ -2754,50 +1368,23 @@ MONITOR
   }
 ;
 
-MROUTER
-:
-  'mrouter'
-;
+MROUTER: 'mrouter';
 
-MSEC
-:
-  'msec'
-;
+MSEC: 'msec';
 
-MST
-:
-  'mst'
-;
+MST: 'mst';
 
-MTU
-:
-  'mtu'
-;
+MTU: 'mtu';
 
-MTU_FAILURE
-:
-  'mtu-failure'
-;
+MTU_FAILURE: 'mtu-failure';
 
-MULTICAST
-:
-  'multicast'
-;
+MULTICAST: 'multicast';
 
-MULTIPATH_RELAX
-:
-  'multipath-relax'
-;
+MULTIPATH_RELAX: 'multipath-relax';
 
-MULTIPLIER
-:
-  'multiplier'
-;
+MULTIPLIER: 'multiplier';
 
-MVPN
-:
-  'mvpn'
-;
+MVPN: 'mvpn';
 
 NAME
 :
@@ -2813,280 +1400,121 @@ NAME
   }
 ;
 
-NAME_LOOKUP
-:
-  'name-lookup'
-;
+NAME_LOOKUP: 'name-lookup';
 
-NAME_SERVER
-:
-  'name-server'
-;
+NAME_SERVER: 'name-server';
 
-NAMESERVER
-:
-  'nameserver'
-;
+NAMESERVER: 'nameserver';
 
-NAT_FLOW
-:
-  'nat-flow'
-;
+NAT_FLOW: 'nat-flow';
 
-NATIVE
-:
-  'native'
-;
+NATIVE: 'native';
 
-ND
-:
-  'nd'
-;
+ND: 'nd';
 
-ND_NA
-:
-  'nd-na'
-;
+ND_NA: 'nd-na';
 
-ND_NS
-:
-  'nd-ns'
-;
+ND_NS: 'nd-ns';
 
-NEGOTIATE
-:
-  'negotiate'
-;
+NEGOTIATE: 'negotiate';
 
-NEIGHBOR
-:
-  'neighbor'
-;
+NEIGHBOR: 'neighbor';
 
 NEIGHBOR_POLICY
 :
   'neighbor-policy' -> pushMode ( M_PrefixListOrWord )
 ;
 
-NEQ
-:
-  'neq'
-;
+NEQ: 'neq';
 
-NETBIOS_DGM
-:
-  'netbios-dgm'
-;
+NETBIOS_DGM: 'netbios-dgm';
 
-NETBIOS_NS
-:
-  'netbios-ns'
-;
+NETBIOS_NS: 'netbios-ns';
 
-NETBIOS_SS
-:
-  'netbios-ss'
-;
+NETBIOS_SS: 'netbios-ss';
 
-NET_REDIRECT
-:
-  'net-redirect'
-;
+NET_REDIRECT: 'net-redirect';
 
-NET_TOS_REDIRECT
-:
-  'net-tos-redirect'
-;
+NET_TOS_REDIRECT: 'net-tos-redirect';
 
-NET_TOS_UNREACHABLE
-:
-  'net-tos-unreachable'
-;
+NET_TOS_UNREACHABLE: 'net-tos-unreachable';
 
-NET_UNREACHABLE
-:
-  'net-unreachable'
-;
+NET_UNREACHABLE: 'net-unreachable';
 
-NETWORK
-:
-  'network'
-;
+NETWORK: 'network';
 
-NETWORK_QOS
-:
-  'network-qos'
-;
+NETWORK_QOS: 'network-qos';
 
-NETWORK_UNKNOWN
-:
-  'network-unknown'
-;
+NETWORK_UNKNOWN: 'network-unknown';
 
-NEVER
-:
-  'never'
-;
+NEVER: 'never';
 
-NEWROOT
-:
-  'newroot'
-;
+NEWROOT: 'newroot';
 
-NEWS
-:
-  'news'
-;
+NEWS: 'news';
 
-NEXT_HOP
-:
-  'next-hop'
-;
+NEXT_HOP: 'next-hop';
 
-NEXT_HOP_SELF
-:
-  'next-hop-self'
-;
+NEXT_HOP_SELF: 'next-hop-self';
 
-NEXT_HOP_THIRD_PARTY
-:
-  'next-hop-third-party'
-;
+NEXT_HOP_THIRD_PARTY: 'next-hop-third-party';
 
-NEXTHOP
-:
-  'nexthop'
-;
+NEXTHOP: 'nexthop';
 
-NNTP
-:
-  'nntp'
-;
+NNTP: 'nntp';
 
-NO
-:
-  'no'
-;
+NO: 'no';
 
-NO_ADVERTISE
-:
-  'no-advertise'
-;
+NO_ADVERTISE: 'no-advertise';
 
-NO_EXPORT
-:
-  'no-export'
-;
+NO_EXPORT: 'no-export';
 
-NO_PREPEND
-:
-  'no-prepend'
-;
+NO_PREPEND: 'no-prepend';
 
-NO_REDISTRIBUTION
-:
-  'no-redistribution'
-;
+NO_REDISTRIBUTION: 'no-redistribution';
 
-NO_ROOM_FOR_OPTION
-:
-  'no-room-for-option'
-;
+NO_ROOM_FOR_OPTION: 'no-room-for-option';
 
-NO_SUMMARY
-:
-  'no-summary'
-;
+NO_SUMMARY: 'no-summary';
 
-NON_CRITICAL
-:
-  'non-critical'
-;
+NON_CRITICAL: 'non-critical';
 
-NON_DETERMINISTIC
-:
-  'non-deterministic'
-;
+NON_DETERMINISTIC: 'non-deterministic';
 
-NON_EXIST_MAP
-:
-  'non-exist-map'
-;
+NON_EXIST_MAP: 'non-exist-map';
 
-NON500_ISAKMP
-:
-  'non500-isakmp'
-;
+NON500_ISAKMP: 'non500-isakmp';
 
-NONE
-:
-  'none'
-;
+NONE: 'none';
 
-NORMAL
-:
-  'normal'
-;
+NORMAL: 'normal';
 
-NOS
-:
-  'nos'
-;
+NOS: 'nos';
 
-NOT_ADVERTISE
-:
-  'not-advertise'
-;
+NOT_ADVERTISE: 'not-advertise';
 
-NOTIFY_LICENSEFILE_EXPIRY
-:
-  'notify-licensefile-expiry'
-;
+NOTIFY_LICENSEFILE_EXPIRY: 'notify-licensefile-expiry';
 
-NOTIFY_LICENSEFILE_MISSING
-:
-  'notify-licensefile-missing'
-;
+NOTIFY_LICENSEFILE_MISSING: 'notify-licensefile-missing';
 
-NSSA
-:
-  'nssa'
-;
+NSSA: 'nssa';
 
-NSSA_EXTERNAL
-:
-  'nssa-external'
-;
+NSSA_EXTERNAL: 'nssa-external';
 
-NTP
-:
-  'ntp'
-;
+NTP: 'ntp';
 
-NULL
-:
-  'null'
-;
+NULL: 'null';
 
 NULL0
 :
   [Nn] [Uu] [Ll] [Ll] ' '* '0'
 ;
 
-NV
-:
-  'nv'
-;
+NV: 'nv';
 
-NVE
-:
-  'nve'
-;
+NVE: 'nve';
 
-NXAPI
-:
-  'nxapi'
-;
+NXAPI: 'nxapi';
 
 NXOS
 :
@@ -3100,50 +1528,23 @@ NXOS
 
 ;
 
-OBJECT_GROUP
-:
-  'object-group'
-;
+OBJECT_GROUP: 'object-group';
 
-OBJSTORE
-:
-  'objstore'
-;
+OBJSTORE: 'objstore';
 
-OFF
-:
-  'off'
-;
+OFF: 'off';
 
-ON
-:
-  'on'
-;
+ON: 'on';
 
-ON_STARTUP
-:
-  'on-startup'
-;
+ON_STARTUP: 'on-startup';
 
-OPTION
-:
-  'option'
-;
+OPTION: 'option';
 
-OPTION_MISSING
-:
-  'option-missing'
-;
+OPTION_MISSING: 'option-missing';
 
-ORIGIN
-:
-  'origin'
-;
+ORIGIN: 'origin';
 
-ORIGINATE
-:
-  'originate'
-;
+ORIGINATE: 'originate';
 
 OSPF
 :
@@ -3167,15 +1568,9 @@ OSPFV3
   }
 ;
 
-OTHER_CONFIG_FLAG
-:
-  'other-config-flag'
-;
+OTHER_CONFIG_FLAG: 'other-config-flag';
 
-OUT
-:
-  'out'
-;
+OUT: 'out';
 
 OUTPUT
 :
@@ -3187,100 +1582,49 @@ OUTPUT
   }
 ;
 
-OVERLAY
-:
-  'overlay'
-;
+OVERLAY: 'overlay';
 
-OVERRIDE
-:
-  'override'
-;
+OVERRIDE: 'override';
 
-PACKET
-:
-  'packet'
-;
+PACKET: 'packet';
 
-PACKET_LENGTH
-:
-  'packet-length'
-;
+PACKET_LENGTH: 'packet-length';
 
-PACKET_TOO_BIG
-:
-  'packet-too-big'
-;
+PACKET_TOO_BIG: 'packet-too-big';
 
-PACKETS
-:
-  'packets'
-;
+PACKETS: 'packets';
 
-PARAM
-:
-  'param'
-;
+PARAM: 'param';
 
-PARAMETER_PROBLEM
-:
-  'parameter-problem'
-;
+PARAMETER_PROBLEM: 'parameter-problem';
 
-PASSIVE
-:
-  'passive'
-;
+PASSIVE: 'passive';
 
-PASSIVE_INTERFACE
-:
-  'passive-interface'
-;
+PASSIVE_INTERFACE: 'passive-interface';
 
 PASSWORD
 :
   'password' -> pushMode ( M_Password )
 ;
 
-PATHCOST
-:
-  'pathcost'
-;
+PATHCOST: 'pathcost';
 
-PAUSE
-:
-  'pause'
-;
+PAUSE: 'pause';
 
-PBR
-:
-  'pbr'
-;
+PBR: 'pbr';
 
-PBR_STATISTICS
-:
-  'pbr-statistics'
-;
+PBR_STATISTICS: 'pbr-statistics';
 
-PCP
-:
-  'pcp'
-;
+PCP: 'pcp';
 
 PEER
 :
   'peer' -> pushMode ( M_Word )
 ;
 
-PEER_IP
-:
-  'peer-ip'
-;
+PEER_IP: 'peer-ip';
 
-PEER_LINK
-:
-  'peer-link'
-;
+PEER_LINK: 'peer-link';
 
 PEER_POLICY
 :
@@ -3292,295 +1636,139 @@ PEER_SESSION
   'peer-session' -> pushMode ( M_Word )
 ;
 
-PEER_VTEP
-:
-  'peer-vtep'
-;
+PEER_VTEP: 'peer-vtep';
 
-PEERS
-:
-  'peers'
-;
+PEERS: 'peers';
 
-PER_ENTRY
-:
-  'per-entry'
-;
+PER_ENTRY: 'per-entry';
 
-PER_LINK
-:
-  'per-link'
-;
+PER_LINK: 'per-link';
 
-PER_VLAN
-:
-  'per-vlan'
-;
+PER_VLAN: 'per-vlan';
 
-PERCENT
-:
-  'percent'
-;
+PERCENT: 'percent';
 
-PERIODIC
-:
-  'periodic'
-;
+PERIODIC: 'periodic';
 
-PERMIT
-:
-  'permit'
-;
+PERMIT: 'permit';
 
-PERMIT_ALL
-:
-  'permit-all'
-;
+PERMIT_ALL: 'permit-all';
 
-PIM
-:
-  'pim'
-;
+PIM: 'pim';
 
-PIM_AUTO_RP
-:
-  'pim-auto-rp'
-;
+PIM_AUTO_RP: 'pim-auto-rp';
 
-PIM6
-:
-  'pim6'
-;
+PIM6: 'pim6';
 
-PING
-:
-  'ping'
-;
+PING: 'ping';
 
-PINNING
-:
-  'pinning'
-;
+PINNING: 'pinning';
 
-PLANNED_ONLY
-:
-  'planned-only'
-;
+PLANNED_ONLY: 'planned-only';
 
-POAP
-:
-  'poap'
-;
+POAP: 'poap';
 
-POINT_TO_POINT
-:
-  'point-to-point'
-;
+POINT_TO_POINT: 'point-to-point';
 
-POLICE
-:
-  'police'
-;
+POLICE: 'police';
 
-POLICY
-:
-  'policy'
-;
+POLICY: 'policy';
 
 POLICY_MAP
 :
   'policy-map' -> pushMode ( M_PolicyMap )
 ;
 
-POP2
-:
-  'pop2'
-;
+POP2: 'pop2';
 
-POP3
-:
-  'pop3'
-;
+POP3: 'pop3';
 
-PORT
-:
-  'port'
-;
+PORT: 'port';
 
 PORT_CHANNEL
 :
   [Pp] [Oo] [Rr] [Tt] '-' [Cc] [Hh] [Aa] [Nn] [Nn] [Ee] [Ll]
 ;
 
-PORT_PRIORITY
-:
-  'port-priority'
-;
+PORT_PRIORITY: 'port-priority';
 
-PORT_UNREACHABLE
-:
-  'port-unreachable'
-;
+PORT_UNREACHABLE: 'port-unreachable';
 
 PORTGROUP
 :
   'portgroup' -> pushMode ( M_Word )
 ;
 
-POST
-:
-  'post'
-;
+POST: 'post';
 
-PPS
-:
-  'pps'
-;
+PPS: 'pps';
 
-PRECEDENCE
-:
-  'precedence'
-;
+PRECEDENCE: 'precedence';
 
-PRECEDENCE_UNREACHABLE
-:
-  'precedence-unreachable'
-;
+PRECEDENCE_UNREACHABLE: 'precedence-unreachable';
 
-PREEMPT
-:
-  'preempt'
-;
+PREEMPT: 'preempt';
 
-PREFER
-:
-  'prefer'
-;
+PREFER: 'prefer';
 
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
 ;
 
-PREFIX_PEER_TIMEOUT
-:
-  'prefix-peer-timeout'
-;
+PREFIX_PEER_TIMEOUT: 'prefix-peer-timeout';
 
-PREFIX_PEER_WAIT
-:
-  'prefix-peer-wait'
-;
+PREFIX_PEER_WAIT: 'prefix-peer-wait';
 
-PREPEND
-:
-  'prepend'
-;
+PREPEND: 'prepend';
 
-PRIORITY
-:
-  'priority'
-;
+PRIORITY: 'priority';
 
-PRIORITY_FLOW_CONTROL
-:
-   'priority-flow-control'
-;
+PRIORITY_FLOW_CONTROL: 'priority-flow-control';
 
 PRIV
 :
   'priv' -> pushMode ( M_Priv )
 ;
 
-PRIVATE_VLAN
-:
-  'private-vlan'
-;
+PRIVATE_VLAN: 'private-vlan';
 
-PROTOCOL
-:
-  'protocol'
-;
+PROTOCOL: 'protocol';
 
-PROTOCOL_UNREACHABLE
-:
-  'protocol-unreachable'
-;
+PROTOCOL_UNREACHABLE: 'protocol-unreachable';
 
-PROXY
-:
-  'proxy'
-;
+PROXY: 'proxy';
 
-PROXY_ARP
-:
-  'proxy-arp'
-;
+PROXY_ARP: 'proxy-arp';
 
-PROXY_LEAVE
-:
-  'proxy-leave'
-;
+PROXY_LEAVE: 'proxy-leave';
 
-PSECURE_VIOLATION
-:
-  'psecure-violation'
-;
+PSECURE_VIOLATION: 'psecure-violation';
 
-PSH
-:
-  'psh'
-;
+PSH: 'psh';
 
-PUT
-:
-  'put'
-;
+PUT: 'put';
 
-QOS
-:
-  'qos'
-;
+QOS: 'qos';
 
-QOS_GROUP
-:
-  'qos-group'
-;
+QOS_GROUP: 'qos-group';
 
-QUERIER
-:
-  'querier'
-;
+QUERIER: 'querier';
 
-QUERIER_TIMEOUT
-:
-  'querier-timeout'
-;
+QUERIER_TIMEOUT: 'querier-timeout';
 
-QUERY_INTERVAL
-:
-  'query-interval'
-;
+QUERY_INTERVAL: 'query-interval';
 
-QUERY_MAX_RESPONSE_TIME
-:
-  'query-max-response-time'
-;
+QUERY_MAX_RESPONSE_TIME: 'query-max-response-time';
 
 QUERY_ONLY
 :
   'query-only' -> pushMode(M_Word)
 ;
 
-QUEUE_LIMIT
-:
-  'queue-limit'
-;
+QUEUE_LIMIT: 'queue-limit';
 
-QUEUING
-:
-  'queuing'
-;
+QUEUING: 'queuing';
 
 RADIUS
 :
@@ -3593,185 +1781,89 @@ RADIUS
    }
 ;
 
-RANDOM_DETECT
-:
-  'random-detect'
-;
+RANDOM_DETECT: 'random-detect';
 
-RANGE
-:
-  'range'
-;
+RANGE: 'range';
 
-RATE
-:
-  'rate'
-;
+RATE: 'rate';
 
-RD
-:
-  'rd'
-;
+RD: 'rd';
 
-REACHABLE_VIA
-:
-  'reachable-via'
-;
+REACHABLE_VIA: 'reachable-via';
 
-REACHABILITY
-:
-  'reachability'
-;
+REACHABILITY: 'reachability';
 
 REACTION_CONFIGURATION
 :
   'reaction-configuration' -> pushMode( M_Remark )
 ;
 
-REACTION_TRIGGER
-:
-  'reaction-trigger'
-;
+REACTION_TRIGGER: 'reaction-trigger';
 
-READ
-:
-  'read'
-;
+READ: 'read';
 
-REASSEMBLY_TIMEOUT
-:
-  'reassembly-timeout'
-;
+REASSEMBLY_TIMEOUT: 'reassembly-timeout';
 
-RECEIVE
-:
-  'receive'
-;
+RECEIVE: 'receive';
 
-RECONNECT_INTERVAL
-:
-  'reconnect-interval'
-;
+RECONNECT_INTERVAL: 'reconnect-interval';
 
 RECORD
 :
   'record' -> pushMode(M_Word)
 ;
 
-RECOVERY
-:
-  'recovery'
-;
+RECOVERY: 'recovery';
 
-REDIRECT
-:
-  'redirect'
-;
+REDIRECT: 'redirect';
 
-REDIRECTS
-:
-  'redirects'
-;
+REDIRECTS: 'redirects';
 
-REDISTRIBUTE
-:
-  'redistribute'
-;
+REDISTRIBUTE: 'redistribute';
 
-REFERENCE_BANDWIDTH
-:
-  'reference-bandwidth'
-;
+REFERENCE_BANDWIDTH: 'reference-bandwidth';
 
-REFLECTION
-:
-  'reflection'
-;
+REFLECTION: 'reflection';
 
-RELAY
-:
-  'relay'
-;
+RELAY: 'relay';
 
-RELOAD
-:
-  'reload'
-;
+RELOAD: 'reload';
 
 REMARK
 :
   'remark' -> pushMode ( M_Remark )
 ;
 
-REMOTE_AS
-:
-  'remote-as'
-;
+REMOTE_AS: 'remote-as';
 
-REMOVE
-:
-  'remove'
-;
+REMOVE: 'remove';
 
-REMOVE_PRIVATE_AS
-:
-  'remove-private-as'
-;
+REMOVE_PRIVATE_AS: 'remove-private-as';
 
-REPLACE_AS
-:
-  'replace-as'
-;
+REPLACE_AS: 'replace-as';
 
-REPORT_FLOOD
-:
-  'report-flood'
-;
+REPORT_FLOOD: 'report-flood';
 
-REPORT_POLICY
-:
-  'report-policy'
-;
+REPORT_POLICY: 'report-policy';
 
-REPORT_SUPPRESSION
-:
-  'report-suppression'
-;
+REPORT_SUPPRESSION: 'report-suppression';
 
-REQUEST
-:
-  'request'
-;
+REQUEST: 'request';
 
-RESET
-:
-  'reset'
-;
+RESET: 'reset';
 
 RESPONDER
 :
   'responder' -> pushMode( M_Remark )
 ;
 
-RESTART
-:
-  'restart'
-;
+RESTART: 'restart';
 
-RESTART_TIME
-:
-  'restart-time'
-;
+RESTART_TIME: 'restart-time';
 
-RETAIN
-:
-  'retain'
-;
+RETAIN: 'retain';
 
-RETRANSMIT_INTERVAL
-:
-  'retransmit-interval'
-;
+RETRANSMIT_INTERVAL: 'retransmit-interval';
 
 RIP
 :
@@ -3789,130 +1881,58 @@ RIP
   }
 ;
 
-ROBUSTNESS_VARIABLE
-:
-  'robustness-variable'
-;
+ROBUSTNESS_VARIABLE: 'robustness-variable';
 
-ROLE
-:
-  'role'
-;
+ROLE: 'role';
 
-ROOT
-:
-  'root'
-;
+ROOT: 'root';
 
-ROOT_INCONSISTENCY
-:
-  'root-inconsistency'
-;
+ROOT_INCONSISTENCY: 'root-inconsistency';
 
-ROUTABLE
-:
-  'routable'
-;
+ROUTABLE: 'routable';
 
-ROUTE
-:
-  'route'
-;
+ROUTE: 'route';
 
-ROUTE_FILTER
-:
-  'route-filter'
-;
+ROUTE_FILTER: 'route-filter';
 
 ROUTE_MAP
 :
   'route-map' -> pushMode ( M_Word )
 ;
 
-ROUTE_PREFERENCE
-:
-  'route-preference'
-;
+ROUTE_PREFERENCE: 'route-preference';
 
-ROUTE_REFLECTOR_CLIENT
-:
-  'route-reflector-client'
-;
+ROUTE_REFLECTOR_CLIENT: 'route-reflector-client';
 
-ROUTE_TARGET
-:
-  'route-target'
-;
+ROUTE_TARGET: 'route-target';
 
-ROUTE_TYPE
-:
-  'route-type'
-;
+ROUTE_TYPE: 'route-type';
 
-ROUTER
-:
-  'router'
-;
+ROUTER: 'router';
 
-ROUTER_ADVERTISEMENT
-:
-  'router-advertisement'
-;
+ROUTER_ADVERTISEMENT: 'router-advertisement';
 
-ROUTER_ID
-:
-  'router-id'
-;
+ROUTER_ID: 'router-id';
 
-ROUTER_LSA
-:
-  'router-lsa'
-;
+ROUTER_LSA: 'router-lsa';
 
-ROUTER_SOLICITATION
-:
-  'router-solicitation'
-;
+ROUTER_SOLICITATION: 'router-solicitation';
 
-ROUTINE
-:
-  'routine'
-;
+ROUTINE: 'routine';
 
-RP_ADDRESS
-:
-  'rp-address'
-;
+RP_ADDRESS: 'rp-address';
 
-RP_CANDIDATE
-:
-  'rp-candidate'
-;
+RP_CANDIDATE: 'rp-candidate';
 
-RPF_FAILURE
-:
-  'rpf-failure'
-;
+RPF_FAILURE: 'rpf-failure';
 
-RSA
-:
-  'rsa'
-;
+RSA: 'rsa';
 
-RST
-:
-  'rst'
-;
+RST: 'rst';
 
-RULE
-:
-  'rule'
-;
+RULE: 'rule';
 
-RX
-:
-  'rx'
-;
+RX: 'rx';
 
 SAMPLER
 :
@@ -3924,50 +1944,23 @@ SCHEDULE
   'schedule' -> pushMode( M_Remark )
 ;
 
-SCHEDULER
-:
-  'scheduler'
-;
+SCHEDULER: 'scheduler';
 
-SCP_SERVER
-:
-  'scp-server'
-;
+SCP_SERVER: 'scp-server';
 
-SECONDARY
-:
-  'secondary'
-;
+SECONDARY: 'secondary';
 
-SECURE
-:
-  'secure'
-;
+SECURE: 'secure';
 
-SECURITY_VIOLATION
-:
-  'security-violation'
-;
+SECURITY_VIOLATION: 'security-violation';
 
-SELECTION
-:
-  'selection'
-;
+SELECTION: 'selection';
 
-SEND
-:
-  'send'
-;
+SEND: 'send';
 
-SEND_COMMUNITY
-:
-  'send-community'
-;
+SEND_COMMUNITY: 'send-community';
 
-SEQ
-:
-  'seq'
-;
+SEQ: 'seq';
 
 SERVE
 :
@@ -3979,60 +1972,27 @@ SERVE_ONLY
   'serve-only' -> pushMode(M_Word)
 ;
 
-SERVER
-:
-  'server'
-;
+SERVER: 'server';
 
-SERVER_STATE_CHANGE
-:
-  'server-state-change'
-;
+SERVER_STATE_CHANGE: 'server-state-change';
 
-SERVICE
-:
-  'service'
-;
+SERVICE: 'service';
 
-SERVICE_POLICY
-:
-  'service-policy'
-;
+SERVICE_POLICY: 'service-policy';
 
-SESSION
-:
-  'session'
-;
+SESSION: 'session';
 
-SESSION_LIMIT
-:
-  'session-limit'
-;
+SESSION_LIMIT: 'session-limit';
 
-SET
-:
-  'set'
-;
+SET: 'set';
 
-SFLOW
-:
-  'sflow'
-;
+SFLOW: 'sflow';
 
-SFTP_SERVER
-:
-  'sftp-server'
-;
+SFTP_SERVER: 'sftp-server';
 
-SG_EXPIRY_TIMER
-:
-  'sg-expiry-timer'
-;
+SG_EXPIRY_TIMER: 'sg-expiry-timer';
 
-SG_RPF_FAILURE
-:
-  'sg-rpf-failure'
-;
+SG_RPF_FAILURE: 'sg-rpf-failure';
 
 SHA
 :
@@ -4045,321 +2005,138 @@ SHA
   }
 ;
 
-SHAPE
-:
-  'shape'
-;
+SHAPE: 'shape';
 
-SHOW
-:
-  'show'
-;
+SHOW: 'show';
 
-SHUT
-:
-  'shut'
-;
+SHUT: 'shut';
 
-SHUTDOWN
-:
-  'shutdown'
-;
+SHUTDOWN: 'shutdown';
 
-SINGLE_CONNECTION
-:
-  'single-connection'
-;
+SINGLE_CONNECTION: 'single-connection';
 
-SIZE
-:
-  'size'
-;
+SIZE: 'size';
 
-SLA
-:
-  'sla'
-;
+SLA: 'sla';
 
-SMALL
-:
-  'small'
-;
+SMALL: 'small';
 
-SMART_RELAY
-:
-  'smart-relay'
-;
+SMART_RELAY: 'smart-relay';
 
-SMTP
-:
-  'smtp'
-;
+SMTP: 'smtp';
 
-SMTP_SEND_FAIL
-:
-  'smtp-send-fail'
-;
+SMTP_SEND_FAIL: 'smtp-send-fail';
 
-SNMP
-:
-  'snmp'
-;
+SNMP: 'snmp';
 
-SNMP_SERVER
-:
-  'snmp-server'
-;
+SNMP_SERVER: 'snmp-server';
 
-SNMPTRAP
-:
-  'snmptrap'
-;
+SNMPTRAP: 'snmptrap';
 
-SNOOPING
-:
-  'snooping'
-;
+SNOOPING: 'snooping';
 
-SOFT_RECONFIGURATION
-:
-  'soft-reconfiguration'
-;
+SOFT_RECONFIGURATION: 'soft-reconfiguration';
 
-SOO
-:
-  'soo'
-;
+SOO: 'soo';
 
-SOURCE
-:
-  'source'
-;
+SOURCE: 'source';
 
-SOURCE_INTERFACE
-:
-  'source-interface'
-;
+SOURCE_INTERFACE: 'source-interface';
 
 SOURCE_PROTOCOL
 :
   'source-protocol' -> pushMode(M_Words)
 ;
 
-SOURCE_QUENCH
-:
-  'source-quench'
-;
+SOURCE_QUENCH: 'source-quench';
 
-SOURCE_ROUTE_FAILED
-:
-  'source-route-failed'
-;
+SOURCE_ROUTE_FAILED: 'source-route-failed';
 
-SPANNING_TREE
-:
-  'spanning-tree'
-;
+SPANNING_TREE: 'spanning-tree';
 
-SPARSE_MODE
-:
-  'sparse-mode'
-;
+SPARSE_MODE: 'sparse-mode';
 
-SPEED
-:
-  'speed'
-;
+SPEED: 'speed';
 
-SPF
-:
-  'spf'
-;
+SPF: 'spf';
 
-SPINE_ANYCAST_GATEWAY
-:
-  'spine-anycast-gateway'
-;
+SPINE_ANYCAST_GATEWAY: 'spine-anycast-gateway';
 
-SRC_IP
-:
-  'src-ip'
-;
+SRC_IP: 'src-ip';
 
-SRC_MAC
-:
-  'src-mac'
-;
+SRC_MAC: 'src-mac';
 
-SSH
-:
-  'ssh'
-;
+SSH: 'ssh';
 
-STALEPATH_TIME
-:
-  'stalepath-time'
-;
+STALEPATH_TIME: 'stalepath-time';
 
 STANDARD
 :
   'standard' -> pushMode ( M_Word )
 ;
 
-STARTUP_QUERY_COUNT
-:
-  'startup-query-count'
-;
+STARTUP_QUERY_COUNT: 'startup-query-count';
 
-STARTUP_QUERY_INTERVAL
-:
-  'startup-query-interval'
-;
+STARTUP_QUERY_INTERVAL: 'startup-query-interval';
 
-STATE
-:
-  'state'
-;
+STATE: 'state';
 
-STATE_CHANGE
-:
-  'state-change'
-;
+STATE_CHANGE: 'state-change';
 
-STATE_CHANGE_NOTIF
-:
-  'state-change-notif'
-;
+STATE_CHANGE_NOTIF: 'state-change-notif';
 
-STATIC
-:
-  'static'
-;
+STATIC: 'static';
 
-STATIC_GROUP
-:
-  'static-group'
-;
+STATIC_GROUP: 'static-group';
 
-STATISTICS
-:
-  'statistics'
-;
+STATISTICS: 'statistics';
 
-STICKY_ARP
-:
-  'sticky-arp'
-;
+STICKY_ARP: 'sticky-arp';
 
-STORM_CONTROL
-:
-  'storm-control'
-;
+STORM_CONTROL: 'storm-control';
 
-STPX
-:
-  'stpx'
-;
+STPX: 'stpx';
 
-STRICT_RFC_COMPLIANT
-:
-  'strict-rfc-compliant'
-;
+STRICT_RFC_COMPLIANT: 'strict-rfc-compliant';
 
-STUB
-:
-  'stub'
-;
+STUB: 'stub';
 
-STUB_PREFIX_LSA
-:
-  'stub-prefix-lsa'
-;
+STUB_PREFIX_LSA: 'stub-prefix-lsa';
 
-SUB_OPTION
-:
-  'sub-option'
-;
+SUB_OPTION: 'sub-option';
 
-SUBNET_BROADCAST
-:
-  'subnet-broadcast'
-;
+SUBNET_BROADCAST: 'subnet-broadcast';
 
-SUMMARY_ADDRESS
-:
-  'summary-address'
-;
+SUMMARY_ADDRESS: 'summary-address';
 
-SUMMARY_LSA
-:
-  'summary-lsa'
-;
+SUMMARY_LSA: 'summary-lsa';
 
-SUMMARY_ONLY
-:
-  'summary-only'
-;
+SUMMARY_ONLY: 'summary-only';
 
-SUMMER_TIME
-:
-  'summer-time'
-;
+SUMMER_TIME: 'summer-time';
 
-SUNRPC
-:
-  'sunrpc'
-;
+SUNRPC: 'sunrpc';
 
-SUP_1
-:
-  'sup-1'
-;
+SUP_1: 'sup-1';
 
-SUP_2
-:
-  'sup-2'
-;
+SUP_2: 'sup-2';
 
-SUPPRESS
-:
-  'suppress'
-;
+SUPPRESS: 'suppress';
 
-SUPPRESS_ARP
-:
-  'suppress-arp'
-;
+SUPPRESS_ARP: 'suppress-arp';
 
-SUPPRESS_FIB_PENDING
-:
-  'suppress-fib-pending'
-;
+SUPPRESS_FIB_PENDING: 'suppress-fib-pending';
 
-SUPPRESS_INACTIVE
-:
-  'suppress-inactive'
-;
+SUPPRESS_INACTIVE: 'suppress-inactive';
 
-SUPPRESS_MAP
-:
-  'suppress-map'
-;
+SUPPRESS_MAP: 'suppress-map';
 
-SUPPRESS_RA
-:
-  'suppress-ra'
-;
+SUPPRESS_RA: 'suppress-ra';
 
 // sic
-SUPRESS_FA
-:
-  'supress-fa'
-;
+SUPRESS_FA: 'supress-fa';
 
-SUSPEND_INDIVIDUAL
-:
-  'suspend-individual'
-;
+SUSPEND_INDIVIDUAL: 'suspend-individual';
 
 SWITCHNAME
 :
@@ -4371,25 +2148,13 @@ SWITCHNAME
   }
 ;
 
-SWITCHPORT
-:
-  'switchport'
-;
+SWITCHPORT: 'switchport';
 
-SYN
-:
-  'syn'
-;
+SYN: 'syn';
 
-SYNC
-:
-  'sync'
-;
+SYNC: 'sync';
 
-SYSLOG
-:
-  'syslog'
-;
+SYSLOG: 'syslog';
 
 SYSTEM
 :
@@ -4408,15 +2173,9 @@ TABLE_MAP
   'table-map' -> pushMode ( M_Word )
 ;
 
-TACACS
-:
-  'tacacs'
-;
+TACACS: 'tacacs';
 
-TACACS_SERVER
-:
-  'tacacs-server'
-;
+TACACS_SERVER: 'tacacs-server';
 
 TACACSP
 :
@@ -4429,170 +2188,83 @@ TACACSP
   }
 ;
 
-TAG
-:
-  'tag'
-;
+TAG: 'tag';
 
-TAIL_DROP
-:
-  'tail-drop'
-;
+TAIL_DROP: 'tail-drop';
 
-TALK
-:
-  'talk'
-;
+TALK: 'talk';
 
-TCP
-:
-  'tcp'
-;
+TCP: 'tcp';
 
 TCP_CONNECT
 :
   'tcp-connect' -> pushMode( M_Remark )
 ;
 
-TCP_FLAGS_MASK
-:
-  'tcp-flags-mask'
-;
+TCP_FLAGS_MASK: 'tcp-flags-mask';
 
-TCP_OPTION_LENGTH
-:
-  'tcp-option-length'
-;
+TCP_OPTION_LENGTH: 'tcp-option-length';
 
-TELNET
-:
-  'telnet'
-;
+TELNET: 'telnet';
 
-TEMPLATE
-:
-  'template'
-;
+TEMPLATE: 'template';
 
-TENG_4X
-:
-  '10g-4x'
-;
+TENG_4X: '10g-4x';
 
-TERMINAL
-:
-  'terminal'
-;
+TERMINAL: 'terminal';
 
-TEST
-:
-  'test'
-;
+TEST: 'test';
 
 TEXT
 :
   'text' -> pushMode ( M_Word )
 ;
 
-TFTP
-:
-  'tftp'
-;
+TFTP: 'tftp';
 
-THRESHOLD
-:
-  'threshold'
-;
+THRESHOLD: 'threshold';
 
-THROTTLE
-:
-  'throttle'
-;
+THROTTLE: 'throttle';
 
-TIME
-:
-  'time'
-;
+TIME: 'time';
 
-TIME_EXCEEDED
-:
-  'time-exceeded'
-;
+TIME_EXCEEDED: 'time-exceeded';
 
-TIMEOUT
-:
-  'timeout'
-;
+TIMEOUT: 'timeout';
 
-TIMERS
-:
-  'timers'
-;
+TIMERS: 'timers';
 
-TIMESTAMP_REPLY
-:
-  'timestamp-reply'
-;
+TIMESTAMP_REPLY: 'timestamp-reply';
 
-TIMESTAMP_REQUEST
-:
-  'timestamp-request'
-;
+TIMESTAMP_REQUEST: 'timestamp-request';
 
 TIMEZONE
 :
   'timezone' -> pushMode ( M_Remark )
 ;
 
-TLV_SET
-:
-  'tlv-set'
-;
+TLV_SET: 'tlv-set';
 
-TOPOLOGYCHANGE
-:
-  'topologychange'
-;
+TOPOLOGYCHANGE: 'topologychange';
 
-TRACEROUTE
-:
-  'traceroute'
-;
+TRACEROUTE: 'traceroute';
 
-TRACE
-:
-  'trace'
-;
+TRACE: 'trace';
 
-TRACK
-:
-  'track'
-;
+TRACK: 'track';
 
 TRAFFIC_FILTER
 :
   'traffic-filter' -> pushMode ( M_Word )
 ;
 
-TRANSLATE
-:
-  'translate'
-;
+TRANSLATE: 'translate';
 
-TRANSMIT
-:
-  'transmit'
-;
+TRANSMIT: 'transmit';
 
-TRANSMIT_DELAY
-:
-  'transmit-delay'
-;
+TRANSMIT_DELAY: 'transmit-delay';
 
-TRANSPORT
-:
-  'transport'
-;
+TRANSPORT: 'transport';
 
 TRAP
 :
@@ -4629,55 +2301,25 @@ TRAPS
   }
 ;
 
-TRIGGER_DELAY
-:
-  'trigger-delay'
-;
+TRIGGER_DELAY: 'trigger-delay';
 
-TRUNK
-:
-  'trunk'
-;
+TRUNK: 'trunk';
 
-TRUNK_STATUS
-:
-  'trunk-status'
-;
+TRUNK_STATUS: 'trunk-status';
 
-TRUST
-:
-  'trust'
-;
+TRUST: 'trust';
 
-TRUSTED
-:
-  'trusted'
-;
+TRUSTED: 'trusted';
 
-TRUSTPOINT
-:
-  'trustpoint'
-;
+TRUSTPOINT: 'trustpoint';
 
-TTL
-:
-  'ttl'
-;
+TTL: 'ttl';
 
-TTL_EXCEEDED
-:
-  'ttl-exceeded'
-;
+TTL_EXCEEDED: 'ttl-exceeded';
 
-TTL_FAILURE
-:
-  'ttl-failure'
-;
+TTL_FAILURE: 'ttl-failure';
 
-TX
-:
-  'tx'
-;
+TX: 'tx';
 
 TYPE
 :
@@ -4692,40 +2334,19 @@ TYPE
   }
 ;
 
-TYPE_1
-:
-  'type-1'
-;
+TYPE_1: 'type-1';
 
-TYPE_2
-:
-  'type-2'
-;
+TYPE_2: 'type-2';
 
-TYPE7
-:
-  'type7'
-;
+TYPE7: 'type7';
 
-U4ROUTE_MEM
-:
-  'u4route-mem'
-;
+U4ROUTE_MEM: 'u4route-mem';
 
-U6ROUTE_MEM
-:
-  'u6route-mem'
-;
+U6ROUTE_MEM: 'u6route-mem';
 
-UDLD
-:
-  'udld'
-;
+UDLD: 'udld';
 
-UDP
-:
-  'udp'
-;
+UDP: 'udp';
 
 UDP_ECHO
 :
@@ -4737,45 +2358,21 @@ UDP_JITTER
   'udp-jitter' -> pushMode ( M_Remark )
 ;
 
-UNCHANGED
-:
-  'unchanged'
-;
+UNCHANGED: 'unchanged';
 
-UNICAST
-:
-  'unicast'
-;
+UNICAST: 'unicast';
 
-UNREACHABLE
-:
-  'unreachable'
-;
+UNREACHABLE: 'unreachable';
 
-UNREACHABLES
-:
-  'unreachables'
-;
+UNREACHABLES: 'unreachables';
 
-UNSUPPRESS_MAP
-:
-  'unsuppress-map'
-;
+UNSUPPRESS_MAP: 'unsuppress-map';
 
-UPDATE
-:
-  'update'
-;
+UPDATE: 'update';
 
-UPDATE_SOURCE
-:
-  'update-source'
-;
+UPDATE_SOURCE: 'update-source';
 
-UPGRADE
-:
-  'upgrade'
-;
+UPGRADE: 'upgrade';
 
 UPGRADEJOBSTATUSNOTIFY
 :
@@ -4789,25 +2386,16 @@ UPGRADEOPNOTIFYONCOMPLETION
   [Oo] [Nn] [Cc] [Oo] [Mm] [Pp] [Ll] [Ee] [Tt] [Ii] [Oo] [Nn]
 ;
 
-UPPER
-:
-  'upper'
-;
+UPPER: 'upper';
 
-URG
-:
-  'urg'
-;
+URG: 'urg';
 
 USE_ACL
 :
   'use-acl' -> pushMode ( M_Word )
 ;
 
-USE_BIA
-:
-  'use-bia'
-;
+USE_BIA: 'use-bia';
 
 USE_IPV4ACL
 :
@@ -4839,35 +2427,20 @@ USERNAME
   'username' -> pushMode ( M_Remark )
 ;
 
-USERPASSPHRASE
-:
-  'userpassphrase'
-;
+USERPASSPHRASE: 'userpassphrase';
 
-UUCP
-:
-  'uucp'
-;
+UUCP: 'uucp';
 
-V3_REPORT_SUPPRESSION
-:
-  'v3-report-suppression'
-;
+V3_REPORT_SUPPRESSION: 'v3-report-suppression';
 
-VALIDATE
-:
-  'validate'
-;
+VALIDATE: 'validate';
 
 VDC
 :
   'vdc' -> pushMode ( M_Word )
 ;
 
-VERIFY
-:
-  'verify'
-;
+VERIFY: 'verify';
 
 VERSION
 :
@@ -4889,120 +2462,57 @@ VERSION
   }
 ;
 
-VETHERNET
-:
-  'vethernet'
-;
+VETHERNET: 'vethernet';
 
-VIOLATE
-:
-  'violate'
-;
+VIOLATE: 'violate';
 
-VIRTUAL_LINK
-:
-  'virtual-link'
-;
+VIRTUAL_LINK: 'virtual-link';
 
 VLAN
 :
   [Vv] [Ll] [Aa] [Nn]
 ;
 
-VN_SEGMENT
-:
-  'vn-segment'
-;
+VN_SEGMENT: 'vn-segment';
 
-VN_SEGMENT_VLAN_BASED
-:
-  'vn-segment-vlan-based'
-;
+VN_SEGMENT_VLAN_BASED: 'vn-segment-vlan-based';
 
-VNI
-:
-  'vni'
-;
+VNI: 'vni';
 
-VPC
-:
-  'vpc'
-;
+VPC: 'vpc';
 
-VPNV4
-:
-  'vpnv4'
-;
+VPNV4: 'vpnv4';
 
-VPNV6
-:
-  'vpnv6'
-;
+VPNV6: 'vpnv6';
 
 VRF
 :
   'vrf' -> pushMode ( M_Vrf )
 ;
 
-VTP
-:
-  'vtp'
-;
+VTP: 'vtp';
 
-VTY
-:
-  'vty'
-;
+VTY: 'vty';
 
-WAIT_FOR
-:
-  'wait-for'
-;
+WAIT_FOR: 'wait-for';
 
-WAIT_IGP_CONVERGENCE
-:
-  'wait-igp-convergence'
-;
+WAIT_IGP_CONVERGENCE: 'wait-igp-convergence';
 
-WARNING_ONLY
-:
-  'warning-only'
-;
+WARNING_ONLY: 'warning-only';
 
-WEIGHT
-:
-  'weight'
-;
+WEIGHT: 'weight';
 
-WHOIS
-:
-  'whois'
-;
+WHOIS: 'whois';
 
-WHO
-:
-  'who'
-;
+WHO: 'who';
 
-WITHDRAW
-:
-  'withdraw'
-;
+WITHDRAW: 'withdraw';
 
-WWW
-:
-  'www'
-;
+WWW: 'www';
 
-XCONNECT
-:
-  'xconnect'
-;
+XCONNECT: 'xconnect';
 
-XDMCP
-:
-  'xdmcp'
-;
+XDMCP: 'xdmcp';
 
 // Other Tokens
 
@@ -5045,10 +2555,7 @@ COMMENT_LINE
   ) -> channel ( HIDDEN )
 ;
 
-DASH
-:
-  '-'
-;
+DASH: '-';
 
 DOUBLE_QUOTE
 :
