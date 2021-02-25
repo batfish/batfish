@@ -853,7 +853,7 @@ public class Conversions {
   static RouteFilterList toRouteFilterList(PrefixList list) {
     RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
     List<RouteFilterLine> newLines =
-        list.getLines().stream()
+        list.getLines().values().stream()
             .map(
                 l ->
                     new RouteFilterLine(
