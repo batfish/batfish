@@ -47,7 +47,8 @@ po_condition
 
 pocond_if_route_exists
 :
-  IF_ROUTE_EXISTS (
+  IF_ROUTE_EXISTS
+  (
     pocondi_prefix
     | pocondi_table
   )
