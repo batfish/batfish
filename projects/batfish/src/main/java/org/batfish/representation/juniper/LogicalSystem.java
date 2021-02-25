@@ -80,6 +80,8 @@ public class LogicalSystem implements Serializable {
 
   private NavigableSet<String> _ntpServers;
 
+  private final Map<String, Condition> _conditions;
+
   private final Map<String, PolicyStatement> _policyStatements;
 
   private final Map<String, PrefixList> _prefixLists;
@@ -126,6 +128,7 @@ public class LogicalSystem implements Serializable {
     _jf = new JuniperFamily();
     _ntpServers = new TreeSet<>();
     _prefixLists = new TreeMap<>();
+    _conditions = new TreeMap<>();
     _policyStatements = new TreeMap<>();
     _ribGroups = new HashMap<>();
     _routeFilters = new TreeMap<>();
@@ -318,6 +321,10 @@ public class LogicalSystem implements Serializable {
       _zones.put(zoneName, zone);
     }
     return _zones.get(zoneName);
+  }
+
+  public @Nonnull Map<String, Condition> getConditions() {
+    return _conditions;
   }
 
   public Map<String, PolicyStatement> getPolicyStatements() {

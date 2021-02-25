@@ -188,6 +188,8 @@ ip_option
   | TIMESTAMP
 ;
 
+ip_prefix: IP_PREFIX;
+
 ip_protocol
 :
   AH

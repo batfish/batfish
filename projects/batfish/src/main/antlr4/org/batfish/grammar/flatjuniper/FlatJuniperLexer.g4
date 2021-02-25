@@ -741,7 +741,7 @@ COMPRESS_CONFIGURATION_FILES
 
 CONDITION
 :
-   'condition'
+   'condition' -> pushMode(M_Name)
 ;
 
 CONFEDERATION
@@ -1823,6 +1823,8 @@ IDS_OPTION
 :
    'ids-option'
 ;
+
+IF_ROUTE_EXISTS: 'if-route-exists';
 
 IGMP
 :
@@ -5609,6 +5611,8 @@ SYSTEM_SERVICES
 :
    'system-services'
 ;
+
+TABLE: 'table';
 
 TACACS
 :

@@ -15,6 +15,7 @@ public final class PsFroms implements Serializable {
   private final Set<PsFromAsPath> _fromAsPaths;
   private PsFromColor _fromColor;
   private final Set<PsFromCommunity> _fromCommunities;
+  private final Set<PsFromCondition> _fromConditions;
   private PsFromFamily _fromFamily;
   private PsFromInstance _fromInstance;
   private final Set<PsFromInterface> _fromInterfaces;
@@ -33,6 +34,7 @@ public final class PsFroms implements Serializable {
   PsFroms() {
     _fromAsPaths = new LinkedHashSet<>();
     _fromCommunities = new LinkedHashSet<>();
+    _fromConditions = new LinkedHashSet<>();
     _fromInterfaces = new LinkedHashSet<>();
     _fromPolicyStatements = new LinkedHashSet<>();
     _fromPolicyStatementConjunctions = new LinkedHashSet<>();
@@ -52,6 +54,11 @@ public final class PsFroms implements Serializable {
   public void addFromCommunity(@Nonnull PsFromCommunity fromCommunity) {
     _atLeastOneFrom = true;
     _fromCommunities.add(fromCommunity);
+  }
+
+  public void addFromCondition(@Nonnull PsFromCondition fromCondition) {
+    _atLeastOneFrom = true;
+    _fromConditions.add(fromCondition);
   }
 
   public void addFromInterface(@Nonnull PsFromInterface fromInterface) {
@@ -115,6 +122,11 @@ public final class PsFroms implements Serializable {
   @Nonnull
   Set<PsFromCommunity> getFromCommunities() {
     return _fromCommunities;
+  }
+
+  @VisibleForTesting
+  public @Nonnull Set<PsFromCondition> getFromConditions() {
+    return _fromConditions;
   }
 
   @Nullable
