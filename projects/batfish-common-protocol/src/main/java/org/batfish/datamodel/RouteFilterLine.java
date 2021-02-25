@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -17,9 +18,9 @@ public final class RouteFilterLine implements Serializable {
   private static final String PROP_LENGTH_RANGE = "lengthRange";
   private static final String PROP_IP_WILDCARD = "ipWildcard";
 
-  private final LineAction _action;
-  private final IpWildcard _ipWildcard;
-  private final SubRange _lengthRange;
+  private final @Nonnull LineAction _action;
+  private final @Nonnull IpWildcard _ipWildcard;
+  private final @Nonnull SubRange _lengthRange;
 
   /** Route filter line that permits all routes */
   public static final RouteFilterLine PERMIT_ALL =
@@ -44,9 +45,7 @@ public final class RouteFilterLine implements Serializable {
   }
 
   public RouteFilterLine(LineAction action, Prefix prefix, SubRange lengthRange) {
-    _action = action;
-    _ipWildcard = IpWildcard.create(prefix);
-    _lengthRange = lengthRange;
+    this(action, IpWildcard.create(prefix), lengthRange);
   }
 
   public RouteFilterLine(LineAction action, PrefixRange prefixRange) {
@@ -62,20 +61,20 @@ public final class RouteFilterLine implements Serializable {
     }
 
     RouteFilterLine other = (RouteFilterLine) o;
-    return Objects.equals(_action, other._action)
-        && Objects.equals(_lengthRange, other._lengthRange)
-        && Objects.equals(_ipWildcard, other._ipWildcard);
+    return _action == other._action
+        && _lengthRange.equals(other._lengthRange)
+        && _ipWildcard.equals(other._ipWildcard);
   }
 
   /** The action the underlying access-list will take when this line matches an IPV4 route. */
   @JsonProperty(PROP_ACTION)
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
   /** The range of acceptable prefix-lengths for a route. */
   @JsonProperty(PROP_LENGTH_RANGE)
-  public SubRange getLengthRange() {
+  public @Nonnull SubRange getLengthRange() {
     return _lengthRange;
   }
 
@@ -84,7 +83,7 @@ public final class RouteFilterLine implements Serializable {
    * which bits must match.
    */
   @JsonProperty(PROP_IP_WILDCARD)
-  public IpWildcard getIpWildcard() {
+  public @Nonnull IpWildcard getIpWildcard() {
     return _ipWildcard;
   }
 

@@ -163,6 +163,8 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
 import org.batfish.representation.arista.MlagConfiguration;
+import org.batfish.representation.arista.PrefixList;
+import org.batfish.representation.arista.PrefixListLine;
 import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
 import org.batfish.representation.arista.VrrpInterface;
@@ -2621,5 +2623,50 @@ public class AristaGrammarTest {
             .get(Prefix.parse("3.3.3.0/24"))
             .getRemoteAsns(),
         equalTo(BgpPeerConfig.ALL_AS_NUMBERS));
+  }
+
+  @Test
+  public void testPrefixListSeq() {
+    AristaConfiguration c = parseVendorConfig("prefix-list-seq");
+    assertThat(
+        c.getPrefixLists(), hasKeys("NOSEQ", "NOSEQ_THEN_SEQ", "SEQ_NO_SEQ", "OUT_OF_ORDER"));
+    {
+      PrefixList pl = c.getPrefixLists().get("NOSEQ");
+      assertThat(pl.getLines(), hasKeys(10L));
+      assertThat(
+          pl.getLines().values().stream()
+              .map(PrefixListLine::getPrefix)
+              .collect(ImmutableList.toImmutableList()),
+          contains(Prefix.parse("10.0.0.0/8")));
+    }
+    {
+      PrefixList pl = c.getPrefixLists().get("NOSEQ_THEN_SEQ");
+      assertThat(pl.getLines(), hasKeys(10L, 20L));
+      assertThat(
+          pl.getLines().values().stream()
+              .map(PrefixListLine::getPrefix)
+              .collect(ImmutableList.toImmutableList()),
+          contains(Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8")));
+    }
+    {
+      PrefixList pl = c.getPrefixLists().get("SEQ_NO_SEQ");
+      assertThat(pl.getLines(), hasKeys(15L, 25L, 30L));
+      assertThat(
+          pl.getLines().values().stream()
+              .map(PrefixListLine::getPrefix)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8"), Prefix.parse("30.0.0.0/8")));
+    }
+    {
+      PrefixList pl = c.getPrefixLists().get("OUT_OF_ORDER");
+      assertThat(pl.getLines(), hasKeys(10L, 20L, 30L));
+      assertThat(
+          pl.getLines().values().stream()
+              .map(PrefixListLine::getPrefix)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8"), Prefix.parse("30.0.0.0/8")));
+    }
   }
 }
