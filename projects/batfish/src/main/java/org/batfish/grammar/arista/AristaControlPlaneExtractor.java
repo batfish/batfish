@@ -5946,7 +5946,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       maxLen = toInteger(ctx.eqpl);
     }
     SubRange lengthRange = new SubRange(minLen, maxLen);
-    PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
+    long seq = ctx.seqnum != null ? toLong(ctx.seqnum) : _currentPrefixList.getNextSeq();
+    PrefixListLine line = new PrefixListLine(seq, action, prefix, lengthRange);
     _currentPrefixList.addLine(line);
   }
 
