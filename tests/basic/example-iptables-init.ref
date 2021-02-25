@@ -2,6 +2,23 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileFormats" : {
+        "configs/r1.cfg" : "CISCO_IOS",
+        "configs/r2.cfg" : "CISCO_IOS",
+        "configs/r3.cfg" : "CISCO_IOS",
+        "configs/z1-firewall.cfg" : "CISCO_IOS",
+        "configs/z2-firewall.cfg" : "CISCO_IOS",
+        "hosts/internet-host.json" : "HOST",
+        "hosts/z1-firewall.json" : "HOST",
+        "hosts/z1-host1.json" : "HOST",
+        "hosts/z1-host2.json" : "HOST",
+        "hosts/z2-firewall.json" : "HOST",
+        "hosts/z2-host1.json" : "HOST",
+        "hosts/z2-host2.json" : "HOST",
+        "iptables/z1-firewall.v4" : "IPTABLES",
+        "iptables/z2-firewall.v4" : "IPTABLES",
+        "iptables/z2-host2.v4" : "IPTABLES"
+      },
       "fileMap" : {
         "internet-host" : [
           "hosts/internet-host.json"

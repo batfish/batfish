@@ -12,6 +12,7 @@ import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.representation.cisco.CiscoConfiguration;
@@ -37,6 +38,7 @@ public class ParseVendorConfigurationResultTest {
             0,
             new BatfishLoggerHistory(),
             filename,
+            ConfigurationFormat.CISCO_IOS,
             config,
             warnings,
             parseTree,
