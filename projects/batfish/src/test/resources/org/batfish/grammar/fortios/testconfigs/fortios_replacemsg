@@ -10,5 +10,11 @@ config system replacemsg admin pre_admin-disclaimer-text
 line
 end
 config system replacemsg admin "post_admin-disclaimer-text"
+  set buffer ''
+  set buffer ""
+  unset buffer
+end
+config system replacemsg admin "invalid minor type"
+  set buffer 'crashing would be rude'
 end
 

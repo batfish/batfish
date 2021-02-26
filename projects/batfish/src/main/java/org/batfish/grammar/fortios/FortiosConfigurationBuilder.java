@@ -181,7 +181,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return "";
     }
     String quotedText = ctx.text.getText();
-    // TODO: smarter unescaping?
     return ESCAPED_CHAR_PATTERN.matcher(quotedText).replaceAll("$1");
   }
 
