@@ -141,9 +141,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
      * - single-quoted strings do not interpret any characters specially
      * - double-quoted strings recognize the following three escape sequences:
      *   \" -> "
-     *   \' -> '
+     *   \' -> ' <---Note that single-quotes are canonically escaped in double-quotes, but need not be.
      *   \\ -> \
-     *   A backslash followed by any other character is treated as a literal backslash
+     *   A backslash followed by any other character is treated as a literal backslash.
+     *   So e.g.
+     *   \n -> \n <---The letter 'n', not newline.
      * - outside of quotes, a backslash followed by any character other than a newline is stripped.
      *   E.g.
      *   \n -> n
