@@ -60,6 +60,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -210,6 +211,8 @@ public class CumulusFrrGrammarTest {
     walker.walk(cb, tree);
     Warnings w = _config.getWarnings();
     _config = SerializationUtils.clone(_config);
+    // Gets cleared during parsing, only needed during conversion.
+    _config.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     _config.setWarnings(w);
   }
 
