@@ -35,6 +35,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     return ImmutableList.of(toVendorIndependentConfiguration());
   }
 
+  /** majorType -> minorType -> replacemsg config */
   public @Nonnull Map<String, Map<String, Replacemsg>> getReplacemsgs() {
     return _replacemsgs;
   }
