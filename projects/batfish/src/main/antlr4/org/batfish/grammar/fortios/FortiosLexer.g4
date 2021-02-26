@@ -6,8 +6,7 @@ options {
 
 tokens {
   QUOTED_TEXT,
-  UNQUOTED_ESCAPED_CHAR,
-  WORD
+  UNQUOTED_WORD_CHARS
 }
 
 // Keyword Tokens
@@ -16,20 +15,20 @@ ADMIN:
   'admin'
   {
     if (lastTokenType() == REPLACEMSG) {
-      pushMode(M_Word);
+      pushMode(M_Str);
     }
   }
 ;
 
 ALERTMAIL: 'alertmail';
 AUTH: 'auth';
-BUFFER: 'buffer' -> pushMode(M_Word);
+BUFFER: 'buffer' -> pushMode(M_Str);
 CONFIG: 'config';
 END: 'end';
 FORTIGUARD_WF: 'fortiguard-wf';
 FTP: 'ftp';
 GLOBAL: 'global';
-HOSTNAME: 'hostname' -> pushMode(M_Word);
+HOSTNAME: 'hostname' -> pushMode(M_Str);
 HTTP: 'http';
 ICAP: 'icap';
 MAIL: 'mail';
@@ -457,24 +456,22 @@ M_SingleQuote_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), popMode;
 
 M_SingleQuote_QUOTED_TEXT: ~[']+ -> type(QUOTED_TEXT);
 
-mode M_Word;
+mode M_Str;
 
-M_WordWs_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_StrWs_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
 
-M_WordWs_WS: F_Whitespace+ -> skip, mode(M_Word2);
+M_StrWs_WS: F_Whitespace+ -> skip, mode(M_Str2);
 
-mode M_Word2;
+mode M_Str2;
 
-M_Word_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+M_Str_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
 
-M_Word_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+M_Str_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 
-M_Word_LINE_CONTINUATION: F_LineContinuation -> skip;
+M_Str_LINE_CONTINUATION: F_LineContinuation -> skip;
 
-M_Word_UNQUOTED_ESCAPED_CHAR: F_UnquotedEscapedChar -> type(UNQUOTED_ESCAPED_CHAR);
+M_Str_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTED_WORD_CHARS);
 
-M_Word_WORD: F_WordChar+ -> type(WORD);
+M_Str_WS: F_Whitespace+ -> skip, popMode;
 
-M_Word_WS: F_Whitespace+ -> skip, popMode;
-
-M_Word_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_Str_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;

@@ -1,10 +1,10 @@
 package org.batfish.grammar.fortios;
 
-import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_ESCAPED_CHAR;
-import static org.batfish.grammar.fortios.FortiosLexer.WORD;
+import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -29,6 +29,7 @@ import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Single_quoted_stringContext;
 import org.batfish.grammar.fortios.FortiosParser.StrContext;
 import org.batfish.grammar.fortios.FortiosParser.Subnet_maskContext;
@@ -110,26 +111,33 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, Device_hostnameContext ctx) {
-    Optional<String> maybeHostname = toString(messageCtx, ctx.word());
-    if (!maybeHostname.isPresent()) {
-      return Optional.empty();
-    }
-    String hostname = maybeHostname.get();
-    if (!DEVICE_HOSTNAME_PATTERN.matcher(hostname).matches()) {
-      warn(messageCtx, String.format("Invalid characters in hostname: %s", hostname));
-      return Optional.empty();
-    }
-    return Optional.of(hostname);
+      ParserRuleContext messageCtx, Replacemsg_minor_typeContext ctx) {
+    return toString(messageCtx, ctx.word(), "replacemsg minor type");
   }
 
-  private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, WordContext ctx) {
-    String content = toString(ctx.str());
-    if (WSNL_PATTERN.matcher(content).find()) {
-      warn(messageCtx, String.format("Illegal whitespace in: %s", content));
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Device_hostnameContext ctx) {
+    return toString(messageCtx, ctx.str(), "device hostname", DEVICE_HOSTNAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, StrContext ctx, String type, Pattern pattern) {
+    return toString(messageCtx, ctx, type, s -> pattern.matcher(s).matches());
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, StrContext ctx, String type, Predicate<String> predicate) {
+    String text = toString(ctx);
+    if (!predicate.test(text)) {
+      warn(messageCtx, String.format("Illegal value for %s", type));
       return Optional.empty();
     }
-    return Optional.of(content);
+    return Optional.of(text);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, WordContext ctx, String type) {
+    return toString(messageCtx, ctx.str(), type, WORD_PATTERN);
   }
 
   private static @Nonnull String toString(StrContext ctx) {
@@ -164,13 +172,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
               } else {
                 assert child instanceof TerminalNode;
                 int type = ((TerminalNode) child).getSymbol().getType();
-                String text = child.getText();
-                if (type == WORD) {
-                  return text;
-                } else {
-                  assert type == UNQUOTED_ESCAPED_CHAR;
-                  return child.getText().substring(1);
-                }
+                assert type == UNQUOTED_WORD_CHARS;
+                return ESCAPED_UNQUOTED_CHAR_PATTERN.matcher(child.getText()).replaceAll("$1");
               }
             })
         .collect(Collectors.joining(""));
@@ -181,7 +184,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return "";
     }
     String quotedText = ctx.text.getText();
-    return ESCAPED_CHAR_PATTERN.matcher(quotedText).replaceAll("$1");
+    return ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN.matcher(quotedText).replaceAll("$1");
   }
 
   private static @Nonnull String toString(Single_quoted_stringContext ctx) {
@@ -243,8 +246,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
-  private static final Pattern ESCAPED_CHAR_PATTERN = Pattern.compile("\\\\(['\"\\\\])");
-  private static final Pattern WSNL_PATTERN = Pattern.compile("[ \t\r\n]");
+  private static final Pattern ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN =
+      Pattern.compile("\\\\(['\"\\\\])");
+  private static final Pattern ESCAPED_UNQUOTED_CHAR_PATTERN = Pattern.compile("\\\\([^\\r\\n])");
+  private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
 
   private Replacemsg _currentReplacemsg;
   private final @Nonnull FortiosConfiguration _c;

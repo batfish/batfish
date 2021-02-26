@@ -23,9 +23,9 @@ cs_global
 csg_hostname: HOSTNAME host=device_hostname NEWLINE;
 
 // [A-Za-z0-9_-]
-device_hostname: word;
+device_hostname: str;
 
-cs_replacemsg: REPLACEMSG major_type=replacemsg_major_type minor_type=word NEWLINE csr*;
+cs_replacemsg: REPLACEMSG major_type=replacemsg_major_type minor_type=replacemsg_minor_type NEWLINE csr*;
 
 replacemsg_major_type:
   ADMIN
@@ -43,6 +43,11 @@ replacemsg_major_type:
   | UTM
   | WEBPROXY
 ;
+
+replacemsg_minor_type:
+/* TODO: something smarter. Enumerating the minor types is complicated by the fact that in show
+         output they appear in quotes, but need not be entered that way. */
+  word;
 
 csr:
   SET (

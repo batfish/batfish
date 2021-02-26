@@ -43,4 +43,4 @@ uint32
 word: str;
 
 // can include whitespace, newlines, html tags, etc.
-str: (double_quoted_string | single_quoted_string | UNQUOTED_ESCAPED_CHAR | WORD)+;
+str: (double_quoted_string | single_quoted_string | UNQUOTED_WORD_CHARS)*;
