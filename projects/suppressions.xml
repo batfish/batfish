@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <suppress>
+    <notes>This is a SUSE packaging bug, nothing to do with jar.</notes>
+    <cve>CVE-2020-8022</cve>
+  </suppress>
+</suppressions>
