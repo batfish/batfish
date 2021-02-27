@@ -445,8 +445,15 @@
           <configuration>
             <skip>true</skip>
             <failBuildOnCVSS>4</failBuildOnCVSS>
-            <suppressionFiles>suppressions.xml</suppressionFiles>
+            <suppressionFiles>org/batfish/owasp/suppressions.xml</suppressionFiles>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.batfish</groupId>
+              <artifactId>build-tools</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -561,18 +568,6 @@
             <id>attach-javadocs</id>
             <goals>
               <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.owasp</groupId>
-        <artifactId>dependency-check-maven</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
             </goals>
           </execution>
         </executions>
