@@ -1,4 +1,0 @@
-config system global
-  set hostname "invalid hostname"
-end
-

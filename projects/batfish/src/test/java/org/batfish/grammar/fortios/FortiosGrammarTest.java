@@ -1,6 +1,9 @@
 package org.batfish.grammar.fortios;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
@@ -55,16 +58,22 @@ public final class FortiosGrammarTest {
 
   @Test
   public void testInvalidHostnameWithDotExtraction() {
-    String filename = "fortios_bad_hostname_dot";
+    String filename = "fortios_bad_hostname";
     // invalid hostname from config file is thrown away
     assertThat(parseVendorConfig(filename).getHostname(), nullValue());
   }
 
   @Test
-  public void testInvalidHostnameWithWsExtraction() {
-    String filename = "fortios_bad_hostname_ws";
-    // invalid hostname from config file is thrown away
-    assertThat(parseVendorConfig(filename).getHostname(), nullValue());
+  public void testInvalidHostnameWithDotConversion() throws IOException {
+    String filename = "fortios_bad_hostname";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(warnings, hasParseWarning(hasComment("Illegal value for device hostname")));
   }
 
   @Test
@@ -80,6 +89,20 @@ public final class FortiosGrammarTest {
         vc.getReplacemsgs().get(majorType).get(minorTypePre).getBuffer(),
         equalTo("\"npre\"''\\\\nabc\\\\\\\" \"\nlastline"));
     assertThat(vc.getReplacemsgs().get(majorType).get(minorTypePost).getBuffer(), nullValue());
+  }
+
+  @Test
+  public void testReplacemsgConversion() throws IOException {
+    String filename = "fortios_replacemsg";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    // Should see a single conversion warning for Ethernet1/1's conflicting speeds
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(warnings, hasParseWarning(hasComment("Illegal value for replacemsg minor type")));
   }
 
   private static final BddTestbed BDD_TESTBED =
