@@ -206,6 +206,7 @@
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
