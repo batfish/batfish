@@ -1205,6 +1205,9 @@ class FlowTracer {
   @Nullable
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    if (!firewallSessionInterfaceInfo.canSetUpSessionForFlowFrom(_ingressInterface)) {
+      return null;
+    }
     SessionAction action =
         getSessionAction(
             firewallSessionInterfaceInfo.getAction(),

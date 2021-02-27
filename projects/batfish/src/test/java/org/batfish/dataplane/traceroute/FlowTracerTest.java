@@ -34,8 +34,10 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -50,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.Stack;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
@@ -60,6 +63,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
@@ -886,6 +890,130 @@ public final class FlowTracerTest {
             .getOutputInterface()
             .getInterface(),
         equalTo(natBeforeRouting ? postNatEgressIface : preNatEgressIface));
+  }
+
+  @Test
+  public void testSessionSetupForIngressInterfaces() {
+    /*
+     * Test that sessions are set up correctly according to egress interface's
+     * FirewallSessionInterfaceInfo, which controls whether sessions can be set up by flows from a
+     * given source interface and whether they can be set up by flows originating from the device.
+     */
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
+    Interface.Builder ifaceBuilder = nf.interfaceBuilder().setOwner(c).setVrf(vrf);
+    Interface eth1 = ifaceBuilder.setName("eth1").build();
+    Interface eth2 = ifaceBuilder.setName("eth2").build();
+    Interface eth3 = ifaceBuilder.setName("eth3").build();
+
+    // Make a TCP flow with dst IP 1.1.1.1 (must set protocol for sessions to be set up).
+    // Create traceroute context where that IP will be forwarded out eth3.
+    Ip dstIp = Ip.parse("1.1.1.1");
+    Flow.Builder flowBuilder =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setIpProtocol(IpProtocol.TCP)
+            .setSrcPort(22)
+            .setDstPort(22)
+            .setDstIp(dstIp);
+    StaticRoute route =
+        StaticRoute.testBuilder()
+            .setAdmin(1)
+            .setNetwork(dstIp.toPrefix())
+            .setNextHopInterface(eth3.getName())
+            .build();
+    DataPlane mockDataPlane =
+        MockDataPlane.builder()
+            .setForwardingAnalysis(
+                MockForwardingAnalysis.builder()
+                    .setDeliveredToSubnet(
+                        ImmutableMap.of(
+                            c.getHostname(),
+                            ImmutableMap.of(
+                                vrf.getName(), ImmutableMap.of(eth3.getName(), dstIp.toIpSpace()))))
+                    .build())
+            .build();
+    Fib fib =
+        MockFib.builder()
+            .setFibEntries(
+                ImmutableMap.of(
+                    dstIp,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            new FibForward(dstIp, eth3.getName()), ImmutableList.of(route)))))
+            .build();
+    TracerouteEngineImplContext ctxt =
+        new TracerouteEngineImplContext(
+            mockDataPlane,
+            Topology.EMPTY,
+            ImmutableSet.of(),
+            ImmutableSet.of(),
+            ImmutableMap.of(c.getHostname(), ImmutableMap.of(vrf.getName(), fib)),
+            false,
+            ImmutableMap.of(c.getHostname(), c));
+
+    // Create test flows
+    Flow fromEth1 = flowBuilder.setIngressInterface(eth1.getName()).build();
+    Flow fromEth2 = flowBuilder.setIngressInterface(eth2.getName()).build();
+    Flow fromDevice = flowBuilder.setIngressInterface(null).setIngressVrf(vrf.getName()).build();
+
+    {
+      // eth3 should set up sessions for flows from any ingress interface or originating from device
+      eth3.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(
+              Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of(eth3.getName()), null, true, null, null));
+      assertTrue(setsUpNewSession(c, vrf.getName(), eth1.getName(), fromEth1, ctxt));
+      assertTrue(setsUpNewSession(c, vrf.getName(), eth2.getName(), fromEth2, ctxt));
+      assertTrue(setsUpNewSession(c, vrf.getName(), null, fromDevice, ctxt));
+    }
+    {
+      // eth3 should set up sessions for flows from eth1 only
+      eth3.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(
+              Action.PRE_NAT_FIB_LOOKUP,
+              ImmutableSet.of(eth3.getName()),
+              ImmutableSet.of(eth1.getName()),
+              false,
+              null,
+              null));
+      assertTrue(setsUpNewSession(c, vrf.getName(), eth1.getName(), fromEth1, ctxt));
+      assertFalse(setsUpNewSession(c, vrf.getName(), eth2.getName(), fromEth2, ctxt));
+      assertFalse(setsUpNewSession(c, vrf.getName(), null, fromDevice, ctxt));
+    }
+  }
+
+  /**
+   * Returns true if processing {@code flow} in the given {@code ctxt} sets up at least one new
+   * session. Assumes only one trace is produced.
+   */
+  private boolean setsUpNewSession(
+      Configuration c,
+      String vrf,
+      @Nullable String ingressIface, // null if originating from device
+      Flow flow,
+      TracerouteEngineImplContext ctxt) {
+    List<TraceAndReverseFlow> traces = new ArrayList<>();
+    FlowTracer flowTracer =
+        new FlowTracer(
+            ctxt,
+            c,
+            ingressIface,
+            new Node(c.getHostname()),
+            new LegacyTraceRecorder(traces::add),
+            null,
+            new ArrayList<>(),
+            flow,
+            vrf,
+            new ArrayList<>(),
+            new ArrayList<>(),
+            new Stack<>(),
+            flow,
+            0,
+            0);
+    flowTracer.processHop();
+    return !Iterables.getOnlyElement(traces).getNewFirewallSessions().isEmpty();
   }
 
   @Test
