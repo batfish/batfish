@@ -1,4 +1,4 @@
 config system global
-  set hostname "my_fortios_hostname"
+  set hostname my_fortios-hostname1
 end
 

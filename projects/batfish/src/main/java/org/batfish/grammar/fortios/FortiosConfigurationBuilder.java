@@ -1,10 +1,17 @@
 package org.batfish.grammar.fortios;
 
+import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
+
+import java.util.HashMap;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.IntegerSpace;
@@ -13,14 +20,24 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.fortios.FortiosParser.Cs_replacemsgContext;
 import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
+import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
+import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
+import org.batfish.grammar.fortios.FortiosParser.Device_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
+import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Single_quoted_stringContext;
+import org.batfish.grammar.fortios.FortiosParser.StrContext;
 import org.batfish.grammar.fortios.FortiosParser.Subnet_maskContext;
 import org.batfish.grammar.fortios.FortiosParser.Uint16Context;
 import org.batfish.grammar.fortios.FortiosParser.Uint8Context;
+import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.representation.fortios.FortiosConfiguration;
+import org.batfish.representation.fortios.Replacemsg;
 
 /**
  * Given a parse tree, builds a {@link FortiosConfiguration} that has been prepopulated with
@@ -57,11 +74,121 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCsg_hostname(Csg_hostnameContext ctx) {
-    _c.setHostname(toString(ctx.hostname));
+    toString(ctx, ctx.host).ifPresent(_c::setHostname);
   }
 
-  private @Nonnull String toString(Double_quoted_stringContext ctx) {
-    return ctx.quoted_text() != null ? ctx.quoted_text().getText() : "";
+  @Override
+  public void enterCs_replacemsg(Cs_replacemsgContext ctx) {
+    String majorType = toString(ctx.major_type);
+    Optional<String> maybeMinorType = toString(ctx, ctx.minor_type);
+    if (!maybeMinorType.isPresent()) {
+      _currentReplacemsg = new Replacemsg(); // dummy
+      return;
+    }
+    _currentReplacemsg =
+        _c.getReplacemsgs()
+            .computeIfAbsent(majorType, n -> new HashMap<>())
+            .computeIfAbsent(maybeMinorType.get(), n -> new Replacemsg());
+  }
+
+  @Override
+  public void exitCs_replacemsg(Cs_replacemsgContext ctx) {
+    _currentReplacemsg = null;
+  }
+
+  @Override
+  public void exitCsr_set_buffer(Csr_set_bufferContext ctx) {
+    _currentReplacemsg.setBuffer(toString(ctx.buffer));
+  }
+
+  @Override
+  public void exitCsr_unset_buffer(Csr_unset_bufferContext ctx) {
+    _currentReplacemsg.setBuffer(null);
+  }
+
+  private @Nonnull String toString(Replacemsg_major_typeContext ctx) {
+    return ctx.getText();
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Replacemsg_minor_typeContext ctx) {
+    return toString(messageCtx, ctx.word(), "replacemsg minor type");
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Device_hostnameContext ctx) {
+    return toString(messageCtx, ctx.str(), "device hostname", DEVICE_HOSTNAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, StrContext ctx, String type, Pattern pattern) {
+    return toString(messageCtx, ctx, type, s -> pattern.matcher(s).matches());
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, StrContext ctx, String type, Predicate<String> predicate) {
+    String text = toString(ctx);
+    if (!predicate.test(text)) {
+      warn(messageCtx, String.format("Illegal value for %s", type));
+      return Optional.empty();
+    }
+    return Optional.of(text);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, WordContext ctx, String type) {
+    return toString(messageCtx, ctx.str(), type, WORD_PATTERN);
+  }
+
+  private static @Nonnull String toString(StrContext ctx) {
+    /*
+     * Extract the text from a str.
+     *
+     * A str is composed of a sequence of single-quoted strings, double-quoted strings,
+     * and unquoted non-whitespace characters.
+     * - single-quoted strings do not interpret any characters specially
+     * - double-quoted strings recognize the following three escape sequences:
+     *   \" -> "
+     *   \' -> ' <---Note that single-quotes are canonically escaped in double-quotes, but need not be.
+     *   \\ -> \
+     *   A backslash followed by any other character is treated as a literal backslash.
+     *   So e.g.
+     *   \n -> \n <---The letter 'n', not newline.
+     * - outside of quotes, a backslash followed by any character other than a newline is stripped.
+     *   E.g.
+     *   \n -> n
+     *   \" -> "
+     *   \(space) -> (space)
+     *   A backslash followed immediately by a newline character indicates a line continuation.
+     *   That is, the backslash and the newline are both stripped.
+     */
+    return ctx.children.stream()
+        .map(
+            child -> {
+              if (child instanceof Double_quoted_stringContext) {
+                return toString((Double_quoted_stringContext) child);
+              } else if (child instanceof Single_quoted_stringContext) {
+                return toString((Single_quoted_stringContext) child);
+              } else {
+                assert child instanceof TerminalNode;
+                int type = ((TerminalNode) child).getSymbol().getType();
+                assert type == UNQUOTED_WORD_CHARS;
+                return ESCAPED_UNQUOTED_CHAR_PATTERN.matcher(child.getText()).replaceAll("$1");
+              }
+            })
+        .collect(Collectors.joining(""));
+  }
+
+  private static @Nonnull String toString(Double_quoted_stringContext ctx) {
+    if (ctx.text == null) {
+      return "";
+    }
+    String quotedText = ctx.text.getText();
+    return ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN.matcher(quotedText).replaceAll("$1");
+  }
+
+  private static @Nonnull String toString(Single_quoted_stringContext ctx) {
+    return ctx.text != null ? ctx.text.getText() : "";
   }
 
   /**
@@ -118,6 +245,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Ip6.parse(ctx.getText());
   }
 
+  private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
+  private static final Pattern ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN =
+      Pattern.compile("\\\\(['\"\\\\])");
+  private static final Pattern ESCAPED_UNQUOTED_CHAR_PATTERN = Pattern.compile("\\\\([^\\r\\n])");
+  private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
+
+  private Replacemsg _currentReplacemsg;
   private final @Nonnull FortiosConfiguration _c;
   private final @Nonnull FortiosCombinedParser _parser;
   private final @Nonnull String _text;
