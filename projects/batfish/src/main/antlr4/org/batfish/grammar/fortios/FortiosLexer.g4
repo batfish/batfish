@@ -464,14 +464,14 @@ M_StrWs_WS: F_Whitespace+ -> skip, mode(M_Str2);
 
 mode M_Str2;
 
-M_Str_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+M_Str2_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
 
-M_Str_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+M_Str2_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 
-M_Str_LINE_CONTINUATION: F_LineContinuation -> skip;
+M_Str2_LINE_CONTINUATION: F_LineContinuation -> skip;
 
-M_Str_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTED_WORD_CHARS);
+M_Str2_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTED_WORD_CHARS);
 
-M_Str_WS: F_Whitespace+ -> skip, popMode;
+M_Str2_WS: F_Whitespace+ -> skip, popMode;
 
-M_Str_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_Str2_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
