@@ -1,7 +1,9 @@
 package org.batfish.representation.fortios;
 
 import com.google.common.collect.ImmutableList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
@@ -10,6 +12,10 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 
 public class FortiosConfiguration extends VendorConfiguration {
+
+  public FortiosConfiguration() {
+    _replacemsgs = new HashMap<>();
+  }
 
   @Override
   public String getHostname() {
@@ -29,7 +35,13 @@ public class FortiosConfiguration extends VendorConfiguration {
     return ImmutableList.of(toVendorIndependentConfiguration());
   }
 
+  /** majorType -> minorType -> replacemsg config */
+  public @Nonnull Map<String, Map<String, Replacemsg>> getReplacemsgs() {
+    return _replacemsgs;
+  }
+
   private String _hostname;
+  private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.FORTIOS);

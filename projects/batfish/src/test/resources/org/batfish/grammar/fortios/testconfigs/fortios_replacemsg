@@ -1,0 +1,20 @@
+config system global
+  set hostname "fortios_replacemsg"
+end
+config system replacemsg admin pre_admin-disclaimer-text
+# buffer should end in newline and begin with following, where all characters except NEWLINE
+# are interpreted to be single literal characters, and NEWLINE is a single \n character:
+# "npre"''\\nabc\\\" "NEWLINElastline
+  set buffer \"\n"pre\"\''\\\n"abc'\\\" "'"
+"last\
+line
+end
+config system replacemsg admin "post_admin-disclaimer-text"
+  set buffer ''
+  set buffer ""
+  unset buffer
+end
+config system replacemsg admin "invalid minor type"
+  set buffer 'crashing would be rude'
+end
+
