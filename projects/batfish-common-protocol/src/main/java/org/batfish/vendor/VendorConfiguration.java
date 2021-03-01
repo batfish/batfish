@@ -48,8 +48,10 @@ public abstract class VendorConfiguration implements Serializable {
 
   private VendorConfiguration _overlayConfiguration;
 
+  // Type description -> Name -> DefinedStructureInfo
   protected final SortedMap<String, SortedMap<String, DefinedStructureInfo>> _structureDefinitions;
 
+  // StructureType -> Name -> StructureUsage
   protected final SortedMap<
           StructureType, SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>>>
       _structureReferences;
@@ -171,6 +173,62 @@ public abstract class VendorConfiguration implements Serializable {
         byName.computeIfAbsent(name, k -> new TreeMap<>());
     SortedMultiset<Integer> lines = byUsage.computeIfAbsent(usage, k -> TreeMultiset.create());
     lines.add(line);
+  }
+
+  /**
+   * Check if specified rename is valid (new name isn't taken and existing definition exists) and
+   * warn if not.
+   */
+  private boolean isRenameValid(StructureType type, String orgName, String newName) {
+    SortedMap<String, DefinedStructureInfo> defsByName =
+        _structureDefinitions.computeIfAbsent(type.getDescription(), m -> new TreeMap<>());
+
+    if (!defsByName.containsKey(orgName)) {
+      _w.redFlag(String.format("Cannot rename undefined structure %s.", orgName));
+      return false;
+    }
+    if (defsByName.containsKey(newName)) {
+      _w.redFlag(String.format("New name %s is already in use.", newName));
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Update the definition for the specified structure to use the new name. This should only be
+   * called if a definition exists for the specified structure.
+   */
+  private void renameStructureDefinition(StructureType type, String orgName, String newName) {
+    SortedMap<String, DefinedStructureInfo> defsByName =
+        _structureDefinitions.computeIfAbsent(type.getDescription(), m -> new TreeMap<>());
+    DefinedStructureInfo def = defsByName.get(orgName);
+    // Guaranteed by caller
+    assert def != null;
+    defsByName.remove(orgName);
+    defsByName.put(newName, def);
+  }
+
+  /** If any references exist to the specified structure, update them to use the new name. */
+  private void renameStructureReferences(StructureType type, String orgName, String newName) {
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> refsByName =
+        _structureReferences.computeIfAbsent(type, m -> new TreeMap<>());
+    if (refsByName.containsKey(orgName)) {
+      SortedMap<StructureUsage, SortedMultiset<Integer>> refs = refsByName.get(orgName);
+      refsByName.remove(orgName);
+      refsByName.put(newName, refs);
+    }
+  }
+
+  /**
+   * Rename the specified structure in its definition as well as references. Warns if the rename
+   * request is invalid (e.g. no corresponding structure or name conflict).
+   */
+  public void renameStructure(StructureType type, String orgName, String newName) {
+    if (!isRenameValid(type, orgName, newName)) {
+      return;
+    }
+    renameStructureDefinition(type, orgName, newName);
+    renameStructureReferences(type, orgName, newName);
   }
 
   public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
