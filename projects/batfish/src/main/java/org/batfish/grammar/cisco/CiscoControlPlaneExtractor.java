@@ -9718,7 +9718,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     warn(ctx, "Export maps for VRFs are not currently supported");
     assert _currentVrfAddressFamily != null;
     String name = ctx.name.getText();
-    _currentVrfAddressFamily.setExportMap(name);
+    if (ctx.MULTICAST() == null) {
+      // unicast
+      _currentVrfAddressFamily.setExportMap(name);
+    } // TODO: add else branch warning about just multicast not being supported
     _configuration.referenceStructure(
         ROUTE_MAP, name, VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP, ctx.getStart().getLine());
   }
