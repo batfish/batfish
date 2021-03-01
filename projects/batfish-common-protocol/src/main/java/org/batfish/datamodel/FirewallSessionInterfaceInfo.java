@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -59,37 +58,35 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   private static final String PROP_ACTION = "action";
   private static final String PROP_FIB_LOOKUP = "fibLookup"; // for JSON backwards compatibility
   private static final String PROP_SESSION_INTERFACES = "sessionInterfaces";
-  private static final String PROP_SRC_INTERFACES = "srcInterfaces";
-  private static final String PROP_MATCH_ORIGINATING_FROM_DEVICE = "matchOriginatingFromDevice";
+  private static final String PROP_SOURCES = "sources";
   private static final String PROP_INCOMING_ACL_NAME = "incomingAclName";
   private static final String PROP_OUTGOING_ACL_NAME = "outgoingAclName";
 
   private final Action _action;
   private final SortedSet<String> _sessionInterfaces;
-  private final @Nullable Set<String> _srcInterfaces;
-  private final boolean _matchOriginatingFromDevice;
+  private final @Nullable Set<String> _sources;
   private final @Nullable String _incomingAclName;
   private final @Nullable String _outgoingAclName;
 
   /**
    * Creates session info that sets up a session for any outgoing traffic.
    *
-   * @see #FirewallSessionInterfaceInfo(Action, Iterable, Iterable, boolean, String, String)
+   * @see #FirewallSessionInterfaceInfo(Action, Iterable, Iterable, String, String)
    */
   public FirewallSessionInterfaceInfo(
       Action action,
       Iterable<String> sessionInterfaces,
       @Nullable String incomingAclName,
       @Nullable String outgoingAclName) {
-    this(action, sessionInterfaces, null, true, incomingAclName, outgoingAclName);
+    this(action, sessionInterfaces, null, incomingAclName, outgoingAclName);
   }
 
   /**
    * @param action {@link Action} to take on a matching return flow
    * @param sessionInterfaces This session can be set up when a flow exits these interfaces
-   * @param srcInterfaces This session can be set up by flows that entered these source interfaces
-   * @param matchOriginatingFromDevice Whether this session can be set up by flows originating from
-   *     the device
+   * @param sources This session can be set up by flows from these sources, which may include both
+   *     interface names and {@link
+   *     org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}
    * @param incomingAclName Session flows entering an interface with this session info will be
    *     filtered through this ACL
    * @param outgoingAclName Session flows exiting an interface with this session info will be
@@ -98,8 +95,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   public FirewallSessionInterfaceInfo(
       Action action,
       Iterable<String> sessionInterfaces,
-      @Nullable Iterable<String> srcInterfaces,
-      boolean matchOriginatingFromDevice,
+      @Nullable Iterable<String> sources,
       @Nullable String incomingAclName,
       @Nullable String outgoingAclName) {
     // A FirewallSessionInterfaceInfo with no interfaces wouldn't create or match any sessions.
@@ -108,8 +104,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
         sessionInterfaces.iterator().hasNext(),
         "Cannot create FirewallSessionInterfaceInfo with zero session interfaces.");
     _sessionInterfaces = ImmutableSortedSet.copyOf(sessionInterfaces);
-    _srcInterfaces = srcInterfaces == null ? null : ImmutableSet.copyOf(srcInterfaces);
-    _matchOriginatingFromDevice = matchOriginatingFromDevice;
+    _sources = sources == null ? null : ImmutableSet.copyOf(sources);
     _incomingAclName = incomingAclName;
     _outgoingAclName = outgoingAclName;
     _action = action;
@@ -120,9 +115,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
       @JsonProperty(PROP_ACTION) @Nullable Action action,
       @JsonProperty(PROP_FIB_LOOKUP) boolean fibLookup,
       @JsonProperty(PROP_SESSION_INTERFACES) @Nullable Set<String> sessionInterfaces,
-      @JsonProperty(PROP_SRC_INTERFACES) @Nullable Set<String> srcInterfaces,
-      @JsonProperty(PROP_MATCH_ORIGINATING_FROM_DEVICE) @Nullable
-          Boolean matchOriginatingFromDevice,
+      @JsonProperty(PROP_SOURCES) @Nullable Set<String> sources,
       @JsonProperty(PROP_INCOMING_ACL_NAME) @Nullable String incomingAclName,
       @JsonProperty(PROP_OUTGOING_ACL_NAME) @Nullable String outgoingAclName) {
     checkNotNull(sessionInterfaces, PROP_SESSION_INTERFACES + " cannot be null");
@@ -130,12 +123,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
         action != null ? action : fibLookup ? Action.POST_NAT_FIB_LOOKUP : Action.FORWARD_OUT_IFACE;
 
     return new FirewallSessionInterfaceInfo(
-        backwardsCompatibleAction,
-        sessionInterfaces,
-        srcInterfaces,
-        matchOriginatingFromDevice == null || matchOriginatingFromDevice,
-        incomingAclName,
-        outgoingAclName);
+        backwardsCompatibleAction, sessionInterfaces, sources, incomingAclName, outgoingAclName);
   }
 
   @Override
@@ -149,8 +137,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
     FirewallSessionInterfaceInfo that = (FirewallSessionInterfaceInfo) o;
     return _action == that._action
         && Objects.equals(_sessionInterfaces, that._sessionInterfaces)
-        && Objects.equals(_srcInterfaces, that._srcInterfaces)
-        && _matchOriginatingFromDevice == that._matchOriginatingFromDevice
+        && Objects.equals(_sources, that._sources)
         && Objects.equals(_incomingAclName, that._incomingAclName)
         && Objects.equals(_outgoingAclName, that._outgoingAclName);
   }
@@ -158,12 +145,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
-        _action.ordinal(),
-        _sessionInterfaces,
-        _srcInterfaces,
-        _matchOriginatingFromDevice,
-        _incomingAclName,
-        _outgoingAclName);
+        _action.ordinal(), _sessionInterfaces, _sources, _incomingAclName, _outgoingAclName);
   }
 
   /** What {@link Action} should be taken for return traffic that matches a session */
@@ -178,20 +160,15 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
     return _sessionInterfaces;
   }
 
-  /** Whether this session can be set up by a flow originating from this device */
-  @JsonProperty(PROP_MATCH_ORIGINATING_FROM_DEVICE)
-  public boolean getMatchOriginatingFromDevice() {
-    return _matchOriginatingFromDevice;
-  }
-
   /**
-   * Session can only be set up by flows that entered these source interfaces (or, potentially, that
-   * {@link #getMatchOriginatingFromDevice() originated on this device}). If {@code null}, the
-   * session can be set up for flows that entered any interface.
+   * Session can only be set up by flows that came from these sources, which may include both names
+   * of ingress interfaces and {@link
+   * org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}. If
+   * {@code null}, the session can be set up by flows from any source.
    */
-  @JsonProperty(PROP_SRC_INTERFACES)
-  public @Nullable Set<String> getSrcInterfaces() {
-    return _srcInterfaces;
+  @JsonProperty(PROP_SOURCES)
+  public @Nullable Set<String> getSources() {
+    return _sources;
   }
 
   /** The name of the incoming ACL for sessions that enter this interface. */
@@ -209,15 +186,11 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
   /**
    * Convenience method: whether session should be set up for a flow from the given {@code src}
    *
-   * @param src Name of flow's ingress interface, or {@code null} or {@link
+   * @param src Name of flow's ingress interface, or {@link
    *     org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}
    *     if the flow originates from the device.
    */
   public boolean canSetUpSessionForFlowFrom(@Nullable String src) {
-    if (src == null || src.equals(SOURCE_ORIGINATING_FROM_DEVICE)) {
-      return _matchOriginatingFromDevice;
-    }
-    // Flow did not originate from device; src is the ingress interface
-    return _srcInterfaces == null || _srcInterfaces.contains(src);
+    return _sources == null || _sources.contains(src);
   }
 }

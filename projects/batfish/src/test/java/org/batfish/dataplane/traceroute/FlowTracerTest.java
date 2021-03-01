@@ -10,6 +10,7 @@ import static org.batfish.datamodel.FlowDisposition.LOOP;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
 import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
@@ -963,7 +964,7 @@ public final class FlowTracerTest {
       // eth3 should set up sessions for flows from any ingress interface or originating from device
       eth3.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
-              Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of(eth3.getName()), null, true, null, null));
+              Action.PRE_NAT_FIB_LOOKUP, ImmutableSet.of(eth3.getName()), null, null, null));
       assertTrue(setsUpNewSession(c, vrf.getName(), eth1.getName(), fromEth1, ctxt));
       assertTrue(setsUpNewSession(c, vrf.getName(), eth2.getName(), fromEth2, ctxt));
       assertTrue(setsUpNewSession(c, vrf.getName(), null, fromDevice, ctxt));
@@ -975,12 +976,24 @@ public final class FlowTracerTest {
               Action.PRE_NAT_FIB_LOOKUP,
               ImmutableSet.of(eth3.getName()),
               ImmutableSet.of(eth1.getName()),
-              false,
               null,
               null));
       assertTrue(setsUpNewSession(c, vrf.getName(), eth1.getName(), fromEth1, ctxt));
       assertFalse(setsUpNewSession(c, vrf.getName(), eth2.getName(), fromEth2, ctxt));
       assertFalse(setsUpNewSession(c, vrf.getName(), null, fromDevice, ctxt));
+    }
+    {
+      // eth3 should set up sessions for flows originating from device only
+      eth3.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(
+              Action.PRE_NAT_FIB_LOOKUP,
+              ImmutableSet.of(eth3.getName()),
+              ImmutableSet.of(SOURCE_ORIGINATING_FROM_DEVICE),
+              null,
+              null));
+      assertFalse(setsUpNewSession(c, vrf.getName(), eth1.getName(), fromEth1, ctxt));
+      assertFalse(setsUpNewSession(c, vrf.getName(), eth2.getName(), fromEth2, ctxt));
+      assertTrue(setsUpNewSession(c, vrf.getName(), null, fromDevice, ctxt));
     }
   }
 
