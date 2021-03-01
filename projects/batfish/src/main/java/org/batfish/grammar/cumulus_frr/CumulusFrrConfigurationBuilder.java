@@ -845,10 +845,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterS_router_ospf(S_router_ospfContext ctx) {
-    if (_frr.getOspfProcess() == null) {
-      _frr.setOspfProcess(new OspfProcess());
-    }
-    _currentOspfVrf = _frr.getOspfProcess().getDefaultVrf();
+    _currentOspfVrf = _frr.getOrCreateOspfProcess().getDefaultVrf();
   }
 
   @Override

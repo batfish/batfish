@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
+import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreaRangeFilterName;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.OSPF;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
@@ -21,6 +22,7 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -77,11 +79,14 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -1886,6 +1891,48 @@ public class CumulusFrrGrammarTest {
     assertThat(area5, notNullValue());
     assertThat(area5.getRanges(), hasKeys(prefix));
     assertThat(area5.getRange(prefix).getCost(), nullValue());
+  }
+
+  @Test
+  public void testRouterOspfAreaRangeConversion() {
+    parse(
+        "interface swp1\n"
+            + " ip address 1.2.3.4/5\n"
+            + " ip ospf area 1.1.1.0\n"
+            + "\n"
+            + "interface swp2\n"
+            + " ip address 2.3.4.5/6\n"
+            + " ip ospf area 5\n"
+            + "\n"
+            + "router ospf\n"
+            + " area 1.1.1.0 range 1.255.0.0/17 cost 10\n");
+    long area1110 = Ip.parse("1.1.1.0").asLong();
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
+    assertThat(c.getDefaultVrf().getOspfProcesses(), aMapWithSize(1));
+    OspfProcess proc = Iterables.getOnlyElement(c.getDefaultVrf().getOspfProcesses().values());
+    assertThat(proc.getAreas(), hasKeys(5L, area1110));
+    {
+      org.batfish.datamodel.ospf.OspfArea area = proc.getAreas().get(5L);
+      assertThat(area.getSummaries(), anEmptyMap());
+      assertThat(area.getSummaryFilter(), nullValue());
+    }
+    {
+      org.batfish.datamodel.ospf.OspfArea area = proc.getAreas().get(area1110);
+      assertThat(area.getSummaries(), hasKeys(Prefix.parse("1.255.0.0/17")));
+      OspfAreaSummary summary = Iterables.getOnlyElement(area.getSummaries().values());
+      assertThat(summary.getAdvertised(), equalTo(true));
+      assertThat(summary.getMetric(), equalTo(10L));
+      String name = computeOspfAreaRangeFilterName(c.getDefaultVrf().getName(), area1110);
+      assertThat(area.getSummaryFilter(), equalTo(name));
+      assertThat(c.getRouteFilterLists(), hasKey(name));
+      RouteFilterList filter = c.getRouteFilterLists().get(name);
+      assertTrue(filter.permits(Prefix.parse("1.255.0.0/17"))); // prefix itself should be permitted
+      assertFalse(
+          filter.permits(
+              Prefix.parse("1.255.64.0/18"))); // more specific, even with diff prefix, denied
+      assertTrue(filter.permits(Prefix.parse("10.0.0.0/18"))); // more specific, not overlapping
+      assertTrue(filter.permits(Prefix.parse("1.255.0.0/16"))); // less specific
+    }
   }
 
   @Test
