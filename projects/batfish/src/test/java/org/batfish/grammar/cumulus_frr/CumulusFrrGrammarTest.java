@@ -209,9 +209,11 @@ public class CumulusFrrGrammarTest {
     CumulusFrrConfigurationBuilder cb =
         new CumulusFrrConfigurationBuilder(_config, parser, _warnings, src);
     walker.walk(cb, tree);
+
+    // SerializationUtils.clone will clear transient state, which we save and restore.
+    // Or populate with default values for things that supplied by Batfish pre-conversion.
     Warnings w = _config.getWarnings();
     _config = SerializationUtils.clone(_config);
-    // Gets cleared during parsing, only needed during conversion.
     _config.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     _config.setWarnings(w);
   }
