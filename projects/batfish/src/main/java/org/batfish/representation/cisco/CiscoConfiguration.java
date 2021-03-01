@@ -11,6 +11,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -3226,8 +3227,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // IOS does FIB lookups with the original dst IP for flows from inside to outside, but the
       // transformed dst IP for flows from outside to inside.
       if (!getNatInside().isEmpty()) {
+        // Flows to inside interfaces should undergo NAT if they come from an outside interface
         FirewallSessionInterfaceInfo insideIfaceInfo =
-            new FirewallSessionInterfaceInfo(Action.PRE_NAT_FIB_LOOKUP, getNatInside(), null, null);
+            new FirewallSessionInterfaceInfo(
+                Action.PRE_NAT_FIB_LOOKUP, getNatInside(), getNatOutside(), null, null);
         getNatInside().stream()
             .map(c.getAllInterfaces()::get)
             .forEach(iface -> iface.setFirewallSessionInterfaceInfo(insideIfaceInfo));
@@ -3235,7 +3238,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (!getNatOutside().isEmpty()) {
         FirewallSessionInterfaceInfo outsideIfaceInfo =
             new FirewallSessionInterfaceInfo(
-                Action.POST_NAT_FIB_LOOKUP, getNatOutside(), null, null);
+                Action.POST_NAT_FIB_LOOKUP,
+                getNatOutside(),
+                // Flows to outside interfaces should undergo NAT if they come from an inside
+                // interface or originate on device
+                ImmutableSet.<String>builder()
+                    .addAll(getNatInside())
+                    .add(SOURCE_ORIGINATING_FROM_DEVICE)
+                    .build(),
+                null,
+                null);
         getNatOutside().stream()
             .map(c.getAllInterfaces()::get)
             .forEach(iface -> iface.setFirewallSessionInterfaceInfo(outsideIfaceInfo));

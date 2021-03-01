@@ -23,6 +23,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
@@ -7451,12 +7452,14 @@ public final class CiscoGrammarTest {
         new FirewallSessionInterfaceInfo(
             Action.PRE_NAT_FIB_LOOKUP,
             ImmutableSet.of(inside1.getName(), inside2.getName()),
+            ImmutableSet.of(outside1.getName(), outside2.getName()),
             null,
             null);
     FirewallSessionInterfaceInfo outsideInfo =
         new FirewallSessionInterfaceInfo(
             Action.POST_NAT_FIB_LOOKUP,
             ImmutableSet.of(outside1.getName(), outside2.getName()),
+            ImmutableSet.of(inside1.getName(), inside2.getName(), SOURCE_ORIGINATING_FROM_DEVICE),
             null,
             null);
     assertThat(inside1.getFirewallSessionInterfaceInfo(), equalTo(insideInfo));

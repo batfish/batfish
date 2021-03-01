@@ -28571,6 +28571,10 @@
               "action" : "POST_NAT_FIB_LOOKUP",
               "sessionInterfaces" : [
                 "Ethernet0"
+              ],
+              "sources" : [
+                "DEVICE IS THE SOURCE",
+                "Ethernet0"
               ]
             },
             "mtu" : 1500,
