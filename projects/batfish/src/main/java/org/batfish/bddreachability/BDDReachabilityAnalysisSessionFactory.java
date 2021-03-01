@@ -36,6 +36,7 @@ import org.batfish.common.bdd.BDDOps;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.FirewallSessionVrfInfo;
 import org.batfish.datamodel.Interface;
@@ -256,19 +257,22 @@ final class BDDReachabilityAnalysisSessionFactory {
         _reverseFlowTransformationFactory.reverseFlowOutgoingTransformation(
             hostname, outIface.getName());
 
-    Action matchAction = outIface.getFirewallSessionInterfaceInfo().getAction();
+    FirewallSessionInterfaceInfo interfaceInfo = outIface.getFirewallSessionInterfaceInfo();
+    Action matchAction = interfaceInfo.getAction();
     ImmutableList.Builder<BDDFirewallSessionTraceInfo> builder = ImmutableList.builder();
-    srcMgr
-        .getSourceBDDs()
+    srcMgr.getSourceBDDs().entrySet().stream()
+        // Don't bother building trace info for sources for which sessions can't be set up
+        .filter(e -> interfaceInfo.canSetUpSessionForFlowFrom(e.getKey()))
         .forEach(
-            (src, srcBdd) -> {
+            e -> {
               // Flows entered src (either an interface or this device) and exited outIface
-              BDD srcToOutIfaceBdd = outIfaceBdd.and(srcBdd);
+              BDD srcToOutIfaceBdd = outIfaceBdd.and(e.getValue());
 
               if (srcToOutIfaceBdd.isZero()) {
                 return;
               }
 
+              String src = e.getKey();
               if (src.equals(SOURCE_ORIGINATING_FROM_DEVICE)) {
                 assert !_lastHopManager.hasLastHopConstraint(srcToOutIfaceBdd);
 

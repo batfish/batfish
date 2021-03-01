@@ -7,6 +7,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.util.Comparator.comparing;
 import static org.batfish.datamodel.FlowDiff.flowDiffs;
 import static org.batfish.datamodel.FlowDiff.returnFlowDiffs;
+import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.EGRESS_ORIGINAL_FLOW_FILTER;
 import static org.batfish.datamodel.flow.FilterStep.FilterType.INGRESS_FILTER;
@@ -1205,6 +1206,10 @@ class FlowTracer {
   @Nullable
   private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
+    if (!firewallSessionInterfaceInfo.canSetUpSessionForFlowFrom(
+        firstNonNull(_ingressInterface, SOURCE_ORIGINATING_FROM_DEVICE))) {
+      return null;
+    }
     SessionAction action =
         getSessionAction(
             firewallSessionInterfaceInfo.getAction(),
