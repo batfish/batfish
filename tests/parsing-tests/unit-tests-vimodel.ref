@@ -28567,6 +28567,16 @@
               "172.16.0.1",
               "172.17.0.1"
             ],
+            "firewallSessionInterfaceInfo" : {
+              "action" : "POST_NAT_FIB_LOOKUP",
+              "sessionInterfaces" : [
+                "Ethernet0"
+              ],
+              "sources" : [
+                "DEVICE IS THE SOURCE",
+                "Ethernet0"
+              ]
+            },
             "mtu" : 1500,
             "nativeVlan" : 6,
             "ospfSettings" : {
