@@ -11,6 +11,7 @@ vrf definition vrf1
    route-target export 2222:23
    address-family ipv4
       import map RT_IMPORT_MAP
+      export map RT_EXPORT_MAP
       export ipv4 unicast 500 map RT_EXPORT_MAP
       route-target both 3333:31
       route-target import 3333:32
