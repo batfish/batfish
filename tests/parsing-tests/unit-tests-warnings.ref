@@ -268,56 +268,56 @@
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 13,
+        "Line" : 17,
         "Text" : "weights 0 1 2 3 4 5",
         "Parser_Context" : "[rec_metric_weights rec_metric rec_address_family_tail rec_address_family re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 23,
+        "Line" : 27,
         "Text" : "weights 0 1 2 3 4 5",
         "Parser_Context" : "[rec_metric_weights rec_metric re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 38,
+        "Line" : 42,
         "Text" : "redistribute isis route-map ISIS_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_isis re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "ISIS redistribution in EIGRP is not implemented"
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 39,
+        "Line" : 43,
         "Text" : "redistribute ospf 4 route-map OSPF_TO_EIGRP",
         "Parser_Context" : "[re_redistribute_ospf re_redistribute re_classic_tail re_classic s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 119,
+        "Line" : 123,
         "Text" : "addrgroup bleep_blorp",
         "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 122,
+        "Line" : 126,
         "Text" : "address-family ipv4 multicast vrf autonomous-system autonomous-system 4\n  af-interface Ethernet0\n   add-paths 4\n   bandwidth-percent 75\n   dampening-change 75\n   dampening-interval 45\n   hold-time 40\n   passive-interface\n  exit-af-interface\n  eigrp default-route-tag 2\n  metric rib-scale 100\n  metric weights 0 1 2 3 4 5 6\n  network 1.1.1.100\n  remote-neighbors source GigabitEthernet0/0/1 unicast-listen lisp-encap 2\n  topology base\n   metric maximum-hops 10\n   offset-list 21 out 10\n   summary-metric 192.168.0.0/16 10000 10 255 1 1500 distance 20\n   traffic-share balanced\n   variance 4\n  exit-af-topology\n  topology VOICE tid 1000\n   no auto-summary\n  exit-af-topology\n  passive-interface default\n  no passive-interface FastEthernet0/1\n exit-address-family",
         "Parser_Context" : "[ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 133,
+        "Line" : 137,
         "Text" : "metric weights 0 1 2 3 4 5 6",
         "Parser_Context" : "[ren_metric_weights ren_address_family_tail ren_address_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_eigrp",
-        "Line" : 151,
+        "Line" : 155,
         "Text" : "metric weights 0 1 2 3 4 5 6",
         "Parser_Context" : "[ren_metric_weights ren_service_family_tail ren_service_family re_named_tail re_named s_router_eigrp stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"

@@ -9,6 +9,10 @@ object-group ip address _anonymized2_
 !
 router eigrp 5
  address-family ipv4 unicast vrf default autonomous-system 55
+  timers active-time 3
+  timers graceful-restart purge-time 240
+  traffic-share balanced                                                                                                                                                     
+  variance 1  
   autonomous-system 65500
   metric weights 0 1 2 3 4 5
   metric maximum-hops 11
