@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
@@ -31,6 +32,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -205,9 +207,16 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       return Optional.empty();
     }
 
-    return makeFilterMatchExpr(ifaceName, routeMaps, c.getIpAccessLists().keySet(), c, w)
-        .map(filterMatchExpr -> and(filterMatchExpr, new MatchSrcInterface(insideInterfaces)))
-        .map(matchExpr -> makeTransformation(matchExpr, true, natPools, interfaces));
+    Optional<AclLineMatchExpr> filterMatchExpr =
+        makeFilterMatchExpr(ifaceName, routeMaps, c.getIpAccessLists().keySet(), c, w);
+    if (!filterMatchExpr.isPresent()) {
+      return Optional.empty();
+    }
+    AclLineMatchExpr sourcesMatchExpr =
+        or(new MatchSrcInterface(insideInterfaces), OriginatingFromDevice.INSTANCE);
+    return Optional.of(
+        makeTransformation(
+            and(filterMatchExpr.get(), sourcesMatchExpr), true, natPools, interfaces));
   }
 
   /**
