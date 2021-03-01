@@ -1480,7 +1480,7 @@ public final class CumulusConversions {
     // 2. add a RouteFilterList to force summarization and block more specific routes.
     if (!vsArea.getRanges().isEmpty()) {
       ImmutableList.Builder<RouteFilterLine> lines =
-          ImmutableList.builderWithExpectedSize(vsArea.getRanges().size());
+          ImmutableList.builderWithExpectedSize(vsArea.getRanges().size() + 1);
       for (OspfAreaRange range : vsArea.getRanges().values()) {
         // OSPF costs are only 16-bit, but the VI metric is a long, for other protocols that support
         // that. Upconvert if not null.
