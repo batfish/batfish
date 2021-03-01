@@ -53,15 +53,13 @@ public final class VendorConfigurationTest {
     }
   }
 
-  private final TestStructureType TEST_STRUCTURE_TYPE = TestStructureType.TEST_STRUCTURE_TYPE1;
-  private final TestStructureUsage TEST_STRUCTURE_USAGE = TestStructureUsage.TEST_STRUCTURE_USAGE1;
+  private final TestStructureType _testStructureType = TestStructureType.TEST_STRUCTURE_TYPE1;
+  private final TestStructureUsage _testStructureUsage = TestStructureUsage.TEST_STRUCTURE_USAGE1;
 
   private static final class TestVendorConfiguration extends VendorConfiguration {
-    private final String HOSTNAME = "hostname";
-
     @Override
     public String getHostname() {
-      return HOSTNAME;
+      return "hostname";
     }
 
     @Override
@@ -98,7 +96,7 @@ public final class VendorConfigurationTest {
     {
       VendorConfiguration c = buildVendorConfiguration();
 
-      c.renameStructure(TEST_STRUCTURE_TYPE, orgName, newName);
+      c.renameStructure(_testStructureType, orgName, newName);
       // Produce an appropriate warning
       assertThat(
           c.getWarnings(), hasRedFlag(hasText("Cannot rename undefined structure orgName.")));
@@ -108,10 +106,10 @@ public final class VendorConfigurationTest {
     {
       VendorConfiguration c = buildVendorConfiguration();
 
-      c.defineSingleLineStructure(TEST_STRUCTURE_TYPE, orgName, orgLine);
-      c.defineSingleLineStructure(TEST_STRUCTURE_TYPE, newName, otherLine);
+      c.defineSingleLineStructure(_testStructureType, orgName, orgLine);
+      c.defineSingleLineStructure(_testStructureType, newName, otherLine);
 
-      c.renameStructure(TEST_STRUCTURE_TYPE, orgName, newName);
+      c.renameStructure(_testStructureType, orgName, newName);
       // Produces appropriate warning
       assertThat(c.getWarnings(), hasRedFlag(hasText("New name newName is already in use.")));
 
@@ -119,22 +117,22 @@ public final class VendorConfigurationTest {
       assertThat(
           c.getAnswerElement(),
           hasDefinedStructureWithDefinitionLines(
-              FILENAME, TEST_STRUCTURE_TYPE, orgName, contains(orgLine)));
+              FILENAME, _testStructureType, orgName, contains(orgLine)));
       assertThat(
           c.getAnswerElement(),
           hasDefinedStructureWithDefinitionLines(
-              FILENAME, TEST_STRUCTURE_TYPE, newName, contains(otherLine)));
+              FILENAME, _testStructureType, newName, contains(otherLine)));
     }
 
     // Valid structure renaming
     {
       VendorConfiguration c = buildVendorConfiguration();
 
-      c.defineSingleLineStructure(TEST_STRUCTURE_TYPE, orgName, orgLine);
-      c.defineSingleLineStructure(TEST_STRUCTURE_TYPE, unaffectedName, otherLine);
-      c.referenceStructure(TEST_STRUCTURE_TYPE, unaffectedName, TEST_STRUCTURE_USAGE, 11);
-      c.referenceStructure(TEST_STRUCTURE_TYPE, orgName, TEST_STRUCTURE_USAGE, 22);
-      c.renameStructure(TEST_STRUCTURE_TYPE, orgName, newName);
+      c.defineSingleLineStructure(_testStructureType, orgName, orgLine);
+      c.defineSingleLineStructure(_testStructureType, unaffectedName, otherLine);
+      c.referenceStructure(_testStructureType, unaffectedName, _testStructureUsage, 11);
+      c.referenceStructure(_testStructureType, orgName, _testStructureUsage, 22);
+      c.renameStructure(_testStructureType, orgName, newName);
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
       c.setAnswerElement(new ConvertConfigurationAnswerElement());
 
@@ -144,15 +142,15 @@ public final class VendorConfigurationTest {
       assertThat(
           c.getAnswerElement(),
           hasDefinedStructureWithDefinitionLines(
-              FILENAME, TEST_STRUCTURE_TYPE, newName, contains(orgLine)));
+              FILENAME, _testStructureType, newName, contains(orgLine)));
       assertThat(
           c.getAnswerElement(),
-          hasReferencedStructure(FILENAME, TEST_STRUCTURE_TYPE, newName, TEST_STRUCTURE_USAGE));
+          hasReferencedStructure(FILENAME, _testStructureType, newName, _testStructureUsage));
       // Unaffected reference should persist
       assertThat(
           c.getAnswerElement(),
           hasReferencedStructure(
-              FILENAME, TEST_STRUCTURE_TYPE, unaffectedName, TEST_STRUCTURE_USAGE));
+              FILENAME, _testStructureType, unaffectedName, _testStructureUsage));
     }
   }
 }
