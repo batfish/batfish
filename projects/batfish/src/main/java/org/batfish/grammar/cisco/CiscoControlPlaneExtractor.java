@@ -9716,11 +9716,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitVrfd_af_export(Vrfd_af_exportContext ctx) {
     warn(ctx, "Export maps for VRFs are not currently supported");
+    assert _currentVrfAddressFamily != null;
+    String name = ctx.name.getText();
+    _currentVrfAddressFamily.setExportMap(name);
     _configuration.referenceStructure(
-        ROUTE_MAP,
-        ctx.name.getText(),
-        VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP,
-        ctx.getStart().getLine());
+        ROUTE_MAP, name, VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP, ctx.getStart().getLine());
   }
 
   @Override

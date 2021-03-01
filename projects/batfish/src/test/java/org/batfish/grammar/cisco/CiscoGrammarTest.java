@@ -3956,7 +3956,8 @@ public final class CiscoGrammarTest {
           ipv4UnicastAddressFamily.getRouteTargetExport(),
           containsInAnyOrder(
               ExtendedCommunity.target(3333, 31), ExtendedCommunity.target(3333, 33)));
-      assertThat(ipv4UnicastAddressFamily.getImportMap(), equalTo("RT_MAP"));
+      assertThat(ipv4UnicastAddressFamily.getExportMap(), equalTo("RT_EXPORT_MAP"));
+      assertThat(ipv4UnicastAddressFamily.getImportMap(), equalTo("RT_IMPORT_MAP"));
     }
     {
       org.batfish.representation.cisco.Vrf vrf = vc.getVrfs().get("vrf2");
